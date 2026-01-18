@@ -238,8 +238,8 @@ class DrMarioEnv(gym.Env):
             terminated = True
             print(f"[DrMarioEnv] ✓ Episode {self.episode_count} WON!")
 
-        # Game over (topped out - simplistic check)
-        if max_height <= 2:  # Stacked to near-top
+        # Game over (topped out - only if absolute top row occupied)
+        if max_height == 0:  # Row 0 occupied = actual game over
             terminated = True
             reward += self.reward_calc.GAME_OVER_PENALTY
             print(f"[DrMarioEnv] ✗ Episode {self.episode_count} GAME OVER (topped out)")
