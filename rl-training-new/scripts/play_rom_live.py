@@ -27,9 +27,15 @@ from drmario.faithful_game import (
 )
 from drmario.planner import GreedyPlanner, PlannerWeights
 
-# Tuned weights: the vertical-clear term lifts the buried-virus endgame massively
-# (sim L7 win 35%->80% on identical seeds). See scripts/tune_endgame.py.
-TUNED_WEIGHTS = PlannerWeights(v_readiness_bonus=1.5)
+# Tuned weights: vertical-clear pursuit (lifts the buried-virus endgame) + a
+# spawn-column penalty (cols 3-4) to stop the greedy clustering -> fast top-out
+# seen live at high levels (viruses near the top tempt it to stack the spawn lane).
+# spawn_pen set via env DRM_SPAWN_PEN for quick A/B (default 0 = off).
+import os as _os
+TUNED_WEIGHTS = PlannerWeights(
+    v_readiness_bonus=1.5,
+    spawn_pen=float(_os.environ.get("DRM_SPAWN_PEN", "0")),
+)
 
 MODE, BOARD, CAP_X, CAP_Y, ORIENT = 0x0046, 0x0400, 0x0305, 0x0306, 0x00A5
 PILL_A, PILL_B, P1_VIR, LEVEL, SPEED = 0x0301, 0x0302, 0x0324, 0x0096, 0x008B
@@ -252,14 +258,17 @@ def main():
     if not it.connect(timeout=8):
         print("no bridge"); return
     rd = lambda a: it.read_memory(a, 1)[0]
-    planner = GreedyPlanner(TUNED_WEIGHTS, depth=2)
+    depth = int(sys.argv[5]) if len(sys.argv) > 5 else 2
+    planner = GreedyPlanner(TUNED_WEIGHTS, depth=depth)
     it.set_step_mode(True)  # frame-perfect -> nav + play deterministic at any emu speed
     results = []
     try:
+        seed0 = int(sys.argv[4]) if len(sys.argv) > 4 else 0
         for t in range(trials):
-            # vary RNG per trial (soft reset alone is deterministic -> identical games)
+            # vary RNG per trial via the $0017/$0018 seed write (sequential from seed0
+            # so trials line up with harvested/replayed layouts for apples-to-apples).
             r = play_one_game(it, rd, planner, level, speed,
-                              verbose=(trials == 1), seed=(t * 37 + 11) & 0xFF)
+                              verbose=(trials == 1), seed=(seed0 + t) & 0xFF)
             results.append(r)
             print(f"game {t+1}/{trials}: won={r['won']} viruses {r['start_v']}->{r['end_v']} "
                   f"pills={r['pills']} diverge={r['diverge']}", flush=True)
