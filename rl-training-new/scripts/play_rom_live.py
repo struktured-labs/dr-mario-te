@@ -25,7 +25,11 @@ from mesen_interface_file import MesenInterface
 from drmario.faithful_game import (
     FaithfulBoard, Pill, LINK_NONE, LINK_UP, LINK_DOWN, LINK_LEFT, LINK_RIGHT,
 )
-from drmario.planner import GreedyPlanner
+from drmario.planner import GreedyPlanner, PlannerWeights
+
+# Tuned weights: the vertical-clear term lifts the buried-virus endgame massively
+# (sim L7 win 35%->80% on identical seeds). See scripts/tune_endgame.py.
+TUNED_WEIGHTS = PlannerWeights(v_readiness_bonus=1.5)
 
 MODE, BOARD, CAP_X, CAP_Y, ORIENT = 0x0046, 0x0400, 0x0305, 0x0306, 0x00A5
 PILL_A, PILL_B, P1_VIR, LEVEL, SPEED = 0x0301, 0x0302, 0x0324, 0x0096, 0x008B
@@ -253,7 +257,7 @@ def main():
     if not it.connect(timeout=8):
         print("no bridge"); return
     rd = lambda a: it.read_memory(a, 1)[0]
-    planner = GreedyPlanner(depth=2)
+    planner = GreedyPlanner(TUNED_WEIGHTS, depth=2)
     it.set_step_mode(True)  # frame-perfect -> nav + play deterministic at any emu speed
     results = []
     try:
