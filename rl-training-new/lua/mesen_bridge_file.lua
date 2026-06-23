@@ -146,6 +146,33 @@ local frame_count = 0
 local last_debug = 0
 local commands_handled = 0
 
+-- ---- Controller injection ----------------------------------------------
+-- held[port] is a button table applied every input poll via emu.setInput,
+-- which overrides the real controller (the only reliable way to drive the
+-- game externally; direct $F5/$F6 writes get overwritten by the poll).
+-- mask bits: 1=a 2=b 4=up 8=down 16=left 32=right 64=start 128=select
+local held = {}
+local function bit_on(mask, value)
+    return (math.floor(mask / value) % 2) >= 1
+end
+local function handle_input(port_s, mask_s)
+    local port = tonumber(port_s)
+    local mask = tonumber(mask_s)
+    if not port or not mask then return "ERROR bad input args" end
+    held[port] = {
+        a = bit_on(mask, 1), b = bit_on(mask, 2),
+        up = bit_on(mask, 4), down = bit_on(mask, 8),
+        left = bit_on(mask, 16), right = bit_on(mask, 32),
+        start = bit_on(mask, 64), select = bit_on(mask, 128),
+    }
+    return "OK"
+end
+local function apply_input()
+    for port, btns in pairs(held) do
+        emu.setInput(btns, port)
+    end
+end
+
 local function dispatch(cmd_line)
     local parts = {}
     for word in string.gmatch(cmd_line, "%S+") do
@@ -167,6 +194,8 @@ local function dispatch(cmd_line)
         return seq, handle_step(parts[3])
     elseif cmd == "GET_STATE" then
         return seq, handle_get_state()
+    elseif cmd == "INPUT" and #parts >= 4 then
+        return seq, handle_input(parts[3], parts[4])
     elseif cmd == "PING" then
         return seq, "PONG"
     end
@@ -206,6 +235,8 @@ end
 
 -- Register frame callback (Mesen invokes us at the end of each rendered frame).
 emu.addEventCallback(process_command, emu.eventType.endFrame)
+-- Apply injected controller input every poll (overrides the real controller).
+emu.addEventCallback(apply_input, emu.eventType.inputPolled)
 
 -- Signal ready ONLY after cleanup + callback registration so Python doesn't race us.
 local ready = io.open(READY_FILE, "w")

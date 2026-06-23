@@ -198,6 +198,20 @@ class MesenInterface:
         """Advance the emulator by ``frames`` frames (cooperative, see Lua)."""
         self._send_command(f"STEP {frames}")
 
+    # mask bits for set_input: 1=a 2=b 4=up 8=down 16=left 32=right 64=start 128=select
+    BTN = {"a": 1, "b": 2, "up": 4, "down": 8, "left": 16, "right": 32, "start": 64, "select": 128}
+
+    def set_input(self, port: int, buttons=()) -> None:
+        """Inject controller input on ``port`` (0=P1, 1=P2), held until changed.
+
+        ``buttons`` is an iterable of button names (a/b/up/down/left/right/start/
+        select). Applied every input poll via emu.setInput, overriding the real
+        controller -- the reliable way to drive the game externally."""
+        mask = 0
+        for b in buttons:
+            mask |= self.BTN[b]
+        self._send_command(f"INPUT {port} {mask}")
+
     def get_game_state(self) -> Dict[str, Any]:
         """Return the consolidated Dr. Mario P2 state dictionary."""
         response = self._send_command("GET_STATE")
