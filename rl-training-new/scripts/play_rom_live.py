@@ -208,7 +208,7 @@ def play_one_game(it, rd, planner, level, speed, verbose=True, seed=None):
         spd = {0: "LOW", 1: "MED", 2: "HI"}.get(rd(SPEED), "?")
         print(f"=== level {rd(LEVEL)} start: {start_v} viruses, speed={spd} ===", flush=True)
     won, diverge_ct, vleft, pill = False, 0, start_v, 0
-    for pill in range(300):
+    for pill in range(200):  # match sim MAX_PILLS; thrashing past this is a loss
         board = read_board(it)
         vleft = board.virus_count()
         if vleft == 0:
@@ -229,22 +229,17 @@ def play_one_game(it, rd, planner, level, speed, verbose=True, seed=None):
         if rd(ORIENT) != nes_or:  # drifted (rare wall-kick) -- correct once
             rotate_to(it, rd, nes_or); move_to(it, rd, col)
         locked = drop_lock(it)
-        nv = read_board(it).virus_count()
+        got_next = wait_falling(it, rd)  # wait out the full cascade + next capsule spawn
+        nv = read_board(it).virus_count()  # fully-settled board (accurate clear count)
         if pred_v != (vleft - nv):
             diverge_ct += 1
         if verbose and (pill % 5 == 0 or nv != vleft or pred_v != (vleft - nv)):
             tag = "  <-- DIVERGE" if pred_v != (vleft - nv) else ""
             print(f"  pill#{pill+1}: var{variant}->or{nes_or} col{col} "
                   f"viruses {vleft}->{nv} (pred -{pred_v}/act -{vleft-nv}){tag}", flush=True)
-        if nv == 0:  # cleared the level THIS drop -- win before the game advances levels
+        if nv == 0:  # level cleared
             won = True; vleft = 0; break
-        if not locked:
-            if verbose:
-                print(f"  pill didn't lock (topped out) after {pill+1}", flush=True)
-            break
-        if not wait_falling(it, rd):
-            if read_board(it).virus_count() == 0:
-                won = True; vleft = 0
+        if not locked or not got_next:  # topped out / no next capsule
             break
     return {"won": won, "start_v": start_v, "end_v": vleft, "pills": pill + 1, "diverge": diverge_ct}
 
