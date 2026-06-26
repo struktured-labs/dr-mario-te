@@ -44,12 +44,6 @@ def main():
     seed = int(os.environ.get("DRM_SEED", "0"))
     if seed:
         w(0x0017, [seed & 0xFF]); w(0x0018, [(seed >> 8) & 0xFF])
-    # wait for the virus intro to finish placing all viruses on BOTH boards
-    for _ in range(60):
-        it.step_frame(16)
-        if viruses(P1_BOARD) >= 40 and viruses(P2_BOARD) >= 40:
-            break
-
     def keep_p1_alive():
         # Clear ALL capsule tiles ($40-$7F) across P1's whole board so stacked
         # pieces can never top P1 out; preserve viruses ($Dx) so P1 can't win.
@@ -66,6 +60,14 @@ def main():
             rows.append("".join("." if x == 0xFF else
                                 ("V" if (x & 0xF0) == 0xD0 else "o") for x in row))
         return rows
+
+    # wait for the virus intro to finish — keep P1 alive throughout so the match
+    # can't end before the measurement loop starts.
+    for _ in range(60):
+        keep_p1_alive()
+        it.step_frame(16)
+        if viruses(P1_BOARD) >= 40 and viruses(P2_BOARD) >= 40:
+            break
 
     p2v0 = viruses(P2_BOARD)
     print(f"level={r(0x0316)} P1v={viruses(P1_BOARD)} P2v={p2v0}  (expect 48 each at L11)")
