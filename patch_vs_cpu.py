@@ -659,8 +659,16 @@ VIR_W = 32
 CELL_W = 2
 
 
-def build_v18_ai(ai_cpu):
+def build_v18_ai(ai_cpu, with_rotation=False):
     """Emit the v18 depth-1 simulation AI. Returns bytes. ai_cpu = CPU load addr.
+
+    with_rotation: if True (the "v28" build), (a) save the best-scoring
+    placement's orientation into Z_BORIENT ($DA), and (b) replace the inline
+    movement tail with a JMP to a relocated orient+move routine at $FF54 that
+    rotates the capsule (edge-triggered A press, $80) when its parity ($03A5 & 1)
+    differs from Z_BORIENT before nudging it toward the target column. This
+    unlocks the vertical placements the v18 scorer already computes but could
+    never physically reach. See dr-mario-rotation-mechanism memory.
 
     Subroutines (internal, called via JSR):
       land_col   : input Z_COL = column. Sets carry=0 and Z_OFFB=bottom offset,
@@ -682,15 +690,30 @@ def build_v18_ai(ai_cpu):
     a.ins("STA_zp", 0xF6)
     a.ins("LDA_zp", 0x46)           # LDA $46 (game mode)
     a.ins("CMP_imm", 0x04)
-    a.br("BCS", "gameplay")
-    a.jmp("exit")                    # menu/level select -> done (already mirrored)
+    a.br("BEQ", "gameplay")          # ONLY mode==4 (active play). BCS(>=4) also
+                                     # fired during mode 8 (intro) -> phantom
+                                     # cells/freeze; the shipped v18 was manually
+                                     # post-patched here, now fixed in-builder.
+    a.jmp("exit")                    # menu/level select/intro -> done (mirrored)
     a.label("gameplay")
+
+    if with_rotation:
+        # The expensive search + cheap orient/move + per-pill CACHE all live in
+        # the relocated wrapper at $FF54 (dead v17 AI window). The wrapper JSRs
+        # back to "search_entry" only when the pill colors change, so the heavy
+        # 15-column search runs once per pill instead of every controller poll
+        # (which would starve the frame and freeze the game). Plumbing is done;
+        # hand off to the wrapper now.
+        a.jmp(0xFF54)                # -> wrapper (cache + orient + move)
+        a.label("search_entry")      # callable search; sets Z_TARGET/Z_BORIENT, RTS
 
     # ---- setup search ----
     a.ins("LDA_imm", 0x03)
     a.ins("STA_zp", Z_TARGET)        # default target = center col 3
     a.ins("LDA_imm", 0x00)
     a.ins("STA_zp", Z_BEST)          # best score = 0 (all scores are >= 0)
+    if with_rotation:
+        a.ins("STA_zp", 0xDA)        # Z_BORIENT default = 0 horizontal (A still 0)
     # build placement tiles 0x4C|color from $0381/$0382
     a.ins("LDA_abs", 0x81, 0x03)     # LDA $0381 (color A)
     a.ins("ORA_imm", 0x4C)
@@ -780,24 +803,32 @@ def build_v18_ai(ai_cpu):
     a.ins("INC_zp", Z_COL)
     a.ins("LDA_zp", Z_COL)
     a.ins("CMP_imm", 0x07)
-    a.br("BCS", "move")
+    a.br("BCS", "move" if not with_rotation else "search_done")
     a.jmp("h_loop")
 
     # ==================== MOVEMENT (toward best col) ====================
-    a.label("move")
-    a.ins("LDA_abs", 0x85, 0x03)     # LDA $0385 (P2 capsule X)
-    a.ins("CMP_zp", Z_TARGET)
-    a.br("BEQ", "at_target")
-    a.ins("LDY_imm", 0x01)           # assume Right
-    a.br("BCC", "store_move")        # capX < target -> move right
-    a.ins("LDY_imm", 0x02)           # else Left
-    a.jmp("store_move")
-    a.label("at_target")
-    a.ins("LDY_imm", 0x04)           # Down (drop)
-    a.label("store_move")
-    a.ins("STY_zp", 0xF6)
-    a.label("exit")
-    a.ins("RTS")
+    if with_rotation:
+        # Search is callable from the $FF54 wrapper: return after it has set
+        # Z_TARGET ($00) and Z_BORIENT ($DA). The wrapper does orient+move.
+        a.label("search_done")
+        a.ins("RTS")
+        a.label("exit")
+        a.ins("RTS")
+    else:
+        a.label("move")
+        a.ins("LDA_abs", 0x85, 0x03)     # LDA $0385 (P2 capsule X)
+        a.ins("CMP_zp", Z_TARGET)
+        a.br("BEQ", "at_target")
+        a.ins("LDY_imm", 0x01)           # assume Right
+        a.br("BCC", "store_move")        # capX < target -> move right
+        a.ins("LDY_imm", 0x02)           # else Left
+        a.jmp("store_move")
+        a.label("at_target")
+        a.ins("LDY_imm", 0x04)           # Down (drop)
+        a.label("store_move")
+        a.ins("STY_zp", 0xF6)
+        a.label("exit")
+        a.ins("RTS")
 
     # ==================== SUBROUTINE: eval_pair ====================
     # input Z_OFFA, Z_OFFB = the two cell offsets to place; Z_HIROW = row of the
@@ -1020,15 +1051,82 @@ def build_v18_ai(ai_cpu):
     a.ins("STA_zp", Z_BEST)
     a.ins("LDA_zp", Z_COL)
     a.ins("STA_zp", Z_TARGET)
+    if with_rotation:
+        a.ins("LDA_zp", Z_ORIENT)    # remember the winning placement's orientation
+        a.ins("STA_zp", 0xDA)        # Z_BORIENT (0 = horizontal, 1 = vertical)
     a.label("su_done")
     a.ins("RTS")
 
-    return a.assemble()
+    code = a.assemble()
+    labels_cpu = {k: a.base + v for k, v in a.labels.items()}
+    return code, labels_cpu
 
 
-def apply_patches_v18(input_path, output_path):
+def _build_rotation_wrapper(wrapper_cpu, search_entry, rotate_exec=True):
+    """Assemble the cache+orient+move wrapper (returns bytes). The blob's plumbing
+    JMPs to wrapper_cpu; this re-runs the heavy search (JSR search_entry) once per
+    pill, rotates the capsule to the chosen orientation (edge-triggered A=$80),
+    then nudges it toward the target column. zp: $DF=last-seen P2y, $DE=cached
+    target column, $DA=Z_BORIENT. Crucially $DE/$DF are written AFTER the search
+    so v19's burial (which scratches $DE/$DF mid-search) can't corrupt them."""
+    w = Asm6502(wrapper_cpu)
+    # --- plan once per pill: re-run the heavy search when P2y INCREASES (a new
+    #     pill just spawned at the top). During a fall P2y only decreases, so
+    #     this fires exactly once per pill, with no flag and no per-poll search
+    #     (which would starve the frame). ---
+    w.ins("LDA_abs", 0x86, 0x03)                 # current P2y $0386
+    w.ins("CMP_zp", 0xDF)                        # vs last-seen y (compare, don't update yet)
+    w.br("BCC", "reuse")                         # y < lastY -> falling -> reuse plan
+    w.br("BEQ", "reuse")                         # y == lastY -> reuse plan
+    w.jsr(search_entry)                          # y > lastY -> new pill -> re-search
+    # Snapshot the chosen column from Z_TARGET($00, burial-safe) into $DE. The
+    # game clobbers $00 between polls, so the move below reads $DE instead.
+    w.ins("LDA_zp", 0x00); w.ins("STA_zp", 0xDE)
+    w.label("reuse")
+    # Update last-y AFTER any search, so burial's mid-search scratch of $DF is
+    # overwritten with the true current y.
+    w.ins("LDA_abs", 0x86, 0x03); w.ins("STA_zp", 0xDF)
+    # --- orient: rotate (edge-triggered A) until parity matches Z_BORIENT ---
+    if rotate_exec:
+        w.ins("LDA_abs", 0xA5, 0x03)                 # P2 orientation $03A5
+        w.raw(0x29, 0x01)                            # AND #$01 (orientation parity)
+        w.ins("CMP_zp", 0xDA)                        # vs Z_BORIENT
+        w.br("BEQ", "mv")
+        w.ins("LDA_imm", 0x00); w.ins("STA_zp", 0xF8)  # clear P2 prev -> rising edge
+        w.ins("LDA_imm", 0x80); w.ins("STA_zp", 0xF6)  # $80 = A = rotate CCW
+        w.ins("RTS")
+    # --- move: nudge toward target column, drop when aligned ---
+    w.label("mv")
+    w.ins("LDA_abs", 0x85, 0x03)                 # P2 capsule X $0385
+    w.ins("CMP_zp", 0xDE)                        # vs cached target ($DE)
+    w.br("BEQ", "dn")
+    w.ins("LDY_imm", 0x01); w.br("BCC", "st")    # capX<target -> Right
+    w.ins("LDY_imm", 0x02); w.jmp("st")          # else Left
+    w.label("dn"); w.ins("LDY_imm", 0x04)        # Down (drop)
+    w.label("st"); w.ins("STY_zp", 0xF6); w.ins("RTS")
+    return w.assemble()
+
+
+def _emit_rotation_wrapper(rom_data, search_entry, rotate_exec=True):
+    """Write the wrapper at the start of the dead v17 AI window (CPU $FF54,
+    file 0x7F64). $FF4B-$FF53 (input copy) is LIVE — we start exactly at $FF54.
+    Returns (cpu_end, rom_off_end) so a caller can pack more code after it."""
+    RELOC_CPU, RELOC_OFF = 0xFF54, 0x7F64
+    reloc = _build_rotation_wrapper(RELOC_CPU, search_entry, rotate_exec)
+    assert RELOC_OFF + len(reloc) <= 0x7FE0, "wrapper overflows dead window"
+    rom_data[RELOC_OFF:RELOC_OFF + len(reloc)] = reloc
+    print(f"✓ Wrapper (cache+orient+move) at 0x{RELOC_OFF:04X} (CPU $FF54, "
+          f"{len(reloc)} bytes); JSR search_entry ${search_entry:04X}")
+    return RELOC_CPU + len(reloc), RELOC_OFF + len(reloc)
+
+
+def apply_patches_v18(input_path, output_path, with_rotation=False, rotate_exec=True):
     """Build the v18 ROM: v17 toggle/mirror/AI stay in place; a new depth-1
-    simulation AI is installed at CPU $FB00 and the 0x37CF hook points to it."""
+    simulation AI is installed at CPU $FB00 and the 0x37CF hook points to it.
+
+    with_rotation (the "v28" build): also installs a relocated orient+move
+    routine at CPU $FF54 (the now-dead v17 AI window) so the AI can rotate the
+    capsule to the orientation its scorer actually chose. See build_v18_ai."""
     # Start from a fresh v17 build so toggle/mirror/study mode are all present.
     import tempfile, os
     tmp_v17 = output_path + ".v17tmp"
@@ -1045,7 +1143,7 @@ def apply_patches_v18(input_path, output_path):
     V18_CPU = 0x8000 + (V18_ROM_OFF - 0x10)   # -> $FB00
     assert V18_CPU == 0xFB00, f"unexpected v18 cpu addr {V18_CPU:#06x}"
 
-    v18 = build_v18_ai(V18_CPU)
+    v18, v18_labels = build_v18_ai(V18_CPU, with_rotation=with_rotation)
     end = V18_ROM_OFF + len(v18)
     region_end = 0x7D10
     if end > region_end:
@@ -1064,6 +1162,9 @@ def apply_patches_v18(input_path, output_path):
     rom_data[0x37D1] = (V18_CPU >> 8) & 0xFF
     print(f"✓ Re-hooked controller (0x37CF): JMP ${V18_CPU:04X} (was v17 AI)")
 
+    if with_rotation:
+        _emit_rotation_wrapper(rom_data, v18_labels["search_entry"], rotate_exec)
+
     with open(output_path, "wb") as f:
         f.write(rom_data)
 
@@ -1073,6 +1174,1020 @@ def apply_patches_v18(input_path, output_path):
     return True
 
 
+# ============================================================================
+# v19: depth-1 simulation + buried-pen + height-weight + setup-bonus
+# ============================================================================
+# v19 extends v18 by enriching the eval terms with three live-relevant
+# penalties/bonuses inspired by the Python depth-2 planner:
+#   * height penalty weight bumped (hirow*2 instead of hirow*1) so a tall stack
+#     is a real penalty term, not just a tiebreaker.
+#   * buried_pen: after each candidate placement is undone, scan the board for
+#     viruses and count non-virus, non-empty cells *above* them in the same
+#     column. Each such "buried" cell shaves BURY_W=3 off the candidate score
+#     (clamped at 0 so the score never goes negative — keeps the unsigned
+#     compare in score_update intact).
+#   * setup_bonus: tally length-3 same-color runs of capsule cells that sit in
+#     the same row or column as a same-color virus. Each qualifying length-3
+#     run adds SETUP_W=4 to the score. This is the "one cell from a clear"
+#     heuristic that the depth-2 planner uses.
+# pollution_pen from the design is intentionally DROPPED: it requires a second
+# full board scan per placement (~90 bytes of code) and the chosen ROM region
+# (0x7B10-0x7D10 = 512 bytes) is tighter than the design assumed. With the
+# items above, the remaining budget is enough for a clean build without
+# overflowing into $FF30-$FFD0 secondary regions.
+#
+# Score formula:  score = clamp0( min(VIR,3)*32 + cells*2 + hirow*2
+#                                  + setup*4 - buried*3 )
+# Range: max ~96 + 16 + 30 + 32 = 174 (cap to 0xFF, fits in a byte). Min 0
+# after the clamp.
+
+# Additional v19 zero-page temps (must not alias active eval_pair temps).
+Z_BURIED = 0xDC   # accumulated buried-cell count for the candidate
+Z_SETUP  = 0xDD   # accumulated setup-run count for the candidate
+Z_VITER  = 0xDE   # virus-scan iterator (board offset)
+Z_VROW   = 0xDF   # row of the virus being inspected
+Z_VCOL   = 0xE0   # col of the virus being inspected
+Z_TMPOFF = 0xE1   # scratch offset
+BURY_W = 3
+SETUP_W = 4
+HIROW_W = 2     # hirow weight in v19 (was implicit 1 in v18)
+
+
+def _emit_v19_burial(a):
+    """Emit the v19 score_burial routine into an open Asm6502 instance.
+
+    Compact version: walk top-to-bottom (rows 0..15) for each column. Maintain
+    a per-column "pending" count of non-virus, non-empty cells seen so far.
+    When a virus is encountered, commit the pending count into Z_BURIED and
+    reset pending=0 for that column. (Cells below the last virus in a column
+    are NOT buried; they have no virus underneath in the sense the planner
+    cares about — but ALSO not "buried above a virus" since we only commit
+    when we hit a virus on the way down.) This is exactly the Python planner
+    semantics: cells stacked between the top and the topmost virus contribute,
+    AND so do cells between two viruses in the same column.
+    """
+    a.label("score_burial")
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_BURIED)
+    a.ins("STA_zp", Z_VCOL)              # col = 0
+    a.label("burial_col")
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_TMPOFF)            # pending count for this column
+    a.ins("LDA_zp", Z_VCOL)
+    a.ins("STA_zp", Z_VITER)             # offset = col (row 0)
+    a.label("burial_walk")
+    a.ins("LDX_zp", Z_VITER)
+    a.ins16("LDA_absX", 0x0500)
+    a.ins("CMP_imm", 0xFF)
+    a.br("BEQ", "burial_step")           # empty -> pending unchanged
+    a.ins("CMP_imm", 0xD0)
+    a.br("BCC", "burial_capsule")        # capsule -> pending += 1
+    # virus: commit pending into Z_BURIED, reset pending
+    a.ins("LDA_zp", Z_BURIED)
+    a.ins("CLC"); a.ins("ADC_zp", Z_TMPOFF)
+    a.ins("STA_zp", Z_BURIED)
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_TMPOFF)
+    a.ins("CLC")
+    a.br("BCC", "burial_step")           # unconditional via CLC+BCC
+    a.label("burial_capsule")
+    a.ins("INC_zp", Z_TMPOFF)
+    a.label("burial_step")
+    a.ins("LDA_zp", Z_VITER)
+    a.ins("CLC"); a.ins("ADC_imm", 0x08)
+    a.ins("STA_zp", Z_VITER)
+    a.ins("CMP_imm", 0x80)
+    a.br("BCC", "burial_walk")
+    # end of column (row 16): pending is discarded (no virus below to bury)
+    a.ins("INC_zp", Z_VCOL)
+    a.ins("LDA_zp", Z_VCOL)
+    a.ins("CMP_imm", 0x08)
+    a.br("BCC", "burial_col")
+    a.ins("RTS")
+
+
+def build_v19_burial(cpu_addr):
+    """Assemble score_burial as a standalone routine at the given CPU address.
+
+    This is the form used by apply_patches_v19 when relocating the routine
+    into the v17 dead-AI region at $FF64. Returns the assembled bytes."""
+    a = Asm6502(cpu_addr)
+    _emit_v19_burial(a)
+    return a.assemble()
+
+
+def build_v19_ai(ai_cpu, burial_cpu=None, with_rotation=False):
+    """Emit the v19 depth-1 simulation AI. Returns bytes. ai_cpu = CPU load addr.
+
+    Same overall structure as build_v18_ai. Differences:
+      * eval_pair calls score_burial before score_update.
+      * score_update consumes Z_BURIED / Z_HIROW with new weights.
+    Subroutines:
+      eval_pair, land_col, clear_cell, scan_cell_row, scan_cell_col, scan_run
+      (identical to v18) plus:
+      score_burial : per-column streaming scan; counts non-empty non-virus
+                     cells that sit above a virus in the same column.
+                     -> Z_BURIED.
+    If burial_cpu is given, the score_burial routine is NOT emitted inline:
+    instead a JSR <burial_cpu> is generated, and the caller must separately
+    assemble score_burial at burial_cpu (use build_v19_burial). This is how
+    v19 fits in the 512-byte primary region: the burial routine is relocated
+    into the v17 dead-AI zone at $FF64 (124 bytes free after the 0x37CF hook
+    re-point makes the v17 AI unreachable).
+    """
+    a = Asm6502(ai_cpu)
+
+    # ---- plumbing (identical contract to v17/v18) ----
+    a.ins("STA_zp", 0xF6)
+    a.ins("LDA_zp", 0x04)
+    a.br("BNE", "vs_active")
+    a.jmp("exit")
+    a.label("vs_active")
+    a.ins("LDA_zp", 0xF5)
+    a.ins("STA_zp", 0xF6)
+    a.ins("LDA_zp", 0x46)
+    a.ins("CMP_imm", 0x04)
+    a.br("BEQ", "gameplay")          # mode==4 only (BCS also fired in mode 8 intro)
+    a.jmp("exit")
+    a.label("gameplay")
+
+    if with_rotation:
+        a.jmp(0xFF54)                # -> shared cache+orient+move wrapper
+        a.label("search_entry")      # callable search: sets Z_TARGET/Z_BORIENT, RTS
+
+    # ---- setup search ----
+    a.ins("LDA_imm", 0x03)
+    a.ins("STA_zp", Z_TARGET)
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_BEST)
+    if with_rotation:
+        a.ins("STA_zp", 0xDA)        # Z_BORIENT default = horizontal (A still 0)
+    a.ins("LDA_abs", 0x81, 0x03)
+    a.ins("ORA_imm", 0x4C)
+    a.ins("STA_zp", Z_TILEA)
+    a.ins("LDA_abs", 0x82, 0x03)
+    a.ins("ORA_imm", 0x4C)
+    a.ins("STA_zp", Z_TILEB)
+
+    # ==================== VERTICAL pass: col 0..7 ====================
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_COL)
+    a.label("v_loop")
+    a.ins("LDX_zp", Z_COL)
+    a.jsr("land_col")
+    a.br("BCS", "v_next")
+    a.ins("LDA_zp", Z_HIROW)
+    a.br("BNE", "v_haveroom")
+    a.jmp("v_next")
+    a.label("v_haveroom")
+    a.ins("LDA_zp", Z_OFFB)
+    a.ins("SEC")
+    a.ins("SBC_imm", 0x08)
+    a.ins("STA_zp", Z_OFFA)
+    a.ins("DEC_zp", Z_HIROW)
+    a.ins("LDA_imm", 0x01); a.ins("STA_zp", Z_ORIENT)
+    a.jsr("eval_pair")
+    a.label("v_next")
+    a.ins("INC_zp", Z_COL)
+    a.ins("LDA_zp", Z_COL)
+    a.ins("CMP_imm", 0x08)
+    a.br("BCS", "h_start")
+    a.jmp("v_loop")
+
+    # ==================== HORIZONTAL pass: col 0..6 ====================
+    a.label("h_start")
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_COL)
+    a.label("h_loop")
+    a.ins("LDX_zp", Z_COL)
+    a.jsr("land_col")
+    a.br("BCS", "h_next")
+    a.ins("LDA_zp", Z_OFFB)
+    a.ins("STA_zp", Z_OFFA)
+    a.ins("LDA_zp", Z_HIROW)
+    a.ins("PHA")
+    a.ins("INC_zp", Z_COL)
+    a.ins("LDX_zp", Z_COL)
+    a.jsr("land_col")
+    a.ins("DEC_zp", Z_COL)
+    a.br("BCS", "h_next_pull")
+    a.ins("PLA")
+    a.ins("CMP_zp", Z_HIROW)
+    a.br("BCC", "h_use_left")
+    a.ins("LDA_zp", Z_HIROW)
+    a.jmp("h_setrow")
+    a.label("h_use_left")
+    a.label("h_setrow")
+    a.ins("STA_zp", Z_HIROW)
+    a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+    a.ins("CLC")
+    a.ins("ADC_zp", Z_COL)
+    a.ins("STA_zp", Z_OFFA)
+    a.ins("CLC")
+    a.ins("ADC_imm", 0x01)
+    a.ins("STA_zp", Z_OFFB)
+    a.ins("LDA_imm", 0x00); a.ins("STA_zp", Z_ORIENT)
+    a.jsr("eval_pair")
+    a.jmp("h_next")
+    a.label("h_next_pull")
+    a.ins("PLA")
+    a.label("h_next")
+    a.ins("INC_zp", Z_COL)
+    a.ins("LDA_zp", Z_COL)
+    a.ins("CMP_imm", 0x07)
+    a.br("BCS", "move" if not with_rotation else "search_done")
+    a.jmp("h_loop")
+
+    # ==================== MOVEMENT ====================
+    if with_rotation:
+        a.label("search_done")       # search done: Z_TARGET/Z_BORIENT set, return
+        a.ins("RTS")
+        a.label("exit")
+        a.ins("RTS")
+    else:
+        a.label("move")
+        a.ins("LDA_abs", 0x85, 0x03)
+        a.ins("CMP_zp", Z_TARGET)
+        a.br("BEQ", "at_target")
+        a.ins("LDY_imm", 0x01)
+        a.br("BCC", "store_move")
+        a.ins("LDY_imm", 0x02)
+        a.jmp("store_move")
+        a.label("at_target")
+        a.ins("LDY_imm", 0x04)
+        a.label("store_move")
+        a.ins("STY_zp", 0xF6)
+        a.label("exit")
+        a.ins("RTS")
+
+    # ==================== SUBROUTINE: eval_pair ====================
+    # Place A/B, scan shared+perpendicular runs, undo, then in v19 we also
+    # tally board-wide buried/setup before score_update.
+    a.label("eval_pair")
+    a.ins("LDX_zp", Z_OFFA)
+    a.ins("LDA_zp", Z_TILEA)
+    a.ins16("STA_absX", 0x0500)
+    a.ins("LDX_zp", Z_OFFB)
+    a.ins("LDA_zp", Z_TILEB)
+    a.ins16("STA_absX", 0x0500)
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_CELLS)
+    a.ins("STA_zp", Z_VIR)
+    a.ins("LDA_zp", Z_ORIENT)
+    a.br("BNE", "ep_vert")
+    # horizontal
+    a.ins("LDA_zp", Z_OFFA); a.ins("STA_zp", Z_CELLOFF)
+    a.jsr("scan_cell_row")
+    a.ins("LDA_zp", Z_OFFA); a.ins("STA_zp", Z_CELLOFF)
+    a.jsr("scan_cell_col")
+    a.ins("LDA_zp", Z_OFFB); a.ins("STA_zp", Z_CELLOFF)
+    a.jsr("scan_cell_col")
+    a.jmp("ep_postscan")
+    a.label("ep_vert")
+    a.ins("LDA_zp", Z_OFFA); a.ins("STA_zp", Z_CELLOFF)
+    a.jsr("scan_cell_col")
+    a.ins("LDA_zp", Z_OFFA); a.ins("STA_zp", Z_CELLOFF)
+    a.jsr("scan_cell_row")
+    a.ins("LDA_zp", Z_OFFB); a.ins("STA_zp", Z_CELLOFF)
+    a.jsr("scan_cell_row")
+    a.label("ep_postscan")
+    # NEW v19: walk the board for buried scores BEFORE undoing.
+    # (The placed cells are part of the board for the metric, matching what
+    # the planner does too.) If burial_cpu is provided, JSR to the separately
+    # assembled score_burial routine in the v17 AI dead-zone.
+    if burial_cpu is not None:
+        a.jsr(burial_cpu)
+    else:
+        a.jsr("score_burial")
+    a.ins("LDA_imm", 0xFF)
+    a.ins("LDX_zp", Z_OFFA)
+    a.ins16("STA_absX", 0x0500)
+    a.ins("LDX_zp", Z_OFFB)
+    a.ins16("STA_absX", 0x0500)
+    a.jsr("score_update")
+    a.ins("RTS")
+
+    # ==================== SUBROUTINE: land_col (verbatim from v18) ====================
+    a.label("land_col")
+    a.ins("STX_zp", Z_SOFF)
+    a.ins("TXA")
+    a.ins("TAY")
+    a.label("lc_scan")
+    a.ins16("LDA_absY", 0x0500)
+    a.ins("CMP_imm", 0xFF)
+    a.br("BNE", "lc_hit")
+    a.ins("TYA")
+    a.ins("CLC")
+    a.ins("ADC_imm", 0x08)
+    a.ins("TAY")
+    a.ins("CPY_imm", 0x80)
+    a.br("BCC", "lc_scan")
+    a.label("lc_hit")
+    a.ins("TYA")
+    a.ins("CMP_imm", 0x08)
+    a.br("BCS", "lc_ok")
+    a.ins("SEC")
+    a.ins("RTS")
+    a.label("lc_ok")
+    a.ins("SEC")
+    a.ins("SBC_imm", 0x08)
+    a.ins("STA_zp", Z_OFFB)
+    a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A")
+    a.ins("STA_zp", Z_HIROW)
+    a.ins("CLC")
+    a.ins("RTS")
+
+    # ==================== SUBROUTINE: clear_cell / scan_cell_* / scan_run ====
+    # (verbatim from v18, retained for the v19 unit tests that re-exercise the
+    # clear-detection primitive)
+    a.label("clear_cell")
+    a.jsr("scan_cell_row")
+    a.jsr("scan_cell_col")
+    a.ins("RTS")
+    a.label("scan_cell_row")
+    a.ins("LDA_imm", 0x01)
+    a.ins("STA_zp", Z_STEP)
+    a.ins("LDA_zp", Z_CELLOFF)
+    a.ins("AND_imm", 0xF8)
+    a.ins("STA_zp", Z_MIN)
+    a.ins("CLC"); a.ins("ADC_imm", 0x07); a.ins("STA_zp", Z_MAX)
+    a.jmp("sr_setcolor")
+    a.label("scan_cell_col")
+    a.ins("LDA_imm", 0x08)
+    a.ins("STA_zp", Z_STEP)
+    a.ins("LDA_zp", Z_CELLOFF)
+    a.ins("AND_imm", 0x07)
+    a.ins("STA_zp", Z_MIN)
+    a.ins("CLC"); a.ins("ADC_imm", 120); a.ins("STA_zp", Z_MAX)
+    a.label("sr_setcolor")
+    a.ins("LDX_zp", Z_CELLOFF)
+    a.ins16("LDA_absX", 0x0500)
+    a.ins("AND_imm", 0x03)
+    a.ins("STA_zp", Z_MCOLOR)
+    a.jsr("scan_run")
+    a.ins("RTS")
+    a.label("scan_run")
+    a.ins("LDA_zp", Z_CELLOFF)
+    a.ins("STA_zp", Z_SOFF)
+    a.label("sr_back")
+    a.ins("LDA_zp", Z_SOFF)
+    a.ins("SEC"); a.ins("SBC_zp", Z_STEP)
+    a.ins("CMP_zp", Z_MIN)
+    a.br("BCC", "sr_backdone")
+    a.ins("TAX")
+    a.ins16("LDA_absX", 0x0500)
+    a.ins("CMP_imm", 0xFF)
+    a.br("BEQ", "sr_backdone")
+    a.ins("AND_imm", 0x03)
+    a.ins("CMP_zp", Z_MCOLOR)
+    a.br("BNE", "sr_backdone")
+    a.ins("STX_zp", Z_SOFF)
+    a.jmp("sr_back")
+    a.label("sr_backdone")
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_RUNLEN)
+    a.ins("STA_zp", Z_RUNVIR)
+    a.label("sr_fwd")
+    a.ins("LDX_zp", Z_SOFF)
+    a.ins16("LDA_absX", 0x0500)
+    a.ins("CMP_imm", 0xFF)
+    a.br("BEQ", "sr_commit")
+    a.ins("AND_imm", 0x03)
+    a.ins("CMP_zp", Z_MCOLOR)
+    a.br("BNE", "sr_commit")
+    a.ins("INC_zp", Z_RUNLEN)
+    a.ins16("LDA_absX", 0x0500)
+    a.ins("CMP_imm", 0xD0)
+    a.br("BCC", "sr_novir")
+    a.ins("INC_zp", Z_RUNVIR)
+    a.label("sr_novir")
+    a.ins("LDA_zp", Z_SOFF)
+    a.ins("CLC"); a.ins("ADC_zp", Z_STEP)
+    a.ins("STA_zp", Z_SOFF)
+    a.ins("CMP_zp", Z_MAX)
+    a.br("BCC", "sr_fwd")
+    a.br("BEQ", "sr_fwd")
+    a.label("sr_commit")
+    a.ins("LDA_zp", Z_RUNLEN)
+    a.ins("CMP_imm", 0x04)
+    a.br("BCC", "sr_done")
+    a.ins("CLC"); a.ins("LDA_zp", Z_CELLS); a.ins("ADC_zp", Z_RUNLEN); a.ins("STA_zp", Z_CELLS)
+    a.ins("CLC"); a.ins("LDA_zp", Z_VIR); a.ins("ADC_zp", Z_RUNVIR); a.ins("STA_zp", Z_VIR)
+    a.label("sr_done")
+    a.ins("RTS")
+
+    if burial_cpu is None:
+        _emit_v19_burial(a)
+
+    # NOTE: score_setup (length-3 same-color capsule runs adjacent to a same-
+    # color virus) is intentionally DROPPED from v19 to fit in the 512-byte
+    # ROM region at 0x7B10-0x7D10. The ~178-byte routine pushed v19 to ~796
+    # bytes (284 over budget); buried-pen + height-weight already capture the
+    # most live-relevant signal from the planner. v20 may re-introduce setup
+    # by reclaiming the v17 AI dead-zone at 0x7F64-0x7FDF (124 bytes free
+    # after the v19 controller hook re-point) or by streaming a leaner counter
+    # into score_burial's existing virus iteration.
+
+    # ==================== SUBROUTINE: score_update (v19) ====================
+    # score = clamp0( min(VIR,3)*32 + cells*2 + hirow*HIROW_W - buried*BURY_W )
+    # (setup_bonus was dropped to fit budget; see notes above.)
+    # The subtraction is clamped at 0 (saturating) so the unsigned compare with
+    # Z_BEST still ranks correctly.
+    a.label("score_update")
+    a.ins("LDA_zp", Z_VIR)
+    a.ins("CMP_imm", 0x04)
+    a.br("BCC", "su_capped")
+    a.ins("LDA_imm", 0x03)
+    a.label("su_capped")
+    a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+    a.ins("ASL_A"); a.ins("ASL_A")
+    a.ins("STA_zp", Z_SCORE)
+    # cells*2 + hirow*2 = (cells + hirow) * 2  -> one shift saves 3 bytes
+    a.ins("LDA_zp", Z_CELLS)
+    a.ins("CLC"); a.ins("ADC_zp", Z_HIROW)
+    a.ins("ASL_A")
+    a.ins("CLC"); a.ins("ADC_zp", Z_SCORE)
+    # buried penalty (BURY_W=1, simplified from design's 3 to fit budget).
+    # A holds the running score; subtract Z_BURIED with saturating clamp.
+    a.ins("SEC"); a.ins("SBC_zp", Z_BURIED)
+    a.br("BCS", "su_nofloor")
+    a.ins("LDA_imm", 0x00)
+    a.label("su_nofloor")
+    a.ins("STA_zp", Z_SCORE)
+    a.ins("CMP_zp", Z_BEST)                 # A is current score; compare to best
+    a.br("BCC", "su_done")                  # score < best -> keep
+    a.br("BEQ", "su_done")                  # score == best -> keep first
+    a.ins("STA_zp", Z_BEST)                 # score > best -> update
+    a.ins("LDA_zp", Z_COL)
+    a.ins("STA_zp", Z_TARGET)
+    if with_rotation:
+        a.ins("LDA_zp", Z_ORIENT)           # save winning orientation
+        a.ins("STA_zp", 0xDA)               # Z_BORIENT
+    a.label("su_done")
+    a.ins("RTS")
+
+    code = a.assemble()
+    labels_cpu = {k: a.base + v for k, v in a.labels.items()}
+    return code, labels_cpu
+
+
+# ============================================================================
+# v20: aggressive-completion endgame (stricter virus preference + bury*3)
+# ============================================================================
+# v20 ports the live-validated aggressive-completion Python config that won
+# multi-level L11->L12->L13 runs. The core insight: v19 was over-patient. v20
+# bumps the virus-clear coefficient from 32 to 48 and the buried penalty from
+# *1 to *3, so the planner aggressively prefers actual clears over "set up
+# forever" placements.
+#
+# Implementation strategy under tight byte budget (v19 used 510/512 in the
+# main region): relocate the saturating-subtract tail of score_update into a
+# new score_finalize subroutine in the burial region (where v19 leaves ~60
+# bytes spare). This frees enough bytes in the main routine to widen the VIR
+# multiplier and apply BURY_W=3 without overflowing the 512-byte slot.
+#
+# Score formula:
+#   score = clamp0( min(VIR,3)*64 + (cells+hirow)*2 - buried*3 )
+# Range: max 192 + 32 - 0 = 224 ; min 0 (saturating). Fits in unsigned byte.
+# (The design called for VIR*48; the *48 implementation overran the 512-byte
+# main slot by 7 bytes, so v20 ships *64 instead — an even stronger virus
+# preference, same direction of intent.)
+#
+# All non-score routines (eval_pair, land_col, clear_cell, scan_cell_*, scan_run,
+# score_burial) are identical to v19; only score_update changes.
+
+V20_VIR_W = 64      # was 32 in v19 (design intent was *48; ROM budget gave *64)
+V20_BURY_W = 3      # was 1 (implicit) in v19
+
+
+def _emit_v20_score_finalize(a):
+    """Emit score_finalize: takes running score in A, applies buried*BURY_W
+    saturating subtract, returns final score in A.
+
+    Layout (~22 bytes):
+      STA Z_SCORE       ; save running score
+      LDA Z_BURIED      ; load buried count
+      ASL_A             ; buried*2
+      CLC ; ADC Z_BURIED ; buried*3
+      STA Z_TMPOFF      ; save penalty
+      LDA Z_SCORE       ; reload running score
+      SEC ; SBC Z_TMPOFF ; subtract
+      BCS sf_done       ; positive result -> keep
+      LDA #0            ; underflow -> clamp to 0
+    sf_done:
+      RTS
+    """
+    a.label("score_finalize")
+    a.ins("STA_zp", Z_SCORE)
+    a.ins("LDA_zp", Z_BURIED)
+    a.ins("ASL_A")
+    a.ins("CLC"); a.ins("ADC_zp", Z_BURIED)   # buried * 3
+    a.ins("STA_zp", Z_TMPOFF)
+    a.ins("LDA_zp", Z_SCORE)
+    a.ins("SEC"); a.ins("SBC_zp", Z_TMPOFF)
+    a.br("BCS", "sf_done")
+    a.ins("LDA_imm", 0x00)
+    a.label("sf_done")
+    a.ins("RTS")
+
+
+def build_v20_burial(cpu_addr):
+    """Assemble score_burial + score_finalize as standalone routines at the
+    given CPU address. Returns (bytes, finalize_cpu_addr)."""
+    a = Asm6502(cpu_addr)
+    _emit_v19_burial(a)
+    # score_finalize lives immediately after score_burial in the same region.
+    finalize_offset = len(a.code)
+    finalize_cpu = cpu_addr + finalize_offset
+    _emit_v20_score_finalize(a)
+    return a.assemble(), finalize_cpu
+
+
+def build_v20_ai(ai_cpu, burial_cpu=None, finalize_cpu=None):
+    """Emit the v20 depth-1 simulation AI. Returns bytes.
+
+    Same overall structure as build_v19_ai. The ONLY change is in score_update:
+      * VIR multiplier bumped from 32 to 64 (min(VIR,3)*32 -> min(VIR,3)*64).
+        Implemented as one extra ASL_A (six shifts total). Design intent was
+        *48, but the *48 implementation (split *32 + *16 with a temp save) over-
+        ran the 512-byte main slot by 7 bytes; *64 is the cheapest legal bump.
+      * Buried penalty bumped from *1 to *3, applied via JSR to score_finalize
+        (which lives in the burial region to save bytes in the 512-byte main
+        slot).
+
+    If burial_cpu/finalize_cpu are given, JSRs reference those external
+    addresses. Otherwise the routines are emitted inline (used by unit tests
+    that want a self-contained build).
+    """
+    a = Asm6502(ai_cpu)
+
+    # ---- plumbing (identical contract to v17/v18/v19) ----
+    a.ins("STA_zp", 0xF6)
+    a.ins("LDA_zp", 0x04)
+    a.br("BNE", "vs_active")
+    a.jmp("exit")
+    a.label("vs_active")
+    a.ins("LDA_zp", 0xF5)
+    a.ins("STA_zp", 0xF6)
+    a.ins("LDA_zp", 0x46)
+    a.ins("CMP_imm", 0x04)
+    a.br("BCS", "gameplay")
+    a.jmp("exit")
+    a.label("gameplay")
+
+    # ---- setup search ----
+    a.ins("LDA_imm", 0x03)
+    a.ins("STA_zp", Z_TARGET)
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_BEST)
+    a.ins("LDA_abs", 0x81, 0x03)
+    a.ins("ORA_imm", 0x4C)
+    a.ins("STA_zp", Z_TILEA)
+    a.ins("LDA_abs", 0x82, 0x03)
+    a.ins("ORA_imm", 0x4C)
+    a.ins("STA_zp", Z_TILEB)
+
+    # ==================== VERTICAL pass: col 0..7 ====================
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_COL)
+    a.label("v_loop")
+    a.ins("LDX_zp", Z_COL)
+    a.jsr("land_col")
+    a.br("BCS", "v_next")
+    a.ins("LDA_zp", Z_HIROW)
+    a.br("BNE", "v_haveroom")
+    a.jmp("v_next")
+    a.label("v_haveroom")
+    a.ins("LDA_zp", Z_OFFB)
+    a.ins("SEC")
+    a.ins("SBC_imm", 0x08)
+    a.ins("STA_zp", Z_OFFA)
+    a.ins("DEC_zp", Z_HIROW)
+    a.ins("LDA_imm", 0x01); a.ins("STA_zp", Z_ORIENT)
+    a.jsr("eval_pair")
+    a.label("v_next")
+    a.ins("INC_zp", Z_COL)
+    a.ins("LDA_zp", Z_COL)
+    a.ins("CMP_imm", 0x08)
+    a.br("BCS", "h_start")
+    a.jmp("v_loop")
+
+    # ==================== HORIZONTAL pass: col 0..6 ====================
+    a.label("h_start")
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_COL)
+    a.label("h_loop")
+    a.ins("LDX_zp", Z_COL)
+    a.jsr("land_col")
+    a.br("BCS", "h_next")
+    a.ins("LDA_zp", Z_OFFB)
+    a.ins("STA_zp", Z_OFFA)
+    a.ins("LDA_zp", Z_HIROW)
+    a.ins("PHA")
+    a.ins("INC_zp", Z_COL)
+    a.ins("LDX_zp", Z_COL)
+    a.jsr("land_col")
+    a.ins("DEC_zp", Z_COL)
+    a.br("BCS", "h_next_pull")
+    a.ins("PLA")
+    a.ins("CMP_zp", Z_HIROW)
+    a.br("BCC", "h_use_left")
+    a.ins("LDA_zp", Z_HIROW)
+    a.jmp("h_setrow")
+    a.label("h_use_left")
+    a.label("h_setrow")
+    a.ins("STA_zp", Z_HIROW)
+    a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+    a.ins("CLC")
+    a.ins("ADC_zp", Z_COL)
+    a.ins("STA_zp", Z_OFFA)
+    a.ins("CLC")
+    a.ins("ADC_imm", 0x01)
+    a.ins("STA_zp", Z_OFFB)
+    a.ins("LDA_imm", 0x00); a.ins("STA_zp", Z_ORIENT)
+    a.jsr("eval_pair")
+    a.jmp("h_next")
+    a.label("h_next_pull")
+    a.ins("PLA")
+    a.label("h_next")
+    a.ins("INC_zp", Z_COL)
+    a.ins("LDA_zp", Z_COL)
+    a.ins("CMP_imm", 0x07)
+    a.br("BCS", "move")
+    a.jmp("h_loop")
+
+    # ==================== MOVEMENT ====================
+    a.label("move")
+    a.ins("LDA_abs", 0x85, 0x03)
+    a.ins("CMP_zp", Z_TARGET)
+    a.br("BEQ", "at_target")
+    a.ins("LDY_imm", 0x01)
+    a.br("BCC", "store_move")
+    a.ins("LDY_imm", 0x02)
+    a.jmp("store_move")
+    a.label("at_target")
+    a.ins("LDY_imm", 0x04)
+    a.label("store_move")
+    a.ins("STY_zp", 0xF6)
+    a.label("exit")
+    a.ins("RTS")
+
+    # ==================== SUBROUTINE: eval_pair ====================
+    a.label("eval_pair")
+    a.ins("LDX_zp", Z_OFFA)
+    a.ins("LDA_zp", Z_TILEA)
+    a.ins16("STA_absX", 0x0500)
+    a.ins("LDX_zp", Z_OFFB)
+    a.ins("LDA_zp", Z_TILEB)
+    a.ins16("STA_absX", 0x0500)
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_CELLS)
+    a.ins("STA_zp", Z_VIR)
+    a.ins("LDA_zp", Z_ORIENT)
+    a.br("BNE", "ep_vert")
+    # horizontal
+    a.ins("LDA_zp", Z_OFFA); a.ins("STA_zp", Z_CELLOFF)
+    a.jsr("scan_cell_row")
+    a.ins("LDA_zp", Z_OFFA); a.ins("STA_zp", Z_CELLOFF)
+    a.jsr("scan_cell_col")
+    a.ins("LDA_zp", Z_OFFB); a.ins("STA_zp", Z_CELLOFF)
+    a.jsr("scan_cell_col")
+    a.jmp("ep_postscan")
+    a.label("ep_vert")
+    a.ins("LDA_zp", Z_OFFA); a.ins("STA_zp", Z_CELLOFF)
+    a.jsr("scan_cell_col")
+    a.ins("LDA_zp", Z_OFFA); a.ins("STA_zp", Z_CELLOFF)
+    a.jsr("scan_cell_row")
+    a.ins("LDA_zp", Z_OFFB); a.ins("STA_zp", Z_CELLOFF)
+    a.jsr("scan_cell_row")
+    a.label("ep_postscan")
+    if burial_cpu is not None:
+        a.jsr(burial_cpu)
+    else:
+        a.jsr("score_burial")
+    a.ins("LDA_imm", 0xFF)
+    a.ins("LDX_zp", Z_OFFA)
+    a.ins16("STA_absX", 0x0500)
+    a.ins("LDX_zp", Z_OFFB)
+    a.ins16("STA_absX", 0x0500)
+    a.jsr("score_update")
+    a.ins("RTS")
+
+    # ==================== SUBROUTINE: land_col (verbatim) ====================
+    a.label("land_col")
+    a.ins("STX_zp", Z_SOFF)
+    a.ins("TXA")
+    a.ins("TAY")
+    a.label("lc_scan")
+    a.ins16("LDA_absY", 0x0500)
+    a.ins("CMP_imm", 0xFF)
+    a.br("BNE", "lc_hit")
+    a.ins("TYA")
+    a.ins("CLC")
+    a.ins("ADC_imm", 0x08)
+    a.ins("TAY")
+    a.ins("CPY_imm", 0x80)
+    a.br("BCC", "lc_scan")
+    a.label("lc_hit")
+    a.ins("TYA")
+    a.ins("CMP_imm", 0x08)
+    a.br("BCS", "lc_ok")
+    a.ins("SEC")
+    a.ins("RTS")
+    a.label("lc_ok")
+    a.ins("SEC")
+    a.ins("SBC_imm", 0x08)
+    a.ins("STA_zp", Z_OFFB)
+    a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A")
+    a.ins("STA_zp", Z_HIROW)
+    a.ins("CLC")
+    a.ins("RTS")
+
+    # ==================== SUBROUTINE: clear_cell / scan_cell_* / scan_run ====
+    a.label("clear_cell")
+    a.jsr("scan_cell_row")
+    a.jsr("scan_cell_col")
+    a.ins("RTS")
+    a.label("scan_cell_row")
+    a.ins("LDA_imm", 0x01)
+    a.ins("STA_zp", Z_STEP)
+    a.ins("LDA_zp", Z_CELLOFF)
+    a.ins("AND_imm", 0xF8)
+    a.ins("STA_zp", Z_MIN)
+    a.ins("CLC"); a.ins("ADC_imm", 0x07); a.ins("STA_zp", Z_MAX)
+    a.jmp("sr_setcolor")
+    a.label("scan_cell_col")
+    a.ins("LDA_imm", 0x08)
+    a.ins("STA_zp", Z_STEP)
+    a.ins("LDA_zp", Z_CELLOFF)
+    a.ins("AND_imm", 0x07)
+    a.ins("STA_zp", Z_MIN)
+    a.ins("CLC"); a.ins("ADC_imm", 120); a.ins("STA_zp", Z_MAX)
+    a.label("sr_setcolor")
+    a.ins("LDX_zp", Z_CELLOFF)
+    a.ins16("LDA_absX", 0x0500)
+    a.ins("AND_imm", 0x03)
+    a.ins("STA_zp", Z_MCOLOR)
+    a.jsr("scan_run")
+    a.ins("RTS")
+    a.label("scan_run")
+    a.ins("LDA_zp", Z_CELLOFF)
+    a.ins("STA_zp", Z_SOFF)
+    a.label("sr_back")
+    a.ins("LDA_zp", Z_SOFF)
+    a.ins("SEC"); a.ins("SBC_zp", Z_STEP)
+    a.ins("CMP_zp", Z_MIN)
+    a.br("BCC", "sr_backdone")
+    a.ins("TAX")
+    a.ins16("LDA_absX", 0x0500)
+    a.ins("CMP_imm", 0xFF)
+    a.br("BEQ", "sr_backdone")
+    a.ins("AND_imm", 0x03)
+    a.ins("CMP_zp", Z_MCOLOR)
+    a.br("BNE", "sr_backdone")
+    a.ins("STX_zp", Z_SOFF)
+    a.jmp("sr_back")
+    a.label("sr_backdone")
+    a.ins("LDA_imm", 0x00)
+    a.ins("STA_zp", Z_RUNLEN)
+    a.ins("STA_zp", Z_RUNVIR)
+    a.label("sr_fwd")
+    a.ins("LDX_zp", Z_SOFF)
+    a.ins16("LDA_absX", 0x0500)
+    a.ins("CMP_imm", 0xFF)
+    a.br("BEQ", "sr_commit")
+    a.ins("AND_imm", 0x03)
+    a.ins("CMP_zp", Z_MCOLOR)
+    a.br("BNE", "sr_commit")
+    a.ins("INC_zp", Z_RUNLEN)
+    a.ins16("LDA_absX", 0x0500)
+    a.ins("CMP_imm", 0xD0)
+    a.br("BCC", "sr_novir")
+    a.ins("INC_zp", Z_RUNVIR)
+    a.label("sr_novir")
+    a.ins("LDA_zp", Z_SOFF)
+    a.ins("CLC"); a.ins("ADC_zp", Z_STEP)
+    a.ins("STA_zp", Z_SOFF)
+    a.ins("CMP_zp", Z_MAX)
+    a.br("BCC", "sr_fwd")
+    a.br("BEQ", "sr_fwd")
+    a.label("sr_commit")
+    a.ins("LDA_zp", Z_RUNLEN)
+    a.ins("CMP_imm", 0x04)
+    a.br("BCC", "sr_done")
+    a.ins("CLC"); a.ins("LDA_zp", Z_CELLS); a.ins("ADC_zp", Z_RUNLEN); a.ins("STA_zp", Z_CELLS)
+    a.ins("CLC"); a.ins("LDA_zp", Z_VIR); a.ins("ADC_zp", Z_RUNVIR); a.ins("STA_zp", Z_VIR)
+    a.label("sr_done")
+    a.ins("RTS")
+
+    if burial_cpu is None:
+        _emit_v19_burial(a)
+        _emit_v20_score_finalize(a)
+
+    # ==================== SUBROUTINE: score_update (v20) ====================
+    # score = clamp0( min(VIR,3)*64 + (cells+hirow)*2 - buried*3 )
+    # Design called for VIR_W=48; the *48 implementation (split *32 + *16 with
+    # a temp save) overran the 512-byte slot by 7 bytes. *64 is one extra ASL
+    # over v19's *32 and yields an even stronger virus-preference signal
+    # (cap = 3*64 = 192, leaving headroom under 0xFF for the *2 reward term).
+    # Saturating subtract for buried*3 is delegated to score_finalize in the
+    # burial region.
+    a.label("score_update")
+    a.ins("LDA_zp", Z_VIR)
+    a.ins("CMP_imm", 0x04)
+    a.br("BCC", "su_capped")
+    a.ins("LDA_imm", 0x03)
+    a.label("su_capped")
+    a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+    a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")   # vir' * 64
+    a.ins("STA_zp", Z_SCORE)
+    # cells*2 + hirow*2 = (cells + hirow) * 2
+    a.ins("LDA_zp", Z_CELLS)
+    a.ins("CLC"); a.ins("ADC_zp", Z_HIROW)
+    a.ins("ASL_A")
+    a.ins("CLC"); a.ins("ADC_zp", Z_SCORE)
+    # buried*3 saturating subtract via score_finalize in burial region.
+    if finalize_cpu is not None:
+        a.jsr(finalize_cpu)
+    else:
+        a.jsr("score_finalize")
+    a.ins("STA_zp", Z_SCORE)
+    a.ins("CMP_zp", Z_BEST)
+    a.br("BCC", "su_done")
+    a.br("BEQ", "su_done")
+    a.ins("STA_zp", Z_BEST)
+    a.ins("LDA_zp", Z_COL)
+    a.ins("STA_zp", Z_TARGET)
+    a.label("su_done")
+    a.ins("RTS")
+
+    return a.assemble()
+
+
+def apply_patches_v19(input_path, output_path, with_rotation=False, rotate_exec=True):
+    """Build the v19 ROM:
+      * main AI at $FB00 (ROM 0x7B10), within v18's 512-byte region.
+      * score_burial relocated to $FF64 (ROM 0x7F64), reclaiming the now-dead
+        v17 AI region. (v17's AI is unreachable after the 0x37CF hook is
+        re-pointed to $FB00.)
+    Re-points 0x37CF to v19.
+
+    with_rotation (the "v29" build): the cache+orient+move wrapper is packed at
+    the START of the dead window ($FF54); score_burial is relocated to sit
+    immediately AFTER the wrapper (they share the 124-byte window). v19's
+    stronger eval (buried_pen + setup_bonus) + working rotation + per-pill cache.
+    """
+    import os
+    tmp_v17 = output_path + ".v17tmp"
+    if not apply_patches(input_path, tmp_v17):
+        return False
+    with open(tmp_v17, "rb") as f:
+        rom_data = bytearray(f.read())
+    os.remove(tmp_v17)
+
+    print()
+    tag = "v29 (v19 eval + rotation + cache)" if with_rotation else "v19"
+    print(f"=== {tag}: installing depth-1 sim AI with buried+height eval ===")
+
+    V19_ROM_OFF = 0x7B10
+    V19_CPU = 0x8000 + (V19_ROM_OFF - 0x10)
+    assert V19_CPU == 0xFB00, f"unexpected v19 cpu addr {V19_CPU:#06x}"
+
+    # Relocated burial routine lives in the dead v17 AI region (124 bytes,
+    # $FF54-$FFD0). Without rotation it starts at $FF54. WITH rotation the
+    # cache+orient+move wrapper takes the start of the window, so burial is
+    # packed immediately after it.
+    if with_rotation:
+        wrapper_len = len(_build_rotation_wrapper(0xFF54, 0x0000, rotate_exec))
+        BURIAL_ROM_OFF = 0x7F64 + wrapper_len
+    else:
+        BURIAL_ROM_OFF = 0x7F64
+    BURIAL_CPU = 0x8000 + (BURIAL_ROM_OFF - 0x10)
+
+    burial = build_v19_burial(BURIAL_CPU)
+    burial_region_end = 0x7FE0
+    if BURIAL_ROM_OFF + len(burial) > burial_region_end:
+        print(f"ERROR: score_burial ({len(burial)} bytes) overflows v17 AI "
+              f"dead-zone 0x{BURIAL_ROM_OFF:04X}-0x{burial_region_end:04X}")
+        return False
+
+    v19, v19_labels = build_v19_ai(V19_CPU, burial_cpu=BURIAL_CPU,
+                                   with_rotation=with_rotation)
+    end = V19_ROM_OFF + len(v19)
+    region_end = 0x7D10
+    if end > region_end:
+        print(f"ERROR: v19 main routine ({len(v19)} bytes) overflows free "
+              f"region 0x{V19_ROM_OFF:04X}-0x{region_end:04X} "
+              f"(over by {end - region_end} bytes)")
+        return False
+
+    rom_data[V19_ROM_OFF:V19_ROM_OFF + len(v19)] = v19
+    print(f"v19 main AI at 0x{V19_ROM_OFF:04X} ({len(v19)} bytes) -> CPU "
+          f"${V19_CPU:04X} (region 0x{V19_ROM_OFF:04X}-0x{region_end:04X}, "
+          f"{region_end - end} bytes spare)")
+
+    # With rotation: pack the wrapper at the window start (it owns $FF54), then
+    # burial right after. Sanity-check they don't overlap.
+    if with_rotation:
+        _emit_rotation_wrapper(rom_data, v19_labels["search_entry"], rotate_exec)
+        assert BURIAL_ROM_OFF >= 0x7F64 + wrapper_len, "burial overlaps wrapper"
+
+    # Install score_burial in the v17 dead-AI region.
+    rom_data[BURIAL_ROM_OFF:BURIAL_ROM_OFF + len(burial)] = burial
+    print(f"v19 score_burial at 0x{BURIAL_ROM_OFF:04X} ({len(burial)} bytes) "
+          f"-> CPU ${BURIAL_CPU:04X} (over v17 AI dead-zone)")
+
+    rom_data[0x37CF] = 0x4C
+    rom_data[0x37D0] = V19_CPU & 0xFF
+    rom_data[0x37D1] = (V19_CPU >> 8) & 0xFF
+    print(f"Re-hooked controller (0x37CF): JMP ${V19_CPU:04X} (v19 AI)")
+
+    with open(output_path, "wb") as f:
+        f.write(rom_data)
+
+    patched_checksum = hashlib.md5(rom_data).hexdigest()
+    total = len(v19) + len(burial)
+    print(f"Wrote {output_path} ({len(rom_data)} bytes, md5 {patched_checksum})")
+    print(f"Dr. Mario VS CPU Edition v19 built "
+          f"({total} bytes total: {len(v19)} main + {len(burial)} burial).")
+    return True
+
+
+def apply_patches_v20(input_path, output_path):
+    """Build the v20 ROM:
+      * main AI at $FB00 (ROM 0x7B10), within v18's 512-byte region.
+      * score_burial + score_finalize relocated to $FF54 (ROM 0x7F64), in the
+        v17 dead-AI region (124 bytes). v19's burial used ~56 of those; v20's
+        finalize adds ~20 more.
+    Re-points 0x37CF to v20."""
+    import os
+    tmp_v17 = output_path + ".v17tmp"
+    if not apply_patches(input_path, tmp_v17):
+        return False
+    with open(tmp_v17, "rb") as f:
+        rom_data = bytearray(f.read())
+    os.remove(tmp_v17)
+
+    print()
+    print("=== v20: installing aggressive-completion endgame AI "
+          "(VIR*64, BURY*3) ===")
+
+    V20_ROM_OFF = 0x7B10
+    V20_CPU = 0x8000 + (V20_ROM_OFF - 0x10)
+    assert V20_CPU == 0xFB00, f"unexpected v20 cpu addr {V20_CPU:#06x}"
+
+    # Combined burial + finalize routine relocated to ROM 0x7F64.
+    BURIAL_ROM_OFF = 0x7F64
+    BURIAL_CPU = 0x8000 + (BURIAL_ROM_OFF - 0x10)
+    assert BURIAL_CPU == 0xFF54
+
+    burial, finalize_cpu = build_v20_burial(BURIAL_CPU)
+    burial_region_end = 0x7FE0
+    if BURIAL_ROM_OFF + len(burial) > burial_region_end:
+        print(f"ERROR: v20 burial+finalize ({len(burial)} bytes) overflows "
+              f"v17 AI dead-zone 0x{BURIAL_ROM_OFF:04X}-0x{burial_region_end:04X}")
+        return False
+
+    v20 = build_v20_ai(V20_CPU, burial_cpu=BURIAL_CPU,
+                       finalize_cpu=finalize_cpu)
+    end = V20_ROM_OFF + len(v20)
+    region_end = 0x7D10
+    if end > region_end:
+        print(f"ERROR: v20 main routine ({len(v20)} bytes) overflows free "
+              f"region 0x{V20_ROM_OFF:04X}-0x{region_end:04X} "
+              f"(over by {end - region_end} bytes)")
+        return False
+
+    rom_data[V20_ROM_OFF:V20_ROM_OFF + len(v20)] = v20
+    print(f"v20 main AI at 0x{V20_ROM_OFF:04X} ({len(v20)} bytes) -> CPU "
+          f"${V20_CPU:04X} (region 0x{V20_ROM_OFF:04X}-0x{region_end:04X}, "
+          f"{region_end - end} bytes spare)")
+
+    rom_data[BURIAL_ROM_OFF:BURIAL_ROM_OFF + len(burial)] = burial
+    print(f"v20 burial+finalize at 0x{BURIAL_ROM_OFF:04X} ({len(burial)} bytes) "
+          f"-> CPU ${BURIAL_CPU:04X} (finalize at ${finalize_cpu:04X})")
+
+    rom_data[0x37CF] = 0x4C
+    rom_data[0x37D0] = V20_CPU & 0xFF
+    rom_data[0x37D1] = (V20_CPU >> 8) & 0xFF
+    print(f"Re-hooked controller (0x37CF): JMP ${V20_CPU:04X} (v20 AI)")
+
+    with open(output_path, "wb") as f:
+        f.write(rom_data)
+
+    patched_checksum = hashlib.md5(rom_data).hexdigest()
+    total = len(v20) + len(burial)
+    print(f"Wrote {output_path} ({len(rom_data)} bytes, md5 {patched_checksum})")
+    print(f"Dr. Mario VS CPU Edition v20 built "
+          f"({total} bytes total: {len(v20)} main + {len(burial)} burial+finalize).")
+    return True
+
+
 if __name__ == "__main__":
     apply_patches(INPUT_ROM, OUTPUT_ROM)
     apply_patches_v18(INPUT_ROM, "drmario_v18.nes")
+    apply_patches_v18(INPUT_ROM, "drmario_v28.nes", with_rotation=True)
+    apply_patches_v18(INPUT_ROM, "drmario_v28h.nes", with_rotation=True, rotate_exec=False)
+    apply_patches_v19(INPUT_ROM, "drmario_v19.nes")
+    apply_patches_v19(INPUT_ROM, "drmario_v29.nes", with_rotation=True)
+    apply_patches_v20(INPUT_ROM, "drmario_v20.nes")
