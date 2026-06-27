@@ -1,0 +1,166 @@
+"""Shared, validated 6502 board-sim primitives, emitted as labeled subroutines
+into an Asm6502 program. Single source of truth for the unit tests AND the
+eventual patch_vs_cpu.py depth-2 integration.
+
+Each emit_*(a) appends one or more RTS-terminated subroutines (labels below).
+All operate on the board at $0500 (128 bytes, 16 rows x 8 cols, row-major).
+NES tiles: empty=$FF; occupied color = tile & $0F; virus = (tile & $F0)==$D0.
+
+Labels exposed:
+  resolve     -> loops find_clears+gravity; writes RV_CELLS/RV_VIR grand totals
+  find_clears -> mark+clear all >=4 runs this pass; writes PASS_CELLS/PASS_VIR
+  gravity     -> column-compact, viruses fixed
+  shape       -> writes SH_MAXH/SH_HOLES/SH_TOPRISK
+"""
+EMPTY = 0xFF
+ROWS, COLS = 16, 8
+BOARD = 0x0500
+MARK = 0x0300          # 128-byte scratch mark buffer
+
+# zero-page map for the primitives (kept clear of the v18 search temps when
+# integrated; see patch_vs_cpu.py Z_* map). Tests use these freely.
+RV_CELLS, RV_VIR = 0xE0, 0xE1     # resolve grand totals
+PASS_CELLS, PASS_VIR = 0xEB, 0xEC  # find_clears per-pass
+SH_MAXH, SH_HOLES, SH_TOPRISK = 0xF1, 0xF2, 0xF3
+_ROW, _COL, _OFF, _RUN, _MCOL, _RSTART = 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7
+_STEP, _CNT, _FLCNT = 0xE8, 0xE9, 0xEA
+_GCOL, _GREAD, _GDEST, _GTILE = 0xED, 0xEE, 0xEF, 0xF0
+_SHCOL, _SHOFF, _SHSEEN, _SHTMP = 0xF4, 0xF5, 0xF6, 0xF7
+
+
+def emit_resolve(a):
+    """resolve driver. JSRs find_clears + gravity (emit those too)."""
+    a.label("resolve")
+    a.ins("LDA_imm", 0); a.ins("STA_zp", RV_CELLS); a.ins("STA_zp", RV_VIR)
+    a.label("rs_loop")
+    a.jsr("find_clears")
+    a.ins("LDA_zp", PASS_CELLS); a.br("BNE", "rs_more")
+    a.ins("RTS")
+    a.label("rs_more")
+    a.ins("CLC"); a.ins("ADC_zp", RV_CELLS); a.ins("STA_zp", RV_CELLS)
+    a.ins("LDA_zp", PASS_VIR); a.ins("CLC"); a.ins("ADC_zp", RV_VIR); a.ins("STA_zp", RV_VIR)
+    a.jsr("gravity")
+    a.jmp("rs_loop")
+
+
+def emit_find_clears(a):
+    a.label("find_clears")
+    a.ins("LDA_imm", 0); a.ins("LDX_imm", 127)
+    a.label("fc_mkclr"); a.ins16("STA_absX", MARK); a.ins("DEX"); a.br("BPL", "fc_mkclr")
+    a.ins("STA_zp", PASS_CELLS); a.ins("STA_zp", PASS_VIR)
+    a.ins("LDA_imm", 0); a.ins("STA_zp", _ROW)
+    a.label("fc_hrow")
+    a.ins("LDA_zp", _ROW); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("STA_zp", _OFF)
+    a.ins("LDA_imm", 1); a.ins("STA_zp", _STEP); a.ins("LDA_imm", COLS); a.ins("STA_zp", _CNT)
+    a.jsr("fc_scan")
+    a.ins("INC_zp", _ROW); a.ins("LDA_zp", _ROW); a.ins("CMP_imm", ROWS); a.br("BNE", "fc_hrow")
+    a.ins("LDA_imm", 0); a.ins("STA_zp", _COL)
+    a.label("fc_vcol")
+    a.ins("LDA_zp", _COL); a.ins("STA_zp", _OFF)
+    a.ins("LDA_imm", 8); a.ins("STA_zp", _STEP); a.ins("LDA_imm", ROWS); a.ins("STA_zp", _CNT)
+    a.jsr("fc_scan")
+    a.ins("INC_zp", _COL); a.ins("LDA_zp", _COL); a.ins("CMP_imm", COLS); a.br("BNE", "fc_vcol")
+    a.ins("LDX_imm", 127)
+    a.label("fc_ap")
+    a.ins16("LDA_absX", MARK); a.br("BEQ", "fc_apnext")
+    a.ins16("LDA_absX", BOARD); a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0)
+    a.br("BNE", "fc_apnotv"); a.ins("INC_zp", PASS_VIR)
+    a.label("fc_apnotv")
+    a.ins("INC_zp", PASS_CELLS)
+    a.ins("LDA_imm", EMPTY); a.ins16("STA_absX", BOARD)
+    a.label("fc_apnext")
+    a.ins("DEX"); a.br("BPL", "fc_ap")
+    a.ins("RTS")
+    # fc_scan: walk _CNT cells from _OFF step _STEP, mark runs >=4
+    a.label("fc_scan")
+    a.ins("LDY_imm", 0); a.ins("LDA_imm", 0); a.ins("STA_zp", _RUN)
+    a.ins("LDA_imm", 0xFF); a.ins("STA_zp", _MCOL)
+    a.label("fc_cell")
+    a.ins("LDX_zp", _OFF); a.ins16("LDA_absX", BOARD)
+    a.ins("CMP_imm", EMPTY); a.br("BEQ", "fc_break")
+    a.ins("AND_imm", 0x0F); a.ins("CMP_zp", _MCOL); a.br("BNE", "fc_newcol")
+    a.ins("INC_zp", _RUN); a.jmp("fc_adv")
+    a.label("fc_break")
+    a.jsr("fc_flush"); a.ins("LDA_imm", 0); a.ins("STA_zp", _RUN)
+    a.ins("LDA_imm", 0xFF); a.ins("STA_zp", _MCOL); a.jmp("fc_adv")
+    a.label("fc_newcol")
+    a.jsr("fc_flush")
+    a.ins("LDX_zp", _OFF); a.ins16("LDA_absX", BOARD); a.ins("AND_imm", 0x0F); a.ins("STA_zp", _MCOL)
+    a.ins("LDA_zp", _OFF); a.ins("STA_zp", _RSTART)
+    a.ins("LDA_imm", 1); a.ins("STA_zp", _RUN)
+    a.label("fc_adv")
+    a.ins("LDA_zp", _RUN); a.ins("CMP_imm", 1); a.br("BNE", "fc_noset")
+    a.ins("LDA_zp", _OFF); a.ins("STA_zp", _RSTART)
+    a.label("fc_noset")
+    a.ins("LDA_zp", _OFF); a.ins("CLC"); a.ins("ADC_zp", _STEP); a.ins("STA_zp", _OFF)
+    a.ins("INY"); a.ins("CPY_zp", _CNT); a.br("BNE", "fc_cell")
+    a.jsr("fc_flush"); a.ins("RTS")
+    # fc_flush: if _RUN>=4 mark cells from _RSTART step _STEP
+    a.label("fc_flush")
+    a.ins("LDA_zp", _RUN); a.ins("CMP_imm", 4); a.br("BCC", "fc_fldone")
+    a.ins("LDX_zp", _RSTART); a.ins("LDA_zp", _RUN); a.ins("STA_zp", _FLCNT)
+    a.label("fc_flmark")
+    a.ins("LDA_imm", 1); a.ins16("STA_absX", MARK)
+    a.ins("TXA"); a.ins("CLC"); a.ins("ADC_zp", _STEP); a.ins("TAX")
+    a.ins("DEC_zp", _FLCNT); a.br("BNE", "fc_flmark")
+    a.label("fc_fldone"); a.ins("RTS")
+
+
+def emit_gravity(a):
+    a.label("gravity")
+    a.ins("LDA_imm", 0); a.ins("STA_zp", _GCOL)
+    a.label("g_col")
+    a.ins("LDA_imm", 120); a.ins("CLC"); a.ins("ADC_zp", _GCOL); a.ins("STA_zp", _GDEST)
+    a.ins("LDA_imm", 120); a.ins("CLC"); a.ins("ADC_zp", _GCOL); a.ins("STA_zp", _GREAD)
+    a.ins("LDY_imm", 0)
+    a.label("g_row")
+    a.ins("LDX_zp", _GREAD); a.ins16("LDA_absX", BOARD)
+    a.ins("CMP_imm", EMPTY); a.br("BEQ", "g_next")
+    a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BNE", "g_iscap")
+    a.ins("LDA_zp", _GREAD); a.ins("SEC"); a.ins("SBC_imm", 8); a.ins("STA_zp", _GDEST)
+    a.jmp("g_next")
+    a.label("g_iscap")
+    a.ins("LDX_zp", _GREAD); a.ins16("LDA_absX", BOARD); a.ins("STA_zp", _GTILE)
+    a.ins("LDA_zp", _GREAD); a.ins("CMP_zp", _GDEST); a.br("BEQ", "g_nomove")
+    a.ins("LDA_imm", EMPTY); a.ins16("STA_absX", BOARD)
+    a.ins("LDX_zp", _GDEST); a.ins("LDA_zp", _GTILE); a.ins16("STA_absX", BOARD)
+    a.label("g_nomove")
+    a.ins("LDA_zp", _GDEST); a.ins("SEC"); a.ins("SBC_imm", 8); a.ins("STA_zp", _GDEST)
+    a.label("g_next")
+    a.ins("LDA_zp", _GREAD); a.ins("SEC"); a.ins("SBC_imm", 8); a.ins("STA_zp", _GREAD)
+    a.ins("INY"); a.ins("CPY_imm", ROWS); a.br("BNE", "g_row")
+    a.ins("INC_zp", _GCOL); a.ins("LDA_zp", _GCOL); a.ins("CMP_imm", COLS); a.br("BNE", "g_col")
+    a.ins("RTS")
+
+
+def emit_shape(a):
+    a.label("shape")
+    a.ins("LDA_imm", 0); a.ins("STA_zp", SH_MAXH); a.ins("STA_zp", SH_HOLES); a.ins("STA_zp", SH_TOPRISK)
+    a.ins("LDX_imm", 23)
+    a.label("sh_tr"); a.ins16("LDA_absX", BOARD); a.ins("CMP_imm", EMPTY); a.br("BEQ", "sh_trsk")
+    a.ins("INC_zp", SH_TOPRISK)
+    a.label("sh_trsk"); a.ins("DEX"); a.br("BPL", "sh_tr")
+    a.ins("LDA_imm", 0); a.ins("STA_zp", _SHCOL)
+    a.label("sh_col")
+    a.ins("LDA_zp", _SHCOL); a.ins("STA_zp", _SHOFF)
+    a.ins("LDA_imm", 0); a.ins("STA_zp", _SHSEEN); a.ins("LDY_imm", 0)
+    a.label("sh_row")
+    a.ins("LDX_zp", _SHOFF); a.ins16("LDA_absX", BOARD); a.ins("CMP_imm", EMPTY); a.br("BEQ", "sh_empty")
+    a.ins("LDA_zp", _SHSEEN); a.br("BNE", "sh_after")
+    a.ins("LDA_imm", 1); a.ins("STA_zp", _SHSEEN)
+    a.ins("TYA"); a.ins("STA_zp", _SHTMP)
+    a.ins("LDA_imm", ROWS); a.ins("SEC"); a.ins("SBC_zp", _SHTMP)
+    a.ins("CMP_zp", SH_MAXH); a.br("BCC", "sh_after")
+    a.ins("STA_zp", SH_MAXH); a.jmp("sh_after")
+    a.label("sh_empty")
+    a.ins("LDA_zp", _SHSEEN); a.br("BEQ", "sh_after")
+    a.ins("INC_zp", SH_HOLES)
+    a.label("sh_after")
+    a.ins("LDA_zp", _SHOFF); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("STA_zp", _SHOFF)
+    a.ins("INY"); a.ins("CPY_imm", ROWS); a.br("BNE", "sh_row")
+    a.ins("INC_zp", _SHCOL); a.ins("LDA_zp", _SHCOL); a.ins("CMP_imm", COLS); a.br("BNE", "sh_col")
+    a.ins("RTS")
+
+
+def emit_all(a):
+    emit_resolve(a); emit_find_clears(a); emit_gravity(a); emit_shape(a)
