@@ -218,6 +218,45 @@ def emit_shape(a):
     a.ins("RTS")
 
 
+SCRATCH = 0x0600        # 128-byte board backup for the kernel
+
+
+def emit_kernel(a):
+    """eval_placement_deep: inputs Z_OFFA($6D)/Z_OFFB($6E)/Z_TILEA($D2)/Z_TILEB($D3).
+    backup board -> place -> resolve_targeted -> shape -> restore. Outputs
+    RV_VIR/RV_CELLS (cleared) + SH_MAXH/SH_HOLES/SH_TOPRISK. Non-destructive."""
+    a.label("kernel")
+    a.ins("LDX_imm", 127)
+    a.label("k_bk"); a.ins16("LDA_absX", BOARD); a.ins16("STA_absX", SCRATCH)
+    a.ins("DEX"); a.br("BPL", "k_bk")
+    a.ins("LDX_zp", 0x6D); a.ins("LDA_zp", 0xD2); a.ins16("STA_absX", BOARD)
+    a.ins("LDX_zp", 0x6E); a.ins("LDA_zp", 0xD3); a.ins16("STA_absX", BOARD)
+    a.jsr("resolve_targeted")
+    a.jsr("shape")
+    a.ins("LDX_imm", 127)
+    a.label("k_rs"); a.ins16("LDA_absX", SCRATCH); a.ins16("STA_absX", BOARD)
+    a.ins("DEX"); a.br("BPL", "k_rs")
+    a.ins("RTS")
+
+
+def emit_first_occ(a):
+    """first_occ: input col in X (0-7). Output A = row (0-15) of the topmost
+    occupied cell in that column, or 16 if the column is empty."""
+    a.label("first_occ")
+    a.ins("TXA"); a.ins("STA_zp", 0xF8)        # working offset = col (row 0)
+    a.ins("LDY_imm", 0)                          # Y = row
+    a.label("fo_loop")
+    a.ins("LDX_zp", 0xF8); a.ins16("LDA_absX", BOARD)
+    a.ins("CMP_imm", EMPTY); a.br("BNE", "fo_hit")
+    a.ins("LDA_zp", 0xF8); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("STA_zp", 0xF8)
+    a.ins("INY"); a.ins("CPY_imm", ROWS); a.br("BNE", "fo_loop")
+    a.label("fo_hit")
+    a.ins("TYA"); a.ins("RTS")                   # A = row of first occupied (or 16)
+
+
 def emit_all(a):
+    """Board-sim primitives only (resolve + shape). Callers that need the
+    per-placement kernel / first_occ emit those separately to avoid duplicate
+    `kernel` labels with tests that define their own."""
     emit_resolve(a); emit_resolve_targeted(a)
     emit_find_clears(a); emit_gravity(a); emit_shape(a)
