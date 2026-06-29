@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from py65_harness import Cpu
 from patch_vs_cpu import Asm6502
 import primitives
-from primitives import (emit_all, emit_kernel, emit_kernel_wc, emit_first_occ, EMPTY, ROWS, COLS,
+from primitives import (emit_all, emit_kernel, emit_kernel_wc, emit_copy_place, emit_first_occ, EMPTY, ROWS, COLS,
                         RV_CELLS, RV_VIR, SH_MAXH, SH_HOLES, SH_TOPRISK,
                         Z_OFFA, Z_OFFB, Z_TILEA, Z_TILEB)
 from test_search import golden_search, rand_board, BIAS, score_components, first_occ
@@ -53,6 +53,19 @@ SE_BESTHI= 0x01C6
 SE_PCA   = 0x01C7
 SE_PCB   = 0x01C8
 ST_BUSY  = 0x01C9
+ST_PHASE = 0x01CA   # resumable eval phase: 0 LAND(copy+place) 1 CLEAR 2 GRAV 3 SHAPE
+# --- CROSS-FRAME persistent shadows of the zp temps (validated-free $01xx RAM) ---
+# The phase machine keeps pill tiles/offsets/clear-counts live ACROSS frames, but the
+# game's NMI runs between our frames and may clobber zp. "Game-safe zp" only holds
+# WITHIN one NMI call -- not across frames. So the authoritative values live here and
+# each phase reloads its zp temps from these shadows at entry. (Confirmed live: with
+# zp-only persistence the AI spread well but cleared 0 -- wrong-colored Z_TILE.)
+ST_TILEA = 0x01CB   # shadow Z_TILEA ($D9): pill color A, set once per pill
+ST_TILEB = 0x01CC   # shadow Z_TILEB ($DB): pill color B
+ST_OFFA  = 0x01CD   # shadow Z_OFFA  ($DC): placed-cell A offset (LAND->CLEAR)
+ST_OFFB  = 0x01CE   # shadow Z_OFFB  ($DE): placed-cell B offset
+ST_RVC   = 0x01CF   # shadow RV_CELLS($E0): cleared cells (CLEAR->SHAPE)
+ST_RVV   = 0x01D0   # shadow RV_VIR  ($E1): cleared viruses
 PUB_DD   = 0x00DD   # publish target column (wrapper reads)
 PUB_DA   = 0x00DA   # publish target orient  (wrapper reads)
 # pool zp temps reused for score / landing (same as the verified diet)
@@ -82,31 +95,78 @@ def build_slicer(wc=False, base=BASE):
     a.ins("LDA_imm", 0)
     a.ins16("STA_abs", SE_COL); a.ins16("STA_abs", SE_ORIENT)
     a.ins16("STA_abs", SE_BESTLO); a.ins16("STA_abs", SE_BESTHI)
-    a.ins16("STA_abs", ST_BUSY)
+    a.ins16("STA_abs", ST_BUSY); a.ins16("STA_abs", ST_PHASE)   # start at PHASE 0 LAND
     a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", SE_BCOL); a.ins16("STA_abs", SE_BORIENT)
-    # tiles set ONCE here from the pill colors (kernel reuses them every eval)
-    a.ins16("LDA_abs", SE_PCA); a.ins("ORA_imm", 0x40); a.ins("STA_zp", Z_TILEA)
-    a.ins16("LDA_abs", SE_PCB); a.ins("ORA_imm", 0x40); a.ins("STA_zp", Z_TILEB)
+    # tiles set ONCE here from the pill colors; ALSO write the cross-frame shadow so
+    # PHASE 0 can reload them every placement (zp may be clobbered between frames).
+    a.ins16("LDA_abs", SE_PCA); a.ins("ORA_imm", 0x40)
+    a.ins("STA_zp", Z_TILEA); a.ins16("STA_abs", ST_TILEA)
+    a.ins16("LDA_abs", SE_PCB); a.ins("ORA_imm", 0x40)
+    a.ins("STA_zp", Z_TILEB); a.ins16("STA_abs", ST_TILEB)
     a.ins("RTS")
 
-    # ================= slice: one frame's work (<=1 eval) =================
+    # ================= slice: ONE bounded eval PHASE per frame (resumable) =================
+    # The cartridge NMI-hook budget is only ~8-10k cyc/frame, so a full atomic eval
+    # (~13-24k) overruns and corrupts. We split each placement eval into phases, ONE
+    # per frame, each <= ~8k: 0 LAND(copy+place) 1 CLEAR(find_clears) 2 GRAV 3 SHAPE+score.
+    # WORK board lives in validated-free RAM; pill tiles/offsets/clear-counts persist via
+    # the ST_* shadows (reloaded at each phase entry -- raw zp doesn't survive frames).
     a.label("slice")
-    a.ins16("LDA_abs", ST_BUSY); a.br("BNE", "sl_rts")
-    a.ins16("LDA_abs", ST_MODE); a.ins("CMP_imm", 1); a.br("BNE", "sl_rts")
+    # guards use inverted branch + local RTS (sl_rts is now >127 B away)
+    a.ins16("LDA_abs", ST_BUSY); a.br("BEQ", "sl_notbusy"); a.ins("RTS")
+    a.label("sl_notbusy")
+    a.ins16("LDA_abs", ST_MODE); a.ins("CMP_imm", 1); a.br("BEQ", "sl_go"); a.ins("RTS")
+    a.label("sl_go")
     a.ins16("INC_abs", ST_BUSY)
-    a.label("sl_loop")
-    a.ins16("LDA_abs", ST_MODE); a.ins("CMP_imm", 1); a.br("BNE", "sl_yield")  # DONE -> stop
-    a.jsr("try_eval")               # A=1 if evaled this cursor, A=0 if skipped (illegal)
-    a.ins("PHA"); a.jsr("advance"); a.ins("PLA")   # advance cursor (may publish+DONE)
-    a.ins("CMP_imm", 1); a.br("BEQ", "sl_yield")    # evaled -> one per slice, yield
-    a.jmp("sl_loop")                                # skipped -> keep scanning for a legal cursor
+    a.ins16("LDA_abs", ST_PHASE); a.br("BNE", "ph_notland")
+    # --- PHASE 0 LAND: find next legal cursor (cheap illegal-skips), copy+place ---
+    # reload pill tiles from the cross-frame shadow (zp may be clobbered since arm)
+    a.ins16("LDA_abs", ST_TILEA); a.ins("STA_zp", Z_TILEA)
+    a.ins16("LDA_abs", ST_TILEB); a.ins("STA_zp", Z_TILEB)
+    a.label("ph_land")
+    a.jsr("landing_current")                        # A=1 legal (Z_OFFA/B set) / 0 illegal
+    a.ins("CMP_imm", 1); a.br("BEQ", "ph_land_ok")
+    a.jsr("advance")                                # illegal -> advance cursor (may DONE)
+    a.ins16("LDA_abs", ST_MODE); a.ins("CMP_imm", 1); a.br("BEQ", "ph_land")  # keep skipping
+    a.jmp("sl_yield")                               # exhausted -> DONE
+    a.label("ph_land_ok")
+    # persist the placed-cell offsets for PHASE 1 (which runs a frame later)
+    a.ins("LDA_zp", Z_OFFA); a.ins16("STA_abs", ST_OFFA)
+    a.ins("LDA_zp", Z_OFFB); a.ins16("STA_abs", ST_OFFB)
+    a.jsr("copy_place"); a.ins("LDA_imm", 1); a.ins16("STA_abs", ST_PHASE)
+    a.jmp("sl_yield")
+    a.label("ph_notland")
+    a.ins("CMP_imm", 1); a.br("BNE", "ph_notclear")
+    # --- PHASE 1 CLEAR: find_clears_targeted on WORK; branch to GRAV or SHAPE ---
+    a.ins16("LDA_abs", ST_OFFA); a.ins("STA_zp", Z_OFFA)   # reload offsets from shadow
+    a.ins16("LDA_abs", ST_OFFB); a.ins("STA_zp", Z_OFFB)
+    a.jsr("find_clears_targeted")
+    a.ins("LDA_zp", primitives.PASS_CELLS); a.ins("STA_zp", RV_CELLS); a.ins16("STA_abs", ST_RVC)
+    a.ins("LDA_zp", primitives.PASS_VIR); a.ins("STA_zp", RV_VIR); a.ins16("STA_abs", ST_RVV)
+    a.ins("LDA_zp", RV_CELLS); a.br("BEQ", "ph_clear_none")
+    a.ins("LDA_imm", 2); a.ins16("STA_abs", ST_PHASE); a.jmp("sl_yield")  # cleared -> GRAV
+    a.label("ph_clear_none")
+    a.ins("LDA_imm", 3); a.ins16("STA_abs", ST_PHASE); a.jmp("sl_yield")  # -> SHAPE
+    a.label("ph_notclear")
+    a.ins("CMP_imm", 2); a.br("BNE", "ph_shape")
+    # --- PHASE 2 GRAV: settle WORK once ---
+    a.jsr("gravity")
+    a.ins("LDA_imm", 3); a.ins16("STA_abs", ST_PHASE); a.jmp("sl_yield")
+    # --- PHASE 3 SHAPE: shape + score + keep-best + advance cursor; phase -> LAND ---
+    a.label("ph_shape")
+    a.ins16("LDA_abs", ST_RVC); a.ins("STA_zp", RV_CELLS)  # reload clear-counts from shadow
+    a.ins16("LDA_abs", ST_RVV); a.ins("STA_zp", RV_VIR)
+    a.jsr("shape")
+    a.jsr("score_update")
+    a.jsr("advance")                                # next placement (may publish+DONE)
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", ST_PHASE)
     a.label("sl_yield")
     a.ins16("DEC_abs", ST_BUSY)
     a.label("sl_rts")
     a.ins("RTS")
 
-    # ----- try_eval: eval the CURRENT (SE_ORIENT,SE_COL) if legal. A=1 evaled / 0 skipped -----
-    a.label("try_eval")
+    # ----- landing_current: compute Z_OFFA/Z_OFFB for (SE_ORIENT,SE_COL). A=1 legal / 0 illegal -----
+    a.label("landing_current")
     a.ins16("LDA_abs", SE_ORIENT); a.br("BNE", "te_h")
     # vertical: fo=first_occ(col); legal if fo>=2; offb=(fo-1)*8+col, offa=offb-8
     a.ins16("LDX_abs", SE_COL); a.jsr("first_occ")     # A=fo
@@ -127,14 +187,14 @@ def build_slicer(wc=False, base=BASE):
     a.ins("SEC"); a.ins("SBC_imm", 8); a.ins("CLC"); a.ins16("ADC_abs", SE_COL); a.ins("STA_zp", Z_OFFA)
     a.ins("LDA_zp", Z_OFFA); a.ins("CLC"); a.ins("ADC_imm", 1); a.ins("STA_zp", Z_OFFB)
     a.label("te_eval")
-    a.jsr("eval_one")
-    a.ins("LDA_imm", 1); a.ins("RTS")        # evaled
+    a.ins("LDA_imm", 1); a.ins("RTS")        # legal: Z_OFFA/Z_OFFB set
     a.label("te_skip")
     a.ins("LDA_imm", 0); a.ins("RTS")        # illegal, skipped
 
-    # ----- eval_one: kernel + 16-bit score + keep-best (tiles already armed) -----
-    a.label("eval_one")
-    a.jsr("kernel")
+    # ----- score_update: 16-bit score of the already-resolved WORK board + keep-best -----
+    # (was eval_one; the kernel is now the phased LAND/CLEAR/GRAV/SHAPE machine. PHASE 3
+    #  already ran shape() -> SH_MAXH/SH_HOLES/SH_TOPRISK and RV_VIR/RV_CELLS hold counts.)
+    a.label("score_update")
     a.ins("LDA_imm", BIAS & 0xFF); a.ins("STA_zp", SE_SLO)
     a.ins("LDA_imm", (BIAS >> 8) & 0xFF); a.ins("STA_zp", SE_SHI)
     # + 18*vir
@@ -203,14 +263,19 @@ def build_slicer(wc=False, base=BASE):
     a.ins16("STA_abs", PUB_DA)
     a.ins("RTS")
 
-    emit_all(a)
-    (emit_kernel_wc if wc else emit_kernel)(a, resolve="resolve_capped")
+    emit_all(a)                     # resolve*/find_clears(+targeted)/gravity/shape
+    emit_copy_place(a)              # PHASE 0 LAND uses this (both py65 + cartridge)
     emit_first_occ(a)
     return a.assemble(), a.labels
 
 
 def main():
     import statistics
+    # The phase machine keeps a WORK board separate from the LIVE settled board
+    # ($0500), exactly like the cartridge (WORK=$0600, MARK=$068C). copy_place
+    # copies LIVE->WORK fresh each placement; if WORK==LIVE it would accumulate.
+    primitives.BOARD = 0x0600
+    primitives.MARK = 0x068C
     code, labels = build_slicer()
     arm_addr = BASE + labels["arm"]; slice_addr = BASE + labels["slice"]
     rng = random.Random(31337)   # same seed as test_search for matching boards
@@ -223,7 +288,8 @@ def main():
         cpu.mem[SE_PCA] = pca; cpu.mem[SE_PCB] = pcb
         cpu.call(arm_addr)
         nsl = 0
-        while cpu.mem[ST_MODE] != 2 and nsl < 80:
+        # phase machine: ~3-4 calls per legal placement (LAND/CLEAR/[GRAV]/SHAPE)
+        while cpu.mem[ST_MODE] != 2 and nsl < 300:
             cpu.call(slice_addr); nsl += 1
         slice_counts.append(nsl)
         got = (cpu.mem[SE_BORIENT], cpu.mem[SE_BCOL])

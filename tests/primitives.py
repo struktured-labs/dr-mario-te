@@ -123,32 +123,34 @@ def emit_find_clears(a):
     a.label("fc_mkclr"); a.ins16("STA_absX", MARK); a.ins("DEX"); a.br("BPL", "fc_mkclr")
     a.ins("STA_zp", PASS_CELLS); a.ins("STA_zp", PASS_VIR); a.ins("RTS")
 
-    # fc_apply: walk cell offset 127..0; test its packed bit; clear+count if set.
-    # _BP1 holds the cell offset (X is reused for byte index); _BP2 holds the mask.
+    # fc_apply: BYTE-MAJOR walk of the 16-byte packed MARK. For each MARK byte:
+    # if zero, skip its 8 cells outright (the common case -- most bytes are empty,
+    # so this is far cheaper than the old per-cell shift-loop and fits the NMI
+    # budget). If nonzero, expand bits 0..7 -> cell offsets byteidx*8 + bit, and
+    # clear+count each set bit. X = byte index throughout (board uses Y/absY, so X
+    # is never clobbered); _BP2 = rolling mask. Same totals as the old 127..0 walk.
     a.label("fc_apply")
-    a.ins("LDX_imm", 127)
-    a.label("fc_ap")
-    a.ins("STX_zp", _BP1)                                  # save cell offset
-    a.ins("TXA"); a.ins("AND_imm", 7); a.ins("TAY")        # Y = bit index
-    a.ins("LDA_imm", 1)
-    a.label("fc_apsh"); a.ins("DEY"); a.br("BMI", "fc_apshd")
-    a.ins("ASL_A"); a.jmp("fc_apsh")
-    a.label("fc_apshd"); a.ins("STA_zp", _BP2)             # mask = 1<<(off&7)
-    a.ins("TXA"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("TAX")  # X = byte idx
-    a.ins16("LDA_absX", MARK); a.ins("AND_zp", _BP2); a.br("BEQ", "fc_apnext")
-    # marked: clear board[_BP1], count
-    a.ins("LDX_zp", _BP1)
-    a.ins16("LDA_absX", BOARD); a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0)
+    a.ins("LDX_imm", 0)                                    # X = MARK byte index 0..15
+    a.label("fc_apb")
+    a.ins16("LDA_absX", MARK); a.br("BEQ", "fc_apbnext")   # empty byte -> skip 8 cells
+    a.ins("STA_zp", _BP2)                                  # rolling mask
+    a.ins("TXA"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("TAY")  # Y = byteidx*8
+    a.label("fc_apbit")
+    a.ins("LDA_zp", _BP2); a.ins("LSR_A"); a.ins("STA_zp", _BP2); a.br("BCC", "fc_apbitnext")
+    # bit set: clear board[Y], count (Y = cell offset)
+    a.ins16("LDA_absY", BOARD); a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0)
     a.br("BNE", "fc_apnotv"); a.ins("INC_zp", PASS_VIR)
     a.label("fc_apnotv")
     a.ins("INC_zp", PASS_CELLS)
-    a.ins("LDA_imm", EMPTY); a.ins16("STA_absX", BOARD)
-    a.label("fc_apnext")
-    a.ins("LDX_zp", _BP1); a.ins("DEX"); a.br("BPL", "fc_ap")   # restore offset, next
+    a.ins("LDA_imm", EMPTY); a.ins16("STA_absY", BOARD)
+    a.label("fc_apbitnext")
+    a.ins("INY"); a.ins("LDA_zp", _BP2); a.br("BNE", "fc_apbit")  # more set bits in byte?
+    a.label("fc_apbnext")
+    a.ins("INX"); a.ins("CPX_imm", 16); a.br("BNE", "fc_apb")
     a.ins("RTS")
 
     # ---- targeted first pass: scan only the 2 placed cells' rows+cols ----
-    # inputs Z_OFFA=$6D, Z_OFFB=$6E. Correct because the pre-placement board has
+    # inputs Z_OFFA=$DC, Z_OFFB=$DE. Correct because the pre-placement board has
     # no >=4 runs, so any new run must pass through a placed cell.
     a.label("find_clears_targeted")
     a.jsr("fc_clearmark")
@@ -306,6 +308,19 @@ def emit_kernel_wc(a, resolve="resolve_capped"):
     a.ins("LDX_zp", Z_OFFB); a.ins("LDA_zp", Z_TILEB); a.ins16("STA_absX", BOARD)
     a.jsr(resolve)
     a.jsr("shape")
+    a.ins("RTS")
+
+
+def emit_copy_place(a):
+    """copy_place: copy LIVE settled board ($0500) -> WORK (BOARD), then place the
+    pill's 2 cells. The RESUMABLE LAND phase calls this; later phases
+    (find_clears_targeted / gravity / shape) operate on the persisted WORK."""
+    a.label("copy_place")
+    a.ins("LDX_imm", 127)
+    a.label("cp_lp"); a.ins16("LDA_absX", LIVE_BOARD); a.ins16("STA_absX", BOARD)
+    a.ins("DEX"); a.br("BPL", "cp_lp")
+    a.ins("LDX_zp", Z_OFFA); a.ins("LDA_zp", Z_TILEA); a.ins16("STA_absX", BOARD)
+    a.ins("LDX_zp", Z_OFFB); a.ins("LDA_zp", Z_TILEB); a.ins16("STA_absX", BOARD)
     a.ins("RTS")
 
 

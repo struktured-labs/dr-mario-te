@@ -16,9 +16,14 @@ Start ROM: drmario_v28cs.nes (2-bank). Output: drmario_cart.nes (4-bank).
 import sys
 sys.path.insert(0, "tests")
 import primitives
-# ROM working-copy config: WORK board $0100, bit-packed mark $0180 (LIVE stays $0500)
-primitives.BOARD = 0x0600
-primitives.MARK = 0x068C
+# ROM working-copy config: WORK board $0100, bit-packed mark $0180 (LIVE stays $0500).
+# $0100-$018F is the ONLY region the banktest proved free across frames (low stack;
+# the game's stack stays above $01EF). The phase machine keeps WORK live across 3-4
+# frames per placement, so WORK MUST sit in game-safe RAM -- $0600 was NOT free and
+# the game overwrote it between phases (search saw garbage -> avoided empty cols,
+# never cleared). Confirmed live: $0600 gave 11/14 picks != py65; $0100 fixes it.
+primitives.BOARD = 0x0100
+primitives.MARK = 0x0180
 import importlib, test_slicer
 importlib.reload(test_slicer)
 from patch_vs_cpu import Asm6502
@@ -113,12 +118,18 @@ def main():
     rom = bytearray(open(V28CS, "rb").read())
     assert rom[4] == 2
     rom[WRAP_FILE:WRAP_FILE + len(wrap)] = wrap
-    # RE-POINT the controller hook (0x37CF) DIRECTLY to $FF54 (was -> $FB00 blob)
+    # KEEP the controller hook (0x37CF) pointing at the v28cs blob ($FB00) -- do NOT
+    # bypass it. The blob replicates the displaced original `STA $F6` (the controller-
+    # read tail) + the $04/$F5 controller plumbing + mode gate, and ALREADY does
+    # `JMP $FF54` into our wrapper in play mode (else RTS via $FBAD). Bypassing it
+    # straight to $FF54 dropped that `STA $F6`, so P2's menu/level input was dead and
+    # P2 spawned at LEVEL 0 (4 viruses) instead of L11 (48). Confirmed live: blob path
+    # restores P2=48. (The earlier "blob path broke the bank-switch" was the freeze
+    # misdiagnosis -- the freeze was the per-frame budget overrun, now fixed.)
     HOOK_FILE = 0x37CF
-    assert rom[HOOK_FILE] == 0x4C, "hook is not a JMP"
-    rom[HOOK_FILE + 1] = WRAP_CPU & 0xFF
-    rom[HOOK_FILE + 2] = (WRAP_CPU >> 8) & 0xFF
-    print(f"hook 0x{HOOK_FILE:04X}: JMP ${WRAP_CPU:04X} (direct, bypassing blob)")
+    assert rom[HOOK_FILE] == 0x4C and rom[HOOK_FILE+1] == 0x00 and rom[HOOK_FILE+2] == 0xFB, \
+        "expected v28cs hook JMP $FB00 at 0x37CF"
+    print(f"hook 0x{HOOK_FILE:04X}: JMP $FB00 (blob -> JMP $FF54 in play mode; preserved)")
     tmp = OUT + ".2bank"; open(tmp, "wb").write(rom)
     expand(tmp, OUT, new_bank_bytes=slicer)
     import os; os.remove(tmp)
