@@ -21,6 +21,9 @@ ST2_PC = 0x6140
 RD_RGN = 0x6141
 SU_RGN = 0x6142
 ARMED  = 0x6143
+# cross-frame shadows (game clobbers zp between NMIs): Z_OFF (LAND->CLEAR), SH_* (SHAPE->COMB)
+ST2_OFFA, ST2_OFFB = 0x6148, 0x6149
+ST2_MH, ST2_HO, ST2_TR = 0x614A, 0x614B, 0x614C
 # readiness region table (start,end) x3 ; setup region (step,lstart,lend,nalong) x4
 RD_REGIONS = [(0,43),(43,86),(86,128)]
 SU_REGIONS = [(1,0,8,8),(1,8,16,8),(8,0,4,16),(8,4,8,16)]
@@ -74,10 +77,11 @@ def build_resumable():
     a.ins("LDA_imm",0); a.ins16("STA_abs",S_C1); a.ins16("INC_abs",S_O1)
     a.ins16("LDA_abs",S_O1); a.ins("CMP_imm",4); a.br("BEQ","lret2"); a.ins("RTS"); a.label("lret2")
     a.ins("LDA_imm",13); a.ins16("STA_abs",ST2_PC); a.jmp("p_publish")
-    a.label("pl1_ok"); setpc(1)
+    a.label("pl1_ok"); a.ins("LDA_zp",P.Z_OFFA); a.ins16("STA_abs",ST2_OFFA); a.ins("LDA_zp",P.Z_OFFB); a.ins16("STA_abs",ST2_OFFB); setpc(1)
 
     # PHASE 1 CLEAR1: find_clears + imm + has_virus (all unaffected by gravity); split gravity->PC14
     a.label("p_res1")
+    a.ins16("LDA_abs",ST2_OFFA); a.ins("STA_zp",P.Z_OFFA); a.ins16("LDA_abs",ST2_OFFB); a.ins("STA_zp",P.Z_OFFB)
     a.jsr("find_clears_targeted")
     a.ins("LDA_zp",P.PASS_CELLS); a.ins("STA_zp",P.RV_CELLS)
     a.ins("LDA_zp",P.PASS_VIR); a.ins("STA_zp",P.RV_VIR)
@@ -115,10 +119,11 @@ def build_resumable():
     a.ins16("LDA_abs",S_O2); a.ins("CMP_imm",4); a.br("BEQ","lret4"); a.ins("RTS"); a.label("lret4")
     a.ins("LDA_imm",11); a.ins16("STA_abs",ST2_PC); a.jmp("st_rts")
     a.label("pl2_ok")
-    a.ins("LDA_imm",1); a.ins16("STA_abs",S_ANY2); setpc(5)
+    a.ins("LDA_imm",1); a.ins16("STA_abs",S_ANY2); a.ins("LDA_zp",P.Z_OFFA); a.ins16("STA_abs",ST2_OFFA); a.ins("LDA_zp",P.Z_OFFB); a.ins16("STA_abs",ST2_OFFB); setpc(5)
 
     # PHASE 5 CLEAR2: find_clears + imm2 + init leaf accumulators; split gravity->PC15
     a.label("p_res2")
+    a.ins16("LDA_abs",ST2_OFFA); a.ins("STA_zp",P.Z_OFFA); a.ins16("LDA_abs",ST2_OFFB); a.ins("STA_zp",P.Z_OFFB)
     a.jsr("find_clears_targeted")
     a.ins("LDA_zp",P.PASS_CELLS); a.ins("STA_zp",P.RV_CELLS)
     a.ins("LDA_zp",P.PASS_VIR); a.ins("STA_zp",P.RV_VIR)
@@ -133,7 +138,7 @@ def build_resumable():
     a.jsr("gravity"); setpc(6)
 
     # PHASE 6 SHAPE
-    a.label("p_shape"); a.jsr("shape"); setpc(7)
+    a.label("p_shape"); a.jsr("shape"); a.ins("LDA_zp",P.SH_MAXH); a.ins16("STA_abs",ST2_MH); a.ins("LDA_zp",P.SH_HOLES); a.ins16("STA_abs",ST2_HO); a.ins("LDA_zp",P.SH_TOPRISK); a.ins16("STA_abs",ST2_TR); setpc(7)
     # PHASE 7 BURIED
     a.label("p_buried"); a.jsr("buried"); setpc(8)
 
@@ -151,6 +156,7 @@ def build_resumable():
 
     # PHASE 10 COMB
     a.label("p_comb")
+    a.ins16("LDA_abs",ST2_MH); a.ins("STA_zp",P.SH_MAXH); a.ins16("LDA_abs",ST2_HO); a.ins("STA_zp",P.SH_HOLES); a.ins16("LDA_abs",ST2_TR); a.ins("STA_zp",P.SH_TOPRISK)
     a.ins("LDA_imm",0); a.ins16("STA_abs",P.EV_SCO_LO); a.ins16("STA_abs",P.EV_SCO_HI)  # ensure
     a.ins("LDA_zp",P.EO_LO); a.ins16("STA_abs",P.EV_RDY_LO) if False else None  # readiness already in EV_RDY
     a.jsr("has_virus"); a.jsr("combine")
