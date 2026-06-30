@@ -201,10 +201,34 @@ def build_resumable():
     a.jsr("cmp_update")
     adv_outer_then("p_publish")
 
-    # PHASE 13 publish
+    # PHASE 13 publish: best_col -> $DD ; best_orient4 -> $DA via map {0:3,1:1,2:0,3:2}
     a.label("p_publish")
-    a.ins("LDA_imm",0); a.ins16("STA_abs",ARMED)   # mark done (test reads S_BEST_*)
+    a.ins16("LDA_abs",S_BEST_O); a.ins("CMP_imm",0xFF); a.br("BNE","pub_ok")
+    a.ins("LDA_imm",3); a.ins("STA_zp",0xDD); a.ins("STA_zp",0xDA)   # topout fallback: col3, vert
+    a.jmp("pub_done")
+    a.label("pub_ok")
+    a.ins16("LDA_abs",S_BEST_C); a.ins("STA_zp",0xDD)
+    a.ins16("LDA_abs",S_BEST_O); a.ins("CMP_imm",0); a.br("BNE","pm1"); a.ins("LDA_imm",3); a.jmp("pmst")
+    a.label("pm1"); a.ins("CMP_imm",1); a.br("BNE","pm2"); a.ins("LDA_imm",1); a.jmp("pmst")
+    a.label("pm2"); a.ins("CMP_imm",2); a.br("BNE","pm3"); a.ins("LDA_imm",0); a.jmp("pmst")
+    a.label("pm3"); a.ins("LDA_imm",2)
+    a.label("pmst"); a.ins("STA_zp",0xDA)
+    a.label("pub_done")
+    a.ins("LDA_imm",0); a.ins16("STA_abs",ARMED)   # mark done
     a.label("st_rts")
+    a.ins("RTS")
+
+    # ---- dispatch: SINGLE per-frame cart entry: new-pill edge -> read colors+next + arm; then step ----
+    a.label("dispatch")
+    a.ins16("LDA_abs",0x0386); a.ins("CMP_zp",0xDF)         # P2y vs last-y
+    a.br("BCC","d_step"); a.br("BEQ","d_step")
+    a.ins16("LDA_abs",0x0381); a.ins("AND_imm",0x0F); a.ins16("STA_abs",S_CA)   # current pill colors
+    a.ins16("LDA_abs",0x0382); a.ins("AND_imm",0x0F); a.ins16("STA_abs",S_CB)
+    a.ins16("LDA_abs",0x031A); a.ins("AND_imm",0x0F); a.ins16("STA_abs",S_NA)   # next-pill preview
+    a.ins16("LDA_abs",0x031B); a.ins("AND_imm",0x0F); a.ins16("STA_abs",S_NB)
+    a.jsr("arm")
+    a.label("d_step")
+    a.jsr("step")
     a.ins("RTS")
 
     # ---- helpers: set readiness/setup region params from RD_RGN/SU_RGN ----
