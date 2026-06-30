@@ -65,6 +65,17 @@ accumulate into a RAM cell across the two phases. shape/buried fit one phase as-
 - Keep 0x37CF->$FB00 blob (preserves P2 leveling -- DO NOT bypass). Blob JMP $FF54 = our wrapper.
 - v28cs stays ship until live L11 >= v28cs.
 
+## Eval ablation (L11, compact+targeted, 12 seeds) -- SPEED LEVERS
+- full rich (shape+setup+buried+readiness): 67.5% / 25%  <- current
+- drop readiness: 64.9% / 16.7%  (-2.6pp, saves the 17.5k term / 3 phases) <- best speed/acc trade
+- drop setup:     60.9% / 16.7%  (setup is the KEY term -- keep it)
+- setup ONLY (shape+setup): 63.9% / 8.3%   ;  buried ONLY: 38.5% (craters)
+DECISION: keep full eval for now (readiness split already written+validated). When optimizing
+for speed, DROP readiness first (coordinated: nes_d2_golden leaf_shape_score, 6502 combine/
+leaf_score, test_leaf_score golden, then re-validate build_search vs updated oracle) -> 64.9%.
+Term costs: shape 5k, buried 5.6k, setup 18k(split 2-3), readiness 17.5k(split 3: readiness_rg
+done, 500/500). setup still needs a resumable rows/cols-pass split.
+
 ## Build order
 1. (measure targeted L11) 2. split readiness/setup into region phases (validate cell-exact)
 3. resumable phase machine + validate vs atomic 4. cart integrate 5. live L11 test 6. cache.
