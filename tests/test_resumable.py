@@ -24,8 +24,9 @@ ARMED  = 0x6143
 # cross-frame shadows (game clobbers zp between NMIs): Z_OFF (LAND->CLEAR), SH_* (SHAPE->COMB)
 ST2_OFFA, ST2_OFFB = 0x6148, 0x6149
 ST2_MH, ST2_HO, ST2_TR = 0x614A, 0x614B, 0x614C
-# readiness region table (start,end) x3 ; setup region (step,lstart,lend,nalong) x4
-RD_REGIONS = [(0,43),(43,86),(86,128)]
+# readiness region table -- 4 regions (~6k cyc each, margin under the ~8k NMI budget; the
+# old 3-region split peaked at 8086 cyc which overran on the cart -> NMI re-entry freeze).
+RD_REGIONS = [(0,22),(22,43),(43,64),(64,85),(85,106),(106,128)]
 SU_REGIONS = [(1,0,8,8),(1,8,16,8),(8,0,4,16),(8,4,8,16)]
 
 
@@ -148,7 +149,7 @@ def build_resumable(base=0x8000, cur=CUR, work1=WORK1, live=LIVE, mark=0x0780, s
     a.label("p_read")
     a.ins16("LDA_abs",RD_RGN); a.ins("ASL_A"); a.ins("TAX")   # idx*2 into region table addr
     a.jsr("set_rd_region"); a.jsr("readiness_rg")
-    a.ins16("INC_abs",RD_RGN); a.ins16("LDA_abs",RD_RGN); a.ins("CMP_imm",3); a.br("BEQ","lret5"); a.ins("RTS"); a.label("lret5")
+    a.ins16("INC_abs",RD_RGN); a.ins16("LDA_abs",RD_RGN); a.ins("CMP_imm",len(RD_REGIONS)); a.br("BEQ","lret5"); a.ins("RTS"); a.label("lret5")
     setpc(9)
     # PHASE 9 SETUP (4 regions)
     a.label("p_setup")

@@ -15,7 +15,7 @@ def main():
     for t in range(n):
         b = rand_board(rng); cpu.set_board(b)
         cpu.mem[primitives.EV_RDY_LO]=0; cpu.mem[primitives.EV_RDY_HI]=0
-        for st,en in [(0,43),(43,86),(86,128)]:
+        for st,en in [(0,22),(22,43),(43,64),(64,85),(85,106),(106,128)]:
             cpu.mem[primitives.RD_START]=st; cpu.mem[primitives.RD_END]=en
             cmax=max(cmax,cpu.call(addr))
         got = cpu.mem[primitives.EV_RDY_LO] | (cpu.mem[primitives.EV_RDY_HI]<<8)
@@ -23,6 +23,6 @@ def main():
         if got != exp:
             fails += 1
             if fails<=4: print(f"  t{t}: got={got} exp={exp}")
-    print(f"readiness_rg(3 regions): {n-fails}/{n} match  per-region cyc_max={cmax}")
+    print(f"readiness_rg(6 regions): {n-fails}/{n} match  per-region cyc_max={cmax}")
     sys.exit(1 if fails else 0)
 if __name__=="__main__": main()
