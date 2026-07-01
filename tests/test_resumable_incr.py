@@ -330,7 +330,9 @@ def build_resumable_incr(base=0x8000, cur=CUR, work1=WORK1, live=LIVE, mark=0x07
 
 
 def validate(nboards=12, seed=321):
+    import py65_harness as _ph
     code, labels = build_resumable_incr()
+    _ph.HALT = 0x8000 + len(code) + 0x100   # sentinel must sit ABOVE the (now larger) code
     cpu = Cpu(); cpu.load(0x8000, code)
     for i in range(17): cpu.mem[P.SQ_LO_ADDR+i]=(i*i)&0xFF; cpu.mem[P.SQ_HI_ADDR+i]=(i*i)>>8
     arm = 0x8000+labels["arm"]; step = 0x8000+labels["step"]
