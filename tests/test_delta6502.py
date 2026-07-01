@@ -53,6 +53,10 @@ WQ_O0, WQ_STEP, WQ_EP, WQ_EN, WQ_COL, WQ_C1, WQ_C2, DSET = 0x47, 0x48, 0x49, 0x4
 RA, RB, WROW, WCOL, WI, WJ, ILO, IHI, JLO, JHI = 0x4F, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58
 CURCELL, PCOL, VO, LNIDX, CUROFF, TVMASK = 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E
 RCOL, HRUN, VRUN, WOFF, RUN = 0x5F, 0x60, 0x61, 0x62, 0x63
+NV, RAYOFF, NI = 0x64, 0x65, 0x66
+VLIST = 0x61A0                       # up to 32 affected-virus offsets
+
+DROP_SETUP = False        # set True for the production cart variant (drops the setup term)
 
 _uid = [0]
 def uid(tag):
@@ -270,41 +274,63 @@ def emit_vir_run2(a):
     a.ins("RTS")
 
 
-def emit_try_virus(a):
-    """If BOARD[VO] is a color-PCOL virus not yet visited: mark, run2, add to RSUM."""
-    a.label("try_virus")
-    a.ins("LDX_zp", VO); a.ins16("LDA_absX", BOARD); a.ins("CMP_imm", EMPTY); a.br("BEQ", "tv_no")
-    a.ins("TAY"); a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BNE", "tv_no")
-    a.ins("TYA"); a.ins("AND_imm", 0x0F); a.ins("CMP_zp", PCOL); a.br("BNE", "tv_no")
-    # mask = 1 << (VO & 7)
+def emit_collect_virus(a):
+    """VO is a same-low-nibble cell contiguous to a placed cell. If it's a virus not yet visited:
+    mark, append offset to VLIST, add its new run2 to RSUM."""
+    a.label("collect_virus")
+    a.ins("LDX_zp", VO); a.ins16("LDA_absX", BOARD); a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BNE", "cv_ret")
     a.ins("LDA_zp", VO); a.ins("AND_imm", 7); a.ins("TAY"); a.ins("LDA_imm", 1)
-    a.label("tv_shift")
-    a.ins("DEY"); a.br("BMI", "tv_shifted"); a.ins("ASL_A"); a.jmp("tv_shift")
-    a.label("tv_shifted")
+    a.label("cv_shift")
+    a.ins("DEY"); a.br("BMI", "cv_shd"); a.ins("ASL_A"); a.jmp("cv_shift")
+    a.label("cv_shd")
     a.ins("STA_zp", TVMASK)
     a.ins("LDA_zp", VO); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("TAX")
-    a.ins16("LDA_absX", VISIT); a.ins("AND_zp", TVMASK); a.br("BNE", "tv_no")     # already visited
+    a.ins16("LDA_absX", VISIT); a.ins("AND_zp", TVMASK); a.br("BNE", "cv_ret")     # already visited
     a.ins16("LDA_absX", VISIT); a.ins("ORA_zp", TVMASK); a.ins16("STA_absX", VISIT)
+    a.ins("LDX_zp", NV); a.ins("LDA_zp", VO); a.ins16("STA_absX", VLIST); a.ins("INC_zp", NV)
     a.jsr("vir_run2")
     a.ins16("LDA_abs", RSUM_LO); a.ins("CLC"); a.ins16("ADC_abs", RUN2_LO); a.ins16("STA_abs", RSUM_LO)
     a.ins16("LDA_abs", RSUM_HI); a.ins16("ADC_abs", RUN2_HI); a.ins16("STA_abs", RSUM_HI)
-    a.label("tv_no")
+    a.label("cv_ret")
     a.ins("RTS")
 
 
-def emit_process_cell(a):
-    """Scan CURCELL's row + col for color-PCOL viruses (dedup via VISIT), sum run2 into RSUM."""
-    a.label("process_cell")
-    a.ins("LDA_zp", CURCELL); a.ins("AND_imm", 0xF8); a.ins("STA_zp", CUROFF)     # row base
-    a.ins("LDA_imm", 0); a.ins("STA_zp", LNIDX)
-    a.label("pc_row")
-    a.ins("LDA_zp", CUROFF); a.ins("CLC"); a.ins("ADC_zp", LNIDX); a.ins("STA_zp", VO); a.jsr("try_virus")
-    a.ins("INC_zp", LNIDX); a.ins("LDA_zp", LNIDX); a.ins("CMP_imm", 8); a.br("BNE", "pc_row")
-    a.ins("LDA_zp", CURCELL); a.ins("AND_imm", 7); a.ins("STA_zp", CUROFF)         # col
-    a.ins("LDA_imm", 0); a.ins("STA_zp", LNIDX)
-    a.label("pc_col")
-    a.ins("LDA_zp", LNIDX); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("CLC"); a.ins("ADC_zp", CUROFF); a.ins("STA_zp", VO); a.jsr("try_virus")
-    a.ins("INC_zp", LNIDX); a.ins("LDA_zp", LNIDX); a.ins("CMP_imm", 16); a.br("BNE", "pc_col")
+def emit_collect_cell(a):
+    """Scan the 4 rays (L/R/U/D) from CURCELL through same-low-nibble (PCOL) cells; collect the
+    viruses among them (the only viruses whose run the placed cell can change)."""
+    a.label("collect_cell")
+    a.ins("LDA_zp", CURCELL); a.ins("STA_zp", RAYOFF)                              # LEFT
+    a.label("cc_l")
+    a.ins("LDA_zp", RAYOFF); a.ins("AND_imm", 7); a.br("BEQ", "cc_ri")
+    a.ins("DEC_zp", RAYOFF)
+    a.ins("LDX_zp", RAYOFF); a.ins16("LDA_absX", BOARD); a.ins("CMP_imm", EMPTY); a.br("BEQ", "cc_ri")
+    a.ins("AND_imm", 0x0F); a.ins("CMP_zp", PCOL); a.br("BNE", "cc_ri")
+    a.ins("LDA_zp", RAYOFF); a.ins("STA_zp", VO); a.jsr("collect_virus"); a.jmp("cc_l")
+    a.label("cc_ri")
+    a.ins("LDA_zp", CURCELL); a.ins("STA_zp", RAYOFF)                              # RIGHT
+    a.label("cc_r")
+    a.ins("LDA_zp", RAYOFF); a.ins("AND_imm", 7); a.ins("CMP_imm", 7); a.br("BEQ", "cc_ui")
+    a.ins("INC_zp", RAYOFF)
+    a.ins("LDX_zp", RAYOFF); a.ins16("LDA_absX", BOARD); a.ins("CMP_imm", EMPTY); a.br("BEQ", "cc_ui")
+    a.ins("AND_imm", 0x0F); a.ins("CMP_zp", PCOL); a.br("BNE", "cc_ui")
+    a.ins("LDA_zp", RAYOFF); a.ins("STA_zp", VO); a.jsr("collect_virus"); a.jmp("cc_r")
+    a.label("cc_ui")
+    a.ins("LDA_zp", CURCELL); a.ins("STA_zp", RAYOFF)                              # UP
+    a.label("cc_u")
+    a.ins("LDA_zp", RAYOFF); a.ins("CMP_imm", 8); a.br("BCC", "cc_di")
+    a.ins("LDA_zp", RAYOFF); a.ins("SEC"); a.ins("SBC_imm", 8); a.ins("STA_zp", RAYOFF)
+    a.ins("LDX_zp", RAYOFF); a.ins16("LDA_absX", BOARD); a.ins("CMP_imm", EMPTY); a.br("BEQ", "cc_di")
+    a.ins("AND_imm", 0x0F); a.ins("CMP_zp", PCOL); a.br("BNE", "cc_di")
+    a.ins("LDA_zp", RAYOFF); a.ins("STA_zp", VO); a.jsr("collect_virus"); a.jmp("cc_u")
+    a.label("cc_di")
+    a.ins("LDA_zp", CURCELL); a.ins("STA_zp", RAYOFF)                              # DOWN
+    a.label("cc_d")
+    a.ins("LDA_zp", RAYOFF); a.ins("CMP_imm", 120); a.br("BCS", "cc_done")
+    a.ins("LDA_zp", RAYOFF); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("STA_zp", RAYOFF)
+    a.ins("LDX_zp", RAYOFF); a.ins16("LDA_absX", BOARD); a.ins("CMP_imm", EMPTY); a.br("BEQ", "cc_done")
+    a.ins("AND_imm", 0x0F); a.ins("CMP_zp", PCOL); a.br("BNE", "cc_done")
+    a.ins("LDA_zp", RAYOFF); a.ins("STA_zp", VO); a.jsr("collect_virus"); a.jmp("cc_d")
+    a.label("cc_done")
     a.ins("RTS")
 
 
@@ -319,20 +345,24 @@ def emit_clear_visit(a):
 def emit_readiness_delta(a):
     """EV_RDY = BASE_RDY + sum_affected(run2_new - run2_old)."""
     a.label("readiness_delta")
-    # NEW pass (board = nb as-is)
-    a.ins("LDA_imm", 0); a.ins16("STA_abs", RSUM_LO); a.ins16("STA_abs", RSUM_HI)
+    # NEW pass: collect affected viruses (contiguous to placed cells) + sum new run2
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", RSUM_LO); a.ins16("STA_abs", RSUM_HI); a.ins("STA_zp", NV)
     a.jsr("clear_visit")
-    a.ins("LDA_zp", Z_OFFA); a.ins("STA_zp", CURCELL); a.ins("LDX_zp", Z_OFFA); a.ins16("LDA_absX", BOARD); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCOL); a.jsr("process_cell")
-    a.ins("LDA_zp", Z_OFFB); a.ins("STA_zp", CURCELL); a.ins("LDX_zp", Z_OFFB); a.ins16("LDA_absX", BOARD); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCOL); a.jsr("process_cell")
+    a.ins("LDA_zp", Z_OFFA); a.ins("STA_zp", CURCELL); a.ins("LDX_zp", Z_OFFA); a.ins16("LDA_absX", BOARD); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCOL); a.jsr("collect_cell")
+    a.ins("LDA_zp", Z_OFFB); a.ins("STA_zp", CURCELL); a.ins("LDX_zp", Z_OFFB); a.ins16("LDA_absX", BOARD); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCOL); a.jsr("collect_cell")
     a.ins16("LDA_abs", RSUM_LO); a.ins16("STA_abs", RNEW_LO); a.ins16("LDA_abs", RSUM_HI); a.ins16("STA_abs", RNEW_HI)
     # mask offa/offb -> board = b
     a.ins("LDX_zp", Z_OFFA); a.ins16("LDA_absX", BOARD); a.ins16("STA_abs", SAVA); a.ins("LDA_imm", EMPTY); a.ins16("STA_absX", BOARD)
     a.ins("LDX_zp", Z_OFFB); a.ins16("LDA_absX", BOARD); a.ins16("STA_abs", SAVB); a.ins("LDA_imm", EMPTY); a.ins16("STA_absX", BOARD)
-    # OLD pass
-    a.ins("LDA_imm", 0); a.ins16("STA_abs", RSUM_LO); a.ins16("STA_abs", RSUM_HI)
-    a.jsr("clear_visit")
-    a.ins("LDA_zp", Z_OFFA); a.ins("STA_zp", CURCELL); a.ins16("LDA_abs", SAVA); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCOL); a.jsr("process_cell")
-    a.ins("LDA_zp", Z_OFFB); a.ins("STA_zp", CURCELL); a.ins16("LDA_abs", SAVB); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCOL); a.jsr("process_cell")
+    # OLD pass: re-score exactly the collected viruses on the masked board
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", RSUM_LO); a.ins16("STA_abs", RSUM_HI); a.ins("STA_zp", NI)
+    a.label("rd_old")
+    a.ins("LDA_zp", NI); a.ins("CMP_zp", NV); a.br("BCS", "rd_old_done")
+    a.ins("LDX_zp", NI); a.ins16("LDA_absX", VLIST); a.ins("STA_zp", VO); a.jsr("vir_run2")
+    a.ins16("LDA_abs", RSUM_LO); a.ins("CLC"); a.ins16("ADC_abs", RUN2_LO); a.ins16("STA_abs", RSUM_LO)
+    a.ins16("LDA_abs", RSUM_HI); a.ins16("ADC_abs", RUN2_HI); a.ins16("STA_abs", RSUM_HI)
+    a.ins("INC_zp", NI); a.jmp("rd_old")
+    a.label("rd_old_done")
     a.ins16("LDA_abs", RSUM_LO); a.ins16("STA_abs", ROLD_LO); a.ins16("LDA_abs", RSUM_HI); a.ins16("STA_abs", ROLD_HI)
     # restore
     a.ins("LDX_zp", Z_OFFA); a.ins16("LDA_abs", SAVA); a.ins16("STA_absX", BOARD)
@@ -386,9 +416,12 @@ def emit_delta_eval(a):
     # EV_BUR = BASE_BUR + DT
     a.ins("LDA_zp", DT); a.ins("CLC"); a.ins16("ADC_abs", BASE_BUR_LO); a.ins16("STA_abs", EV_BUR_LO)
     a.ins16("LDA_abs", BASE_BUR_HI); a.ins("ADC_imm", 0); a.ins16("STA_abs", EV_BUR_HI)
-    # setup delta -> EV_SET
-    a.jsr("setup_delta")
-    a.ins16("LDA_abs", BASE_SET); a.ins("CLC"); a.ins("ADC_zp", DSET); a.ins16("STA_abs", EV_SET)
+    # setup delta -> EV_SET  (DROP_SETUP: setup actively hurts L11 clear-rate; omit the term)
+    if DROP_SETUP:
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", EV_SET)
+    else:
+        a.jsr("setup_delta")
+        a.ins16("LDA_abs", BASE_SET); a.ins("CLC"); a.ins("ADC_zp", DSET); a.ins16("STA_abs", EV_SET)
     # readiness delta -> EV_RDY
     a.jsr("readiness_delta")
     # virflag unchanged for non-clearing
@@ -400,7 +433,7 @@ def emit_delta_eval(a):
 def build():
     a = Asm6502(BASE)
     emit_base_info(a); emit_wq(a); emit_row_wins(a); emit_col_wins(a); emit_setup_delta(a)
-    emit_vir_run2(a); emit_try_virus(a); emit_process_cell(a); emit_clear_visit(a); emit_readiness_delta(a)
+    emit_vir_run2(a); emit_collect_virus(a); emit_collect_cell(a); emit_clear_visit(a); emit_readiness_delta(a)
     emit_delta_eval(a); emit_combine(a)
     return a, a.assemble()
 
