@@ -55,6 +55,7 @@ CURCELL, PCOL, VO, LNIDX, CUROFF, TVMASK = 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E
 RCOL, HRUN, VRUN, WOFF, RUN = 0x5F, 0x60, 0x61, 0x62, 0x63
 NV, RAYOFF, NI = 0x64, 0x65, 0x66
 VLIST = 0x61A0                       # up to 32 affected-virus offsets
+NV_SH = 0x61C1                       # RAM shadow of NV (persists across the DELTA phase split)
 
 DROP_SETUP = False        # set True for the production cart variant (drops the setup term)
 
@@ -344,30 +345,39 @@ def emit_clear_visit(a):
 
 def emit_readiness_delta(a):
     """EV_RDY = BASE_RDY + sum_affected(run2_new - run2_old)."""
-    a.label("readiness_delta")
-    # NEW pass: collect affected viruses (contiguous to placed cells) + sum new run2
+    a.label("readiness_delta")            # standalone (unit test): both passes back-to-back
+    a.jsr("readiness_new"); a.jsr("readiness_old"); a.ins("RTS")
+
+
+def emit_readiness_new(a):
+    """NEW pass: collect affected viruses (contiguous to placed cells) + sum new run2. Persists
+    VLIST/NV_SH/RNEW in RAM so the OLD pass can run in a later NMI frame."""
+    a.label("readiness_new")
     a.ins("LDA_imm", 0); a.ins16("STA_abs", RSUM_LO); a.ins16("STA_abs", RSUM_HI); a.ins("STA_zp", NV)
     a.jsr("clear_visit")
     a.ins("LDA_zp", Z_OFFA); a.ins("STA_zp", CURCELL); a.ins("LDX_zp", Z_OFFA); a.ins16("LDA_absX", BOARD); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCOL); a.jsr("collect_cell")
     a.ins("LDA_zp", Z_OFFB); a.ins("STA_zp", CURCELL); a.ins("LDX_zp", Z_OFFB); a.ins16("LDA_absX", BOARD); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCOL); a.jsr("collect_cell")
     a.ins16("LDA_abs", RSUM_LO); a.ins16("STA_abs", RNEW_LO); a.ins16("LDA_abs", RSUM_HI); a.ins16("STA_abs", RNEW_HI)
-    # mask offa/offb -> board = b
+    a.ins("LDA_zp", NV); a.ins16("STA_abs", NV_SH)
+    a.ins("RTS")
+
+
+def emit_readiness_old(a):
+    """OLD pass: re-score exactly the collected viruses on the masked board -> EV_RDY."""
+    a.label("readiness_old")
     a.ins("LDX_zp", Z_OFFA); a.ins16("LDA_absX", BOARD); a.ins16("STA_abs", SAVA); a.ins("LDA_imm", EMPTY); a.ins16("STA_absX", BOARD)
     a.ins("LDX_zp", Z_OFFB); a.ins16("LDA_absX", BOARD); a.ins16("STA_abs", SAVB); a.ins("LDA_imm", EMPTY); a.ins16("STA_absX", BOARD)
-    # OLD pass: re-score exactly the collected viruses on the masked board
     a.ins("LDA_imm", 0); a.ins16("STA_abs", RSUM_LO); a.ins16("STA_abs", RSUM_HI); a.ins("STA_zp", NI)
     a.label("rd_old")
-    a.ins("LDA_zp", NI); a.ins("CMP_zp", NV); a.br("BCS", "rd_old_done")
+    a.ins("LDA_zp", NI); a.ins16("CMP_abs", NV_SH); a.br("BCS", "rd_old_done")
     a.ins("LDX_zp", NI); a.ins16("LDA_absX", VLIST); a.ins("STA_zp", VO); a.jsr("vir_run2")
     a.ins16("LDA_abs", RSUM_LO); a.ins("CLC"); a.ins16("ADC_abs", RUN2_LO); a.ins16("STA_abs", RSUM_LO)
     a.ins16("LDA_abs", RSUM_HI); a.ins16("ADC_abs", RUN2_HI); a.ins16("STA_abs", RSUM_HI)
     a.ins("INC_zp", NI); a.jmp("rd_old")
     a.label("rd_old_done")
     a.ins16("LDA_abs", RSUM_LO); a.ins16("STA_abs", ROLD_LO); a.ins16("LDA_abs", RSUM_HI); a.ins16("STA_abs", ROLD_HI)
-    # restore
     a.ins("LDX_zp", Z_OFFA); a.ins16("LDA_abs", SAVA); a.ins16("STA_absX", BOARD)
     a.ins("LDX_zp", Z_OFFB); a.ins16("LDA_abs", SAVB); a.ins16("STA_absX", BOARD)
-    # EV_RDY = BASE_RDY + RNEW - ROLD
     a.ins16("LDA_abs", BASE_RDY_LO); a.ins("CLC"); a.ins16("ADC_abs", RNEW_LO); a.ins16("STA_abs", EV_RDY_LO)
     a.ins16("LDA_abs", BASE_RDY_HI); a.ins16("ADC_abs", RNEW_HI); a.ins16("STA_abs", EV_RDY_HI)
     a.ins16("LDA_abs", EV_RDY_LO); a.ins("SEC"); a.ins16("SBC_abs", ROLD_LO); a.ins16("STA_abs", EV_RDY_LO)
@@ -375,10 +385,10 @@ def emit_readiness_delta(a):
     a.ins("RTS")
 
 
-def emit_delta_eval(a):
-    """Full incremental leaf: easy deltas + setup + readiness + combine. BOARD=nb, offa/offb set,
-    base terms + base_info precomputed."""
-    a.label("delta_eval")
+def emit_delta_terms(a):
+    """First DELTA half: easy deltas (maxh/holes/toprisk/buried) + setup + readiness_new.
+    BOARD=nb, offa/offb set, base terms + base_info precomputed. Writes SH_* (zp) + EV_BUR/EV_SET."""
+    a.label("delta_terms")
     # toprisk = BASE_TR + (offa<24) + (offb<24)
     a.ins16("LDA_abs", BASE_TR); a.ins("STA_zp", SH_TOPRISK)
     a.ins("LDA_zp", Z_OFFA); a.ins("CMP_imm", 24); a.br("BCS", "de_a24"); a.ins("INC_zp", SH_TOPRISK)
@@ -422,10 +432,22 @@ def emit_delta_eval(a):
     else:
         a.jsr("setup_delta")
         a.ins16("LDA_abs", BASE_SET); a.ins("CLC"); a.ins("ADC_zp", DSET); a.ins16("STA_abs", EV_SET)
-    # readiness delta -> EV_RDY
-    a.jsr("readiness_delta")
-    # virflag unchanged for non-clearing
-    a.ins16("LDA_abs", BASE_VIRFLAG); a.ins16("STA_abs", EV_VIRFLAG)
+    a.jsr("readiness_new")               # heavy half 1 (collect + new run2); split point on the cart
+    a.ins("RTS")
+
+
+def emit_delta_eval(a):
+    """Standalone incremental leaf (unit test / py65): both halves back-to-back."""
+    a.label("delta_eval")
+    a.jsr("delta_terms"); a.jsr("delta_finish"); a.ins("RTS")
+
+
+def emit_delta_finish(a):
+    """Second DELTA half (own NMI frame on the cart): old readiness pass + combine.
+    Assumes SH_MAXH/HOLES/TOPRISK restored, EV_BUR/EV_SET/BASE_* still in RAM, offa/offb set."""
+    a.label("delta_finish")
+    a.jsr("readiness_old")               # heavy half 2 (old run2) -> EV_RDY
+    a.ins16("LDA_abs", BASE_VIRFLAG); a.ins16("STA_abs", EV_VIRFLAG)   # virflag unchanged (non-clearing)
     a.jsr("combine")
     a.ins("RTS")
 
@@ -433,8 +455,9 @@ def emit_delta_eval(a):
 def build():
     a = Asm6502(BASE)
     emit_base_info(a); emit_wq(a); emit_row_wins(a); emit_col_wins(a); emit_setup_delta(a)
-    emit_vir_run2(a); emit_collect_virus(a); emit_collect_cell(a); emit_clear_visit(a); emit_readiness_delta(a)
-    emit_delta_eval(a); emit_combine(a)
+    emit_vir_run2(a); emit_collect_virus(a); emit_collect_cell(a); emit_clear_visit(a)
+    emit_readiness_new(a); emit_readiness_old(a); emit_readiness_delta(a)
+    emit_delta_terms(a); emit_delta_finish(a); emit_delta_eval(a); emit_combine(a)
     return a, a.assemble()
 
 
