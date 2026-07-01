@@ -17,7 +17,7 @@ Start ROM: drmario_v28cs.nes (2-bank). Output: drmario_cart_d2.nes (4-bank).
 import sys
 sys.path.insert(0, "tests")
 import primitives
-import test_depth2, test_resumable
+import test_depth2, test_resumable, test_resumable_incr
 from patch_vs_cpu import Asm6502
 from expand_prg import expand
 
@@ -76,8 +76,12 @@ def build_wrapper(dispatch_cpu):
 
 
 def main():
-    # 1) resumable depth-2 slicer for unit-1, cart RAM config + ROM square tables
-    slicer, labels = test_resumable.build_resumable(
+    # 1) INCREMENTAL resumable depth-2 slicer for unit-1, cart RAM config + ROM square tables.
+    #    DROP_SETUP=True: setup term hurts L11 clear-rate (+4.6pp dropping it) and is ~33% slower;
+    #    base eval (shape+buried+readiness) computed once per first-ply + a cheap per-leaf DELTA.
+    #    Delta RAM lives at $6160-$61C1 (above mark/S_*/machine state; PRG-RAM is ours to $7FFF).
+    test_resumable_incr.DROP_SETUP = True
+    slicer, labels = test_resumable_incr.build_resumable_incr(
         base=UNIT1_CPU, cur=0x6000, work1=0x6080, live=0x0500, mark=0x6100,
         sq_lo=SQ_LO_ADDR, sq_hi=SQ_HI_ADDR)
     dispatch_cpu = UNIT1_CPU + labels["dispatch"]
