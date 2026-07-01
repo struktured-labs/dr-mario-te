@@ -60,6 +60,9 @@ def main():
         img[0x0500 + i] = EMPTY
     with open(os.path.join(HERE, "firmware_rom.hex"), "w") as f:
         f.write("\n".join("%02x" % x for x in img) + "\n")
+    # 16KB ROM window ($8000-$BFFF) for the MiSTer CoproDrMario module
+    with open(os.path.join(HERE, "copro_rom.hex"), "w") as f:
+        f.write("\n".join("%02x" % x for x in img[0x8000:0xC000]) + "\n")
     # host problems; expectations from the SAME machine in py65 (see machine_oracle)
     rng = random.Random(2026)
     cases = []

@@ -18,7 +18,7 @@ from test_depth2 import (S_CA, S_CB, S_NA, S_NB, S_BEST_C, S_BEST_O, CUR, WORK1,
 from test_resumable import ARMED
 
 SQ_LO_ROM, SQ_HI_ROM = 0xB000, 0xB011
-STUB = 0xC000
+STUB = 0xBF80          # inside the 16KB ROM window ($8000-$BFFF) of the MiSTer copro
 DONE = 0x61FF
 
 
