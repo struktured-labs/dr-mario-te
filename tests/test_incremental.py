@@ -11,7 +11,7 @@ Hard terms (setup, readiness) recompute local windows/runs -- separate file, or 
 import sys, os, random
 sys.path.insert(0, os.path.dirname(__file__))
 from test_shape_eval import golden_shape
-from test_eval_terms import g_buried, g_setup
+from test_eval_terms import g_buried, g_setup, g_readiness
 from nes_d2_golden import _landing, _first_occ
 
 EMPTY = 0xFF
@@ -116,6 +116,37 @@ def setup_delta(nb, offa, offb, base_setup):
     return base_setup + d
 
 
+def _vir_run2(b, o):
+    """Readiness of one virus: max(horiz run, vert run) squared."""
+    color = b[o] & 0x0F; r, c = o >> 3, o & 7
+    hr = 1; cc = c-1
+    while cc >= 0 and _col(b, r*COLS+cc) == color: hr += 1; cc -= 1
+    cc = c+1
+    while cc < COLS and _col(b, r*COLS+cc) == color: hr += 1; cc += 1
+    vr = 1; rr = r-1
+    while rr >= 0 and _col(b, rr*COLS+c) == color: vr += 1; rr -= 1
+    rr = r+1
+    while rr < ROWS and _col(b, rr*COLS+c) == color: vr += 1; rr += 1
+    return max(hr, vr) ** 2
+
+def readiness_delta(b, nb, offa, offb, base_rdy):
+    """Only viruses in the placed cells' row/col with the placed color can change their run.
+    Recompute those viruses' run^2 on old vs new; sum the deltas. (Non-contiguous ones delta 0.)"""
+    affected = set()
+    for off in (offa, offb):
+        r, c = off >> 3, off & 7; X = nb[off] & 0x0F
+        for cc in range(COLS):
+            o = r*COLS + cc
+            if _isvir(b, o) and (b[o] & 0x0F) == X: affected.add(o)
+        for rr in range(ROWS):
+            o = rr*COLS + c
+            if _isvir(b, o) and (b[o] & 0x0F) == X: affected.add(o)
+    d = 0
+    for o in affected:
+        d += _vir_run2(nb, o) - _vir_run2(b, o)
+    return base_rdy + d
+
+
 def _rand_settled(rng):
     b = [EMPTY] * 128
     for c in range(COLS):
@@ -133,6 +164,7 @@ def main():
         mh0, ho0, tr0 = golden_shape(b)
         bur0 = g_buried(b)
         set0 = g_setup(b)
+        rdy0 = g_readiness(b)
         base = (surf, vc, mh0, ho0, tr0, bur0)
         ta, tb = rng.randint(0, 2), rng.randint(0, 2)
         for orient2 in (0, 1):
@@ -146,14 +178,15 @@ def main():
                     continue                                   # clearing -> full path (rare)
                 nmh, nho, ntr, nbur = delta_easy(b, orient2, col, base)
                 nset = setup_delta(nb, offa, offb, set0)
-                emh, eho, etr = golden_shape(nb); ebur = g_buried(nb); eset = g_setup(nb)
+                nrdy = readiness_delta(b, nb, offa, offb, rdy0)
+                emh, eho, etr = golden_shape(nb); ebur = g_buried(nb); eset = g_setup(nb); erdy = g_readiness(nb)
                 tested += 1
-                if (nmh, nho, ntr, nbur, nset) != (emh, eho, etr, ebur, eset):
+                if (nmh, nho, ntr, nbur, nset, nrdy) != (emh, eho, etr, ebur, eset, erdy):
                     fails += 1
                     if fails <= 6:
-                        print(f"  MISMATCH o{orient2} c{col}: got ({nmh},{nho},{ntr},{nbur},set{nset}) "
-                              f"exp ({emh},{eho},{etr},{ebur},set{eset})")
-    print(f"incremental deltas (maxh/holes/toprisk/buried/SETUP): {tested-fails}/{tested} match")
+                        print(f"  MISMATCH o{orient2} c{col}: got (mh{nmh},ho{nho},tr{ntr},bur{nbur},set{nset},rdy{nrdy}) "
+                              f"exp (mh{emh},ho{eho},tr{etr},bur{ebur},set{eset},rdy{erdy})")
+    print(f"incremental deltas (maxh/holes/toprisk/buried/setup/READINESS -- ALL 6): {tested-fails}/{tested} match")
     sys.exit(1 if fails else 0)
 
 
