@@ -43,6 +43,10 @@ TGT_C2 = 0x6152
 TGT_O2 = 0x6153
 LASTY1 = 0x6154
 LASTY2 = 0x6155
+STKX1, STKY1, STK1 = 0x6156, 0x6157, 0x6158   # P1 stagnation: last x/y + stuck-frame count
+STKX2, STKY2, STK2 = 0x6159, 0x615A, 0x615B   # P2 stagnation
+# if a pill sits still this many frames (while not search-frozen), force DOWN to unstick
+STUCK_LIM = 90
 # copro window (mapper 100)
 W_BOARD, W_CA, W_GO, W_DONE, W_COL, W_OR = 0x5000, 0x5080, 0x5084, 0x5084, 0x5085, 0x5086
 # NES pad bits on $F5 (pressed-this-frame): A=$80 B=$40 Sel=$20 Start=$10 U=$08 D=$04 L=$02 R=$01
@@ -58,6 +62,10 @@ def build_main():
     a.ins16("LDA_abs", NAV_MAGIC); a.ins("CMP_imm", 0xA5); a.br("BEQ", "inited")
     a.ins("LDA_imm", 0xA5); a.ins16("STA_abs", NAV_MAGIC)
     a.ins("LDA_imm", 0); a.ins16("STA_abs", ARMED); a.ins16("STA_abs", NAV_T)
+    a.ins16("STA_abs", STK1); a.ins16("STA_abs", STK2)
+    a.ins("LDA_imm", 3)                                     # sane targets pre-first-publish
+    a.ins16("STA_abs", TGT_C1); a.ins16("STA_abs", TGT_O1)
+    a.ins16("STA_abs", TGT_C2); a.ins16("STA_abs", TGT_O2)
     a.label("inited")
     a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "not_play")
     a.ins("LDA_zp", 0x04); a.br("BNE", "go_ai"); a.ins("RTS")
@@ -123,6 +131,24 @@ def build_main():
     a.ins("LDA_imm", 1); a.ins16("STA_abs", PEND2)
     a.label("no_p2_new")
     a.ins16("LDA_abs", 0x0386); a.ins16("STA_abs", LASTY2)
+
+    # ---- stagnation detect: pill not moving while not search-frozen -> count up ----
+    def stagnate(px, py, sx, sy, cnt, freeze_which, tag):
+        a.ins16("LDA_abs", px); a.ins16("CMP_abs", sx); a.br("BNE", f"mvd_{tag}")
+        a.ins16("LDA_abs", py); a.ins16("CMP_abs", sy); a.br("BNE", f"mvd_{tag}")
+        # unchanged; only count when this player is NOT deliberately frozen by a search
+        a.ins16("LDA_abs", ARMED); a.br("BEQ", f"cnt_{tag}")
+        a.ins16("LDA_abs", WHICH); a.ins("CMP_imm", freeze_which); a.br("BEQ", f"sk_{tag}")
+        a.label(f"cnt_{tag}")
+        a.ins16("INC_abs", cnt)
+        a.jmp(f"sk_{tag}")
+        a.label(f"mvd_{tag}")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", cnt)
+        a.ins16("LDA_abs", px); a.ins16("STA_abs", sx)
+        a.ins16("LDA_abs", py); a.ins16("STA_abs", sy)
+        a.label(f"sk_{tag}")
+    stagnate(0x0305, 0x0306, STKX1, STKY1, STK1, 1, "s1")
+    stagnate(0x0385, 0x0386, STKX2, STKY2, STK2, 2, "s2")
 
     # ---- FPGA search state machine ----
     a.ins16("LDA_abs", ARMED); a.br("BEQ", "d_start")       # nothing in flight -> maybe start one
@@ -198,6 +224,9 @@ def build_main():
     a.ins16("LDA_abs", ARMED); a.br("BEQ", "act_p2")
     a.ins16("LDA_abs", WHICH); a.ins("CMP_imm", 2); a.br("BEQ", "act_p1")
     a.label("act_p2")
+    a.ins16("LDA_abs", STK2); a.ins("CMP_imm", STUCK_LIM); a.br("BCC", "act_p2_n")
+    a.ins("LDY_imm", 0x04); a.ins("STY_zp", 0xF6); a.jmp("act_p1")   # stuck: force drop
+    a.label("act_p2_n")
     a.ins16("LDA_abs", 0x03A5); a.ins16("CMP_abs", TGT_O2); a.br("BEQ", "mv_p2")
     a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)
     a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF6); a.jmp("act_p1")
@@ -212,6 +241,9 @@ def build_main():
     a.ins16("LDA_abs", ARMED); a.br("BEQ", "act_p1_go")
     a.ins16("LDA_abs", WHICH); a.ins("CMP_imm", 1); a.br("BEQ", "act_done")
     a.label("act_p1_go")
+    a.ins16("LDA_abs", STK1); a.ins("CMP_imm", STUCK_LIM); a.br("BCC", "act_p1_n")
+    a.ins("LDY_imm", 0x04); a.ins("STY_zp", 0xF5); a.jmp("act_done")  # stuck: force drop
+    a.label("act_p1_n")
     a.ins16("LDA_abs", 0x0325); a.ins16("CMP_abs", TGT_O1); a.br("BEQ", "mv_p1")
     a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF7)
     a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF5); a.jmp("act_done")
