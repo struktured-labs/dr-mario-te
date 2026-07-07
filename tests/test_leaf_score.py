@@ -14,11 +14,17 @@ from test_shape_eval import golden_shape
 BASE = 0x4000
 
 
+def golden_spawn(b):
+    # occupied cells in the pill entry zone: rows0-3 x cols3-4 (offsets col+8*row)
+    return sum(1 for off in (3, 4, 11, 12, 19, 20, 27, 28) if b[off] != 0xFF)
+
+
 def golden_leaf(b):
     if not any(t != 0xFF and (t & 0xF0) == 0xD0 for t in b):
         return 1, 0                      # virus-free -> WIN
     mh, ho, tr = golden_shape(b)
-    s = 5000 - 12*mh - 25*ho - 45*tr + 40*g_setup(b) - 30*g_buried(b) + 4*g_readiness(b)
+    s = (5000 - 12*mh - 25*ho - 90*tr + 40*g_setup(b) - 30*g_buried(b)
+         + 4*g_readiness(b) - 150*golden_spawn(b))
     return 0, s & 0xFFFF
 
 

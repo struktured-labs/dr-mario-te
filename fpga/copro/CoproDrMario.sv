@@ -61,26 +61,23 @@ reg [7:0] rom_q;
 always @(posedge clk) rom_q <= rom[AB[13:0]];
 
 // ------------------------------------------------------------------ 4KB TDP work RAM
-// Port A: coprocessor. Port B: host bridge. Intel-recommended TDP template, nothing else
-// in these blocks (required for M10K inference).
-reg [7:0] wram [0:4095];
-reg [7:0] ram_a_q, ram_b_q;
-
-always @(posedge clk) begin : port_a
-	if (WE && !cpu_rst && a_ram) begin
-		wram[a_addr] <= DO;
-		ram_a_q <= DO;
-	end else
-		ram_a_q <= wram[a_addr];
-end
-
-always @(posedge clk) begin : port_b
-	if (hb_we) begin
-		wram[hb_addr] <= hb_din;
-		ram_b_q <= hb_din;
-	end else
-		ram_b_q <= wram[hb_addr];
-end
+// Port A: coprocessor. Port B: host bridge. Explicit altsyncram via the core's dpram
+// wrapper (behavioral TDP templates fail inference in Quartus Std -> 33k regs -> no fit).
+// q_* = synchronous read, 1-cycle latency: exactly what Arlet's DI and the bridge expect.
+// Neither side reads an address it is writing in the same cycle, so RDW mode is moot.
+wire [7:0] ram_a_q, ram_b_q;
+dpram #(.widthad_a(12), .width_a(8)) wram (
+	.clock_a  (clk),
+	.address_a(a_addr),
+	.data_a   (DO),
+	.wren_a   (WE && !cpu_rst && a_ram),
+	.q_a      (ram_a_q),
+	.clock_b  (clk),
+	.address_b(hb_addr),
+	.data_b   (hb_din),
+	.wren_b   (hb_we),
+	.q_b      (ram_b_q)
+);
 
 // registered DI mux (data + selects all registered -> DI valid 1 cycle after AB, as Arlet expects)
 reg sel_ram_d, sel_rom_d, sel_vec_d, ab0_d;

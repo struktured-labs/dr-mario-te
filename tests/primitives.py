@@ -28,6 +28,7 @@ MARK = 0x0300          # 16-byte BIT-PACKED mark buffer (cell k -> bit k&7 of by
 RV_CELLS, RV_VIR = 0xE0, 0xE1         # dedicated: resolve grand totals (KEEP)
 PASS_CELLS, PASS_VIR = 0xD4, 0xD5     # pool P10/P11
 SH_MAXH, SH_HOLES, SH_TOPRISK = 0xD6, 0xD7, 0xD8   # dedicated (live shape->score)
+SH_SPAWN = 0xEB                                     # spawn-zone (rows0-3 x cols3-4) occupancy; survival term
 # find_clears temps (pool): _ROW/_COL share P0 (row pass fully before col pass)
 _ROW, _COL, _OFF, _RUN, _MCOL, _RSTART = 0xCA, 0xCA, 0xCB, 0xCE, 0xCF, 0xD0
 _STEP, _CNT, _FLCNT = 0xCC, 0xCD, 0xD1
@@ -517,7 +518,7 @@ def emit_has_virus(a):
 
 
 def emit_combine(a):
-    # SCO = 5000 -12*maxh -25*holes -45*toprisk +40*set -30*bur +4*rdy ; EV_WIN=1 if no virus
+    # SCO = 5000 -12*maxh -25*holes -90*toprisk -150*spawn +40*set -30*bur +4*rdy +12*vrdy ; EV_WIN=1 if no virus
     a.label("combine")
     a.ins16("LDA_abs", EV_VIRFLAG); a.br("BNE", "cm_go")
     a.ins("LDA_imm", 1); a.ins16("STA_abs", EV_WIN)
@@ -533,7 +534,16 @@ def emit_combine(a):
     def t16(lo, hi, k, sub):
         a.ins16("LDA_abs", lo); a.ins16("STA_abs", EV_MLO); a.ins16("LDA_abs", hi); a.ins16("STA_abs", EV_MHI)
         a.ins("LDX_imm", k); a.jsr("cm_mul"); a.jsr("cm_sub" if sub else "cm_add")
-    t8(SH_MAXH, 12, True); t8(SH_HOLES, 25, True); t8(SH_TOPRISK, 45, True)
+    # count spawn-zone occupancy (rows0-3 x cols3-4 = pill entry zone) FRESH from BOARD here,
+    # not in shape: every combine caller (full/delta/clearing) then gets it right, since the
+    # delta & clearing paths reach combine via zp shadows without re-running shape.
+    a.ins("LDA_imm", 0); a.ins("STA_zp", SH_SPAWN)
+    for _spoff in (3, 4, 11, 12, 19, 20, 27, 28):
+        a.ins16("LDA_abs", BOARD + _spoff); a.ins("CMP_imm", EMPTY); a.br("BEQ", f"cm_sp{_spoff}")
+        a.ins("INC_zp", SH_SPAWN)
+        a.label(f"cm_sp{_spoff}")
+    t8(SH_MAXH, 12, True); t8(SH_HOLES, 25, True); t8(SH_TOPRISK, 90, True)
+    t8(SH_SPAWN, 150, True)   # spawn-danger survival term (sim W_SPAWN=15 x10); toprisk raised 45->90 (sim WTR 4.5->9)
     a.ins16("LDA_abs", EV_SET); a.ins16("STA_abs", EV_MLO); a.ins("LDA_imm", 0); a.ins16("STA_abs", EV_MHI)
     a.ins("LDX_imm", 40); a.jsr("cm_mul"); a.jsr("cm_add")
     t16(EV_BUR_LO, EV_BUR_HI, 30, True)

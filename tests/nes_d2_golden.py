@@ -129,7 +129,8 @@ def leaf_shape_score(b):
     setup = g_setup(b)
     buried = g_buried(b)
     ready = g_readiness(b)
-    return (5000 - 12 * mh - 25 * ho - 45 * tr
+    spawn = sum(1 for off in (3, 4, 11, 12, 19, 20, 27, 28) if b[off] != 0xFF)
+    return (5000 - 12 * mh - 25 * ho - 90 * tr - 150 * spawn
             + 40 * setup - 30 * buried + 4 * ready)
 
 
