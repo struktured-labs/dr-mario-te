@@ -19,6 +19,8 @@ NOT Mesen-compatible (mapper 100) — MiSTer custom core only.
 import sys
 sys.path.insert(0, "tests")
 from patch_vs_cpu import Asm6502
+import patch_vs_cpu as _pv
+_pv.OPS.setdefault("ORA_abs", 0x0D)
 from expand_prg import expand
 
 V28CS = "drmario_v28cs.nes"
@@ -55,6 +57,10 @@ MATCH_ACTIVE = 0x6164   # set once play is dispatched; gates the full-clear STAG
 WDOGH1, WDOGH2 = 0x6165, 0x6166   # watchdog HIGH bytes: depth-3 searches run seconds, not frames
 WDOG_HI_LIM = 16                  # timeout = 16*256 = 4096 ticks ~= 68s (worst d3 first pill ~45s:
                                   # 832M instr x ~4.6 clk/instr @85.9MHz on the dense 48-virus board)
+# per-copro tie-break seeds (same eval, different near-tie resolution -> desyncs mirror play).
+# Derived once per match from NAV_T; ride the color uploads' HIGH nibbles (firmware masks &$0F
+# and extracts SEED=(CB&$F0)|(CA>>4); seed 0 = jitter off).
+SEED1, SEED2, TMPSEED = 0x6167, 0x6168, 0x6169
 VCOUNT_P1, VCOUNT_P2 = 0x0324, 0x03A4   # remaining virus counts (0 => that player cleared -> STAGE CLEAR)
 W2_BASE = 0x5200
 # if a pill sits still this many frames (while not search-frozen), force DOWN to unstick
@@ -78,6 +84,7 @@ def build_main(level=11, speed=1):
     a.ins16("STA_abs", WDOG); a.ins16("STA_abs", WRETRY)
     a.ins16("STA_abs", ARMED2); a.ins16("STA_abs", WDOG2); a.ins16("STA_abs", WRETRY2)
     a.ins16("STA_abs", WDOGH1); a.ins16("STA_abs", WDOGH2)
+    a.ins16("STA_abs", SEED1); a.ins16("STA_abs", SEED2)
     a.ins("LDA_imm", 3)                                     # sane targets pre-first-publish
     a.ins16("STA_abs", TGT_C1); a.ins16("STA_abs", TGT_O1)
     a.ins16("STA_abs", TGT_C2); a.ins16("STA_abs", TGT_O2)
@@ -99,6 +106,10 @@ def build_main(level=11, speed=1):
     a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "not_play")
     a.ins("LDA_zp", 0x04); a.br("BNE", "go_ai"); a.ins("RTS")
     a.label("go_ai")
+    a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_on")  # first play frame of this match:
+    a.ins16("LDA_abs", NAV_T); a.ins("ORA_imm", 0x01); a.ins16("STA_abs", SEED1)   # root seed
+    a.ins("EOR_imm", 0xA4); a.ins16("STA_abs", SEED2)       # bit0 kept -> both odd, distinct
+    a.label("ga_on")
     a.ins("LDA_imm", 1); a.ins16("STA_abs", MATCH_ACTIVE)   # play started -> arm full-clear detect
     a.jmp("dispatch")
     a.label("not_play")
@@ -188,7 +199,7 @@ def build_main(level=11, speed=1):
 
     # ---- DUAL-COPRO search: each player drives its OWN coprocessor; both run in parallel.
     # No time-sharing => no WHICH / fair-serving / pending-wait. handle() emitted per player.
-    def handle(idx, wbase, board_src, colsrcs, armed, wdog, wretry, pend, delay, tgt_c, tgt_o, wdogh):
+    def handle(idx, wbase, board_src, colsrcs, armed, wdog, wretry, pend, delay, tgt_c, tgt_o, wdogh, seedsrc):
         wgo, wdone, wcol, wor = wbase + 0x84, wbase + 0x84, wbase + 0x85, wbase + 0x86
         L = f"h{idx}"
         a.ins16("LDA_abs", delay); a.br("BEQ", f"{L}_dz"); a.ins16("DEC_abs", delay)   # settle timer
@@ -210,27 +221,37 @@ def build_main(level=11, speed=1):
         a.label(f"{L}_search")           # 16-bit watchdog: d3 searches take seconds; abandon ~30s, re-queue once
         a.ins16("INC_abs", wdog); a.br("BNE", f"{L}_wl"); a.ins16("INC_abs", wdogh)
         a.label(f"{L}_wl")
-        a.ins16("LDA_abs", wdogh); a.ins("CMP_imm", WDOG_HI_LIM); a.br("BCC", f"{L}_done")
+        a.ins16("LDA_abs", wdogh); a.ins("CMP_imm", WDOG_HI_LIM); a.br("BCS", f"{L}_wto"); a.jmp(f"{L}_done"); a.label(f"{L}_wto")
         a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
-        a.ins16("LDA_abs", wretry); a.br("BNE", f"{L}_done")
+        a.ins16("LDA_abs", wretry); a.br("BEQ", f"{L}_rt"); a.jmp(f"{L}_done"); a.label(f"{L}_rt")
         a.ins("LDA_imm", 1); a.ins16("STA_abs", wretry); a.ins16("STA_abs", pend)
         a.jmp(f"{L}_done")
         a.label(f"{L}_start")            # start a search: upload board+colors to THIS copro, GO
-        a.ins16("LDA_abs", pend); a.br("BEQ", f"{L}_done")
-        a.ins16("LDA_abs", delay); a.br("BNE", f"{L}_done")
+        a.ins16("LDA_abs", pend); a.br("BNE", f"{L}_st1"); a.jmp(f"{L}_done"); a.label(f"{L}_st1")
+        a.ins16("LDA_abs", delay); a.br("BEQ", f"{L}_st2"); a.jmp(f"{L}_done"); a.label(f"{L}_st2")
         a.ins("LDX_imm", 0)
         a.label(f"{L}_cp")
         a.ins16("LDA_absX", board_src); a.ins16("STA_absX", wbase)
         a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", f"{L}_cp")
         for k, src in enumerate(colsrcs):
-            a.ins16("LDA_abs", src); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", wbase + 0x80 + k)
+            if k == 0:      # cA carries seed low nibble (<<4)
+                a.ins16("LDA_abs", seedsrc)
+                a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+                a.ins16("STA_abs", TMPSEED)
+                a.ins16("LDA_abs", src); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED)
+            elif k == 1:    # cB carries seed high nibble
+                a.ins16("LDA_abs", seedsrc); a.ins("AND_imm", 0xF0); a.ins16("STA_abs", TMPSEED)
+                a.ins16("LDA_abs", src); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED)
+            else:
+                a.ins16("LDA_abs", src); a.ins("AND_imm", 0x0F)
+            a.ins16("STA_abs", wbase + 0x80 + k)
         a.ins16("STA_abs", wgo)          # GO: write to +$84 pulses copro reset, clears DONE
         a.ins("LDA_imm", 1); a.ins16("STA_abs", armed)
         a.ins("LDA_imm", 0); a.ins16("STA_abs", pend); a.ins16("STA_abs", wretry)
         a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
         a.label(f"{L}_done")
-    handle(1, 0x5000, 0x0400, [0x0301, 0x0302, 0x031A, 0x031B], ARMED, WDOG, WRETRY, PEND1, DELAY1, TGT_C1, TGT_O1, WDOGH1)
-    handle(2, W2_BASE, 0x0500, [0x0381, 0x0382, 0x039A, 0x039B], ARMED2, WDOG2, WRETRY2, PEND2, DELAY2, TGT_C2, TGT_O2, WDOGH2)
+    handle(1, 0x5000, 0x0400, [0x0301, 0x0302, 0x031A, 0x031B], ARMED, WDOG, WRETRY, PEND1, DELAY1, TGT_C1, TGT_O1, WDOGH1, SEED1)
+    handle(2, W2_BASE, 0x0500, [0x0381, 0x0382, 0x039A, 0x039B], ARMED2, WDOG2, WRETRY2, PEND2, DELAY2, TGT_C2, TGT_O2, WDOGH2, SEED2)
     a.jmp("act")
 
     # freeze QUEUED players too: a pill whose search hasn't run yet must not fall unguided

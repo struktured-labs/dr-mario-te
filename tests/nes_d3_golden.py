@@ -126,9 +126,19 @@ def _placements4(b, cA, cB):
     return out
 
 
-def decide_d3(board, pA, pB, nA, nB, topk1=8, topk2=8, third=None):
+def _jitter(seed, o4, col):
+    """Seeded tie-break jitter, bit-exact vs the 6502: t = seed ^ ((o4<<3)|col);
+    j = (t ^ (t>>3)) & 3. seed==0 -> no jitter (exact deterministic search)."""
+    if seed == 0:
+        return 0
+    t = (seed ^ ((o4 << 3) | col)) & 0xFF
+    return (t ^ (t >> 3)) & 3
+
+
+def decide_d3(board, pA, pB, nA, nB, topk1=8, topk2=8, third=None, seed=0):
     """Returns (col, orient4) exactly as the 6502 emit_search_d3 does (same enumeration
-    order, same tie-breaks: strictly-greater keep-first)."""
+    order, same tie-breaks: strictly-greater keep-first). seed!=0 adds the per-candidate
+    +0..3 val1 jitter (per-copro tie-break divergence; same strategy)."""
     pills3 = third if third is not None else [(x, y) for x in range(3) for y in range(3)]
     first = []
     for (o4, col, offa, offb, ta, tb) in _placements4(board, pA, pB):
@@ -175,6 +185,7 @@ def decide_d3(board, pA, pB, nA, nB, topk1=8, topk2=8, third=None):
                     if best2 is None or v2 > best2:
                         best2 = v2
                 val = imm1 + best2
+        val += _jitter(seed, o4, col)
         if best_val is None or val > best_val:
             best_val = val; best_key = (col, o4)
     return best_key

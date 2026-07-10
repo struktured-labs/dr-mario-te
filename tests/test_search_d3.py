@@ -17,6 +17,8 @@ patch_vs_cpu.OPS.setdefault("ROR_zp", 0x66)
 patch_vs_cpu.OPS.setdefault("ROL_zp", 0x26)
 patch_vs_cpu.OPS.setdefault("LSR_zp", 0x46)
 patch_vs_cpu.OPS.setdefault("ASL_zp", 0x06)
+patch_vs_cpu.OPS.setdefault("ORA_zp", 0x05)
+patch_vs_cpu.OPS.setdefault("EOR_zp", 0x45)
 from py65_harness import Cpu
 from test_depth2 import (_rand_board, _emit_calc_imm, _emit_copy, emit_landplace,
                          S_CA, S_CB, S_NA, S_NB, CI_LO, CI_HI, PO, PC, PCA, PCB)
@@ -41,7 +43,8 @@ TK1_KL, TK1_KH, TK1_O, TK1_C = 0x0A00, 0x0A20, 0x0A40, 0x0A60
 # silently truncated by ins()). $40-$65 is free: primitives scratch is $CA-$F1, stack $01xx.
 (D_C1, D_O1, D_I1L, D_I1H, D_BVL, D_BVH, D_BC, D_BO, D_C2, D_O2, D_C3, D_O3, D_TKC,
  D_B2L, D_B2H, D_KL, D_KH, D_I2L, D_I2H, D_MKL, D_MKH, D_MI, D_J, D_PI, D_SL, D_SM, D_SH,
- D_EBL, D_EBH, D_EA, D_V3L, D_V3H, D_EL, D_EH, D_V1L, D_V1H, D_J1, D_T1C) = range(0x40, 0x66)
+ D_EBL, D_EBH, D_EA, D_V3L, D_V3H, D_EL, D_EH, D_V1L, D_V1H, D_J1, D_T1C,
+ D_SEED, D_JT) = range(0x40, 0x68)
 
 THIRD = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1)]   # 9 minus (2,2), /8=shift
 RESOLVE_LBL = "resolve_capped"   # TARGETED (deploy config, isolation 12/12); "resolve_capped_full" for full
@@ -91,13 +94,17 @@ def _emit_search_d3(a):
     a.label("search")
     a.ins("LDA_imm", 0xFF); a.ins("STA_zp", D_BO)
     a.ins("LDA_imm", 0x00); a.ins("STA_zp", D_BVL); a.ins("LDA_imm", 0x80); a.ins("STA_zp", D_BVH)   # best_val=-32768
+    # tie-break seed rides the color bytes' HIGH nibbles: SEED = (S_CB&$F0)|(S_CA>>4); 0=off
+    a.ins16("LDA_abs", S_CA); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("STA_zp", D_SEED)
+    a.ins16("LDA_abs", S_CB); a.ins("AND_imm", 0xF0); a.ins("ORA_zp", D_SEED); a.ins("STA_zp", D_SEED)
     # ---- Pass 0: rank ALL ply1 placements by imm1+leaf into TK1 (topk1=8 select below) ----
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_T1C); a.ins("STA_zp", D_O1)
     a.label("p0_o"); a.ins("LDA_imm", 0); a.ins("STA_zp", D_C1)
     a.label("p0_c")
     a.jsr("cp_live_cur")
     a.ins("LDA_zp", D_O1); a.ins("STA_zp", PO); a.ins("LDA_zp", D_C1); a.ins("STA_zp", PC)
-    a.ins16("LDA_abs", S_CA); a.ins("STA_zp", PCA); a.ins16("LDA_abs", S_CB); a.ins("STA_zp", PCB)
+    a.ins16("LDA_abs", S_CA); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCA)
+    a.ins16("LDA_abs", S_CB); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCB)
     a.jsr("land_place"); a.ins("CMP_imm", 1); a.br("BEQ", "p0_leg"); a.jmp("p0_next")
     a.label("p0_leg")
     a.jsr(RESOLVE_LBL); a.jsr("calc_imm")
@@ -140,7 +147,8 @@ def _emit_search_d3(a):
     # replay ply1 (legal by construction): b1 in CUR, imm1 recomputed
     a.jsr("cp_live_cur")
     a.ins("LDA_zp", D_O1); a.ins("STA_zp", PO); a.ins("LDA_zp", D_C1); a.ins("STA_zp", PC)
-    a.ins16("LDA_abs", S_CA); a.ins("STA_zp", PCA); a.ins16("LDA_abs", S_CB); a.ins("STA_zp", PCB)
+    a.ins16("LDA_abs", S_CA); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCA)
+    a.ins16("LDA_abs", S_CB); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCB)
     a.jsr("land_place"); a.jsr(RESOLVE_LBL); a.jsr("calc_imm")
     a.ins16("LDA_abs", CI_LO); a.ins("STA_zp", D_I1L); a.ins16("LDA_abs", CI_HI); a.ins("STA_zp", D_I1H)
     a.jsr("has_virus"); a.ins16("LDA_abs", P.EV_VIRFLAG); a.br("BNE", "o_nw")
@@ -156,7 +164,8 @@ def _emit_search_d3(a):
     a.label("i_inner")
     a.jsr("cp_work1_cur")
     a.ins("LDA_zp", D_O2); a.ins("STA_zp", PO); a.ins("LDA_zp", D_C2); a.ins("STA_zp", PC)
-    a.ins16("LDA_abs", S_NA); a.ins("STA_zp", PCA); a.ins16("LDA_abs", S_NB); a.ins("STA_zp", PCB)
+    a.ins16("LDA_abs", S_NA); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCA)
+    a.ins16("LDA_abs", S_NB); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCB)
     a.jsr("land_place"); a.ins("CMP_imm", 1); a.br("BEQ", "i_leg"); a.jmp("i_next")
     a.label("i_leg")
     a.jsr(RESOLVE_LBL); a.jsr("calc_imm")
@@ -216,7 +225,8 @@ def _emit_search_d3(a):
     # replay ply2: cp WORK1->CUR, land, resolve -> b2
     a.jsr("cp_work1_cur")
     a.ins("LDA_zp", D_O2); a.ins("STA_zp", PO); a.ins("LDA_zp", D_C2); a.ins("STA_zp", PC)
-    a.ins16("LDA_abs", S_NA); a.ins("STA_zp", PCA); a.ins16("LDA_abs", S_NB); a.ins("STA_zp", PCB)
+    a.ins16("LDA_abs", S_NA); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCA)
+    a.ins16("LDA_abs", S_NB); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCB)
     a.jsr("land_place"); a.jsr(RESOLVE_LBL)
     # val2: if virus-free -> imm2+WIN ; else imm2 + expectimax
     a.jsr("has_virus"); a.ins16("LDA_abs", P.EV_VIRFLAG); a.br("BNE", "k_ex")
@@ -239,6 +249,14 @@ def _emit_search_d3(a):
     a.ins("CLC"); a.ins("LDA_zp", D_I1L); a.ins("ADC_zp", D_B2L); a.ins("STA_zp", D_V1L)
     a.ins("LDA_zp", D_I1H); a.ins("ADC_zp", D_B2H); a.ins("STA_zp", D_V1H)
     a.label("o_cand")
+    # seeded tie-break: val1 += (t ^ (t>>3)) & 3, t = seed ^ ((o1<<3)|c1); seed==0 -> off
+    a.ins("LDA_zp", D_SEED); a.br("BEQ", "o_nj")
+    a.ins("LDA_zp", D_O1); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ORA_zp", D_C1)
+    a.ins("EOR_zp", D_SEED); a.ins("STA_zp", D_JT)
+    a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("EOR_zp", D_JT); a.ins("AND_imm", 0x03)
+    a.ins("CLC"); a.ins("ADC_zp", D_V1L); a.ins("STA_zp", D_V1L)
+    a.ins("LDA_zp", D_V1H); a.ins("ADC_imm", 0); a.ins("STA_zp", D_V1H)
+    a.label("o_nj")
     # if val1 (D_V1) > best_val (D_BV): best_val=val1, best_c/o=c1/o1
     a.ins("LDA_zp", D_BVL); a.ins("SEC"); a.ins("SBC_zp", D_V1L); a.ins("LDA_zp", D_BVH); a.ins("SBC_zp", D_V1H)
     a.br("BVC", "o_s1"); a.ins("EOR_imm", 0x80); a.label("o_s1"); a.br("BPL", "s_next")
@@ -340,14 +358,18 @@ def main():
     for t in range(N):
         fb = make_fewlegal(rng, FaithfulBoard)
         ca, cb = rng.randint(1, 3), rng.randint(1, 3); na, nb_ = rng.randint(1, 3), rng.randint(1, 3)
+        seed = 0 if t < N // 2 else rng.randint(1, 255)   # half regression, half seeded
         nes = faithful_to_nes(fb)
-        gk = G3.decide_d3(list(nes), ca - 1, cb - 1, na - 1, nb_ - 1, topk1=8, topk2=8, third=THIRD_T)
+        gk = G3.decide_d3(list(nes), ca - 1, cb - 1, na - 1, nb_ - 1, topk1=8, topk2=8,
+                          third=THIRD_T, seed=seed)
         cpu = Cpu(); cpu.load(0x8000, code); cpu.set_board(nes)
         for i in range(17):
             cpu.mem[sq_a := (P.SQ_LO_ADDR + i)] = sq[i] & 0xFF; cpu.mem[P.SQ_HI_ADDR + i] = sq[i] >> 8
         for i in range(NPILLS):
             cpu.mem[PILLA + i] = pa[i]; cpu.mem[PILLB + i] = pb[i]
-        cpu.mem[S_CA] = ca - 1; cpu.mem[S_CB] = cb - 1; cpu.mem[S_NA] = na - 1; cpu.mem[S_NB] = nb_ - 1
+        cpu.mem[S_CA] = (ca - 1) | ((seed & 0x0F) << 4)   # seed rides the color high nibbles
+        cpu.mem[S_CB] = (cb - 1) | (seed & 0xF0)
+        cpu.mem[S_NA] = na - 1; cpu.mem[S_NB] = nb_ - 1
         cpu.call(0x8000 + labels["search"], max_steps=500_000_000)
         ek = (cpu.mem[D_BC], cpu.mem[D_BO]) if cpu.mem[D_BO] != 0xFF else None
         if ek == gk:
