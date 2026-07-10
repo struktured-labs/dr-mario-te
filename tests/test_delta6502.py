@@ -679,7 +679,7 @@ def py_leaf(b, nb, orient2, col, offa, offb):
     if virfree:
         return 0, mh, ho, tr, bur, st, rd, vr
     spawn = sum(1 for off in (3, 4, 11, 12, 19, 20, 27, 28) if nb[off] != 0xFF)  # combine counts on nb
-    sco = 5000 - 12*mh - 25*ho - 90*tr - 150*spawn + 40*st - 30*bur + 4*rd + 12*vr
+    sco = 5000 - 12*mh - 20*ho - 90*tr - 150*spawn + 60*st - 30*bur + 12*rd + 12*vr
     return sco, mh, ho, tr, bur, st, rd, vr
 
 

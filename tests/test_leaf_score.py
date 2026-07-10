@@ -23,8 +23,8 @@ def golden_leaf(b):
     if not any(t != 0xFF and (t & 0xF0) == 0xD0 for t in b):
         return 1, 0                      # virus-free -> WIN
     mh, ho, tr = golden_shape(b)
-    s = (5000 - 12*mh - 25*ho - 90*tr + 40*g_setup(b) - 30*g_buried(b)
-         + 4*g_readiness(b) - 150*golden_spawn(b))
+    s = (5000 - 12*mh - 20*ho - 90*tr + 60*g_setup(b) - 30*g_buried(b)
+         + 12*g_readiness(b) - 150*golden_spawn(b))
     return 0, s & 0xFFFF
 
 

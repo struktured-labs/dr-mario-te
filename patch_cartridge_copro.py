@@ -51,6 +51,10 @@ TURN = 0x6160    # (unused in dual-copro) fair round-robin serving
 # DUAL COPRO: each player has its OWN coprocessor + search state -> no time-sharing.
 # copro1 window $5000-$51FF serves P1; copro2 window $5200-$53FF serves P2.
 ARMED2, WDOG2, WRETRY2 = 0x6161, 0x6162, 0x6163   # P2's independent search state (ARMED/WDOG/WRETRY = P1's)
+MATCH_ACTIVE = 0x6164   # set once play is dispatched; gates the full-clear STAGE-CLEAR auto-advance
+WDOGH1, WDOGH2 = 0x6165, 0x6166   # watchdog HIGH bytes: depth-3 searches run seconds, not frames
+WDOG_HI_LIM = 7                   # timeout = 7*256 = 1792 ticks ~= 30s (worst d3 decision ~3-4s)
+VCOUNT_P1, VCOUNT_P2 = 0x0324, 0x03A4   # remaining virus counts (0 => that player cleared -> STAGE CLEAR)
 W2_BASE = 0x5200
 # if a pill sits still this many frames (while not search-frozen), force DOWN to unstick
 STUCK_LIM = 60        # 1s -- continuous holds again; if truly stuck kick fast to unpark
@@ -69,17 +73,33 @@ def build_main(level=11, speed=1):
     a.ins16("LDA_abs", NAV_MAGIC); a.ins("CMP_imm", 0xA5); a.br("BEQ", "inited")
     a.ins("LDA_imm", 0xA5); a.ins16("STA_abs", NAV_MAGIC)
     a.ins("LDA_imm", 0); a.ins16("STA_abs", ARMED); a.ins16("STA_abs", NAV_T)
-    a.ins16("STA_abs", STK1); a.ins16("STA_abs", STK2)
+    a.ins16("STA_abs", STK1); a.ins16("STA_abs", STK2); a.ins16("STA_abs", MATCH_ACTIVE)
     a.ins16("STA_abs", WDOG); a.ins16("STA_abs", WRETRY)
+    a.ins16("STA_abs", ARMED2); a.ins16("STA_abs", WDOG2); a.ins16("STA_abs", WRETRY2)
+    a.ins16("STA_abs", WDOGH1); a.ins16("STA_abs", WDOGH2)
     a.ins("LDA_imm", 3)                                     # sane targets pre-first-publish
     a.ins16("STA_abs", TGT_C1); a.ins16("STA_abs", TGT_O1)
     a.ins16("STA_abs", TGT_C2); a.ins16("STA_abs", TGT_O2)
     a.ins("LDA_imm", 2); a.ins16("STA_abs", TURN)          # fair-serve round-robin seed
     a.label("inited")
     a.ins16("INC_abs", NAV_T)                               # tick every hook call (autonav only ticked in menus)
+    # ---- full-clear auto-advance (mode-independent): a player's virus count ($0324/$03A4) hit 0
+    # => STAGE CLEAR screen. Inject START (press window) to advance it so the demo LOOPS instead
+    # of halting. Gated by MATCH_ACTIVE (set once play dispatched) so boot-init count==0 can't
+    # false-trigger (which would wreck the boot state machine). ----
+    a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BEQ", "fc_no")
+    a.ins16("LDA_abs", VCOUNT_P1); a.br("BEQ", "fc_clear")
+    a.ins16("LDA_abs", VCOUNT_P2); a.br("BNE", "fc_no")
+    a.label("fc_clear")                                     # full clear -> own the frame (skip normal dispatch)
+    a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 4); a.br("BCS", "fc_ret")
+    a.ins("LDA_imm", B_START); a.ins("STA_zp", 0xF5)        # inject START to dismiss STAGE CLEAR
+    a.label("fc_ret"); a.ins("RTS")
+    a.label("fc_no")
     a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "not_play")
     a.ins("LDA_zp", 0x04); a.br("BNE", "go_ai"); a.ins("RTS")
-    a.label("go_ai"); a.jmp("dispatch")
+    a.label("go_ai")
+    a.ins("LDA_imm", 1); a.ins16("STA_abs", MATCH_ACTIVE)   # play started -> arm full-clear detect
+    a.jmp("dispatch")
     a.label("not_play")
     a.ins("CMP_imm", 0x08); a.br("BNE", "menus")
     a.ins("RTS")                                            # intro/init: hands off
@@ -167,7 +187,7 @@ def build_main(level=11, speed=1):
 
     # ---- DUAL-COPRO search: each player drives its OWN coprocessor; both run in parallel.
     # No time-sharing => no WHICH / fair-serving / pending-wait. handle() emitted per player.
-    def handle(idx, wbase, board_src, colsrcs, armed, wdog, wretry, pend, delay, tgt_c, tgt_o):
+    def handle(idx, wbase, board_src, colsrcs, armed, wdog, wretry, pend, delay, tgt_c, tgt_o, wdogh):
         wgo, wdone, wcol, wor = wbase + 0x84, wbase + 0x84, wbase + 0x85, wbase + 0x86
         L = f"h{idx}"
         a.ins16("LDA_abs", delay); a.br("BEQ", f"{L}_dz"); a.ins16("DEC_abs", delay)   # settle timer
@@ -184,11 +204,13 @@ def build_main(level=11, speed=1):
         a.label(f"{L}_m2"); a.ins("CMP_imm", 2); a.br("BNE", f"{L}_m3"); a.ins("LDA_imm", 0); a.jmp(f"{L}_pst")
         a.label(f"{L}_m3"); a.ins("LDA_imm", 2)
         a.label(f"{L}_pst"); a.ins16("STA_abs", tgt_o)
-        a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
         a.jmp(f"{L}_done")
-        a.label(f"{L}_search")           # watchdog: abandon if wedged ~200 ticks, re-queue once
-        a.ins16("INC_abs", wdog); a.ins16("LDA_abs", wdog); a.ins("CMP_imm", 200); a.br("BCC", f"{L}_done")
-        a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog)
+        a.label(f"{L}_search")           # 16-bit watchdog: d3 searches take seconds; abandon ~30s, re-queue once
+        a.ins16("INC_abs", wdog); a.br("BNE", f"{L}_wl"); a.ins16("INC_abs", wdogh)
+        a.label(f"{L}_wl")
+        a.ins16("LDA_abs", wdogh); a.ins("CMP_imm", WDOG_HI_LIM); a.br("BCC", f"{L}_done")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
         a.ins16("LDA_abs", wretry); a.br("BNE", f"{L}_done")
         a.ins("LDA_imm", 1); a.ins16("STA_abs", wretry); a.ins16("STA_abs", pend)
         a.jmp(f"{L}_done")
@@ -204,9 +226,10 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", wgo)          # GO: write to +$84 pulses copro reset, clears DONE
         a.ins("LDA_imm", 1); a.ins16("STA_abs", armed)
         a.ins("LDA_imm", 0); a.ins16("STA_abs", pend); a.ins16("STA_abs", wretry)
+        a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
         a.label(f"{L}_done")
-    handle(1, 0x5000, 0x0400, [0x0301, 0x0302, 0x031A, 0x031B], ARMED, WDOG, WRETRY, PEND1, DELAY1, TGT_C1, TGT_O1)
-    handle(2, W2_BASE, 0x0500, [0x0381, 0x0382, 0x039A, 0x039B], ARMED2, WDOG2, WRETRY2, PEND2, DELAY2, TGT_C2, TGT_O2)
+    handle(1, 0x5000, 0x0400, [0x0301, 0x0302, 0x031A, 0x031B], ARMED, WDOG, WRETRY, PEND1, DELAY1, TGT_C1, TGT_O1, WDOGH1)
+    handle(2, W2_BASE, 0x0500, [0x0381, 0x0382, 0x039A, 0x039B], ARMED2, WDOG2, WRETRY2, PEND2, DELAY2, TGT_C2, TGT_O2, WDOGH2)
     a.jmp("act")
 
     # freeze QUEUED players too: a pill whose search hasn't run yet must not fall unguided

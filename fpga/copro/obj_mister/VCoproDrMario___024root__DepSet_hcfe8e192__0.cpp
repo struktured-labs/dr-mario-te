@@ -101,48 +101,42 @@ VL_INLINE_OPT void VCoproDrMario___024root___nba_sequent__TOP__0(VCoproDrMario__
     __Vtableidx7 = 0;
     CData/*4:0*/ __Vdly__CoproDrMario__DOT__rst_cnt;
     __Vdly__CoproDrMario__DOT__rst_cnt = 0;
-    CData/*7:0*/ __VdlyVal__CoproDrMario__DOT__wram__v0;
-    __VdlyVal__CoproDrMario__DOT__wram__v0 = 0;
-    SData/*11:0*/ __VdlyDim0__CoproDrMario__DOT__wram__v0;
-    __VdlyDim0__CoproDrMario__DOT__wram__v0 = 0;
-    CData/*0:0*/ __VdlySet__CoproDrMario__DOT__wram__v0;
-    __VdlySet__CoproDrMario__DOT__wram__v0 = 0;
-    CData/*7:0*/ __VdlyVal__CoproDrMario__DOT__wram__v1;
-    __VdlyVal__CoproDrMario__DOT__wram__v1 = 0;
-    SData/*11:0*/ __VdlyDim0__CoproDrMario__DOT__wram__v1;
-    __VdlyDim0__CoproDrMario__DOT__wram__v1 = 0;
-    CData/*0:0*/ __VdlySet__CoproDrMario__DOT__wram__v1;
-    __VdlySet__CoproDrMario__DOT__wram__v1 = 0;
     CData/*7:0*/ __VdlyVal__CoproDrMario__DOT__cpu6502__DOT__AXYS__v0;
     __VdlyVal__CoproDrMario__DOT__cpu6502__DOT__AXYS__v0 = 0;
     CData/*1:0*/ __VdlyDim0__CoproDrMario__DOT__cpu6502__DOT__AXYS__v0;
     __VdlyDim0__CoproDrMario__DOT__cpu6502__DOT__AXYS__v0 = 0;
     CData/*0:0*/ __VdlySet__CoproDrMario__DOT__cpu6502__DOT__AXYS__v0;
     __VdlySet__CoproDrMario__DOT__cpu6502__DOT__AXYS__v0 = 0;
+    CData/*7:0*/ __VdlyVal__CoproDrMario__DOT__wram__DOT__mem__v0;
+    __VdlyVal__CoproDrMario__DOT__wram__DOT__mem__v0 = 0;
+    SData/*11:0*/ __VdlyDim0__CoproDrMario__DOT__wram__DOT__mem__v0;
+    __VdlyDim0__CoproDrMario__DOT__wram__DOT__mem__v0 = 0;
+    CData/*0:0*/ __VdlySet__CoproDrMario__DOT__wram__DOT__mem__v0;
+    __VdlySet__CoproDrMario__DOT__wram__DOT__mem__v0 = 0;
+    CData/*7:0*/ __VdlyVal__CoproDrMario__DOT__wram__DOT__mem__v1;
+    __VdlyVal__CoproDrMario__DOT__wram__DOT__mem__v1 = 0;
+    SData/*11:0*/ __VdlyDim0__CoproDrMario__DOT__wram__DOT__mem__v1;
+    __VdlyDim0__CoproDrMario__DOT__wram__DOT__mem__v1 = 0;
+    CData/*0:0*/ __VdlySet__CoproDrMario__DOT__wram__DOT__mem__v1;
+    __VdlySet__CoproDrMario__DOT__wram__DOT__mem__v1 = 0;
     // Body
-    __VdlySet__CoproDrMario__DOT__wram__v0 = 0U;
+    __VdlySet__CoproDrMario__DOT__wram__DOT__mem__v0 = 0U;
     __Vdly__CoproDrMario__DOT__rst_cnt = vlSelfRef.CoproDrMario__DOT__rst_cnt;
-    __VdlySet__CoproDrMario__DOT__wram__v1 = 0U;
+    __VdlySet__CoproDrMario__DOT__wram__DOT__mem__v1 = 0U;
     __VdlySet__CoproDrMario__DOT__cpu6502__DOT__AXYS__v0 = 0U;
-    if ((((IData)(vlSelfRef.CoproDrMario__DOT__WE) 
-          & (~ (IData)(vlSelfRef.CoproDrMario__DOT__cpu_rst))) 
-         & (IData)(vlSelfRef.CoproDrMario__DOT__a_ram))) {
-        __VdlyVal__CoproDrMario__DOT__wram__v0 = vlSelfRef.CoproDrMario__DOT__DO;
-        __VdlyDim0__CoproDrMario__DOT__wram__v0 = vlSelfRef.CoproDrMario__DOT__a_addr;
-        __VdlySet__CoproDrMario__DOT__wram__v0 = 1U;
-        vlSelfRef.CoproDrMario__DOT__ram_a_q = vlSelfRef.CoproDrMario__DOT__DO;
-    } else {
-        vlSelfRef.CoproDrMario__DOT__ram_a_q = vlSelfRef.CoproDrMario__DOT__wram
-            [vlSelfRef.CoproDrMario__DOT__a_addr];
+    if (vlSelfRef.CoproDrMario__DOT____Vcellinp__wram__wren_a) {
+        __VdlyVal__CoproDrMario__DOT__wram__DOT__mem__v0 
+            = vlSelfRef.CoproDrMario__DOT__DO;
+        __VdlyDim0__CoproDrMario__DOT__wram__DOT__mem__v0 
+            = vlSelfRef.CoproDrMario__DOT__a_addr;
+        __VdlySet__CoproDrMario__DOT__wram__DOT__mem__v0 = 1U;
     }
     if (vlSelfRef.CoproDrMario__DOT__hb_we) {
-        __VdlyVal__CoproDrMario__DOT__wram__v1 = vlSelfRef.CoproDrMario__DOT__hb_din;
-        __VdlyDim0__CoproDrMario__DOT__wram__v1 = vlSelfRef.CoproDrMario__DOT__hb_addr;
-        __VdlySet__CoproDrMario__DOT__wram__v1 = 1U;
-        vlSelfRef.CoproDrMario__DOT__ram_b_q = vlSelfRef.CoproDrMario__DOT__hb_din;
-    } else {
-        vlSelfRef.CoproDrMario__DOT__ram_b_q = vlSelfRef.CoproDrMario__DOT__wram
-            [vlSelfRef.CoproDrMario__DOT__hb_addr];
+        __VdlyVal__CoproDrMario__DOT__wram__DOT__mem__v1 
+            = vlSelfRef.CoproDrMario__DOT__hb_din;
+        __VdlyDim0__CoproDrMario__DOT__wram__DOT__mem__v1 
+            = vlSelfRef.CoproDrMario__DOT__hb_addr;
+        __VdlySet__CoproDrMario__DOT__wram__DOT__mem__v1 = 1U;
     }
     if (((IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__NMI_edge) 
          & (0xbU == (IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__state)))) {
@@ -177,10 +171,14 @@ VL_INLINE_OPT void VCoproDrMario___024root___nba_sequent__TOP__0(VCoproDrMario__
     vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__cond_code 
         = (7U & ((IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__IR) 
                  >> 5U));
+    vlSelfRef.CoproDrMario__DOT__ram_b_q = vlSelfRef.CoproDrMario__DOT__wram__DOT__mem
+        [vlSelfRef.CoproDrMario__DOT__hb_addr];
     vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__PC = 
         (0xffffU & ((IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__PC_temp) 
                     + (IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__PC_inc)));
     vlSelfRef.CoproDrMario__DOT__sel_ram_d = vlSelfRef.CoproDrMario__DOT__a_ram;
+    vlSelfRef.CoproDrMario__DOT__ram_a_q = vlSelfRef.CoproDrMario__DOT__wram__DOT__mem
+        [vlSelfRef.CoproDrMario__DOT__a_addr];
     vlSelfRef.CoproDrMario__DOT__sel_rom_d = (2U == 
                                               (3U & 
                                                ((IData)(vlSelfRef.CoproDrMario__DOT__AB) 
@@ -361,13 +359,112 @@ VL_INLINE_OPT void VCoproDrMario___024root___nba_sequent__TOP__0(VCoproDrMario__
         vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__AXYS[__VdlyDim0__CoproDrMario__DOT__cpu6502__DOT__AXYS__v0] 
             = __VdlyVal__CoproDrMario__DOT__cpu6502__DOT__AXYS__v0;
     }
-    if (__VdlySet__CoproDrMario__DOT__wram__v0) {
-        vlSelfRef.CoproDrMario__DOT__wram[__VdlyDim0__CoproDrMario__DOT__wram__v0] 
-            = __VdlyVal__CoproDrMario__DOT__wram__v0;
+    if (__VdlySet__CoproDrMario__DOT__wram__DOT__mem__v0) {
+        vlSelfRef.CoproDrMario__DOT__wram__DOT__mem[__VdlyDim0__CoproDrMario__DOT__wram__DOT__mem__v0] 
+            = __VdlyVal__CoproDrMario__DOT__wram__DOT__mem__v0;
     }
-    if (__VdlySet__CoproDrMario__DOT__wram__v1) {
-        vlSelfRef.CoproDrMario__DOT__wram[__VdlyDim0__CoproDrMario__DOT__wram__v1] 
-            = __VdlyVal__CoproDrMario__DOT__wram__v1;
+    if (__VdlySet__CoproDrMario__DOT__wram__DOT__mem__v1) {
+        vlSelfRef.CoproDrMario__DOT__wram__DOT__mem[__VdlyDim0__CoproDrMario__DOT__wram__DOT__mem__v1] 
+            = __VdlyVal__CoproDrMario__DOT__wram__DOT__mem__v1;
+    }
+    vlSelfRef.CoproDrMario__DOT__hb_we = 0U;
+    if ((((IData)(vlSelfRef.ce) & (IData)(vlSelfRef.prg_write)) 
+         & (IData)(vlSelfRef.copro_sel))) {
+        if ((0x84U == (0x1ffU & (IData)(vlSelfRef.prg_ain)))) {
+            vlSelfRef.CoproDrMario__DOT__parked = 0U;
+            vlSelfRef.CoproDrMario__DOT__hb_din = 0U;
+            vlSelfRef.CoproDrMario__DOT__hb_addr = 0x8ffU;
+        } else {
+            vlSelfRef.CoproDrMario__DOT__hb_din = vlSelfRef.prg_din;
+            __Vfunc_CoproDrMario__DOT__xlate__0__a 
+                = (0x1ffU & (IData)(vlSelfRef.prg_ain));
+            __Vfunc_CoproDrMario__DOT__xlate__0__Vfuncout 
+                = ((IData)((0U == (0x180U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))))
+                    ? (0x500U | (0x7fU & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a)))
+                    : ((IData)((0x80U == (0x180U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))))
+                        ? ((0x40U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
+                            ? 0x8feU : ((0x20U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
+                                         ? 0x8feU : 
+                                        ((0x10U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
+                                          ? 0x8feU : 
+                                         ((8U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
+                                           ? 0x8feU
+                                           : ((4U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
+                                               ? ((2U 
+                                                   & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
+                                                   ? 
+                                                  ((1U 
+                                                    & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
+                                                    ? 0x8feU
+                                                    : 0x835U)
+                                                   : 
+                                                  ((1U 
+                                                    & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
+                                                    ? 0x834U
+                                                    : 0x8ffU))
+                                               : ((2U 
+                                                   & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
+                                                   ? 
+                                                  ((1U 
+                                                    & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
+                                                    ? 0x827U
+                                                    : 0x826U)
+                                                   : 
+                                                  ((1U 
+                                                    & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
+                                                    ? 0x825U
+                                                    : 0x824U)))))))
+                        : 0x8feU));
+            vlSelfRef.CoproDrMario__DOT__hb_addr = __Vfunc_CoproDrMario__DOT__xlate__0__Vfuncout;
+        }
+        vlSelfRef.CoproDrMario__DOT__hb_we = 1U;
+    } else {
+        __Vfunc_CoproDrMario__DOT__xlate__1__a = (0x1ffU 
+                                                  & (IData)(vlSelfRef.prg_ain));
+        __Vfunc_CoproDrMario__DOT__xlate__1__Vfuncout 
+            = ((IData)((0U == (0x180U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))))
+                ? (0x500U | (0x7fU & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a)))
+                : ((IData)((0x80U == (0x180U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))))
+                    ? ((0x40U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
+                        ? 0x8feU : ((0x20U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
+                                     ? 0x8feU : ((0x10U 
+                                                  & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
+                                                  ? 0x8feU
+                                                  : 
+                                                 ((8U 
+                                                   & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
+                                                   ? 0x8feU
+                                                   : 
+                                                  ((4U 
+                                                    & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
+                                                    ? 
+                                                   ((2U 
+                                                     & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
+                                                     ? 
+                                                    ((1U 
+                                                      & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
+                                                      ? 0x8feU
+                                                      : 0x835U)
+                                                     : 
+                                                    ((1U 
+                                                      & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
+                                                      ? 0x834U
+                                                      : 0x8ffU))
+                                                    : 
+                                                   ((2U 
+                                                     & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
+                                                     ? 
+                                                    ((1U 
+                                                      & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
+                                                      ? 0x827U
+                                                      : 0x826U)
+                                                     : 
+                                                    ((1U 
+                                                      & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
+                                                      ? 0x825U
+                                                      : 0x824U)))))))
+                    : 0x8feU));
+        vlSelfRef.CoproDrMario__DOT__hb_addr = __Vfunc_CoproDrMario__DOT__xlate__1__Vfuncout;
     }
     vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__HC = vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__ALU__DOT__temp_HC;
     vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__adj_bcd 
@@ -482,105 +579,6 @@ VL_INLINE_OPT void VCoproDrMario___024root___nba_sequent__TOP__0(VCoproDrMario__
             = (0x61U == (0x63U & (IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__IR)));
     }
     vlSelfRef.prg_dout = vlSelfRef.CoproDrMario__DOT__ram_b_q;
-    vlSelfRef.CoproDrMario__DOT__hb_we = 0U;
-    if ((((IData)(vlSelfRef.ce) & (IData)(vlSelfRef.prg_write)) 
-         & (IData)(vlSelfRef.copro_sel))) {
-        if ((0x84U == (0x1ffU & (IData)(vlSelfRef.prg_ain)))) {
-            vlSelfRef.CoproDrMario__DOT__parked = 0U;
-            vlSelfRef.CoproDrMario__DOT__hb_din = 0U;
-            vlSelfRef.CoproDrMario__DOT__hb_addr = 0x8ffU;
-        } else {
-            vlSelfRef.CoproDrMario__DOT__hb_din = vlSelfRef.prg_din;
-            __Vfunc_CoproDrMario__DOT__xlate__0__a 
-                = (0x1ffU & (IData)(vlSelfRef.prg_ain));
-            __Vfunc_CoproDrMario__DOT__xlate__0__Vfuncout 
-                = ((IData)((0U == (0x180U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))))
-                    ? (0x500U | (0x7fU & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a)))
-                    : ((IData)((0x80U == (0x180U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))))
-                        ? ((0x40U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
-                            ? 0x8feU : ((0x20U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
-                                         ? 0x8feU : 
-                                        ((0x10U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
-                                          ? 0x8feU : 
-                                         ((8U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
-                                           ? 0x8feU
-                                           : ((4U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
-                                               ? ((2U 
-                                                   & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
-                                                   ? 
-                                                  ((1U 
-                                                    & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
-                                                    ? 0x8feU
-                                                    : 0x835U)
-                                                   : 
-                                                  ((1U 
-                                                    & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
-                                                    ? 0x834U
-                                                    : 0x8ffU))
-                                               : ((2U 
-                                                   & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
-                                                   ? 
-                                                  ((1U 
-                                                    & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
-                                                    ? 0x827U
-                                                    : 0x826U)
-                                                   : 
-                                                  ((1U 
-                                                    & (IData)(__Vfunc_CoproDrMario__DOT__xlate__0__a))
-                                                    ? 0x825U
-                                                    : 0x824U)))))))
-                        : 0x8feU));
-            vlSelfRef.CoproDrMario__DOT__hb_addr = __Vfunc_CoproDrMario__DOT__xlate__0__Vfuncout;
-        }
-        vlSelfRef.CoproDrMario__DOT__hb_we = 1U;
-    } else {
-        __Vfunc_CoproDrMario__DOT__xlate__1__a = (0x1ffU 
-                                                  & (IData)(vlSelfRef.prg_ain));
-        __Vfunc_CoproDrMario__DOT__xlate__1__Vfuncout 
-            = ((IData)((0U == (0x180U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))))
-                ? (0x500U | (0x7fU & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a)))
-                : ((IData)((0x80U == (0x180U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))))
-                    ? ((0x40U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
-                        ? 0x8feU : ((0x20U & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
-                                     ? 0x8feU : ((0x10U 
-                                                  & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
-                                                  ? 0x8feU
-                                                  : 
-                                                 ((8U 
-                                                   & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
-                                                   ? 0x8feU
-                                                   : 
-                                                  ((4U 
-                                                    & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
-                                                    ? 
-                                                   ((2U 
-                                                     & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
-                                                     ? 
-                                                    ((1U 
-                                                      & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
-                                                      ? 0x8feU
-                                                      : 0x835U)
-                                                     : 
-                                                    ((1U 
-                                                      & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
-                                                      ? 0x834U
-                                                      : 0x8ffU))
-                                                    : 
-                                                   ((2U 
-                                                     & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
-                                                     ? 
-                                                    ((1U 
-                                                      & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
-                                                      ? 0x827U
-                                                      : 0x826U)
-                                                     : 
-                                                    ((1U 
-                                                      & (IData)(__Vfunc_CoproDrMario__DOT__xlate__1__a))
-                                                      ? 0x825U
-                                                      : 0x824U)))))))
-                    : 0x8feU));
-        vlSelfRef.CoproDrMario__DOT__hb_addr = __Vfunc_CoproDrMario__DOT__xlate__1__Vfuncout;
-    }
     vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__AN = 
         (1U & ((IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__ALU__DOT__temp) 
                >> 7U));
@@ -993,9 +991,9 @@ VL_INLINE_OPT void VCoproDrMario___024root___nba_sequent__TOP__3(VCoproDrMario__
         = vlSelfRef.__Vdly__CoproDrMario__DOT__cpu6502__DOT__state;
 }
 
-extern const VlUnpacked<CData/*0:0*/, 128> VCoproDrMario__ConstPool__TABLE_h3046dbb4_0;
 extern const VlUnpacked<CData/*0:0*/, 256> VCoproDrMario__ConstPool__TABLE_hf9320a1f_0;
 extern const VlUnpacked<CData/*0:0*/, 512> VCoproDrMario__ConstPool__TABLE_hafeef89d_0;
+extern const VlUnpacked<CData/*0:0*/, 128> VCoproDrMario__ConstPool__TABLE_h3046dbb4_0;
 extern const VlUnpacked<CData/*0:0*/, 8192> VCoproDrMario__ConstPool__TABLE_hc377d77d_0;
 extern const VlUnpacked<CData/*1:0*/, 2048> VCoproDrMario__ConstPool__TABLE_h8ffa5a2b_0;
 extern const VlUnpacked<CData/*3:0*/, 2048> VCoproDrMario__ConstPool__TABLE_h00ffe440_0;
@@ -1006,6 +1004,8 @@ VL_INLINE_OPT void VCoproDrMario___024root___nba_comb__TOP__0(VCoproDrMario___02
     VL_DEBUG_IF(VL_DBG_MSGF("+    VCoproDrMario___024root___nba_comb__TOP__0\n"); );
     auto& vlSelfRef = std::ref(*vlSelf).get();
     // Init
+    CData/*0:0*/ CoproDrMario__DOT__WE;
+    CoproDrMario__DOT__WE = 0;
     CData/*7:0*/ CoproDrMario__DOT__cpu6502__DOT__BI;
     CoproDrMario__DOT__cpu6502__DOT__BI = 0;
     CData/*0:0*/ CoproDrMario__DOT__cpu6502__DOT__CI;
@@ -1035,10 +1035,6 @@ VL_INLINE_OPT void VCoproDrMario___024root___nba_comb__TOP__0(VCoproDrMario___02
     SData/*12:0*/ __Vtableidx6;
     __Vtableidx6 = 0;
     // Body
-    __Vtableidx2 = (((IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__store) 
-                     << 6U) | (IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__state));
-    vlSelfRef.CoproDrMario__DOT__WE = VCoproDrMario__ConstPool__TABLE_h3046dbb4_0
-        [__Vtableidx2];
     __Vtableidx3 = (((IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__plp) 
                      << 7U) | (((IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__load_reg) 
                                 << 6U) | (IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__state)));
@@ -1052,6 +1048,10 @@ VL_INLINE_OPT void VCoproDrMario___024root___nba_comb__TOP__0(VCoproDrMario___02
     vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__PC_inc 
         = VCoproDrMario__ConstPool__TABLE_hafeef89d_0
         [__Vtableidx1];
+    __Vtableidx2 = (((IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__store) 
+                     << 6U) | (IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__state));
+    CoproDrMario__DOT__WE = VCoproDrMario__ConstPool__TABLE_h3046dbb4_0
+        [__Vtableidx2];
     vlSelfRef.CoproDrMario__DOT__cpu6502__DOT____Vcellinp__ALU__BCD 
         = ((IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__adc_bcd) 
            & (0xdU == (IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__state)));
@@ -1535,13 +1535,6 @@ VL_INLINE_OPT void VCoproDrMario___024root___nba_comb__TOP__0(VCoproDrMario___02
         }
         vlSelfRef.CoproDrMario__DOT__DO = (0xffU & (IData)(CoproDrMario__DOT__cpu6502__DOT__regfile));
     }
-    vlSelfRef.CoproDrMario__DOT__a_ram = ((0U == (0xfU 
-                                                  & ((IData)(vlSelfRef.CoproDrMario__DOT__AB) 
-                                                     >> 0xcU))) 
-                                          | (0x61U 
-                                             == (0xffU 
-                                                 & ((IData)(vlSelfRef.CoproDrMario__DOT__AB) 
-                                                    >> 8U))));
     vlSelfRef.CoproDrMario__DOT__a_addr = (0xfffU & 
                                            ((0x61U 
                                              == (0xffU 
@@ -1551,6 +1544,13 @@ VL_INLINE_OPT void VCoproDrMario___024root___nba_comb__TOP__0(VCoproDrMario___02
                                                 | (0xffU 
                                                    & (IData)(vlSelfRef.CoproDrMario__DOT__AB)))
                                              : (IData)(vlSelfRef.CoproDrMario__DOT__AB)));
+    vlSelfRef.CoproDrMario__DOT__a_ram = ((0U == (0xfU 
+                                                  & ((IData)(vlSelfRef.CoproDrMario__DOT__AB) 
+                                                     >> 0xcU))) 
+                                          | (0x61U 
+                                             == (0xffU 
+                                                 & ((IData)(vlSelfRef.CoproDrMario__DOT__AB) 
+                                                    >> 8U))));
     CoproDrMario__DOT__cpu6502__DOT__ALU__DOT__temp_logic 
         = ((2U & (IData)(CoproDrMario__DOT__cpu6502__DOT__alu_op))
             ? ((1U & (IData)(CoproDrMario__DOT__cpu6502__DOT__alu_op))
@@ -1570,6 +1570,9 @@ VL_INLINE_OPT void VCoproDrMario___024root___nba_comb__TOP__0(VCoproDrMario___02
                                                 & ((IData)(vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__AI) 
                                                    >> 1U))));
     }
+    vlSelfRef.CoproDrMario__DOT____Vcellinp__wram__wren_a 
+        = ((IData)(CoproDrMario__DOT__WE) & ((~ (IData)(vlSelfRef.CoproDrMario__DOT__cpu_rst)) 
+                                             & (IData)(vlSelfRef.CoproDrMario__DOT__a_ram)));
     vlSelfRef.CoproDrMario__DOT__cpu6502__DOT__ALU__DOT__temp_BI 
         = (0xffU & ((8U & (IData)(CoproDrMario__DOT__cpu6502__DOT__alu_op))
                      ? ((4U & (IData)(CoproDrMario__DOT__cpu6502__DOT__alu_op))

@@ -33,7 +33,7 @@ def decide_d2_4(board, cA, cB, nA, nB):
     for (orient, col, offa, offb, ta, tb) in _legal_placements(board, cA, cB):
         b1 = _place(board, offa, offb, ta, tb)
         cells1, vir1 = _cap1(b1)
-        imm1 = 180 * vir1 + 10 * cells1
+        imm1 = 250 * vir1 + 10 * cells1
         if _virus_count(b1) == 0:
             val = imm1 + WIN
         else:
@@ -41,7 +41,7 @@ def decide_d2_4(board, cA, cB, nA, nB):
             for (_o2, _c2, oa2, ob2, ta2, tb2) in _legal_placements(b1, nA, nB):
                 b2 = _place(b1, oa2, ob2, ta2, tb2)
                 cells2, vir2 = _cap1(b2)
-                leaf = 180 * vir2 + 10 * cells2 + leaf_shape_score(b2)
+                leaf = 250 * vir2 + 10 * cells2 + leaf_shape_score(b2)
                 if best2 is None or leaf > best2:
                     best2 = leaf
             val = imm1 + (best2 if best2 is not None else leaf_shape_score(b1))

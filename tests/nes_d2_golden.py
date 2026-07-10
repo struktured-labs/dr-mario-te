@@ -130,8 +130,8 @@ def leaf_shape_score(b):
     buried = g_buried(b)
     ready = g_readiness(b)
     spawn = sum(1 for off in (3, 4, 11, 12, 19, 20, 27, 28) if b[off] != 0xFF)
-    return (5000 - 12 * mh - 25 * ho - 90 * tr - 150 * spawn
-            + 40 * setup - 30 * buried + 4 * ready)
+    return (5000 - 12 * mh - 20 * ho - 90 * tr - 150 * spawn
+            + 60 * setup - 30 * buried + 12 * ready)
 
 
 # ------------------------------------------------------------------- decision
@@ -144,7 +144,7 @@ def decide_d2(board128, pillA, pillB, nextA, nextB):
     for (orient, col, offa, offb, ta, tb) in _legal_placements(board128, pillA, pillB):
         b1 = _place(board128, offa, offb, ta, tb)
         cells1, vir1 = _cap1(b1)                     # mutates b1 -> resolved B1
-        imm1 = 180 * vir1 + 10 * cells1
+        imm1 = 250 * vir1 + 10 * cells1
         if _virus_count(b1) == 0:
             val = imm1 + WIN                         # already won after ply 1
         else:
@@ -152,7 +152,7 @@ def decide_d2(board128, pillA, pillB, nextA, nextB):
             for (_o2, _c2, oa2, ob2, ta2, tb2) in _legal_placements(b1, nextA, nextB):
                 b2 = _place(b1, oa2, ob2, ta2, tb2)
                 cells2, vir2 = _cap1(b2)
-                leaf = 180 * vir2 + 10 * cells2 + leaf_shape_score(b2)
+                leaf = 250 * vir2 + 10 * cells2 + leaf_shape_score(b2)
                 if best2 is None or leaf > best2:
                     best2 = leaf
             val = imm1 + (best2 if best2 is not None else leaf_shape_score(b1))

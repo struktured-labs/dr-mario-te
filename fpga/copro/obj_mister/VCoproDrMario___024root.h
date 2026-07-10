@@ -26,7 +26,6 @@ class alignas(VL_CACHE_LINE_BYTES) VCoproDrMario___024root final : public Verila
         VL_OUT8(prg_dout,7,0);
         VL_OUT8(copro_sel,0,0);
         CData/*7:0*/ CoproDrMario__DOT__DO;
-        CData/*0:0*/ CoproDrMario__DOT__WE;
         CData/*4:0*/ CoproDrMario__DOT__rst_cnt;
         CData/*0:0*/ CoproDrMario__DOT__parked;
         CData/*7:0*/ CoproDrMario__DOT__DI;
@@ -34,6 +33,7 @@ class alignas(VL_CACHE_LINE_BYTES) VCoproDrMario___024root final : public Verila
         CData/*7:0*/ CoproDrMario__DOT__rom_q;
         CData/*7:0*/ CoproDrMario__DOT__ram_a_q;
         CData/*7:0*/ CoproDrMario__DOT__ram_b_q;
+        CData/*0:0*/ CoproDrMario__DOT____Vcellinp__wram__wren_a;
         CData/*0:0*/ CoproDrMario__DOT__sel_ram_d;
         CData/*0:0*/ CoproDrMario__DOT__sel_rom_d;
         CData/*0:0*/ CoproDrMario__DOT__sel_vec_d;
@@ -115,8 +115,8 @@ class alignas(VL_CACHE_LINE_BYTES) VCoproDrMario___024root final : public Verila
         SData/*8:0*/ CoproDrMario__DOT__cpu6502__DOT__ALU__DOT__temp;
         IData/*31:0*/ __VactIterCount;
         VlUnpacked<CData/*7:0*/, 16384> CoproDrMario__DOT__rom;
-        VlUnpacked<CData/*7:0*/, 4096> CoproDrMario__DOT__wram;
         VlUnpacked<CData/*7:0*/, 4> CoproDrMario__DOT__cpu6502__DOT__AXYS;
+        VlUnpacked<CData/*7:0*/, 4096> CoproDrMario__DOT__wram__DOT__mem;
     };
     VlTriggerVec<1> __VstlTriggered;
     VlTriggerVec<1> __VicoTriggered;
