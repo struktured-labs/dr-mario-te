@@ -14,18 +14,39 @@
 module LeafEval(
 	input             clk,
 	input             rst,
-	input             wr,
+	input             wr,          // board-window write into slot `wslot`
 	input       [6:0] waddr,
 	input       [2:0] wdata,
-	input             start,
+	input       [1:0] wslot,       // 0=CUR 1=LIVE 2=WORK1 3=WORK2
+	input             start,       // legacy: LEAF on CUR
+	input       [3:0] cmd,         // 1=LEAF 2=CUR<-slot(a_sl) 3=slot(a_sl)<-CUR
+	                               // 4=NODE(land+place+resolve+leaf) 5=LAND_RESOLVE (no leaf)
+	input             cmd_go,
+	input       [1:0] a_sl,        // slot argument for copies
+	input       [1:0] a_o4,        // orient4 (0..3)
+	input       [2:0] a_col,       // column 0..7
+	input       [1:0] a_ca,        // colors, ENGINE encoding 1..3 handled by wrapper (pass nibble+1)
+	input       [1:0] a_cb,
 	output reg        done,
 	output reg [15:0] sco,
-	output reg        win
+	output reg        win,
+	output reg        legal,
+	output reg  [5:0] rv_cells,
+	output reg  [3:0] rv_vir,
+	output reg [15:0] imm
 );
 
-// board register file: 128 x {vir, color[1:0]}
-reg [2:0] bcell [0:127];
-always @(posedge clk) if (wr) bcell[waddr] <= wdata;
+// board register files: CUR (evaluated/mutated) + 3 snapshot slots
+reg [2:0] bcell [0:127] /*verilator public_flat_rd*/;
+reg [2:0] s_live [0:127], s_w1 [0:127], s_w2 [0:127];
+always @(posedge clk) if (wr) begin
+	case (wslot)
+		2'd0: bcell[waddr]  <= wdata;
+		2'd1: s_live[waddr] <= wdata;
+		2'd2: s_w1[waddr]   <= wdata;
+		2'd3: s_w2[waddr]   <= wdata;
+	endcase
+end
 
 wire [1:0] col_of  [0:127];
 wire       occ_of  [0:127];
@@ -45,8 +66,25 @@ endfunction
 // ------------------------------------------------------------------ FSM
 localparam S_IDLE=0, S_COLWALK=1, S_VNEXT=2, S_HRUN_L=3, S_HSPAN_L=4, S_HRUN_R=5,
            S_HSPAN_R=6, S_VRUN_U=7, S_VSPAN_U=8, S_VRUN_D=9, S_VSPAN_D=10,
-           S_POLROW=11, S_POLCOL=12, S_VFIN=13, S_SETUP_H=14, S_SETUP_V=15, S_DONE=16;
+           S_POLROW=11, S_POLCOL=12, S_VFIN=13, S_SETUP_H=14, S_SETUP_V=15, S_DONE=16,
+           S_COPY=17, S_FO1=18, S_FO2=19, S_PLACE=20, S_SCAN=21, S_EOL=22,
+           S_APPLY=23, S_GRAV=24, S_RESDONE=25;
 reg [4:0] st;
+reg       node_leaf;           // CMD_NODE: run the leaf after resolve
+// land/resolve working regs
+reg [4:0]   fo1, fo2, fwp;     // first-occ results + walk pointer
+reg [6:0]   off_a, off_b;      // placed cell offsets
+reg [127:0] markb;             // targeted-clear mark bits
+reg [1:0]   li;                // scan line index 0..3
+reg [7:0]   soff;              // scan offset
+reg [3:0]   sstep;             // scan step (1 or 8)
+reg [4:0]   scnt;              // cells left in line
+reg [4:0]   srun;              // current run length
+reg [1:0]   smcol;             // current run color (0 = none)
+reg [7:0]   srstart;           // run start offset
+reg [6:0]   fwp2;              // apply sweep pointer 0..127
+reg [4:0]   gdest;             // gravity dest row
+reg         anyclear;
 
 reg  [3:0] wc, wr_;            // column/row walk indices
 reg  [4:0] maxh /*verilator public_flat_rd*/;
@@ -78,12 +116,164 @@ always @(posedge clk) begin
 		st <= S_IDLE; done <= 1'b0;
 	end else begin
 		case (st)
-		S_IDLE: if (start) begin
-			maxh <= 0; holes <= 0; toprisk <= 0; spawn <= 0; setup <= 0;
-			pollution <= 0; buried <= 0; rdy_ext <= 0; vrdy <= 0; anyvir <= 0;
-			wc <= 0; wr_ <= 0; seen <= 0; fillcnt <= 0;
+		S_IDLE: if (start || cmd_go) begin
 			done <= 1'b0;
-			st <= S_COLWALK;
+			if (start || cmd == 4'd1) begin                      // LEAF on CUR
+				maxh <= 0; holes <= 0; toprisk <= 0; spawn <= 0; setup <= 0;
+				pollution <= 0; buried <= 0; rdy_ext <= 0; vrdy <= 0; anyvir <= 0;
+				wc <= 0; wr_ <= 0; seen <= 0; fillcnt <= 0;
+				st <= S_COLWALK;
+			end else if (cmd == 4'd2 || cmd == 4'd3)             // slot copies
+				st <= S_COPY;
+			else if (cmd == 4'd4) begin                          // NODE: land+place+resolve+leaf
+				node_leaf <= 1'b1;
+				legal <= 1'b0; rv_cells <= 0; rv_vir <= 0; imm <= 0;
+				markb <= 128'd0; anyclear <= 1'b0;
+				fwp <= 0;
+				st <= S_FO1;
+			end
+		end
+
+		S_COPY: begin
+			if (cmd == 4'd2)
+				for (i = 0; i < 128; i = i + 1)
+					case (a_sl)
+						2'd1: bcell[i] <= s_live[i];
+						2'd2: bcell[i] <= s_w1[i];
+						default: bcell[i] <= s_w2[i];
+					endcase
+			else
+				for (i = 0; i < 128; i = i + 1)
+					case (a_sl)
+						2'd1: s_live[i] <= bcell[i];
+						2'd2: s_w1[i]   <= bcell[i];
+						default: s_w2[i] <= bcell[i];
+					endcase
+			done <= 1'b1; st <= S_IDLE;
+		end
+
+		// ---- landing: first_occ walks (col, then col+1 for horizontal) ----
+		S_FO1: begin
+			if (fwp == 5'd16 || occ_of[{fwp[3:0], a_col}]) begin
+				fo1 <= fwp; fwp <= 0;
+				if (a_o4[1]) begin                               // horizontal
+					if (a_col == 3'd7) begin done <= 1'b1; st <= S_IDLE; end  // illegal (legal=0)
+					else st <= S_FO2;
+				end else begin                                   // vertical: legal iff fo>=2
+					if (fwp >= 5'd2) begin
+						off_b <= {fwp[3:0] - 4'd1, a_col};
+						off_a <= {fwp[3:0] - 4'd2, a_col};
+						legal <= 1'b1; st <= S_PLACE;
+					end else begin done <= 1'b1; st <= S_IDLE; end
+				end
+			end else
+				fwp <= fwp + 1'b1;
+		end
+		S_FO2: begin
+			if (fwp == 5'd16 || occ_of[{fwp[3:0], a_col + 3'd1}]) begin : fo2b
+				reg [4:0] fom;
+				fom = (fo1 < fwp) ? fo1 : fwp;
+				if (fom >= 5'd1) begin
+					off_a <= {fom[3:0] - 4'd1, a_col};
+					off_b <= {fom[3:0] - 4'd1, a_col + 3'd1};
+					legal <= 1'b1; st <= S_PLACE;
+				end else begin done <= 1'b1; st <= S_IDLE; end
+			end else
+				fwp <= fwp + 1'b1;
+		end
+		S_PLACE: begin
+			// orient4 odd = color swap (B goes to offa/top/left)
+			bcell[off_a] <= {1'b0, a_o4[0] ? a_cb : a_ca};
+			bcell[off_b] <= {1'b0, a_o4[0] ? a_ca : a_cb};
+			li <= 0; st <= S_SCAN;
+			// initialize line 0 (row of off_a)
+			soff <= {1'b0, off_a[6:3], 3'd0}; sstep <= 4'd1; scnt <= 5'd8;
+			srun <= 0; smcol <= 0;
+		end
+
+		// ---- targeted find-clears: 4 lines (rowA, colA, rowB, colB) ----
+		// One cell per cycle; a completed run >= 4 marks its cells COMBINATIONALLY
+		// (16 conditional bit-sets along the stride) -- no flush sub-state, no re-scan.
+		S_SCAN: begin : scan
+			reg brk;      // run break at this cell (empty or color change)
+			reg [1:0] c_;
+			c_  = col_of[soff[6:0]];
+			brk = (c_ == 2'd0) || (c_ != smcol);
+			if (brk && srun >= 5'd4)
+				for (i = 0; i < 16; i = i + 1)
+					if (i < srun) markb[srstart[6:0] + i * sstep] <= 1'b1;
+			if (c_ == 2'd0) begin
+				srun <= 0; smcol <= 0;
+			end else if (c_ != smcol) begin
+				smcol <= c_; srstart <= soff; srun <= 5'd1;
+			end else
+				srun <= srun + 1'b1;
+			if (scnt == 5'd1)
+				st <= S_EOL;
+			else begin
+				soff <= soff + {4'd0, sstep};
+				scnt <= scnt - 1'b1;
+			end
+		end
+		S_EOL: begin
+			if (srun >= 5'd4)
+				for (i = 0; i < 16; i = i + 1)
+					if (i < srun) markb[srstart[6:0] + i * sstep] <= 1'b1;
+			srun <= 0; smcol <= 0;
+			case (li)
+				2'd0: begin soff <= {5'd0, off_a[2:0]}; sstep <= 4'd8; scnt <= 5'd16; li <= 2'd1; st <= S_SCAN; end
+				2'd1: begin soff <= {1'b0, off_b[6:3], 3'd0}; sstep <= 4'd1; scnt <= 5'd8; li <= 2'd2; st <= S_SCAN; end
+				2'd2: begin soff <= {5'd0, off_b[2:0]}; sstep <= 4'd8; scnt <= 5'd16; li <= 2'd3; st <= S_SCAN; end
+				default: begin fwp2 <= 0; st <= S_APPLY; end
+			endcase
+		end
+
+		S_APPLY: begin : apl
+			if (markb[fwp2]) begin
+				rv_cells <= rv_cells + 1'b1;
+				if (vir_of[fwp2]) rv_vir <= rv_vir + 1'b1;
+				bcell[fwp2] <= 3'd0;
+				anyclear <= 1'b1;
+			end
+			if (fwp2 == 7'd127) begin
+				wc <= 0; gdest <= 5'd15; fwp <= 5'd15;   // gravity: col wc, read row fwp
+				st <= (anyclear || markb[7'd127]) ? S_GRAV : S_RESDONE;
+			end else
+				fwp2 <= fwp2 + 1'b1;
+		end
+
+		// gravity: per column bottom-up; viruses anchor (dest = read-1); pills fall to dest
+		S_GRAV: begin : grv
+			reg [2:0] t;
+			t = bcell[{fwp[3:0], wc[2:0]}];
+			if (t != 3'd0) begin
+				if (t[2]) begin                       // virus: fixed anchor
+					gdest <= fwp - 1'b1;
+				end else begin
+					if (gdest != fwp) begin
+						bcell[{gdest[3:0], wc[2:0]}] <= t;
+						bcell[{fwp[3:0], wc[2:0]}] <= 3'd0;
+					end
+					gdest <= gdest - 1'b1;
+				end
+			end
+			if (fwp == 5'd0) begin
+				if (wc == 3'd7) st <= S_RESDONE;
+				else begin wc <= wc + 1'b1; gdest <= 5'd15; fwp <= 5'd15; end
+			end else
+				fwp <= fwp - 1'b1;
+		end
+
+		S_RESDONE: begin
+			imm <= 16'd180 * rv_vir + 16'd10 * rv_cells;
+			if (node_leaf) begin
+				maxh <= 0; holes <= 0; toprisk <= 0; spawn <= 0; setup <= 0;
+				pollution <= 0; buried <= 0; rdy_ext <= 0; vrdy <= 0; anyvir <= 0;
+				wc <= 0; wr_ <= 0; seen <= 0; fillcnt <= 0;
+				st <= S_COLWALK;
+			end else begin
+				done <= 1'b1; st <= S_IDLE;
+			end
 		end
 
 		// ---- one bcell per cycle, column-major: shape + buried + toprisk + spawn + anyvir
