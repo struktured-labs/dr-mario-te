@@ -55,7 +55,39 @@ wire        a_ram_st = (AB[15:8]  == 8'h61);         // $6100-$61FF
 wire        a_ram    = a_ram_lo | a_ram_st;
 wire        a_rom    = (AB[15:14] == 2'b10);         // $8000-$BFFF
 wire        a_vec    = (AB[15:1]  == 15'h7FFE);      // $FFFC/$FFFD
+wire        a_lev    = (AB[15:8]  == 8'h70);         // $7000-$70FF: LeafEval accelerator
 wire [11:0] a_addr   = a_ram_st ? {4'h8, AB[7:0]} : AB[11:0];
+
+// ---------------------------------------------------------- LeafEval accelerator
+// $7000-$707F W: board bytes (NES encoding, converted to 3-bit cells here)
+// $70F8 W: START ; $70F8 R: DONE ; $70F0/1 R: sco lo/hi ; $70F2 R: win
+wire       lev_wr_board = WE && !cpu_rst && a_lev && !AB[7];
+wire       lev_start    = WE && !cpu_rst && a_lev && (AB[7:0] == 8'hF8);
+wire [2:0] lev_enc = (DO == 8'hFF) ? 3'd0
+                   : {(DO[7:4] == 4'hD), (DO[1:0] == 2'd0) ? 2'd1
+                                        : (DO[1:0] == 2'd1) ? 2'd2 : 2'd3};
+wire        lev_done;
+wire [15:0] lev_sco;
+wire        lev_win;
+LeafEval leafeval(
+	.clk   (clk_cpu),
+	.rst   (cpu_rst),
+	.wr    (lev_wr_board),
+	.waddr (AB[6:0]),
+	.wdata (lev_enc),
+	.start (lev_start),
+	.done  (lev_done),
+	.sco   (lev_sco),
+	.win   (lev_win)
+);
+reg [7:0] lev_q;
+always @(posedge clk_cpu)
+	case (AB[3:0])
+		4'h0: lev_q <= lev_sco[7:0];
+		4'h1: lev_q <= lev_sco[15:8];
+		4'h2: lev_q <= {7'b0, lev_win};
+		default: lev_q <= {7'b0, lev_done};
+	endcase
 
 // ------------------------------------------------------------------ 16KB firmware ROM (copro-only)
 reg [7:0] rom [0:16383];
@@ -83,12 +115,13 @@ dpram #(.widthad_a(12), .width_a(8)) wram (
 );
 
 // registered DI mux (data + selects all registered -> DI valid 1 cycle after AB, as Arlet expects)
-reg sel_ram_d, sel_rom_d, sel_vec_d, ab0_d;
+reg sel_ram_d, sel_rom_d, sel_vec_d, sel_lev_d, ab0_d;
 always @(posedge clk_cpu) begin
-	sel_ram_d <= a_ram; sel_rom_d <= a_rom; sel_vec_d <= a_vec; ab0_d <= AB[0];
+	sel_ram_d <= a_ram; sel_rom_d <= a_rom; sel_vec_d <= a_vec; sel_lev_d <= a_lev; ab0_d <= AB[0];
 end
 assign DI = sel_vec_d ? (ab0_d ? 8'hBF : 8'h80) :
             sel_rom_d ? rom_q :
+            sel_lev_d ? lev_q :
             sel_ram_d ? ram_a_q : 8'hFF;
 
 // ------------------------------------------------------------------ host bridge (port B control)

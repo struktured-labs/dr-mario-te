@@ -34,6 +34,7 @@ MAX_STEPS = 3_000_000_000
 
 def build_image(board, cA, cB, nA, nB):
     assert (D3.NPILLS, D3.SHIFT) == (4, 2), "deploy config is 4 pills / >>2 (isoD 24/24)"
+    D3.USE_ACCEL = True          # leaf via the LeafEval RTL block ($70xx)
     # copro RAM is ONLY $0000-$0FFF + $6100-$61FF (CoproDrMario.sv): the SQ tables must be
     # read straight from ROM @$B000 (there is no RAM at the py65 tests' $7A00 location).
     # test_vrdy/test_readiness_ext capture the addresses at import -> override those too.
@@ -111,6 +112,7 @@ def main():
     for i in range(16):                          # direct call skips the stub: load pill table
         cpu.mem[PILLA + i] = img[PILL_ROM + i]
     cpu.set_board(b)
+    D3.attach_accel_emu(cpu)
     cpu.mem[S_CA] = cA; cpu.mem[S_CB] = cB; cpu.mem[S_NA] = nA; cpu.mem[S_NB] = nB
     cpu.call(search_ep, max_steps=MAX_STEPS)
     got = (cpu.mem[D_BC], cpu.mem[D_BO]) if cpu.mem[D_BO] != 0xFF else None
@@ -125,6 +127,7 @@ def main():
     for a, v in enumerate(img):
         cpu2.mem[a] = v
     cpu2.set_board(b)
+    D3.attach_accel_emu(cpu2)
     cpu2.mem[S_CA] = cA; cpu2.mem[S_CB] = cB; cpu2.mem[S_NA] = nA; cpu2.mem[S_NB] = nB
     cpu2.mem[DONE] = 0
     m = cpu2.mpu

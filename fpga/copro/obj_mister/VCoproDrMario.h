@@ -9,6 +9,7 @@
 #define VERILATED_VCOPRODRMARIO_H_  // guard
 
 #include "verilated.h"
+#include "svdpi.h"
 
 class VCoproDrMario__Syms;
 class VCoproDrMario___024root;

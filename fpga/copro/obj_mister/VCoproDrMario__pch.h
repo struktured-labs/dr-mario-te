@@ -19,6 +19,7 @@
 
 
 #include "verilated.h"
+#include "verilated_dpi.h"
 
 #include "VCoproDrMario__Syms.h"
 #include "VCoproDrMario.h"

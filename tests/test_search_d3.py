@@ -49,6 +49,8 @@ TK1_KL, TK1_KH, TK1_O, TK1_C = 0x0A00, 0x0A20, 0x0A40, 0x0A60
 
 THIRD = [(0, 1), (1, 2), (2, 0), (1, 1)]   # stratified 4-pill subset (3 mixed + 1 double), /4=shift
 RESOLVE_LBL = "resolve_capped"   # TARGETED (deploy config, isolation 12/12); "resolve_capped_full" for full
+USE_ACCEL = False                # True: leaf via the LeafEval RTL block at $70xx (deploy);
+LEV_BOARD, LEV_SCO, LEV_WIN_R, LEV_GO = 0x7000, 0x70F0, 0x70F2, 0x70F8
 TOPK1 = 32   # ply1 keep-width; 32 = FULL (T1C <= 30). MEASURED (isolation 2026-07-10):
              # topk1=8 = 70% clears vs FULL = 91% (n=24, FW model) -- the depth-1 Pass-0 key
              # under-ranks setup moves; ply1 pruning is NOT quality-safe at depth-3. Cost:
@@ -70,14 +72,55 @@ def build():
     P.emit_first_occ(a); P.emit_find_clears(a); P.emit_gravity(a); P.emit_shape(a)
     P.emit_resolve_capped_full(a); P.emit_resolve_capped(a)
     P.emit_buried(a); P.emit_setup(a); P.emit_has_virus(a)
-    emit_leaf_score_d3(a); emit_readiness_ext(a); emit_walk(a); emit_vrdy(a); emit_pollution(a)
-    emit_combine_d3(a)
+    if USE_ACCEL:
+        _emit_leaf_accel(a)
+        P.emit_combine(a)        # dead soft-combine, but calc_imm JSRs its cm_mul helper
+    else:
+        emit_leaf_score_d3(a); emit_readiness_ext(a); emit_walk(a); emit_vrdy(a); emit_pollution(a)
+        emit_combine_d3(a)
     _emit_copy(a, "cp_live_cur", LIVE, CUR)
     _emit_copy(a, "cp_cur_work1", CUR, WORK1)
     _emit_copy(a, "cp_work1_cur", WORK1, CUR)
     _emit_copy(a, "cp_cur_work2", CUR, WORK2)
     _emit_copy(a, "cp_work2_cur", WORK2, CUR)
     return a.assemble(), a.labels
+
+
+def _emit_leaf_accel(a):
+    """leaf_score_d3 via the LeafEval RTL block: copy CUR -> $7000, START, poll DONE,
+    read EV_SCO/EV_WIN back. Same label + EV_ contract as the soft leaf (~3.5k cyc vs ~50k)."""
+    a.label("leaf_score_d3")
+    a.ins("LDX_imm", 0)
+    a.label("la_cp")
+    a.ins16("LDA_absX", CUR); a.ins16("STA_absX", LEV_BOARD)
+    a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "la_cp")
+    a.ins16("STA_abs", LEV_GO)                 # START (value irrelevant)
+    a.label("la_poll")
+    a.ins16("LDA_abs", LEV_GO); a.br("BEQ", "la_poll")
+    a.ins16("LDA_abs", LEV_SCO); a.ins16("STA_abs", P.EV_SCO_LO)
+    a.ins16("LDA_abs", LEV_SCO + 1); a.ins16("STA_abs", P.EV_SCO_HI)
+    a.ins16("LDA_abs", LEV_WIN_R); a.ins16("STA_abs", P.EV_WIN)
+    a.ins("RTS")
+
+
+def attach_accel_emu(cpu):
+    """py65-side emulation of the LeafEval block: a write to $70F8 computes leaf_d3 on
+    the NES-encoded board at $7000-$707F and posts sco/win/done -- so the ACCEL firmware
+    validates end-to-end in py65 against the same golden."""
+    from py65.memory import ObservableMemory
+    base = cpu.mem
+    obs = ObservableMemory(subject=base)
+
+    def on_go(addr, value):
+        b = [base[LEV_BOARD + i] for i in range(128)]
+        win = 1 if all((x & 0xF0) != 0xD0 for x in b if x != 0xFF) else 0
+        v = 0 if win else (G3.leaf_d3(b) & 0xFFFF)
+        base[LEV_SCO] = v & 0xFF; base[LEV_SCO + 1] = (v >> 8) & 0xFF
+        base[LEV_WIN_R] = win; base[LEV_GO] = 1
+
+    obs.subscribe_to_write([LEV_GO], on_go)
+    cpu.mpu.memory = obs
+    cpu.mem = obs
 
 
 _sc_ctr = [0]
@@ -347,7 +390,11 @@ def make_fewlegal(rng, FaithfulBoard):
 
 
 def main():
-    global NPILLS, SHIFT
+    global NPILLS, SHIFT, USE_ACCEL
+    import os
+    if os.environ.get("ACCEL"):
+        USE_ACCEL = True
+        print("ACCEL mode: leaf via emulated LeafEval block")
     NPILLS, SHIFT = 2, 1                       # fast validation config (deploy uses 8,3)
     THIRD_T = [(0, 1), (1, 2)]
     G3.USE_VRDY = True
@@ -370,6 +417,8 @@ def main():
         gk = G3.decide_d3(list(nes), ca - 1, cb - 1, na - 1, nb_ - 1, topk1=TOPK1, topk2=8,
                           third=THIRD_T, seed=seed)
         cpu = Cpu(); cpu.load(0x8000, code); cpu.set_board(nes)
+        if USE_ACCEL:
+            attach_accel_emu(cpu)
         for i in range(17):
             cpu.mem[sq_a := (P.SQ_LO_ADDR + i)] = sq[i] & 0xFF; cpu.mem[P.SQ_HI_ADDR + i] = sq[i] >> 8
         for i in range(NPILLS):

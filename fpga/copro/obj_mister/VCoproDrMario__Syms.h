@@ -16,6 +16,8 @@
 // INCLUDE MODULE CLASSES
 #include "VCoproDrMario___024root.h"
 
+// DPI TYPES for DPI Export callbacks (Internal use)
+
 // SYMS CLASS (contains all model state)
 class alignas(VL_CACHE_LINE_BYTES)VCoproDrMario__Syms final : public VerilatedSyms {
   public:
@@ -26,6 +28,9 @@ class alignas(VL_CACHE_LINE_BYTES)VCoproDrMario__Syms final : public VerilatedSy
 
     // MODULE INSTANCE STATE
     VCoproDrMario___024root        TOP;
+
+    // SCOPE NAMES
+    VerilatedScope __Vscope_CoproDrMario__leafeval;
 
     // CONSTRUCTORS
     VCoproDrMario__Syms(VerilatedContext* contextp, const char* namep, VCoproDrMario* modelp);
