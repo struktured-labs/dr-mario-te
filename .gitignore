@@ -28,3 +28,8 @@ drmario_exp.nes
 drmario_v28cs_exp.nes
 drmario_banktest.nes
 drmario_cart.nes
+
+# recorded gameplay clips (large binaries)
+*.mp4
+# agent scratch
+.letta/
