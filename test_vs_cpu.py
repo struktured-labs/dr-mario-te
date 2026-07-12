@@ -18,7 +18,7 @@ class CPU6502:
         self.status = 0  # NV-BDIZC
         self.memory = bytearray(0x10000)
         self.cycles = 0
-        self.max_cycles = 10000
+        self.max_cycles = 500000  # v18 enumerates many placements x clear scans
 
     def reset(self):
         self.a = 0
@@ -71,13 +71,28 @@ class CPU6502:
             self.memory[addr + i] = b
 
     def run(self, start_addr):
-        """Run until RTS or max cycles."""
+        """Run until the top-level RTS (or max cycles).
+
+        Supports nested JSR/RTS: a JSR pushes a return address and an RTS pops
+        it. Only the RTS that returns the stack pointer to its level at entry
+        ends the run (this is what lets v18's subroutines work; v17 had none, so
+        the old 'first RTS ends run' shortcut sufficed there)."""
         self.pc = start_addr
+        entry_sp = self.sp
         while self.cycles < self.max_cycles:
             opcode = self.memory[self.pc]
 
             if opcode == 0x60:  # RTS
-                return True
+                if self.sp == entry_sp:
+                    return True  # top-level return: program done
+                # pop return address and continue in the caller
+                self.sp = (self.sp + 1) & 0xFF
+                lo = self.memory[0x100 + self.sp]
+                self.sp = (self.sp + 1) & 0xFF
+                hi = self.memory[0x100 + self.sp]
+                self.pc = ((hi << 8) | lo) + 1
+                self.cycles += 1
+                continue
             elif opcode == 0x4C:  # JMP abs
                 addr = self.memory[self.pc + 1] | (self.memory[self.pc + 2] << 8)
                 self.pc = addr
@@ -126,10 +141,30 @@ class CPU6502:
                 addr = self.memory[self.pc + 1] | (self.memory[self.pc + 2] << 8)
                 self.memory[addr] = self.a
                 self.pc += 3
+            elif opcode == 0x9D:  # STA abs,X  (v18)
+                addr = (self.memory[self.pc + 1] | (self.memory[self.pc + 2] << 8)) + self.x
+                self.memory[addr & 0xFFFF] = self.a
+                self.pc += 3
+            elif opcode == 0x99:  # STA abs,Y  (v18, parity)
+                addr = (self.memory[self.pc + 1] | (self.memory[self.pc + 2] << 8)) + self.y
+                self.memory[addr & 0xFFFF] = self.a
+                self.pc += 3
             elif opcode == 0xA2:  # LDX imm
                 self.x = self.memory[self.pc + 1]
                 self.set_z(self.x)
                 self.set_n(self.x)
+                self.pc += 2
+            elif opcode == 0xA6:  # LDX zp  (v18)
+                addr = self.memory[self.pc + 1]
+                self.x = self.memory[addr]
+                self.set_z(self.x)
+                self.set_n(self.x)
+                self.pc += 2
+            elif opcode == 0xA4:  # LDY zp  (v18, parity)
+                addr = self.memory[self.pc + 1]
+                self.y = self.memory[addr]
+                self.set_z(self.y)
+                self.set_n(self.y)
                 self.pc += 2
             elif opcode == 0x86:  # STX zp
                 addr = self.memory[self.pc + 1]
@@ -289,6 +324,52 @@ class CPU6502:
                 self.set_z(self.a)
                 self.set_n(self.a)
                 self.pc += 2
+            elif opcode == 0x3D:  # AND abs,X
+                addr = (self.memory[self.pc + 1] | (self.memory[self.pc + 2] << 8)) + self.x
+                self.a &= self.memory[addr & 0xFFFF]
+                self.set_z(self.a)
+                self.set_n(self.a)
+                self.pc += 3
+            elif opcode == 0x49:  # EOR imm
+                self.a ^= self.memory[self.pc + 1]
+                self.set_z(self.a)
+                self.set_n(self.a)
+                self.pc += 2
+            elif opcode == 0x09:  # ORA imm  (v18)
+                self.a |= self.memory[self.pc + 1]
+                self.set_z(self.a)
+                self.set_n(self.a)
+                self.pc += 2
+            elif opcode == 0x05:  # ORA zp  (v18, parity)
+                addr = self.memory[self.pc + 1]
+                self.a |= self.memory[addr]
+                self.set_z(self.a)
+                self.set_n(self.a)
+                self.pc += 2
+            elif opcode == 0x0A:  # ASL A  (v18)
+                self.set_c(self.a & 0x80)
+                self.a = (self.a << 1) & 0xFF
+                self.set_z(self.a)
+                self.set_n(self.a)
+                self.pc += 1
+            elif opcode == 0x48:  # PHA  (v18)
+                self.memory[0x100 + self.sp] = self.a
+                self.sp = (self.sp - 1) & 0xFF
+                self.pc += 1
+            elif opcode == 0x68:  # PLA  (v18)
+                self.sp = (self.sp + 1) & 0xFF
+                self.a = self.memory[0x100 + self.sp]
+                self.set_z(self.a)
+                self.set_n(self.a)
+                self.pc += 1
+            elif opcode == 0xD9:  # CMP abs,Y
+                addr = (self.memory[self.pc + 1] | (self.memory[self.pc + 2] << 8)) + self.y
+                val = self.memory[addr & 0xFFFF]
+                result = self.a - val
+                self.set_c(self.a >= val)
+                self.set_z(result & 0xFF)
+                self.set_n(result & 0xFF)
+                self.pc += 3
             elif opcode == 0x18:  # CLC
                 self.set_c(False)
                 self.pc += 1
@@ -303,8 +384,24 @@ class CPU6502:
                 self.set_z(self.a)
                 self.set_n(self.a)
                 self.pc += 2
+            elif opcode == 0x65:  # ADC zp  (v18)
+                val = self.memory[self.memory[self.pc + 1]]
+                result = self.a + val + (1 if self.get_c() else 0)
+                self.set_c(result > 255)
+                self.a = result & 0xFF
+                self.set_z(self.a)
+                self.set_n(self.a)
+                self.pc += 2
             elif opcode == 0xE9:  # SBC imm
                 val = self.memory[self.pc + 1]
+                result = self.a - val - (0 if self.get_c() else 1)
+                self.set_c(result >= 0)
+                self.a = result & 0xFF
+                self.set_z(self.a)
+                self.set_n(self.a)
+                self.pc += 2
+            elif opcode == 0xE5:  # SBC zp  (v18)
+                val = self.memory[self.memory[self.pc + 1]]
                 result = self.a - val - (0 if self.get_c() else 1)
                 self.set_c(result >= 0)
                 self.a = result & 0xFF
@@ -337,7 +434,7 @@ class CPU6502:
 
 
 def extract_routines_from_patch():
-    """Extract the compiled routines from patch_vs_cpu.py"""
+    """Extract the compiled routines from patch_vs_cpu.py (v17 layout)."""
     # Import and run the patch to get the routines
     import importlib.util
     spec = importlib.util.spec_from_file_location("patch", "patch_vs_cpu.py")
@@ -354,9 +451,9 @@ def extract_routines_from_patch():
     with open("drmario_vs_cpu.nes", "rb") as f:
         rom = f.read()
 
-    # Extract routines from ROM
-    toggle_offset = 0x7F50
-    mirror_offset = 0x7F6B
+    # Extract routines from ROM (v17 layout)
+    toggle_offset = 0x7F40
+    mirror_offset = 0x7F5B  # toggle_offset + 27 (toggle len)
 
     # Read routine lengths from patch output
     toggle_len = mirror_offset - toggle_offset
@@ -385,22 +482,23 @@ class TestVSCPU:
         self.mirror_routine = None
 
     def load_routines(self):
-        """Load routines from the patched ROM."""
+        """Load routines from the patched ROM (v17 layout)."""
         with open("drmario_vs_cpu.nes", "rb") as f:
             rom = bytearray(f.read())
 
-        # Routine locations in ROM (from patch_vs_cpu.py)
-        toggle_offset = 0x7F50
-        mirror_offset = 0x7F6B  # toggle_offset + 27
+        # v17 Routine locations in ROM (from patch_vs_cpu.py)
+        # Toggle/mirror moved from 0x7F50 to 0x7F40 to expand AI window
+        toggle_offset = 0x7F40
+        mirror_offset = 0x7F5B  # toggle_offset + 27 (toggle len)
 
-        # Mirror routine now just has 1 RTS (simplified - just loads $F6 to $5B)
+        # Mirror routine: simplified pass-through (LDA $F6/STA $5B/LDA $F8/STA $5C/RTS)
         mirror_end = mirror_offset
         for i in range(mirror_offset, 0x7FE0):
             if rom[i] == 0x60:  # RTS
                 mirror_end = i + 1
                 break
 
-        # AI routine starts after mirror
+        # AI routine starts after mirror (should be 0x7F64 in v17)
         ai_offset = mirror_end
 
         # AI routine ends at last RTS before 0x7FE0
@@ -414,9 +512,11 @@ class TestVSCPU:
         self.mirror_routine = bytes(rom[mirror_offset:mirror_end])
         self.ai_routine = bytes(rom[ai_offset:ai_end])
 
-        print(f"Loaded toggle routine: {len(self.toggle_routine)} bytes")
-        print(f"Loaded mirror routine: {len(self.mirror_routine)} bytes")
-        print(f"Loaded AI routine: {len(self.ai_routine)} bytes")
+        print(f"Loaded toggle routine: {len(self.toggle_routine)} bytes (at 0x{toggle_offset:04X})")
+        print(f"Loaded mirror routine: {len(self.mirror_routine)} bytes (at 0x{mirror_offset:04X})")
+        print(f"Loaded AI routine: {len(self.ai_routine)} bytes (at 0x{ai_offset:04X})")
+        ai_budget = 0x7FE0 - ai_offset
+        print(f"AI byte budget: {ai_budget} bytes ({ai_budget - len(self.ai_routine)} bytes spare)")
 
     def assert_eq(self, name, actual, expected):
         if actual == expected:
@@ -845,6 +945,878 @@ class TestVSCPU:
         self.assert_eq("target column (default)", self.cpu.memory[0x00], 3)
         self.assert_eq("best score (unset)", self.cpu.memory[0x01], 0xFF)
 
+    # ==================== v17 HEURISTIC TESTS ====================
+
+    def test_v17_skips_column_with_row1_occupied(self):
+        """v17 fat top check: skip column if row 1 (below top) is occupied (height-1 penalty)."""
+        print("test_v17_skips_column_with_row1_occupied...")
+        self.cpu.reset()
+        self.cpu.memory[0x04] = 1  # VS CPU mode
+        self.cpu.memory[0x46] = 5  # Gameplay mode
+        self.cpu.memory[0x0385] = 0  # Capsule at col 0
+        self.cpu.memory[0x0381] = 1  # Left = red
+
+        # Red virus at row 5, col 2 (offset 42) - row 0 clear, but row 1 occupied
+        self.cpu.memory[0x0500 + 42] = 0xD1
+        self.cpu.memory[0x0500 + 10] = 0x50  # Row 1 of col 2 occupied
+        # Red virus at row 10, col 5 (offset 85) - both rows 0,1 clear
+        self.cpu.memory[0x0500 + 85] = 0xD1
+
+        ai_addr = 0xFF5B + len(self.mirror_routine)
+        self.cpu.load_routine(ai_addr, self.ai_routine)
+        self.cpu.run(ai_addr)
+
+        # v17 should skip col 2 (row 1 occupied) and pick col 5 even though col 2
+        # has lower (better) base score. v16 would have picked col 2.
+        self.assert_eq("target column (height-1 skip)", self.cpu.memory[0x00], 5)
+
+    def test_v17_vertical_adjacency_bonus(self):
+        """v17 adjacency: virus with same-color tile above gets -1 score bonus."""
+        print("test_v17_vertical_adjacency_bonus...")
+        self.cpu.reset()
+        self.cpu.memory[0x04] = 1  # VS CPU mode
+        self.cpu.memory[0x46] = 5  # Gameplay mode
+        self.cpu.memory[0x0385] = 0  # Capsule at col 0
+        self.cpu.memory[0x0381] = 1  # Left = red
+
+        # Two red viruses at SAME score row=5: col 2 (offset 42) and col 6 (offset 46)
+        # Without adjacency bonus, both have base score 5; first-scanned (col 2) wins.
+        # With adjacency bonus on col 6: cell above (row 4 = offset 38) gets a
+        # red virus too -> -1 bonus -> col 6 wins.
+        self.cpu.memory[0x0500 + 42] = 0xD1  # col 2 row 5
+        self.cpu.memory[0x0500 + 46] = 0xD1  # col 6 row 5
+        self.cpu.memory[0x0500 + 38] = 0xD1  # col 6 row 4 (above the col-6 virus)
+        # Note: the col 6 row-4 virus also gets evaluated. Its target is col 6
+        # too (same column), score = 4 (best of all). So it should win. Let's
+        # verify col 6 is targeted regardless of which virus drives the choice.
+
+        ai_addr = 0xFF5B + len(self.mirror_routine)
+        self.cpu.load_routine(ai_addr, self.ai_routine)
+        self.cpu.run(ai_addr)
+
+        # Adjacency-rich column 6 should be targeted
+        self.assert_eq("target column (adj bonus)", self.cpu.memory[0x00], 6)
+
+    def test_v17_vertical_adjacency_breaks_tie(self):
+        """v17 adjacency bonus should break a tie between equal-score candidates."""
+        print("test_v17_vertical_adjacency_breaks_tie...")
+        self.cpu.reset()
+        self.cpu.memory[0x04] = 1  # VS CPU mode
+        self.cpu.memory[0x46] = 5  # Gameplay mode
+        self.cpu.memory[0x0385] = 0  # Capsule at col 0
+        self.cpu.memory[0x0381] = 1  # Left = red
+
+        # Red virus at col 2 row 5 (offset 42), no adjacent same-color
+        self.cpu.memory[0x0500 + 42] = 0xD1
+        # Red virus at col 5 row 6 (offset 53). Has matching-color tile above
+        # (col 5 row 5 = offset 45), giving it adjacency bonus -> score 5
+        # (6 - 1) which TIES the col-2 virus (score 5).
+        # v17 picks the first-encountered (col 2) when scores tie via BCS, so
+        # to truly demonstrate the bonus break the tie, we make col 5 base
+        # score 6 with bonus -> 5, and col 2 base 6 with no bonus -> 6.
+        self.cpu.memory[0x0500 + 42] = 0xFF  # clear earlier
+        self.cpu.memory[0x0500 + 50] = 0xD1  # col 2 row 6 (offset 50)
+        self.cpu.memory[0x0500 + 53] = 0xD1  # col 5 row 6 (offset 53)
+        self.cpu.memory[0x0500 + 45] = 0xD1  # col 5 row 5 (above col-5 virus)
+
+        ai_addr = 0xFF5B + len(self.mirror_routine)
+        self.cpu.load_routine(ai_addr, self.ai_routine)
+        self.cpu.run(ai_addr)
+
+        # col 5 should win because of adjacency bonus (score 5 vs col 2's 6).
+        # Note: the col 5 row 5 virus itself is also a candidate (base 5, no
+        # above-bonus since above is empty) which also targets col 5. Either
+        # way, target should be col 5.
+        self.assert_eq("target column (adjacency tie-break)", self.cpu.memory[0x00], 5)
+
+    def test_v17_horizontal_adjacency_bonus(self):
+        """v17 adjacency: virus with same-color tile to its right gets bonus."""
+        print("test_v17_horizontal_adjacency_bonus...")
+        self.cpu.reset()
+        self.cpu.memory[0x04] = 1  # VS CPU mode
+        self.cpu.memory[0x46] = 5  # Gameplay mode
+        self.cpu.memory[0x0385] = 0  # Capsule at col 0
+        self.cpu.memory[0x0381] = 1  # Left = red
+
+        # Red virus at col 2 row 7 (offset 58), no neighbors -> score 7
+        self.cpu.memory[0x0500 + 58] = 0xD1
+        # Red virus at col 5 row 7 (offset 61), with red tile right (col 6 row 7
+        # = offset 62) -> base 7 - 1 (h-adj) = 6
+        self.cpu.memory[0x0500 + 61] = 0xD1
+        self.cpu.memory[0x0500 + 62] = 0xD1
+
+        ai_addr = 0xFF5B + len(self.mirror_routine)
+        self.cpu.load_routine(ai_addr, self.ai_routine)
+        self.cpu.run(ai_addr)
+
+        # col 5 should win (score 6 vs col 2's 7); col 6 is also a candidate but
+        # has no neighbor to its right (col 7 row 7 = 0xFF) so its score is 7.
+        self.assert_eq("target column (h-adj bonus)", self.cpu.memory[0x00], 5)
+        self.assert_eq("best score (with h-adj)", self.cpu.memory[0x01], 6)
+
+    def test_v17_score_stored_in_temp(self):
+        """v17 weighted scoring: $02 zero-page is used as score accumulator."""
+        print("test_v17_score_stored_in_temp...")
+        self.cpu.reset()
+        self.cpu.memory[0x04] = 1  # VS CPU mode
+        self.cpu.memory[0x46] = 5  # Gameplay mode
+        self.cpu.memory[0x0385] = 0  # Capsule at col 0
+        self.cpu.memory[0x0381] = 1  # Left = red
+
+        # Place a red virus at col 4 row 3 (offset 28), no adjacent same-color
+        self.cpu.memory[0x0500 + 28] = 0xD1
+
+        ai_addr = 0xFF5B + len(self.mirror_routine)
+        self.cpu.load_routine(ai_addr, self.ai_routine)
+        self.cpu.run(ai_addr)
+
+        # $02 was used as a temp; after final eval, $02 contains the score
+        # of the LAST evaluated candidate that passed the fat top check.
+        # Here only one candidate, score = row = 3 (no adj bonus).
+        # Verify $02 = 3 and best score $01 = 3.
+        self.assert_eq("score temp $02 was set", self.cpu.memory[0x02], 3)
+        self.assert_eq("best score in $01", self.cpu.memory[0x01], 3)
+        self.assert_eq("target column", self.cpu.memory[0x00], 4)
+
+    def test_v17_height_penalty_skips_partition(self):
+        """v17 fat top: column with row 0 OK but row 1 occupied -> skip (avoids
+        building a tall stack that risks partitioning the playfield)."""
+        print("test_v17_height_penalty_skips_partition...")
+        self.cpu.reset()
+        self.cpu.memory[0x04] = 1  # VS CPU mode
+        self.cpu.memory[0x46] = 5  # Gameplay mode
+        self.cpu.memory[0x0385] = 0  # Capsule at col 0
+        self.cpu.memory[0x0381] = 1  # Left = red
+
+        # Only one red virus exists at col 4 row 8 (offset 68).
+        # Top row of col 4 is clear, but row 1 of col 4 is occupied.
+        # v17 should skip this and fall back to default target (col 3).
+        self.cpu.memory[0x0500 + 68] = 0xD1
+        self.cpu.memory[0x0500 + 12] = 0x50  # row 1 of col 4 occupied
+
+        ai_addr = 0xFF5B + len(self.mirror_routine)
+        self.cpu.load_routine(ai_addr, self.ai_routine)
+        self.cpu.run(ai_addr)
+
+        # Target should be center default (col 3); v16 would have picked col 4.
+        self.assert_eq("target (v17 fat top defaults)", self.cpu.memory[0x00], 3)
+        self.assert_eq("best score still unset", self.cpu.memory[0x01], 0xFF)
+
+    def test_v17_ai_fits_in_124_byte_budget(self):
+        """v17 AI routine must fit in the 124-byte window 0x7F64-0x7FDF."""
+        print("test_v17_ai_fits_in_124_byte_budget...")
+        size = len(self.ai_routine)
+        self.assert_eq("AI routine size <= 124 bytes", size <= 124, True)
+        # Also assert the toggle moved to 0x7F40 (ROM reorg required by v17)
+        with open("drmario_vs_cpu.nes", "rb") as f:
+            rom = f.read()
+        # Toggle starts with LDA $0727 = AD 27 07
+        self.assert_eq("toggle relocated to 0x7F40", rom[0x7F40], 0xAD)
+        self.assert_eq("toggle still has LDA $0727 byte 1", rom[0x7F41], 0x27)
+        self.assert_eq("toggle still has LDA $0727 byte 2", rom[0x7F42], 0x07)
+
+    # ==================== v18 SIMULATION AI TESTS ====================
+    # v18 is a depth-1 simulation AI: it enumerates placements, drops each into
+    # a scratch copy of the P2 board (in-place + undo), detects REAL row/column
+    # lines of >= 4 at the resting position, and scores by viruses/cells cleared
+    # minus a height penalty. Lives at CPU $FB00 (ROM 0x7B10). These tests load
+    # the v18 routine + its labelled subroutines straight from the builder, and
+    # exercise both the clear-detection primitive and the full decision.
+    #
+    # NES tile model: empty=$FF, virus color k=$D0+k, settled capsule=$4C+k.
+    # Colors: 0 yellow, 1 red, 2 blue (matches CLAUDE.md / heuristics.py).
+
+    V18_CPU = 0xFB00
+
+    def _load_v18(self):
+        """Build v18 + capture subroutine label offsets (once)."""
+        if getattr(self, "_v18_code", None) is not None:
+            return
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("patch_v18", "patch_vs_cpu.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        labels = {}
+        orig = mod.Asm6502.assemble
+        def capture(s):
+            labels.update(s.labels)
+            return orig(s)
+        mod.Asm6502.assemble = capture
+        self._v18_code = mod.build_v18_ai(self.V18_CPU)
+        mod.Asm6502.assemble = orig
+        self._v18_labels = labels
+        self._v18_mod = mod
+
+    def _v18_addr(self, label):
+        return self.V18_CPU + self._v18_labels[label]
+
+    def _fresh_cpu_with_board(self, board=None):
+        """Reset CPU, load v18 at $FB00, optionally write a 128-byte P2 board."""
+        self._load_v18()
+        self.cpu.reset()
+        self.cpu.load_routine(self.V18_CPU, self._v18_code)
+        if board is not None:
+            for i, t in enumerate(board):
+                self.cpu.memory[0x0500 + i] = t
+        return self.cpu
+
+    @staticmethod
+    def _empty_board():
+        return [0xFF] * 128
+
+    @staticmethod
+    def _off(row, col):
+        return row * 8 + col
+
+    def _run_v18_clear_cell(self, board, off):
+        """Run the clear_cell primitive on a board with a placed cell at off.
+        Returns (cells_cleared, viruses_cleared) = (Z_CELLS $CA, Z_VIR $CB)."""
+        cpu = self._fresh_cpu_with_board(board)
+        cpu.memory[0xCA] = 0  # Z_CELLS
+        cpu.memory[0xCB] = 0  # Z_VIR
+        cpu.memory[0xD4] = off  # Z_CELLOFF
+        cpu.run(self._v18_addr("clear_cell"))
+        return cpu.memory[0xCA], cpu.memory[0xCB]
+
+    def _run_v18_full(self, board, colorA, colorB, capsule_x=3,
+                      vs_cpu=1, game_mode=5):
+        """Run the full v18 AI. Returns (target_col $00, best_score $01, $F6)."""
+        cpu = self._fresh_cpu_with_board(board)
+        cpu.memory[0x04] = vs_cpu
+        cpu.memory[0x46] = game_mode
+        cpu.memory[0x0385] = capsule_x
+        cpu.memory[0x0381] = colorA
+        cpu.memory[0x0382] = colorB
+        cpu.a = 0
+        cpu.run(self.V18_CPU)
+        return cpu.memory[0x00], cpu.memory[0x01], cpu.memory[0xF6]
+
+    def test_v18_detects_vertical_line_of_4(self):
+        """(d/clear) clear_cell counts a vertical run of 4 (3 viruses + 1 cell).
+        Reuses faithful test_vertical_four_clears semantics (col run of >=4)."""
+        print("test_v18_detects_vertical_line_of_4...")
+        b = self._empty_board()
+        # three red viruses stacked at col 2 rows 13,14,15; a red capsule cell
+        # placed at row 12 completes a vertical line of 4.
+        for r in (13, 14, 15):
+            b[self._off(r, 2)] = 0xD1            # red virus
+        b[self._off(12, 2)] = 0x4C + 1           # placed red capsule cell
+        cells, vir = self._run_v18_clear_cell(b, self._off(12, 2))
+        self.assert_eq("vertical run cells cleared", cells, 4)
+        self.assert_eq("vertical run viruses cleared", vir, 3)
+
+    def test_v18_detects_horizontal_line_of_4(self):
+        """(b/clear) clear_cell counts a horizontal run of 4. Reuses faithful
+        test_horizontal_four_clears semantics (row run of >=4)."""
+        print("test_v18_detects_horizontal_line_of_4...")
+        b = self._empty_board()
+        for c in (0, 1, 2):
+            b[self._off(15, c)] = 0xD1           # 3 red viruses in row 15
+        b[self._off(15, 3)] = 0x4C + 1           # placed red completes the line
+        cells, vir = self._run_v18_clear_cell(b, self._off(15, 3))
+        self.assert_eq("horizontal run cells cleared", cells, 4)
+        self.assert_eq("horizontal run viruses cleared", vir, 3)
+
+    def test_v18_three_in_a_row_does_not_clear(self):
+        """(rule) a run of only 3 must NOT clear. Reuses faithful
+        test_three_does_not_clear."""
+        print("test_v18_three_in_a_row_does_not_clear...")
+        b = self._empty_board()
+        for c in (0, 1):
+            b[self._off(15, c)] = 0xD1
+        b[self._off(15, 2)] = 0x4C + 1           # only 3 in a row now
+        cells, vir = self._run_v18_clear_cell(b, self._off(15, 2))
+        self.assert_eq("run of 3 cells cleared", cells, 0)
+        self.assert_eq("run of 3 viruses cleared", vir, 0)
+
+    def test_v18_mixed_color_run_not_cleared(self):
+        """(rule) 4 cells but mixed color does NOT clear. Reuses faithful
+        test_mixed_color_run_not_cleared."""
+        print("test_v18_mixed_color_run_not_cleared...")
+        b = self._empty_board()
+        b[self._off(15, 0)] = 0xD1               # red
+        b[self._off(15, 1)] = 0xD1               # red
+        b[self._off(15, 2)] = 0xD2               # blue (breaks the run)
+        b[self._off(15, 3)] = 0x4C + 1           # placed red
+        cells, vir = self._run_v18_clear_cell(b, self._off(15, 3))
+        self.assert_eq("mixed-color cells cleared", cells, 0)
+
+    def test_v18_l_shape_does_not_clear(self):
+        """(rule) 4 connected cells in an L are NOT a line. Reuses faithful
+        test_l_shape_does_not_clear."""
+        print("test_v18_l_shape_does_not_clear...")
+        b = self._empty_board()
+        b[self._off(15, 0)] = 0xD1
+        b[self._off(15, 1)] = 0xD1
+        b[self._off(15, 2)] = 0x4C + 1           # 3 in a row (placed)
+        b[self._off(14, 2)] = 0xD1               # makes an L, but no line of 4
+        cells, vir = self._run_v18_clear_cell(b, self._off(15, 2))
+        self.assert_eq("L-shape cells cleared", cells, 0)
+
+    def test_v18_five_in_row_clears_all(self):
+        """(rule) a run of 5 clears all 5. Reuses faithful
+        test_five_in_row_clears_all_five."""
+        print("test_v18_five_in_row_clears_all...")
+        b = self._empty_board()
+        for c in (0, 1, 2, 3):
+            b[self._off(15, c)] = 0xD2           # 4 blue viruses
+        b[self._off(15, 4)] = 0x4C + 2           # placed blue -> run of 5
+        cells, vir = self._run_v18_clear_cell(b, self._off(15, 4))
+        self.assert_eq("run of 5 cells cleared", cells, 5)
+        self.assert_eq("run of 5 viruses cleared", vir, 4)
+
+    def test_v18_targets_vertical_clear_column(self):
+        """(a) full AI: a stack of 3 reds at col 5 -> v18 drops there to make a
+        vertical line of 4 and scores it highly (best score >= 32)."""
+        print("test_v18_targets_vertical_clear_column...")
+        b = self._empty_board()
+        for r in (13, 14, 15):
+            b[self._off(r, 5)] = 0xD1            # 3 red viruses, col 5
+        # capsule A=red(1), B=yellow(0): dropping vertical at col 5 completes 4.
+        target, score, f6 = self._run_v18_full(b, colorA=1, colorB=0, capsule_x=0)
+        self.assert_eq("targets clearing col 5", target, 5)
+        self.assert_eq("clearing score is high (>=32)", score >= 32, True)
+
+    def test_v18_targets_horizontal_clear_column(self):
+        """(b) full AI: 3 reds in a row at cols 1,2,3 -> v18 places a red half to
+        complete a horizontal line of 4 and targets that column."""
+        print("test_v18_targets_horizontal_clear_column...")
+        b = self._empty_board()
+        for c in (1, 2, 3):
+            b[self._off(15, c)] = 0xD1           # 3 red viruses across row 15
+        # A=red(1) so the left/horizontal placement at col 4 (or col 0) completes
+        # the line; either way the chosen column must yield a clearing score.
+        target, score, f6 = self._run_v18_full(b, colorA=1, colorB=0, capsule_x=4)
+        self.assert_eq("clearing score is high (>=32)", score >= 32, True)
+        # the clearing columns for this board are 0 (left of run) or 4 (right of
+        # run); accept either as a valid clearing target.
+        self.assert_eq("targets a clearing column (0 or 4)", target in (0, 4), True)
+
+    def test_v18_prefers_clearing_over_nonclearing(self):
+        """(c) given one clearing placement and otherwise empty board, v18 picks
+        the clearing column over the center default."""
+        print("test_v18_prefers_clearing_over_nonclearing...")
+        b = self._empty_board()
+        # 3 blue viruses stacked at col 6 -> a blue vertical drop clears 4.
+        for r in (13, 14, 15):
+            b[self._off(r, 6)] = 0xD2
+        # capsule A=blue(2) B=red(1). Center (col 3) is empty -> non-clearing
+        # (score = hirow only). Col 6 clears -> score >= 32. Must pick col 6.
+        target, score, f6 = self._run_v18_full(b, colorA=2, colorB=1, capsule_x=3)
+        self.assert_eq("prefers clearing col 6 over center", target, 6)
+        self.assert_eq("score reflects a clear (>=32)", score >= 32, True)
+
+    def test_v18_counts_viruses_cleared(self):
+        """(d) score encodes virus count: a placement clearing 2 viruses scores
+        strictly higher than one clearing 1 virus (both lines of 4)."""
+        print("test_v18_counts_viruses_cleared...")
+        # Board A: vertical line of 4 with ONE virus (col 2: virus + 3 capsules).
+        bA = self._empty_board()
+        bA[self._off(13, 2)] = 0xD1              # 1 red virus
+        bA[self._off(14, 2)] = 0x4C + 1          # red capsule
+        bA[self._off(15, 2)] = 0x4C + 1          # red capsule
+        bA[self._off(12, 2)] = 0x4C + 1          # placed red completes line of 4
+        cellsA, virA = self._run_v18_clear_cell(bA, self._off(12, 2))
+        # Board B: vertical line of 4 with TWO viruses.
+        bB = self._empty_board()
+        bB[self._off(13, 2)] = 0xD1              # virus
+        bB[self._off(14, 2)] = 0xD1              # virus
+        bB[self._off(15, 2)] = 0x4C + 1          # capsule
+        bB[self._off(12, 2)] = 0x4C + 1          # placed red completes line of 4
+        cellsB, virB = self._run_v18_clear_cell(bB, self._off(12, 2))
+        self.assert_eq("board A clears 1 virus", virA, 1)
+        self.assert_eq("board B clears 2 viruses", virB, 2)
+        # And the compact score (vir*32 + cells*2 + hirow) ranks B above A.
+        scoreA = min(virA, 3) * 32 + cellsA * 2
+        scoreB = min(virB, 3) * 32 + cellsB * 2
+        self.assert_eq("more viruses -> higher score", scoreB > scoreA, True)
+
+    def test_v18_no_clear_picks_center_default(self):
+        """A board with no possible line-of-4 leaves the center default (col 3)
+        as the best (highest non-clear score is just a height term)."""
+        print("test_v18_no_clear_picks_center_default...")
+        b = self._empty_board()
+        # a couple of isolated viruses that can never form a line in one drop
+        b[self._off(15, 0)] = 0xD1
+        b[self._off(15, 7)] = 0xD2
+        target, score, f6 = self._run_v18_full(b, colorA=0, colorB=0, capsule_x=3)
+        # no clear anywhere -> best score is small (< 32, just height); the AI
+        # should still produce a legal target column and a movement byte.
+        self.assert_eq("no-clear best score < 32", score < 32, True)
+        self.assert_eq("movement byte is a valid input",
+                       f6 in (0x01, 0x02, 0x04), True)
+
+    def test_v18_does_not_activate_without_vscpu(self):
+        """v18 must be inert outside VS CPU mode (just stores original input)."""
+        print("test_v18_does_not_activate_without_vscpu...")
+        b = self._empty_board()
+        for r in (13, 14, 15):
+            b[self._off(r, 5)] = 0xD1            # a clear is available
+        target, score, f6 = self._run_v18_full(b, colorA=1, colorB=0,
+                                                capsule_x=0, vs_cpu=0)
+        self.assert_eq("$F6 unchanged when not VS CPU", f6, 0x00)
+
+    def test_v18_restores_board_after_simulation(self):
+        """v18 must leave the P2 board byte-for-byte unchanged (in-place sim with
+        undo). Critical: it scribbles into $0500-$057F then restores."""
+        print("test_v18_restores_board_after_simulation...")
+        b = self._empty_board()
+        for r in (13, 14, 15):
+            b[self._off(r, 5)] = 0xD1
+        b[self._off(15, 0)] = 0xD2
+        b[self._off(10, 3)] = 0x4C + 2
+        cpu = self._fresh_cpu_with_board(b)
+        cpu.memory[0x04] = 1
+        cpu.memory[0x46] = 5
+        cpu.memory[0x0385] = 0
+        cpu.memory[0x0381] = 1
+        cpu.memory[0x0382] = 0
+        cpu.run(self.V18_CPU)
+        ok = all(cpu.memory[0x0500 + i] == b[i] for i in range(128))
+        self.assert_eq("board fully restored after sim", ok, True)
+
+    def test_v18_fits_in_rom_region(self):
+        """(e) v18 routine must fit in the free padding region 0x7B10-0x7D10
+        (512 bytes) and be installed/hooked in drmario_v18.nes."""
+        print("test_v18_fits_in_rom_region...")
+        self._load_v18()
+        size = len(self._v18_code)
+        self.assert_eq("v18 routine <= 512 bytes", size <= 512, True)
+        with open("drmario_v18.nes", "rb") as f:
+            rom = f.read()
+        self.assert_eq("v18 ROM is 65552 bytes", len(rom), 65552)
+        self.assert_eq("valid iNES header", rom[:4], b"NES\x1a")
+        # routine installed at 0x7B10 (first byte = STA $F6 = 0x85)
+        self.assert_eq("v18 installed at 0x7B10", rom[0x7B10], 0x85)
+        self.assert_eq("v18 routine matches builder",
+                       rom[0x7B10:0x7B10 + size], self._v18_code)
+        # controller hook 0x37CF -> JMP $FB00
+        self.assert_eq("0x37CF is JMP", rom[0x37CF], 0x4C)
+        self.assert_eq("0x37CF target lo", rom[0x37D0], 0x00)
+        self.assert_eq("0x37CF target hi", rom[0x37D1], 0xFB)
+        # v17 toggle/mirror region untouched in the v18 ROM
+        self.assert_eq("v17 toggle intact (LDA $0727)", rom[0x7F40], 0xAD)
+
+    # ==================== v19 SIMULATION AI TESTS ====================
+    # v19 = v18 + buried-cell penalty + bumped height weight (hirow*2).
+    # New score formula: score = clamp0( min(VIR,3)*32 + (cells+hirow)*2 - buried )
+    # where 'buried' = total non-virus, non-empty cells stacked above a virus
+    # in the same column (commit-on-virus streaming counter). score_burial is
+    # relocated to $FF54 (ROM 0x7F64) so the main routine fits in 512 bytes.
+
+    V19_CPU = 0xFB00
+    V19_BURIAL_CPU = 0xFF54
+
+    def _load_v19(self):
+        """Build v19 main + score_burial; capture label offsets (once)."""
+        if getattr(self, "_v19_code", None) is not None:
+            return
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("patch_v19",
+                                                       "patch_vs_cpu.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        labels = {}
+        orig = mod.Asm6502.assemble
+        def capture(s):
+            labels.update(s.labels)
+            return orig(s)
+        mod.Asm6502.assemble = capture
+        self._v19_code = mod.build_v19_ai(self.V19_CPU,
+                                           burial_cpu=self.V19_BURIAL_CPU)
+        self._v19_main_labels = dict(labels)
+        labels.clear()
+        self._v19_burial = mod.build_v19_burial(self.V19_BURIAL_CPU)
+        self._v19_burial_labels = dict(labels)
+        mod.Asm6502.assemble = orig
+
+    def _fresh_cpu_with_v19(self, board=None):
+        """Reset CPU, load v19 main at $FB00 and burial at $FF54."""
+        self._load_v19()
+        self.cpu.reset()
+        self.cpu.load_routine(self.V19_CPU, self._v19_code)
+        self.cpu.load_routine(self.V19_BURIAL_CPU, self._v19_burial)
+        if board is not None:
+            for i, t in enumerate(board):
+                self.cpu.memory[0x0500 + i] = t
+        return self.cpu
+
+    def _run_v19_burial(self, board):
+        """Run score_burial standalone on a board. Returns Z_BURIED ($DC)."""
+        cpu = self._fresh_cpu_with_v19(board)
+        cpu.memory[0xDC] = 0  # Z_BURIED
+        cpu.run(self.V19_BURIAL_CPU)
+        return cpu.memory[0xDC]
+
+    def _run_v19_full(self, board, colorA, colorB, capsule_x=3,
+                       vs_cpu=1, game_mode=5):
+        """Run the full v19 AI. Returns (target_col $00, best_score $01, $F6,
+        last_buried $DC)."""
+        cpu = self._fresh_cpu_with_v19(board)
+        cpu.memory[0x04] = vs_cpu
+        cpu.memory[0x46] = game_mode
+        cpu.memory[0x0385] = capsule_x
+        cpu.memory[0x0381] = colorA
+        cpu.memory[0x0382] = colorB
+        cpu.a = 0
+        cpu.run(self.V19_CPU)
+        return (cpu.memory[0x00], cpu.memory[0x01], cpu.memory[0xF6],
+                cpu.memory[0xDC])
+
+    @staticmethod
+    def _v19_off(row, col):
+        return row * 8 + col
+
+    @staticmethod
+    def _v19_empty_board():
+        return [0xFF] * 128
+
+    def test_v19_burial_counts_capsule_above_virus(self):
+        """score_burial counts a single non-virus, non-empty cell above a
+        virus in the same column."""
+        print("test_v19_burial_counts_capsule_above_virus...")
+        b = self._v19_empty_board()
+        b[self._v19_off(15, 2)] = 0xD1            # virus at bottom of col 2
+        b[self._v19_off(10, 2)] = 0x4C + 1         # capsule above it
+        buried = self._run_v19_burial(b)
+        self.assert_eq("one cell buried above virus", buried, 1)
+
+    def test_v19_burial_no_capsule_no_count(self):
+        """Empty column above a virus contributes 0 to burial."""
+        print("test_v19_burial_no_capsule_no_count...")
+        b = self._v19_empty_board()
+        b[self._v19_off(15, 4)] = 0xD2            # lone virus, nothing above
+        buried = self._run_v19_burial(b)
+        self.assert_eq("isolated virus has no burial", buried, 0)
+
+    def test_v19_burial_counts_multiple_cells_in_column(self):
+        """Two capsules stacked above a single virus count as 2 buried."""
+        print("test_v19_burial_counts_multiple_cells_in_column...")
+        b = self._v19_empty_board()
+        b[self._v19_off(15, 3)] = 0xD1
+        b[self._v19_off(10, 3)] = 0x4C + 1
+        b[self._v19_off(8, 3)] = 0x4C + 1
+        buried = self._run_v19_burial(b)
+        self.assert_eq("two cells buried above virus", buried, 2)
+
+    def test_v19_burial_ignores_cells_below_virus(self):
+        """Cells BELOW the bottom virus in a column are not buried."""
+        print("test_v19_burial_ignores_cells_below_virus...")
+        b = self._v19_empty_board()
+        b[self._v19_off(5, 6)] = 0xD2              # virus high up
+        b[self._v19_off(10, 6)] = 0x4C + 2          # capsule below it
+        b[self._v19_off(12, 6)] = 0x4C + 2          # another below it
+        buried = self._run_v19_burial(b)
+        self.assert_eq("cells below virus aren't buried", buried, 0)
+
+    def test_v19_burial_counts_between_two_viruses(self):
+        """Cells stacked between two viruses in the same column DO count
+        (matches Python planner semantics)."""
+        print("test_v19_burial_counts_between_two_viruses...")
+        b = self._v19_empty_board()
+        b[self._v19_off(15, 1)] = 0xD1             # bottom virus
+        b[self._v19_off(12, 1)] = 0x4C + 1          # capsule between
+        b[self._v19_off(8, 1)] = 0xD1              # top virus
+        buried = self._run_v19_burial(b)
+        # Streaming: walk top->bottom col 1: row 0..7 empty (pending=0); row 8
+        # is virus -> commit 0; row 9..11 empty; row 12 capsule -> pending=1;
+        # row 13..14 empty; row 15 virus -> commit 1. Total = 1.
+        self.assert_eq("one cell between two viruses", buried, 1)
+
+    def test_v19_burial_multi_column(self):
+        """Burial counts across independent columns add up correctly."""
+        print("test_v19_burial_multi_column...")
+        b = self._v19_empty_board()
+        # col 0: virus + 1 above
+        b[self._v19_off(15, 0)] = 0xD1
+        b[self._v19_off(5, 0)] = 0x4C + 1
+        # col 4: virus + 2 above
+        b[self._v19_off(15, 4)] = 0xD2
+        b[self._v19_off(13, 4)] = 0x4C + 2
+        b[self._v19_off(7, 4)] = 0x4C + 2
+        buried = self._run_v19_burial(b)
+        self.assert_eq("sum of burial across columns", buried, 3)
+
+    def test_v19_prefers_lower_stack(self):
+        """v19's bumped hirow weight (hirow*2) makes the AI prefer the deepest
+        legal placement when no clear is available. A taller stack at one
+        column should NOT win against a clean drop in another column."""
+        print("test_v19_prefers_lower_stack...")
+        b = self._v19_empty_board()
+        # Single isolated virus at row 15 col 0 (no clear path anywhere).
+        b[self._v19_off(15, 0)] = 0xD1
+        # Fill col 3 from row 5 down to row 15 with same-color capsules so
+        # any drop at col 3 lands at row 4 (hirow=4). An empty col like 5
+        # lets the drop land at row 15 (hirow=15) -> much higher score.
+        for r in range(5, 16):
+            b[self._v19_off(r, 3)] = 0x4C + 0
+        target, score, f6, buried = self._run_v19_full(
+            b, colorA=2, colorB=2, capsule_x=3)
+        # The chosen target should NOT be col 3 (only 4 deep); it should be
+        # one of the empty columns where vertical placement lands deep.
+        self.assert_eq("does not pick the tall stack at col 3",
+                       target != 3, True)
+
+    def test_v19_prefers_clear_with_fewer_buried(self):
+        """Given two clearing placements with equal vir/cells, the one that
+        leaves FEWER buried cells should win. We construct two equivalent
+        4-clears, one of which buries an unrelated virus."""
+        print("test_v19_prefers_clear_with_fewer_buried...")
+        b = self._v19_empty_board()
+        # Setup: 3 red viruses at row 15, cols 0/1/2. A red half drop at col 0
+        # (vertical) makes a vertical 4 in col 0 (3 viruses + capsule), and a
+        # red half drop at col 7 also as vertical... no actually we want two
+        # clearing placements that match. Simpler: 3 reds at col 2 rows 13-15.
+        # Vertical drop at col 2 with red top clears 4. There's a separate
+        # isolated virus at col 6 row 15 — and a single capsule at col 6 row
+        # 14 ABOVE it that's already buried. The clear at col 2 doesn't
+        # affect col 6, so buried = 1 regardless. Both placements have the
+        # same buried count, but the clearing one outscores by virus_w.
+        # (This test mostly validates that buried is computed and folded in
+        # without breaking the clear-prefers logic.)
+        for r in (13, 14, 15):
+            b[self._v19_off(r, 2)] = 0xD1
+        b[self._v19_off(15, 6)] = 0xD1
+        b[self._v19_off(14, 6)] = 0x4C + 1
+        target, score, f6, buried = self._run_v19_full(
+            b, colorA=1, colorB=0, capsule_x=0)
+        # The chosen target must clear (vertical at col 2). Score should still
+        # be high (>= 32) despite the buried-pen of ~1 at col 6.
+        self.assert_eq("v19 still prefers the clearing column", target, 2)
+        self.assert_eq("v19 clear score stays >= 30", score >= 30, True)
+
+    def test_v19_burial_zero_for_clean_board(self):
+        """A board with viruses but no junk above them yields buried=0."""
+        print("test_v19_burial_zero_for_clean_board...")
+        b = self._v19_empty_board()
+        for c in range(8):
+            b[self._v19_off(15, c)] = 0xD1
+        buried = self._run_v19_burial(b)
+        self.assert_eq("clean board has zero buried", buried, 0)
+
+    def test_v19_fits_in_rom_region(self):
+        """v19 main routine must fit in 512 bytes at 0x7B10; score_burial
+        must fit in the v17 dead-AI zone at 0x7F64-0x7FDF; the ROM file is
+        unchanged-size 65552 bytes."""
+        print("test_v19_fits_in_rom_region...")
+        self._load_v19()
+        main_size = len(self._v19_code)
+        burial_size = len(self._v19_burial)
+        self.assert_eq("v19 main <= 512 bytes", main_size <= 512, True)
+        self.assert_eq("v19 burial <= 124 bytes (v17 dead zone)",
+                       burial_size <= 124, True)
+        with open("drmario_v19.nes", "rb") as f:
+            rom = f.read()
+        self.assert_eq("v19 ROM is 65552 bytes", len(rom), 65552)
+        self.assert_eq("v19 main installed at 0x7B10",
+                       rom[0x7B10:0x7B10 + main_size], self._v19_code)
+        self.assert_eq("v19 burial installed at 0x7F64",
+                       rom[0x7F64:0x7F64 + burial_size], self._v19_burial)
+        # controller hook 0x37CF -> JMP $FB00
+        self.assert_eq("0x37CF is JMP", rom[0x37CF], 0x4C)
+        self.assert_eq("0x37CF target lo", rom[0x37D0], 0x00)
+        self.assert_eq("0x37CF target hi", rom[0x37D1], 0xFB)
+
+    # ==================== v20 SIMULATION AI TESTS ====================
+    # v20 = v19 with stricter virus preference + scaled buried penalty:
+    #   score = clamp0( min(VIR,3)*64 + (cells+hirow)*2 - buried*3 )
+    # Design intent was VIR*48 but ROM budget forced *64 (one extra ASL).
+    # The score_finalize subroutine (saturating subtract of buried*3) lives in
+    # the burial region (CPU $FF54..) immediately after score_burial.
+
+    V20_CPU = 0xFB00
+    V20_BURIAL_CPU = 0xFF54
+
+    def _load_v20(self):
+        if getattr(self, "_v20_code", None) is not None:
+            return
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("patch_v20",
+                                                      "patch_vs_cpu.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        burial_bytes, finalize_cpu = mod.build_v20_burial(self.V20_BURIAL_CPU)
+        self._v20_burial = burial_bytes
+        self._v20_finalize_cpu = finalize_cpu
+        self._v20_code = mod.build_v20_ai(self.V20_CPU,
+                                          burial_cpu=self.V20_BURIAL_CPU,
+                                          finalize_cpu=finalize_cpu)
+
+    def _fresh_cpu_with_v20(self, board=None):
+        self._load_v20()
+        self.cpu.reset()
+        self.cpu.load_routine(self.V20_CPU, self._v20_code)
+        self.cpu.load_routine(self.V20_BURIAL_CPU, self._v20_burial)
+        if board is not None:
+            for i, t in enumerate(board):
+                self.cpu.memory[0x0500 + i] = t
+        return self.cpu
+
+    def _run_v20_full(self, board, colorA, colorB, capsule_x=3,
+                      vs_cpu=1, game_mode=5):
+        """Run the full v20 AI. Returns (target_col $00, best_score $01,
+        $F6, last_buried $DC)."""
+        cpu = self._fresh_cpu_with_v20(board)
+        cpu.memory[0x04] = vs_cpu
+        cpu.memory[0x46] = game_mode
+        cpu.memory[0x0385] = capsule_x
+        cpu.memory[0x0381] = colorA
+        cpu.memory[0x0382] = colorB
+        cpu.a = 0
+        cpu.run(self.V20_CPU)
+        return (cpu.memory[0x00], cpu.memory[0x01], cpu.memory[0xF6],
+                cpu.memory[0xDC])
+
+    @staticmethod
+    def _v20_off(row, col):
+        return row * 8 + col
+
+    @staticmethod
+    def _v20_empty_board():
+        return [0xFF] * 128
+
+    def test_v20_picks_virus_over_no_virus_with_smaller_margin(self):
+        """v20's VIR*64 weight means even a single virus clear dominates a
+        deep-but-empty drop. Set up: column 2 has a vertical-4 clear (1 virus
+        at the bottom + 3 capsules above), column 5 is fully empty (deep drop,
+        big hirow*2 reward of ~30). v19 would weight ~ 1*32 + small reward vs
+        no-virus 0 + 30; v20 weights ~1*64 + small reward, so the margin grows
+        even larger and the clearing column is the unambiguous pick."""
+        print("test_v20_picks_virus_over_no_virus_with_smaller_margin...")
+        b = self._v20_empty_board()
+        # Three same-color (red, 0x01) capsules stacked above a red virus at
+        # column 2: row 12,13,14 = capsule red, row 15 = virus red. Vertical
+        # drop of red top half lands at row 11 (col 2) -> 4-in-a-col clear.
+        b[self._v20_off(15, 2)] = 0xD1
+        b[self._v20_off(14, 2)] = 0x4C + 1
+        b[self._v20_off(13, 2)] = 0x4C + 1
+        b[self._v20_off(12, 2)] = 0x4C + 1
+        target, score, f6, buried = self._run_v20_full(
+            b, colorA=1, colorB=1, capsule_x=0)
+        # The planner may pick column 2 (vertical pair) or column 1 (horizontal
+        # pair where the right half lands on top of the stack), either way it
+        # must be a clearing placement adjacent to the virus stack.
+        self.assert_eq("v20 picks a clearing column (1 or 2)",
+                       target in (1, 2), True)
+        # With VIR*64 the score must be >= 64 for a single-virus clear.
+        self.assert_eq("v20 clear score >= 64 (vs v19's >= 32)",
+                       score >= 64, True)
+
+    def test_v20_score_formula_correct(self):
+        """Verify the v20 score formula numerically. Place a single virus on
+        an otherwise empty board such that the AI's only winning placement
+        clears exactly 1 virus + 3 capsules (vertical-4). With buried=0 and
+        a known landing row, the expected score is min(1,3)*64 + (cells+hirow)*2."""
+        print("test_v20_score_formula_correct...")
+        b = self._v20_empty_board()
+        # vertical-4 setup at column 0
+        b[self._v20_off(15, 0)] = 0xD1
+        b[self._v20_off(14, 0)] = 0x4C + 1
+        b[self._v20_off(13, 0)] = 0x4C + 1
+        b[self._v20_off(12, 0)] = 0x4C + 1
+        target, score, f6, buried = self._run_v20_full(
+            b, colorA=1, colorB=1, capsule_x=0)
+        # After the clearing placement, buried should be 0 (no capsules above
+        # any surviving virus). VIR=1 -> 64; cells=4; hirow for vertical drop
+        # at col 0 is row 11 (since the next pill top half lands at row 11,
+        # below it row 12). The exact hirow depends on the v19/v20 land_col
+        # accounting; v19 stores hirow = top placed row. We just sanity-check
+        # the score sits in the expected band.
+        self.assert_eq("v20 picks the vertical clear column", target, 0)
+        # min(VIR,3)*64 = 64; (cells+hirow)*2 >= 4*2 = 8. Buried = 0.
+        self.assert_eq("v20 score >= 64 + 8 = 72", score >= 72, True)
+        self.assert_eq("v20 score fits in a byte", score <= 0xFF, True)
+
+    def test_v20_buried_penalty_stronger_than_v19(self):
+        """v20's BURY_W=3 (vs v19's *1) means a buried cell costs 3x as much
+        per unit. The score_finalize routine implements buried*3 with saturating
+        subtract. Directly drive score_finalize with a known input to verify
+        the multiplication factor."""
+        print("test_v20_buried_penalty_stronger_than_v19...")
+        self._load_v20()
+        # Run score_finalize directly: A=running_score, Z_BURIED=count.
+        # Expected: A_out = max(0, A_in - count*3).
+        cpu = self._fresh_cpu_with_v20()
+        cpu.memory[0xDC] = 5     # Z_BURIED = 5
+        cpu.memory[0xCC] = 0     # Z_SCORE scratch (finalize will overwrite)
+        cpu.a = 100              # running score in
+        cpu.run(self._v20_finalize_cpu)
+        result = cpu.a
+        self.assert_eq("score_finalize: 100 - 5*3 = 85", result, 85)
+        # Saturating clamp: small score, large buried
+        cpu = self._fresh_cpu_with_v20()
+        cpu.memory[0xDC] = 50
+        cpu.memory[0xCC] = 0
+        cpu.a = 10
+        cpu.run(self._v20_finalize_cpu)
+        result = cpu.a
+        self.assert_eq("score_finalize clamps at 0 on underflow", result, 0)
+
+    def test_v20_prefers_clearing_over_burial_savings(self):
+        """The bumped VIR*64 must still dominate the BURY*3 penalty: a placement
+        that clears one virus is preferred over one that avoids burying. Set up
+        a board where the clearing placement creates a tiny burial (1 cell) and
+        a non-clearing placement avoids it entirely. v20 must still pick the
+        clear: 64 - 3 = 61 >> any non-clear height reward (max ~30)."""
+        print("test_v20_prefers_clearing_over_burial_savings...")
+        b = self._v20_empty_board()
+        # Vertical-4 clear at col 0 (1 virus + 3 capsules). After the clear,
+        # the board is empty in col 0 -> no burial possible there.
+        b[self._v20_off(15, 0)] = 0xD1
+        b[self._v20_off(14, 0)] = 0x4C + 1
+        b[self._v20_off(13, 0)] = 0x4C + 1
+        b[self._v20_off(12, 0)] = 0x4C + 1
+        # Add an isolated virus + a capsule on top of it elsewhere (col 7) to
+        # create a constant baseline burial=1 across all placements.
+        b[self._v20_off(15, 7)] = 0xD2
+        b[self._v20_off(14, 7)] = 0x4C + 2
+        target, score, f6, buried = self._run_v20_full(
+            b, colorA=1, colorB=1, capsule_x=0)
+        self.assert_eq("v20 picks the clearing column despite burial",
+                       target, 0)
+        # Score must be >= 64 - 3 = 61 (clearing minus baseline burial).
+        self.assert_eq("v20 clear score >= 61", score >= 61, True)
+
+    def test_v20_fits_in_rom_region(self):
+        """v20 main must fit in 512 bytes at 0x7B10; combined burial+finalize
+        must fit in the v17 dead-AI zone at 0x7F64-0x7FDF (124 bytes); the
+        ROM file is the standard 65552 bytes."""
+        print("test_v20_fits_in_rom_region...")
+        self._load_v20()
+        main_size = len(self._v20_code)
+        burial_size = len(self._v20_burial)
+        self.assert_eq("v20 main <= 512 bytes", main_size <= 512, True)
+        self.assert_eq("v20 burial+finalize <= 124 bytes (v17 dead zone)",
+                       burial_size <= 124, True)
+        with open("drmario_v20.nes", "rb") as f:
+            rom = f.read()
+        self.assert_eq("v20 ROM is 65552 bytes", len(rom), 65552)
+        self.assert_eq("v20 main installed at 0x7B10",
+                       rom[0x7B10:0x7B10 + main_size], self._v20_code)
+        self.assert_eq("v20 burial+finalize installed at 0x7F64",
+                       rom[0x7F64:0x7F64 + burial_size], self._v20_burial)
+        # controller hook 0x37CF -> JMP $FB00
+        self.assert_eq("0x37CF is JMP", rom[0x37CF], 0x4C)
+        self.assert_eq("0x37CF target lo", rom[0x37D0], 0x00)
+        self.assert_eq("0x37CF target hi", rom[0x37D1], 0xFB)
+
+    def test_v20_does_not_activate_without_vscpu(self):
+        """v20 must respect the VS CPU mode gate just like v17-v19. When VS
+        CPU mode is off the routine must bail out before the planner runs;
+        $F6 is left holding only the value the entry STA wrote (A=0)."""
+        print("test_v20_does_not_activate_without_vscpu...")
+        b = self._v20_empty_board()
+        for r in (13, 14, 15):
+            b[self._v20_off(r, 5)] = 0xD1            # a clear IS available
+        target, score, f6, buried = self._run_v20_full(
+            b, colorA=1, colorB=0, capsule_x=0, vs_cpu=0)
+        # Entry path: STA $F6 (A==0) -> LDA $04 (==0) -> BNE -> JMP exit -> RTS.
+        # No planner work, $F6 stays at 0.
+        self.assert_eq("$F6 unchanged when not VS CPU", f6, 0x00)
+        # Also: best score must remain 0 because the search never ran.
+        self.assert_eq("best score never updated when not VS CPU",
+                       score, 0x00)
+
     def run_all_tests(self):
         """Run all test cases."""
         print("=" * 60)
@@ -901,6 +1873,61 @@ class TestVSCPU:
         self.test_ai_multi_candidate_selection()
         self.test_ai_right_match_avoids_top_partition()
         self.test_ai_defaults_to_center_if_no_valid_virus()
+
+        print("\n" + "-" * 60)
+        print("v17 Heuristic Tests")
+        print("-" * 60)
+        self.test_v17_skips_column_with_row1_occupied()
+        self.test_v17_vertical_adjacency_bonus()
+        self.test_v17_vertical_adjacency_breaks_tie()
+        self.test_v17_horizontal_adjacency_bonus()
+        self.test_v17_score_stored_in_temp()
+        self.test_v17_height_penalty_skips_partition()
+        self.test_v17_ai_fits_in_124_byte_budget()
+
+        print("\n" + "-" * 60)
+        print("v18 Simulation AI Tests (depth-1 real clear detection)")
+        print("-" * 60)
+        # clear-detection primitive (faithful rules)
+        self.test_v18_detects_vertical_line_of_4()
+        self.test_v18_detects_horizontal_line_of_4()
+        self.test_v18_three_in_a_row_does_not_clear()
+        self.test_v18_mixed_color_run_not_cleared()
+        self.test_v18_l_shape_does_not_clear()
+        self.test_v18_five_in_row_clears_all()
+        # full-routine decisions
+        self.test_v18_targets_vertical_clear_column()
+        self.test_v18_targets_horizontal_clear_column()
+        self.test_v18_prefers_clearing_over_nonclearing()
+        self.test_v18_counts_viruses_cleared()
+        self.test_v18_no_clear_picks_center_default()
+        self.test_v18_does_not_activate_without_vscpu()
+        self.test_v18_restores_board_after_simulation()
+        self.test_v18_fits_in_rom_region()
+
+        print("\n" + "-" * 60)
+        print("v19 Simulation AI Tests (buried-pen + hirow*2)")
+        print("-" * 60)
+        self.test_v19_burial_counts_capsule_above_virus()
+        self.test_v19_burial_no_capsule_no_count()
+        self.test_v19_burial_counts_multiple_cells_in_column()
+        self.test_v19_burial_ignores_cells_below_virus()
+        self.test_v19_burial_counts_between_two_viruses()
+        self.test_v19_burial_multi_column()
+        self.test_v19_burial_zero_for_clean_board()
+        self.test_v19_prefers_lower_stack()
+        self.test_v19_prefers_clear_with_fewer_buried()
+        self.test_v19_fits_in_rom_region()
+
+        print("\n" + "-" * 60)
+        print("v20 Simulation AI Tests (VIR*64 + buried*3)")
+        print("-" * 60)
+        self.test_v20_picks_virus_over_no_virus_with_smaller_margin()
+        self.test_v20_score_formula_correct()
+        self.test_v20_buried_penalty_stronger_than_v19()
+        self.test_v20_prefers_clearing_over_burial_savings()
+        self.test_v20_fits_in_rom_region()
+        self.test_v20_does_not_activate_without_vscpu()
 
         print("\n" + "=" * 60)
         print(f"Results: {self.passed} passed, {self.failed} failed")

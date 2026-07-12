@@ -1,0 +1,401 @@
+#!/usr/bin/env python3
+"""Build drmario_copro.nes — the COPROCESSOR cartridge for the custom MiSTer NES core
+(mapper 100 = MMC1 + Dr.Mario coprocessor at $5000-$51FF), with AUTO-NAV: the cart boots
+itself into a VS-CPU L11 match and re-arms after every match. No controller needed (built
+for a MiSTer whose physical controls are broken; also makes it a self-running demo).
+
+How: the v28cs blob head at $FB00 (reached from the 0x37CF controller hook EVERY frame,
+all modes) is repointed to the $FF54 trampoline, which bank-switches to unit-1 and runs
+`main` each frame:
+  menu modes  -> autonav state machine injecting P1 presses into $F5 (SELECT,SELECT,START,
+                 LEFT x15, RIGHT x11, START) so the hack's own menu toggle sets VS-CPU
+                 state properly; mirrors $F5->$F6 when $04=1 (P2 level cursor).
+  intro (8)   -> hands off (no stray START).
+  play (4)    -> the copro driver: on new pill upload board+colors to the FPGA window,
+                 GO, hold pill while DONE=0, then publish best move to $DD/$DA and act.
+The heavy depth-2 search runs on the SECOND 6502 inside the FPGA (~0.2-0.3s/pill vs 78s).
+NOT Mesen-compatible (mapper 100) — MiSTer custom core only.
+"""
+import sys
+sys.path.insert(0, "tests")
+from patch_vs_cpu import Asm6502
+import patch_vs_cpu as _pv
+_pv.OPS.setdefault("ORA_abs", 0x0D)
+from expand_prg import expand
+
+V28CS = "drmario_v28cs.nes"
+OUT = "drmario_copro.nes"
+UNIT1_CPU = 0x8000
+WRAP_CPU = 0xFF54
+WRAP_FILE = 0x4010 + (WRAP_CPU - 0xC000)
+BLOB_FILE = 0x7B10                       # CPU $FB00
+PRG_REG = 0xFFF0
+ARMED = 0x6143             # PRG-RAM: !=0 searching (hold), ==0 act
+NAV_T, NAV_MAGIC = 0x6147, 0x6149   # autonav frame counter + PRG-RAM power-on magic
+GRAV_P1, GRAV_P2 = 0x0312, 0x0392   # per-player gravity counters
+# CPU-vs-CPU: FPGA coprocessor is time-shared between P1 and P2 (~0.3s per pill each);
+# ARMED tracks in-flight search, WHICH is 1=serving P1, 2=serving P2, PEND_* records
+# player i's pill has locked and needs a search, TGT_C/O_* are that player's target move.
+WHICH  = 0x614D
+PEND1  = 0x614E
+PEND2  = 0x614F
+TGT_C1 = 0x6150
+TGT_O1 = 0x6151
+TGT_C2 = 0x6152
+TGT_O2 = 0x6153
+LASTY1 = 0x6154
+LASTY2 = 0x6155
+STKX1, STKY1, STK1 = 0x6156, 0x6157, 0x6158   # P1 stagnation: last x/y + stuck-frame count
+STKX2, STKY2, STK2 = 0x6159, 0x615A, 0x615B   # P2 stagnation
+WDOG, WRETRY = 0x615C, 0x615D   # search watchdog: ticks-while-ARMED + one-retry latch
+DELAY1, DELAY2 = 0x615E, 0x615F  # post-edge settle: preview/board can update a beat after spawn
+TURN = 0x6160    # (unused in dual-copro) fair round-robin serving
+# DUAL COPRO: each player has its OWN coprocessor + search state -> no time-sharing.
+# copro1 window $5000-$51FF serves P1; copro2 window $5200-$53FF serves P2.
+ARMED2, WDOG2, WRETRY2 = 0x6161, 0x6162, 0x6163   # P2's independent search state (ARMED/WDOG/WRETRY = P1's)
+MATCH_ACTIVE = 0x6164   # set once play is dispatched; gates the full-clear STAGE-CLEAR auto-advance
+WDOGH1, WDOGH2 = 0x6165, 0x6166   # watchdog HIGH bytes: depth-3 searches run seconds, not frames
+WDOG_HI_LIM = 56                  # timeout = 56*256 = 14336 ticks ~= 4min (FULL-ply1 d3 first pill
+                                  # ~95s measured-scaled on the dense 48-virus board; 2.5x margin)
+# per-copro tie-break seeds (same eval, different near-tie resolution -> desyncs mirror play).
+# Derived once per match from NAV_T; ride the color uploads' HIGH nibbles (firmware masks &$0F
+# and extracts SEED=(CB&$F0)|(CA>>4); seed 0 = jitter off).
+SEED1, SEED2, TMPSEED = 0x6167, 0x6168, 0x6169
+VSEEN1, VSEEN2 = 0x616A, 0x616B   # count-was-nonzero-this-match latches (gate the auto-advance:
+                                  # in 1P/demo contexts the unused P2 count reads 0 -> START-spam)
+import os as _os
+USE_SEEDS = _os.environ.get("DRSEED", "1") != "0"   # DRSEED=0 -> seeds stay 0 = deterministic mirror
+VCOUNT_P1, VCOUNT_P2 = 0x0324, 0x03A4   # remaining virus counts (0 => that player cleared -> STAGE CLEAR)
+W2_BASE = 0x5200
+# if a pill sits still this many frames (while not search-frozen), force DOWN to unstick
+STUCK_LIM = 60        # 1s -- continuous holds again; if truly stuck kick fast to unpark
+# copro window (mapper 100)
+W_BOARD, W_CA, W_GO, W_DONE, W_COL, W_OR = 0x5000, 0x5080, 0x5084, 0x5084, 0x5085, 0x5086
+# NES pad bits on $F5 (pressed-this-frame): A=$80 B=$40 Sel=$20 Start=$10 U=$08 D=$04 L=$02 R=$01
+B_SEL, B_START, B_LEFT, B_RIGHT = 0x20, 0x10, 0x02, 0x01
+
+
+def build_main(level=11, speed=1):
+    a = Asm6502(UNIT1_CPU)
+
+    # ================= per-frame entry =================
+    a.label("main")
+    # PRG-RAM power-on init (SDRAM boots as garbage): magic byte at NAV_MAGIC
+    a.ins16("LDA_abs", NAV_MAGIC); a.ins("CMP_imm", 0xA5); a.br("BEQ", "inited")
+    a.ins("LDA_imm", 0xA5); a.ins16("STA_abs", NAV_MAGIC)
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", ARMED); a.ins16("STA_abs", NAV_T)
+    a.ins16("STA_abs", STK1); a.ins16("STA_abs", STK2); a.ins16("STA_abs", MATCH_ACTIVE)
+    a.ins16("STA_abs", WDOG); a.ins16("STA_abs", WRETRY)
+    a.ins16("STA_abs", ARMED2); a.ins16("STA_abs", WDOG2); a.ins16("STA_abs", WRETRY2)
+    a.ins16("STA_abs", WDOGH1); a.ins16("STA_abs", WDOGH2)
+    a.ins16("STA_abs", SEED1); a.ins16("STA_abs", SEED2)
+    a.ins16("STA_abs", VSEEN1); a.ins16("STA_abs", VSEEN2)
+    a.ins("LDA_imm", 3)                                     # sane targets pre-first-publish
+    a.ins16("STA_abs", TGT_C1); a.ins16("STA_abs", TGT_O1)
+    a.ins16("STA_abs", TGT_C2); a.ins16("STA_abs", TGT_O2)
+    a.ins("LDA_imm", 2); a.ins16("STA_abs", TURN)          # fair-serve round-robin seed
+    a.label("inited")
+    a.ins16("INC_abs", NAV_T)                               # tick every hook call (autonav only ticked in menus)
+    # ---- full-clear auto-advance (mode-independent): a player's virus count ($0324/$03A4) hit 0
+    # => STAGE CLEAR screen. Inject START (press window) to advance it so the demo LOOPS instead
+    # of halting. Gated by MATCH_ACTIVE (set once play dispatched) so boot-init count==0 can't
+    # false-trigger (which would wreck the boot state machine). ----
+    a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BEQ", "fc_no")
+    a.ins16("LDA_abs", VCOUNT_P1); a.br("BNE", "fc_chk2")
+    a.ins16("LDA_abs", VSEEN1); a.br("BNE", "fc_clear")     # P1==0 counts only if it was ever >0
+    a.label("fc_chk2")
+    a.ins16("LDA_abs", VCOUNT_P2); a.br("BNE", "fc_no")
+    a.ins16("LDA_abs", VSEEN2); a.br("BEQ", "fc_no")
+    a.label("fc_clear")                                     # full clear -> own the frame (skip normal dispatch)
+    a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 4); a.br("BCS", "fc_ret")
+    a.ins("LDA_imm", B_START); a.ins("STA_zp", 0xF5)        # inject START to dismiss STAGE CLEAR
+    a.label("fc_ret"); a.ins("RTS")
+    a.label("fc_no")
+    a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "not_play")
+    a.ins("LDA_zp", 0x04); a.br("BNE", "go_ai"); a.ins("RTS")
+    a.label("go_ai")
+    if USE_SEEDS:
+        a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_on")  # first play frame of this match:
+        a.ins16("LDA_abs", NAV_T); a.ins("ORA_imm", 0x01); a.ins16("STA_abs", SEED1)   # root seed
+        a.ins("EOR_imm", 0xA4); a.ins16("STA_abs", SEED2)       # bit0 kept -> both odd, distinct
+        a.label("ga_on")
+    a.ins("LDA_imm", 1); a.ins16("STA_abs", MATCH_ACTIVE)   # play started -> arm full-clear detect
+    a.ins16("LDA_abs", VCOUNT_P1); a.br("BEQ", "ga_v2"); a.ins("LDA_imm", 1); a.ins16("STA_abs", VSEEN1)
+    a.label("ga_v2")
+    a.ins16("LDA_abs", VCOUNT_P2); a.br("BEQ", "ga_vd"); a.ins("LDA_imm", 1); a.ins16("STA_abs", VSEEN2)
+    a.label("ga_vd")
+    a.jmp("dispatch")
+    a.label("not_play")
+    a.ins("CMP_imm", 0x08); a.br("BNE", "menus")
+    # intro mode ONLY happens at power-on/reset: re-arm the autonav (PRG-RAM persists across
+    # soft core relaunches, so the NAV_MAGIC one-time init does NOT re-run -> stale NAV_T killed
+    # the nav and the title idled into attract mode). Zeroing here makes every boot nav cleanly.
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", NAV_T); a.ins16("STA_abs", MATCH_ACTIVE)
+    a.ins16("STA_abs", VSEEN1); a.ins16("STA_abs", VSEEN2)
+    a.ins("RTS")                                            # intro/init: hands off otherwise
+    a.label("menus")
+    a.jsr("autonav")
+    a.ins("LDA_zp", 0x04); a.br("BEQ", "m_done")
+    a.ins("LDA_zp", 0xF5); a.ins("STA_zp", 0xF6)            # VS: mirror P1->P2 (level cursor)
+    a.label("m_done"); a.ins("RTS")
+
+    # ============ autonav: direct state + $F5-only START injection (ZERO input) ============
+    # SELECT-equivalent: JSR $FF30 (hack's own toggle; touches only $0727/$04/$06F1) until
+    # $04==1. Levels: force $0316/$0396/$96=11 in mode 1. STARTs: inject $F5=$10 in a press
+    # window. KEY: inject $F5 ONLY -- the read routine ANDs two raw passes (hook fires in
+    # both, value survives) then computes newly-pressed = raw & ~held($F7); writing $F7 too
+    # marks the button already-held and zeroes the edge (the original injection bug).
+    # Window (NAV_T & $1F) < 4: pressed ~1 frame in ~6 (hook ~5 calls/frame), then released.
+    def inject(bits):
+        a.ins("LDA_imm", bits); a.ins("STA_zp", 0xF5)
+        a.ins16("STA_abs", 0x6148)                          # DBG: last injected
+        a.ins16("INC_abs", 0x614B)                          # DBG: inject count
+    a.label("autonav")
+    a.ins16("LDA_abs", 0x0046)
+    a.ins("CMP_imm", 0x00); a.br("BEQ", "an_title")
+    a.ins("CMP_imm", 0x01); a.br("BEQ", "an_lvl")
+    a.ins("CMP_imm", 0x07); a.br("BEQ", "an_start")         # post-match: START -> rematch
+    a.ins("RTS")
+    a.label("an_title")
+    a.ins("LDA_zp", 0x04); a.br("BEQ", "an_tog")
+    a.jmp("an_start")                                       # VS armed -> START off the title
+    a.label("an_tog")
+    a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 1); a.br("BEQ", "an_tog_go")
+    a.ins("RTS")
+    a.label("an_tog_go")
+    a.jsr(0xFF30)                                           # hack's toggle: 1P->2P->VS-CPU
+    a.ins("RTS")
+    a.label("an_lvl")
+    a.ins("LDA_imm", level)
+    a.ins16("STA_abs", 0x0316)                              # P1 level
+    a.ins16("STA_abs", 0x0396)                              # P2 level (+$80 struct offset)
+    a.ins("STA_zp", 0x96)                                   # live cursor (cosmetic)
+    a.ins("LDA_imm", speed); a.ins("STA_zp", 0x45)         # force game speed (0=LOW,1=MED,2=HI)
+    a.label("an_start")
+    a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 4); a.br("BCC", "an_st_go")
+    a.ins("RTS")
+    a.label("an_st_go")
+    inject(B_START)
+    a.ins("RTS")
+
+    # ================= play-mode CPU-vs-CPU driver (time-shared FPGA) =================
+    a.label("dispatch")
+    # ---- pill-lock edge detect (both players) ----
+    a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", LASTY1)
+    a.br("BCC", "no_p1_new"); a.br("BEQ", "no_p1_new")
+    a.ins("LDA_imm", 1); a.ins16("STA_abs", PEND1)
+    a.ins("LDA_imm", 15); a.ins16("STA_abs", DELAY1)        # ~3 frames settle before upload
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", WRETRY)
+    a.label("no_p1_new")
+    a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", LASTY1)
+    a.ins16("LDA_abs", 0x0386); a.ins16("CMP_abs", LASTY2)
+    a.br("BCC", "no_p2_new"); a.br("BEQ", "no_p2_new")
+    a.ins("LDA_imm", 1); a.ins16("STA_abs", PEND2)
+    a.ins("LDA_imm", 15); a.ins16("STA_abs", DELAY2)        # ~3 frames settle before upload
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", WRETRY)
+    a.label("no_p2_new")
+    a.ins16("LDA_abs", 0x0386); a.ins16("STA_abs", LASTY2)
+
+    # ---- stagnation detect: pill not moving while not search-frozen -> count up ----
+    def stagnate(px, py, sx, sy, cnt, armed, pend, tag):
+        a.ins16("LDA_abs", px); a.ins16("CMP_abs", sx); a.br("BNE", f"mvd_{tag}")
+        a.ins16("LDA_abs", py); a.ins16("CMP_abs", sy); a.br("BNE", f"mvd_{tag}")
+        # Skip while PENDING (waiting for its search -> would force-drop in the spawn center)
+        # or while being SEARCHED (frozen). Only a genuinely wedged pill should force-drop.
+        a.ins16("LDA_abs", pend); a.br("BNE", f"sk_{tag}")
+        a.ins16("LDA_abs", armed); a.br("BNE", f"sk_{tag}")
+        a.label(f"cnt_{tag}")
+        a.ins16("INC_abs", cnt)
+        a.jmp(f"sk_{tag}")
+        a.label(f"mvd_{tag}")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", cnt)
+        a.ins16("LDA_abs", px); a.ins16("STA_abs", sx)
+        a.ins16("LDA_abs", py); a.ins16("STA_abs", sy)
+        a.label(f"sk_{tag}")
+    stagnate(0x0305, 0x0306, STKX1, STKY1, STK1, ARMED, PEND1, "s1")
+    stagnate(0x0385, 0x0386, STKX2, STKY2, STK2, ARMED2, PEND2, "s2")
+
+    # ---- DUAL-COPRO search: each player drives its OWN coprocessor; both run in parallel.
+    # No time-sharing => no WHICH / fair-serving / pending-wait. handle() emitted per player.
+    def handle(idx, wbase, board_src, colsrcs, armed, wdog, wretry, pend, delay, tgt_c, tgt_o, wdogh, seedsrc):
+        wgo, wdone, wcol, wor = wbase + 0x84, wbase + 0x84, wbase + 0x85, wbase + 0x86
+        L = f"h{idx}"
+        a.ins16("LDA_abs", delay); a.br("BEQ", f"{L}_dz"); a.ins16("DEC_abs", delay)   # settle timer
+        a.label(f"{L}_dz")
+        a.ins16("LDA_abs", armed); a.br("BEQ", f"{L}_start")     # not searching -> maybe start
+        a.ins16("LDA_abs", wdone); a.br("BEQ", f"{L}_search")    # DONE==0 -> still searching
+        # publish result: best_col + orient4 -> game orient map {0xFF/0:3, 1:1, 2:0, 3:2}
+        a.ins16("LDA_abs", wcol); a.ins16("STA_abs", tgt_c)
+        a.ins16("LDA_abs", wor); a.ins("CMP_imm", 0xFF); a.br("BNE", f"{L}_map")
+        a.ins("LDA_imm", 3); a.jmp(f"{L}_pst")
+        a.label(f"{L}_map")
+        a.ins("CMP_imm", 0); a.br("BNE", f"{L}_m1"); a.ins("LDA_imm", 3); a.jmp(f"{L}_pst")
+        a.label(f"{L}_m1"); a.ins("CMP_imm", 1); a.br("BNE", f"{L}_m2"); a.ins("LDA_imm", 1); a.jmp(f"{L}_pst")
+        a.label(f"{L}_m2"); a.ins("CMP_imm", 2); a.br("BNE", f"{L}_m3"); a.ins("LDA_imm", 0); a.jmp(f"{L}_pst")
+        a.label(f"{L}_m3"); a.ins("LDA_imm", 2)
+        a.label(f"{L}_pst"); a.ins16("STA_abs", tgt_o)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
+        a.jmp(f"{L}_done")
+        a.label(f"{L}_search")           # 16-bit watchdog: d3 searches take seconds; abandon ~30s, re-queue once
+        a.ins16("INC_abs", wdog); a.br("BNE", f"{L}_wl"); a.ins16("INC_abs", wdogh)
+        a.label(f"{L}_wl")
+        a.ins16("LDA_abs", wdogh); a.ins("CMP_imm", WDOG_HI_LIM); a.br("BCS", f"{L}_wto"); a.jmp(f"{L}_done"); a.label(f"{L}_wto")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
+        a.ins16("LDA_abs", wretry); a.br("BEQ", f"{L}_rt"); a.jmp(f"{L}_done"); a.label(f"{L}_rt")
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", wretry); a.ins16("STA_abs", pend)
+        a.jmp(f"{L}_done")
+        a.label(f"{L}_start")            # start a search: upload board+colors to THIS copro, GO
+        a.ins16("LDA_abs", pend); a.br("BNE", f"{L}_st1"); a.jmp(f"{L}_done"); a.label(f"{L}_st1")
+        a.ins16("LDA_abs", delay); a.br("BEQ", f"{L}_st2"); a.jmp(f"{L}_done"); a.label(f"{L}_st2")
+        a.ins("LDX_imm", 0)
+        a.label(f"{L}_cp")
+        a.ins16("LDA_absX", board_src); a.ins16("STA_absX", wbase)
+        a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", f"{L}_cp")
+        for k, src in enumerate(colsrcs):
+            if k == 0:      # cA carries seed low nibble (<<4)
+                a.ins16("LDA_abs", seedsrc)
+                a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+                a.ins16("STA_abs", TMPSEED)
+                a.ins16("LDA_abs", src); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED)
+            elif k == 1:    # cB carries seed high nibble
+                a.ins16("LDA_abs", seedsrc); a.ins("AND_imm", 0xF0); a.ins16("STA_abs", TMPSEED)
+                a.ins16("LDA_abs", src); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED)
+            else:
+                a.ins16("LDA_abs", src); a.ins("AND_imm", 0x0F)
+            a.ins16("STA_abs", wbase + 0x80 + k)
+        a.ins16("STA_abs", wgo)          # GO: write to +$84 pulses copro reset, clears DONE
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", armed)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", pend); a.ins16("STA_abs", wretry)
+        a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
+        a.label(f"{L}_done")
+    handle(1, 0x5000, 0x0400, [0x0301, 0x0302, 0x031A, 0x031B], ARMED, WDOG, WRETRY, PEND1, DELAY1, TGT_C1, TGT_O1, WDOGH1, SEED1)
+    handle(2, W2_BASE, 0x0500, [0x0381, 0x0382, 0x039A, 0x039B], ARMED2, WDOG2, WRETRY2, PEND2, DELAY2, TGT_C2, TGT_O2, WDOGH2, SEED2)
+    a.jmp("act")
+
+    # freeze QUEUED players too: a pill whose search hasn't run yet must not fall unguided
+    # (time-sharing wait was letting pills drop 2-4 rows before their target arrived ->
+    # unreachable columns -> bad placements). Called from act below.
+    a.label("freeze_pending")
+    a.ins16("LDA_abs", PEND1); a.br("BEQ", "fp_p2")
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)
+    a.label("fp_p2")
+    a.ins16("LDA_abs", PEND2); a.br("BEQ", "fp_done")
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
+    a.label("fp_done")
+    a.ins("RTS")
+
+    # (time-shared d_start / start_p1 / start_p2 removed: handle() above starts each player's
+    #  search on its own copro.)
+
+    # ---- act: steer BOTH players toward their published targets ----
+    a.label("act")
+    a.jsr("freeze_pending")
+    # P2 first (only if we're not currently freezing it)
+    a.ins16("LDA_abs", ARMED2); a.br("BEQ", "act_p2")      # not searching P2 -> steer it
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)       # searching P2 -> freeze + skip steer
+    a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
+    a.label("act_p2")
+    a.ins16("LDA_abs", STK2); a.ins("CMP_imm", STUCK_LIM); a.br("BCC", "act_p2_n")
+    a.ins("LDY_imm", 0x04); a.ins("STY_zp", 0xF6); a.jmp("act_p1")   # stuck: force drop
+    a.label("act_p2_n")
+    # steer-then-drop, CONTINUOUS holds (v28cs DAS handles repeat). Pulsed windows parked
+    # pills near the top on hardware because (with NAV_T=5*/frame) 32-hook cycles = 6.4
+    # frames per edge -> 25s to move 4 cols -> pill hovered forever.
+    a.ins16("LDA_abs", 0x03A5); a.ins16("CMP_abs", TGT_O2); a.br("BEQ", "mv_p2")
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
+    a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)
+    a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF6); a.jmp("act_p1")
+    a.label("mv_p2")
+    a.ins16("LDA_abs", 0x0385); a.ins16("CMP_abs", TGT_C2); a.br("BEQ", "dn_p2")
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
+    a.ins("LDY_imm", 0x01); a.ins16("LDA_abs", 0x0385); a.ins16("CMP_abs", TGT_C2); a.br("BCC", "st_p2")
+    a.ins("LDY_imm", 0x02); a.jmp("st_p2")
+    a.label("dn_p2"); a.ins("LDY_imm", 0x04)
+    a.label("st_p2"); a.ins("STY_zp", 0xF6)
+    a.label("act_p1")
+    # skip P1 acting if we're currently searching for P1
+    a.ins16("LDA_abs", ARMED); a.br("BEQ", "act_p1_go")    # not searching P1 -> steer it
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)       # searching P1 -> freeze + skip steer
+    a.ins("STA_zp", 0xF5); a.ins("STA_zp", 0xF7); a.jmp("act_done")
+    a.label("act_p1_go")
+    a.ins16("LDA_abs", STK1); a.ins("CMP_imm", STUCK_LIM); a.br("BCC", "act_p1_n")
+    a.ins("LDY_imm", 0x04); a.ins("STY_zp", 0xF5); a.jmp("act_done")  # stuck: force drop
+    a.label("act_p1_n")
+    a.ins16("LDA_abs", 0x0325); a.ins16("CMP_abs", TGT_O1); a.br("BEQ", "mv_p1")
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)
+    a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF7)
+    a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF5); a.jmp("act_done")
+    a.label("mv_p1")
+    a.ins16("LDA_abs", 0x0305); a.ins16("CMP_abs", TGT_C1); a.br("BEQ", "dn_p1")
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)
+    a.ins("LDY_imm", 0x01); a.ins16("LDA_abs", 0x0305); a.ins16("CMP_abs", TGT_C1); a.br("BCC", "st_p1")
+    a.ins("LDY_imm", 0x02); a.jmp("st_p1")
+    a.label("dn_p1"); a.ins("LDY_imm", 0x04)
+    a.label("st_p1"); a.ins("STY_zp", 0xF5)
+    a.label("act_done")
+    a.ins("RTS")
+    return a.assemble(), a.labels
+
+
+def _sel(w, value):
+    w.ins("LDA_imm", value)
+    for i in range(5):
+        w.ins("STA_abs", PRG_REG & 0xFF, (PRG_REG >> 8) & 0xFF)
+        if i < 4:
+            w.ins("LSR_A")
+
+
+def build_wrapper(main_cpu):
+    """Trampoline (every frame, all modes): bank2 -> JSR main -> bank0 -> RTS."""
+    w = Asm6502(WRAP_CPU)
+    _sel(w, 2)
+    w.jsr(main_cpu)
+    _sel(w, 0)
+    w.ins("RTS")
+    return w.assemble()
+
+
+def main():
+    import os
+    global OUT
+    level = int(os.environ.get("DRLEVEL", "11"))
+    speed = int(os.environ.get("DRSPEED", "1"))
+    if level != 11 or speed != 1:
+        OUT = f"drmario_copro_L{level}s{speed}.nes"
+    unit1, labels = build_main(level, speed)
+    print(f"LEVEL={level} SPEED={speed} -> {OUT}")
+    main_cpu = UNIT1_CPU + labels["main"]
+    print(f"unit-1 main: {len(unit1)} B at ${UNIT1_CPU:04X}; main=${main_cpu:04X}")
+    bank = bytearray(b"\x00" * 0x4000)
+    bank[0:len(unit1)] = unit1
+
+    wrap = build_wrapper(main_cpu)
+    print(f"trampoline: {len(wrap)} B at ${WRAP_CPU:04X}")
+    assert WRAP_CPU + len(wrap) <= 0xFFD2, "wrapper overflows the dead-v17 window"
+
+    rom = bytearray(open(V28CS, "rb").read())
+    assert rom[4] == 2
+    rom[WRAP_FILE:WRAP_FILE + len(wrap)] = wrap
+    HOOK_FILE = 0x37CF
+    assert rom[HOOK_FILE] == 0x4C and rom[HOOK_FILE + 1] == 0x00 and rom[HOOK_FILE + 2] == 0xFB, \
+        "expected v28cs hook JMP $FB00 at 0x37CF"
+    # blob head: STA $F6; LDA $04; BNE... -> STA $F6; JMP $FF54  (trampoline runs every frame)
+    assert rom[BLOB_FILE:BLOB_FILE + 6] == bytes.fromhex("85f6a504d003"), \
+        "unexpected v28cs blob head"
+    rom[BLOB_FILE:BLOB_FILE + 5] = bytes([0x85, 0xF6, 0x4C, 0x54, 0xFF])
+    print("blob head repointed: STA $F6; JMP $FF54 (every frame, all modes)")
+
+    tmp = OUT + ".2bank"
+    open(tmp, "wb").write(rom)
+    expand(tmp, OUT, new_bank_bytes=bytes(bank))
+    import os
+    os.remove(tmp)
+    out = bytearray(open(OUT, "rb").read())
+    out[6] = (out[6] & 0x0F) | 0x40      # mapper 100 = 0x64
+    out[7] = (out[7] & 0x0F) | 0x60
+    open(OUT, "wb").write(out)
+    print(f"wrote {OUT} (mapper 100, AUTO-NAV VS-CPU L11, FPGA coprocessor)")
+
+
+if __name__ == "__main__":
+    main()
