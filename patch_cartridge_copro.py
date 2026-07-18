@@ -179,14 +179,18 @@ def build_main(level=11, speed=1):
     a.ins("CMP_imm", 0x07); a.br("BEQ", "an_start")         # post-match: START -> rematch
     a.ins("RTS")
     a.label("an_title")
-    a.ins("LDA_zp", 0x04); a.br("BEQ", "an_tog")
-    a.jmp("an_start")                                       # VS armed -> START off the title
+    # DETERMINISTIC mode landing: START only when $0727 == 2 (VS-CPU exactly). The old
+    # $04!=0 gate armed at 2P too and could START from the wrong mode (nav flake: 1P
+    # mis-lands where the never-terminating nav then eats the human's controller).
+    a.ins16("LDA_abs", 0x0727); a.ins("CMP_imm", 0x02); a.br("BNE", "an_tog")
+    a.jmp("an_start")
     a.label("an_tog")
     a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 1); a.br("BEQ", "an_tog_go")
     a.ins("RTS")
     a.label("an_tog_go")
-    a.jsr(0xFF30)                                           # hack's toggle: 1P->2P->VS-CPU
-    a.ins("RTS")
+    a.jsr(0xFF30)                                           # ONE toggle per window (game needs a
+    a.ins("RTS")                                            #  frame between mode inits; the $0727==2
+                                                            #  START gate provides determinism)
     a.label("an_lvl")
     a.ins("LDA_imm", level)
     a.ins16("STA_abs", 0x0316)                              # P1 level
