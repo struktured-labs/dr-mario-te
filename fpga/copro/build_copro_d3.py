@@ -36,8 +36,10 @@ def build_image(board, cA, cB, nA, nB):
     assert (D3.NPILLS, D3.SHIFT) == (4, 2), "deploy config is 4 pills / >>2 (isoD 24/24)"
     D3.USE_ENGINE = True         # full BoardEngine: land/resolve/leaf/copies in RTL
     D3.DISC = True               # temporal discount d=0.5 (dual-end fix, +14% solo efficiency)
+    D3.EH_PLY1 = True            # ply-1 excav+hang firmware add-on (eh_terms -> D_AD)
     import nes_d3_golden as _G
     _G.DISC_SHIFT = 1            # golden must match for the py65 gate
+    _G.EXCAV_HANG_PLY1 = True    # golden must match for the py65 gate
     # copro RAM is ONLY $0000-$0FFF + $6100-$61FF (CoproDrMario.sv): the SQ tables must be
     # read straight from ROM @$B000 (there is no RAM at the py65 tests' $7A00 location).
     # test_vrdy/test_readiness_ext capture the addresses at import -> override those too.
