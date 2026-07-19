@@ -13,6 +13,15 @@ from test_eval_terms import g_buried, g_setup
 from test_incremental import g_readiness_ext
 
 WIN = 30000   # firmware 16-bit-fitting win bonus (dominates max-non-win ~16600, +imm < 32767)
+DISC_SHIFT = None   # temporal discount: val = imm1 + leaf1 + ((best2-leaf1) >> DISC_SHIFT).
+                    # None = off (classic). 1 = d=0.5 (fixes dual-end park pathology; +14% solo efficiency).
+EXCAV_HANG = False  # post-clear-gravity terms (wife/user-coached): excavation readiness +
+                    # hanging-half potential. Firmware add-on family (no RTL change).
+EXCAV_HANG_PLY1 = False  # SHIP form of the above: apply the excav+hang terms ONLY to the
+                    # resolved ply-1 board b1 (not every leaf), added AFTER the DISC_SHIFT
+                    # blend, per ply-1 candidate; skipped on the WIN path. Matches the 6502
+                    # eh_terms add-on (D_AD). Validated in sim (tmp/decide_disc + ply1-only).
+W_EXCAV, W_HANG = 12, 40
 USE_VRDY = True
 RESOLVE = "targeted"   # deploy config (isolation 12/12); "full" only for older cross-checks
 
@@ -92,6 +101,59 @@ def _vrdy(b):
     return total
 
 
+def g_excav(b):
+    """Excavation readiness: for each BURIED virus, credit run^2 of the same-color run at
+    the TOP of its covering pile (a 3-run pile-top is one pill from blasting the cover)."""
+    total = 0
+    for c in range(8):
+        # find the topmost occupied cell in the column
+        r = 0
+        while r < 16 and b[r * 8 + c] == 0xFF:
+            r += 1
+        if r >= 16:
+            continue
+        # is there a buried virus below in this column?
+        vr = None
+        for rr in range(r + 1, 16):
+            x = b[rr * 8 + c]
+            if x != 0xFF and (x & 0xF0) == 0xD0:
+                vr = rr
+                break
+        if vr is None:
+            continue
+        top_color = b[r * 8 + c] & 0x0F
+        if (b[r * 8 + c] & 0xF0) == 0xD0:
+            continue                               # top of pile is itself a virus: not excavation
+        run = 1
+        rr = r + 1
+        while rr < vr and b[rr * 8 + c] != 0xFF and (b[rr * 8 + c] & 0x0F) == top_color \
+                and (b[rr * 8 + c] & 0xF0) != 0xD0:
+            run += 1
+            rr += 1
+        total += min(run, 3) ** 2
+    return total
+
+
+def g_hang(b):
+    """Hanging-half potential: an occupied non-virus cell with EMPTY below whose gap-drop
+    (any depth) lands on a matching color. The delayed-drop setup: it pairs automatically
+    when its partner clears."""
+    total = 0
+    for r in range(15):
+        for c in range(8):
+            x = b[r * 8 + c]
+            if x == 0xFF or (x & 0xF0) == 0xD0:
+                continue
+            if b[(r + 1) * 8 + c] != 0xFF:
+                continue                            # not hovering
+            rr = r + 2
+            while rr < 16 and b[rr * 8 + c] == 0xFF:
+                rr += 1
+            if rr < 16 and (b[rr * 8 + c] & 0x0F) == (x & 0x0F):
+                total += 1
+    return total
+
+
 def leaf_d3(b):
     if _virus_count(b) == 0:
         return WIN
@@ -101,6 +163,8 @@ def leaf_d3(b):
          + 60 * g_setup(b) - 30 * g_buried(b) + 12 * g_readiness_ext(b) - 6 * _pollution(b))
     if USE_VRDY:
         s += 12 * _vrdy(b)
+    if EXCAV_HANG:
+        s += W_EXCAV * g_excav(b) + W_HANG * g_hang(b)
     return s
 
 
@@ -184,7 +248,13 @@ def decide_d3(board, pA, pB, nA, nB, topk1=8, topk2=8, third=None, seed=0):
                         v2 = imm2 + tot // len(pills3)
                     if best2 is None or v2 > best2:
                         best2 = v2
-                val = imm1 + best2
+                if DISC_SHIFT is None:
+                    val = imm1 + best2
+                else:
+                    leaf1_ = _k1 - imm1
+                    val = imm1 + leaf1_ + ((best2 - leaf1_) >> DISC_SHIFT)
+                if EXCAV_HANG_PLY1:                       # ply-1-only add-on (6502 D_AD),
+                    val += W_EXCAV * g_excav(b1) + W_HANG * g_hang(b1)   # after the blend
         val += _jitter(seed, o4, col)
         if best_val is None or val > best_val:
             best_val = val; best_key = (col, o4)

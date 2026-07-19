@@ -1,7 +1,8 @@
 # Dr. Mario NES — FPGA AI Coprocessor
 
 A hardware-accelerated depth-3 AI that plays Dr. Mario (NES) on a real
-[MiSTer](https://github.com/MiSTer-devel/Main_MiSTer/wiki) FPGA. A custom mapper drops a
+[MiSTer](https://github.com/MiSTer-devel/Main_MiSTer/wiki) FPGA **and on the Analogue
+Pocket** (custom openFPGA core). A custom mapper drops a
 **second 6502 core plus an RTL board-engine** into the NES core; a companion cartridge
 auto-navigates into a VS-CPU match and lets the coprocessor drive a player — no controller,
 no host PC in the loop. It is a self-running demo of an expectimax search running on silicon
@@ -27,6 +28,37 @@ cell-exact at each stage.
 
 Steady-state moves are sub-second — the demo is now paced by the game's own pill-drop and
 clear animations, not by the AI.
+
+## Milestone 2 — Analogue Pocket port + the honest (anytime) AI
+
+The same coprocessor now ships on a **handheld**: a single-copro variant of the mapper
+lives inside a trimmed [agg23/openfpga-NES](https://github.com/agg23/openfpga-NES) core
+(mapper farm stripped to MMC1 + mapper 100 — the stock core is 99% ALM-full; the trim
+reclaims ~6.2K ALMs and the copro fits at ~96% with timing closed at the full 85.9 MHz).
+Human-vs-AI on the couch: **you are P1 on the Pocket's buttons, the depth-3 copro is P2.**
+
+The AI itself crossed from "solver with pause privileges" to **honest real-time player**:
+
+- **Anytime search** — the firmware live-publishes its best-so-far move into the result
+  mailbox as the search runs (orient `0xFF` = not-yet-valid sentinel; zero RTL change).
+  The driver never freezes the pill: it weave-steers toward the current best while the
+  search refines, and only fast-drops after DONE. **The pill's own fall time is the AI's
+  time budget.** Hardware A/B (P1 freeze vs P2 anytime, same match): anytime cleared
+  viruses at 2× the rate with no mid-air pauses.
+- **Temporal discount** (`val = imm + leaf + (deep−leaf)/2`) — fixes a search pathology
+  where deferring an obvious placement is value-neutral in the model ("procrastination"),
+  found by a human player in one game. Also worth ~14% solo pill-efficiency.
+- **Household-coached eval terms** — `g_excav` (scaffolding credit for clearing junk off
+  buried viruses) and `g_hang` (a hovering capsule half whose gap-drop lands on a matching
+  color pairs automatically when its partner clears — the delayed-drop setup). Computed by
+  the 6502 once per ply-1 candidate on top of the RTL leaf; py65-gated bit-exact.
+- **Deterministic match entry** — auto-nav STARTs only when `$0727 == 2` (VS-CPU exactly);
+  no more mode roulette.
+- **Human-challenge carts** — `DRHUMAN=1` builds leave P1 as a pure human passthrough
+  (`drmario_copro_human.nes` for MiSTer, `DRPOCKET=1` single-window variant for Pocket).
+
+One canonical source (`fpga/copro/`) feeds both platforms: the Pocket tree vendors the RTL
+via `fpga/copro/sync_to_pocket.sh`, and one `copro_rom.hex` firmware ships everywhere.
 
 ## How it works
 
@@ -86,7 +118,12 @@ they are mirrored into a local `NES_MiSTer` checkout for Quartus synthesis.
 - **Match clear-rate is unmeasured on hardware** — the screenshot OCR's hamming gate rejects
   the near-clear virus-count reads, so the automated clear tally is currently blind. Fix the
   detector before trusting a hardware clear-rate figure.
-- **The search does not engineer cascade combos** — the model's resolve is capped (one clear +
-  one gravity, no chain), so cascade payoffs earn no immediate reward. The BoardEngine now
-  makes a full cascading resolve cheap to add; it is a quality-gated change (an earlier fuller
-  resolve regressed in a small isolation, so it must win in sim first).
+- **Cascade-resolve: tested, rejected** — a full chained resolve in the search halved solo
+  clear-rate (100%→50%) chasing combos into topouts; the capped resolve is the better player.
+- **v4 AB-cart regression (quarantined)** — the CPU-vs-CPU cart built from the current patcher
+  stalls both players on hardware; the v2-era build (`tmp/ab_v2era.nes`, patcher @ `822579e`)
+  plays perfectly on the same rbf and is pinned for the duel. Root cause not yet found (byte
+  delta is confined to the nav region; branch-range overflow ruled out).
+- **Next programs** — expert player data (Twitch/DRMC VOD → frame OCR → (state, move) pairs;
+  the board OCR machinery exists), an NNUE-style learned eval in the idle DSP blocks, and
+  dual-copro parallel search on MiSTer once its controllers are back.

@@ -65,8 +65,30 @@ VSEEN1, VSEEN2 = 0x616A, 0x616B   # count-was-nonzero-this-match latches (gate t
                                   # in 1P/demo contexts the unused P2 count reads 0 -> START-spam)
 import os as _os
 USE_SEEDS = _os.environ.get("DRSEED", "1") != "0"   # DRSEED=0 -> seeds stay 0 = deterministic mirror
+# WEAVE steering: when sliding to the target column is blocked at the pill's row (stuck
+# >= WEAVE_LIM hook-cycles), release the gravity freeze for one drop so the pill descends
+# a row and can slide past the obstruction (down-and-over), instead of hovering frozen and
+# then force-dropping straight down. Measured: 8-17% of legal cols are slide-unreachable at
+# half-to-3/4 fill -> misplacement -> burial (hardware walls at ~20 viruses). DRWEAVE=0 off.
+USE_WEAVE = _os.environ.get("DRWEAVE", "1") != "0"
+# DRHUMAN=1 -> HUMAN-CHALLENGE build: P1 = human passthrough (no copro search, no $F5/$F7
+# injection, no P1 gravity pinning in act), P2 = the validated copro AI unchanged.
+HUMAN_P1 = _os.environ.get("DRHUMAN", "0") == "1"
+# DRNOFREEZE=1 -> ANYTIME steering: never pin P2 gravity while searching. The firmware
+# live-publishes its running best into the result mailbox (orient=0xFF = "no result yet"
+# sentinel); the driver refreshes TGT every hook and weave-steers while the search refines.
+# Pill fall time becomes the AI's honest time budget (kills the visible mid-air pause).
+NO_FREEZE = _os.environ.get("DRNOFREEZE", "0") == "1"
+WEAVE_LIM = int(_os.environ.get("DRWEAVELIM", "40"))   # hook-cycles of no-move before a weave drop
+                                                        # (> DAS repeat ~30 so normal slides don't trip it)
 VCOUNT_P1, VCOUNT_P2 = 0x0324, 0x03A4   # remaining virus counts (0 => that player cleared -> STAGE CLEAR)
 W2_BASE = 0x5200
+# DRPOCKET=1: single-window build (Analogue Pocket core has only the $5000 window).
+# P2's copro traffic rides the $5000 mailbox instead of $5200. Requires DRHUMAN=1
+# (P1 must not be using the window; with both players active they'd collide).
+if _os.environ.get("DRPOCKET", "0") == "1":
+    assert _os.environ.get("DRHUMAN", "0") == "1", "DRPOCKET requires DRHUMAN=1 (single window)"
+    W2_BASE = 0x5000
 # if a pill sits still this many frames (while not search-frozen), force DOWN to unstick
 STUCK_LIM = 60        # 1s -- continuous holds again; if truly stuck kick fast to unpark
 # copro window (mapper 100)
@@ -157,14 +179,18 @@ def build_main(level=11, speed=1):
     a.ins("CMP_imm", 0x07); a.br("BEQ", "an_start")         # post-match: START -> rematch
     a.ins("RTS")
     a.label("an_title")
-    a.ins("LDA_zp", 0x04); a.br("BEQ", "an_tog")
-    a.jmp("an_start")                                       # VS armed -> START off the title
+    # DETERMINISTIC mode landing: START only when $0727 == 2 (VS-CPU exactly). The old
+    # $04!=0 gate armed at 2P too and could START from the wrong mode (nav flake: 1P
+    # mis-lands where the never-terminating nav then eats the human's controller).
+    a.ins16("LDA_abs", 0x0727); a.ins("CMP_imm", 0x02); a.br("BNE", "an_tog")
+    a.jmp("an_start")
     a.label("an_tog")
     a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 1); a.br("BEQ", "an_tog_go")
     a.ins("RTS")
     a.label("an_tog_go")
-    a.jsr(0xFF30)                                           # hack's toggle: 1P->2P->VS-CPU
-    a.ins("RTS")
+    a.jsr(0xFF30)                                           # ONE toggle per window (game needs a
+    a.ins("RTS")                                            #  frame between mode inits; the $0727==2
+                                                            #  START gate provides determinism)
     a.label("an_lvl")
     a.ins("LDA_imm", level)
     a.ins16("STA_abs", 0x0316)                              # P1 level
@@ -248,8 +274,15 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", pend); a.br("BNE", f"{L}_st1"); a.jmp(f"{L}_done"); a.label(f"{L}_st1")
         a.ins16("LDA_abs", delay); a.br("BEQ", f"{L}_st2"); a.jmp(f"{L}_done"); a.label(f"{L}_st2")
         a.ins("LDX_imm", 0)
+        # NES playfield empties are 0xFF *or* 0x00 (per tile-encoding); the copro parser only
+        # treats 0xFF as empty, so a 0x00 cell reads as a PHANTOM yellow pill -> the color-heavy
+        # depth-3 endgame eval corrupts once mid-game clears create 0x00 cells (walls at ~20;
+        # sim never sees it -- faithful_to_nes always emits 0xFF). Normalize 0x00 -> 0xFF here.
         a.label(f"{L}_cp")
-        a.ins16("LDA_absX", board_src); a.ins16("STA_absX", wbase)
+        a.ins16("LDA_absX", board_src); a.br("BNE", f"{L}_cpnz")   # non-zero -> store as-is
+        a.ins("LDA_imm", 0xFF)                                      # 0x00 -> empty
+        a.label(f"{L}_cpnz")
+        a.ins16("STA_absX", wbase)
         a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", f"{L}_cp")
         for k, src in enumerate(colsrcs):
             if k == 0:      # cA carries seed low nibble (<<4)
@@ -268,7 +301,8 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", 0); a.ins16("STA_abs", pend); a.ins16("STA_abs", wretry)
         a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
         a.label(f"{L}_done")
-    handle(1, 0x5000, 0x0400, [0x0301, 0x0302, 0x031A, 0x031B], ARMED, WDOG, WRETRY, PEND1, DELAY1, TGT_C1, TGT_O1, WDOGH1, SEED1)
+    if not HUMAN_P1:
+        handle(1, 0x5000, 0x0400, [0x0301, 0x0302, 0x031A, 0x031B], ARMED, WDOG, WRETRY, PEND1, DELAY1, TGT_C1, TGT_O1, WDOGH1, SEED1)
     handle(2, W2_BASE, 0x0500, [0x0381, 0x0382, 0x039A, 0x039B], ARMED2, WDOG2, WRETRY2, PEND2, DELAY2, TGT_C2, TGT_O2, WDOGH2, SEED2)
     a.jmp("act")
 
@@ -276,8 +310,12 @@ def build_main(level=11, speed=1):
     # (time-sharing wait was letting pills drop 2-4 rows before their target arrived ->
     # unreachable columns -> bad placements). Called from act below.
     a.label("freeze_pending")
-    a.ins16("LDA_abs", PEND1); a.br("BEQ", "fp_p2")
-    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)
+    if not HUMAN_P1:
+        # (DRHUMAN builds MUST skip this: handle(1) never runs, so PEND1 is uninitialized
+        #  boot garbage — nonzero garbage pinned P1's gravity forever = capsule stuck at top,
+        #  observed on Pocket hardware 2026-07-18.)
+        a.ins16("LDA_abs", PEND1); a.br("BEQ", "fp_p2")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)
     a.label("fp_p2")
     a.ins16("LDA_abs", PEND2); a.br("BEQ", "fp_done")
     a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
@@ -292,8 +330,23 @@ def build_main(level=11, speed=1):
     a.jsr("freeze_pending")
     # P2 first (only if we're not currently freezing it)
     a.ins16("LDA_abs", ARMED2); a.br("BEQ", "act_p2")      # not searching P2 -> steer it
-    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)       # searching P2 -> freeze + skip steer
-    a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
+    if NO_FREEZE:
+        # ANYTIME: refresh TGT from the LIVE mailbox and keep steering during the search.
+        # Scratch = $616C/$616D free driver RAM (NOT zp $DB/$DC = v28cs eval scratch).
+        a.ins16("LDA_abs", W2_BASE + 0x86); a.ins("CMP_imm", 0xFF); a.br("BEQ", "nf2_hold")
+        a.ins16("STA_abs", 0x616C)
+        a.ins16("LDA_abs", W2_BASE + 0x85); a.ins16("STA_abs", 0x616D)
+        a.ins16("LDA_abs", W2_BASE + 0x86); a.ins16("CMP_abs", 0x616C); a.br("BNE", "act_p1")  # torn read: keep old TGT
+        a.ins16("LDA_abs", 0x616D); a.ins16("STA_abs", TGT_C2)
+        a.ins16("LDA_abs", 0x616C); a.ins16("STA_abs", TGT_O2)
+        a.jmp("act_p2")                                     # weave-steer toward the live target, no freeze
+        a.label("nf2_hold")
+        # no candidate published yet (first ~10ms of the search): brief freeze as before
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
+        a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
+    else:
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)       # searching P2 -> freeze + skip steer
+        a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
     a.label("act_p2")
     a.ins16("LDA_abs", STK2); a.ins("CMP_imm", STUCK_LIM); a.br("BCC", "act_p2_n")
     a.ins("LDY_imm", 0x04); a.ins("STY_zp", 0xF6); a.jmp("act_p1")   # stuck: force drop
@@ -307,12 +360,25 @@ def build_main(level=11, speed=1):
     a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF6); a.jmp("act_p1")
     a.label("mv_p2")
     a.ins16("LDA_abs", 0x0385); a.ins16("CMP_abs", TGT_C2); a.br("BEQ", "dn_p2")
-    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
+    if not USE_WEAVE:
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)  # baseline: freeze at spawn row (slide-only)
+    # WEAVE: skip the freeze -> the pill falls at natural gravity WHILE sliding toward the
+    # target, weaving down-and-over past columns blocked at the spawn row. DAS shift-rate
+    # (~1 col/6f) >> drop-rate (~1 row/16f), so it reaches the target column well before landing.
     a.ins("LDY_imm", 0x01); a.ins16("LDA_abs", 0x0385); a.ins16("CMP_abs", TGT_C2); a.br("BCC", "st_p2")
     a.ins("LDY_imm", 0x02); a.jmp("st_p2")
-    a.label("dn_p2"); a.ins("LDY_imm", 0x04)
+    a.label("dn_p2")
+    if NO_FREEZE:
+        # ANYTIME: never fast-drop while the search is still ARMED — gravity is the time
+        # budget. Aligned + still thinking = hold position (no input) and keep falling.
+        a.ins16("LDA_abs", ARMED2); a.br("BEQ", "dn_p2_go")
+        a.ins("LDY_imm", 0x00); a.jmp("st_p2")
+        a.label("dn_p2_go")
+    a.ins("LDY_imm", 0x04)
     a.label("st_p2"); a.ins("STY_zp", 0xF6)
     a.label("act_p1")
+    if HUMAN_P1:
+        a.jmp("act_done")                                   # human P1: never touch $F5/$F7/GRAV_P1
     # skip P1 acting if we're currently searching for P1
     a.ins16("LDA_abs", ARMED); a.br("BEQ", "act_p1_go")    # not searching P1 -> steer it
     a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)       # searching P1 -> freeze + skip steer
@@ -327,7 +393,9 @@ def build_main(level=11, speed=1):
     a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF5); a.jmp("act_done")
     a.label("mv_p1")
     a.ins16("LDA_abs", 0x0305); a.ins16("CMP_abs", TGT_C1); a.br("BEQ", "dn_p1")
-    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)
+    if not USE_WEAVE:
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)  # baseline: freeze at spawn row (slide-only)
+    # WEAVE: skip the freeze -> pill falls while sliding, weaving down-and-over (see mv_p2).
     a.ins("LDY_imm", 0x01); a.ins16("LDA_abs", 0x0305); a.ins16("CMP_abs", TGT_C1); a.br("BCC", "st_p1")
     a.ins("LDY_imm", 0x02); a.jmp("st_p1")
     a.label("dn_p1"); a.ins("LDY_imm", 0x04)

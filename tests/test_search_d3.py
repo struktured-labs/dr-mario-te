@@ -20,7 +20,8 @@ patch_vs_cpu.OPS.setdefault("ASL_zp", 0x06)
 patch_vs_cpu.OPS.setdefault("ORA_zp", 0x05)
 patch_vs_cpu.OPS.setdefault("EOR_zp", 0x45)
 from py65_harness import Cpu
-from test_depth2 import (_rand_board, _emit_calc_imm, _emit_copy, emit_landplace,
+from test_depth2 import (S_BEST_C, S_BEST_O,
+                         _rand_board, _emit_calc_imm, _emit_copy, emit_landplace,
                          S_CA, S_CB, S_NA, S_NB, CI_LO, CI_HI, PO, PC, PCA, PCB)
 from test_leaf_d3 import emit_leaf_score_d3, emit_combine_d3, EV_POL_LO, EV_POL_HI
 from test_pollution import emit_pollution
@@ -46,6 +47,11 @@ TK1_KL, TK1_KH, TK1_O, TK1_C = 0x0A00, 0x0A20, 0x0A40, 0x0A60
  D_B2L, D_B2H, D_KL, D_KH, D_I2L, D_I2H, D_MKL, D_MKH, D_MI, D_J, D_PI, D_SL, D_SM, D_SH,
  D_EBL, D_EBH, D_EA, D_V3L, D_V3H, D_EL, D_EH, D_V1L, D_V1H, D_J1, D_T1C,
  D_SEED, D_JT) = range(0x40, 0x68)
+D_L1L, D_L1H = 0x68, 0x69     # ply-1 leaf (for the temporal discount)
+D_ADL, D_ADH = 0x6A, 0x6B     # eh_terms weighted accumulator = W_EXCAV*excav + W_HANG*hang(b1)
+EH_T0, EH_T1, EH_T2, EH_T3 = 0x6C, 0x6D, 0x6E, 0x6F   # eh_terms board-scan scratch ($6C-$6F)
+DISC = False                   # emit discounted combine (set by build_copro_d3)
+EH_PLY1 = False                # emit the ply-1 excav+hang add-on (eh_terms; set by build_copro_d3)
 
 THIRD = [(0, 1), (1, 2), (2, 0), (1, 1)]   # stratified 4-pill subset (3 mixed + 1 double), /4=shift
 RESOLVE_LBL = "resolve_capped"   # TARGETED (deploy config, isolation 12/12); "resolve_capped_full" for full
@@ -67,6 +73,17 @@ def build():
         # everything board-related runs in the BoardEngine; the 6502 is pure control
         _emit_search_d3_engine(a)
         _emit_expectimax_engine(a)
+        if EH_PLY1:
+            # ply-1 excav+hang add-on: the engine keeps b1 only in an RTL slot (no download
+            # path), so eh_terms RE-DERIVES the resolved b1 in 6502 RAM via the soft
+            # land_place + resolve_capped and scans it. These soft primitives operate on
+            # CUR ($0700); first_occ/land read LIVE_BOARD=CUR (cp_live_cur seeds it $0500).
+            P.BOARD = CUR; P.LIVE_BOARD = CUR; P.MARK = 0x0780
+            _emit_eh_terms(a)
+            _emit_copy(a, "cp_live_cur", LIVE, CUR)
+            emit_landplace(a)
+            P.emit_first_occ(a); P.emit_find_clears(a); P.emit_gravity(a)
+            P.emit_resolve_capped(a)
         return a.assemble(), a.labels
     # ALL primitives + leaf eval operate on CUR ($0700); LIVE ($0500) is the preserved input.
     import test_pollution, test_readiness_ext, test_vrdy
@@ -131,9 +148,106 @@ def _e_node(a, o_zp, c_zp, ca_abs, cb_abs):
     _e_poll(a)
 
 
+def _lda_absx_label(a, label):
+    """Emit `LDA <label>,X` where <label> is an internal code label resolved to its absolute
+    address (base+offset) at assemble time. The assembler's abs fixups already accept string
+    targets (used by jmp/jsr); ins16 bakes a literal instead, so patch one in by hand."""
+    a.code.append(patch_vs_cpu.OPS["LDA_absX"])
+    a.fixups.append((len(a.code), "abs", label))
+    a.code.append(0x00); a.code.append(0x00)
+
+
+def _emit_eh_terms(a):
+    """ENGINE add-on. The engine keeps the resolved ply-1 board b1 only in an RTL slot with
+    no read-back path, so eh_terms RE-DERIVES b1 in 6502 RAM (CUR=$0700) via the soft
+    land_place + resolve_capped, then scans CUR to accumulate
+        D_AD = W_EXCAV*g_excav(b1) + W_HANG*g_hang(b1)
+    a bit-exact mirror of nes_d3_golden.g_excav / g_hang. Clobbers A/X/Y, zp $6C-$6F, and the
+    soft-primitive scratch ($CA-$E6, Z_OFF, RV_*); leaves D_O1/D_C1 and every D_* in $40-$69
+    intact, so the caller's ply-2 loop + combine are unaffected. D_AD is consumed at k_done."""
+    a.label("eh_terms")
+    # --- rebuild b1 in CUR: $0700 <- $0500 (root); land candidate (D_O1,D_C1,S_CA,S_CB); resolve
+    a.jsr("cp_live_cur")
+    a.ins("LDA_zp", D_O1); a.ins("STA_zp", PO); a.ins("LDA_zp", D_C1); a.ins("STA_zp", PC)
+    a.ins16("LDA_abs", S_CA); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCA)
+    a.ins16("LDA_abs", S_CB); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCB)
+    a.jsr("land_place")                                   # legal by construction (Pass-0 kept it)
+    a.jsr("resolve_capped")                               # targeted cap-1 resolve -> b1 in CUR
+    a.ins("LDA_imm", 0); a.ins("STA_zp", D_ADL); a.ins("STA_zp", D_ADH)
+    # ===================== g_excav: run^2 of the same-color pile-top over a buried virus =====
+    a.ins("LDA_imm", 0); a.ins("STA_zp", EH_T0)           # EH_T0 = c
+    a.label("eh_xcol")
+    a.ins("LDY_zp", EH_T0)                                # Y = byte idx (row0*8+c == c)
+    a.label("eh_xtop")                                    # scan down for the topmost occupied cell
+    a.ins("CPY_imm", 128); a.br("BCC", "eh_xtop_ok"); a.jmp("eh_xcolnext")   # empty column -> skip
+    a.label("eh_xtop_ok")
+    a.ins16("LDA_absY", CUR); a.ins("CMP_imm", 0xFF); a.br("BNE", "eh_xhavetop")
+    a.ins("TYA"); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAY"); a.jmp("eh_xtop")
+    a.label("eh_xhavetop")
+    a.ins("STY_zp", EH_T1)                                # EH_T1 = topidx
+    a.ins("STA_zp", EH_T2)                                # EH_T2 = top cell byte
+    a.ins("TYA"); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAY")           # Y = topidx+8
+    a.label("eh_xfv")                                     # scan down for the first buried virus
+    a.ins("CPY_imm", 128); a.br("BCC", "eh_xfv_ok"); a.jmp("eh_xcolnext")    # no virus below -> skip
+    a.label("eh_xfv_ok")
+    a.ins16("LDA_absY", CUR); a.ins("CMP_imm", 0xFF); a.br("BEQ", "eh_xfvstep")   # empty -> keep scanning
+    a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BEQ", "eh_xfoundv")     # virus -> found vr
+    a.label("eh_xfvstep")                                 # occupied non-virus -> keep scanning
+    a.ins("TYA"); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAY"); a.jmp("eh_xfv")
+    a.label("eh_xfoundv")
+    a.ins("STY_zp", EH_T3)                                # EH_T3 = vr_idx (first virus below topidx)
+    a.ins("LDA_zp", EH_T2); a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BNE", "eh_xnotvtop")
+    a.jmp("eh_xcolnext")                                  # top of pile is itself a virus -> not excavation
+    a.label("eh_xnotvtop")
+    a.ins("LDA_zp", EH_T2); a.ins("AND_imm", 0x0F); a.ins("STA_zp", EH_T2)   # EH_T2 = top_color
+    a.ins("LDX_imm", 1)                                   # X = run (the top cell counts)
+    a.ins("LDA_zp", EH_T1); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAY")  # Y = rr = topidx+8
+    a.label("eh_xrun")                                    # contiguous same-color non-empty run to vr
+    a.ins("CPY_zp", EH_T3); a.br("BCS", "eh_xrundone")    # rr >= vr_idx -> stop
+    a.ins16("LDA_absY", CUR); a.ins("CMP_imm", 0xFF); a.br("BEQ", "eh_xrundone")   # empty/gap -> stop
+    a.ins("AND_imm", 0x0F); a.ins("CMP_zp", EH_T2); a.br("BNE", "eh_xrundone")     # color mismatch -> stop
+    a.ins("INX")                                          # run++  (no virus can occur before vr_idx)
+    a.ins("TYA"); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAY"); a.jmp("eh_xrun")
+    a.label("eh_xrundone")
+    a.ins("CPX_imm", 3); a.br("BCC", "eh_xnoclamp"); a.ins("LDX_imm", 3)   # X = min(run,3) in {1,2,3}
+    a.label("eh_xnoclamp")
+    _lda_absx_label(a, "eh_excav_tab")                    # A = W_EXCAV*min(run,3)^2  (12/48/108)
+    a.ins("CLC"); a.ins("ADC_zp", D_ADL); a.ins("STA_zp", D_ADL)
+    a.ins("LDA_zp", D_ADH); a.ins("ADC_imm", 0); a.ins("STA_zp", D_ADH)
+    a.label("eh_xcolnext")
+    a.ins("INC_zp", EH_T0); a.ins("LDA_zp", EH_T0); a.ins("CMP_imm", 8); a.br("BCS", "eh_hstart")
+    a.jmp("eh_xcol")
+    # ===================== g_hang: hovering non-virus half whose gap-drop lands on its color ==
+    a.label("eh_hstart")
+    a.ins("LDX_imm", 0)                                   # X = idx (0..119 == rows 0..14)
+    a.label("eh_hloop")
+    a.ins("CPX_imm", 120); a.br("BCS", "eh_hdone")
+    a.ins16("LDA_absX", CUR); a.ins("CMP_imm", 0xFF); a.br("BEQ", "eh_hnext")   # empty
+    a.ins("STA_zp", EH_T0)                                # EH_T0 = x
+    a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BEQ", "eh_hnext")     # virus -> skip
+    a.ins("TXA"); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAY")              # Y = idx+8 (below)
+    a.ins16("LDA_absY", CUR); a.ins("CMP_imm", 0xFF); a.br("BNE", "eh_hnext")   # below occupied -> not hovering
+    a.ins("TXA"); a.ins("CLC"); a.ins("ADC_imm", 16); a.ins("TAY")             # Y = idx+16 (gap-drop start)
+    a.label("eh_hscan")
+    a.ins("CPY_imm", 128); a.br("BCS", "eh_hnext")        # ran off the bottom -> no landing
+    a.ins16("LDA_absY", CUR); a.ins("CMP_imm", 0xFF); a.br("BNE", "eh_hland")   # occupied -> landing cell
+    a.ins("TYA"); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAY"); a.jmp("eh_hscan")
+    a.label("eh_hland")
+    a.ins("AND_imm", 0x0F); a.ins("STA_zp", EH_T1)        # EH_T1 = landing low nibble
+    a.ins("LDA_zp", EH_T0); a.ins("AND_imm", 0x0F); a.ins("CMP_zp", EH_T1); a.br("BNE", "eh_hnext")
+    a.ins("LDA_zp", D_ADL); a.ins("CLC"); a.ins("ADC_imm", G3.W_HANG); a.ins("STA_zp", D_ADL)
+    a.ins("LDA_zp", D_ADH); a.ins("ADC_imm", 0); a.ins("STA_zp", D_ADH)
+    a.label("eh_hnext")
+    a.ins("INX"); a.jmp("eh_hloop")
+    a.label("eh_hdone")
+    a.ins("RTS")
+    a.label("eh_excav_tab"); a.raw(0, G3.W_EXCAV * 1, G3.W_EXCAV * 4, G3.W_EXCAV * 9)   # [min(run,3)]
+
+
 def _emit_search_d3_engine(a):
     a.label("search")
     a.ins("LDA_imm", 0xFF); a.ins("STA_zp", D_BO)
+    a.ins16("STA_abs", S_BEST_O)                    # ANYTIME: live mailbox invalid until 1st cand
     a.ins("LDA_imm", 0x00); a.ins("STA_zp", D_BVL); a.ins("LDA_imm", 0x80); a.ins("STA_zp", D_BVH)
     # tie-break seed (same as soft build)
     a.ins16("LDA_abs", S_CA); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("STA_zp", D_SEED)
@@ -191,12 +305,17 @@ def _emit_search_d3_engine(a):
     _e_copy(a, 1, True)
     _e_node(a, D_O1, D_C1, S_CA, S_CB)
     a.ins16("LDA_abs", LEV_IMM); a.ins("STA_zp", D_I1L); a.ins16("LDA_abs", LEV_IMM + 1); a.ins("STA_zp", D_I1H)
+    if DISC:
+        a.ins16("LDA_abs", LEV_SCO); a.ins("STA_zp", D_L1L)
+        a.ins16("LDA_abs", LEV_SCO + 1); a.ins("STA_zp", D_L1H)
     a.ins16("LDA_abs", LEV_WIN_R); a.br("BEQ", "o_nw")
     a.ins("CLC"); a.ins("LDA_zp", D_I1L); a.ins("ADC_imm", WIN & 0xFF); a.ins("STA_zp", D_V1L)
     a.ins("LDA_zp", D_I1H); a.ins("ADC_imm", (WIN >> 8) & 0xFF); a.ins("STA_zp", D_V1H)
     a.jmp("o_cand")
     a.label("o_nw")
     _e_copy(a, 2, False)                                   # w1 <- cur
+    if EH_PLY1:
+        a.jsr("eh_terms")                                 # D_AD = W_EXCAV*excav(b1)+W_HANG*hang(b1)
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_TKC); a.ins("STA_zp", D_O2)
     a.label("i_outer"); a.ins("LDA_imm", 0); a.ins("STA_zp", D_C2)
     a.label("i_inner")
@@ -265,8 +384,25 @@ def _emit_search_d3_engine(a):
     a.label("k_nx")
     a.ins("INC_zp", D_J); a.jmp("k_loop")
     a.label("k_done")
-    a.ins("CLC"); a.ins("LDA_zp", D_I1L); a.ins("ADC_zp", D_B2L); a.ins("STA_zp", D_V1L)
-    a.ins("LDA_zp", D_I1H); a.ins("ADC_zp", D_B2H); a.ins("STA_zp", D_V1H)
+    if DISC:
+        # val1 = imm1 + leaf1 + asr16(best2 - leaf1)   [d = 0.5 temporal discount]
+        a.ins("SEC"); a.ins("LDA_zp", D_B2L); a.ins("SBC_zp", D_L1L); a.ins("STA_zp", D_V1L)
+        a.ins("LDA_zp", D_B2H); a.ins("SBC_zp", D_L1H)
+        a.ins("CMP_imm", 0x80); a.ins("ROR_A"); a.ins("STA_zp", D_V1H)   # asr hi (sign-preserving)
+        a.ins("LDA_zp", D_V1L); a.ins("ROR_A"); a.ins("STA_zp", D_V1L)   # ror lo with carry
+        a.ins("CLC"); a.ins("LDA_zp", D_V1L); a.ins("ADC_zp", D_L1L); a.ins("STA_zp", D_V1L)
+        a.ins("LDA_zp", D_V1H); a.ins("ADC_zp", D_L1H); a.ins("STA_zp", D_V1H)
+        a.ins("CLC"); a.ins("LDA_zp", D_V1L); a.ins("ADC_zp", D_I1L); a.ins("STA_zp", D_V1L)
+        a.ins("LDA_zp", D_V1H); a.ins("ADC_zp", D_I1H); a.ins("STA_zp", D_V1H)
+    else:
+        a.ins("CLC"); a.ins("LDA_zp", D_I1L); a.ins("ADC_zp", D_B2L); a.ins("STA_zp", D_V1L)
+        a.ins("LDA_zp", D_I1H); a.ins("ADC_zp", D_B2H); a.ins("STA_zp", D_V1H)
+    if EH_PLY1:
+        # + W_EXCAV*g_excav(b1) + W_HANG*g_hang(b1), precomputed in D_AD by eh_terms in o_nw.
+        # Reached only via the have2->k_done path; the WIN and no-legal-ply2 paths JMP straight
+        # to o_cand and (matching the golden) skip the add.
+        a.ins("CLC"); a.ins("LDA_zp", D_V1L); a.ins("ADC_zp", D_ADL); a.ins("STA_zp", D_V1L)
+        a.ins("LDA_zp", D_V1H); a.ins("ADC_zp", D_ADH); a.ins("STA_zp", D_V1H)
     a.label("o_cand")
     a.ins("LDA_zp", D_SEED); a.br("BEQ", "o_nj")
     a.ins("LDA_zp", D_O1); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ORA_zp", D_C1)
@@ -279,6 +415,8 @@ def _emit_search_d3_engine(a):
     a.br("BVC", "o_s1"); a.ins("EOR_imm", 0x80); a.label("o_s1"); a.br("BPL", "s_next")
     a.ins("LDA_zp", D_V1L); a.ins("STA_zp", D_BVL); a.ins("LDA_zp", D_V1H); a.ins("STA_zp", D_BVH)
     a.ins("LDA_zp", D_C1); a.ins("STA_zp", D_BC); a.ins("LDA_zp", D_O1); a.ins("STA_zp", D_BO)
+    a.ins("LDA_zp", D_BC); a.ins16("STA_abs", S_BEST_C)     # ANYTIME: live-publish running best
+    a.ins("LDA_zp", D_BO); a.ins16("STA_abs", S_BEST_O)
     a.label("s_next")
     a.ins("INC_zp", D_J1); a.jmp("s_loop")
     a.label("o_done"); a.ins("RTS")
@@ -456,6 +594,7 @@ def _score_to_ac(a):
 def _emit_search_d3(a):
     a.label("search")
     a.ins("LDA_imm", 0xFF); a.ins("STA_zp", D_BO)
+    a.ins16("STA_abs", S_BEST_O)                    # ANYTIME: live mailbox invalid until 1st cand
     a.ins("LDA_imm", 0x00); a.ins("STA_zp", D_BVL); a.ins("LDA_imm", 0x80); a.ins("STA_zp", D_BVH)   # best_val=-32768
     # tie-break seed rides the color bytes' HIGH nibbles: SEED = (S_CB&$F0)|(S_CA>>4); 0=off
     a.ins16("LDA_abs", S_CA); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("STA_zp", D_SEED)
@@ -625,6 +764,8 @@ def _emit_search_d3(a):
     a.br("BVC", "o_s1"); a.ins("EOR_imm", 0x80); a.label("o_s1"); a.br("BPL", "s_next")
     a.ins("LDA_zp", D_V1L); a.ins("STA_zp", D_BVL); a.ins("LDA_zp", D_V1H); a.ins("STA_zp", D_BVH)
     a.ins("LDA_zp", D_C1); a.ins("STA_zp", D_BC); a.ins("LDA_zp", D_O1); a.ins("STA_zp", D_BO)
+    a.ins("LDA_zp", D_BC); a.ins16("STA_abs", S_BEST_C)     # ANYTIME: live-publish running best
+    a.ins("LDA_zp", D_BO); a.ins16("STA_abs", S_BEST_O)
     a.label("s_next")
     a.ins("INC_zp", D_J1); a.jmp("s_loop")
     a.label("o_done"); a.ins("RTS")
