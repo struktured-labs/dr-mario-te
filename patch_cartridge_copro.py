@@ -63,6 +63,12 @@ WDOG_HI_LIM = 56                  # timeout = 56*256 = 14336 ticks ~= 4min (FULL
 SEED1, SEED2, TMPSEED = 0x6167, 0x6168, 0x6169
 VSEEN1, VSEEN2 = 0x616A, 0x616B   # count-was-nonzero-this-match latches (gate the auto-advance:
                                   # in 1P/demo contexts the unused P2 count reads 0 -> START-spam)
+# ROT_DONE2 (DRROTFIX): P2 orient-commit latch, reset per pill. 0 = pre-phase (orient still
+# tracks the search while the capsule is frozen HIGH); 1 = committed (orient LOCKED, only the
+# column refines as it descends). Stops the mid-flight orient retarget that rotates a low/flush
+# capsule and locks it BACKWARDS (field-seen on the Pocket combo brain 2026-07-19). $616C/$616D
+# are the anytime torn-read scratch; $616E is the next free PRG-RAM byte.
+ROT_DONE2 = 0x616E
 import os as _os
 USE_SEEDS = _os.environ.get("DRSEED", "1") != "0"   # DRSEED=0 -> seeds stay 0 = deterministic mirror
 # WEAVE steering: when sliding to the target column is blocked at the pill's row (stuck
@@ -81,6 +87,17 @@ HUMAN_P1 = _os.environ.get("DRHUMAN", "0") == "1"
 NO_FREEZE = _os.environ.get("DRNOFREEZE", "0") == "1"
 WEAVE_LIM = int(_os.environ.get("DRWEAVELIM", "40"))   # hook-cycles of no-move before a weave drop
                                                         # (> DAS repeat ~30 so normal slides don't trip it)
+# DRROTFIX=1 (default): the P2 anytime driver gets driver-fidelity steering -- rotation
+# PRE-PHASE (rotate to the target orient while frozen high, in open air), FEASIBILITY-GATED
+# retarget (orient locks at commit so a late retarget can't rotate a low capsule backwards),
+# and a MINIMUM-THINK gate (no lateral/orient commit until DONE or MIN_THINK hooks of search).
+# DRROTFIX=0 reproduces the pre-fidelity byte-exact emission (A/B + regression parity).
+ROTFIX = _os.environ.get("DRROTFIX", "1") != "0"
+# minimum-think gate: hooks of search (WDOG2) the driver waits before committing laterally /
+# locking orient. ~5 hooks/frame, so 90 ~= 18 frames ~= the spawn animation (controller input
+# is ignored during it anyway). Below this the search's argmax is a shallow first guess; the
+# field miss (dual-end at cols 6-7 lost to a left-wall half-credit) was a commit off that guess.
+MIN_THINK = int(_os.environ.get("DRMINTHINK", "90"))
 VCOUNT_P1, VCOUNT_P2 = 0x0324, 0x03A4   # remaining virus counts (0 => that player cleared -> STAGE CLEAR)
 W2_BASE = 0x5200
 # DRPOCKET=1: single-window build (Analogue Pocket core has only the $5000 window).
@@ -112,6 +129,8 @@ def build_main(level=11, speed=1):
     a.ins16("STA_abs", WDOGH1); a.ins16("STA_abs", WDOGH2)
     a.ins16("STA_abs", SEED1); a.ins16("STA_abs", SEED2)
     a.ins16("STA_abs", VSEEN1); a.ins16("STA_abs", VSEEN2)
+    if ROTFIX:
+        a.ins16("STA_abs", ROT_DONE2)                       # A==0 here: orient-commit latch clear
     a.ins("LDA_imm", 3)                                     # sane targets pre-first-publish
     a.ins16("STA_abs", TGT_C1); a.ins16("STA_abs", TGT_O1)
     a.ins16("STA_abs", TGT_C2); a.ins16("STA_abs", TGT_O2)
@@ -227,6 +246,8 @@ def build_main(level=11, speed=1):
     a.ins("LDA_imm", 1); a.ins16("STA_abs", PEND2)
     a.ins("LDA_imm", 15); a.ins16("STA_abs", DELAY2)        # ~3 frames settle before upload
     a.ins("LDA_imm", 0); a.ins16("STA_abs", WRETRY)
+    if ROTFIX:
+        a.ins16("STA_abs", ROT_DONE2)                       # A==0 here: new P2 pill -> re-enter pre-phase
     a.label("no_p2_new")
     a.ins16("LDA_abs", 0x0386); a.ins16("STA_abs", LASTY2)
 
@@ -344,10 +365,22 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", W2_BASE + 0x86); a.ins("CMP_imm", 0xFF); a.br("BEQ", "nf2_hold")
         a.ins16("STA_abs", 0x616C)
         a.ins16("LDA_abs", W2_BASE + 0x85); a.ins16("STA_abs", 0x616D)
-        a.ins16("LDA_abs", W2_BASE + 0x86); a.ins16("CMP_abs", 0x616C); a.br("BNE", "act_p1")  # torn read: keep old TGT
-        a.ins16("LDA_abs", 0x616D); a.ins16("STA_abs", TGT_C2)
-        a.ins16("LDA_abs", 0x616C); a.ins16("STA_abs", TGT_O2)
-        a.jmp("act_p2")                                     # weave-steer toward the live target, no freeze
+        a.ins16("LDA_abs", W2_BASE + 0x86); a.ins16("CMP_abs", 0x616C)         # re-read: detect torn read
+        if ROTFIX:
+            a.br("BEQ", "nf2_untorn"); a.jmp("act_p1"); a.label("nf2_untorn")  # torn: keep old TGT (rel too far)
+        else:
+            a.br("BNE", "act_p1")                                              # torn read: keep old TGT
+        a.ins16("LDA_abs", 0x616D); a.ins16("STA_abs", TGT_C2)   # column: always refine (anytime)
+        if ROTFIX:
+            # FEASIBILITY-GATED retarget: refine the ORIENT only while pre-phase (orient not yet
+            # committed). Once ROT_DONE2 latches, keep the committed orient so a late candidate
+            # cannot rotate a low/flush capsule and lock it backwards.
+            a.ins16("LDA_abs", ROT_DONE2); a.br("BNE", "nf2_col_only")
+            a.ins16("LDA_abs", 0x616C); a.ins16("STA_abs", TGT_O2)
+            a.label("nf2_col_only")
+        else:
+            a.ins16("LDA_abs", 0x616C); a.ins16("STA_abs", TGT_O2)
+        a.jmp("act_p2")                                     # weave-steer toward the live target
         a.label("nf2_hold")
         # no candidate published yet (first ~10ms of the search): brief freeze as before
         a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
@@ -356,16 +389,46 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)       # searching P2 -> freeze + skip steer
         a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
     a.label("act_p2")
+    if ROTFIX:
+        # SETTLE GUARD: while a new pill is PENDING (search not started, TGT still stale from the
+        # previous pill) hold frozen HIGH -- do not steer to a stale target or latch a stale orient.
+        a.ins16("LDA_abs", PEND2); a.br("BEQ", "act_p2_go")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
+        a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
+        a.label("act_p2_go")
     a.ins16("LDA_abs", STK2); a.ins("CMP_imm", STUCK_LIM); a.br("BCC", "act_p2_n")
     a.ins("LDY_imm", 0x04); a.ins("STY_zp", 0xF6); a.jmp("act_p1")   # stuck: force drop
     a.label("act_p2_n")
     # steer-then-drop, CONTINUOUS holds (v28cs DAS handles repeat). Pulsed windows parked
     # pills near the top on hardware because (with NAV_T=5*/frame) 32-hook cycles = 6.4
     # frames per edge -> 25s to move 4 cols -> pill hovered forever.
-    a.ins16("LDA_abs", 0x03A5); a.ins16("CMP_abs", TGT_O2); a.br("BEQ", "mv_p2")
-    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
-    a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)
-    a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF6); a.jmp("act_p1")
+    if ROTFIX:
+        # ROTATION PRE-PHASE + MINIMUM-THINK gate (orient not yet committed):
+        #  - orient != target -> rotate toward TGT_O2 while frozen HIGH (open air), so every
+        #    required rotation lands before descent (NES rotation fails flush against objects;
+        #    late rotations fail silently and lock the capsule BACKWARDS -- field-seen).
+        #  - orient reached -> hold frozen until the think gate opens: DONE (ARMED2==0) or
+        #    WDOG2 >= MIN_THINK hooks of search (below that the argmax is a shallow first guess).
+        #  - at the gate: LATCH ROT_DONE2 (orient locked) and fall through to the column phase.
+        # (ROT_DONE2 set => this whole block is skipped: orient stays put, only the column moves.)
+        a.ins16("LDA_abs", ROT_DONE2); a.br("BNE", "mv_p2")           # committed -> column only
+        a.ins16("LDA_abs", 0x03A5); a.ins16("CMP_abs", TGT_O2); a.br("BEQ", "p2_orient_ok")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)             # freeze HIGH while rotating
+        a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)
+        a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF6); a.jmp("act_p1")   # press A (one rotation)
+        a.label("p2_orient_ok")                                       # orient reached; think gate:
+        a.ins16("LDA_abs", ARMED2); a.br("BEQ", "p2_commit")         # DONE -> commit
+        a.ins16("LDA_abs", WDOGH2); a.br("BNE", "p2_commit")         # >256 hooks searched -> commit
+        a.ins16("LDA_abs", WDOG2); a.ins("CMP_imm", MIN_THINK); a.br("BCS", "p2_commit")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)             # gate closed: hold HIGH, no lateral
+        a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
+        a.label("p2_commit")
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", ROT_DONE2)           # orient LOCKED -> begin descent
+    else:
+        a.ins16("LDA_abs", 0x03A5); a.ins16("CMP_abs", TGT_O2); a.br("BEQ", "mv_p2")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
+        a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)
+        a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF6); a.jmp("act_p1")
     a.label("mv_p2")
     a.ins16("LDA_abs", 0x0385); a.ins16("CMP_abs", TGT_C2); a.br("BEQ", "dn_p2")
     if not USE_WEAVE:
