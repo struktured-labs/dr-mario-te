@@ -15,6 +15,7 @@
 | **Analogue Pocket** (agg23.NES fork + copro, mapper 100) | ✅ Shipped — human-vs-depth-3 on real silicon |
 | **MiSTer** (NES core + copro) | ✅ Shipped — CPU-vs-CPU duel live; human play awaits BliSSTer Rev.3 |
 | Physical FPGA-in-cart for stock NES | 🔭 Someday — the literal SA-1 move |
+| **P2-port peripheral** (vision → brain → controller; stock console, stock cart) | 🔭 Someday, bottom of list — enabled by the vision pipeline |
 
 ## Shipped milestones
 
