@@ -87,7 +87,9 @@ SLAM_ARM, LAST_LAT = 0x6172, 0x6173
 # the title fade-in (before the menu inits the 1P default $0727=1/$04=0) while NAV_T is still small so
 # the START window is open -> a premature START lands a 1P game (~1-in-3 cold loads, no reset from cart).
 # DRNAVFIX withholds START until the armed state has been STABLE for NAV_M hooks, filtering the transient.
-NAV_STABLE = 0x6174
+# NAV_1P is a diagnostic latch: set if the cart ever runs play-mode with $0727==1 (a 1P game or the
+# attract demo) = the nav did NOT land VS-CPU. Readable on hardware to score a cold-load gauntlet.
+NAV_STABLE, NAV_1P = 0x6174, 0x6175
 import os as _os
 USE_SEEDS = _os.environ.get("DRSEED", "1") != "0"   # DRSEED=0 -> seeds stay 0 = deterministic mirror
 # WEAVE steering: when sliding to the target column is blocked at the pill's row (stuck
@@ -139,11 +141,15 @@ MATURE = (FAST_HI > 0) and SLAM
 # withholds START until VS-CPU-armed ($04!=0 AND $0727==2) has held for NAV_M consecutive hooks -- the
 # same stability principle as the slam gate, applied to nav. Also un-armed no longer over-toggles past
 # VS-CPU (it waits while accumulating). DRNAVFIX=0 rebuilds the byte-exact canonical nav (A/B parity).
+# NAVFIX uses a LEAKY armed-stability counter (NAV_STABLE): armed -> +1 toward NAV_M, un-armed -> -1
+# (NOT reset). A menu-redraw flicker (the gauntlet failure: $04/$0727 bounce ~1 hook per redraw) only
+# nibbles the count, so a genuinely-sustained VS-CPU still fills it -- the consecutive-reset v1 never
+# reached the threshold under flicker and the title timed out into the attract demo (2/5 cold loads).
 NAVFIX = _os.environ.get("DRNAVFIX", "1") != "0"
-# NAV_M: consecutive VS-CPU-armed hooks required before START (byte-patchable). A cold-boot $04/$0727
-# garbage window resolves once the menu inits (~1-2 frames ~= 5-10 hooks); NAV_M=48 (~10 f, ~0.16 s) is a
-# comfortable filter over that while the legitimately-reached VS-CPU state holds indefinitely until START.
-NAV_M = int(_os.environ.get("DRNAV_M", "48"))
+# NAV_M: NET armed hooks (arm minus flicker) required before START (byte-patchable). The cold-boot
+# garbage window is ~5-15 hooks (menu-init), so NAV_M=24 rejects it; the leaky counter fills 24 at a
+# genuine VS-CPU for any flicker interval R>=3 (net rate (R-2)/R), well inside the ~10 s title timeout.
+NAV_M = int(_os.environ.get("DRNAV_M", "24"))
 # Phase-aware tuning table (byte-patchable immediates, DRMINTHINK-style, so per-platform tuning
 # is a rebuild via env or a byte-patch). K is in HOOKS the argmax has been stable (~5 hooks/frame;
 # the FPGA publishes ~1 candidate / ~10 hooks on MiSTer, ~4x slower on the 21.47MHz Pocket -> the
@@ -365,7 +371,7 @@ def build_main(level=11, speed=1):
     if MATURE:
         a.ins16("STA_abs", SLAM_ARM); a.ins16("STA_abs", LAST_LAT)   # A==0: slam disarmed, no latency yet
     if NAVFIX:
-        a.ins16("STA_abs", NAV_STABLE)                      # A==0: nav armed-stability counter
+        a.ins16("STA_abs", NAV_STABLE); a.ins16("STA_abs", NAV_1P)   # A==0: nav stability + 1P diag latch
     a.ins("LDA_imm", 3)                                     # sane targets pre-first-publish
     a.ins16("STA_abs", TGT_C1); a.ins16("STA_abs", TGT_O1)
     a.ins16("STA_abs", TGT_C2); a.ins16("STA_abs", TGT_O2)
@@ -388,7 +394,14 @@ def build_main(level=11, speed=1):
     a.label("fc_ret"); a.ins("RTS")
     a.label("fc_no")
     a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "not_play")
-    a.ins("LDA_zp", 0x04); a.br("BNE", "go_ai"); a.ins("RTS")
+    a.ins("LDA_zp", 0x04); a.br("BNE", "go_ai")            # $04 != 0 -> VS-CPU AI
+    if NAVFIX:
+        # DIAGNOSTIC: play-mode with $04==0 AND $0727==1 = a 1P game or the attract demo = the nav
+        # did NOT land VS-CPU. Latch NAV_1P (persists this cold boot) so a gauntlet can read it.
+        a.ins16("LDA_abs", 0x0727); a.ins("CMP_imm", 1); a.br("BNE", "np_1p_done")
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", NAV_1P)
+        a.label("np_1p_done")
+    a.ins("RTS")
     a.label("go_ai")
     if MATURE:
         # EXPLICIT GAME-START INIT: on the first play frame of a match (MATCH_ACTIVE still 0), disarm
@@ -454,17 +467,21 @@ def build_main(level=11, speed=1):
     # change here shifts the whole downstream driver and reopens the byte-divergence from the
     # deployed reference carts.
     if NAVFIX:
-        # STABILITY-GATED START. armed = ($04 != 0) AND ($0727 == 2) -- the conjunction (not $0727
-        # alone, which is the v4 2P-human trap) uniquely identifies VS-CPU AND rejects a garbage $04
-        # that lacks $0727==2. Require NAV_M consecutive armed hooks before START, so a cold-boot
-        # transient can't fire it. While armed-but-not-yet-stable we WAIT (no toggle -> never over-
-        # toggle past VS-CPU); un-armed resets the counter and toggles once per window toward VS-CPU.
+        # LEAKY STABILITY-GATED START. armed = ($04 != 0) AND ($0727 == 2) -- the conjunction (not
+        # $0727 alone, the v4 2P-human trap) uniquely identifies VS-CPU AND rejects a garbage $04 that
+        # lacks $0727==2. armed -> NAV_STABLE toward NAV_M; un-armed -> DECREMENT (not reset), so a
+        # menu-redraw flicker only nibbles the count while a genuinely-sustained VS-CPU fills it (the
+        # consecutive-reset v1 never filled under flicker -> title timed out into the attract demo).
+        # START only at NAV_STABLE>=NAV_M. While NAV_STABLE>0 a flicker does NOT toggle (so it can't
+        # over-toggle past VS-CPU); only a truly un-VS-CPU state (NAV_STABLE==0) toggles onward.
         a.ins("LDA_zp", 0x04); a.br("BEQ", "an_unarmed")
         a.ins16("LDA_abs", 0x0727); a.ins("CMP_imm", 2); a.br("BNE", "an_unarmed")
-        a.ins16("LDA_abs", NAV_STABLE); a.ins("CMP_imm", NAV_M); a.br("BCS", "an_start")  # stable -> START
-        a.ins16("INC_abs", NAV_STABLE); a.ins("RTS")        # armed but not yet stable -> wait (no toggle)
+        a.ins16("LDA_abs", NAV_STABLE); a.ins("CMP_imm", NAV_M); a.br("BCS", "an_start")  # at NAV_M -> START
+        a.ins16("INC_abs", NAV_STABLE); a.ins("RTS")        # armed, climbing -> wait (no toggle)
         a.label("an_unarmed")
-        a.ins("LDA_imm", 0); a.ins16("STA_abs", NAV_STABLE)  # not VS-CPU -> reset the stability count
+        a.ins16("LDA_abs", NAV_STABLE); a.br("BEQ", "an_untog")   # ==0 -> genuinely not at VS-CPU
+        a.ins16("DEC_abs", NAV_STABLE); a.ins("RTS")        # leak a flicker off VS-CPU -> do NOT toggle
+        a.label("an_untog")
         a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 1); a.br("BEQ", "an_tog_go")
         a.ins("RTS")
         a.label("an_tog_go")
