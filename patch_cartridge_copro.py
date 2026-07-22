@@ -74,11 +74,14 @@ ROT_DONE2 = 0x616E
 # published argmax has held unchanged (saturating), reset on any change or a new pill. The slam
 # gate reads STABLE_CT2 to decide when the running best is confident enough to fast-drop.
 LAST_COL2, LAST_ORI2, STABLE_CT2 = 0x616F, 0x6170, 0x6171
-# SLAM_OK (DRSLAM_COLDGUARD): per-match "the copro pipeline has produced a validated (DONE) result"
-# latch. 0 at match start (cold FPGA window / stale nav-era $5200 reads are NOT trustworthy); set on
-# P2's first DONE. The confidence slam + crossover escape only fire once SLAM_OK=1, so a cold round-1
-# entry can't slam the pre-DONE window garbage (the round-1 dead-round; round 2+ inherit it armed).
-SLAM_OK = 0x6172
+# SLAM_ARM (DRSLAM_MATURE): "the search pipeline is keeping pace, so its pre-DONE argmax is trustworthy."
+# The confidence slam + crossover escape only fire while SLAM_ARM=1. It is armed/disarmed per search by
+# the LAST P2 search's latency (LAST_LAT = WDOGH2 at DONE = latency/256 hooks): a FAST DONE arms, a slow
+# DONE / a watchdog timeout / a pill that locks while its search is still ARMED disarms. First pill of a
+# match starts disarmed. So a cold round-1 entry (no validated result yet) and any slow-search episode
+# fall back to the proven anytime placement, re-arming on the next fast DONE -- breaking the cold/dense
+# vicious cycle (bad placement -> denser board -> slower search -> worse commit) at its root.
+SLAM_ARM, LAST_LAT = 0x6172, 0x6173
 import os as _os
 USE_SEEDS = _os.environ.get("DRSEED", "1") != "0"   # DRSEED=0 -> seeds stay 0 = deterministic mirror
 # WEAVE steering: when sliding to the target column is blocked at the pill's row (stuck
@@ -115,12 +118,16 @@ MIN_THINK = int(_os.environ.get("DRMINTHINK", "90"))
 # min-think floor is safety layer 1 against the v1 shallow-argmax slam-suicide, so with DRROTFIX=0
 # SLAM auto-disables. DRSLAM=0 rebuilds byte-exact to canonical (every add below is `if SLAM`-guarded).
 SLAM = (_os.environ.get("DRSLAM", "1") != "0") and ROTFIX
-# DRSLAM_COLDGUARD=1 (default when SLAM): hold the confidence slam until P2's first DONE of the match
-# (SLAM_OK), so a cold-boot round-1 entry -- whose $5200 window has no validated result yet -- falls
-# back to the proven anytime/DONE-wait placement instead of slamming pre-DONE window garbage. Field
-# repro: slam WINS rounds 2-3 but dead-rounds round 1 (tmp/driver_slam/cold_entry_repro.py).
-# DRSLAM_COLDGUARD=0 reproduces the pre-guard slam (regression A/B).
-COLDGUARD = (_os.environ.get("DRSLAM_COLDGUARD", "1") != "0") and SLAM
+# DRSLAM_MATURE (default 2, when SLAM): FAST_HI threshold on the search-latency HIGH byte (WDOGH2 =
+# latency in 256-hook units, ~5 hooks/frame). Arm the slam iff the last P2 search DONE'd in < FAST_HI*256
+# hooks. Derivation (tmp/driver_slam/round1_repro.py + tempo §2.3): warm depth-3 T_s ~= 60 f * 5 = ~300
+# hooks => WDOGH2=1; the cold-regression entry (an armed slam lands the pill ~106 f ~= 530 hooks, before
+# a slower DONE arrives) is WDOGH2=2. FAST_HI=2 (=512 hooks ~1.7 s) is the unique 256-hook-granular
+# threshold that sits ABOVE warm-typical (300, arms) and AT/below the regression entry (530, disarms) --
+# margin ~212 hooks over warm, and it disarms the moment a search crosses into the danger band. Byte-
+# patchable via the CMP #FAST_HI immediate. DRSLAM_MATURE=0 disables the gate (pre-fix slam, A/B).
+FAST_HI = int(_os.environ.get("DRSLAM_MATURE", "2"))
+MATURE = (FAST_HI > 0) and SLAM
 # Phase-aware tuning table (byte-patchable immediates, DRMINTHINK-style, so per-platform tuning
 # is a rebuild via env or a byte-patch). K is in HOOKS the argmax has been stable (~5 hooks/frame;
 # the FPGA publishes ~1 candidate / ~10 hooks on MiSTer, ~4x slower on the 21.47MHz Pocket -> the
@@ -339,8 +346,8 @@ def build_main(level=11, speed=1):
     if SLAM:
         a.ins16("STA_abs", LAST_COL2); a.ins16("STA_abs", LAST_ORI2)   # A==0: argmax-stability state
         a.ins16("STA_abs", STABLE_CT2)
-    if COLDGUARD:
-        a.ins16("STA_abs", SLAM_OK)                         # A==0: slam disarmed until first DONE
+    if MATURE:
+        a.ins16("STA_abs", SLAM_ARM); a.ins16("STA_abs", LAST_LAT)   # A==0: slam disarmed, no latency yet
     a.ins("LDA_imm", 3)                                     # sane targets pre-first-publish
     a.ins16("STA_abs", TGT_C1); a.ins16("STA_abs", TGT_O1)
     a.ins16("STA_abs", TGT_C2); a.ins16("STA_abs", TGT_O2)
@@ -365,11 +372,12 @@ def build_main(level=11, speed=1):
     a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "not_play")
     a.ins("LDA_zp", 0x04); a.br("BNE", "go_ai"); a.ins("RTS")
     a.label("go_ai")
-    if COLDGUARD:
-        # EXPLICIT GAME-START INIT: on the first play frame of a match (MATCH_ACTIVE still 0),
-        # disarm the slam so the cold $5200 window can't be slammed before it holds a real result.
+    if MATURE:
+        # EXPLICIT GAME-START INIT: on the first play frame of a match (MATCH_ACTIVE still 0), disarm
+        # the slam -- the first pill has no prior search latency, and the cold $5200 window holds no
+        # validated result yet, so it plays canonical anytime until the first fast DONE arms it.
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_slam_ok")
-        a.ins("LDA_imm", 0); a.ins16("STA_abs", SLAM_OK)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", SLAM_ARM)
         a.label("ga_slam_ok")
     if USE_SEEDS:
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_on")  # first play frame of this match:
@@ -466,6 +474,12 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", ROT_DONE2)                       # A==0 here: new P2 pill -> re-enter pre-phase
     if SLAM:
         a.ins16("STA_abs", STABLE_CT2)                      # A==0: new pill -> argmax must re-prove stability
+    if MATURE:
+        # LOCK-WHILE-ARMED: this pill locked while its search was still ARMED (never DONE'd) -> the
+        # search can't keep pace with the fall -> disarm so the next pill plays canonical anytime.
+        a.ins16("LDA_abs", ARMED2); a.br("BEQ", "p2_lockok")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", SLAM_ARM)
+        a.label("p2_lockok")
     a.label("no_p2_new")
     a.ins16("LDA_abs", 0x0386); a.ins16("STA_abs", LASTY2)
 
@@ -495,7 +509,11 @@ def build_main(level=11, speed=1):
         L = f"h{idx}"
         a.ins16("LDA_abs", delay); a.br("BEQ", f"{L}_dz"); a.ins16("DEC_abs", delay)   # settle timer
         a.label(f"{L}_dz")
-        a.ins16("LDA_abs", armed); a.br("BEQ", f"{L}_start")     # not searching -> maybe start
+        a.ins16("LDA_abs", armed)                               # not searching -> maybe start
+        if MATURE and idx == 2:
+            a.br("BNE", f"{L}_armed"); a.jmp(f"{L}_start"); a.label(f"{L}_armed")  # trampoline (maturity code widens the span)
+        else:
+            a.br("BEQ", f"{L}_start")
         a.ins16("LDA_abs", wdone); a.br("BEQ", f"{L}_search")    # DONE==0 -> still searching
         # publish result: best_col + orient4 -> game orient map {0xFF/0:3, 1:1, 2:0, 3:2}
         a.ins16("LDA_abs", wcol); a.ins16("STA_abs", tgt_c)
@@ -507,15 +525,24 @@ def build_main(level=11, speed=1):
         a.label(f"{L}_m2"); a.ins("CMP_imm", 2); a.br("BNE", f"{L}_m3"); a.ins("LDA_imm", 0); a.jmp(f"{L}_pst")
         a.label(f"{L}_m3"); a.ins("LDA_imm", 2)
         a.label(f"{L}_pst"); a.ins16("STA_abs", tgt_o)
+        if MATURE and idx == 2:
+            # MATURITY GATE: capture this search's latency (WDOGH2 high byte) BEFORE it is zeroed below,
+            # and arm the slam iff the search was FAST (< FAST_HI*256 hooks) -- a fast DONE means its
+            # stable argmax is the converged answer; a slow one is a not-yet-refined intermediate.
+            a.ins16("LDA_abs", wdogh); a.ins16("STA_abs", LAST_LAT)
+            a.ins("CMP_imm", FAST_HI); a.br("BCS", "mat_slow")     # WDOGH2 >= FAST_HI -> slow -> disarm
+            a.ins("LDA_imm", 1); a.ins16("STA_abs", SLAM_ARM); a.jmp("mat_done")
+            a.label("mat_slow"); a.ins("LDA_imm", 0); a.ins16("STA_abs", SLAM_ARM)
+            a.label("mat_done")
         a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
-        if COLDGUARD and idx == 2:
-            a.ins("LDA_imm", 1); a.ins16("STA_abs", SLAM_OK)   # P2 pipeline produced a validated result -> arm slam
         a.jmp(f"{L}_done")
         a.label(f"{L}_search")           # 16-bit watchdog: d3 searches take seconds; abandon ~30s, re-queue once
         a.ins16("INC_abs", wdog); a.br("BNE", f"{L}_wl"); a.ins16("INC_abs", wdogh)
         a.label(f"{L}_wl")
         a.ins16("LDA_abs", wdogh); a.ins("CMP_imm", WDOG_HI_LIM); a.br("BCS", f"{L}_wto"); a.jmp(f"{L}_done"); a.label(f"{L}_wto")
         a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
+        if MATURE and idx == 2:
+            a.ins16("STA_abs", SLAM_ARM)                       # A==0: search timed out (slowest) -> disarm
         a.ins16("LDA_abs", wretry); a.br("BEQ", f"{L}_rt"); a.jmp(f"{L}_done"); a.label(f"{L}_rt")
         a.ins("LDA_imm", 1); a.ins16("STA_abs", wretry); a.ins16("STA_abs", pend)
         a.jmp(f"{L}_done")
@@ -680,10 +707,10 @@ def build_main(level=11, speed=1):
             # ALREADY at target here (past the CMP above), so committing merely LATCHES it (no low
             # rotation -> DRROTFIX's no-backwards-lock invariant holds) and hands the descent to the
             # confidence gate -- which is the PRIMARY commit mechanism under fast/slow-silicon gravity.
-            if COLDGUARD:
-                a.ins16("LDA_abs", SLAM_OK); a.br("BEQ", "p2_esc_skip")   # pre-first-DONE: min-think only
+            if MATURE:
+                a.ins16("LDA_abs", SLAM_ARM); a.br("BEQ", "p2_esc_skip")  # search not keeping pace: min-think only
             a.ins16("LDA_abs", 0x0386); a.ins("CMP_imm", CROSS_LOWY); a.br("BCC", "p2_commit")
-            if COLDGUARD:
+            if MATURE:
                 a.label("p2_esc_skip")
         a.ins16("LDA_abs", WDOG2); a.ins("CMP_imm", MIN_THINK); a.br("BCS", "p2_commit")
         a.ins("LDA_imm", 0); a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8)   # gate closed: no ACT,
@@ -719,8 +746,8 @@ def build_main(level=11, speed=1):
             #    opening/mid uses the aggressive K_OPEN. Feasibility dominates (checked first).
             # If the argmax column later CHANGES, nf2 refreshes TGT_C2 + zeroes STABLE_CT2, so the
             # next hook is un-aligned -> mv_p2 re-steers and the slam self-aborts (no latch needed).
-            if COLDGUARD:
-                a.ins16("LDA_abs", SLAM_OK); a.br("BEQ", "dn_hold")   # pre-first-DONE: DONE-wait only
+            if MATURE:
+                a.ins16("LDA_abs", SLAM_ARM); a.br("BEQ", "dn_hold")  # search not keeping pace: DONE-wait only
             a.ins16("LDA_abs", 0x0386); a.ins("CMP_imm", CROSS_LOWY); a.br("BCC", "dn_slam_cross")
             a.ins16("LDA_abs", VCOUNT_P2); a.ins("CMP_imm", VC_ENDGAME); a.br("BCC", "dn_slam_end")
             a.ins16("LDA_abs", STABLE_CT2); a.ins("CMP_imm", K_OPEN); a.br("BCS", "dn_p2_go")

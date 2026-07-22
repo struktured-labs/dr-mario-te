@@ -29,7 +29,7 @@ PEND2, DELAY2 = 0x614F, 0x615F
 TGT_C2, TGT_O2 = 0x6152, 0x6153
 ROT_DONE2 = 0x616E
 LAST_COL2, LAST_ORI2, STABLE_CT2 = 0x616F, 0x6170, 0x6171   # DRSLAM argmax-stability state
-SLAM_OK = 0x6172                                             # DRSLAM_COLDGUARD "pipeline validated" latch
+SLAM_ARM, LAST_LAT = 0x6172, 0x6173                         # DRSLAM_MATURE armed latch + last search latency
 STK2 = 0x615B
 LASTY1, LASTY2 = 0x6154, 0x6155
 P1Y = 0x0306
@@ -44,17 +44,17 @@ _KNOB_ENV = {"kopen": "DRSLAM_KOPEN", "kend": "DRSLAM_KEND", "kcross": "DRSLAM_K
              "vcend": "DRSLAM_VCEND", "lowy": "DRSLAM_LOWY", "minthink": "DRMINTHINK"}
 
 
-def load_build(rotfix, slam=True, coldguard=True, human=False, pocket=False, patcher=WT, **knobs):
+def load_build(rotfix, slam=True, mature=2, human=False, pocket=False, patcher=WT, **knobs):
     """Import the patcher fresh (module-level env is read at import) and return build_main bytes.
-    slam=True/False sets DRSLAM; coldguard=True/False sets DRSLAM_COLDGUARD (the first-DONE gate);
+    slam=True/False sets DRSLAM; mature sets DRSLAM_MATURE (FAST_HI threshold; 0 disables the gate);
     human/pocket select the shipped variants (DRHUMAN/DRPOCKET); **knobs override the phase table
     (kopen/kend/kcross/vcend/lowy) and the min-think floor (minthink) so scenarios stay deterministic."""
-    for k in ("DRNOFREEZE", "DRROTFIX", "DRHUMAN", "DRPOCKET", "DRSLAM", "DRSLAM_COLDGUARD", *_KNOB_ENV.values()):
+    for k in ("DRNOFREEZE", "DRROTFIX", "DRHUMAN", "DRPOCKET", "DRSLAM", "DRSLAM_MATURE", *_KNOB_ENV.values()):
         os.environ.pop(k, None)
     os.environ["DRNOFREEZE"] = "1"
     os.environ["DRROTFIX"] = "1" if rotfix else "0"
     os.environ["DRSLAM"] = "1" if slam else "0"
-    os.environ["DRSLAM_COLDGUARD"] = "1" if coldguard else "0"
+    os.environ["DRSLAM_MATURE"] = str(mature)
     if human:
         os.environ["DRHUMAN"] = "1"
     if pocket:
@@ -66,7 +66,7 @@ def load_build(rotfix, slam=True, coldguard=True, human=False, pocket=False, pat
         if p not in sys.path:
             sys.path.insert(0, p)
     # unique module name per (patcher, config) so env changes take effect (module body re-runs)
-    key = f"pc_{abs(hash((patcher, rotfix, slam, coldguard, human, pocket, tuple(sorted(knobs.items()))))):x}"
+    key = f"pc_{abs(hash((patcher, rotfix, slam, mature, human, pocket, tuple(sorted(knobs.items()))))):x}"
     spec = importlib.util.spec_from_file_location(key, patcher)
     m = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = m
@@ -159,8 +159,8 @@ def spawn_pill(s, y=0x0D, x=3, orient=0):
     s.mem[ROT_DONE2] = 0; s.mem[STK2] = 0
     s.mem[W2_DONE] = 0; s.mem[W2_OR] = 0xFF; s.mem[W2_COL] = 0  # no candidate
     s.mem[TGT_C2] = 3; s.mem[TGT_O2] = orient
-    s.mem[SLAM_OK] = 1   # normal mid-match: the pipeline has DONE'd before -> slam armed. Cold-entry
-                         #   scenarios below clear this to test DRSLAM_COLDGUARD explicitly.
+    s.mem[SLAM_ARM] = 1  # normal mid-match: the last search was fast -> slam armed. The maturity
+                         #   scenarios below clear this to test DRSLAM_MATURE arm/disarm explicitly.
 
 
 # scenarios speak GAME orient; the copro mailbox is copro-space and the driver maps it
@@ -449,72 +449,100 @@ for i in range(220):
 check("F: ZERO gravity pins across a full SLAM-path pill (rotate+min-think+slam, all under live gravity)",
       not any(s.froze_hist), f"pinned={sum(s.froze_hist)}/{len(s.froze_hist)} frames")
 
-# ---------------------------------------------------------------- (g) DRSLAM_COLDGUARD gate
-print("SCENARIO G (DRSLAM_COLDGUARD): the confidence slam is HELD until P2's first DONE of the match")
-s = Sim(rotfix=True, slam=True, coldguard=True, minthink=8, kopen=4, vcend=10, lowy=6)
-s.grav_period = 40                      # Y stays high -> isolate the OPEN stability gate (no crossover)
+# ---------------------------------------------------------------- (g) DRSLAM_MATURE arm/disarm
+print("SCENARIO G (DRSLAM_MATURE): the slam is armed/disarmed by the LAST search's latency")
+# G1: disarmed (SLAM_ARM=0) -> the confidence slam is HELD (canonical DONE-wait fallback)
+s = Sim(rotfix=True, slam=True, minthink=8, kopen=4, vcend=10, lowy=6)
+s.grav_period = 40                       # Y high -> isolate the OPEN stability gate (no crossover)
 spawn_pill(s, y=0x0D, x=3, orient=0)
-s.mem[SLAM_OK] = 0                       # COLD entry: nothing validated yet this match
-publish_live(s, col=3, orient=0)        # perfectly stable + aligned argmax -- but pre-first-DONE
-cold_downs = 0
-for i in range(60):
-    st = s.frame(apply_physics=False)   # Y frozen high: only the OPEN stability gate could fire
-    if st["f6"] & 0x04:
-        cold_downs += 1
-check("G: pre-first-DONE (SLAM_OK=0) the confidence slam does NOT fire (falls back to DONE-wait)",
-      cold_downs == 0 and s.mem[SLAM_OK] == 0, f"DOWN frames={cold_downs} SLAM_OK={s.mem[SLAM_OK]}")
-publish_done(s, col=3, orient=0)        # P2's first DONE -> handle() arms SLAM_OK; the ceiling slams
-g_done_slam = False
-for i in range(10):
-    st = s.frame(apply_physics=False)
-    if st["f6"] & 0x04:
-        g_done_slam = True
-check("G: P2's first DONE arms SLAM_OK (and the DONE ceiling still slams)",
-      s.mem[SLAM_OK] == 1 and g_done_slam, f"SLAM_OK={s.mem[SLAM_OK]} done_slam={g_done_slam}")
+s.mem[SLAM_ARM] = 0                       # search not keeping pace -> disarmed
+publish_live(s, col=3, orient=0)
+g1_downs = sum(1 for _ in range(60) if s.frame(apply_physics=False)["f6"] & 0x04)
+check("G: disarmed (SLAM_ARM=0) -> the confidence slam is held (canonical DONE-wait)",
+      g1_downs == 0, f"DOWN frames={g1_downs}")
+# G2: a FAST DONE (WDOGH2 < FAST_HI=2) ARMS the slam
+s.mem[WDOGH2] = 0                         # this search was fast
+publish_done(s, col=3, orient=0)
+for _ in range(6):
+    s.frame(apply_physics=False)
+check("G: a FAST DONE (WDOGH2 < FAST_HI) arms the slam", s.mem[SLAM_ARM] == 1,
+      f"SLAM_ARM={s.mem[SLAM_ARM]} LAST_LAT={s.mem[LAST_LAT]}")
+# G3: a SLOW DONE (WDOGH2 >= FAST_HI) does NOT arm -- it DISARMS
+s3 = Sim(rotfix=True, slam=True, minthink=8, kopen=4, vcend=10, lowy=6)
+spawn_pill(s3, y=0x0D, x=3, orient=0)
+s3.mem[SLAM_ARM] = 1                      # was armed
+s3.mem[WDOGH2] = 2                        # this search was SLOW (>= FAST_HI)
+publish_done(s3, col=3, orient=0)
+for _ in range(6):
+    s3.frame(apply_physics=False)
+check("G: a SLOW DONE (WDOGH2 >= FAST_HI) DISARMS the slam", s3.mem[SLAM_ARM] == 0,
+      f"SLAM_ARM={s3.mem[SLAM_ARM]} LAST_LAT={s3.mem[LAST_LAT]}")
+# G4: a pill that LOCKS while its search is still ARMED disarms (search can't keep pace with the fall)
+s4 = Sim(rotfix=True, slam=True, minthink=8, kopen=4, vcend=10, lowy=6)
+spawn_pill(s4, y=0x02, x=3, orient=0)
+s4.mem[SLAM_ARM] = 1; s4.mem[ARMED2] = 1  # armed + still searching
+s4.mem[P2Y] = 0x0D; s4.mem[LASTY2] = 0x02  # force a pill-lock edge (Y jumps up) while ARMED2 set
+s4.frame(apply_physics=False)
+check("G: lock-while-armed disarms (the search never DONE'd before the pill locked)",
+      s4.mem[SLAM_ARM] == 0, f"SLAM_ARM={s4.mem[SLAM_ARM]}")
 
-# ---------------------------------------------------------------- (h) round-1 dead-round REGRESSION
-print("SCENARIO H (regression): cold round-1 first pill -- pre-fix slam commits the pre-DONE window,")
-print("  the coldguard waits for the validated DONE. (Field: slam dead-rounds round 1, wins rounds 2-3.)")
-def cold_first_pill(coldguard):
-    # cold match entry: the $5200 window holds a WRONG move (col1) until the search DONEs the RIGHT
-    # move (col6) late (cold search). SLAM_OK=0 = first pill of the match, nothing validated yet.
-    s = Sim(rotfix=True, slam=True, coldguard=coldguard, minthink=8, kopen=4, kcross=6, vcend=10, lowy=6)
+# ---------------------------------------------------------------- (h) round-1 dead-round + vicious cycle
+print("SCENARIO H (regression): the round-1 dead round + the mid-game vicious cycle")
+# Ha: cold match entry -- the pre-DONE window is a WRONG move (col1); the search DONEs the RIGHT move
+# (col6) only late (cold/slow). DRSLAM_MATURE=0 (pre-fix) commits the wrong window; default waits.
+def cold_first_pill(mature):
+    s = Sim(rotfix=True, slam=True, mature=mature, minthink=8, kopen=4, kcross=6, vcend=10, lowy=6)
     s.soft_drop = True; s.grav_period = 16
     spawn_pill(s, y=0x0D, x=3, orient=0)
-    s.mem[SLAM_OK] = 0
+    s.mem[SLAM_ARM] = 0                    # first pill of the match: disarmed (no prior latency)
     for i in range(300):
         if i < 120:
-            publish_live(s, col=1, orient=0)      # cold pre-DONE window = a WRONG move
+            publish_live(s, col=1, orient=0)   # cold pre-DONE window = a WRONG move
         else:
-            publish_done(s, col=6, orient=0)      # the real answer, only now validated (DONE)
-        st = s.frame(apply_physics=True)
-        if st["y"] == 0:
+            s.mem[WDOGH2] = 0                   # the DONE that finally lands is itself timely
+            publish_done(s, col=6, orient=0)    # the real answer, only now validated
+        if s.frame(apply_physics=True)["y"] == 0:
             break
     return s.mem[P2X]
-buggy = cold_first_pill(coldguard=False)   # == the aea9f6e pre-fix slam
-fixed = cold_first_pill(coldguard=True)    # DRSLAM_COLDGUARD default
-check("H: WITHOUT the coldguard the cold pill commits the WRONG pre-DONE move (col1) = the dead round",
+buggy, fixed = cold_first_pill(0), cold_first_pill(2)
+check("H: DRSLAM_MATURE=0 (pre-fix) commits the WRONG pre-DONE move (col1) = the dead round",
       buggy == 1, f"pre-fix landed col={buggy} (wrong=1, correct=6)")
-check("H: WITH the coldguard (default) the cold pill waits for the DONE and lands correct (col6)",
+check("H: DRSLAM_MATURE=2 (default) waits for the validated DONE, lands correct (col6)",
       fixed == 6, f"fixed landed col={fixed}")
+# Hb: a MID-GAME slow-search episode disarms (canonical anytime for that pill), then a FAST DONE
+# re-arms -- breaking the vicious cycle (bad placement -> denser board -> slower search) at the root.
+s = Sim(rotfix=True, slam=True, minthink=8, kopen=4, vcend=10, lowy=6)
+spawn_pill(s, y=0x0D, x=3, orient=0)
+s.mem[SLAM_ARM] = 1; s.mem[WDOGH2] = 3    # armed, but THIS search is slow -> should disarm the next pill
+publish_done(s, col=3, orient=0)          # handle() processes the DONE (ARMED2=1 from spawn) -> disarm
+for _ in range(4):
+    s.frame(apply_physics=False)
+disarmed = s.mem[SLAM_ARM]
+s.mem[ARMED2] = 1; s.mem[WDOG2] = 0; s.mem[WDOGH2] = 0   # a NEW search that DONEs FAST
+publish_done(s, col=3, orient=0)
+for _ in range(4):
+    s.frame(apply_physics=False)
+rearmed = s.mem[SLAM_ARM]
+check("H: a mid-game SLOW search disarms, a later FAST DONE re-arms (breaks the vicious cycle)",
+      disarmed == 0 and rearmed == 1, f"after-slow={disarmed} after-fast={rearmed}")
 
-# ---------------------------------------------------------------- byte-exactness: DRSLAM=0 == canonical
-print("BYTE-EXACT (DRSLAM=0): rebuilds byte-identical to canonical, all three shipped variants")
+# ---------------------------------------------------------------- byte-exactness (immutable c300acb)
+print("BYTE-EXACT: DRSLAM=0 == canonical (c300acb); DRSLAM_MATURE=0 == the pre-fix slam (aea9f6e)")
 import hashlib
+def sha(code):
+    return hashlib.sha256(bytes(code)).hexdigest()[:16]
 VARIANTS = {"ab": {}, "human": {"human": True}, "pocket": {"human": True, "pocket": True}}
-CANON = "/home/struktured/projects/dr-mario-canonical-wt/patch_cartridge_copro.py"
-# canonical golden sha256[:16] of build_main(11,1) at copro-canonical c300acb (DRSLAM did not exist).
-GOLDEN = {"ab": "855ca99a2cc3c8aa", "human": "70568fdbb39422cc", "pocket": "d1c7f8165767b4a4"}
+# immutable goldens: build_main(11,1) at c300acb (DRSLAM=0 = canonical) and aea9f6e (DRSLAM=1 = pre-fix
+# slam). The live canonical worktree tracks HEAD and drifts as this work merges, so we pin to commits.
+GOLD_CANON = {"ab": "855ca99a2cc3c8aa", "human": "70568fdbb39422cc", "pocket": "d1c7f8165767b4a4"}
+GOLD_PREFIX = {"ab": "47e3ed7cf8a2e650", "human": "e53c36f0efbd2cb2", "pocket": "36003fb7268db303"}
 for name, kw in VARIANTS.items():
-    mine, _ = load_build(rotfix=True, slam=False, **kw)
-    if os.path.exists(CANON):                       # strongest: diff against the live canonical patcher
-        canon, _ = load_build(rotfix=True, slam=False, patcher=CANON, **kw)
-        check(f"BYTE-EXACT {name}: DRSLAM=0 == canonical patcher (live diff)", bytes(mine) == bytes(canon),
-              f"len mine={len(mine)} canon={len(canon)}")
-    else:                                           # fallback: golden hash of c300acb
-        sha = hashlib.sha256(bytes(mine)).hexdigest()[:16]
-        check(f"BYTE-EXACT {name}: DRSLAM=0 == canonical golden", sha == GOLDEN[name],
-              f"got {sha} want {GOLDEN[name]}")
+    canon = sha(load_build(rotfix=True, slam=False, **kw)[0])
+    check(f"BYTE-EXACT {name}: DRSLAM=0 == canonical c300acb golden", canon == GOLD_CANON[name],
+          f"got {canon} want {GOLD_CANON[name]}")
+    prefix = sha(load_build(rotfix=True, slam=True, mature=0, **kw)[0])
+    check(f"BYTE-EXACT {name}: DRSLAM_MATURE=0 == pre-fix slam aea9f6e golden", prefix == GOLD_PREFIX[name],
+          f"got {prefix} want {GOLD_PREFIX[name]}")
 
 print()
 npass = sum(1 for _, c, _ in results if c)
