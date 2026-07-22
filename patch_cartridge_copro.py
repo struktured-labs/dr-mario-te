@@ -21,6 +21,8 @@ sys.path.insert(0, "tests")
 from patch_vs_cpu import Asm6502
 import patch_vs_cpu as _pv
 _pv.OPS.setdefault("ORA_abs", 0x0D)
+for _mn, _op in (("LDX_abs", 0xAE), ("STA_absX", 0x9D), ("CLC", 0x18), ("ADC_imm", 0x69)):
+    _pv.OPS.setdefault(_mn, _op)   # for the DRTRACE ring writer (STA $5000,X etc.)
 from expand_prg import expand
 
 V28CS = "drmario_v28cs.nes"
@@ -146,6 +148,12 @@ MATURE = (FAST_HI > 0) and SLAM
 # nibbles the count, so a genuinely-sustained VS-CPU still fills it -- the consecutive-reset v1 never
 # reached the threshold under flicker and the title timed out into the attract demo (2/5 cold loads).
 NAVFIX = _os.environ.get("DRNAVFIX", "1") != "0"
+# DRTRACE=1: DIAGNOSTIC-ONLY build. main becomes a passive tracer -- NO autonav / AI / dispatch. Every
+# hook it logs ($0046 mode, $0727, $04) ON CHANGE into a 64-entry ring, so a cold boot's REAL menu-state
+# evolution (power-on -> intro -> title -> demo ...) can be dumped from hardware and v4 designed against
+# real data. The ring survives reset (RAM persists across core reload -- the very thing we're diagnosing),
+# so boots are identified by their mode==8 entries. Written to BOTH copro window $5000 and PRG-RAM $6200.
+TRACE = _os.environ.get("DRTRACE", "0") == "1"
 # NAV_M: NET armed hooks (arm minus flicker) required before START (byte-patchable). The cold-boot
 # garbage window is ~5-15 hooks (menu-init), so NAV_M=24 rejects it; the leaky counter fills 24 at a
 # genuine VS-CPU for any flicker interval R>=3 (net rate (R-2)/R), well inside the ~10 s title timeout.
@@ -350,6 +358,65 @@ def apply_study_pause(rom):
 
 def build_main(level=11, speed=1):
     a = Asm6502(UNIT1_CPU)
+
+    if TRACE:
+        # ================= DIAGNOSTIC TRACER (no AI/nav) =================
+        # Log ($0046,$0727,$04) ON CHANGE into a 64-entry x 3-byte ring at $5000 (copro window) mirrored
+        # to $6200 (PRG-RAM). Header (both regions): +0xC0 write-index, +0xC1/C2 change-count lo/hi,
+        # +0xC3..C5 the LIVE ($0046,$0727,$04) every hook, +0xC6 magic 0x54('T'). State in PRG-RAM $6186+.
+        TR_IDX, TR_CNT, TR_L0, TR_L1, TR_L2, TR_MAG = 0x6186, 0x6187, 0x6189, 0x618A, 0x618B, 0x618C
+        RING0, RING1 = 0x5000, 0x6200
+        a.label("main")
+        a.ins16("LDA_abs", TR_MAG); a.ins("CMP_imm", 0x5A); a.br("BEQ", "tr_go")   # lazy init (once ever)
+        a.ins("LDA_imm", 0x5A); a.ins16("STA_abs", TR_MAG)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", TR_IDX); a.ins16("STA_abs", TR_CNT); a.ins16("STA_abs", TR_CNT + 1)
+        a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", TR_L0); a.ins16("STA_abs", TR_L1); a.ins16("STA_abs", TR_L2)
+        a.label("tr_go")
+        for r in (RING0, RING1):                                   # LIVE snapshot every hook + magic
+            a.ins16("LDA_abs", 0x0046); a.ins16("STA_abs", r + 0xC3)
+            a.ins16("LDA_abs", 0x0727); a.ins16("STA_abs", r + 0xC4)
+            a.ins("LDA_zp", 0x04); a.ins16("STA_abs", r + 0xC5)
+            a.ins("LDA_imm", 0x54); a.ins16("STA_abs", r + 0xC6)
+        # --- ON-SCREEN render (the only read channel is a screenshot). main runs from the NMI ($800A)
+        # with PPUSTATUS($2002) bit7 still SET; the ~4 main-loop calls/frame have it CLEAR, so gating on
+        # bit7 renders ONLY in vblank -> PPU writes never hit active rendering, and the NMI resets scroll
+        # right after us ($801F) so no scroll corruption. Font: hex nibble N == background tile $0N (bank 0,
+        # confirmed). Row 2 (past overscan): MODE $0046 | $0727 | $04 | change-count | write-index, hex.
+        a.ins16("LDA_abs", 0x2002); a.br("BPL", "tr_nppu")
+        for lo, src in ((0x42, 0x0046), (0x45, 0x0727), (0x48, None), (0x4C, TR_CNT), (0x4F, TR_IDX)):
+            a.ins("LDA_imm", 0x20); a.ins16("STA_abs", 0x2006)          # PPUADDR hi = $20
+            a.ins("LDA_imm", lo); a.ins16("STA_abs", 0x2006)           # PPUADDR lo -> $2040(row2)+col
+            if src is None:
+                a.ins("LDA_zp", 0x04)                                   # $04 is zero-page
+            else:
+                a.ins16("LDA_abs", src)
+            a.jsr("tr_hex")                                             # write the 2 hex tiles
+        a.label("tr_nppu")
+        a.ins16("LDA_abs", 0x0046); a.ins16("CMP_abs", TR_L0); a.br("BNE", "tr_log")   # change detect
+        a.ins16("LDA_abs", 0x0727); a.ins16("CMP_abs", TR_L1); a.br("BNE", "tr_log")
+        a.ins("LDA_zp", 0x04); a.ins16("CMP_abs", TR_L2); a.br("BNE", "tr_log")
+        a.ins("RTS")
+        a.label("tr_log")
+        a.ins16("LDX_abs", TR_IDX)                                 # write entry at RING+IDX (both regions)
+        for r in (RING0, RING1):
+            a.ins16("LDA_abs", 0x0046); a.ins16("STA_absX", r + 0)
+            a.ins16("LDA_abs", 0x0727); a.ins16("STA_absX", r + 1)
+            a.ins("LDA_zp", 0x04); a.ins16("STA_absX", r + 2)
+        a.ins16("LDA_abs", TR_IDX); a.ins("CLC"); a.ins("ADC_imm", 3)   # advance IDX by 3, wrap at 192
+        a.ins("CMP_imm", 192); a.br("BCC", "tr_iok"); a.ins("LDA_imm", 0); a.label("tr_iok")
+        a.ins16("STA_abs", TR_IDX); a.ins16("STA_abs", RING0 + 0xC0); a.ins16("STA_abs", RING1 + 0xC0)
+        a.ins16("LDA_abs", 0x0046); a.ins16("STA_abs", TR_L0)     # remember last-logged
+        a.ins16("LDA_abs", 0x0727); a.ins16("STA_abs", TR_L1)
+        a.ins("LDA_zp", 0x04); a.ins16("STA_abs", TR_L2)
+        a.ins16("INC_abs", TR_CNT); a.br("BNE", "tr_c"); a.ins16("INC_abs", TR_CNT + 1); a.label("tr_c")
+        for r in (RING0, RING1):
+            a.ins16("LDA_abs", TR_CNT); a.ins16("STA_abs", r + 0xC1)
+            a.ins16("LDA_abs", TR_CNT + 1); a.ins16("STA_abs", r + 0xC2)
+        a.ins("RTS")
+        a.label("tr_hex")     # A = byte -> two background tiles via $2007 (nibble N -> hex-font tile $0N)
+        a.ins("PHA"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins16("STA_abs", 0x2007)
+        a.ins("PLA"); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", 0x2007); a.ins("RTS")
+        return a.assemble(), a.labels
 
     # ================= per-frame entry =================
     a.label("main")
