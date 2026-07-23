@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Deterministic validation of DRNAVFIX -- the stability-gated autonav.
+"""DRNAVFIX byte-exactness pins + two anti-premature-START smoke checks.
 
-Field flake: the AB cart's autonav mis-lands into a 1P game ~1-in-3 cold loads (nobody driving,
-virus static at 48, relaunch fixes it). Root cause: canonical an_title fires START the instant
-$04!=0; NAV_T is zeroed at intro so the START window (NAV_T&$1F<4) is open on the first title hooks,
-and a cold-boot garbage-nonzero $04 (title fade-in, before the menu inits the 1P default) then STARTs
-into a 1P game -- unrecoverable from the cart (no reset).
+DRNAVFIX is now v4: it directly WRITES coherent VS-CPU ($0727=2,$04=1) each menu hook and gates the
+mode-independent full-clear auto-advance to play/post (mode>=4). The real ~1-in-3 mis-land was the
+full-clear FALSE-firing at the title on inherited MATCH_ACTIVE (injecting START, skipping the autonav
+-> 1P) -- see tests/test_nav_fullclear.py for the reproduce-then-fix, test_nav_parity.py for the
+inherited-state sweep, and test_nav_demo_hold.py for the secondary attract-demo guard.
 
-This drives the REAL unit-1 main() at the title (mode 0) in py65 with a scripted ($04,$0727) menu
-timeline and a stubbed $FF30 toggle, counting START injections ($614B). It asserts the canonical nav
-fires a premature START on the transient while DRNAVFIX withholds it until VS-CPU-armed ($04!=0 AND
-$0727==2) has been stable for NAV_M hooks -- and that DRNAVFIX still fires on a genuine VS-CPU state.
+This file retains: (NAV-1/NAV-2) smoke checks that v4 does NOT premature-START on a cold-boot menu
+transient and DOES eventually fire START on a stable VS-CPU state (driving the REAL main() at mode 0
+in py65 with a stubbed $FF30 and counting START injections at $614B); and the BYTE-EXACTNESS golden
+pins for DRNAVFIX=0 (== the b92ec32 base) and DRSLAM=0 DRNAVFIX=0 (== the c300acb canonical).
 """
 import os, sys, importlib.util, hashlib
 from py65.devices.mpu6502 import MPU
@@ -113,28 +113,13 @@ check("NAV-2: DRNAVFIX DOES fire START on a stable VS-CPU state (does not hang)"
 check("NAV-2: and it waits out the stability floor first (first START only after >= NAV_M hooks)",
       bool(vs_inj) and vs_inj[0] >= s.NAV_M, f"first START hook={vs_inj[0] if vs_inj else None} NAV_M={s.NAV_M}")
 
-# ---------------------------------------------------------------- NAV-3: conjunction rejects garbage
-# A garbage $04!=0 that is NOT accompanied by $0727==2 is not VS-CPU. Canonical fires (premature);
-# DRNAVFIX rejects it (the $04 AND $0727==2 conjunction), never even accumulating.
-print("NAV-3: garbage $04!=0 with $0727!=2 -- canonical fires, DRNAVFIX rejects (conjunction)")
-tl3 = [(0x03, 0x05)] * 12              # nonzero $04, but $0727 != 2 (not VS-CPU)
-canon3 = NavSim(navfix=False).run(tl3)
-fixsim = NavSim(navfix=True); fix3 = fixsim.run(tl3)
-check("NAV-3: canonical fires START on $04!=0 regardless of $0727 (premature)", len(canon3) > 0,
-      f"canonical injected at {canon3}")
-check("NAV-3: DRNAVFIX rejects it -- no START, NAV_STABLE stays 0 ($0727!=2 never counts as armed)",
-      len(fix3) == 0 and fixsim.mem[NAV_STABLE] == 0, f"fix injects={fix3} NAV_STABLE={fixsim.mem[NAV_STABLE]}")
-
-# ---------------------------------------------------------------- NAV-4: transient then legit -> recovers
-# Realistic cold boot: garbage transient, menu settles to 1P, toggles reach VS-CPU. DRNAVFIX must
-# not have mis-landed AND must ultimately start VS-CPU (the counter reset by the transient is clean).
-print("NAV-4: garbage transient -> 1P settle -> genuine VS-CPU: no mis-land, then a clean START")
-s4 = NavSim(navfix=True)
-tl4 = [(0x01, 0x02)] * 8 + [(0x00, 0x01)] * 30 + [(0x01, 0x02)] * (s4.NAV_M + 20)
-inj4 = s4.run(tl4)
-premature4 = [i for i in inj4 if i < 38]     # anything before the genuine VS-CPU block is a mis-land
-check("NAV-4: no START during the transient/1P phase, exactly one clean START run in the VS-CPU phase",
-      len(premature4) == 0 and len(inj4) > 0, f"injects={inj4} (all >= 38 = the VS-CPU phase)")
+# NAV-3/NAV-4 (the v3 stability-gate "conjunction-rejects-garbage" and "delayed-VS-phase-START"
+# assertions) were REMOVED when DRNAVFIX became v4: v4 does not respond to a scripted menu timeline --
+# it directly WRITES coherent VS-CPU ($0727=2,$04=1) each menu hook and gates the full-clear
+# auto-advance to mode>=4. v4's decision logic + the real mis-land root cause are covered by
+# tests/test_nav_fullclear.py (full-clear false-fire), test_nav_parity.py (inherited-state sweep),
+# and test_nav_demo_hold.py (attract-demo guard). NAV-1/NAV-2 above still hold for v4 (it does not
+# premature-START on a cold-boot transient, and it does eventually fire START on a stable VS-CPU).
 
 # ---------------------------------------------------------------- byte-exactness
 print("BYTE-EXACT: DRNAVFIX=0 == the b92ec32 base; DRSLAM=0 DRNAVFIX=0 == c300acb canonical")
