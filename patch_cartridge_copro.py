@@ -100,6 +100,7 @@ NAV_STABLE, NAV_1P = 0x6174, 0x6175
 # ($6176-$6185) makes the trampoline bail on re-entry BEFORE the bank switch (a re-entrant _sel would corrupt
 # the interrupted invocation's bank). Byte-exact for the build_main goldens -- the guard is in the trampoline.
 BUSY = 0x6176
+DWELL_CNT, DWELL_LAST = 0x6177, 0x6178   # TITLE DWELL: frames dwelt at the title + last frameCounter($43) seen
 import os as _os
 REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
 # DRWRETRY (default OFF -- touches build_main, so off keeps the goldens == published c300acb canonical;
@@ -216,6 +217,16 @@ NAV_M4 = int(_os.environ.get("DRNAV_M4", "4"))    # title hooks (2,1) held befor
 # (labeled-disasm confirmed: base $98FE does inc $51 / cmp #$08 / beq @toDemo, and @toDemo forces
 # nbPlayers=1). This is THE fix for the mis-land; DRNAV_HOLD=0 reproduces the pre-hold 3/6 (demo wins).
 NAV_HOLD = NAV_V4 and (_os.environ.get("DRNAV_HOLD", "1") != "0")
+# DRNAVDWELL (default ON with V4): TITLE DWELL -- hold autonav's FIRST title START for ~DRNAVDWELL_F frames
+# so the TRAINING EDITION branding is visible at every boot (else the autonav enters L11 in ~4 hooks and the
+# title logo is never seen). PURE frame-count gate placed IN FRONT of the nav VS-CPU write + stability gate
+# (both byte-INTACT downstream) -- does NOT touch the silicon-validated $51/mode/$04 stability logic. The $51
+# demo-hold above keeps running each dwell hook so the attract demo never trips. Counts real frames via the
+# game's frameCounter $43 (hook-rate-independent), saturates at DRNAVDWELL_F (no wrap), resets per title-visit
+# (cold-init + at the START injection). Gated on NAV_V4 so the DRNAVFIX=0 byte-goldens are unaffected.
+# DRNAVDWELL=0 reverts (byte-identical nav). py65: nav still lands VS-CPU, just ~DRNAVDWELL_F frames later.
+NAVDWELL = NAV_V4 and (_os.environ.get("DRNAVDWELL", "1") != "0")
+DWELL_FRAMES = int(_os.environ.get("DRNAVDWELL_F", "180"))   # ~3 s at 60 fps
 # Phase-aware tuning table (byte-patchable immediates, DRMINTHINK-style, so per-platform tuning
 # is a rebuild via env or a byte-patch). K is in HOOKS the argmax has been stable (~5 hooks/frame;
 # the FPGA publishes ~1 candidate / ~10 hooks on MiSTer, ~4x slower on the 21.47MHz Pocket -> the
@@ -497,6 +508,8 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", SLAM_ARM); a.ins16("STA_abs", LAST_LAT)   # A==0: slam disarmed, no latency yet
     if NAVFIX:
         a.ins16("STA_abs", NAV_STABLE); a.ins16("STA_abs", NAV_1P)   # A==0: nav stability + 1P diag latch
+    if NAVDWELL:
+        a.ins16("STA_abs", DWELL_CNT); a.ins16("STA_abs", DWELL_LAST)   # A==0: title-dwell fresh at power-on
     a.ins("LDA_imm", 3)                                     # sane targets pre-first-publish
     a.ins16("STA_abs", TGT_C1); a.ins16("STA_abs", TGT_O1)
     a.ins16("STA_abs", TGT_C2); a.ins16("STA_abs", TGT_O2)
@@ -675,6 +688,18 @@ def build_main(level=11, speed=1):
         # ($0727=2,$04=1) directly (disasm-verified: $FF30 touches only these two), hold NAV_M4 hooks, START.
         if NAV_HOLD:
             a.ins("LDA_imm", 0); a.ins("STA_zp", 0x51)      # waitFrames = 0 -> demo never trips (title HOLD)
+        if NAVDWELL:
+            # TITLE DWELL (see DRNAVDWELL): hold here until ~DWELL_FRAMES real frames pass at the title, so the
+            # branded logo shows. The $51 demo-hold above keeps the attract demo at bay each held hook; the
+            # VS-CPU write + stability gate below are byte-intact and simply run once the dwell elapses.
+            a.ins("LDA_zp", 0x43); a.ins16("CMP_abs", DWELL_LAST); a.br("BEQ", "dwell_chk")   # same frame -> check
+            a.ins16("STA_abs", DWELL_LAST)                                                     # new frame seen
+            a.ins16("LDA_abs", DWELL_CNT); a.ins("CMP_imm", DWELL_FRAMES); a.br("BCS", "dwell_chk")  # saturate
+            a.ins16("INC_abs", DWELL_CNT)
+            a.label("dwell_chk")
+            a.ins16("LDA_abs", DWELL_CNT); a.ins("CMP_imm", DWELL_FRAMES); a.br("BCS", "dwell_done")  # elapsed->nav
+            a.ins("RTS")                                                                       # holding: logo shown
+            a.label("dwell_done")
         a.ins("LDA_imm", 2); a.ins16("STA_abs", 0x0727)     # $0727 (nbPlayers) = 2
         a.ins("LDA_imm", 1); a.ins("STA_zp", 0x04)          # $04 = 1  -> coherent VS-CPU, set every title hook
         a.ins16("LDA_abs", NAV_STABLE); a.ins("CMP_imm", NAV_M4); a.br("BCS", "an_start")  # confirmed -> START
@@ -720,6 +745,8 @@ def build_main(level=11, speed=1):
     a.ins("RTS")
     a.label("an_st_go")
     inject(B_START)
+    if NAVDWELL:
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", DWELL_CNT)   # START fired -> re-arm the dwell for the next title
     a.ins("RTS")
 
     # ================= play-mode CPU-vs-CPU driver (time-shared FPGA) =================

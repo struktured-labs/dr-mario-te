@@ -31,10 +31,11 @@ TOGGLE_BYTES = _rom[_FF30_OFF:_FF30_OFF + 28]           # LDA $0727 ... DEC $072
 
 
 def load(patcher, navfix):
-    for k in ("DRNOFREEZE", "DRROTFIX", "DRHUMAN", "DRPOCKET", "DRSLAM", "DRNAVFIX", "DRNAV_M"):
+    for k in ("DRNOFREEZE", "DRROTFIX", "DRHUMAN", "DRPOCKET", "DRSLAM", "DRNAVFIX", "DRNAV_M", "DRNAVDWELL"):
         os.environ.pop(k, None)
     os.environ["DRNOFREEZE"] = "1"; os.environ["DRSLAM"] = "1"
     os.environ["DRNAVFIX"] = "1" if navfix else "0"
+    os.environ["DRNAVDWELL"] = "0"                 # title dwell is orthogonal to the nav-gate logic under test
     d = os.path.dirname(patcher)
     for p in (d, os.path.join(d, "tests")):
         if p not in sys.path:

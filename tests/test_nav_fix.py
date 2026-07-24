@@ -28,11 +28,12 @@ SENTINEL = 0x0400
 
 
 def load_build(navfix, slam="0", patcher=WT):
-    for k in ("DRNOFREEZE", "DRROTFIX", "DRHUMAN", "DRPOCKET", "DRSLAM", "DRNAVFIX", "DRNAV_M"):
+    for k in ("DRNOFREEZE", "DRROTFIX", "DRHUMAN", "DRPOCKET", "DRSLAM", "DRNAVFIX", "DRNAV_M", "DRNAVDWELL"):
         os.environ.pop(k, None)
     os.environ["DRNOFREEZE"] = "1"                 # AB cart context
     os.environ["DRSLAM"] = slam
     os.environ["DRNAVFIX"] = "1" if navfix else "0"
+    os.environ["DRNAVDWELL"] = "0"                 # title dwell is orthogonal to the nav-gate logic under test
     d = os.path.dirname(patcher)
     for p in (d, os.path.join(d, "tests")):
         if p not in sys.path:
