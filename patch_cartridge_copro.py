@@ -368,12 +368,18 @@ OLD_STUDY_BLOB2_V31 = bytes.fromhex( # v3.1 part2 @ $9FF8 (31 B)
 OLD_STUDY_BLOB4_V32 = bytes.fromhex( # v3.2 part3b @ $BE56 (11 B, ended RTS instead of JMP part3c)
     "A9B8" "8D9F02" "A9C0" "8DA302" "60")
 
+# v8.2 EVAC: the 2P-study tail ($9FF8/$A371/$BE56/$BC26) sits on LIVE RB6C2_PRINT printing tables +
+# an LDA $9FF8,X data table -> read-as-data every draw -> part3c $BC26 mis-parse -> $0301 KIL; part3b
+# $BE56 -> level-select junk.  v8.2 keeps part1 (STUDY + P1 preview) ending RTS, drops blobs 2-5, and
+# the caller restores the 4 sites to base.  See FREE_SPACE_MAP.md / dr-mario-te-freeze-rootcause.
+STUDY_BLOB_EVAC = STUDY_BLOB[:-3] + bytes.fromhex("60FFFF")   # part1 JMP $9FF8 -> RTS + pad (52 B)
+
 
 class StudyPatchError(Exception):
     pass
 
 
-def apply_study_pause(rom):
+def apply_study_pause(rom, evac=False):
     """Apply the DRSTUDY 'study pause' byte patches to a Dr. Mario PRG image in place.
     Idempotent + asserted: locate the pause routine by a stable anchor, verify each target holds
     an accepted original (base) OR the already-patched value (v28cs / re-run), place the preview
@@ -395,13 +401,19 @@ def apply_study_pause(rom):
                 + "/".join(b.hex() for b in accepted + [after]))
     # 5 blob targets, each in a confirmed dead run; every one must be free (or already ours, or a
     # prior blob we are upgrading in place). (cpu, blob, dead-run-size, [accepted prior prefixes])
-    targets = [
-        (STUDY_BLOB_CPU,  STUDY_BLOB,  52, [OLD_STUDY_BLOB_V2, OLD_STUDY_BLOB_V3, OLD_STUDY_BLOB_V31]),
-        (STUDY_BLOB2_CPU, STUDY_BLOB2, 38, [OLD_STUDY_BLOB2_V31]),
-        (STUDY_BLOB3_CPU, STUDY_BLOB3, 28, []),
-        (STUDY_BLOB4_CPU, STUDY_BLOB4, 24, [OLD_STUDY_BLOB4_V32]),
-        (STUDY_BLOB5_CPU, STUDY_BLOB5, 22, []),
-    ]
+    if evac:                                               # v8.2: part1 (RTS) only; no 2P tail
+        targets = [
+            (STUDY_BLOB_CPU, STUDY_BLOB_EVAC, 52,
+             [OLD_STUDY_BLOB_V2, OLD_STUDY_BLOB_V3, OLD_STUDY_BLOB_V31, STUDY_BLOB]),
+        ]
+    else:
+        targets = [
+            (STUDY_BLOB_CPU,  STUDY_BLOB,  52, [OLD_STUDY_BLOB_V2, OLD_STUDY_BLOB_V3, OLD_STUDY_BLOB_V31]),
+            (STUDY_BLOB2_CPU, STUDY_BLOB2, 38, [OLD_STUDY_BLOB2_V31]),
+            (STUDY_BLOB3_CPU, STUDY_BLOB3, 28, []),
+            (STUDY_BLOB4_CPU, STUDY_BLOB4, 24, [OLD_STUDY_BLOB4_V32]),
+            (STUDY_BLOB5_CPU, STUDY_BLOB5, 22, []),
+        ]
     def _overwritable(reg, blob, olds):
         if reg[:len(blob)] == blob or set(reg) <= {0x00, 0xFF}:              # already ours / pristine
             return True
@@ -1165,9 +1177,15 @@ def main():
     print("blob head repointed: STA $F6; JMP $FF54 (every frame, all modes)")
 
     if STUDY:
-        n = apply_study_pause(rom)      # asserted + idempotent; touches only the pause routine
-        print(f"DRSTUDY: study-pause patched ($978E; {n} new edit(s)) — bg stays on, "
-              f"sprites frozen, no blank/PAUSE")
+        # v8.2 EVAC: keep part1 ($D2CC STUDY + P1 preview, RTS), drop the 2P tail, and restore the 4
+        # tail sites to their pre-study (vanilla) bytes so the title/settings/$A346 printing tables +
+        # the LDA $9FF8,X table draw clean (kills the $BC26 KIL + the $BE56 level-select junk).
+        _evac = [(0x2008, 34), (0x2381, 27), (0x3E66, 13), (0x3C36, 18)]   # $9FF8 $A371 $BE56 $BC26
+        _saved = [(o, bytes(rom[o:o + l])) for o, l in _evac]
+        n = apply_study_pause(rom, evac=True)
+        for o, orig in _saved:
+            rom[o:o + len(orig)] = orig
+        print(f"DRSTUDY v8.2 EVAC: part1-only ($D2CC RTS); tail $9FF8/$A371/$BE56/$BC26 -> base; {n} edit(s)")
 
     tmp = OUT + ".2bank"
     open(tmp, "wb").write(rom)
