@@ -543,7 +543,9 @@ for name, kw in VARIANTS.items():
     canon = sha(load_build(rotfix=True, slam=False, **kw)[0])
     check(f"BYTE-EXACT {name}: DRSLAM=0 == canonical c300acb golden", canon == GOLD_CANON[name],
           f"got {canon} want {GOLD_CANON[name]}")
-    prefix = sha(load_build(rotfix=True, slam=True, mature=0, **kw)[0])
+    # pin kopen=40: this golden pins the aea9f6e pre-fix-slam bytes (K_OPEN was 40 then); the shipping
+    # default moved to 255 (task #40 retune), so hold K_OPEN=40 here to keep testing the historical artifact.
+    prefix = sha(load_build(rotfix=True, slam=True, mature=0, kopen=40, **kw)[0])
     check(f"BYTE-EXACT {name}: DRSLAM_MATURE=0 == pre-fix slam aea9f6e golden", prefix == GOLD_PREFIX[name],
           f"got {prefix} want {GOLD_PREFIX[name]}")
 

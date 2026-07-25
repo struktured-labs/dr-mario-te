@@ -231,13 +231,18 @@ DWELL_FRAMES = int(_os.environ.get("DRNAVDWELL_F", "180"))   # ~3 s at 60 fps
 # is a rebuild via env or a byte-patch). K is in HOOKS the argmax has been stable (~5 hooks/frame;
 # the FPGA publishes ~1 candidate / ~10 hooks on MiSTer, ~4x slower on the 21.47MHz Pocket -> the
 # gate is the PRIMARY commit there, so retune K per platform):
-#   K_OPEN  : opening/mid (virus_count >= VC_ENDGAME) -- aggressive; the argmax settles first here.
+#   K_OPEN  : opening/mid (virus_count >= VC_ENDGAME). Default 255 = require DONE. Was 40 (aggressive),
+#             but at the fast ~40f copro cadence a low K commits a PARTIAL-search argmax: min-think
+#             locks orient early and the confidence slam soft-drops the shallow decoy BEFORE the
+#             search converges (the strength regression, task #40 -- validated on the shipped binary:
+#             unpatched lands the decoy, K=255 lands optimal at ~v2 tempo). K_CROSS still commits
+#             genuinely-slow / never-DONE searches, so the anti-drift-lock escape is unaffected.
 #   K_END   : endgame (virus_count < VC_ENDGAME) -- 255 = require DONE (early commits ~20% worse there).
 #   K_CROSS : PAST THE FEASIBILITY CROSSOVER (still searching while the capsule is already low, Y <
 #             CROSS_LOWY) -- minimal stability: DONE is physically unreachable, so commit the stable
 #             argmax rather than drift-lock (TEMPO_DESIGN §2.5). This reactive net self-calibrates --
 #             it never trips when the search finishes before the capsule falls (e.g. incremental-eval).
-K_OPEN     = int(_os.environ.get("DRSLAM_KOPEN",  "40"))
+K_OPEN     = int(_os.environ.get("DRSLAM_KOPEN",  "255"))
 K_END      = int(_os.environ.get("DRSLAM_KEND",   "255"))
 K_CROSS    = int(_os.environ.get("DRSLAM_KCROSS", "8"))
 VC_ENDGAME = int(_os.environ.get("DRSLAM_VCEND",  "10"))
