@@ -33,7 +33,8 @@ module LeafEval(
 	output reg        legal,
 	output reg  [5:0] rv_cells,
 	output reg  [3:0] rv_vir,
-	output reg [15:0] imm
+	output reg [15:0] imm,
+	output reg        dv_fallback   // CMD 7 (DELTA): placement clears -> host must re-issue as full NODE
 );
 
 // CUR as registers (the eval/scan walks index it combinationally); the 3 snapshot
@@ -86,8 +87,11 @@ localparam S_IDLE=0, S_COLWALK=1, S_VNEXT=2, S_HRUN_L=3, S_HSPAN_L=4, S_HRUN_R=5
            S_POLROW=11, S_POLCOL=12, S_VFIN=13, S_SETUP_H=14, S_SETUP_V=15, S_DONE=16,
            S_COPY=17, S_FO1=18, S_FO2=19, S_PLACE=20, S_SCAN=21, S_EOL=22,
            S_APPLY=23, S_GRAV=24, S_RESDONE=25, S_CP_R=26, S_CP_W=27, S_CP_P=28, S_DONE2=29;
+// incremental-delta states (CMD 6 = BASE latch, CMD 7 = DELTA child)
+localparam S_DPOL=31, S_DNEW=32, S_DBUR=33, S_DADV=34, S_DRV=35,
+           S_DRVFIN=36, S_DSETH=37, S_DUNPL=38, S_DSETV=39, S_DCOMB=40;
 reg [3:0] cmd_l;
-reg [4:0] st;
+reg [5:0] st;
 reg       node_leaf;           // CMD_NODE: run the leaf after resolve
 // land/resolve working regs
 reg [4:0]   fo1, fo2, fwp;     // first-occ results + walk pointer
@@ -121,6 +125,36 @@ reg  [4:0] vseen;             // R7b: viruses seen so far this column (buried ch
 reg  [4:0] maxh_p; reg [7:0] holes_p, toprisk_p, spawn_p, setup_p;
 reg [10:0] pollution_p; reg [9:0] buried_p; reg [15:0] rdy_ext_p, vrdy_p; reg [12:0] matched60_p;
 
+// ---- incremental delta engine (CMD 6 = BASE latch, CMD 7 = DELTA child) ----
+reg        base_mode;                 // CMD 6: latch base_* instead of driving sco
+reg        delta_mode;                // CMD 7 active
+reg  [4:0] colh [0:7] /*verilator public_flat_rd*/;  // per-column height (16 - top occ row); 0 = empty
+reg  [4:0] base_maxh /*verilator public_flat_rd*/;
+reg  [7:0] base_holes /*verilator public_flat_rd*/, base_toprisk, base_spawn, base_setup;
+reg [10:0] base_pol;
+reg  [9:0] base_buried;
+reg [12:0] base_matched;
+reg [15:0] base_rdy, base_vrdy;
+reg        base_anyvir;
+// delta accumulators: new_total = base - old_local + new_local
+reg  [9:0] od_bur, nd_bur;
+reg [15:0] od_rdy, nd_rdy, od_vrdy, nd_vrdy;
+reg  [7:0] od_set, nd_set;
+reg [12:0] dd_matched;                // matched60 delta (closed form: +60 per new same-color cover)
+reg [10:0] dd_pol;                    // pollution delta (closed form)
+reg  [7:0] dd_holes;                  // holes delta (closed form from colh)
+reg  [1:0] pca, pcb;                  // placed colors landed at off_a / off_b (post o4-swap)
+reg  [6:0] dsoff; reg [4:0] dscnt; reg [3:0] dstep;  // delta row/col scan cursor
+reg  [1:0] dphase;                    // rdy/vrdy rescore phase: 1=new(child) 2=old(parent)
+reg  [6:0] daff;                      // affected-virus iterator (0..127)
+reg [127:0] affbit;                   // affected viruses to rescore for rdy_ext/vrdy
+reg  [2:0] dcol; reg [4:0] drow;      // delta mini-colwalk cursor
+reg        dbur_new;                  // buried mini-colwalk phase (1=child/new 0=parent/old)
+reg  [1:0] dcolstep;                  // which placed column (0 = col_a, 1 = col_b)
+reg  [3:0] dlmask;                    // rdy/vrdy rescore: which of the 4 placed lines to scan (dedup)
+reg  [3:0] dws, dwhi, dwrow;          // setup-window cursor: start, hi bound, row(H)/col(V)
+reg        dwsecond;                  // setup scan: processing the second placed row/col
+
 reg  [6:0] vo;                 // current virus bcell offset
 wire [3:0] v_r = vo[6:3];
 wire [2:0] v_c = vo[2:0];
@@ -139,12 +173,14 @@ integer i;
 always @(posedge clk) begin
 	if (rst) begin
 		st <= S_IDLE; done <= 1'b0; sl_cpw <= 1'b0;
+		base_mode <= 1'b0; delta_mode <= 1'b0; dv_fallback <= 1'b0;
 	end else begin
 		if (wr && wslot == 2'd0) bcell[waddr] <= wdata;   // slot writes go via the dpram port
 		case (st)
 		S_IDLE: if (start || cmd_go) begin
 			done <= 1'b0;
 			if (start || cmd == 4'd1) begin                      // LEAF on CUR
+				delta_mode <= 1'b0; base_mode <= 1'b0;           // FIX: a fresh LEAF must not inherit a stale mode
 				maxh <= 0; holes <= 0; toprisk <= 0; spawn <= 0; setup <= 0;
 				pollution <= 0; buried <= 0; rdy_ext <= 0; vrdy <= 0; anyvir <= 0; matched60 <= 13'd0;
 				wc <= 0; wr_ <= 0; seen <= 0; fillcnt <= 0; curcol <= 2'd0; curlen <= 5'd0; vseen <= 5'd0;
@@ -154,9 +190,27 @@ always @(posedge clk) begin
 			end
 			else if (cmd == 4'd4) begin                          // NODE: land+place+resolve+leaf
 				node_leaf <= 1'b1;
+				delta_mode <= 1'b0; base_mode <= 1'b0;           // FIX: a fresh NODE must not inherit a stale mode
 				legal <= 1'b0; rv_cells <= 0; rv_vir <= 0; imm <= 0;
 				markb <= 128'd0; anyclear <= 1'b0;
 				fwp <= 0;
+				st <= S_FO1;
+			end
+			else if (cmd == 4'd6) begin                          // BASE: full scan, latch base_* + colh
+				base_mode <= 1'b1; node_leaf <= 1'b0; delta_mode <= 1'b0;   // FIX: no stale delta_mode into a BASE scan
+				maxh <= 0; holes <= 0; toprisk <= 0; spawn <= 0; setup <= 0;
+				pollution <= 0; buried <= 0; rdy_ext <= 0; vrdy <= 0; anyvir <= 0; matched60 <= 13'd0;
+				wc <= 0; wr_ <= 0; seen <= 0; fillcnt <= 0; curcol <= 2'd0; curlen <= 5'd0; vseen <= 5'd0;
+				colh[0]<=0; colh[1]<=0; colh[2]<=0; colh[3]<=0; colh[4]<=0; colh[5]<=0; colh[6]<=0; colh[7]<=0;
+				st <= S_COLWALK;
+			end
+			else if (cmd == 4'd7) begin                          // DELTA: land+place, child leaf via base +/- local
+				delta_mode <= 1'b1; node_leaf <= 1'b0; dv_fallback <= 1'b0;
+				legal <= 1'b0; rv_cells <= 0; rv_vir <= 0; imm <= 0;
+				markb <= 128'd0; anyclear <= 1'b0; fwp <= 0;
+				od_bur <= 0; nd_bur <= 0; od_rdy <= 0; nd_rdy <= 0; od_vrdy <= 0; nd_vrdy <= 0;
+				od_set <= 0; nd_set <= 0; dd_matched <= 13'd0; dd_pol <= 0; dd_holes <= 0; affbit <= 128'd0;
+				dphase <= 2'd0;
 				st <= S_FO1;
 			end
 		end
@@ -217,6 +271,7 @@ always @(posedge clk) begin
 			// orient4 odd = color swap (B goes to offa/top/left)
 			bcell[off_a] <= {1'b0, a_o4[0] ? a_cb : a_ca};
 			bcell[off_b] <= {1'b0, a_o4[0] ? a_ca : a_cb};
+			pca <= a_o4[0] ? a_cb : a_ca; pcb <= a_o4[0] ? a_ca : a_cb;   // placed colors (delta)
 			li <= 0; st <= S_SCAN;
 			// initialize line 0 (row of off_a)
 			soff <= {1'b0, off_a[6:3], 3'd0}; sstep <= 4'd1; scnt <= 5'd8;
@@ -269,7 +324,12 @@ always @(posedge clk) begin
 			end
 			if (fwp2 == 7'd127) begin
 				wc <= 0; gdest <= 5'd15; fwp <= 5'd15;   // gravity: col wc, read row fwp
-				st <= (anyclear || markb[7'd127]) ? S_GRAV : S_RESDONE;
+				if (delta_mode) begin
+					if (anyclear || markb[7'd127]) begin      // clearing placement -> host does full NODE
+						dv_fallback <= 1'b1; done <= 1'b1; delta_mode <= 1'b0; st <= S_IDLE;
+					end else st <= S_DNEW;                     // non-clearing: child in CUR, run delta scans
+				end else
+					st <= (anyclear || markb[7'd127]) ? S_GRAV : S_RESDONE;
 			end else
 				fwp2 <= fwp2 + 1'b1;
 		end
@@ -314,6 +374,7 @@ always @(posedge clk) begin
 				if (!seen) begin
 					seen <= 1'b1;
 					if (5'd16 - wr_ > maxh) maxh <= 5'd16 - wr_;
+					if (base_mode) colh[wc] <= 5'd16 - wr_;   // per-column height for delta holes
 				end
 				if (vir_of[{wr_[3:0], wc[2:0]}]) begin
 					anyvir <= 1'b1;
@@ -421,6 +482,7 @@ always @(posedge clk) begin
 			if (vspan_hi != 5'd15 &&
 			    (!occ_of[{vspan_hi[3:0] + 4'd1, v_c}] || col_of[{vspan_hi[3:0] + 4'd1, v_c}] == v_col))
 				vspan_hi <= vspan_hi + 1'b1;
+			else if (dphase != 2'd0) st <= S_DRVFIN;   // delta rescore: skip pollution, go accumulate
 			else begin
 				p <= 0; st <= S_POLROW;
 			end
@@ -509,10 +571,17 @@ always @(posedge clk) begin
 		end
 
 		S_DONE: begin       // stage 1: register combine (multiplier) inputs near the DSPs
-			maxh_p <= maxh; holes_p <= holes; toprisk_p <= toprisk; spawn_p <= spawn; setup_p <= setup;
-			pollution_p <= pollution; buried_p <= buried; rdy_ext_p <= rdy_ext; vrdy_p <= vrdy; matched60_p <= matched60;
-			win  <= !anyvir;
-			st <= S_DONE2;
+			if (base_mode) begin   // CMD 6: latch base_* totals, no sco
+				base_maxh <= maxh; base_holes <= holes; base_toprisk <= toprisk; base_spawn <= spawn;
+				base_setup <= setup; base_pol <= pollution; base_buried <= buried; base_matched <= matched60;
+				base_rdy <= rdy_ext; base_vrdy <= vrdy; base_anyvir <= anyvir;
+				win <= !anyvir; done <= 1'b1; base_mode <= 1'b0; st <= S_IDLE;
+			end else begin
+				maxh_p <= maxh; holes_p <= holes; toprisk_p <= toprisk; spawn_p <= spawn; setup_p <= setup;
+				pollution_p <= pollution; buried_p <= buried; rdy_ext_p <= rdy_ext; vrdy_p <= vrdy; matched60_p <= matched60;
+				win  <= !anyvir;
+				st <= S_DONE2;
+			end
 		end
 		S_DONE2: begin      // stage 2: combine from registered inputs (same sco, +1 leaf cycle)
 			sco <= 16'd5000
@@ -528,6 +597,188 @@ always @(posedge clk) begin
 			     - 16'd6   * pollution_p;
 			done <= 1'b1;
 			st <= S_IDLE;
+		end
+
+		// ================= incremental DELTA child (CMD 7) =================
+		// entered from S_APPLY with the non-clearing CHILD board in bcell; base_* valid.
+		S_DNEW: begin : dnew
+			reg [7:0] ga, gb;
+			// holes delta: horizontal pill can hover a half over a shorter column; vertical lands contiguous -> 0
+			ga = 8'd15 - {3'd0, colh[off_a[2:0]]} - {4'd0, off_a[6:3]};
+			gb = 8'd15 - {3'd0, colh[off_b[2:0]]} - {4'd0, off_b[6:3]};
+			dd_holes <= a_o4[1] ? (ga + gb) : 8'd0;
+			// matched60 delta: a placed cell resting directly on a same-color virus adds a cover (+60)
+			dd_matched <= ((off_a[6:3] != 4'd15 && vir_of[off_a + 7'd8] && col_of[off_a + 7'd8] == pca) ? 13'd60 : 13'd0)
+			            + ((off_b[6:3] != 4'd15 && vir_of[off_b + 7'd8] && col_of[off_b + 7'd8] == pcb) ? 13'd60 : 13'd0);
+			// pollution delta: scan the 2 placed cells' rows+cols for differently-colored viruses
+			dsoff <= {off_a[6:3], 3'd0}; dstep <= 4'd1; dscnt <= 5'd8; li <= 2'd0;
+			st <= S_DPOL;
+		end
+		S_DPOL: begin
+			if (vir_of[dsoff] && col_of[dsoff] != (li[1] ? pcb : pca))
+				dd_pol <= dd_pol + 1'b1;
+			if (dscnt == 5'd1) begin
+				case (li)
+					2'd0: begin dsoff <= {5'd0, off_a[2:0]}; dstep <= 4'd8; dscnt <= 5'd16; li <= 2'd1; end  // colA
+					2'd1: begin dsoff <= {off_b[6:3], 3'd0}; dstep <= 4'd1; dscnt <= 5'd8;  li <= 2'd2; end  // rowB
+					2'd2: begin dsoff <= {5'd0, off_b[2:0]}; dstep <= 4'd8; dscnt <= 5'd16; li <= 2'd3; end  // colB
+					default: begin   // -> buried mini-colwalk (new phase, child board)
+						dbur_new <= 1'b1; dcolstep <= 2'd0; dcol <= off_a[2:0]; drow <= 5'd0;
+						fillcnt <= 0; curcol <= 2'd0; curlen <= 5'd0; vseen <= 5'd0;
+						st <= S_DBUR;
+					end
+				endcase
+			end else begin
+				dsoff <= dsoff + {3'd0, dstep};
+				dscnt <= dscnt - 1'b1;
+			end
+		end
+		S_DCOMB: begin : dcomb
+			reg [4:0] hha, hhb, hmax;
+			hha = 5'd16 - off_a[6:3]; hhb = 5'd16 - off_b[6:3]; hmax = base_maxh;
+			if (hha > hmax) hmax = hha;
+			if (hhb > hmax) hmax = hhb;
+			maxh     <= hmax;
+			holes    <= base_holes + dd_holes;
+			toprisk  <= base_toprisk + {7'd0, (off_a[6:3] < 4'd3)} + {7'd0, (off_b[6:3] < 4'd3)};
+			spawn    <= base_spawn
+			          + {7'd0, (off_a[6:3] < 4'd4 && (off_a[2:0] == 3'd3 || off_a[2:0] == 3'd4))}
+			          + {7'd0, (off_b[6:3] < 4'd4 && (off_b[2:0] == 3'd3 || off_b[2:0] == 3'd4))};
+			setup    <= base_setup - od_set + nd_set;
+			pollution<= base_pol + {5'd0, dd_pol};
+			buried   <= base_buried - od_bur + nd_bur;
+			rdy_ext  <= base_rdy - od_rdy + nd_rdy;
+			vrdy     <= base_vrdy - od_vrdy + nd_vrdy;
+			matched60<= base_matched + dd_matched;
+			anyvir   <= base_anyvir;
+			delta_mode <= 1'b0;
+			st <= S_DONE;
+		end
+
+		// buried mini-colwalk over the 1-2 placed columns (R1 color-aware + R7b nearest-2 cap),
+		// new phase on child then old phase on parent; new_buried = base - od_bur + nd_bur.
+		S_DBUR: begin : dbur
+			reg [4:0] excess;
+			if (occ_of[{drow[3:0], dcol}]) begin
+				if (vir_of[{drow[3:0], dcol}]) begin
+					if (vseen < 5'd2) begin
+						excess = fillcnt - ((curcol == col_of[{drow[3:0], dcol}]) ? curlen : 5'd0);
+						if (dbur_new) nd_bur <= nd_bur + {5'd0, excess};
+						else          od_bur <= od_bur + {5'd0, excess};
+					end
+					vseen <= vseen + 1'b1; curcol <= 2'd0; curlen <= 5'd0;
+				end else begin
+					if (curcol == col_of[{drow[3:0], dcol}]) curlen <= curlen + 1'b1;
+					else begin curcol <= col_of[{drow[3:0], dcol}]; curlen <= 5'd1; end
+				end
+				fillcnt <= fillcnt + 1'b1;
+			end else begin
+				curcol <= 2'd0; curlen <= 5'd0;
+			end
+			if (drow == 5'd15) begin
+				if (dcolstep == 2'd0 && a_o4[1] && off_b[2:0] != off_a[2:0]) begin
+					dcolstep <= 2'd1; dcol <= off_b[2:0]; drow <= 5'd0;
+					fillcnt <= 0; curcol <= 2'd0; curlen <= 5'd0; vseen <= 5'd0;
+				end else begin
+					// buried done -> rdy_ext/vrdy rescore of same-color viruses in the placed lines
+					dphase <= dbur_new ? 2'd1 : 2'd2;
+					dlmask <= {a_o4[1], ~a_o4[1], 1'b1, 1'b1};   // {col_b(horiz), row_b(vert), col_a, row_a}
+					dsoff <= {off_a[6:3], 3'd0}; dstep <= 4'd1; dscnt <= 5'd8; li <= 2'd0;
+					st <= S_DRV;
+				end
+			end else drow <= drow + 1'b1;
+		end
+		S_DUNPL: begin
+			bcell[off_a] <= 3'd0; bcell[off_b] <= 3'd0;   // placed cells were empty on the settled parent
+			dbur_new <= 1'b0; dcolstep <= 2'd0; dcol <= off_a[2:0]; drow <= 5'd0;
+			fillcnt <= 0; curcol <= 2'd0; curlen <= 5'd0; vseen <= 5'd0;
+			st <= S_DBUR;
+		end
+
+		// rdy_ext/vrdy rescore: walk the placed cells' rows+cols, and for each same-color virus
+		// re-run the per-virus run/span machinery (reused) to get its old/new contribution.
+		S_DRV: begin
+			// rescore EVERY virus in a placed line: a diff-color placed cell can bound a virus's
+			// span (rdy_ext gate), not only extend a same-color run. Unaffected viruses net od==nd.
+			if (vir_of[dsoff]) begin
+				vo <= dsoff; run_h <= 5'd1; run_v <= 5'd1; p <= {2'b0, dsoff[2:0]};
+				st <= S_HRUN_L;                              // -> ... -> S_VSPAN_D -> S_DRVFIN (dphase!=0)
+			end else st <= S_DADV;
+		end
+		S_DADV: begin
+			if (dscnt != 5'd1) begin
+				dsoff <= dsoff + {3'd0, dstep}; dscnt <= dscnt - 1'b1; st <= S_DRV;
+			end else if (li == 2'd0) begin                  // -> col_a
+				dsoff <= {5'd0, off_a[2:0]}; dstep <= 4'd8; dscnt <= 5'd16; li <= 2'd1; st <= S_DRV;
+			end else if (li == 2'd1 && dlmask[2]) begin      // -> row_b
+				dsoff <= {off_b[6:3], 3'd0}; dstep <= 4'd1; dscnt <= 5'd8; li <= 2'd2; st <= S_DRV;
+			end else if (li != 2'd3 && dlmask[3]) begin      // -> col_b
+				dsoff <= {5'd0, off_b[2:0]}; dstep <= 4'd8; dscnt <= 5'd16; li <= 2'd3; st <= S_DRV;
+			end else begin                                   // rescore done -> setup windows (horizontal first)
+				dphase <= 2'd0;
+				dwrow <= {1'b0, off_a[6:3]};
+				dws   <= (off_a[2:0] >= 3'd2) ? {1'b0, off_a[2:0] - 3'd2} : 4'd0;
+				dwhi  <= a_o4[1] ? ((off_b[2:0] <= 3'd5) ? {1'b0, off_b[2:0]} : 4'd5)
+				                 : ((off_a[2:0] <= 3'd5) ? {1'b0, off_a[2:0]} : 4'd5);
+				dwsecond <= 1'b0;
+				st <= S_DSETH;
+			end
+		end
+		S_DRVFIN: begin : drvfin
+			reg [8:0] hq, vq, mx;
+			hq = ((span_hi  - span_lo  + 5'd1) >= 5'd4) ? sq(run_h) : 9'd0;
+			vq = ((vspan_hi - vspan_lo + 5'd1) >= 5'd4) ? sq(run_v) : 9'd0;
+			mx = (hq > vq) ? hq : vq;
+			if (dphase == 2'd1) begin nd_rdy <= nd_rdy + {7'd0, mx}; nd_vrdy <= nd_vrdy + {7'd0, sq(run_v)}; end
+			else                begin od_rdy <= od_rdy + {7'd0, mx}; od_vrdy <= od_vrdy + {7'd0, sq(run_v)}; end
+			st <= S_DADV;
+		end
+
+		// setup delta: re-evaluate only the 3-in-a-row windows that contain a placed cell,
+		// horizontal windows (over placed rows) then vertical (over placed cols); dbur_new picks nd/od.
+		S_DSETH: begin : dseth
+			reg [1:0] c0; reg tt;
+			c0 = col_of[{dwrow[3:0], dws[2:0]}]; tt = 1'b0;
+			if (c0 != 2'd0 && col_of[{dwrow[3:0], dws[2:0] + 3'd1}] == c0
+			              && col_of[{dwrow[3:0], dws[2:0] + 3'd2}] == c0) begin
+				tt = (vir_of[{dwrow[3:0], dws[2:0]}]         && col_of[{dwrow[3:0], dws[2:0]}] == c0)
+				  || (vir_of[{dwrow[3:0], dws[2:0] + 3'd1}]  && col_of[{dwrow[3:0], dws[2:0] + 3'd1}] == c0)
+				  || (vir_of[{dwrow[3:0], dws[2:0] + 3'd2}]  && col_of[{dwrow[3:0], dws[2:0] + 3'd2}] == c0);
+				if (!tt && dws[2:0] != 3'd0) tt = vir_of[{dwrow[3:0], dws[2:0] - 3'd1}] && col_of[{dwrow[3:0], dws[2:0] - 3'd1}] == c0;
+				if (!tt && dws[2:0] < 3'd5)  tt = vir_of[{dwrow[3:0], dws[2:0] + 3'd3}] && col_of[{dwrow[3:0], dws[2:0] + 3'd3}] == c0;
+				if (tt) begin if (dbur_new) nd_set <= nd_set + 1'b1; else od_set <= od_set + 1'b1; end
+			end
+			if (dws >= dwhi) begin
+				if (!a_o4[1] && !dwsecond) begin                 // vertical pill: second placed row
+					dwrow <= {1'b0, off_b[6:3]}; dwsecond <= 1'b1;
+					dws <= (off_a[2:0] >= 3'd2) ? {1'b0, off_a[2:0] - 3'd2} : 4'd0;
+				end else begin                                    // -> vertical windows
+					dwrow <= {1'b0, off_a[2:0]};
+					dws  <= (off_a[6:3] >= 4'd2) ? (off_a[6:3] - 4'd2) : 4'd0;
+					dwhi <= (!a_o4[1]) ? ((off_b[6:3] <= 4'd13) ? off_b[6:3] : 4'd13)
+					                   : ((off_a[6:3] <= 4'd13) ? off_a[6:3] : 4'd13);
+					dwsecond <= 1'b0; st <= S_DSETV;
+				end
+			end else dws <= dws + 1'b1;
+		end
+		S_DSETV: begin : dsetv
+			reg [1:0] c0; reg tt;
+			c0 = col_of[{dws[3:0], dwrow[2:0]}]; tt = 1'b0;
+			if (c0 != 2'd0 && col_of[{dws[3:0] + 4'd1, dwrow[2:0]}] == c0
+			              && col_of[{dws[3:0] + 4'd2, dwrow[2:0]}] == c0) begin
+				tt = (vir_of[{dws[3:0], dwrow[2:0]}]         && col_of[{dws[3:0], dwrow[2:0]}] == c0)
+				  || (vir_of[{dws[3:0] + 4'd1, dwrow[2:0]}]  && col_of[{dws[3:0] + 4'd1, dwrow[2:0]}] == c0)
+				  || (vir_of[{dws[3:0] + 4'd2, dwrow[2:0]}]  && col_of[{dws[3:0] + 4'd2, dwrow[2:0]}] == c0);
+				if (!tt && dws != 4'd0)  tt = vir_of[{dws[3:0] - 4'd1, dwrow[2:0]}] && col_of[{dws[3:0] - 4'd1, dwrow[2:0]}] == c0;
+				if (!tt && dws < 4'd13)  tt = vir_of[{dws[3:0] + 4'd3, dwrow[2:0]}] && col_of[{dws[3:0] + 4'd3, dwrow[2:0]}] == c0;
+				if (tt) begin if (dbur_new) nd_set <= nd_set + 1'b1; else od_set <= od_set + 1'b1; end
+			end
+			if (dws >= dwhi) begin
+				if (a_o4[1] && !dwsecond) begin                  // horizontal pill: second placed col
+					dwrow <= {1'b0, off_b[2:0]}; dwsecond <= 1'b1;
+					dws <= (off_a[6:3] >= 4'd2) ? (off_a[6:3] - 4'd2) : 4'd0;
+				end else st <= dbur_new ? S_DUNPL : S_DCOMB;      // setup done -> unplace / combine
+			end else dws <= dws + 1'b1;
 		end
 		default: st <= S_IDLE;
 		endcase
