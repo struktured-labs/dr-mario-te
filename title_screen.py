@@ -274,7 +274,7 @@ def _footer_pixels(text=FOOTER_TEXT, n_tiles=8):
 
 def apply_training_edition_title(rom, routine_off=FOOTER_ROUTINE_OFFSET,
                                  data_off=FOOTER_DATA_OFFSET, footer_text=FOOTER_TEXT,
-                                 mark_te=False):
+                                 mark_te=False, draw_footer=True):
     """Patch a standard 64 KiB Dr. Mario ROM image in place.
 
     Returns the number of CHR tiles written.  The crash-sensitive title
@@ -345,6 +345,9 @@ def apply_training_edition_title(rom, routine_off=FOOTER_ROUTINE_OFFSET,
             rom[off:off + 16] = TE_E_HALF
             tiles_written += 1
 
+    if not draw_footer:                  # v8.2 copro carts: subtitle + TE mark only, NO sprite footer
+        return tiles_written             # (the footer routine/metasprite collide with the Settings
+                                         #  printing table and $FBxx = the copro driver -> drop it)
     routine_bytes = footer_routine(data_off, base_x)
     hook_patched = footer_hook_patched(routine_off)
 

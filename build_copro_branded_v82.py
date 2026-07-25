@@ -24,16 +24,14 @@ V8_ROUTINE_OFF, V8_DATA_OFF, V8_FOOTER_TEXT = 0x40B9, 0x40FF, "V8.00 SL"
 
 core = bytearray(open(V28CS_CLEAN, "rb").read())
 assert core[4] == 2, "expected a clean 32 KB-PRG v28cs core"
-# footer sites (Settings-table runs) — saved clean, then restored AFTER branding = sprite footer dropped
-FOOTER_SITES = [(FOOTER_HOOK_OFFSET, 3), (V8_ROUTINE_OFF, 24), (V8_DATA_OFF, 24)]
-clean_footer = [(o, bytes(core[o:o + l])) for o, l in FOOTER_SITES]
+# footer=False: subtitle + TE mark only, NO sprite footer (it collides with the Settings printing
+# table, and $FBxx is the copro driver so it can't relocate) -> the footer sites stay stock.
+clean_footer = [(o, bytes(core[o:o + l])) for o, l in
+                [(FOOTER_HOOK_OFFSET, 3), (V8_ROUTINE_OFF, 24), (V8_DATA_OFF, 24)]]
 apply_training_edition_title(core, routine_off=V8_ROUTINE_OFF, data_off=V8_DATA_OFF,
-                             footer_text=V8_FOOTER_TEXT, mark_te=True)   # subtitle + TE mark + footer
-for o, orig in clean_footer:                                             # DROP the sprite footer
-    core[o:o + len(orig)] = orig
-# assert the footer sites are back to base + subtitle/mark survived (branding is CHR/tilemap-side)
+                             footer_text=V8_FOOTER_TEXT, mark_te=True, draw_footer=False)
 for o, orig in clean_footer:
-    assert bytes(core[o:o + len(orig)]) == orig, "footer-drop failed"
+    assert bytes(core[o:o + len(orig)]) == orig, "footer=False left footer bytes on the Settings table"
 os.makedirs("tmp", exist_ok=True)
 branded_core = "tmp/_v28cs_te82_core.nes"
 open(branded_core, "wb").write(core)
