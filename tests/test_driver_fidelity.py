@@ -540,12 +540,14 @@ VARIANTS = {"ab": {}, "human": {"human": True}, "pocket": {"human": True, "pocke
 GOLD_CANON = {"ab": "855ca99a2cc3c8aa", "human": "70568fdbb39422cc", "pocket": "d1c7f8165767b4a4"}
 GOLD_PREFIX = {"ab": "47e3ed7cf8a2e650", "human": "e53c36f0efbd2cb2", "pocket": "36003fb7268db303"}
 for name, kw in VARIANTS.items():
-    canon = sha(load_build(rotfix=True, slam=False, **kw)[0])
+    # pin minthink=90: MIN_THINK is ROTFIX-level (in both goldens); its default moved to 25 (task #40
+    # tempo lever), so hold 90 here to keep pinning the historical c300acb / aea9f6e bytes.
+    canon = sha(load_build(rotfix=True, slam=False, minthink=90, **kw)[0])
     check(f"BYTE-EXACT {name}: DRSLAM=0 == canonical c300acb golden", canon == GOLD_CANON[name],
           f"got {canon} want {GOLD_CANON[name]}")
-    # pin kopen=40: this golden pins the aea9f6e pre-fix-slam bytes (K_OPEN was 40 then); the shipping
-    # default moved to 255 (task #40 retune), so hold K_OPEN=40 here to keep testing the historical artifact.
-    prefix = sha(load_build(rotfix=True, slam=True, mature=0, kopen=40, **kw)[0])
+    # pin kopen=40 (K_OPEN was 40 at aea9f6e; default now 255) + minthink=90 (default now 25) -- hold both
+    # historical values so this golden keeps testing the aea9f6e pre-fix-slam artifact.
+    prefix = sha(load_build(rotfix=True, slam=True, mature=0, kopen=40, minthink=90, **kw)[0])
     check(f"BYTE-EXACT {name}: DRSLAM_MATURE=0 == pre-fix slam aea9f6e golden", prefix == GOLD_PREFIX[name],
           f"got {prefix} want {GOLD_PREFIX[name]}")
 

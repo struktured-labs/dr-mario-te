@@ -134,10 +134,12 @@ WEAVE_LIM = int(_os.environ.get("DRWEAVELIM", "40"))   # hook-cycles of no-move 
 # DRROTFIX=0 reproduces the pre-fidelity byte-exact emission (A/B + regression parity).
 ROTFIX = _os.environ.get("DRROTFIX", "1") != "0"
 # minimum-think gate: hooks of search (WDOG2) the driver waits before committing laterally /
-# locking orient. ~5 hooks/frame, so 90 ~= 18 frames ~= the spawn animation (controller input
-# is ignored during it anyway). Below this the search's argmax is a shallow first guess; the
-# field miss (dual-end at cols 6-7 lost to a left-wall half-credit) was a commit off that guess.
-MIN_THINK = int(_os.environ.get("DRMINTHINK", "90"))
+# locking orient. ~5 hooks/frame. Default 25 (~5f). Was 90 (~18f), a guard against the shallow-argmax
+# slam back when searches were slow; with K_OPEN=255 (wait-for-DONE) + RECOMMIT (orient re-open at DONE
+# if high) that guard is redundant, and at the fast ~40f silicon cadence the 18f floor was pure tempo
+# loss at fast DONE (task #40 sweep: placement stays OPTIMAL at floor {90,45,25,0}; only tempo moves --
+# @15f DONE land 35.8f->27.0f). 25 keeps a minimal floor as insurance if a build runs K_OPEN<255.
+MIN_THINK = int(_os.environ.get("DRMINTHINK", "25"))
 # DRSLAM=1 (default): CONFIDENCE-GATED SLAM. Once the capsule is column-aligned + orient-locked
 # (ROT_DONE2, so the min-think floor already passed), fast-drop as soon as the published argmax has
 # held stable for K hooks -- instead of idling at natural gravity until the search formally DONEs
