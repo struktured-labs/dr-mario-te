@@ -102,10 +102,28 @@ def main():
     for i in range(128):
         img[0x0500 + i] = EMPTY
     rom = img[0x8000:0xC000]
-    with open(os.path.join(HERE, "copro_rom.hex"), "w") as f:
-        f.write("\n".join("%02x" % x for x in rom) + "\n")
-    print(f"copro_rom.hex written: d3 search={clen}B stub={slen}B rom={len(rom)}B "
-          f"(topk1={D3.TOPK1} topk2=8 pills={D3.NPILLS} resolve={D3.RESOLVE_LBL} WIN={D3.WIN})")
+    # main() builds + py65-validates the BASE search firmware (the cell-exact reference for the search
+    # LOGIC vs decide_d3). The SHIPPED firmware is the co-sim-validated DELTA build (CMD-6/7 engine),
+    # md5 c87e60a1, produced by `dbg_build.py all 0` and committed as copro_rom.hex. py65 cannot run
+    # the RTL delta engine (attach_engine_emu has no CMD-6/7), so we MUST NOT overwrite the ship hex
+    # here -- write a clearly-named reference and report the ship hex instead. See FIRMWARE.md.
+    import hashlib
+    base_txt = "\n".join("%02x" % x for x in rom) + "\n"
+    with open(os.path.join(HERE, "copro_rom.base.hex"), "w") as f:
+        f.write(base_txt)
+    if not D3.__file__.startswith(ROOT):
+        print(f"  WARN: built with the main-repo SHADOW emitter ({D3.__file__}) -- that is the "
+              f"PRE-DELTA base emitter; the shipped delta build only comes from dbg_build.py.")
+    print(f"copro_rom.base.hex written (py65 BASE reference, NOT the ship hex): d3 search={clen}B "
+          f"stub={slen}B rom={len(rom)}B (topk1={D3.TOPK1} topk2=8 pills={D3.NPILLS} "
+          f"resolve={D3.RESOLVE_LBL} WIN={D3.WIN})")
+    ship = os.path.join(HERE, "copro_rom.hex")
+    if os.path.exists(ship):
+        smd5 = hashlib.md5(open(ship, "rb").read()).hexdigest()
+        rel = "DELTA (shipped)" if smd5 != hashlib.md5(base_txt.encode()).hexdigest() else \
+              "== this BASE reference (delta not built in this tree; run dbg_build.py all 0)"
+        print(f"  ship firmware copro_rom.hex md5={smd5[:8]} [{rel}]; reproduce/validate the shipped "
+              f"delta via 'dbg_build.py all 0' + './run_gate.sh' (FIRMWARE.md).")
 
     _code, labels = D3.build()
     search_ep = 0x8000 + labels["search"]

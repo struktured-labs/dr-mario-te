@@ -18,6 +18,8 @@ if diff -q /tmp/gate_base.txt /tmp/gate_all.txt >/dev/null; then
 else
   echo "GATE FAIL: divergence"; diff /tmp/gate_base.txt /tmp/gate_all.txt
 fi
-# restore pristine baseline hex
-$PY dbg_build.py baseline 0 >/dev/null 2>&1
-md5sum copro_rom.hex
+# restore the SHIPPED hex = the DELTA build (this is what vendors to silicon; see FIRMWARE.md).
+# (Leaving 'baseline 0' here is exactly what historically drifted the committed copro_rom.hex to the
+#  cell-exact BASE build 412615b2, so the repo described a firmware that was on no device.)
+$PY dbg_build.py all 0 >/dev/null 2>&1
+md5sum copro_rom.hex   # expect c87e60a1736224cfc3fa29cfed7c6f16 (shipped delta)
