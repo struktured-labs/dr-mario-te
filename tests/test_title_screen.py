@@ -22,8 +22,13 @@ from title_screen import (
     TM_TILE_ID,
     TM_M_HALF,
     TE_E_HALF,
+    INGAME_TM_PAGES,
+    INGAME_TM_TILE_ID,
+    INGAME_M_GLYPH,
+    INGAME_E_GLYPH,
     _decode_strip,
     _tile_offset,
+    apply_ingame_te_mark,
     apply_training_edition_title,
     footer_hook_patched,
     footer_layout,
@@ -169,6 +174,50 @@ def test_tm_to_te_repaints_only_tile_0F_and_default_keeps_tm():
         assert bytes(marked[_tile_offset(page, TM_TILE_ID):_tile_offset(page, TM_TILE_ID) + 16]) == TE_E_HALF
         t_off = _tile_offset(page, 0x0E)
         assert bytes(marked[t_off:t_off + 16]) == bytes(original[t_off:t_off + 16])   # T-half kept
+
+
+def test_ingame_tm_to_te_repaints_only_tile_9A_on_pages_0_and_1():
+    original = Path("drmario.nes").read_bytes()
+
+    # base ROM really carries the in-game ™ "M" glyph at tile $9A on CHR pages 0 & 1
+    for page in INGAME_TM_PAGES:
+        off = _tile_offset(page, INGAME_TM_TILE_ID)
+        assert bytes(original[off:off + 16]) == INGAME_M_GLYPH
+
+    # default apply (ingame_te off): the in-game ™ "M" is untouched
+    plain = bytearray(original)
+    apply_training_edition_title(plain)
+    for page in INGAME_TM_PAGES:
+        off = _tile_offset(page, INGAME_TM_TILE_ID)
+        assert bytes(plain[off:off + 16]) == INGAME_M_GLYPH
+
+    # ingame_te toggles ONLY the in-game repaint: an ingame_te=True build differs from an otherwise
+    # identical ingame_te=False build by exactly the two tile-$9A regions (pages 0 & 1), nothing else
+    kw = dict(routine_off=V8_ROUTINE_OFF, data_off=V8_DATA_OFF, footer_text=V8_TEXT, mark_te=True)
+    without = bytearray(original); apply_training_edition_title(without, **kw)
+    with_ig = bytearray(original); apply_training_edition_title(with_ig, ingame_te=True, **kw)
+    changed = {i for i in range(len(with_ig)) if with_ig[i] != without[i]}
+    ingame_region = set()
+    for page in INGAME_TM_PAGES:
+        off = _tile_offset(page, INGAME_TM_TILE_ID)
+        assert bytes(with_ig[off:off + 16]) == INGAME_E_GLYPH   # repainted to the "E"
+        assert bytes(without[off:off + 16]) == INGAME_M_GLYPH   # untouched without the flag
+        ingame_region.update(range(off, off + 16))
+    assert changed and changed <= ingame_region                # confined to the two in-game tiles
+    # the neighbouring "T" tile ($99) and the very next tile ($9B) are untouched on both banks
+    for page in INGAME_TM_PAGES:
+        for tid in (0x99, 0x9B):
+            off = _tile_offset(page, tid)
+            assert bytes(with_ig[off:off + 16]) == bytes(original[off:off + 16])
+
+
+def test_apply_ingame_te_mark_is_idempotent():
+    original = Path("drmario.nes").read_bytes()
+    once = bytearray(original)
+    assert apply_ingame_te_mark(once) == len(INGAME_TM_PAGES)
+    twice = bytearray(once)
+    assert apply_ingame_te_mark(twice) == len(INGAME_TM_PAGES)   # already-E tiles accepted
+    assert bytes(twice) == bytes(once)
 
 
 def test_v8_footer_leaves_drstudy_runs_intact():

@@ -86,6 +86,19 @@ TM_TILE_ID = 0x0F
 TM_M_HALF = bytes.fromhex("fffff76797f7f7f7" * 2)   # original ™ M-half (drmario.nes, pages 3 & 4)
 TE_E_HALF = bytes.fromhex("ffff0fff1fffff0f" * 2)   # repainted E (pairs with the T-half's stem)
 
+# In-game "Dr.MARIO ™" logo -> "TE".  This is a SEPARATE asset from the title logo above: the
+# playfield-frame logo (drawn during 1P/2P gameplay and the attract demo, top-right of the screen)
+# renders its trademark from CHR pages 0 & 1 as two whole tiles, $99 (a superscript "T") + $9A (a
+# superscript "M"); the three in-game nametables (file 0x3ABD/0x4231/0x4DA3) all reference $99 $9A.
+# Same approach as the title mark: keep the "T" tile, repaint the "M" tile ($9A) into an "E" so the
+# mark reads "TE".  $9A is a purpose-built ™ glyph (the in-game font "M" is tile $16), so no other
+# graphic shares it.  The E uses the M's exact colour treatment (value-2 strokes on the value-0
+# field) so it renders in the same colour the "M" did.
+INGAME_TM_PAGES = (0, 1)                             # both banks carry the ™ glyph; gameplay banks one
+INGAME_TM_TILE_ID = 0x9A                             # the "M" of the in-game ™ (the "T" is $99)
+INGAME_M_GLYPH = bytes.fromhex("000000000000000000006c5454444400")  # original in-game ™ "M" glyph
+INGAME_E_GLYPH = bytes.fromhex("00000000000000000000784070407800")  # repainted "E" (cols 1-4, rows 2-6)
+
 SUBTITLE_TEXT = "TRAINING EDITION"
 TRAINING_TEXT = "TRAINING"
 EDITION_TEXT = "EDITION"
@@ -272,9 +285,34 @@ def _footer_pixels(text=FOOTER_TEXT, n_tiles=8):
     return body
 
 
+def apply_ingame_te_mark(rom):
+    """Repaint the in-game "Dr.MARIO ™" logo to "TE" in place.
+
+    Repaints CHR tile ``INGAME_TM_TILE_ID`` ($9A, the ™'s "M") into an "E" on
+    every bank in ``INGAME_TM_PAGES`` (0 & 1), so the playfield-frame logo shown
+    during 1P/2P gameplay and the attract demo reads "TE".  Independent of the
+    title mark (that one lives on CHR pages 3/4, tile $0F).  Idempotent: a tile
+    already carrying the "E" is left as-is; anything that is neither the original
+    "M" nor the "E" raises, so the patch never silently corrupts a wrong tile.
+    Returns the number of CHR tiles written.  Honours ``CHR_START`` so the copro
+    cart's 64 KiB-PRG CHR offset is handled by the caller's CHR_START override.
+    """
+    written = 0
+    for page in INGAME_TM_PAGES:
+        off = _tile_offset(page, INGAME_TM_TILE_ID)
+        existing = bytes(rom[off:off + 16])
+        if existing not in (INGAME_M_GLYPH, INGAME_E_GLYPH):
+            raise ValueError(
+                f"in-game ™ 'M' tile 0x{INGAME_TM_TILE_ID:02X} on CHR page {page} "
+                f"is not the expected glyph: {existing.hex()}")
+        rom[off:off + 16] = INGAME_E_GLYPH
+        written += 1
+    return written
+
+
 def apply_training_edition_title(rom, routine_off=FOOTER_ROUTINE_OFFSET,
                                  data_off=FOOTER_DATA_OFFSET, footer_text=FOOTER_TEXT,
-                                 mark_te=False, draw_footer=True):
+                                 mark_te=False, draw_footer=True, ingame_te=False):
     """Patch a standard 64 KiB Dr. Mario ROM image in place.
 
     Returns the number of CHR tiles written.  The crash-sensitive title
@@ -286,6 +324,9 @@ def apply_training_edition_title(rom, routine_off=FOOTER_ROUTINE_OFFSET,
     JSR target and the routine's data pointer are derived from these offsets.
     ``mark_te`` repaints the title "™" M-half tile into an E so the mark reads
     "TE" (Training Edition); off by default so v7 keeps its "™".
+    ``ingame_te`` additionally repaints the separate in-game playfield-frame logo
+    "™" (CHR pages 0/1, tile $9A) to "TE" via :func:`apply_ingame_te_mark`, so
+    gameplay and the attract demo match the title; also off by default.
     """
     if len(rom) < CHR_START + 5 * CHR_PAGE_SIZE:
         raise ValueError("ROM is too small for the standard Dr. Mario CHR layout")
@@ -344,6 +385,9 @@ def apply_training_edition_title(rom, routine_off=FOOTER_ROUTINE_OFFSET,
                     f"is not the expected mark: {existing.hex()}")
             rom[off:off + 16] = TE_E_HALF
             tiles_written += 1
+
+    if ingame_te:                        # separate in-game logo ™ (CHR pages 0/1, tile $9A) -> TE
+        tiles_written += apply_ingame_te_mark(rom)
 
     if not draw_footer:                  # v8.2 copro carts: subtitle + TE mark only, NO sprite footer
         return tiles_written             # (the footer routine/metasprite collide with the Settings
