@@ -34,7 +34,8 @@ The driver maps copro→game orient `{0xFF/0:3, 1:1, 2:0, 3:2}`, writes `tgt_c/t
 - `qa_harness.lua` — config-driven runner (single window): attaches the emulator, drives the cart into VS-CPU play, proves the AI places pills, pauses into DRSTUDY, and dumps/screenshots STUDY + both previews (OAM slots 37-40). Edit the `CFG` block per cart.
 - `ab_run.lua` — two-window proof: attaches `copro_emu` on **both** `$5000` and `$5200` of the AB dual-copro cart (zero input) and logs GO/DONE + fill for both players.
 - `remap_mapper100_mmc1.py` — header remap (mapper 100→1). Byte-identical PRG/CHR.
-- `evidence/` — proof screenshots (AI placing pills; 2P STUDY with both previews).
+- `bridge/` — the **real-planner bridge**: run the actual depth-3 AI (RTL-exact leaf) through the harness so it clears viruses, not just stacks pills. See the "Real-planner bridge" section below.
+- `evidence/` — proof screenshots (AI placing pills; 2P STUDY with both previews; bridge clearing viruses).
 
 ## Usage
 
@@ -76,8 +77,40 @@ is proven reusable on a multi-window cart. **2P STUDY** (see `evidence/03_2P_stu
 both next-pill previews render (OAM slots 37-38 P1, 39-40 P2 on-screen) — part-4 verified.
 
 Note: the emptiest-column default brain does no color-matching, so viruses are not cleared —
-this proves the **mailbox plumbing + placement**, not clearing. Intelligent clearing needs the
-real-planner bridge (a future deliverable).
+this proves the **mailbox plumbing + placement**, not clearing. Intelligent clearing is the
+**real-planner bridge** below.
+
+## Real-planner bridge (`bridge/`) — the real AI actually clears viruses
+
+Swaps the dumb default brain for the **actual py65 depth-3 planner** (`nes_d3_golden.decide_d3`
+at DEPLOY config) so the emulated copro answers with the shipped brain's move. This turns the
+harness into a true end-to-end test of **cart + driver + brain**.
+
+- `bridge/planner_bridge.py` — daemon serving `decide_d3` over a line-based file protocol
+  (`req.txt`/`resp.txt`, atomic via `os.replace`), with `--selftest` and `--w-vrdy` (24 = shipped
+  cart, 12 = r47b5 in flight). **LEAF FIDELITY: RTL-exact** — it monkeypatches
+  `nes_d3_golden.leaf_d3` → `fpga/copro/leaf_r47.py`, validated **536/536 cell-exact** vs the
+  pinned Verilator corpus (and 5036/5036 vs live RTL), so leaf == RTL == FPGA (no longer
+  weekend-era).
+- `bridge/bridge_run.lua` — drives the AB cart's P1 via the bridge (P2 = dumb to keep the match
+  alive). The brain **blocks the emulation thread** during the ~2.4–4 s compute, which freezes
+  game time so the slow planner costs the falling pill no distance. Counts live viruses correctly
+  via `(cell & 0xF0) == 0xD0` (not the flat `$0324`).
+- `bridge/block_test.lua` — de-risk: proves Mesen tolerates a multi-second callback block.
+- `bridge/xcheck_gen.py` — generates a 200-board cross-check corpus (board + ref decision per
+  `w_vrdy` arm) to gate the coef-opt numba path.
+
+**Proven** (RTL-exact leaf): 12/12 GO=DONE, miss=0, **P1 virus 48→43** (real clearing) — see
+`evidence/bridge_final.png`. `selftest` passes (leaf swap confirmed; ~2.6 s/decision).
+
+Prereqs / caveats (this is an internal dev tool, not fully path-portable):
+- Run the daemon with the repo **`.venv` python** (has py65): `/home/struktured/projects/dr-mario-mods/.venv/bin/python bridge/planner_bridge.py --w-vrdy 24`.
+- `planner_bridge.py` imports the planner + RTL leaf from the `incr-delta` worktree (`REPO` at
+  the top of the file — edit for your layout); `bridge_run.lua` uses hardcoded `DIR`/`BR`/`OUT`
+  paths (edit to your copy). Committed **verbatim as proven** — parametrizing these (à la
+  `DRQA_DIR`) is a follow-up.
+- **Perf:** ~2.4–4 s/pill (blocking). A numba fast-path is the perf follow-up (task #50); it
+  doesn't change correctness, just cadence.
 
 ## Mesen2 gotchas (verified — do not relearn the hard way)
 
