@@ -41,7 +41,7 @@ def build_image(board, cA, cB, nA, nB):
     _G.DISC_SHIFT = 1            # golden must match for the py65 gate
     _G.EXCAV_HANG_PLY1 = True    # golden must match for the py65 gate
     _G.BURIED_COLOR_AWARE = True # R1: color-aware g_buried (matches patched LeafEval.sv RTL)
-    _G.W_VRDY = 24               # R3: vrdy coefficient (matches patched LeafEval.sv S_DONE)
+    _G.W_VRDY = 12               # R3->r47b5: vrdy 24->12 (lockstep w/ LeafEval.sv S_DONE; leaf runs in RTL so no hex change)
     _G.W_EXCAV = 24              # R2: eh_terms excav weight -> emitted into copro_rom.hex
     _G.HANG_DEPTH_PROP = True     # R4: depth-proportional hang credit  (eh_terms -> copro_rom.hex)
     _G.W_HANG_GAP = 20            # R4

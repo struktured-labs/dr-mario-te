@@ -9,7 +9,7 @@
 //   done            : high when finished; sco[15:0] (signed) & win valid
 // Bit-exact contract (validated vs the python goldens in tb_leafeval):
 //   sco = 5000 - 12*maxh - 20*holes - 90*toprisk - 150*spawn + 60*setup
-//         - 30*buried + 12*rdy_ext + 24*vrdy - 6*pollution + matched60   (16-bit wrap; buried color-aware + nearest-2 cap, R6 matched-cover pre-scaled)
+//         - 30*buried + 12*rdy_ext + 12*vrdy - 6*pollution + matched60   (16-bit wrap; buried color-aware + nearest-2 cap, R6 matched-cover pre-scaled; r47b5: vrdy 24->12, was over-weighted -- eval A/B)
 //   win = (no virus on board)
 module LeafEval(
 	input             clk,
@@ -593,7 +593,7 @@ always @(posedge clk) begin
 			     + matched60_p
 			     - 16'd30  * buried_p
 			     + 16'd12  * rdy_ext_p
-			     + 16'd24  * vrdy_p
+			     + 16'd12  * vrdy_p
 			     - 16'd6   * pollution_p;
 			done <= 1'b1;
 			st <= S_IDLE;
