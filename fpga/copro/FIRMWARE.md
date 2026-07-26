@@ -49,6 +49,23 @@ shadow**, which is the PRE-delta emitter with no `USE_DELTA` at all — so it ca
 emitter) into `sys.modules` before `build_copro_d3` imports it. Always build the shipped firmware via
 `dbg_build.py all 0`. `build_copro_d3.py` warns if it detects the shadow emitter.
 
+## Vendor source of truth: only `incr-delta` (→ `copro-canonical`). NEVER `study-pause`.
+
+`sync_to_pocket.sh` vendors from whatever tree it runs in. The ONLY safe vendor source is the branch
+that carries the delta engine + the reconciled ship hex + the guard together — `incr-delta`, now
+promoted into `copro-canonical`.
+
+`study-pause` (`~/projects/dr-mario-mods`) is a **research tree, never a vendor source**:
+- It has NO delta engine (base `LeafEval.sv`) and still carries the **pre-fix `build_copro_d3.py`**
+  that overwrites `copro_rom.hex` with the BASE build. Running any firmware build there produces
+  **base-hex residue** (`412615b2`) in the working tree — that residue is not device firmware and must
+  never be vendored. Its committed hex is older still (`3d73b374`).
+- It typically holds active, uncommitted eval-research changes. Do not reach into it to "fix" the
+  build script; whoever owns that lane picks up the `build_copro_d3.py` / `run_gate.sh` /
+  `sync_to_pocket.sh` fixes when they next sync from canonical.
+If you must vendor, run `sync_to_pocket.sh` from `incr-delta`/`copro-canonical` only. The guard will
+still fail-loud if the hex disagrees, but the source-tree choice is your first line of defense.
+
 ## History
 - Delta engine landed cell-exact at `9e040e3` (2026-07-25); RTL + `dbg_build.py` + `USE_DELTA`.
 - Shipped delta `c87e60a1` vendored to Pocket at `b7429de` from a `9e040e3-dirty` tree — never
