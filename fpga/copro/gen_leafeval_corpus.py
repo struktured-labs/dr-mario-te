@@ -28,6 +28,7 @@ VARIANTS = {
     "r47": leaf_r47.leaf_r47,
     "vrdy12": leaf_r47.leaf_vrdy12,
     "weekend_burial": leaf_r47.leaf_weekend_burial,
+    "combined": leaf_r47.leaf_combined,
 }
 
 

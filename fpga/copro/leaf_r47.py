@@ -239,6 +239,14 @@ def leaf_weekend_burial(board):
     return leaf_sco(board, buried_color_aware=False, buried_nearest2_cap=False)
 
 
+def leaf_combined(board):
+    """Candidates (a)+(b) together: W_VRDY 24->12 AND weekend burial. The two edits hit
+    independent accumulators (vrdy in S_DONE2, buried in S_COLWALK/S_DBUR), so the score
+    delta from R47 is exactly the sum of the two single-term deltas -- additive, not
+    overlapping. Use this to prep the combined RTL arm."""
+    return leaf_sco(board, w_vrdy=12, buried_color_aware=False, buried_nearest2_cap=False)
+
+
 # ---- validation vs the pinned corpus (real RTL output) ----------------------
 def _parse_corpus(path):
     with open(path) as f:
