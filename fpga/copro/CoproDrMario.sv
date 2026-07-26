@@ -91,6 +91,7 @@ wire        lev_done, lev_win, lev_legal;
 wire [15:0] lev_sco, lev_imm;
 wire  [5:0] lev_rvc;
 wire  [3:0] lev_rvv;
+wire        lev_dv_fallback;   // delta (CMD 7) hit a clearing placement -> firmware re-issues CMD 4
 LeafEval leafeval(
 	.clk   (clk_cpu),
 	.rst   (cpu_rst),
@@ -112,7 +113,8 @@ LeafEval leafeval(
 	.legal (lev_legal),
 	.rv_cells(lev_rvc),
 	.rv_vir(lev_rvv),
-	.imm   (lev_imm)
+	.imm   (lev_imm),
+	.dv_fallback(lev_dv_fallback)
 );
 reg [7:0] lev_q;
 always @(posedge clk_cpu)
@@ -125,6 +127,7 @@ always @(posedge clk_cpu)
 		4'hA: lev_q <= {4'b0, lev_rvv};
 		4'hB: lev_q <= lev_imm[7:0];
 		4'hC: lev_q <= lev_imm[15:8];
+		4'hD: lev_q <= {7'b0, lev_dv_fallback};   // $70xD: delta clearing-fallback flag
 		default: lev_q <= {7'b0, lev_done};
 	endcase
 

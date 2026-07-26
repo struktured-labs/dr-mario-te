@@ -60,7 +60,15 @@ USE_ENGINE = False               # True: FULL BoardEngine (copies/land/resolve/l
 LEV_BOARD, LEV_SCO, LEV_WIN_R, LEV_GO = 0x7000, 0x70F0, 0x70F2, 0x70F8
 LEV_A_O4, LEV_A_COL, LEV_A_CA, LEV_A_CB, LEV_A_SL = 0x70E0, 0x70E1, 0x70E2, 0x70E3, 0x70E4
 LEV_LEGAL, LEV_RVC, LEV_RVV, LEV_IMM = 0x70E8, 0x70E9, 0x70EA, 0x70EB
+LEV_DVFB = 0x70ED   # delta clearing-fallback flag (CoproDrMario read-mux $70xD)
 LEV_WSLOT, LEV_CMD = 0x70F3, 0x70F4
+USE_DELTA = False   # incremental-leaf: CMD-6 BASE per parent + CMD-7 DELTA per child (+ CMD-4 fallback)
+DELTA_P0 = DELTA_P2 = DELTA_P3 = None   # per-ply gates for bisection; None -> follow USE_DELTA
+DEBUG_VAL1 = False   # diagnostic: dump per-ply1-candidate (C1,O1,V1L,V1H) into copro RAM ring at DBG_RING
+DBG_RING = 0x0C00    # free copro RAM (LIVE$0500 WORK1$0600 CUR$0700 MARK$0780 WORK2$0B00 -> $0C00 free)
+DELTA_P2_LOOP = True   # diagnostic: False keeps ply2 base-latch but uses full-node loop (engine vs orch)
+def _d(flag):
+    return USE_DELTA if flag is None else flag
 TOPK1 = 32   # ply1 keep-width; 32 = FULL (T1C <= 30). MEASURED (isolation 2026-07-10):
              # topk1=8 = 70% clears vs FULL = 91% (n=24, FW model) -- the depth-1 Pass-0 key
              # under-ranks setup moves; ply1 pruning is NOT quality-safe at depth-3. Cost:
@@ -146,6 +154,30 @@ def _e_node(a, o_zp, c_zp, ca_abs, cb_abs):
     a.ins16("LDA_abs", cb_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CB)
     a.ins("LDA_imm", 4); a.ins16("STA_abs", LEV_CMD)
     _e_poll(a)
+
+
+def _e_base(a):
+    """CMD 6: scan CUR (parent) and LATCH the base accumulators + column heights for the delta."""
+    a.ins("LDA_imm", 6); a.ins16("STA_abs", LEV_CMD)
+    _e_poll(a)
+
+
+def _e_dnode(a, o_zp, c_zp, ca_abs, cb_abs, rslot):
+    """Incremental NODE: CMD 7 DELTA (child leaf from base+delta; leaves CUR = parent unless it
+    hit a clearing placement). On dv_fallback (clear), restore CUR<-slot rslot and re-run CMD 4
+    full NODE (args stay latched), then restore CUR again for the next delta. Result regs
+    (sco/imm/legal/win) match _e_node either way. Assumes base already latched (CMD 6) and CUR=parent."""
+    a.ins("LDA_zp", o_zp); a.ins16("STA_abs", LEV_A_O4)
+    a.ins("LDA_zp", c_zp); a.ins16("STA_abs", LEV_A_COL)
+    a.ins16("LDA_abs", ca_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CA)
+    a.ins16("LDA_abs", cb_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CB)
+    a.ins("LDA_imm", 7); a.ins16("STA_abs", LEV_CMD); _e_poll(a)      # CMD 7 DELTA
+    n = _ec[0]; _ec[0] += 1
+    a.ins16("LDA_abs", LEV_DVFB); a.br("BEQ", f"dn{n}")              # dv_fallback==0 -> delta result OK
+    _e_copy(a, rslot, True)                                          # clearing: restore CUR <- parent
+    a.ins("LDA_imm", 4); a.ins16("STA_abs", LEV_CMD); _e_poll(a)     # CMD 4 full NODE (args latched)
+    _e_copy(a, rslot, True)                                          # restore CUR <- parent for next delta
+    a.label(f"dn{n}")
 
 
 def _lda_absx_label(a, label):
@@ -235,13 +267,46 @@ def _emit_eh_terms(a):
     a.label("eh_hland")
     a.ins("AND_imm", 0x0F); a.ins("STA_zp", EH_T1)        # EH_T1 = landing low nibble
     a.ins("LDA_zp", EH_T0); a.ins("AND_imm", 0x0F); a.ins("CMP_zp", EH_T1); a.br("BNE", "eh_hnext")
-    a.ins("LDA_zp", D_ADL); a.ins("CLC"); a.ins("ADC_imm", G3.W_HANG); a.ins("STA_zp", D_ADL)
-    a.ins("LDA_zp", D_ADH); a.ins("ADC_imm", 0); a.ins("STA_zp", D_ADH)
+    if G3.HANG_VIRUS_COL_ONLY or G3.HANG_DEPTH_PROP:
+        a.jsr("eh_hcredit")                               # R4 out-of-line credit (keeps loop branches short)
+    else:
+        a.ins("LDA_zp", D_ADL); a.ins("CLC"); a.ins("ADC_imm", G3.W_HANG); a.ins("STA_zp", D_ADL)
+        a.ins("LDA_zp", D_ADH); a.ins("ADC_imm", 0); a.ins("STA_zp", D_ADH)
     a.label("eh_hnext")
     a.ins("INX"); a.jmp("eh_hloop")
     a.label("eh_hdone")
     a.ins("RTS")
+    # --- R4 credit subroutine (JSR-only; on entry X = hang idx, Y = landing idx) ---
+    if G3.HANG_VIRUS_COL_ONLY or G3.HANG_DEPTH_PROP:
+        a.label("eh_hcredit")
+        a.ins("STY_zp", EH_T3)                            # save landing idx (Y clobbered below)
+        if G3.HANG_VIRUS_COL_ONLY:
+            a.ins("TXA"); a.ins("AND_imm", 0x07); a.ins("TAY")   # Y = column c = idx & 7
+            a.label("eh_hvc")                             # scan column c for a virus
+            a.ins16("LDA_absY", CUR); a.ins("CMP_imm", 0xFF); a.br("BEQ", "eh_hvcs")
+            a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BEQ", "eh_hvok")   # virus present
+            a.label("eh_hvcs")
+            a.ins("TYA"); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAY")
+            a.ins("CPY_imm", 128); a.br("BCC", "eh_hvc"); a.ins("RTS")   # no virus in col -> no credit
+            a.label("eh_hvok")
+        if G3.HANG_DEPTH_PROP:
+            a.ins("STX_zp", EH_T2)                        # save hang idx
+            a.ins("LDA_zp", EH_T3); a.ins("SEC"); a.ins("SBC_zp", EH_T2)   # A = landing - hang (mult of 8)
+            a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A")                 # >>3 = rows between
+            a.ins("SEC"); a.ins("SBC_imm", 1)                             # gap = rows_between - 1
+            a.ins("TAX")                                                  # X = gap (table index)
+            _lda_absx_label(a, "eh_hang_lo"); a.ins("CLC"); a.ins("ADC_zp", D_ADL); a.ins("STA_zp", D_ADL)
+            _lda_absx_label(a, "eh_hang_hi"); a.ins("ADC_zp", D_ADH); a.ins("STA_zp", D_ADH)
+            a.ins("LDX_zp", EH_T2)                        # restore hang idx
+        else:
+            a.ins("LDA_zp", D_ADL); a.ins("CLC"); a.ins("ADC_imm", G3.W_HANG); a.ins("STA_zp", D_ADL)
+            a.ins("LDA_zp", D_ADH); a.ins("ADC_imm", 0); a.ins("STA_zp", D_ADH)
+        a.ins("RTS")
     a.label("eh_excav_tab"); a.raw(0, G3.W_EXCAV * 1, G3.W_EXCAV * 4, G3.W_EXCAV * 9)   # [min(run,3)]
+    if G3.HANG_DEPTH_PROP:                                 # R4: credit[gap] = W_HANG + W_HANG_GAP*gap
+        _hv = [G3.W_HANG + G3.W_HANG_GAP * g for g in range(16)]
+        a.label("eh_hang_lo"); a.raw(*[v & 0xFF for v in _hv])
+        a.label("eh_hang_hi"); a.raw(*[(v >> 8) & 0xFF for v in _hv])
 
 
 def _emit_search_d3_engine(a):
@@ -260,11 +325,17 @@ def _emit_search_d3_engine(a):
     a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "up_l")
     a.ins("LDA_imm", 0); a.ins16("STA_abs", LEV_WSLOT)
     # ---- Pass 0 ----
+    if _d(DELTA_P0):
+        _e_copy(a, 1, True)                               # CUR <- slot1 (root parent), once
+        _e_base(a)                                        # latch base accumulators + col heights
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_T1C); a.ins("STA_zp", D_O1)
     a.label("p0_o"); a.ins("LDA_imm", 0); a.ins("STA_zp", D_C1)
     a.label("p0_c")
-    _e_copy(a, 1, True)
-    _e_node(a, D_O1, D_C1, S_CA, S_CB)
+    if _d(DELTA_P0):
+        _e_dnode(a, D_O1, D_C1, S_CA, S_CB, 1)           # child leaf from base+delta (CUR stays = slot1)
+    else:
+        _e_copy(a, 1, True)
+        _e_node(a, D_O1, D_C1, S_CA, S_CB)
     a.ins16("LDA_abs", LEV_LEGAL); a.br("BNE", "p0_leg"); a.jmp("p0_next")
     a.label("p0_leg")
     _e_score(a)
@@ -316,11 +387,17 @@ def _emit_search_d3_engine(a):
     _e_copy(a, 2, False)                                   # w1 <- cur
     if EH_PLY1:
         a.jsr("eh_terms")                                 # D_AD = W_EXCAV*excav(b1)+W_HANG*hang(b1)
+    if _d(DELTA_P2):
+        _e_copy(a, 2, True)                               # CUR <- w1 (b1 parent), once
+        _e_base(a)                                        # latch base from parent
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_TKC); a.ins("STA_zp", D_O2)
     a.label("i_outer"); a.ins("LDA_imm", 0); a.ins("STA_zp", D_C2)
     a.label("i_inner")
-    _e_copy(a, 2, True)                                    # cur <- w1
-    _e_node(a, D_O2, D_C2, S_NA, S_NB)
+    if _d(DELTA_P2) and DELTA_P2_LOOP:
+        _e_dnode(a, D_O2, D_C2, S_NA, S_NB, 2)            # child leaf from base+delta (CUR stays = slot2)
+    else:
+        _e_copy(a, 2, True)                               # cur <- w1
+        _e_node(a, D_O2, D_C2, S_NA, S_NB)
     a.ins16("LDA_abs", LEV_LEGAL); a.br("BNE", "i_leg"); a.jmp("i_next")
     a.label("i_leg")
     _e_score(a)
@@ -404,6 +481,14 @@ def _emit_search_d3_engine(a):
         a.ins("CLC"); a.ins("LDA_zp", D_V1L); a.ins("ADC_zp", D_ADL); a.ins("STA_zp", D_V1L)
         a.ins("LDA_zp", D_V1H); a.ins("ADC_zp", D_ADH); a.ins("STA_zp", D_V1H)
     a.label("o_cand")
+    if DEBUG_VAL1:                                    # dump (C1,O1,V1L,V1H,B2L,B2H) at ring[D_J1*8] (pre-jitter)
+        a.ins("LDA_zp", D_J1); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("TAX")
+        a.ins("LDA_zp", D_C1);  a.ins16("STA_absX", DBG_RING + 0)
+        a.ins("LDA_zp", D_O1);  a.ins16("STA_absX", DBG_RING + 1)
+        a.ins("LDA_zp", D_V1L); a.ins16("STA_absX", DBG_RING + 2)
+        a.ins("LDA_zp", D_V1H); a.ins16("STA_absX", DBG_RING + 3)
+        a.ins("LDA_zp", D_B2L); a.ins16("STA_absX", DBG_RING + 4)
+        a.ins("LDA_zp", D_B2H); a.ins16("STA_absX", DBG_RING + 5)
     a.ins("LDA_zp", D_SEED); a.br("BEQ", "o_nj")
     a.ins("LDA_zp", D_O1); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ORA_zp", D_C1)
     a.ins("EOR_zp", D_SEED); a.ins("STA_zp", D_JT)
@@ -425,6 +510,8 @@ def _emit_search_d3_engine(a):
 def _emit_expectimax_engine(a):
     a.label("expectimax")
     _e_copy(a, 3, False)                                   # w2 <- cur
+    if _d(DELTA_P3):
+        _e_base(a)                                        # latch base from b2 (const across all pills)
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_SL); a.ins("STA_zp", D_SM); a.ins("STA_zp", D_SH)
     a.ins("STA_zp", D_PI)
     a.label("ex_pill")
@@ -432,12 +519,25 @@ def _emit_expectimax_engine(a):
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_EA); a.ins("STA_zp", D_O3)
     a.label("ex_o"); a.ins("LDA_imm", 0); a.ins("STA_zp", D_C3)
     a.label("ex_c")
-    _e_copy(a, 3, True)                                    # cur <- w2
-    a.ins("LDA_zp", D_O3); a.ins16("STA_abs", LEV_A_O4)
-    a.ins("LDA_zp", D_C3); a.ins16("STA_abs", LEV_A_COL)
-    a.ins("LDX_zp", D_PI); a.ins16("LDA_absX", PILLA); a.ins16("STA_abs", LEV_A_CA)
-    a.ins16("LDA_absX", PILLB); a.ins16("STA_abs", LEV_A_CB)
-    a.ins("LDA_imm", 4); a.ins16("STA_abs", LEV_CMD); _e_poll(a)
+    if _d(DELTA_P3):
+        a.ins("LDA_zp", D_O3); a.ins16("STA_abs", LEV_A_O4)
+        a.ins("LDA_zp", D_C3); a.ins16("STA_abs", LEV_A_COL)
+        a.ins("LDX_zp", D_PI); a.ins16("LDA_absX", PILLA); a.ins16("STA_abs", LEV_A_CA)
+        a.ins16("LDA_absX", PILLB); a.ins16("STA_abs", LEV_A_CB)
+        a.ins("LDA_imm", 7); a.ins16("STA_abs", LEV_CMD); _e_poll(a)   # CMD 7 DELTA (CUR stays = w2)
+        _n = _ec[0]; _ec[0] += 1
+        a.ins16("LDA_abs", LEV_DVFB); a.br("BEQ", f"exd{_n}")          # dv_fallback==0 -> delta OK
+        _e_copy(a, 3, True)                                           # clearing: CUR <- w2
+        a.ins("LDA_imm", 4); a.ins16("STA_abs", LEV_CMD); _e_poll(a)  # CMD 4 full NODE (args latched)
+        _e_copy(a, 3, True)                                           # restore CUR <- w2 for next delta
+        a.label(f"exd{_n}")
+    else:
+        _e_copy(a, 3, True)                                    # cur <- w2
+        a.ins("LDA_zp", D_O3); a.ins16("STA_abs", LEV_A_O4)
+        a.ins("LDA_zp", D_C3); a.ins16("STA_abs", LEV_A_COL)
+        a.ins("LDX_zp", D_PI); a.ins16("LDA_absX", PILLA); a.ins16("STA_abs", LEV_A_CA)
+        a.ins16("LDA_absX", PILLB); a.ins16("STA_abs", LEV_A_CB)
+        a.ins("LDA_imm", 4); a.ins16("STA_abs", LEV_CMD); _e_poll(a)
     a.ins16("LDA_abs", LEV_LEGAL); a.br("BNE", "ex_leg"); a.jmp("ex_cnext")
     a.label("ex_leg")
     a.ins("LDA_imm", 1); a.ins("STA_zp", D_EA)

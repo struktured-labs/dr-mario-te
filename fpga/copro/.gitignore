@@ -9,3 +9,5 @@ firmware_rom.hex
 hostdata.txt
 obj_iface/
 iface_vsim
+# regenerable py65 BASE reference from build_copro_d3.py; ship hex = copro_rom.hex (delta)
+copro_rom.base.hex
