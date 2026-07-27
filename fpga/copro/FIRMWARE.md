@@ -66,6 +66,107 @@ promoted into `copro-canonical`.
 If you must vendor, run `sync_to_pocket.sh` from `incr-delta`/`copro-canonical` only. The guard will
 still fail-loud if the hex disagrees, but the source-tree choice is your first line of defense.
 
+## Provenance gap: we cannot prove a shipped FPGA core was built from the RTL we think it was
+
+This is a **process finding**, first hit auditing `nes.rev.r47b5_c11_pad` (the vrdy 24→12 eval core,
+2026-07-26). It is not specific to that core; it recurs on **every** FPGA core we ship. Same disease as
+the firmware drift above and the "python golden was a pre-release build" trap: *the repo/manifest
+describes something whose presence on the actual device is unproven.*
+
+**Motivating incident (2026-07-26, live — not hypothetical).** The hardware lane needed to know whether
+the MiSTer's *deployed* core carried the eval fix (`vrdy=12`) or the old `vrdy=24`. No inspectable
+artifact could answer it: the bitstream is opaque, and the audit could confirm only the *source commit*
+and that a genuine re-fit had happened — not that *this deployed bitstream* contains the fix. The lane had
+to fall back on **inferring the eval from the AI's playing style** — measuring average landing/board
+height across games and reasoning backward about which weight produces it. That is an enormous amount of
+work to answer "which build is this?", and it is the concrete cost of having no build-ID readout.
+Worse, that fallback **failed on its own terms**: fill-height's ~4-point phase swing across a game swamps
+the ~1.1-row vrdy 24-vs-12 signature (see the decision-fingerprint method warning), so even the behavioral
+workaround could not answer it. Either fix below would have turned the whole question into a single
+save-state RAM read.
+
+**What IS verifiable from inspectable artifacts:**
+- **Source commit.** The staged core names its build commit; you can `git show <sha>:fpga/copro/LeafEval.sv`
+  and confirm the RTL says what it claims (e.g. `16'd12 * vrdy_p`, not `16'd24`), and that the parent
+  had the old value — i.e. the source change is real and isolated.
+- **Rebuild determinism of the firmware.** `copro_rom.hex` is reproducible byte-exact (`dbg_build.py all 0`
+  → `c87e60a1`); the py65/co-sim gates are cell-exact. The 6502 firmware side is fully pinned.
+- **Artifact identity.** The `.rev` md5 matches the manifest, and a real re-fit is distinguishable from a
+  copy (a one-constant RTL change still perturbs most of the bitstream + the fitter report).
+
+**What is NOT verifiable — the gap:**
+- **Bitstream → RTL.** A Quartus `.rbf`/`.rev` cannot be decompiled, and the compile is not bit-reproducible
+  here. Nothing in the shipped bitstream ties it to a specific source commit. So "source commit X contains
+  the fix" + "this is a genuine distinct build" does **not** prove the fix is in *this* bitstream. The only
+  definitive check today is a **hardware A/B** (see task #52) — behavioral, not byte-level. Treat that A/B
+  as load-bearing, not merely nice-to-have, whenever an eval/logic change reaches silicon.
+- **Bitstream → card (no deployment record).** Even given a specific bitstream, nothing records *which*
+  bitstream was written to a physical card at a given time. **Motivating incident (2026-07-26, live):** asked
+  which of the July-18/19 weekend cores the user actually played, the honest answer was **not determinable.**
+  The SD snapshot proves the card held `87bc69c4` at 07-18 09:50, but five later weekend builds
+  (`seed5_85_9` 13:56, `anytime` 14:58, `discount` 17:17, `eh` 21:29, `combo` 07-19 11:25) exist only in the
+  staging dir -- and **staging presence is not deployment.** No deploy log, no staging note (the earliest is
+  07-25), and an un-timestamped 2000-line bash history that no longer reaches that far: which build reached the
+  card is simply unrecorded, and the physical card has been rewritten many times since. (The vrdy=12 eval
+  conclusion is unaffected -- *every* weekend build predates the 07-22 vrdy 12->24 change -- but "we have the
+  exact core he liked" is not established.)
+  - ⚠ **The staged `nes.rev.*` files in `/mnt/data/drmario/pocket-copro/` (16 and counting) have no ordering,
+    no provenance, and no deployment record between them.** Anyone reading that directory in three months will
+    assume the newest is what shipped. It is not necessarily. **Do not treat mtime order as ship order.**
+
+**Cheapest ways to close it going forward (PROPOSED — not built):**
+0. **Deploy log — adopt immediately, no code, no build required (the bitstream->card half).** Every time
+   anything is written to a physical card, append one line to a `DEPLOY_LOG.txt`: **timestamp, artifact
+   filename, md5, destination.** Three fields, one append, no tooling. Unlike the register (1) and the
+   buildinfo sidecar (2) — which both need a *build* to exist and close the RTL->bitstream half — this needs
+   only the habit, and it alone would have answered tonight's "which weekend core did he play?". **Start it
+   with the very next card write.**
+1. **Build-ID / eval-signature register in RTL, readable over the existing `$5000` mailbox (preferred).**
+   Synthesize a small read-only register holding a build stamp — e.g. a 16–32-bit git-hash prefix and/or a
+   packed digest of the eval constants (`W_VRDY`, `W_MAXH`, `W_RDY`, …). Expose it via a new mailbox
+   read (a reserved `$5000` sub-address or a new CMD), so the host 6502 can read the core's own identity
+   and drop it into the `$6200` diagnostic ring. Then "which core / does it have vrdy=12?" becomes a
+   **one-line savestate-RAM read on silicon** (same channel as the existing frozen-RAM forensics), instead
+   of tonight's unprovable claim. **Feasible:** the mailbox is already a host↔copro dual-port/2FF path,
+   and a constant register is trivial logic on its own async group; the only real cost is the tiny
+   firmware+driver read path. This is the highest-leverage fix and would have made tonight a 10-second read.
+2. **Quartus build-manifest sidecar (near-zero cost, weaker).** At build time, write a `<core>.buildinfo`
+   next to the `.rev`: source commit, `.qsf`/revision, fitter report hash, key eval constants, toolchain
+   version. It only attests what the build *system* claims (not what the bitstream *contains*), but it makes
+   provenance a recorded artifact rather than tribal memory, and it costs one file at package time.
+   **Where it must live (2026-07-26 finding):** the effective home is the FPGA lane's **local** Quartus
+   build + bit-reverse step (`~/projects/pocket-nes-mapper100`, `output_files/nes_pocket.rbf` → `nes.rev.*`),
+   NOT the upstream OpenGateware CI publish helper (`.github/publish/helpers/package.py:reverse_bitstream`,
+   `release.py`). That CI path is keyed off `GITHUB_REF`/tags, but dev cores (e.g. r47b5) are built locally
+   and explicitly carry NO tag until silicon — so patching only the CI helper would miss the cores that
+   actually ship. Owner (assigned 2026-07-26): the **mister-ab** lane — they build a core locally with
+   Quartus for the silicon A/B (#52) and are the very lane that just spent an hour unable to tell which eval
+   a deployed bitstream carried, so the first core to carry provenance should be theirs; spec sent to them
+   directly. Spec: emit `<name>.buildinfo` = `git rev-parse HEAD`, the LeafEval eval constants
+   (`grep 16'd.. * .._p LeafEval.sv`), `.qsf` revision, and the fitter-report ALM/register/slack lines,
+   at the moment the `.rev`/`.rbf` is produced.
+
+Recommendation: do (0) and (2) immediately (both free), and schedule (1) as the real fix — a core that self-identifies
+on silicon turns an entire class of "is this really the build we think?" questions into a register read.
+
+## Running the gate / long jobs (process note, 2026-07-26)
+`run_gate.sh` is slow: the **all-delta co-sim** (line 13, the incremental CMD-6/7 path) runs ~15 min of
+`mister_vsim` wall time — roughly 15x the baseline co-sim — and is the phase that dominates the run.
+That length collided twice tonight with a **harness background-task lifetime cap that kills tracked
+background tasks at ~20 min** (observed here and independently in the coef-opt2 lane's 70-min weight search,
+both killed near the same age, neither an OOM — load was low and memory free). A kill mid-`all-delta`
+produces **no verdict**, and — because the delta hex has already been rewritten by line 12 before the
+co-sim — leaves `copro_rom.hex` correctly at `c87e60a1` (check this before assuming a dirty tree; a base
+`412615b2` residue would instead mean the kill landed during the baseline phase).
+
+Rules for re-running it (and any long job in this tree):
+- **Launch it fully detached** — `nohup ./run_gate.sh 12 > some.log 2>&1 & disown` — not as a tracked
+  background task, so a harness-level cancellation cannot reach it. Poll the logfile.
+- **Never silently retry after a kill** — report it. Verify the hex is intact first (`md5sum copro_rom.hex`
+  == `c87e60a1`); the kill can land after the delta build but before the co-sim finishes.
+- Treat any tracked background job still alive past ~20 min as **unreliable infrastructure**; long jobs
+  should checkpoint or chunk so a kill costs minutes, not the whole run.
+
 ## History
 - Delta engine landed cell-exact at `9e040e3` (2026-07-25); RTL + `dbg_build.py` + `USE_DELTA`.
 - Shipped delta `c87e60a1` vendored to Pocket at `b7429de` from a `9e040e3-dirty` tree — never
