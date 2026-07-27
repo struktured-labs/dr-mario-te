@@ -49,11 +49,23 @@ shadow**, which is the PRE-delta emitter with no `USE_DELTA` at all — so it ca
 emitter) into `sys.modules` before `build_copro_d3` imports it. Always build the shipped firmware via
 `dbg_build.py all 0`. `build_copro_d3.py` warns if it detects the shadow emitter.
 
-## Vendor source of truth: only `incr-delta` (→ `copro-canonical`). NEVER `study-pause`.
+## Vendor source of truth (RTL/hex): `copro-canonical`. NEVER `study-pause`, and NO LONGER `incr-delta`.
 
-`sync_to_pocket.sh` vendors from whatever tree it runs in. The ONLY safe vendor source is the branch
-that carries the delta engine + the reconciled ship hex + the guard together — `incr-delta`, now
-promoted into `copro-canonical`.
+> **SUPERSEDED HEADING (2026-07-27):** this section previously read *"only `incr-delta`"*. That is now
+> **obsolete and unsafe as written** — `copro-canonical` is **18 commits ahead of `incr-delta`, 0 behind**,
+> so vendoring from `incr-delta` pulls a strictly-behind branch (it lacks the build-hygiene fixes and the
+> reconciled docs). Reconciling `incr-delta` forward is a tracked follow-up, not done.
+>
+> **AND THIS RULE IS RTL/HEX-SCOPED ONLY.** The vendor source **splits by artifact** — see §69:
+> **RTL / delta engine / `copro_rom.hex` / the guard → `copro-canonical`; DRIVER and copro CARTS
+> (`patch_cartridge_copro.py`) → `driver-nav`.** Building a ROTFIX cart from `copro-canonical` or
+> `incr-delta` picks up the **pre-rework driver** (`if NO_FREEZE:` gate) and would **reintroduce the R47
+> Pocket hard-freeze**. `sync_to_pocket.sh` is already RTL/hex-only, so this is a process rule, not a
+> script path.
+
+`sync_to_pocket.sh` vendors from whatever tree it runs in. The ONLY safe **RTL/hex** vendor source is the
+branch that carries the delta engine + the reconciled ship hex + the guard together — **`copro-canonical`**
+(into which `incr-delta` was promoted, and which has since moved ahead of it).
 
 `study-pause` (`~/projects/dr-mario-mods`) is a **research tree, never a vendor source**:
 - It has NO delta engine (base `LeafEval.sv`) and still carries the **pre-fix `build_copro_d3.py`**
