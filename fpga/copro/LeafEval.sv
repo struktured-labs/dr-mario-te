@@ -8,8 +8,8 @@
 //   start           : pulse start=1 (loads nothing; board regs already written)
 //   done            : high when finished; sco[15:0] (signed) & win valid
 // Bit-exact contract (validated vs the python goldens in tb_leafeval):
-//   sco = 5000 - 12*maxh - 20*holes - 90*toprisk - 150*spawn + 60*setup
-//         - 30*buried + 12*rdy_ext + 12*vrdy - 6*pollution + matched60   (16-bit wrap; buried color-aware + nearest-2 cap, R6 matched-cover pre-scaled; r47b5: vrdy 24->12, was over-weighted -- eval A/B)
+//   sco = 5000 - 12*maxh - 20*holes - 90*toprisk - 150*spawn + 32*setup
+//         - 48*buried + 8*rdy_ext + 8*vrdy - 6*pollution + matched60   (16-bit wrap; buried color-aware + nearest-2 cap, R6 matched-cover pre-scaled @48; r47b5: vrdy 24->12; eval-winner (coef-opt2): setup 60->32, buried 30->48, rdy_ext 12->8, vrdy 12->8, matched-cover 60->48 -- held-out -12.5 / TEST -11.0 paired-median pills vs vrdy12, RTL cost 21 vs 30 bits)
 //   win = (no virus on board)
 module LeafEval(
 	input             clk,
@@ -113,7 +113,7 @@ reg  [4:0] maxh /*verilator public_flat_rd*/;
 reg  [7:0] holes /*verilator public_flat_rd*/, toprisk /*verilator public_flat_rd*/, spawn /*verilator public_flat_rd*/, setup /*verilator public_flat_rd*/;
 reg [10:0] pollution /*verilator public_flat_rd*/;   // up to 48 viruses x 22 cells = 1056
 reg  [9:0] buried /*verilator public_flat_rd*/;   // up to 48 x 15 = 720
-reg [12:0] matched60 /*verilator public_flat_rd*/; // R6 matched-cover pre-scaled: +60 per virus w/ same-color cover directly on top
+reg [12:0] matched60 /*verilator public_flat_rd*/; // R6 matched-cover pre-scaled: +48 per virus w/ same-color cover directly on top (name historical; was +60)
 reg [15:0] rdy_ext /*verilator public_flat_rd*/, vrdy /*verilator public_flat_rd*/;
 reg        anyvir;
 reg        seen;               // column walk: first-occupied seen
@@ -140,7 +140,7 @@ reg        base_anyvir;
 reg  [9:0] od_bur, nd_bur;
 reg [15:0] od_rdy, nd_rdy, od_vrdy, nd_vrdy;
 reg  [7:0] od_set, nd_set;
-reg [12:0] dd_matched;                // matched60 delta (closed form: +60 per new same-color cover)
+reg [12:0] dd_matched;                // matched60 delta (closed form: +48 per new same-color cover)
 reg [10:0] dd_pol;                    // pollution delta (closed form)
 reg  [7:0] dd_holes;                  // holes delta (closed form from colh)
 reg  [1:0] pca, pcb;                  // placed colors landed at off_a / off_b (post o4-swap)
@@ -380,7 +380,7 @@ always @(posedge clk) begin
 					anyvir <= 1'b1;
 					// R6 matched-cover setup: a same-color non-virus cell resting directly on the virus
 					// (== the R1 exemption condition) counts a started vertical clear.
-					if (curcol == col_of[{wr_[3:0], wc[2:0]}]) matched60 <= matched60 + 13'd60;
+					if (curcol == col_of[{wr_[3:0], wc[2:0]}]) matched60 <= matched60 + 13'd48;
 					// R1 color-aware buried; R7b: charge only the 2 topmost viruses in the column.
 					if (vseen < 5'd2)
 						buried <= buried + fillcnt - ((curcol == col_of[{wr_[3:0], wc[2:0]}]) ? curlen : 5'd0);
@@ -589,11 +589,11 @@ always @(posedge clk) begin
 			     - 16'd20  * holes_p
 			     - 16'd90  * toprisk_p
 			     - 16'd150 * spawn_p
-			     + 16'd60  * setup_p
+			     + 16'd32  * setup_p
 			     + matched60_p
-			     - 16'd30  * buried_p
-			     + 16'd12  * rdy_ext_p
-			     + 16'd12  * vrdy_p
+			     - 16'd48  * buried_p
+			     + 16'd8   * rdy_ext_p
+			     + 16'd8   * vrdy_p
 			     - 16'd6   * pollution_p;
 			done <= 1'b1;
 			st <= S_IDLE;
@@ -607,9 +607,9 @@ always @(posedge clk) begin
 			ga = 8'd15 - {3'd0, colh[off_a[2:0]]} - {4'd0, off_a[6:3]};
 			gb = 8'd15 - {3'd0, colh[off_b[2:0]]} - {4'd0, off_b[6:3]};
 			dd_holes <= a_o4[1] ? (ga + gb) : 8'd0;
-			// matched60 delta: a placed cell resting directly on a same-color virus adds a cover (+60)
-			dd_matched <= ((off_a[6:3] != 4'd15 && vir_of[off_a + 7'd8] && col_of[off_a + 7'd8] == pca) ? 13'd60 : 13'd0)
-			            + ((off_b[6:3] != 4'd15 && vir_of[off_b + 7'd8] && col_of[off_b + 7'd8] == pcb) ? 13'd60 : 13'd0);
+			// matched60 delta: a placed cell resting directly on a same-color virus adds a cover (+48)
+			dd_matched <= ((off_a[6:3] != 4'd15 && vir_of[off_a + 7'd8] && col_of[off_a + 7'd8] == pca) ? 13'd48 : 13'd0)
+			            + ((off_b[6:3] != 4'd15 && vir_of[off_b + 7'd8] && col_of[off_b + 7'd8] == pcb) ? 13'd48 : 13'd0);
 			// pollution delta: scan the 2 placed cells' rows+cols for differently-colored viruses
 			dsoff <= {off_a[6:3], 3'd0}; dstep <= 4'd1; dscnt <= 5'd8; li <= 2'd0;
 			st <= S_DPOL;

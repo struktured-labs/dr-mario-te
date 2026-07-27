@@ -41,13 +41,23 @@ def build_image(board, cA, cB, nA, nB):
     _G.DISC_SHIFT = 1            # golden must match for the py65 gate
     _G.EXCAV_HANG_PLY1 = True    # golden must match for the py65 gate
     _G.BURIED_COLOR_AWARE = True # R1: color-aware g_buried (matches patched LeafEval.sv RTL)
-    _G.W_VRDY = 12               # R3->r47b5: vrdy 24->12 (lockstep w/ LeafEval.sv S_DONE; leaf runs in RTL so no hex change)
+    # -----------------------------------------------------------------------
+    # ★ RTL-DIVERGENCE MARKER (branch eval-winner-5const): the shipped RTL leaf
+    #   (LeafEval.sv S_DONE2) now runs the eval-winner constants -- vrdy=8,
+    #   matched-cover=48, plus setup=32/buried=48/rdy_ext=8 (no knob for those here).
+    #   The two golden weights below (W_VRDY=12, W_MATCHED_COVER=60) are r47b5-era and
+    #   are LEFT AS-IS on this branch: they configure the py65-gate golden, and changing
+    #   them needs a full build + py65-gate re-validation (deferred; not run against the
+    #   live merge gate). To measure the SHIPPED brain offline use leaf_r47.leaf_evalwinner(),
+    #   the RTL-exact mirror. Do NOT read the two values below as the current chip.
+    # -----------------------------------------------------------------------
+    _G.W_VRDY = 12               # R3->r47b5: vrdy 24->12 (leaf runs in RTL so no hex change)  [STALE vs eval-winner RTL=8; see marker]
     _G.W_EXCAV = 24              # R2: eh_terms excav weight -> emitted into copro_rom.hex
     _G.HANG_DEPTH_PROP = True     # R4: depth-proportional hang credit  (eh_terms -> copro_rom.hex)
     _G.W_HANG_GAP = 20            # R4
     _G.HANG_VIRUS_COL_ONLY = True # R4: credit hangs only in virus columns
     _G.MATCHED_COVER_SETUP = True # R6: matched-cover setup credit (matches patched LeafEval.sv)
-    _G.W_MATCHED_COVER = 60       # R6
+    _G.W_MATCHED_COVER = 60       # R6  [STALE vs eval-winner RTL=48; see marker above]
     _G.BURIED_NEAREST2_CAP = True # R7b: buried capped at 2 topmost viruses/col (matches RTL)
     _G.READINESS_EXT_CAP = 0      # R7a: no-op on resolved boards (run^2<=9)
     # copro RAM is ONLY $0000-$0FFF + $6100-$61FF (CoproDrMario.sv): the SQ tables must be

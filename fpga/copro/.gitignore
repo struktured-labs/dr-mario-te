@@ -9,5 +9,7 @@ firmware_rom.hex
 hostdata.txt
 obj_iface/
 iface_vsim
+# Verilator build tree for the EDITED eval-winner RTL (run_gate55.sh re-verilates into it)
+obj_mister_edit/
 # regenerable py65 BASE reference from build_copro_d3.py; ship hex = copro_rom.hex (delta)
 copro_rom.base.hex

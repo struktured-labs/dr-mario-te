@@ -28,6 +28,25 @@ The RTL bcell is {vir, col[1:0]} with col = nibble+1 (1..3, 0=empty); col_of/occ
 decode from that. We decode the same way below.
 """
 
+# ============================================================================
+# ★★★  RTL DIVERGENCE NOTICE — READ BEFORE MEASURING "THE SHIPPED BRAIN"  ★★★
+# ----------------------------------------------------------------------------
+# As of branch `eval-winner-5const` (off incr-delta), the shipped RTL leaf
+# (LeafEval.sv S_DONE2) has DIVERGED from the ORIGINAL-R47 constants documented
+# above. The eval-winner (coef-opt2) moves FIVE combine weights vs r47b5:
+#     setup 60->32,  buried 30->48,  rdy_ext 12->8,  vrdy 12->8,  matched-cover 60->48
+# (held-out -12.5 / TEST -11.0 paired-median pills vs vrdy12; RTL cost 21 vs 30 bits.)
+#
+# THIS FILE STILL MIRRORS FROZEN CORPORA. SELECT THE BRAIN BY VARIANT:
+#     leaf_r47()        = ORIGINAL R47 (vrdy=24)  -- validated vs pinned leafeval_cases.txt
+#     leaf_vrdy12()     = r47b5        (vrdy=12)
+#     leaf_evalwinner() = THE CURRENT CHIP (eval-winner 5-const)  <-- USE THIS
+#
+# Do NOT read leaf_r47()/leaf_vrdy12() as "the shipped brain": that is exactly the
+# weekend-era-golden trap that cost us months of python "R47" numbers describing a
+# brain that never shipped. When the RTL constants change again, add a variant here.
+# ============================================================================
+
 ROWS, COLS = 16, 8
 EMPTY = 0xFF
 WIN_SENTINEL = 0x7530  # 30000; RTL leaves sco don't-care on win, tb ignores it. Kept for callers.
@@ -54,14 +73,21 @@ def _sq(n):
     return n * n
 
 
-def leaf_terms(board, *, w_vrdy=24, buried_color_aware=True,
+def leaf_terms(board, *, w_vrdy=24, w_setup=60, w_buried=30, w_rdy_ext=12,
+               w_matched=60, buried_color_aware=True,
                buried_nearest2_cap=True, matched_cover=True):
     """Return the dict of accumulator terms exactly as the RTL computes them.
-    Flags default to the shipped R47 config; flip them for the reverted variants.
-    - w_vrdy:               S_DONE2 vrdy coefficient (R47=24, weekend=12)
+    Flags/weights default to the ORIGINAL R47 config; flip the flags for the
+    reverted variants and pass the w_* weights for the eval-winner (see
+    leaf_evalwinner). All-default reproduces the corpus-validated leaf_r47.
+    - w_vrdy:               S_DONE2 vrdy coefficient (R47=24, r47b5=12, eval-winner=8)
+    - w_setup:              S_SETUP weight (R47=60, eval-winner=32)
+    - w_buried:             buried charge weight (R47=30, eval-winner=48)
+    - w_rdy_ext:            rdy_ext weight (R47=12, eval-winner=8)
+    - w_matched:            R6 matched-cover per-virus credit (R47=60, eval-winner=48)
     - buried_color_aware:   R1 same-color-cover exemption in the buried charge
     - buried_nearest2_cap:  R7b charge only the 2 topmost viruses per column
-    - matched_cover:        R6 matched-cover (+60 per virus with same-color cover on top)
+    - matched_cover:        R6 matched-cover (per-virus credit w/ same-color cover on top)
     """
     occ, vir, col = _decode(board)
 
@@ -87,7 +113,7 @@ def leaf_terms(board, *, w_vrdy=24, buried_color_aware=True,
                     anyvir = True
                     same = (curcol == col[r][c])
                     if matched_cover and same:
-                        matched60 += 60
+                        matched60 += w_matched
                     if (not buried_nearest2_cap) or vseen < 2:
                         exempt = curlen if (buried_color_aware and same) else 0
                         buried += fillcnt - exempt
@@ -193,7 +219,8 @@ def leaf_terms(board, *, w_vrdy=24, buried_color_aware=True,
 
     return dict(maxh=maxh, holes=holes, toprisk=toprisk, spawn=spawn, setup=setup,
                 matched60=matched60, buried=buried, rdy_ext=rdy_ext, vrdy=vrdy,
-                pollution=pollution, anyvir=anyvir, w_vrdy=w_vrdy)
+                pollution=pollution, anyvir=anyvir, w_vrdy=w_vrdy,
+                w_setup=w_setup, w_buried=w_buried, w_rdy_ext=w_rdy_ext)
 
 
 def _combine(t):
@@ -203,10 +230,10 @@ def _combine(t):
          - 20 * t["holes"]
          - 90 * t["toprisk"]
          - 150 * t["spawn"]
-         + 60 * t["setup"]
+         + t["w_setup"] * t["setup"]
          + t["matched60"]
-         - 30 * t["buried"]
-         + 12 * t["rdy_ext"]
+         - t["w_buried"] * t["buried"]
+         + t["w_rdy_ext"] * t["rdy_ext"]
          + t["w_vrdy"] * t["vrdy"]
          - 6 * t["pollution"])
     s &= 0xFFFF                                  # 16-bit wrap
@@ -245,6 +272,15 @@ def leaf_combined(board):
     delta from R47 is exactly the sum of the two single-term deltas -- additive, not
     overlapping. Use this to prep the combined RTL arm."""
     return leaf_sco(board, w_vrdy=12, buried_color_aware=False, buried_nearest2_cap=False)
+
+
+def leaf_evalwinner(board):
+    """THE CURRENT CHIP: eval-winner (coef-opt2) 5-constant leaf, branch
+    `eval-winner-5const` off incr-delta. Five combine weights move vs r47b5:
+    setup 60->32, buried 30->48, rdy_ext 12->8, vrdy 12->8, matched-cover 60->48
+    (held-out -12.5 / TEST -11.0 paired-median pills vs vrdy12; RTL 21 vs 30 bits).
+    Offline lanes measuring the SHIPPED brain must call THIS, not leaf_r47/leaf_vrdy12."""
+    return leaf_sco(board, w_vrdy=8, w_setup=32, w_buried=48, w_rdy_ext=8, w_matched=48)
 
 
 # ---- validation vs the pinned corpus (real RTL output) ----------------------
