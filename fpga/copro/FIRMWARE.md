@@ -150,22 +150,39 @@ Recommendation: do (0) and (2) immediately (both free), and schedule (1) as the 
 on silicon turns an entire class of "is this really the build we think?" questions into a register read.
 
 ## Running the gate / long jobs (process note, 2026-07-26)
-`run_gate.sh` is slow: the **all-delta co-sim** (line 13, the incremental CMD-6/7 path) runs ~15 min of
-`mister_vsim` wall time — roughly 15x the baseline co-sim — and is the phase that dominates the run.
-That length collided twice tonight with a **harness background-task lifetime cap that kills tracked
-background tasks at ~20 min** (observed here and independently in the coef-opt2 lane's 70-min weight search,
-both killed near the same age, neither an OOM — load was low and memory free). A kill mid-`all-delta`
-produces **no verdict**, and — because the delta hex has already been rewritten by line 12 before the
-co-sim — leaves `copro_rom.hex` correctly at `c87e60a1` (check this before assuming a dirty tree; a base
-`412615b2` residue would instead mean the kill landed during the baseline phase).
+`run_gate.sh` now **builds `mister_vsim` from source every run** (Verilator `--build` is incremental — a
+no-op when nothing changed, a correct rebuild when the RTL changed). This closes three defects that cost
+~2h on 2026-07-26 and made a merge gate un-diagnosable:
 
-Rules for re-running it (and any long job in this tree):
+- **No committed binary.** The old committed `obj_mister/mister_vsim` was **~50x slower** than a fresh
+  build (case-0 delta: 240s+ timeout vs 11s fresh) despite the *recorded* verilate command being byte-
+  identical — i.e. the build flags that made it slow were never captured. A committed binary nobody can
+  attribute is the same provenance disease as the firmware drift above, one layer down. `obj_mister/` is
+  now gitignored and rebuilt here. (What made the ~50x: an unoptimised compile, **not** tracing — the
+  committed and a fresh binary carry the same trace-symbol count, so VCD linkage was not the cause.)
+- **Re-verilate before every gate.** The gate used to run a *pre-built* binary and only rebuilt the 6502
+  firmware (`dbg_build.py` → `copro_rom.hex`). The eval constants live in `LeafEval.sv` and are baked into
+  `mister_vsim` at Verilator-compile time, so **editing `LeafEval.sv` and gating without re-verilating
+  tested the STALE constants and passed green on the old eval** — a false green on exactly the change you
+  made. Building from source here means an RTL edit is always what gets gated. (Verify a constant-only edit
+  propagated by diffing the generated `obj_mister/…DepSet…cpp` *contents* — the partition-hash filename does
+  NOT change for a constant-only edit.) NEVER glob the source list: `ALU.v`/`cpu.v` are the old Arlet core
+  and collide with `copro_alu.v`/`copro6502.v` as duplicate module defs.
+- **Visible progress + `clocks=` kept.** Output is line-buffered (the old `vsim | grep | sed > file` pipe
+  was block-buffered — a 0-byte log hid all progress, so "is it hung?" was unanswerable). And the gate no
+  longer strips `clocks=` (the GO→DONE master-clock search-cost counter — the single most diagnostic field
+  the sim emits; a delta count materially exceeding base on the same board is a divergence). It is kept in
+  the per-case log and in `/tmp/gate_{base,all}_full.txt`; the cell-exact diff runs on a move-only
+  projection, since `clocks` legitimately differs base vs delta.
+
+A fresh full-12 gate is ~2–3 min (base ~173s, delta ~116s), not the ~15 min the unoptimised binary took.
+A kill mid-run leaves `copro_rom.hex` at whatever the last `dbg_build` phase wrote — check it before
+assuming a dirty tree: `c87e60a1` means the kill landed after the delta rebuild (line "restore the SHIPPED
+hex"); a base `412615b2` residue means it landed during the baseline phase. Rules for long jobs here:
 - **Launch it fully detached** — `nohup ./run_gate.sh 12 > some.log 2>&1 & disown` — not as a tracked
-  background task, so a harness-level cancellation cannot reach it. Poll the logfile.
-- **Never silently retry after a kill** — report it. Verify the hex is intact first (`md5sum copro_rom.hex`
-  == `c87e60a1`); the kill can land after the delta build but before the co-sim finishes.
-- Treat any tracked background job still alive past ~20 min as **unreliable infrastructure**; long jobs
-  should checkpoint or chunk so a kill costs minutes, not the whole run.
+  background task, so the harness's ~20-min background-task lifetime cap cannot reach it. Poll the logfile.
+- **Never silently retry after a kill** — report it, and verify the hex is intact (`md5sum copro_rom.hex`
+  == `c87e60a1`) first.
 
 ## History
 - Delta engine landed cell-exact at `9e040e3` (2026-07-25); RTL + `dbg_build.py` + `USE_DELTA`.

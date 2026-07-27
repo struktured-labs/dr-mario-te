@@ -9,5 +9,9 @@ firmware_rom.hex
 hostdata.txt
 obj_iface/
 iface_vsim
+# Verilator co-sim build tree (run_gate.sh rebuilds it from source; never commit the binary --
+# a committed unattributable binary was ~50x slower than a fresh build, see FIRMWARE.md)
+obj_mister/
+mister_vsim
 # regenerable py65 BASE reference from build_copro_d3.py; ship hex = copro_rom.hex (delta)
 copro_rom.base.hex
