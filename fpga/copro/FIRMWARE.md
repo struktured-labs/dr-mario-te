@@ -66,6 +66,31 @@ promoted into `copro-canonical`.
 If you must vendor, run `sync_to_pocket.sh` from `incr-delta`/`copro-canonical` only. The guard will
 still fail-loud if the hex disagrees, but the source-tree choice is your first line of defense.
 
+### ★ The vendor rule above is RTL/HEX-SCOPED. The DRIVER splits by artifact — carts vendor `driver-nav`.
+
+Everything in this section is about the **delta engine RTL + `copro_rom.hex` + the guard**. It does
+**NOT** cover the cart-side 6502 **driver** (`patch_cartridge_copro.py`), and applying it to carts
+reintroduces a shipped bug:
+
+- **RTL / delta engine / hex** → canonical (`incr-delta` → `copro-canonical`), as above.
+- **DRIVER / copro carts** → **`driver-nav`** (`~/projects/dr-mario-mods-wt/driver-nav`). This is the
+  *shipped* driver and the ONLY one carrying the ROTFIX freeze-fairness rework.
+
+`copro-canonical` and `incr-delta` carry the **pre-rework driver**. Its freeze gate is
+`if NO_FREEZE:` (incr-delta `patch_cartridge_copro.py` L529/L628); the shipped driver's is
+`if NO_FREEZE or ROTFIX:` (driver-nav L935). Under the pre-rework gate, a **ROTFIX cart built with
+`NO_FREEZE=0`** takes the legacy `else` that pins `GRAV_P2 = 0` (i.e. `p2_speedCounter`, the ROM's own
+lock/gravity timer) **every frame for the whole search** — on the Pocket (4x-slower copro, heavy
+first-pill depth-3) the pin holds for seconds→minutes = **the R47 Pocket HARD-FREEZE**. Building a copro
+cart from `canonical`/`incr-delta` silently ships that regression back.
+
+This **corrects the team-lead's 2026-07-27 "retire 'only vendor from incr-delta', vendor from
+canonical" instruction**: that instruction was **RTL-scoped** (canonical was merged strictly ahead on
+RTL/hex) and **must not be applied to carts**. For any cart, vendor the driver from `driver-nav`.
+(Distinct species of provenance hazard from the rest of this doc: not "we can't tell what an artifact
+was built from" but "the word *canonical* means different things for different artifacts, and it looks
+answered." Source: mister-ab source read + `cadence-mesen` #60 Mesen measurement, both agreeing.)
+
 ## Provenance gap: we cannot prove a shipped FPGA core was built from the RTL we think it was
 
 This is a **process finding**, first hit auditing `nes.rev.r47b5_c11_pad` (the vrdy 24→12 eval core,
