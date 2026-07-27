@@ -183,6 +183,27 @@ save-state RAM read.
    (`grep 16'd.. * .._p LeafEval.sv`), `.qsf` revision, and the fitter-report ALM/register/slack lines,
    at the moment the `.rev`/`.rbf` is produced.
 
+**★ (2) IS NOW DONE for the first core — and the spec needed one refinement (2026-07-27, mister-ab).**
+The winner single-copro provenance core was built with a `.buildinfo` sidecar as specified
+(`~/projects/NES_MiSTer-winner/output_files/speed_build_20260727/NES.rbf.speed.buildinfo`; md5
+`7a538f75…`, source `31e3ce1` + vendored winner `LeafEval.sv`, all 7 eval constants, P1 copro
+stripped). But building it surfaced a hazard the spec's phrase "`.qsf` revision" does **not** cover:
+
+- **Recording "the `.qsf`" is not enough — record the OPTIMIZATION MODE and why.** The *same* qsf can
+  carry `OPTIMIZATION_MODE "AGGRESSIVE AREA"` / `OPTIMIZATION_TECHNIQUE AREA` / register-duplication
+  **OFF** (a squeeze tuned to fit the **dual**-copro overflow) versus `HIGH PERFORMANCE EFFORT` / `SPEED`
+  / duplication+retiming **ON** (the deployed core's known-good config) — and that one difference moved
+  the 85.9 MHz `clk_copro` domain by **5 ns**. Proven by A/B, **same RTL, only the qsf knobs differing**:
+  AREA ⇒ `clk_copro −5.117 ns`, Fmax 59.67 MHz (fails the 85.9 constraint); SPEED ⇒ `clk_copro +0.118 ns`
+  (passes, and better than the deployed core's −0.072).
+- **RULE: a SINGLE-copro build MUST use the SPEED settings; the AGGRESSIVE-AREA squeeze belongs ONLY to
+  the dual-copro configuration.** The single-copro strip already removes the overflow the squeeze existed
+  for (87% ALM at speed settings, room to spare) — left in place, those area knobs cost ~26 MHz of Fmax to
+  buy area no longer needed. This is the **same provenance disease** as the `-O0` `obj_mister` binary below
+  (whose recorded build command was byte-identical to the fast one): a build artifact carrying an
+  **unrecorded configuration that silently produces a different result**. The buildinfo must therefore name
+  the optimization mode/technique explicitly, not just "the qsf".
+
 Recommendation: do (0) and (2) immediately (both free), and schedule (1) as the real fix — a core that self-identifies
 on silicon turns an entire class of "is this really the build we think?" questions into a register read.
 
