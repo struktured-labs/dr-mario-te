@@ -178,7 +178,18 @@ COLGATE = ROTFIX and (_os.environ.get("DRCOLGATE", "1") != "0")
 # DONE path, and only the MATURE idx==2 trampoline reaches {L}_start via a JMP -- without MATURE that path
 # is a short BEQ and the extra bytes push it out of branch range, so gate on MATURE (which implies SLAM/
 # ROTFIX). DRRECOMMIT=0 disables; DRSLAM=0 / DRSLAM_MATURE=0 / DRROTFIX=0 -> off -> byte-exact.
-RECOMMIT = MATURE and (not NO_FREEZE) and (_os.environ.get("DRRECOMMIT", "1") != "0")
+# DRRECOMMIT_NOFREEZE=1 (opt-in, default OFF): allow RECOMMIT on NO_FREEZE=1 carts too.
+# The freeze-carts-only restriction above exists to keep the validated MiSTer AB cart
+# byte-exact for A/B control -- it is NOT a correctness requirement. But it means MiSTer
+# PLAY carts carry the orient-latch bug by design: user field report 2026-07-27, a YB pill
+# placed into the corner as BY (right column, wrong colour order, never rotated twice), plus
+# rare "really dumb" opening moves -- the opening is the SLOWEST search, so it is where the
+# converged orient is most likely to arrive after the latch. Opt-in keeps every existing
+# cart byte-identical; set this only for play carts. RECOMMIT self-gates (no-op unless DONE
+# lands above CROSS_LOWY), so on a slow copro it costs nothing.
+RECOMMIT = (MATURE
+            and (not NO_FREEZE or _os.environ.get("DRRECOMMIT_NOFREEZE", "0") == "1")
+            and (_os.environ.get("DRRECOMMIT", "1") != "0"))
 # DRNAVFIX=1 (default): STABILITY-GATED AUTONAV. The canonical an_title fires START the instant $04!=0;
 # a cold-boot garbage-nonzero $04 (title fade-in, before menu-init) then STARTs into a 1P game. DRNAVFIX
 # withholds START until VS-CPU-armed ($04!=0 AND $0727==2) has held for NAV_M consecutive hooks -- the
@@ -591,7 +602,11 @@ def build_main(level=11, speed=1):
     a.ins16("LDA_abs", VSEEN2); a.br("BEQ", "fc_no")
     a.label("fc_clear")                                     # full clear -> own the frame (skip normal dispatch)
     a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 4); a.br("BCS", "fc_ret")
-    a.ins("LDA_imm", B_START); a.ins("STA_zp", 0xF5)        # inject START to dismiss STAGE CLEAR
+    if not HUMAN_P1:
+        # $F5 is P1's controller latch. On a HUMAN_P1 cart P1 is a PERSON, so injecting
+        # START here presses the human's button for them (spec P0.4). The human dismisses
+        # their own STAGE CLEAR; the AI is P2 and never needed this.
+        a.ins("LDA_imm", B_START); a.ins("STA_zp", 0xF5)    # inject START to dismiss STAGE CLEAR
     a.label("fc_ret"); a.ins("RTS")
     a.label("fc_no")
     a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "not_play")
@@ -754,16 +769,24 @@ def build_main(level=11, speed=1):
         a.ins("RTS")                                        #  frame between mode inits; the $04
                                                             #  gate above lands VS-CPU deterministically)
     a.label("an_lvl")
-    a.ins("LDA_imm", level)
-    a.ins16("STA_abs", 0x0316)                              # P1 level
-    a.ins16("STA_abs", 0x0396)                              # P2 level (+$80 struct offset)
-    a.ins("STA_zp", 0x96)                                   # live cursor (cosmetic)
-    a.ins("LDA_imm", speed); a.ins("STA_zp", 0x45)         # force game speed (0=LOW,1=MED,2=HI)
+    if not HUMAN_P1:
+        # spec P0.4: on a human cart the PERSON chooses the level/speed on the select screen.
+        # Forcing $0316/$45 here silently overrides their choice mid-navigation. Falls through
+        # to an_start, which is itself inert for human carts.
+        a.ins("LDA_imm", level)
+        a.ins16("STA_abs", 0x0316)                          # P1 level
+        a.ins16("STA_abs", 0x0396)                          # P2 level (+$80 struct offset)
+        a.ins("STA_zp", 0x96)                               # live cursor (cosmetic)
+        a.ins("LDA_imm", speed); a.ins("STA_zp", 0x45)      # force game speed (0=LOW,1=MED,2=HI)
     a.label("an_start")
     a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 4); a.br("BCC", "an_st_go")
     a.ins("RTS")
     a.label("an_st_go")
-    inject(B_START)
+    if not HUMAN_P1:
+        # spec P0.4: autonav drives the menus by pressing P1's buttons. On a human cart the
+        # human IS P1 and navigates for themselves -- injecting here fights them for control
+        # (measured 7/40 hooks). Leave an_st_go as a bare RTS so the nav path is inert.
+        inject(B_START)
     if NAVDWELL:
         a.ins("LDA_imm", 0); a.ins16("STA_abs", DWELL_CNT)   # START fired -> re-arm the dwell for the next title
     a.ins("RTS")
