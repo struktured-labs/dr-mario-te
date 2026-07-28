@@ -126,7 +126,7 @@ the RWE session as the first data point. Never headline C until the evidence is 
    it calibrates the caliber ceiling and is more credible than a suspiciously clean sweep.
 
 **One-line headline candidate (fill after RWE):**
-> *"A depth-3 expectimax Dr. Mario AI, running fair (real gravity, no pause) as an in-cartridge
+> *"A depth-3 expectimax Dr. Mario AI, running fair (input-only, real gravity, no pause) as an in-cartridge
 > FPGA coprocessor, clears 100% of Level-11 boards solo and won ___ of ___ best-of-___ series
 > against documented ___-caliber DRMC players at Level 11 MED — the first benchmarked,
 > on-hardware Dr. Mario AI to [beat regional-caliber humans]."*
@@ -140,3 +140,32 @@ the RWE session as the first data point. Never headline C until the evidence is 
   needs T3/T4 evidence.
 - ❌ Any versus claim at a level/speed the AI was not validated at.
 - ❌ "On original NES hardware" if the result was on FPGA — say "console-accurate FPGA."
+  (★ This becomes claimable *only* for the distilled pure-6502 IPS build on a real cart —
+  and only once that is actually measured, not as a promise.)
+- ❌ **"meatfighter cheats."** Accurate and sufficient: *his agent is not constrained by the
+  falling-piece clock.* Sour-grapes framing will cost more credibility than it buys.
+
+## 7. Differentiators — the axes to lead with (updated 2026-07-28)
+
+Ordered as the author wants them emphasised. (0) is the one the source review unlocked.
+
+0. **Honest / fair by construction.** Input-only: no RAM writes, no gravity manipulation, no
+   capsule-state write-back, and a **gravity-derived** (not engineered) deadline, enforced by
+   a build-failing CI gravity-pin audit. meatfighter suspends gravity every frame while
+   manoeuvring and teleports the capsule onto its planned path (`RELATED_WORK.md` #1). This
+   is the axis that makes every *other* number we report mean something.
+1. **Realizable as an actual NES cartridge.** Mapper-100 coprocessor — the AI is *in the
+   cart*, no PC in the decision loop. Lineage: Seta ST010/ST018. His is a PC Java app driving
+   an emulator.
+2. **Built for competitive play, not solo survival.** His eval is `100*viruses` plus four
+   ~[0,1] tiebreakers — **no garbage, attack, or simultaneity term at all**. Ours shapes
+   attack explicitly (combo work: 83% of pro doubles rate, take-rate at parity).
+3. **Tuned against DRMC play.** Weights from a coefficient optimiser with held-out
+   validation, and behaviour benchmarked against a corpus of real tournament play. His
+   weights, in his own words, "derive from intuition rather than search"; he publishes **no**
+   benchmarks.
+4. **Ships as real MiSTer and Analogue Pocket cores.** Reproducible by anyone with the
+   hardware — not a one-off demo binary.
+5. **Nerfed/distilled variant for the pure NES cart.** A pure-6502 IPS-patchable build for
+   unmodified hardware — the only configuration in this space that would run on **actual OG
+   silicon**, at reduced strength, honestly labelled as such.

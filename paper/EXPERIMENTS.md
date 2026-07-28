@@ -55,9 +55,36 @@ the C1 comparison baseline. Not a strawman — reproduce his algorithm as publis
 **Deliverable.** `experiments/meatfighter_baseline.py` + a short fidelity note (what was
 published vs assumed). **Attribution: Michael Birken (meatfighter), not "Colin M."**
 
-**Risk.** If the site under-specifies weights, the baseline is approximate — state it, and if
-feasible tune his weights on his stated objective (survival) rather than ours, to avoid
-strawmanning.
+> ★ **UPDATE 2026-07-28 — the fidelity risk below is RETIRED. We have his source.**
+> `DrMarioAI_2017-06-04.zip` (LGPL 2.1, source + jar) is archived at
+> `dr_mario_rl/tmp/meatfighter/`. The exact scoring function is
+> `DefaultEvaluator.java:11-15`:
+> `100.0*measureVirsues + measureClusters + measureVirusColors + measureTiles + measureHeights`,
+> where each non-virus term is normalised to ~[0,1] (e.g. `measureTiles = (128-count)/128.0`).
+> So the virus term outweighs all four tiebreakers **combined by ~100:1** — it is "clear
+> viruses, with small tiebreakers." No weights need to be assumed, and there is **no
+> strawman risk left**. Port the eval verbatim rather than reimplementing from prose.
+>
+> ★★ **NEW, AND IT CHANGES E2/E3 DESIGN: his agent does not play under gravity.**
+> `DrMarioAI.java` `stallDrop()` (:206) writes `FRAMES_UNTIL_DROP = 0xFF` **every frame**
+> while a move queue is pending (:59-60), and it writes capsule x/y/orientation directly into
+> RAM when the game disagrees with its plan (:79-84, :132-135). Moves run at
+> `MOVES_DELAY = 6` frames each. His numbers therefore measure **planning quality with the
+> clock stopped**, not real-time play. (Also: the drop-timer write is **not** player-offset —
+> bare `0x0312` — so in 2P it targets **P1's** timer, i.e. the human's. Reads as an
+> unported-to-2P bug; describe as "as published, the code does X.")
+>
+> **Required design change — run BOTH arms, report both:**
+> - **(a) as-published** — his eval + his gravity-suspended execution model. This is what he
+>   demonstrated, and it is the fair way to represent *his* result.
+> - **(b) gravity-normalised** — his eval driven through OUR input-only executor under real
+>   gravity, i.e. both agents subject to the same falling-piece deadline.
+>
+> Arm (a) answers "is our *search* better than his?"; arm (b) answers "is our *agent* better
+> under the constraint we both claim to play under?" Reporting only (b) would look like we
+> handicapped him; reporting only (a) would concede a constraint he never accepted. **The gap
+> between (a) and (b) is itself a publishable result** — it prices what the falling-piece
+> deadline actually costs an agent, which is the quantitative heart of our fairness claim.
 
 ## E2 — Solo efficiency comparison (ours depth-3 vs his depth-2)
 **Objective.** Head-to-head on *solo* virus-clearing at matched settings — the cleanest,

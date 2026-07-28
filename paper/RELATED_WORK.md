@@ -12,6 +12,11 @@
 - **"First *strong* Dr. Mario AI" is defensible only as a conjunction** (on-hardware /
   in-cartridge + depth-3 expectimax + quantified benchmarks), and only if we **cite
   meatfighter prominently and ideally beat it head-to-head.**
+- **★ NEW 2026-07-28 — "first Dr. Mario AI to play under the game's own falling-piece
+  constraint" is DEFENSIBLE.** Source review shows meatfighter suspends gravity
+  (`FRAMES_UNTIL_DROP = 0xFF` every frame) and writes capsule position/orientation directly
+  into RAM. Ours is input-only with a gravity-derived deadline. Say **"real-time under
+  gravity, input-only"**, never "he cheats". See correction #1.
 - **"No enhancement chip ran game-playing AI" is FALSE.** The Seta **ST010/ST011/ST018**
   chips ran racing-opponent and shogi AI *in the cartridge* (1993–1995). This must be
   corrected in `README.md`/`ROADMAP.md`; it *strengthens* the lineage once reframed.
@@ -25,28 +30,94 @@
 
 ---
 
-## Load-bearing correction #1 — meatfighter's Dr. Mario AI (2017). THREAT: HIGH.
+## Load-bearing correction #1 — meatfighter's Dr. Mario AI (2017). THREAT: **MODERATE** (re-rated 2026-07-28, was HIGH).
 
 **Ref.** M. Birken (meatfighter), "Applying Artificial Intelligence to Dr. Mario," 2017.
-https://meatfighter.com/drmarioai/
+https://meatfighter.com/drmarioai/ — LGPL 2.1, source + jar published.
+
+> ⚠ **RE-RATED 2026-07-28 after reading the actual source** (`DrMarioAI_2017-06-04.zip`,
+> archived at `dr_mario_rl/tmp/meatfighter/`). The previous entry asserted he plays "under
+> normal gravity, no per-move pause." **That is FALSE** and it was load-bearing — it is why
+> this was rated HIGH and why we conceded that real-gravity/no-pause/second-player were not
+> novel. Corrected below with line-level evidence. He remains genuine prior art and must
+> still be cited prominently; the concession was simply too broad.
 
 **What it is.** A Java program in the **Nintaco** NES emulator driving the *real NES Dr. Mario
 ROM* via the Nintaco API. Algorithm: BFS over every lock placement of *current pill × next
 pill* = **depth-2 lookahead**, weighted heuristic (virus count, consecutive same-color tiles,
 virus-color adjacency, non-empty count, column-height). Demonstrated in **1P at Levels 20–24**
-(24 = internal max) and, critically, in **2P VS controlling Player 2 against a human** under
-normal gravity, no per-move pause.
+(24 = internal max) and in **2P VS controlling Player 2 against a human**.
 
-**Why HIGH.** It kills several would-be differentiators outright: real NES ROM, real-time,
-real gravity, no pause, *plays as a competitive P2 vs a human*. So none of "real gravity / no
-pause / plays as second player" is novel on its own.
+**How it actually drives the game** (`src/drmarioai/DrMarioAI.java`, verbatim):
+- **Seat selection is clean.** `playerAddress = players == 1 ? 0x0000 : 0x0080` (:44) — the same
+  +$80 per-player struct offset our driver uses; gamepad writes go to port `players-1`, so in
+  2P it genuinely occupies the P2 controller.
+- **★ Gravity is SUSPENDED while it manoeuvres.** `stallDrop()` (:206-208) does
+  `writeCPU(FRAMES_UNTIL_DROP, 0xFF)` and is called **every frame** that a move queue is
+  pending (:59-60). The capsule cannot fall during positioning. `forceDrop()` (:210-212)
+  writes `0x01` to slam on demand. Moves are then consumed at a leisurely
+  `MOVES_DELAY = 6` frames each (:11) — a cadence only affordable because the clock is stopped.
+- **★ Capsule state is WRITTEN BACK, not steered.** On each move it reads x/y/orientation and,
+  if they disagree with the plan, writes the expected values straight into RAM (:79-84, and
+  again at :132-135) — teleporting the capsule onto the intended trajectory.
+- **★ The drop-timer write is NOT player-offset.** `stallDrop`/`forceDrop` take no arguments
+  and write **bare `0x0312`** while *every* other access uses `playerAddress | …`. P2's
+  counter is `$0392`. So in **1P** it freezes its own gravity; in **2P** it writes **P1's —
+  the human's — drop timer**. Almost certainly an unported-to-2P bug rather than intent, but
+  as published that is what the code does. (Whether the demo video used this exact build is
+  not something we can establish; state it as "as published, the code does X.")
 
-**Where we genuinely escape it (the C1 wording depends on all three):**
-1. **Hardware locus** — ours runs *on console-class silicon as an in-cartridge coprocessor*
+So the control model is a **hybrid: real controller presses for buttons, direct RAM writes for
+gravity and capsule state.** It is not input-only, and it is not playing under the game's own
+falling-piece constraint.
+
+**Why MODERATE, not HIGH.** He is still first, still real-time, still the real ROM, still an
+AI opponent in the P2 seat — all of that stands and must be cited. What he is *not* is
+**fair** in the sense we define: the piece never falls while he thinks or moves. The
+falling-piece deadline — the entire reason our DONE-latency, crossover, and anytime-search
+work exists — is a constraint he writes away with one byte per frame.
+
+**Where we genuinely escape it (C1 may now rest on all of these):**
+1. **Fairness** — with a **precisely scoped** claim (verified in our own source 2026-07-28,
+   because an unscoped version would not survive a reviewer reading our tree):
+   - ✅ **We NEVER write capsule position or orientation.** Verified: no write to
+     `$0305/$0306/$0325` or the P2 `+$80` equivalents exists anywhere in
+     `patch_cartridge_copro.py`. meatfighter does exactly this (:79-84, :132-135). This half
+     is unconditional and is the cleanest single contrast.
+   - ✅ **The shipping human-challenge configuration does not pin gravity.** `DRHUMAN=1`
+     never touches the human's counter ("human P1: never touch `$F5`/`$F7`/`GRAV_P1`",
+     :1124-ff), and under `DRROTFIX=1` (default) the P2 path explicitly keeps falling —
+     the source's own words: *"FAIRNESS: under ROTFIX the capsule keeps FALLING under live
+     gravity (no pin) — we only WITHHOLD steering until there is a move to make"* (:1002-ff).
+     `DRNOFREEZE=1` ("anytime") is the same intent: *"Pill fall time becomes the AI's honest
+     time budget."*
+   - ⚠ **BUT: our non-anytime "freeze" carts DO pin gravity** (`STA GRAV_P2`, :1005/:1076/
+     :1082) — the same class of manipulation we describe in meatfighter, at the same P1
+     address (`$0312`). Those are development/A-B carts, not the shipping play configuration.
+     **Never claim blanket "no gravity manipulation" across our tree** — claim it for the
+     anytime/human configuration and say which flags define it.
+   - **Gravity-derived deadline** (measured 07-28 on the real RTL: searches complete in
+     22–60 frames against an 80-frame L11 endgame budget), enforced by the CI gravity-pin audit.
+   Scoped this way it is a *primary* axis, not a conceded one — and it survives a hostile
+   reader who greps our repo for `GRAV_P2`.
+2. **Hardware locus** — ours runs *on console-class silicon as an in-cartridge coprocessor*
    (FPGA MiSTer/Pocket), no PC in the decision loop; meatfighter is a PC Java app in a
-   software emulator. This is the cleanest, strongest axis.
-2. **Search** — depth-3 **expectimax** over pill randomness vs deterministic depth-2 BFS.
-3. **Rigor** — we report clear rates (L11 100% sim); meatfighter publishes *no* benchmarks.
+   software emulator. Also: our design is realizable as an actual NES cartridge (mapper-100
+   coprocessor), and the distilled pure-6502 build targets **unmodified OG hardware via IPS**.
+3. **Search** — depth-3 **expectimax** over pill randomness vs deterministic depth-2 BFS.
+4. **Competitive orientation** — his eval is `100.0*viruses + 4 tiebreakers` each normalised to
+   ~[0,1] (`DefaultEvaluator.java:11-15`), i.e. **100:1 virus-dominated with NO garbage,
+   attack, or simultaneity term**. His stated objective is survival. Ours is tuned for
+   *versus*: combo/attack shaping measured at 83% of pro doubles rate with take-rate parity.
+5. **Tuning provenance** — his weights, in his own words, "derive from **intuition rather than
+   search**." Ours come from a coefficient optimiser with held-out validation.
+6. **Rigor** — we report clear rates (100% solo L11–L20 sim) against a DRMC-derived corpus;
+   meatfighter publishes *no* benchmarks.
+
+**★ Do not overclaim.** "He cheats" is the wrong framing and will read as sour grapes. The
+accurate, sufficient statement is: *his agent is not constrained by the falling-piece clock,
+so his results measure planning quality, not real-time play under gravity.* That is a
+methodological difference, and it is enough.
 
 **Required actions.** (a) Cite prominently in §2. (b) Reframe C1 to the conjunction in
 `CLAIMS.md`. (c) **Run a head-to-head** (our depth-3 vs a re-implementation of its depth-2,
