@@ -74,9 +74,12 @@
 - **Publication**: paper lane (enhancement-chip AI, fairness framework, the
   DRMC benchmark) — arXiv → IEEE CoG 2027. Positioning note: prior art exists
   and is credited — meatfighter's 2017 real-time depth-2 Dr. Mario AI (emulator
-  brain), and Seta's ST010/ST018 cart chips that shipped game AI in the 90s;
-  our conjunction (in-cart, hardware-accelerated depth-3, fair second player,
-  benchmarked) is the claim, not "first AI."
+  brain; ★ source review 2026-07-28: it SUSPENDS GRAVITY while manoeuvring and
+  writes capsule state into RAM, so "fair/input-only under the falling-piece
+  deadline" is OURS to claim — see paper-lane `RELATED_WORK.md` #1, re-rated
+  HIGH→MODERATE), and Seta's ST010/ST018 cart chips that shipped game AI in the
+  90s; our conjunction (in-cart, hardware-accelerated depth-3, fair second
+  player, benchmarked) is the claim, not "first AI."
 
 ## Programs (longer horizon)
 
