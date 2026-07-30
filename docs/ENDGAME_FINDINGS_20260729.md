@@ -27,7 +27,7 @@ cost real hours and re-deriving them would cost the same again.
 | 1 | scoring on pills-per-virus by regime | ✅ **SUCCESS** (method) | unblocked every result below |
 | 6 | tuck enumerator + gravity model | ✅ **SUCCESS** (tool) | 18.1% availability proven, 0 physics cost |
 | 7 | meatfighter source review | ✅ **SUCCESS** (corrected our docs) | threat HIGH → MODERATE |
-| 4 | endgame-gated planner | ✅✅ **SUCCESS — PASSED THE FULL GAUNTLET** | h2h wins 4/4 levels (52.6/53.3/**62.1**/53.2%); 3/3 held-out blocks −11 to −18% |
+| 4 | endgame-gated planner | ⚠ **REAL BUT MARGINAL — DO NOT BUILD** | −6% on uniform capsules, only **−1.4% on the REAL NES stream** |
 | 5 | anti-seal move filter | ❌ **FAILURE** | clear 100→93%, p/v 4.44→**6.55**, 82 worse |
 | 5 | cascade override (cheap version) | ❌ **WASH** | median +0.0 pills, 30/28, fires 1.0/game |
 | 5 | blanket plan-avoidance filter | ❌ **FAILURE** (earlier) | +6.98 pills, CI excludes any gain |
@@ -189,8 +189,32 @@ single-arm conversion metric that made the re-tune look good.
 
 All three improve; opening and mid untouched in every one. Compare the re-tune: one
 flattering block, contradictory optima between two optimiser runs, and a NES-capsule-stream
-failure. **This is the champion-path eval-side change.** Firmware only (~10 KB free in
-`copro_rom.hex`), no ALM, no re-fit.
+failure. ### ⚠ …AND THEN THE NES CAPSULE STREAM SHRANK IT (2026-07-30)
+
+Every number above uses the simulator's IID-**uniform** capsule draw. The NES does not:
+mod-9 additive walk off a 16-bit LFSR, strong adjacent correlation, heavy tail on waiting
+for a SPECIFIC capsule. A planner is the single thing most likely to be flattered by a
+uniform stream, because it reasons about capsule AVAILABILITY.
+
+| stream | planner | clear | med pills | endgame p/v |
+|---|---|---|---|---|
+| uniform | off → ON | 100% → 99.3% | 91.5 → 90.0 | 4.40 → 4.13 (**−6%**) |
+| **real NES** | off → ON | 96.7% → **97.3%** | 99.5 → **98.0** | 5.02 → **4.95 (−1.4%)** |
+
+Still POSITIVE on the real stream — clear +0.6pp, 1.5 pills faster — but the endgame gain
+is **4x smaller**. That does not justify a 6502 firmware port.
+
+★ Note the baselines: the real stream is genuinely HARDER (endgame 5.02 vs 4.40; clear
+96.7% vs 100%). **Every offline figure in this document is from an easier game than the
+hardware actually plays.**
+
+★★ **THE GENERAL LESSON, now twice-proven** (NES-pill eval retune, and this): validate on
+the REAL capsule stream before building anything. Uniform draws flatter every
+capsule-dependent strategy, and both the h2h and held-out gauntlets above ran on uniform —
+so passing them proves less than it appears.
+
+**NET: the only change that survives every test is the pair-latch fix.** It is an EXECUTION
+defect measured on the real RTL, so it is independent of capsule modelling entirely.
 
 ## 5. ❌ FAILURES worth keeping
 
