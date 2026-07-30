@@ -722,10 +722,20 @@ def build_main(level=11, speed=1):
         # ($0727=2,$04=1) directly (disasm-verified: $FF30 touches only these two), hold NAV_M4 hooks, START.
         if NAV_HOLD:
             a.ins("LDA_imm", 0); a.ins("STA_zp", 0x51)      # waitFrames = 0 -> demo never trips (title HOLD)
+        # ORDER MATTERS -- 2026-07-29 fix. The dwell gate USED TO SIT HERE, in front of the
+        # coherent-VS-CPU writes below. Those writes exist precisely because the title loop
+        # RESETS $0727 on every transition, so only re-writing (2,1) on EVERY hook survives.
+        # Gating them behind the dwell defeated that invariant: the state never stuck,
+        # NAV_STABLE could never hold, and each START that did fire re-armed the dwell for
+        # another DWELL_FRAMES -- so the title held FOREVER (observed 110+ s on silicon, vs
+        # the ~3 s the dwell intends). Symptom looked like "autonav is dead".
+        # The state maintenance now runs unconditionally; the dwell delays ONLY the START.
+        a.ins("LDA_imm", 2); a.ins16("STA_abs", 0x0727)     # $0727 (nbPlayers) = 2
+        a.ins("LDA_imm", 1); a.ins("STA_zp", 0x04)          # $04 = 1  -> coherent VS-CPU, set every title hook
         if NAVDWELL:
-            # TITLE DWELL (see DRNAVDWELL): hold here until ~DWELL_FRAMES real frames pass at the title, so the
-            # branded logo shows. The $51 demo-hold above keeps the attract demo at bay each held hook; the
-            # VS-CPU write + stability gate below are byte-intact and simply run once the dwell elapses.
+            # TITLE DWELL (see DRNAVDWELL): hold the START for ~DWELL_FRAMES real frames so the
+            # branded logo shows. Counted off the game's frameCounter $43 (hook-rate-independent),
+            # saturating so it cannot wrap.
             a.ins("LDA_zp", 0x43); a.ins16("CMP_abs", DWELL_LAST); a.br("BEQ", "dwell_chk")   # same frame -> check
             a.ins16("STA_abs", DWELL_LAST)                                                     # new frame seen
             a.ins16("LDA_abs", DWELL_CNT); a.ins("CMP_imm", DWELL_FRAMES); a.br("BCS", "dwell_chk")  # saturate
@@ -734,8 +744,6 @@ def build_main(level=11, speed=1):
             a.ins16("LDA_abs", DWELL_CNT); a.ins("CMP_imm", DWELL_FRAMES); a.br("BCS", "dwell_done")  # elapsed->nav
             a.ins("RTS")                                                                       # holding: logo shown
             a.label("dwell_done")
-        a.ins("LDA_imm", 2); a.ins16("STA_abs", 0x0727)     # $0727 (nbPlayers) = 2
-        a.ins("LDA_imm", 1); a.ins("STA_zp", 0x04)          # $04 = 1  -> coherent VS-CPU, set every title hook
         a.ins16("LDA_abs", NAV_STABLE); a.ins("CMP_imm", NAV_M4); a.br("BCS", "an_start")  # confirmed -> START
         a.ins16("INC_abs", NAV_STABLE); a.ins("RTS")        # holding VS, climbing the confirm
     elif NAVFIX:
