@@ -21,12 +21,13 @@ cost real hours and re-deriving them would cost the same again.
 | # | idea | verdict | number |
 |---|---|---|---|
 | 2 | pair-latch fix (driver) | ✅ **SUCCESS** | endgame p/v 8.93 → 4.49 (**−50%**) |
-| 3 | 6-constant eval re-tune | ✅ **SUCCESS** (held out) | 4.85 → 3.59 (**−26%**), clear → 100% |
-| 3 | `W_POLL` 6→12 alone | ✅ **SUCCESS** (held out) | 4.44 → 4.10 (−9.4%) |
+| 3 | 6-constant eval re-tune | ❌ **RETRACTED** — failed cross-level validation | h2h **43.2% @L17, 45.6% @L20** (loses) |
+| 3 | `W_POLL` 6→12 alone | ⚠ **UNVALIDATED** — same tuning, same doubt | −9.4% on one block; not confirmed |
+| 3 | 10-constant re-tune | ❌ **RETRACTED** — contradicts the 6-constant optimum | noise-dominated objective |
 | 1 | scoring on pills-per-virus by regime | ✅ **SUCCESS** (method) | unblocked every result below |
 | 6 | tuck enumerator + gravity model | ✅ **SUCCESS** (tool) | 18.1% availability proven, 0 physics cost |
 | 7 | meatfighter source review | ✅ **SUCCESS** (corrected our docs) | threat HIGH → MODERATE |
-| 4 | endgame-gated planner | ⚠ **WON, THEN CANCELLED** | −13.6% alone, **+0.01** once poll is tuned |
+| 4 | endgame-gated planner | ✅ **SUCCESS — UN-CANCELLED** | −13.6/−9.3/−2.7/−12.1% at L11/14/17/20 |
 | 5 | anti-seal move filter | ❌ **FAILURE** | clear 100→93%, p/v 4.44→**6.55**, 82 worse |
 | 5 | cascade override (cheap version) | ❌ **WASH** | median +0.0 pills, 30/28, fires 1.0/game |
 | 5 | blanket plan-avoidance filter | ❌ **FAILURE** (earlier) | +6.98 pills, CI excludes any gain |
@@ -90,7 +91,7 @@ Full-game cost at those measured rates (n=120):
 (`romgen` tag `latch-converged`, md5 `e8578322`). Not silicon-tested — the MiSTer autonav
 rig is blocked separately.
 
-## 3. ✅ SUCCESS — eval re-tune (evaluation), worth −26% held out
+## 3. ❌ RETRACTED — the eval re-tune does NOT hold up
 
 Coordinate descent on the endgame objective, **6 constants**, held-out block (seeds 9000+):
 
@@ -101,13 +102,41 @@ Coordinate descent on the endgame objective, **6 constants**, held-out block (se
 
 `{vrdy 8, buried 40, rdyext 12, setup 32, matched 56, poll 16}` — vrdy and setup unchanged.
 
+### ★ RETRACTION (same session, further validation)
+
+That −26% was **one favourable holdout block** and does not survive scrutiny. Four
+independent checks all point the other way:
+
+| check | result |
+|---|---|
+| h2h vs shipped, L11 (n=396) | 53.0% finishes-first — ≈ chance |
+| h2h vs shipped, L14 (n=147) | 54.4% |
+| **h2h vs shipped, L17 (n=146)** | **43.2% — LOSES** |
+| **h2h vs shipped, L20 (n=147)** | **45.6% — LOSES** |
+| real NES capsule stream | **NO IMPROVEMENT — keep the coef-opt winner** |
+
+**The two optimiser runs contradict each other.** 6-constant found
+`{vrdy 8, buried 40, rdyext 12, matched 56, poll 16}`; 10-constant found
+`{vrdy 12, buried 56, rdyext 8, matched 48, poll 10}` — nearly opposite on every term.
+Two searches on one objective landing on contradictory optima is the signature of a
+**noise-dominated objective**, not a real gradient.
+
+**Why −26% looked so good:** the shipped baseline scores 4.850 on that block but 4.452 on
+another and 4.14 in the h2h. I quoted the block with the worst baseline, which flattered
+the delta. Effect size is unstable across seed blocks; the sign is not reliable across
+levels.
+
+✅ **One genuine finding survives it:** the 10-constant run left **all four shape terms at
+their shipped values** (`maxh 12, holes 20, toprisk 90, spawn 150`). They had never been
+tuned by anything, and it turns out they did not need to be.
+
 ★ **`poll` (pollution) had NEVER been tuned** by any prior optimisation. It is the only term
 that models junk *blocking a virus's completion line* — exactly the user's insight. Alone,
 `W_POLL 6 -> 12` is worth −9.4% endgame (held out at seeds 5000+: 4.44 -> 4.10) and 12 is a
 genuine optimum (8: 4.60, 10: 4.25, 12: 4.07, 14: 4.19). **Jointly the optimum is 16, not
 12** — individually-optimal != jointly-optimal, which is why single-constant sweeps mislead.
 
-## 4. ⚠ WON THEN CANCELLED — the 6502 planner, absorbed by the constants
+## 4. ✅ SUCCESS — the endgame-gated planner (CANCELLED, then UN-CANCELLED)
 
 | W_POLL | planner | endgame p/v |
 |---|---|---|
@@ -116,9 +145,23 @@ genuine optimum (8: 4.60, 10: 4.25, 12: 4.07, 14: 4.19). **Jointly the optimum i
 | 12 | off | 4.10 |
 | 12 | ON | 4.09 (planner worth **+0.01**) |
 
-Once pollution is weighted properly the planner adds nothing. Weeks of 6502 work deleted.
-(Gated to vc<=8 it *was* a real win first — −13.6% L11 / −9.3% L14 / −2.7% L17 / −12.1% L20,
-opening and mid untouched, firing 2.2 moves/game. It is simply redundant now.)
+At `W_POLL=12` the planner appears redundant — which is why it was cancelled.
+
+### ★ UN-CANCELLED
+
+That cancellation rested on `W_POLL=12`, which is part of the retracted tuning above. At the
+**shipped** constants the planner is the better-supported change of the two:
+
+| level | endgame p/v | change |
+|---|---|---|
+| L11 | 4.49 → 3.88 | **−13.6%** |
+| L14 | 4.30 → 3.90 | −9.3% |
+| L17 | 4.39 → 4.27 | −2.7% |
+| L20 | 4.97 → 4.37 | −12.1% |
+
+**Improvement at every level, same direction**, opening and mid untouched, firing 2.2
+moves/game — versus an eval re-tune that outright loses at two of four levels. Consistency
+across levels is the discriminator, and the planner has it.
 
 ## 5. ❌ FAILURES worth keeping
 
@@ -165,11 +208,14 @@ gravity too**, at the same `$0312`. We never write capsule position/orientation 
 
 ## Where this leaves the champion path
 
-| change | endgame conversion | cost |
-|---|---|---|
-| latch fix | 8.93 -> 4.49 (**−50%**) | one build flag, done |
-| eval constants | 4.85 -> 3.59 (**−26%** held out) | 4 RTL constants, ALM-neutral |
-| ~~endgame planner~~ | ~~−13.6%~~ | **cancelled, absorbed** |
+| change | endgame conversion | status | cost |
+|---|---|---|---|
+| **latch fix** | 8.93 → 4.49 (**−50%**) | ✅ measured on real RTL, mechanism-verified | one build flag, built |
+| **endgame planner** | −2.7% to −13.6%, all 4 levels | ✅ consistent, un-cancelled | 6502 firmware, ~10 KB free, no ALM |
+| ~~eval re-tune~~ | ~~−26%~~ | ❌ **RETRACTED** — loses at L17/L20, fails NES stream | — |
+
+★ The latch fix is independent of all eval tuning — it is an execution defect measured on
+the RTL itself, so nothing above weakens it.
 
 ⚠ The goal-metric h2h is **weak so far**: champion finishes first on 53.6% of decided seeds
 (n=300) — barely above chance, and measured on the pre-6-constant arm. Being re-run at n=400
