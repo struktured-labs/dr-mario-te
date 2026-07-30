@@ -27,7 +27,7 @@ cost real hours and re-deriving them would cost the same again.
 | 1 | scoring on pills-per-virus by regime | ✅ **SUCCESS** (method) | unblocked every result below |
 | 6 | tuck enumerator + gravity model | ✅ **SUCCESS** (tool) | 18.1% availability proven, 0 physics cost |
 | 7 | meatfighter source review | ✅ **SUCCESS** (corrected our docs) | threat HIGH → MODERATE |
-| 4 | endgame-gated planner | ✅ **SUCCESS — UN-CANCELLED** | −13.6/−9.3/−2.7/−12.1% at L11/14/17/20 |
+| 4 | endgame-gated planner | ✅✅ **SUCCESS — PASSED THE FULL GAUNTLET** | h2h wins 4/4 levels (52.6/53.3/**62.1**/53.2%); 3/3 held-out blocks −11 to −18% |
 | 5 | anti-seal move filter | ❌ **FAILURE** | clear 100→93%, p/v 4.44→**6.55**, 82 worse |
 | 5 | cascade override (cheap version) | ❌ **WASH** | median +0.0 pills, 30/28, fires 1.0/game |
 | 5 | blanket plan-avoidance filter | ❌ **FAILURE** (earlier) | +6.98 pills, CI excludes any gain |
@@ -162,6 +162,35 @@ That cancellation rested on `W_POLL=12`, which is part of the retracted tuning a
 **Improvement at every level, same direction**, opening and mid untouched, firing 2.2
 moves/game — versus an eval re-tune that outright loses at two of four levels. Consistency
 across levels is the discriminator, and the planner has it.
+
+### ★★ THE GAUNTLET — the planner PASSES the test that killed the eval re-tune
+
+Same protocol, applied honestly to the surviving candidate rather than stopping at the
+single-arm conversion metric that made the re-tune look good.
+
+**Head-to-head vs shipped, "champion finishes first":**
+
+| level | planner | eval re-tune (for contrast) |
+|---|---|---|
+| L11 | 52.6% | 53.0% |
+| L14 | 53.3% | 54.4% |
+| **L17** | **62.1%** | **43.2% ❌ LOST** |
+| L20 | 53.2% | **45.6% ❌ LOST** |
+
+**Wins 4/4, and is strongest exactly where the re-tune collapsed.**
+
+**Three INDEPENDENT held-out seed blocks (endgame pills-per-virus):**
+
+| block | shipped → planner | change |
+|---|---|---|
+| 3000 | 4.31 → 3.54 | **−17.9%** |
+| 6000 | 4.87 → 4.08 | −16.2% |
+| 12000 | 4.25 → 3.77 | −11.3% |
+
+All three improve; opening and mid untouched in every one. Compare the re-tune: one
+flattering block, contradictory optima between two optimiser runs, and a NES-capsule-stream
+failure. **This is the champion-path eval-side change.** Firmware only (~10 KB free in
+`copro_rom.hex`), no ALM, no re-fit.
 
 ## 5. ❌ FAILURES worth keeping
 
