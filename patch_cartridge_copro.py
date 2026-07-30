@@ -100,8 +100,24 @@ NAV_STABLE, NAV_1P = 0x6174, 0x6175
 # ($6176-$6185) makes the trampoline bail on re-entry BEFORE the bank switch (a re-entrant _sel would corrupt
 # the interrupted invocation's bank). Byte-exact for the build_main goldens -- the guard is in the trampoline.
 BUSY = 0x6176
-DWELL_CNT, DWELL_LAST = 0x6177, 0x6178   # TITLE DWELL: frames dwelt at the title + last frameCounter($43) seen
+DWELL_CNT, DWELL_LAST = 0x6177, 0x6178
+# ---- TUCK EXECUTOR (DRTUCK=1, default OFF -> every existing cart stays byte-identical) ----
+# A tuck is a placement that slides UNDER an overhang: fall beside the lip, then move
+# laterally at the last moment. Measured value (tmp/champion/tuck_ab.py, n=240, on the REAL
+# NES capsule stream): median pills 97.5 -> 90.0 at L11 with clear rate 97.5% -> 98.3%, and
+# faster at all four levels tested. 18.1% of real positions hold a tuck that kills a virus
+# NO straight drop can reach; 88.4% of those are geometrically tuck-only.
+#
+# ★ THE KEY SIMPLIFICATION: a tuck is the SAME steer-then-drop logic with a ROW-DEPENDENT
+# target column. While the capsule is high, steer to the APPROACH column; once it is at or
+# below the trigger row, steer to the FINAL column and the existing DAS slide carries it
+# under the lip. No new movement primitive, no gravity manipulation, no extra frames.
+TUCK_C2 = 0x6179   # approach column for the in-flight P2 capsule; 0xFF = no tuck this pill
+TUCK_R2 = 0x617A   # steer to the FINAL column once pill Y <= this ($0386 counts UP from the floor)
+EFF_C2  = 0x617B   # effective target column this hook (approach or final)
+W_TCOL, W_TROW = 0x5087, 0x5088   # copro publishes the tuck descriptor here (0xFF = none)   # TITLE DWELL: frames dwelt at the title + last frameCounter($43) seen
 import os as _os
+TUCK = _os.environ.get("DRTUCK", "0") == "1"   # tuck executor (see TUCK_C2 above)
 REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
 # DRWRETRY (default OFF -- touches build_main, so off keeps the goldens == published c300acb canonical;
 # the shipping cart opts in): fix the "re-queue once per pill" watchdog latch. Two bugs: (A) handle()'s
@@ -862,6 +878,10 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", wdone); a.br("BEQ", f"{L}_search")    # DONE==0 -> still searching
         # publish result: best_col + orient4 -> game orient map {0xFF/0:3, 1:1, 2:0, 3:2}
         a.ins16("LDA_abs", wcol); a.ins16("STA_abs", tgt_c)
+        if TUCK and idx == 2:
+            # latch the tuck descriptor alongside the column, from the SAME published result
+            a.ins16("LDA_abs", W_TCOL); a.ins16("STA_abs", TUCK_C2)
+            a.ins16("LDA_abs", W_TROW); a.ins16("STA_abs", TUCK_R2)
         a.ins16("LDA_abs", wor); a.ins("CMP_imm", 0xFF); a.br("BNE", f"{L}_map")
         a.ins("LDA_imm", 3); a.jmp(f"{L}_pst")
         a.label(f"{L}_map")
@@ -902,6 +922,11 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", 1); a.ins16("STA_abs", wretry); a.ins16("STA_abs", pend)
         a.jmp(f"{L}_done")
         a.label(f"{L}_start")            # start a search: upload board+colors to THIS copro, GO
+        if TUCK and idx == 2:
+            # a new search invalidates any tuck from the PREVIOUS pill. Without this, stale
+            # descriptor bytes would steer the next capsule to a pocket that no longer exists
+            # -- the same class of bug as the uninitialised PEND/LASTY cold-state defect (P0.3).
+            a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", TUCK_C2)
         a.ins16("LDA_abs", pend); a.br("BNE", f"{L}_st1"); a.jmp(f"{L}_done"); a.label(f"{L}_st1")
         a.ins16("LDA_abs", delay); a.br("BEQ", f"{L}_st2"); a.jmp(f"{L}_done"); a.label(f"{L}_st2")
         a.ins("LDX_imm", 0)
@@ -1085,13 +1110,25 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)
         a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF6); a.jmp("act_p1")
     a.label("mv_p2")
-    a.ins16("LDA_abs", 0x0385); a.ins16("CMP_abs", TGT_C2); a.br("BEQ", "dn_p2")
+    if TUCK:
+        # TUCK: choose THIS hook's target column by height. $0386 counts UP from the floor,
+        # so "still high" is Y > TUCK_R2. BEQ/BCC both mean at-or-below the trigger.
+        a.ins16("LDA_abs", TUCK_C2); a.ins("CMP_imm", 0xFF); a.br("BEQ", "mv_p2_final")
+        a.ins16("LDA_abs", 0x0386); a.ins16("CMP_abs", TUCK_R2); a.br("BEQ", "mv_p2_final")
+        a.br("BCC", "mv_p2_final")
+        a.ins16("LDA_abs", TUCK_C2); a.jmp("mv_p2_have")      # still high -> approach column
+        a.label("mv_p2_final")
+        a.ins16("LDA_abs", TGT_C2)                            # low enough -> slide to final
+        a.label("mv_p2_have")
+        a.ins16("STA_abs", EFF_C2)
+    _EC = EFF_C2 if TUCK else TGT_C2
+    a.ins16("LDA_abs", 0x0385); a.ins16("CMP_abs", _EC); a.br("BEQ", "dn_p2")
     if not USE_WEAVE:
         a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)  # baseline: freeze at spawn row (slide-only)
     # WEAVE: skip the freeze -> the pill falls at natural gravity WHILE sliding toward the
     # target, weaving down-and-over past columns blocked at the spawn row. DAS shift-rate
     # (~1 col/6f) >> drop-rate (~1 row/16f), so it reaches the target column well before landing.
-    a.ins("LDY_imm", 0x01); a.ins16("LDA_abs", 0x0385); a.ins16("CMP_abs", TGT_C2); a.br("BCC", "st_p2")
+    a.ins("LDY_imm", 0x01); a.ins16("LDA_abs", 0x0385); a.ins16("CMP_abs", _EC); a.br("BCC", "st_p2")
     a.ins("LDY_imm", 0x02); a.jmp("st_p2")
     a.label("dn_p2")
     if NO_FREEZE or COLGATE:
