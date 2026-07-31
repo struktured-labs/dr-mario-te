@@ -17,7 +17,7 @@ module dpram #(
     output reg  [width_a-1:0]   q_b
 );
 
-reg [width_a-1:0] mem [0:(1<<widthad_a)-1];
+reg [width_a-1:0] mem [0:(1<<widthad_a)-1] /*verilator public_flat_rd*/;
 
 always @(posedge clock_a) begin
     if (wren_a) mem[address_a] <= data_a;

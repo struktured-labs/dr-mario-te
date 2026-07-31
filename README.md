@@ -97,8 +97,12 @@ Every acceleration step is proven the same way before it reaches hardware:
 ## Build / deploy
 
 ```bash
-# firmware (depth-3 4-pill BoardEngine) — writes fpga/copro/copro_rom.hex, validates in py65
-.venv/bin/python fpga/copro/build_copro_d3.py
+# SHIPPED firmware (depth-3 4-pill BoardEngine, CMD-6/7 DELTA engine) -> fpga/copro/copro_rom.hex
+#   md5 c87e60a1; validated cell-exact vs the base build by the Verilator co-sim gate:
+.venv/bin/python fpga/copro/dbg_build.py all 0   # writes copro_rom.hex (the ship firmware)
+./fpga/copro/run_gate.sh                          # co-sim: delta moves == base moves (cell-exact)
+# BASE reference only (py65-validates the search LOGIC vs decide_d3; NOT what ships):
+.venv/bin/python fpga/copro/build_copro_d3.py     # writes copro_rom.base.hex (py65 gate). See FIRMWARE.md.
 
 # auto-nav cartridge (level/speed via env)
 DRLEVEL=11 DRSPEED=1 .venv/bin/python patch_cartridge_copro.py   # -> drmario_copro.nes

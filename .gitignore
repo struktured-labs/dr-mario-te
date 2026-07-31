@@ -33,3 +33,4 @@ drmario_cart.nes
 *.mp4
 # agent scratch
 .letta/
+.venv
