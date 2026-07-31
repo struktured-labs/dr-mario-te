@@ -28,6 +28,11 @@ import nes_d3_golden as G3
 EMPTY = 0xFF
 STUB = 0xBF80            # MiSTer mapper hardcodes the copro reset to $BF80 (in-ROM)
 DONE = 0x61FF
+# TUCK descriptor, read by the driver's executor as W_TCOL/W_TROW (cart $5087/$5088).
+# The DESTINATION column is the ordinary best_col -- the executor steers to TUCK_COL while
+# the capsule is high and switches to best_col once $0386 reaches TUCK_ROW. So a tuck costs
+# two extra mailbox bytes, not a second placement descriptor.
+TUCK_COL, TUCK_ROW = 0x6139, 0x613A
 SQ_ROM, PILL_ROM = 0xB000, 0xB030
 MAX_STEPS = 3_000_000_000
 
@@ -57,6 +62,13 @@ def build_image(board, cA, cB, nA, nB):
     stub.label("cp2")
     stub.ins16("LDA_absX", PILL_ROM); stub.ins16("STA_absX", PILLA)
     stub.ins("DEX"); stub.br("BPL", "cp2")
+    # TUCK descriptor defaults, written BEFORE the search so the mailbox is never garbage.
+    # CoproDrMario now maps cart $5087/$5088 -> $6139/$613A; before that they aliased onto
+    # scratch, so nothing had to initialise them. Now they are real copro RAM, and an
+    # uninitialised pair would make a DRTUCK=1 driver steer to a random column. 0xFF = "no
+    # tuck this pill", which is exactly what the driver's executor tests for first.
+    stub.ins("LDA_imm", 0xFF)
+    stub.ins16("STA_abs", TUCK_COL); stub.ins16("STA_abs", TUCK_ROW)
     stub.jsr(search_ep)
     stub.ins("LDA_zp", D_BC); stub.ins16("STA_abs", S_BEST_C)
     stub.ins("LDA_zp", D_BO); stub.ins16("STA_abs", S_BEST_O)
