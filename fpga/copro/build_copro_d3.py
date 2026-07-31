@@ -28,6 +28,13 @@ import nes_d3_golden as G3
 EMPTY = 0xFF
 STUB = 0xBF80            # MiSTer mapper hardcodes the copro reset to $BF80 (in-ROM)
 DONE = 0x61FF
+# DRCOPRO_TUCK=1 emits the 6502 tuck enumerator (tuck_scan.py) and calls it after the
+# search, so the copro publishes a real tuck descriptor instead of a constant "none".
+# Default OFF keeps copro_rom.hex byte-identical to the deployed firmware.
+# Measured value, executor-restricted, real NES stream, L11 n=232 paired:
+#   -5.20 pills, 95%% CI [-8.92, -1.47], clear 97.5 -> 98.8%% (dr-mario-tuck-executor-gap).
+EMIT_TUCK = os.environ.get("DRCOPRO_TUCK", "0") == "1"
+TUCK_ROM = 0xA800          # free: search ends ~$88E1, SQ tables start $B000
 # TUCK descriptor, read by the driver's executor as W_TCOL/W_TROW (cart $5087/$5088).
 # The DESTINATION column is the ordinary best_col -- the executor steers to TUCK_COL while
 # the capsule is high and switches to best_col once $0386 reaches TUCK_ROW. So a tuck costs
@@ -55,6 +62,17 @@ def build_image(board, cA, cB, nA, nB):
     assert len(code) <= SQ_ROM - 0x8000, f"search overruns ROM tables ({len(code)}B)"
     search_ep = 0x8000 + labels["search"]
 
+    tuck_code = b""
+    if EMIT_TUCK:
+        from tuck_scan import emit_tuck_scan
+        ta = Asm6502(TUCK_ROM)
+        # first_occ lives inside the search image; call it by ABSOLUTE address.
+        emit_tuck_scan(ta, first_occ_label=0x8000 + labels["first_occ"], live=0x0500)
+        tuck_code = ta.assemble()
+        assert TUCK_ROM + len(tuck_code) <= SQ_ROM, "tuck_scan overruns the SQ tables"
+        assert 0x8000 + len(code) <= TUCK_ROM, "search overruns tuck_scan"
+
+
     stub = Asm6502(STUB)
     stub.ins("SEI"); stub.ins("CLD")
     stub.ins("LDX_imm", 0xFF); stub.ins("TXS")
@@ -70,6 +88,8 @@ def build_image(board, cA, cB, nA, nB):
     stub.ins("LDA_imm", 0xFF)
     stub.ins16("STA_abs", TUCK_COL); stub.ins16("STA_abs", TUCK_ROW)
     stub.jsr(search_ep)
+    if EMIT_TUCK:
+        stub.jsr(TUCK_ROM)                  # publish the tuck descriptor (self-initialising)
     stub.ins("LDA_zp", D_BC); stub.ins16("STA_abs", S_BEST_C)
     stub.ins("LDA_zp", D_BO); stub.ins16("STA_abs", S_BEST_O)
     stub.ins("LDA_imm", 1); stub.ins16("STA_abs", DONE)
@@ -79,6 +99,8 @@ def build_image(board, cA, cB, nA, nB):
 
     img = bytearray(0x10000)
     img[0x8000:0x8000 + len(code)] = code
+    if tuck_code:
+        img[TUCK_ROM:TUCK_ROM + len(tuck_code)] = tuck_code
     for i in range(17):
         img[SQ_ROM + i] = (i * i) & 0xFF
         img[SQ_ROM + 17 + i] = (i * i) >> 8

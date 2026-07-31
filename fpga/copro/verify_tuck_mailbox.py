@@ -110,3 +110,75 @@ if fails:
         print("  ✗", f)
     sys.exit(1)
 print("TUCK MAILBOX: PASS (distinct RTL mapping + firmware never leaves it garbage)")
+
+
+def check_firmware_publishes_tucks():
+    """END-TO-END with DRCOPRO_TUCK=1: the reset->DONE flow must publish the SAME
+    descriptor ref_tuck_scan() computes, on boards that actually have a tuck."""
+    import importlib, random
+    os.environ["DRCOPRO_TUCK"] = "1"
+    import build_copro_d3 as B
+    importlib.reload(B)
+    from py65_harness import Cpu
+    import test_search_d3 as D3
+    from tuck_scan import ref_tuck_scan, ROWS, COLS, EMPTY as TE
+
+    if not B.EMIT_TUCK:
+        fails.append("firmware: DRCOPRO_TUCK=1 did not enable the enumerator")
+        return
+
+    rng = random.Random(7)
+    def tucky():
+        b = [TE]*(ROWS*COLS)
+        for c in range(COLS):
+            h = rng.randint(0, ROWS)
+            for r in range(ROWS-h, ROWS):
+                if rng.random() < 0.6: b[r*COLS+c] = rng.randint(1,3)
+        for _ in range(rng.randint(1,5)):
+            c = rng.randrange(COLS); r = rng.randrange(1, ROWS)
+            b[r*COLS+c] = TE; b[(r-1)*COLS+c] = rng.randint(1,3)
+        return b
+
+    n = miss = withtuck = 0
+    for _ in range(12):
+        board = tucky()
+        img, _c, _s = B.build_image(board, 1, 2, 3, 1)
+        cpu = Cpu()
+        for a_, v in enumerate(img): cpu.mem[a_] = v
+        cpu.set_board(board)
+        D3.attach_engine_emu(cpu)
+        cpu.mem[B.S_CA], cpu.mem[B.S_CB] = 1, 2
+        cpu.mem[B.S_NA], cpu.mem[B.S_NB] = 3, 1
+        cpu.mem[B.DONE] = 0
+        cpu.mem[TUCK_COL] = 0x5A; cpu.mem[TUCK_ROW] = 0xA5
+        m = cpu.mpu; m.pc = B.STUB; m.sp = 0xFF
+        steps = 0
+        while steps < B.MAX_STEPS:
+            m.step(); steps += 1
+            if cpu.mem[B.DONE] == 1: break
+        got = (cpu.mem[TUCK_COL], cpu.mem[TUCK_ROW])
+        exp = ref_tuck_scan(board)
+        n += 1
+        if exp[0] != 0xFF: withtuck += 1
+        if got != exp:
+            miss += 1
+            if miss <= 2: print(f"  ✗ firmware published {got}, reference says {exp}")
+    print(f"  boards {n}, of which {withtuck} have a tuck; descriptor matches "
+          f"reference on {n-miss}/{n}")
+    if miss:
+        fails.append(f"firmware: published descriptor != reference on {miss}/{n} boards")
+    elif withtuck == 0:
+        fails.append("firmware: no test board had a tuck -- check is vacuous")
+    else:
+        print("  ✅ firmware publishes the reference descriptor end-to-end")
+
+
+print("=== FIRMWARE PUBLISHES REAL TUCKS (DRCOPRO_TUCK=1) ===")
+try:
+    check_firmware_publishes_tucks()
+except Exception as e:
+    fails.append(f"tuck-publish check errored: {type(e).__name__}: {e}")
+if fails:
+    for f in fails: print("  ✗", f)
+    sys.exit(1)
+print("\nTUCK MAILBOX + ENUMERATOR: PASS")
