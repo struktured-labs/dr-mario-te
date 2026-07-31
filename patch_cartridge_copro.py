@@ -868,18 +868,38 @@ def build_main(level=11, speed=1):
     a.label("dispatch")
     if STUDY and STUDYCOUNTS:
         # STUDY counter redraw (see DRSTUDYCOUNTS). Stack-free: ones stays in A, tens in X.
-        for (csrc, sa, sb, xa, xb, ytop, tag) in (
-                (0x0324, 12, 13, 0x6E, 0x76, 0xBF, "v1"),
-                (0x03A4, 14, 15, 0x83, 0x8B, 0xBF, "v2"),
-                (0x0316, 8, 9, 0x6D, 0x75, 0x2B, "l1"),
-                (0x0396, 10, 11, 0x84, 0x8C, 0x2B, "l2")):
-            a.ins16("LDA_abs", csrc); a.ins("LDX_imm", 0)
-            a.label(f"sc_{tag}")
-            a.ins("CMP_imm", 10); a.br("BCC", f"sc_{tag}_d")
-            a.ins("SBC_imm", 10); a.ins("INX"); a.jmp(f"sc_{tag}")
-            a.label(f"sc_{tag}_d")
-            a.ins16("STA_abs", 0x0200 + sb * 4 + 1)          # ones tile
-            a.ins("TXA"); a.ins16("STA_abs", 0x0200 + sa * 4 + 1)   # tens tile
+        # ★ THE TWO COUNTERS USE DIFFERENT ENCODINGS -- do not share a digit splitter.
+        # Proven from the BASE GAME's own draw/clamp code in drmario_v28cs.nes, which is the
+        # authority (it produces the number the player sees):
+        #   VIRUS $0324 is BCD  -- @0x446: LDA $0324 / AND #$F0 / LSR x4 / STA $2007, then
+        #                          AND #$0F for the ones. Nibble extraction, never a divide.
+        #   LEVEL $0316 is BINARY -- @0x1992: LDA $0316 / CMP #$15 / LDA #$14 / STA $0316
+        #                          clamps to 0x14 = 20 DECIMAL. A BCD clamp would be #$20.
+        # Splitting the BCD virus byte with a binary divide-by-10 renders 0x48 ("48" viruses
+        # at L11) as "72" -- the exact user-reported 48 -> 72. It gets worse with level:
+        # L15 (64) -> 100 and L20 (84) -> 132, which also overflows the 2-digit field.
+        for (csrc, sa, sb, xa, xb, ytop, tag, bcd) in (
+                (0x0324, 12, 13, 0x6E, 0x76, 0xBF, "v1", True),
+                (0x03A4, 14, 15, 0x83, 0x8B, 0xBF, "v2", True),
+                (0x0316, 8, 9, 0x6D, 0x75, 0x2B, "l1", False),
+                (0x0396, 10, 11, 0x84, 0x8C, 0x2B, "l2", False)):
+            if bcd:
+                # nibble extract: no loop, no backward branch -- which also retires the
+                # BCC-onto-JMP hazard entirely for these two counters.
+                a.ins16("LDA_abs", csrc); a.ins("AND_imm", 0x0F)
+                a.ins16("STA_abs", 0x0200 + sb * 4 + 1)              # ones tile
+                a.ins16("LDA_abs", csrc)
+                for _ in range(4):
+                    a.ins("LSR_A")                                   # high nibble -> tens
+                a.ins16("STA_abs", 0x0200 + sa * 4 + 1)              # tens tile
+            else:
+                a.ins16("LDA_abs", csrc); a.ins("LDX_imm", 0)
+                a.label(f"sc_{tag}")
+                a.ins("CMP_imm", 10); a.br("BCC", f"sc_{tag}_d")
+                a.ins("SBC_imm", 10); a.ins("INX"); a.jmp(f"sc_{tag}")
+                a.label(f"sc_{tag}_d")
+                a.ins16("STA_abs", 0x0200 + sb * 4 + 1)              # ones tile
+                a.ins("TXA"); a.ins16("STA_abs", 0x0200 + sa * 4 + 1)  # tens tile
             a.ins("LDA_imm", ytop)
             a.ins16("STA_abs", 0x0200 + sa * 4); a.ins16("STA_abs", 0x0200 + sb * 4)
             a.ins("LDA_imm", 1)
