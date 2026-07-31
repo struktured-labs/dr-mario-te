@@ -109,7 +109,13 @@ def cmd_build(a):
         "emitter": {"file": "patch_cartridge_copro.py", "md5": md5(EMITTER)},
         "git": {"commit": git("rev-parse", "HEAD"),
                 "branch": git("rev-parse", "--abbrev-ref", "HEAD"),
-                "dirty": bool(git("status", "--porcelain"))},
+                # Exclude our OWN output (manifests) from the dirty check. A manifest records
+                # /git/commit, so committing one changes the hash a rebuild would record -- the
+                # check can never be self-consistently clean, and every cart built after the
+                # first in a batch would false-alarm. What "reproducible" means here is that the
+                # SOURCE is committed, which is exactly what this now measures.
+                "dirty": bool(git("status", "--porcelain", "--",
+                                  ":(exclude)roms/manifests"))},
         "flags": flags,
         "determinism": "verified: two builds byte-identical",
     }
