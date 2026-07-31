@@ -6,7 +6,7 @@
   "determinism": "verified: two builds byte-identical",
   "emitter": {
     "file": "patch_cartridge_copro.py",
-    "md5": "33eaab8990fbd40f8a3dff3e1b8bcb77"
+    "md5": "e8a2f44f5b0fa363d5cb9027bc6d2e49"
   },
   "flags": {
     "DRHUMAN": "1",
@@ -18,11 +18,11 @@
   },
   "git": {
     "branch": "driver-nav",
-    "commit": "dd4a2f1e7bb45acb5ad9769bc6141a6ba39cdfa8",
+    "commit": "4eaf9928531ebaf80e6e861e25d3fa9d0d7767e5",
     "dirty": false
   },
   "output": {
-    "md5": "fe3b3552843f537dd13accd62d415a34",
+    "md5": "1eba01ebca48f2fdf6ff0b65d1be1b75",
     "name": "pocket_human_studycounts.nes",
     "size": 98320
   },
