@@ -677,6 +677,16 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", PEND1); a.ins16("STA_abs", PEND2)
         a.ins16("STA_abs", DELAY1); a.ins16("STA_abs", DELAY2)
         a.ins16("STA_abs", LASTY1); a.ins16("STA_abs", LASTY2)
+        if COLDINIT:
+            # SOFT-RELAUNCH stall (P2.2 mechanism): PRG-RAM persists across a core relaunch, so a
+            # stale ARMED2=1 makes handle() wait on a copro that is not searching -- the FIRST pill
+            # pins until the STALE watchdog trips (minutes). Clear the search state per match too;
+            # a genuinely stale in-flight search is torn down safely (the next GO resets the copro).
+            a.ins16("STA_abs", ARMED2); a.ins16("STA_abs", WDOG2); a.ins16("STA_abs", WDOGH2)
+            a.ins16("STA_abs", WRETRY2)
+            if not HUMAN_P1:
+                a.ins16("STA_abs", ARMED); a.ins16("STA_abs", WDOG); a.ins16("STA_abs", WDOGH1)
+                a.ins16("STA_abs", WRETRY)
         a.label("ga_cold_ok")
     if USE_SEEDS:
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_on")  # first play frame of this match:
