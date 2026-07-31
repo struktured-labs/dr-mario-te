@@ -1,0 +1,30 @@
+{
+  "base_rom": {
+    "md5": "7d307c3051ebc0f8a10e259e3c270acb",
+    "path": "drmario_v28cs.nes"
+  },
+  "determinism": "verified: two builds byte-identical",
+  "emitter": {
+    "file": "patch_cartridge_copro.py",
+    "md5": "33eaab8990fbd40f8a3dff3e1b8bcb77"
+  },
+  "flags": {
+    "DRHUMAN": "1",
+    "DRNAVDWELL": "0",
+    "DRNOFREEZE": "1",
+    "DRPOCKET": "1",
+    "DRRECOMMIT_NOFREEZE": "1",
+    "DRSTUDYCOUNTS": "1"
+  },
+  "git": {
+    "branch": "driver-nav",
+    "commit": "dd4a2f1e7bb45acb5ad9769bc6141a6ba39cdfa8",
+    "dirty": false
+  },
+  "output": {
+    "md5": "fe3b3552843f537dd13accd62d415a34",
+    "name": "pocket_human_studycounts.nes",
+    "size": 98320
+  },
+  "tag": "pocket-human-studycounts"
+}
