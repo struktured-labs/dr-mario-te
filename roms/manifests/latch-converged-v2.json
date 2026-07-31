@@ -16,8 +16,8 @@
   },
   "git": {
     "branch": "driver-nav",
-    "commit": "be9f78a8cca19690d813f6d33f50ace897283ed1",
-    "dirty": true
+    "commit": "5300787cd2f5bf44bf2b24b384e6346467b35a73",
+    "dirty": false
   },
   "output": {
     "md5": "95a15d483c40d3ce5f18fb6e26239192",
