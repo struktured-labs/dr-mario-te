@@ -251,8 +251,14 @@ NAV_HOLD = NAV_V4 and (_os.environ.get("DRNAV_HOLD", "1") != "0")
 # title logo is never seen). PURE frame-count gate placed IN FRONT of the nav VS-CPU write + stability gate
 # (both byte-INTACT downstream) -- does NOT touch the silicon-validated $51/mode/$04 stability logic. The $51
 # demo-hold above keeps running each dwell hook so the attract demo never trips. Counts real frames via the
-# game's frameCounter $43 (hook-rate-independent), saturates at DRNAVDWELL_F (no wrap), resets per title-visit
-# (cold-init + at the START injection). Gated on NAV_V4 so the DRNAVFIX=0 byte-goldens are unaffected.
+# game's frameCounter $43 (hook-rate-independent), saturates at DRNAVDWELL_F (no wrap), and re-arms PER BOOT
+# /RESET (cold-init + the mode-8 intro block, which fires at every power-on). It deliberately does NOT re-arm
+# at the START injection: that ran on the first injecting hook, so the next hook of the same press window
+# re-entered the dwell hold and RTSed before inject(), narrowing the press to ONE hook -- and the game ANDs
+# TWO raw passes of $F5, so a 1-hook press never registers and the title re-dwelled forever (the DRNAVDWELL
+# silicon hang). GENERAL RULE: any early-RTS between the window check and inject() silently narrows the press
+# below the two-pass AND threshold; injection must span the whole 4-hook window.
+# Gated on NAV_V4 so the DRNAVFIX=0 byte-goldens are unaffected.
 # DRNAVDWELL=0 reverts (byte-identical nav). py65: nav still lands VS-CPU, just ~DRNAVDWELL_F frames later.
 NAVDWELL = NAV_V4 and (_os.environ.get("DRNAVDWELL", "1") != "0")
 DWELL_FRAMES = int(_os.environ.get("DRNAVDWELL_F", "180"))   # ~3 s at 60 fps
@@ -675,6 +681,8 @@ def build_main(level=11, speed=1):
     a.ins16("STA_abs", VSEEN1); a.ins16("STA_abs", VSEEN2)
     if NAVFIX:
         a.ins16("STA_abs", NAV_STABLE)                      # A==0: fresh confirm count each boot
+    if NAVDWELL:
+        a.ins16("STA_abs", DWELL_CNT)                       # A==0: fresh boot -> re-arm the title dwell
     if NAVFIX and not NAV_V4:
         # v3 ONLY: force the 1P baseline here. Silicon showed mode 8 RE-ENTERS during the title, so this
         # re-fires and fights the toggles (the 5/5-stuck regression). v4 needs no baseline -- it writes
@@ -811,8 +819,10 @@ def build_main(level=11, speed=1):
         # human IS P1 and navigates for themselves -- injecting here fights them for control
         # (measured 7/40 hooks). Leave an_st_go as a bare RTS so the nav path is inert.
         inject(B_START)
-    if NAVDWELL:
-        a.ins("LDA_imm", 0); a.ins16("STA_abs", DWELL_CNT)   # START fired -> re-arm the dwell for the next title
+    # NOTE: do NOT re-arm DWELL_CNT here. This runs on the FIRST hook that injects START, so the
+    # next hook of the SAME press window re-enters the dwell hold and RTSes before inject() --
+    # the press lasts one hook. The game ANDs TWO raw passes of $F5, so a 1-hook press can never
+    # register and the title re-dwells forever. Re-arm lives in the mode-8 intro block instead.
     a.ins("RTS")
 
     # ================= play-mode CPU-vs-CPU driver (time-shared FPGA) =================
