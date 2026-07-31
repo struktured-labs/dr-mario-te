@@ -1,0 +1,26 @@
+{
+  "base_rom": {
+    "md5": "7d307c3051ebc0f8a10e259e3c270acb",
+    "path": "drmario_v28cs.nes"
+  },
+  "determinism": "verified: two builds byte-identical",
+  "emitter": {
+    "file": "patch_cartridge_copro.py",
+    "md5": "e8965e20263f25b318dd81322947439d"
+  },
+  "flags": {
+    "DRCOLDINIT": "1",
+    "DRNOFREEZE": "1"
+  },
+  "git": {
+    "branch": "driver-nav",
+    "commit": "df5b985bb9ad7dd02c1b2ce6ba8dfc1b2acb2dda",
+    "dirty": true
+  },
+  "output": {
+    "md5": "694f13c46fb6b3e500f4305f662dd1c4",
+    "name": "navdwell_branding_test.nes",
+    "size": 98320
+  },
+  "tag": "navdwell-branding-test"
+}
