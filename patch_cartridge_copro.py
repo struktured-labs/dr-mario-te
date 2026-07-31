@@ -203,6 +203,19 @@ COLGATE = ROTFIX and (_os.environ.get("DRCOLGATE", "1") != "0")
 # converged orient is most likely to arrive after the latch. Opt-in keeps every existing
 # cart byte-identical; set this only for play carts. RECOMMIT self-gates (no-op unless DONE
 # lands above CROSS_LOWY), so on a slow copro it costs nothing.
+# DRPENDBOUND=1 (P0.2 fix, default OFF): bound the freeze_pending gravity pin to the settle
+# window (PEND && DELAY!=0). Unbounded, a lock-while-armed pill latches PEND2 and pins the next
+# capsule motionless until the STALE search DONEs or the watchdog fires (~minutes) -- the
+# leading mechanism for the open MiSTer opening-stall (#56). stagnate() skips PEND/ARMED so the
+# STUCK_LIM rescue can never fire during the pin.
+PENDBOUND = _os.environ.get("DRPENDBOUND", "0") == "1"
+# DRCOLDINIT=1 (P0.3 fix, default OFF): (a) cold-state init on ALL classes (the "anytime carts
+# never pin" justification for the NO_FREEZE gate is wrong -- freeze_pending pins P2 with no
+# class guard); (b) re-arm the init per MATCH (clear MATCH_ACTIVE on every menu hook, so the
+# first play frame of every rematch re-runs it); (c) LASTY1/2 in the power-on init. Without
+# this the strict Y>LASTY2 edge is suppressed after a topout (LASTY2 stuck at spawn row) and
+# the first pill of every rematch gets NO search: it hard-drops at the PREVIOUS match's target.
+COLDINIT = _os.environ.get("DRCOLDINIT", "0") == "1"
 RECOMMIT = (MATURE
             and (not NO_FREEZE or _os.environ.get("DRRECOMMIT_NOFREEZE", "0") == "1")
             and (_os.environ.get("DRRECOMMIT", "1") != "0"))
@@ -562,6 +575,10 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", NAV_STABLE); a.ins16("STA_abs", NAV_1P)   # A==0: nav stability + 1P diag latch
     if NAVDWELL:
         a.ins16("STA_abs", DWELL_CNT); a.ins16("STA_abs", DWELL_LAST)   # A==0: title-dwell fresh at power-on
+    if COLDINIT:
+        a.ins16("STA_abs", LASTY1); a.ins16("STA_abs", LASTY2)   # A==0: no suppressed first edge from garbage
+        a.ins16("STA_abs", PEND1); a.ins16("STA_abs", PEND2)
+        a.ins16("STA_abs", DELAY1); a.ins16("STA_abs", DELAY2)
     a.ins("LDA_imm", 3)                                     # sane targets pre-first-publish
     a.ins16("STA_abs", TGT_C1); a.ins16("STA_abs", TGT_O1)
     a.ins16("STA_abs", TGT_C2); a.ins16("STA_abs", TGT_O2)
@@ -648,7 +665,7 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_slam_ok")
         a.ins("LDA_imm", 0); a.ins16("STA_abs", SLAM_ARM)
         a.label("ga_slam_ok")
-    if not NO_FREEZE:
+    if COLDINIT or not NO_FREEZE:
         # COLD-STATE INIT (freeze carts only): PEND1/2, DELAY1/2, LASTY1/2 are NOT in the power-on init
         # (boot garbage). On a freeze cart, garbage PEND2 makes freeze_pending pin GRAV_P2 on the first
         # frames and garbage LASTY2 mis-fires the pill-lock edge. Clear them on the first play frame of a
@@ -691,6 +708,10 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", 0); a.ins("STA_zp", 0x04)          # $04 = 0 (VS flag clear -> coherent 1P)
     a.ins("RTS")                                            # intro/init: hands off otherwise
     a.label("menus")
+    if COLDINIT:
+        # left play -> the next match must re-run the cold-state init (rematch after topout
+        # keeps LASTY2 at the spawn row, suppressing the first pill's search edge)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", MATCH_ACTIVE)
     a.jsr("autonav")
     a.ins("LDA_zp", 0x04); a.br("BEQ", "m_done")
     a.ins("LDA_zp", 0xF5); a.ins("STA_zp", 0xF6)            # VS: mirror P1->P2 (level cursor)
@@ -983,9 +1004,13 @@ def build_main(level=11, speed=1):
         #  boot garbage — nonzero garbage pinned P1's gravity forever = capsule stuck at top,
         #  observed on Pocket hardware 2026-07-18.)
         a.ins16("LDA_abs", PEND1); a.br("BEQ", "fp_p2")
+        if PENDBOUND:
+            a.ins16("LDA_abs", DELAY1); a.br("BEQ", "fp_p2")   # settle window closed -> no pin
         a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)
     a.label("fp_p2")
     a.ins16("LDA_abs", PEND2); a.br("BEQ", "fp_done")
+    if PENDBOUND:
+        a.ins16("LDA_abs", DELAY2); a.br("BEQ", "fp_done")     # settle window closed -> no pin
     a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
     a.label("fp_done")
     a.ins("RTS")
