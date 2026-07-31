@@ -302,6 +302,16 @@ K_OPEN     = int(_os.environ.get("DRSLAM_KOPEN",  "255"))
 K_END      = int(_os.environ.get("DRSLAM_KEND",   "255"))
 K_CROSS    = int(_os.environ.get("DRSLAM_KCROSS", "8"))
 VC_ENDGAME = int(_os.environ.get("DRSLAM_VCEND",  "10"))
+# ★ VCOUNT_P1/P2 ($0324/$03A4) are BCD, not binary (proven from the game's own draw code at
+# file offset 0x446: AND #$F0 / LSR x4 / AND #$0F, and from an empirical probe at L20 where
+# an 84-virus board reads $84, not $54). The gate below is a plain binary CMP, so it is only
+# correct while the threshold is <= 10: counts 0-9 have identical BCD and binary bytes, and
+# BCD 10 is $10 = 16 which still compares >= any threshold <= 10. At 12, BCD 11 ($11 = 17)
+# would compare ABOVE the threshold and silently classify the endgame as midgame.
+assert VC_ENDGAME <= 10, (
+    f"DRSLAM_VCEND={VC_ENDGAME} is unsafe: the virus counters are BCD and this gate is a "
+    "binary CMP, so thresholds above 10 misclassify counts 11-15. Either keep it <= 10 or "
+    "convert the gate to a BCD-aware comparison.")
 CROSS_LOWY = int(_os.environ.get("DRSLAM_LOWY",   "8"))
 VCOUNT_P1, VCOUNT_P2 = 0x0324, 0x03A4   # remaining virus counts (0 => that player cleared -> STAGE CLEAR)
 W2_BASE = 0x5200
