@@ -28,7 +28,16 @@ from fb import FB, COLS
 import destroy as D
 import tuck_enum as TE
 _C={}
-def _init(level,tuck,nes,P): D._init("winner",level,300,4,600,28,8,6); _C.update(level=level,tuck=tuck,nes=nes,P=P)
+def _init(level,tuck,nes,P):
+    import os as _o
+    D._init("winner",level,300,4,600,28,8,6)
+    # DRTUCK_GATE = minimum virus_count for the override to fire (0 = never gated, the
+    # default, byte-identical to every run before this flag existed). Set 8 to suppress
+    # tucks in the ENDGAME: paired NES runs show tucks help open+mid at BOTH L11 and L20,
+    # but the endgame contribution FLIPS sign with level (L11 38.0->34.7 pills, L20
+    # 39.9->43.3). Virus counts per regime are identical in both, so that is a real
+    # endgame regression, not a composition shift.
+    _C.update(level=level,tuck=tuck,nes=nes,P=P,gate=int(_o.environ.get("DRTUCK_GATE","0")))
 
 def score_placement(fb, cells, ca, cb):
     """Apply a placement (cells in place_at order, colours ca/cb), resolve, score."""
@@ -57,7 +66,7 @@ def play(seed):
         if a is None: res="topout"; break
         vc=env.board.virus_count()
         tuck_play=None
-        if _C["tuck"]:
+        if _C["tuck"] and vc > _C.get("gate", 0):
             fb=FB.from_board(env.board); pa,pb=env.cur.a,env.cur.b
             base=D.child(fb,int(a)//COLS,int(a)%COLS,pa,pb)
             if base[0] is not None:
