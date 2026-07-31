@@ -216,6 +216,14 @@ PENDBOUND = _os.environ.get("DRPENDBOUND", "0") == "1"
 # this the strict Y>LASTY2 edge is suppressed after a topout (LASTY2 stuck at spawn row) and
 # the first pill of every rematch gets NO search: it hard-drops at the PREVIOUS match's target.
 COLDINIT = _os.environ.get("DRCOLDINIT", "0") == "1"
+# DRSTUDYCOUNTS=1 (task #7 copro half, default OFF): the base pause path blanks shadow-OAM
+# slots 8-15 (VIRUS counts 12-15, LEVEL digits 8-11); the STUDY part1 redraws text+preview but
+# not the counters, so on STUDY carts the paused board shows an EMPTY virus box (user's Pocket
+# photo). The driver hook runs every frame incl. pause frames ($46 stays 4 in the pause loop),
+# so rebuild the 8 sprites from $0324/$03A4/$0316/$0396 every play hook: idempotent vs the
+# game's own draw during play, and re-fills after the pause blank. Values/layout measured
+# (study_viruscount_probe.lua): tile IS the digit, Y=$BF/$2B, X=6E/76/83/8B + 6D/75/84/8C.
+STUDYCOUNTS = _os.environ.get("DRSTUDYCOUNTS", "0") == "1"
 RECOMMIT = (MATURE
             and (not NO_FREEZE or _os.environ.get("DRRECOMMIT_NOFREEZE", "0") == "1")
             and (_os.environ.get("DRRECOMMIT", "1") != "0"))
@@ -858,6 +866,26 @@ def build_main(level=11, speed=1):
 
     # ================= play-mode CPU-vs-CPU driver (time-shared FPGA) =================
     a.label("dispatch")
+    if STUDY and STUDYCOUNTS:
+        # STUDY counter redraw (see DRSTUDYCOUNTS). Stack-free: ones stays in A, tens in X.
+        for (csrc, sa, sb, xa, xb, ytop, tag) in (
+                (0x0324, 12, 13, 0x6E, 0x76, 0xBF, "v1"),
+                (0x03A4, 14, 15, 0x83, 0x8B, 0xBF, "v2"),
+                (0x0316, 8, 9, 0x6D, 0x75, 0x2B, "l1"),
+                (0x0396, 10, 11, 0x84, 0x8C, 0x2B, "l2")):
+            a.ins16("LDA_abs", csrc); a.ins("LDX_imm", 0)
+            a.label(f"sc_{tag}")
+            a.ins("CMP_imm", 10); a.br("BCC", f"sc_{tag}_d")
+            a.ins("SBC_imm", 10); a.ins("INX"); a.jmp(f"sc_{tag}")
+            a.label(f"sc_{tag}_d")
+            a.ins16("STA_abs", 0x0200 + sb * 4 + 1)          # ones tile
+            a.ins("TXA"); a.ins16("STA_abs", 0x0200 + sa * 4 + 1)   # tens tile
+            a.ins("LDA_imm", ytop)
+            a.ins16("STA_abs", 0x0200 + sa * 4); a.ins16("STA_abs", 0x0200 + sb * 4)
+            a.ins("LDA_imm", 1)
+            a.ins16("STA_abs", 0x0200 + sa * 4 + 2); a.ins16("STA_abs", 0x0200 + sb * 4 + 2)
+            a.ins("LDA_imm", xa); a.ins16("STA_abs", 0x0200 + sa * 4 + 3)
+            a.ins("LDA_imm", xb); a.ins16("STA_abs", 0x0200 + sb * 4 + 3)
     # ---- pill-lock edge detect (both players) ----
     a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", LASTY1)
     a.br("BCC", "no_p1_new"); a.br("BEQ", "no_p1_new")
