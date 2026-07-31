@@ -33,3 +33,6 @@ drmario_cart.nes
 *.mp4
 # agent scratch
 .letta/
+
+# scratch manifests (leading underscore) — not shipped builds
+roms/manifests/_*.json
