@@ -1,0 +1,28 @@
+{
+  "base_rom": {
+    "md5": "7d307c3051ebc0f8a10e259e3c270acb",
+    "path": "drmario_v28cs.nes"
+  },
+  "determinism": "verified: two builds byte-identical",
+  "emitter": {
+    "file": "patch_cartridge_copro.py",
+    "md5": "447404b2b7687924cffbeac6558e1858"
+  },
+  "flags": {
+    "DRHUMAN": "1",
+    "DRNAVDWELL": "0",
+    "DRNOFREEZE": "1",
+    "DRPOCKET": "1"
+  },
+  "git": {
+    "branch": "driver-nav",
+    "commit": "9e47618ca84f37e8830710c3ae25ff4265fceeb5",
+    "dirty": false
+  },
+  "output": {
+    "md5": "b9956bddae63fac84ab8c218585f2bdf",
+    "name": "verify_ctl.nes",
+    "size": 98320
+  },
+  "tag": "_verify_ctl"
+}
