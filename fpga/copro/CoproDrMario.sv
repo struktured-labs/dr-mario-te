@@ -177,6 +177,13 @@ function [11:0] xlate(input [8:0] a);
 				7'h04: xlate = 12'h8FF;    // $61FF DONE
 				7'h05: xlate = 12'h834;    // $6134 best_col
 				7'h06: xlate = 12'h835;    // $6135 best_orient
+				// TUCK descriptor (cart $5087/$5088 = driver's W_TCOL/W_TROW). Without these
+				// two cases BOTH offsets fell through to `default` and aliased onto the SAME
+				// scratch cell $68FE, so the driver's tuck executor -- which was otherwise
+				// complete -- read one garbage byte for both fields and could never have
+				// worked. $6139/$613A are free ($6138 CAND_HI and $613B are taken).
+				7'h07: xlate = 12'h839;    // $6139 tuck approach column (0xFF = no tuck)
+				7'h08: xlate = 12'h83A;    // $613A tuck trigger row
 				default: xlate = 12'h8FE;  // scratch
 			endcase
 		else                     xlate = 12'h8FE;
