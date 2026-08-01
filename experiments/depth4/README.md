@@ -97,6 +97,72 @@ averaged tree, at one ply, with chance nodes both above and below it, whereas op
 the whole search. So the operative distinction is not beam-vs-no-beam but **whether chance nodes
 survive between the root and the leaf.**
 
+## ★ Phase 3: the oracle verdict — d4's edge is SEQUENTIAL, not per-move
+
+All 1809 disagreements adjudicated deterministically: from each, both actions played forward
+on the identical true capsule stream with **d3 steering after the branch** (deliberate — the
+oracle exists to mine leaf terms for the shipped brain, so "was d4's move better *for a d3
+player*" is the actionable question; a d4-consistent roll-forward answers one we cannot act
+on, at 20x). Zero rollout variance: the only difference between branches is the one move.
+
+**Replay gates CLEAN** — 1809/1809 rows reached, zero mismatches on board colors, virus mask,
+served capsules, stream cursor, and d3's own recorded action.
+
+| metric | result |
+|---|---|
+| paired pills, both cleared (n=1654) | **+0.503** CI95 [−2.949, +3.807] — spans zero |
+| censored delta | **−3.96** CI95 [−12.45, +3.65] — spans zero |
+| win share among decisive | 708/1347 = **52.6%** |
+| regime concentration | **none**; endgame is the *most positive* (+0.890) |
+
+### ★★ The apparent surviving signal is a CLUSTERING ARTEFACT
+
+Among rows where exactly one branch cleared, d4 won **61 to 26** (70.1%), and a naive
+two-sided binomial returns **p = 0.00022**. That treats 87 rows as 87 independent trials.
+They are not: rows cluster by **seed**, and one doomed game emits many disagreement rows that
+each avert **the same** topout.
+
+```
+d4-only rescues: FOUR seeds      -- 4(18)  9(16)  63(11)  109(16)   = 61
+d3-only losses:  FOURTEEN seeds  -- 8(3) 33(2) 45 50 64(2) 72 73 86
+                                    89 93 96(2) 104 105 108(8)      = 26
+```
+
+**Those four seeds are exactly the A/B's four discordant seeds.** No other seed produced a
+rescue. So the 61 are 61 views of the *same four games the A/B already counted* — a re-derivation,
+not independent evidence.
+
+Correct analysis, with the **game** as the unit:
+
+| | |
+|---|---|
+| net rescues per game | **+0.294** CI95 [−0.176, +0.866] — spans zero |
+| seeds net>0 / net<0 / net==0 | **4 / 14 / 101** — more seeds favour d3 |
+| Wilcoxon signed-rank | **p = 0.389** |
+
+Same error class as the completion-order bias found earlier in this lane: a within-cluster
+effect wearing the costume of an independent-sample effect. `rescue_cluster.py` prints the
+invalid and valid computations side by side.
+
+### What follows
+
+No single-move value is detectable on **any** metric. Because the A/B's censored −12.22 is an
+**independent existence proof** that d4's edge is real, the null cannot mean "no edge" — it
+means the edge is not in isolated placements. **It lives in multi-move steering**, so the
+mining target moves from "a leaf term capturing single-position judgment" to "what does d4 set
+up across moves". Harder quarry, still real.
+
+One genuine positive: within the four rescued games the rescue is **robust** — 18/16/11/16
+separate moves each independently avert the topout. Those games differ by persistent judgment,
+not one lucky placement. That is a fact about four games (consistent with the A/B's
+underpowered McNemar p=0.125), not a per-move effect.
+
+**Pre-registration scorecard** (registered before the data, scored after): mean delta −0.3 to
+−1.5 pills — **WRONG** (+0.503, sign opposite); win share 52–58% — **CORRECT** (52.6%, though
+inside a zero-spanning CI so the direction is unestablished); endgame strongest — **WRONG**
+(endgame is the most positive); measured value is a lower bound on d4's true edge — **HOLDS**,
+and it is what makes the null interpretable rather than fatal.
+
 ## The blocker is latency, and that is a different problem
 
 Measured in-game as **CPU time** (this box runs an FPGA compile and several agents; wall clock
@@ -166,6 +232,14 @@ importing from `tmp/`.**
 External dependency not vendored: the faithful sim (`drmario.faithful_env`), which lives in the
 `dr_mario_rl` worktree — same dependency as the other experiments here.
 
+⚠ **Corpus format note for whoever writes the next one: STORE `link`.** `disagree.py` records
+`color` and `is_virus` (what `board_flat` feeds the search) but not `link`. That is sufficient to
+*re-decide* a position and insufficient to *resume* one: the search ignores link, but gravity does
+not — a linked capsule half falls with its partner until the partner clears. A board restored
+without link looks identical to every inspector and has a different FUTURE, which is exactly what
+a roll-forward measures. `adjudicate.py` sidesteps it by replaying each seed from move 0, which
+costs a replay per seed and buys five verification gates per row. Store link, or accept the replay.
+
 ## ★ Method trap found (applies to every ProcessPool A/B in this repo)
 
 Results stream via `as_completed`, which returns **fastest-finishing games first**. A fast game is
@@ -184,8 +258,13 @@ result. **Never analyse an unfinished arm.**
 | `d4_ab.py` | paired A/B runner, both streams, per-seed JSONL |
 | `analyze.py` | paired pills + bootstrap CI, discordants + McNemar, censored pills, both memo conventions, per-regime ppv, latency |
 | `disagree.py` | disagreement rate by regime + orient/column/both split + the oracle corpus |
+| `cost_profile.py` | cost by virus count + branching factor + sampled dv_fallback + copro budget arithmetic |
+| `adjudicate.py` | phase-3 deterministic adjudication (replay + fork + d3 roll-forward, five gates) |
+| `rescue_cluster.py` | the clustering check that killed the 61-26 "signal" — invalid and valid computations side by side |
 | `results/d4main_k3-6_p4-4_perseed.jsonl` | **the evidence** — 480 games, one row each |
-| `results/d4main_summary.json` | derived summary (an assertion; the JSONL is the evidence) |
+| `results/disagree_nes_k3-6_corpus.jsonl` | **the oracle corpus** — 1809 anchored disagreements |
+| `results/adjudicate_rows.jsonl` | **the adjudication** — one verdict per disagreement |
+| `results/*_summary.json`, `cost_profile.json` | derived summaries (assertions; the JSONLs are the evidence) |
 
 Reproduce:
 
@@ -194,7 +273,32 @@ PY=/home/struktured/projects/dr_mario_rl/tmp/venv/bin/python   # only interprete
 $PY d4_kernel.py validate 300      # gates; must print GATE PASS
 $PY d4_ab.py --seeds 120 --workers 4 --streams nes,uniform --topk3 6 --pills4 4 --out d4main
 $PY analyze.py results/d4main_k3-6_p4-4_perseed.jsonl
+$PY disagree.py --seeds 120 --workers 4 --stream nes
+$PY cost_profile.py --per-bucket 60 --stream nes
+$PY adjudicate.py --workers 4 --out adjudicate     # ~23 min; gates must be 0
+$PY rescue_cluster.py results/adjudicate_rows.jsonl
 ```
 
 Phase 2 (beam-crater vs horizon-effect attribution) was **cancelled, not skipped**: it was an
-attribution for a loss, and there is no loss to attribute.
+attribution for a loss, and there is no loss to attribute. The endgame-gated A/B was likewise
+cancelled once the cost profile came back at 23.2x — see below.
+
+## Endgame-gated d4: DOES NOT FIT, by ~7x
+
+| bucket | n | mean vc | branch | d3 ms | d4 ms | ratio | dv_fb |
+|---|---|---|---|---|---|---|---|
+| open | 60 | 40.8 | 30.0 | 31.32 | 652.23 | 20.8x | 6.2% |
+| mid | 60 | 20.2 | 30.0 | 23.54 | 531.80 | 22.6x | 7.8% |
+| end | 60 | 4.2 | 30.0 | 24.53 | 568.76 | **23.2x** | 7.5% |
+
+The endgame is **not** cheaper — marginally worse than the 22.9x all-game figure. At 24f copro d3
+endgame DONE against an 80f budget that projects to **556f, 6.96x over**.
+
+★ **Why, and this generalises past depth-4:** search cost is driven by **legal placement count**,
+not virus count — and branching is **~30 in every regime**. The ceiling is 30 rather than 32
+because the two horizontal orientations at column 7 have no column 8 (verified on an empty board),
+and at L11 the stack is never tall enough to block anything further. **"The endgame is sparse" is
+true of VIRUSES and false of PLACEMENTS:** a nearly-cleared board is *low*, so almost nothing gets
+pruned. The emptiness that makes the endgame feel cheap is exactly what pins branching at the
+ceiling. **Any future "gate the expensive thing to the endgame" proposal — tucks, planner, depth —
+meets this fact first.**
