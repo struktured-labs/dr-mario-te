@@ -20,6 +20,12 @@ Commands
   rtl         level 2: numba _eval_rtl vs the actual RTL via Verilator co-sim
               (parses LeafEval.sv for its baked weights; leaf + node + optional
                CMD6/7 delta cross-check)
+              NOTE: its node oracle is COMPACT gravity. A link-aware engine will
+              fail PHASE2 NODE on clearing placements BY DESIGN -- that is the
+              lnk1 payload, not a defect. Use `linknode` for those.
+  linknode    level 2b: link-aware node co-sim -- colour, virus AND LINK planes
+              plus CHAIN depth, vs cascade_chain_x, on its own pinned corpus
+              (linkcorpus.py). Includes its own mutant selfcheck.
   repro       replay one dumped failure case with full term breakdown
 
 Verdict lines are machine-greppable:  GATE PASS ... / GATE FAIL ...
@@ -232,11 +238,10 @@ def gate_pairs(args):
         return 1
     path = os.path.join(HERE, "pairs_noclear.txt")
     recs = _load_pairs(path)
-    p = rtlparse.parse_leafeval(args.rtl)
-    suite = [("parsed_rtl", p["w"], p["fl"])]
-    for name in ("r47", "winner"):
-        w, fl = named_variant(name)
-        suite.append((name, w, fl))
+    # FULL level-1 variant suite (delta-eval's suggestion, 2026-07-30): the isolation
+    # vectors self-attribute a delta that miscounts ONE term -- exactly the failure
+    # mode a delta engine has and a full rescan doesn't. 3147 x 23 runs in ~1s.
+    suite = variant_suite(args.rtl)
     name = args.name or "candidate"
     print("pairs gate (delta-shaped): %d no-clear pairs x %d variants"
           % (len(recs), len(suite)))
@@ -551,12 +556,139 @@ def repro(args):
     return 0
 
 
+# ---------------------------------------------- level 2b: LINK-AWARE node co-sim
+LINKCASES = os.path.join(HERE, "linknode_cases.txt")
+LINK_BLESSING = os.path.join(RESULTS, "linknode_blessing.json")
+# token offsets into a record:
+#   128 parent | o4 col ca cb fix | legal cells vir chain imm sco win | 128 child
+_LINK_FIELDS = {"legal": 133, "cells": 134, "vir": 135, "chain": 136,
+                "imm": 137, "sco": 138, "win": 139}
+_LINK_REC = 268
+
+
+def _link_build(rtl_path, out_dir):
+    """Verilate the target .sv with the link-aware node testbench."""
+    rtl_dir = os.path.dirname(rtl_path)
+    srcs = [rtl_path]
+    if "dpram" in open(rtl_path).read():
+        for cand in (os.path.join(rtl_dir, "dpram.v"),
+                     os.path.join(rtl_dir, "..", "dpram.v"),
+                     os.path.join(QA_COPRO, "dpram.v")):
+            if os.path.exists(cand):
+                srcs.append(cand); break
+        else:
+            return None, "LeafEval instantiates dpram but no dpram.v found"
+    cmd = ["verilator", "--cc", "--exe", "--build", "-j", "2", "-O2", "-Wno-fatal",
+           "--top-module", "LeafEval", "--Mdir", out_dir, "-o", "VLinkNodeGate"] \
+          + srcs + [os.path.join(HERE, "tb_linknode_gate.cpp")]
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    if r.returncode != 0:
+        return None, (r.stdout[-2500:] + r.stderr[-2500:])
+    return os.path.join(out_dir, "VLinkNodeGate"), None
+
+
+def gate_linknode(args):
+    """RTL vs the LINK-AWARE reference: colour, virus AND link planes, plus chain depth.
+
+    The pinned compact corpus cannot do this job -- it stores no link nibbles (measured:
+    its parent high-nibble histogram is exactly {4, 13, 15}) -- so this level has its own
+    corpus, built from real self-play boards by linkcorpus.py, and its own blessing.
+    node_cases.txt is left alone deliberately: other lanes' blessings are tied to its md5.
+    """
+    if not os.path.exists(LINKCASES):
+        print("no pinned link corpus -- run: linkcorpus.py"); return 2
+    if "blink" not in open(args.rtl).read():
+        print("GATE FAIL linknode: %s has no link plane (`blink` absent) -- this level "
+              "only applies to the link-aware engine" % args.rtl)
+        return 1
+    os.makedirs(BUILD, exist_ok=True)
+    exe, err = _link_build(args.rtl, os.path.join(BUILD, "obj_linknode"))
+    if exe is None:
+        print(err); print("GATE FAIL linknode: verilator build failed"); return 1
+
+    toks = open(LINKCASES).read().split()
+    n = int(toks[0]); body = toks[1:]
+    os.makedirs(RESULTS, exist_ok=True)
+    # dose 0 is the identity arm (must reproduce lnk1/fixpoint-no-reward exactly); doses
+    # 180 and 360 are the measured ones. The tb refuses a dose run over a chain-free
+    # corpus, so a passing dose run cannot be vacuous.
+    for chw, label in ((0, "dose 0 (identity)"), (45, "dose 180"), (90, "dose 360")):
+        r = subprocess.run([exe, LINKCASES, str(chw)], capture_output=True, text=True,
+                           timeout=7200)
+        print("--- %s ---" % label)
+        print(r.stdout)
+        if r.stderr.strip():
+            print("stderr:", r.stderr[-1000:])
+        if r.returncode != 0:
+            print("GATE FAIL linknode: RTL != cascade_chain_x reference at %s" % label)
+            return 1
+
+    # SELFCHECK: a gate that cannot fail proves nothing. Corrupt one field at a time in a
+    # small slice and require the tb to notice EVERY one. `chain` and the LINK plane are
+    # the fields this level exists for, so they get explicit mutants.
+    import tempfile
+    slice_n = min(400, n)
+    rec0 = body[:slice_n * _LINK_REC]
+    tgt = None
+    for k in range(slice_n):                 # a legal, actually-clearing record
+        if rec0[k * _LINK_REC + 133] == "1" and int(rec0[k * _LINK_REC + 134]) > 0:
+            tgt = k; break
+    if tgt is None:
+        print("GATE FAIL linknode: no clearing record in the selfcheck slice"); return 1
+    base = tgt * _LINK_REC
+    muts = list(_LINK_FIELDS.items()) + [("child_colour", None), ("child_link", None)]
+    killed, missed = 0, []
+    for fname, off in muts:
+        rec = list(rec0)
+        if off is not None:
+            rec[base + off] = str(int(rec[base + off]) + 1)
+        elif fname == "child_colour":
+            for j in range(128):             # blank the first occupied child cell
+                if rec[base + 140 + j] != "ff":
+                    rec[base + 140 + j] = "ff"; break
+        else:                                # child_link: retag a linked half as an orphan
+            for j in range(128):
+                if rec[base + 140 + j][0] in "4567":
+                    rec[base + 140 + j] = "8" + rec[base + 140 + j][1]; break
+            else:
+                missed.append(fname + " (no linked child cell)"); continue
+        with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as tf:
+            tf.write("%d\n" % slice_n)
+            for k in range(slice_n):
+                tf.write(" ".join(rec[k * _LINK_REC:(k + 1) * _LINK_REC]) + "\n")
+            mpath = tf.name
+        mr = subprocess.run([exe, mpath], capture_output=True, text=True, timeout=3600)
+        os.unlink(mpath)
+        if mr.returncode != 0:
+            killed += 1
+        else:
+            missed.append(fname)
+    print("linknode selfcheck: %d/%d mutants killed%s"
+          % (killed, len(muts), "" if not missed else "   SURVIVORS: " + ", ".join(missed)))
+    if missed:
+        print("GATE FAIL linknode: mutants survived -- the comparison is not checking "
+              "every field it claims to")
+        return 1
+
+    json.dump(dict(rtl_path=args.rtl, rtl_md5=file_md5(args.rtl),
+                   corpus_md5=file_md5(LINKCASES), n_cases=n,
+                   cascade_chain_x_md5=file_md5(os.path.join(COMBO_TERM,
+                                                             "cascade_chain_x.py")),
+                   cascade_link_x_md5=file_md5(os.path.join(COMBO_TERM,
+                                                            "cascade_link_x.py")),
+                   when=time.strftime("%Y-%m-%d %H:%M:%S")),
+              open(LINK_BLESSING, "w"), indent=2)
+    print("GATE PASS linknode: LeafEval.sv (md5 %s) == cascade_chain_x on %d cases, "
+          "%d/%d mutants killed" % (file_md5(args.rtl)[:8], n, killed, len(muts)))
+    return 0
+
+
 # ---------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("mode", choices=["corpus", "selfcheck", "candidate", "pairs",
-                                     "rtl", "repro"])
+                                     "rtl", "linknode", "repro"])
     ap.add_argument("--rtl", default=RTL_DEFAULT, help="LeafEval.sv to gate against")
     ap.add_argument("--py", help="candidate python file.py:fn")
     ap.add_argument("--cmd", help="candidate subprocess command")
@@ -571,7 +703,8 @@ def main():
     if args.mode != "corpus" and not os.path.exists(CORPUS):
         print("no pinned corpus -- run: gate.py corpus"); return 2
     return {"corpus": build_all, "selfcheck": selfcheck, "candidate": gate_candidate,
-            "pairs": gate_pairs, "rtl": gate_rtl, "repro": repro}[args.mode](args)
+            "pairs": gate_pairs, "rtl": gate_rtl, "linknode": gate_linknode,
+            "repro": repro}[args.mode](args)
 
 
 if __name__ == "__main__":
