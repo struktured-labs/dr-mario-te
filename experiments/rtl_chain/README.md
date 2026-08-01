@@ -181,3 +181,25 @@ on the host.
 
 `/home/struktured/projects/dr_mario_rl/tmp/venv/bin/python` (numba + py65). The kernels are
 imported from `dr_mario_rl/tmp/combo_term`.
+
+## DONE latency: what the pipelining actually cost
+
+Measured end-to-end through the real mapper (`donelat/run_arms.sh`), 6 real boards, tucks on
+both sides so it is like-for-like against what is deployed:
+
+| arm | mean | worst | worst, in frames |
+|---|---|---|---|
+| deployed today (`751b6ce9`) | 29.02M clocks | 36.29M | **25.3** |
+| Combo Stomper 180 (`f4b6dfbf`) | 53.09M clocks | 67.13M | **46.9** |
+
+**1.83x, against a ~80-frame budget — 59% used at worst.** Passes, but it is worth being
+straight that this is far more than the +25% measured before timing closure. Three timing
+splits and the RAM's read-latency bubbles all land on the clearing path, and they add up:
+per-NODE worst went 4,353 → 11,507 cycles across the campaign. Timing margin was bought
+with latency, and the budget is where it was spent.
+
+⚠ The rig prints `@85.9MHz eff/2`. The `eff/2` is a STALE LABEL from when the copro sat on
+outclk_1 (42.95 MHz). It runs on `clk85` now — `CoproDrMario.clk_cpu` is wired to outclk_0
+with `RDY` tied high and no clock enable — so the seconds it prints are correct and the
+frame counts above are at the true rate. Worth knowing before someone halves them in their
+head: at 42.95 MHz the worst case would be ~94 frames and OVER budget.
