@@ -2,9 +2,12 @@
 # The three numbers that decide whether the link engine ships as-is, printed together
 # with their pass/fail so the call is mechanical rather than a judgement.
 #
-#   (a) copro-domain setup slack POSITIVE   -- emu|pll|...counter[0] is the copro clock.
-#                                              The pre-link baseline had just +0.118 ns,
-#                                              so this is the fragile one.
+#   (a) copro-domain setup slack >= +0.10 ns -- emu|pll|...counter[0] is the copro clock.
+#       NOT merely "positive". The pre-link baseline shipped at +0.118 and cliffed to
+#       -3.241 on the first real change; a picosecond-order hair is a seed lottery ticket,
+#       not margin, and tucks (#17) or any VS term would cash it negative immediately.
+#       The bar exists to refuse exactly that number, so it lives HERE -- a stale bar in
+#       the script that enforces the rule is the false-stamp class of bug.
 #   (b) pll_hdmi no worse than the baseline's -0.012 by more than noise. PRE-EXISTING and
 #                                              not ours, but placement pressure can move
 #                                              it, and then it becomes ours to explain.
@@ -19,6 +22,7 @@ STA=$FORK/output_files/NES.sta.summary
 CAPACITY=41910
 FLOOR=1500
 BASE_HDMI=-0.012
+SLACK_BAR=0.10       # ship bar, NOT zero -- see the note above
 
 for f in "$FIT" "$STA"; do
   [ -f "$f" ] || { echo "missing $f -- has the flow finished?" >&2; exit 65; }
@@ -37,8 +41,14 @@ chk() { if [ "$1" = 1 ]; then echo "PASS"; else echo "FAIL"; pass=0; fi; }
 echo "Fitter status : $status"
 printf "ALMs          : %s / %s  (%s free)   " "$used" "$CAPACITY" "$free"
 chk "$(awk -v f="$free" -v m="$FLOOR" 'BEGIN{print (f>=m)?1:0}')"
-printf "copro slack   : %s ns   " "${copro:-<none>}"
-chk "$(awk -v s="${copro:-0}" 'BEGIN{print (s>0)?1:0}')"
+printf "copro slack   : %s ns (bar +%s)   " "${copro:-<none>}" "$SLACK_BAR"
+chk "$(awk -v s="${copro:-0}" -v b="$SLACK_BAR" 'BEGIN{print (s>=b)?1:0}')"
+# closing timing at all is real progress and worth saying, but it is NOT the bar
+if [ -n "${copro:-}" ] \
+   && [ "$(awk -v s="$copro" 'BEGIN{print (s>0)?1:0}')" = 1 ] \
+   && [ "$(awk -v s="$copro" -v b="$SLACK_BAR" 'BEGIN{print (s<b)?1:0}')" = 1 ]; then
+  echo "                (timing CLOSES at $copro ns, but that is a hair, not margin)"
+fi
 printf "pll_hdmi      : %s ns (baseline %s)   " "${hdmi:-<none>}" "$BASE_HDMI"
 chk "$(awk -v s="${hdmi:-0}" -v b="$BASE_HDMI" 'BEGIN{print (s>=b-0.05)?1:0}')"
 echo
