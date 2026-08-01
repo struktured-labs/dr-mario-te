@@ -34,6 +34,9 @@ cost real hours and re-deriving them would cost the same again.
 | 5 | NES-pill eval retune | ❌ **HOLDOUT NEGATIVE** | tuning block was a seed artefact |
 | — | goal-metric h2h | ⚠ **INCONCLUSIVE** | 53.6% finishes-first (n=300), ≈chance |
 | — | MiSTer silicon A/B | ⚠ **BLOCKED** | autonav dead; known-good cart unrebuildable |
+| 5b | defence term gated on incoming garbage | ❌❌ **STANDING NEGATIVE — kills the whole family** | doubling `spawn`+`toprisk` moves the argmax **0 / 102** times in the target states |
+| 5b | argmax sensitivity under re-weighting | ✅ **SUCCESS** (instrument) | measures a term's real fire-rate ceiling before it is built |
+| 5c | VS garbage trigger (`cells>=7`) | ⚠ **HARNESS DEFECT** | 83% false positives *and* misses real doubles (off-by-2) |
 
 **Process failures worth naming too** (mine, all caught before they shipped):
 - ❌ characterised the latch defect from **synthetic** boards (8.3%) — real boards say 23.2%
@@ -233,6 +236,77 @@ defect measured on the real RTL, so it is independent of capsule modelling entir
 ★ **PATTERN, now three-for-three: fire rate predicts soundness.** 21.8 moves/game (refuted),
 2.8/game (refuted), 1.0/game (wash), **2.2/game (works)**. Any override that wants to
 second-guess the search on more than a few moves a game has been wrong every time.
+
+## 5b. ❌❌ STANDING NEGATIVE — the eval's SURVIVAL side cannot be steered (2026-07-31)
+
+★ **Kills the whole future family of "add a defence term when garbage is incoming".** Not
+one proposal — the family. Anything of that shape scales `spawn` and/or `toprisk`, and
+those two penalties **do not move the argmax**.
+
+Measured by re-running the *same* depth-3 search with the eval re-weighted and diffing the
+chosen move, over 9107 decisions of self-play VS (L11, real NES capsule stream, shipped
+`winner` brain both sides):
+
+| re-weighting | move differs, ALL decisions | move differs, garbage inbound |
+|---|---|---|
+| `spawn` 150→300, `toprisk` 90→180 | 29 / 9107 = **0.32%** | **0 / 102** |
+
+Zero, in exactly the states the term is designed for. Then the full scaling sweep (3026
+decisions, 279 of them with spawn-lane h≥12) shows this is not a matter of nudging harder:
+
+| scale | move differs (all) | move differs (danger, h≥12) |
+|---|---|---|
+| ×2 | 0.40% | 2.87% |
+| ×4 | 0.96% | 7.53% |
+| ×8 | 1.06% | 8.24% |
+| ×20 | **1.06%** | **8.24%** |
+| **0 — ablated entirely** | **1.19%** | **10.39%** |
+
+★ Two independent facts kill the family. **Up-scaling saturates at ×8** — ×20 is identical
+to ×8 down to the decision, so there is no "push harder" left to buy. And the **entire
+dynamic range of both penalties, from ablated to ×20, is 1.19% of decisions**. The depth-3
+search is already playing the survival move; these constants barely arbitrate the argmax.
+
+⚠ Read this precisely: low argmax authority is **not** "no value". 1.19% is ~1.8 moves a
+match, and those may be exactly the moves that avert a top-out. The claim is directional —
+you cannot buy *more* safety by scaling these up, whether or not they already earn their
+keep. Corollary: **we have no working headroom lever**; if the AI must play safer it cannot
+be asked to via these constants, and a garbage-gated version of them is dead before build.
+
+★ **INSTRUMENT (reusable, cheap): ARGMAX SENSITIVITY UNDER RE-WEIGHTING.** Before building
+any gated/conditional eval term, replay real decisions and count how often the proposed
+re-weighting actually *changes the chosen move*. State frequency is only an upper bound —
+this measures the real ceiling on the term's fire rate, costs one extra decider call per
+decision, and refutes dead ideas in minutes instead of a build. It is what turned this
+candidate around before a line of RTL was written.
+`dr_mario_rl/tmp/vs_aware/size2.py`, `saturation.py`.
+
+## 5c. ⚠ HARNESS DEFECT — the VS garbage trigger fires on the wrong events
+
+`tmp/champion/vs_env.py` detects an attack with `cells >= 7`, documented as a near-perfect
+proxy for a 2-simultaneous-line clear. It is wrong in **both directions at once**:
+
+- **OVER-fires.** `FaithfulBoard.resolve()` loops clear→gravity→clear and sums cells across
+  steps, so a *cascade of single-line clears* reaches the threshold. Audited every positive
+  over 12 matches: **83% are false**, and the dominant signature is `(1, 1)` — clear a line,
+  gravity, clear another. Sequential, not simultaneous; sends nothing.
+- **UNDER-fires (off-by-2, found by selfplay-opt).** Its `cells` is
+  `occupancy(before) − occupancy(after)`, but `env.step` places the pill (**+2 cells**)
+  before resolving. The delta is `cleared − 2`, so `>= 7` really demands **9** cleared
+  cells — while a genuine L-shaped double is 7. Real doubles land silently.
+
+Consequence: VS self-play has been running with a garbage channel keyed to the wrong
+events, so its top-out rate and any win-rate tuned against it are measurements of a
+different game. Line-accurate replacement counts **distinct maximal runs ≥ 4 per clear
+step**: `dr_mario_rl/tmp/vs_aware/attack.py`; audit `check_proxy2.py`.
+
+⚠ **PENDING ROM-RULE CONFIRMATION.** "Truth" above means *≥2 runs cleared in one step*,
+which is `MECHANICS_NES.md`'s wording — **not** a citation of the ROM's send routine, and
+that doc's own evidence does not support it: `probe_attack.lua`'s log shows `single` clears
+producing 14–34 changed P2 cells, the same range as `double`, with changes in columns 0 and
+4 that the same doc calls garbage-**immune**. That is P2 redraw, not garbage. If the ROM
+counts cascade-formed lines, `attack.py` under-fires, the old proxy was accidentally closer,
+and the inbound-garbage regime grows ~6x. Owned by task #12; freeze one shared trigger.
 
 ## 6. ✅ SUCCESS (tool) / ⚠ UNBUILT — tucks: availability confirmed, executor-limited
 
