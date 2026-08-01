@@ -221,13 +221,19 @@ class Snapshot:
     def verdict(self):
         """SEARCH-committed vs DRIVER-landed, for P2 (the copro side).
 
-        ★ Deliberately a RAW EQUALITY on (column, orient). TGT_O2 already holds the MAPPED
-        game orientation (patch_cartridge_copro.py: "LAST_COL2/LAST_ORI2 = last published
-        (column, MAPPED game-orient)"), so it is directly comparable to $03A5 without
-        knowing which values mean horizontal. I do NOT assert that mapping here: the copro
-        map {0xFF/0:3, 1:1, 2:0, 3:2} does not obviously line up with "0 = horizontal
-        spawn orient", and encoding my guess about it would let this agree with a wrong
-        answer. Geometry on the landed cells settles horizontal-vs-vertical when needed.
+        ★ COLUMN IS THE LOAD-BEARING SIGNAL; ORIENTATION IS REPORTED BUT NOT TRUSTED.
+        Column is unambiguous -- 0-7 on both sides. Orientation is NOT settled: the driver
+        comments call the published value "MAPPED game-orient" (so directly comparable to
+        $03A5), while the 2026-07-27 silicon fingerprint run concluded the opposite, that
+        "the mailbox TGT_O2 raw byte is copro-space and my V/H display map for it is WRONG
+        -- read the placed cells for true game-space orient". Two sources of record
+        disagree, and the copro map {0xFF/0:3, 1:1, 2:0, 3:2} does not obviously line up
+        with "0 = the horizontal spawn orient" either.
+
+        So the verdict does not hinge on an orientation equality. Resolving it needs
+        geometry: the two cells a pill leaves on the board show horizontal-vs-vertical
+        directly, and the ring gives consecutive frames to pair a live orient byte with the
+        shape it produced. Until then, an orientation mismatch is FLAGGED, never decisive.
         """
         m = self.mailbox()
         p2 = self.player(2)
@@ -243,16 +249,16 @@ class Snapshot:
         elif m['ARMED2'] == 0:
             out['state'] = 'IDLE'
             out['note'] = "driver not armed for this pill; nothing committed to compare."
-        elif tgt_c == p2['pill_x'] and tgt_o == p2['orient']:
+        elif tgt_c == p2['pill_x']:
             out['state'] = 'MATCH'
-            out['note'] = ("capsule is on the committed column AND orientation. If the "
-                           "outcome still looks wrong, the fault is VALUATION, not execution.")
-        else:
-            diffs = []
-            if tgt_c != p2['pill_x']:
-                diffs.append(f"column {p2['pill_x']} != committed {tgt_c}")
+            out['note'] = ("capsule is on the committed COLUMN. If the outcome still looks "
+                           "wrong, the fault is VALUATION, not execution.")
             if tgt_o != p2['orient']:
-                diffs.append(f"orient {p2['orient']} != committed {tgt_o}")
+                out['note'] += (f" (orient bytes differ: live {p2['orient']} vs published "
+                                f"{tgt_o} -- NOT decisive, the two spaces are unresolved; "
+                                f"LAST_ORI2={m['LAST_ORI2']}.)")
+        else:
+            diffs = [f"column {p2['pill_x']} != committed {tgt_c}"]
             # ★ HEIGHT DECIDES WHETHER DIVERGENCE MEANS ANYTHING, AND THE AXIS IS INVERTED
             # FROM THE OBVIOUS READING. $0386 counts UP FROM THE FLOOR (driver line 134),
             # so a LARGE Y is a capsule near the TOP -- freshly spawned, with the driver
