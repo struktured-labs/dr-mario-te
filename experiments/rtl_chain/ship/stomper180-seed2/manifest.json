@@ -14,10 +14,25 @@
   "copro_md5": "212118452fadc920e7f21dc3b5b8677e",
   "done_latency": {
     "budget_frames": 80,
-    "deployed_worst_frames": 25.3,
-    "note": "pipelining + RAM read-latency bubbles, all clearing-path",
-    "ratio": 1.83,
-    "stomper_worst_frames": 46.9
+    "clocks": {
+      "max": 81900000.0,
+      "mean": 49900000.0,
+      "median": 48300000.0,
+      "min": 26100000.0,
+      "p90": 59200000.0,
+      "p95": 63400000.0
+    },
+    "corpus": "69 real boards (hostdata_real), stomp180 arm, tucks both sides",
+    "mister_worst_frames": 57.2,
+    "mister_worst_frames_SUPERSEDED": 46.9,
+    "note": "46.9 was worst-of-6 and UNDERSTATED the tail by 22%. The 69-board corpus max is 81.9M clocks = 57.2 frames at 85.909 MHz. Quote 57.2.",
+    "pocket_projection": {
+      "boards_over": 1,
+      "budget_clocks": 72900000.0,
+      "of": 69,
+      "overrun": "~12% on the single board that exceeds",
+      "pct": 1.4
+    }
   },
   "firmware_flags": "DRCOPRO_TUCK=1 DRCOPRO_ARM=1 DRFIX=1 DRCHAIN=180",
   "firmware_md5": "f4b6dfbf76c9beb80d19b3659fb99d26",
