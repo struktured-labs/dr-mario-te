@@ -58,6 +58,44 @@ verdict for the whole core; a *delta* instrument, and ~10 minutes a run.
       + one shared read port                8,034     (-640)
       + two funnelled write ports           7,627     (-407)
 
+### The ladder
+
+Every row is a clean full-core fit. Both columns moved the whole way, which is the point:
+the area work and the timing work were the same work.
+
+| build | copro slack | ALMs (of 41,910) |
+|---|---|---|
+| pre-link baseline | +0.118 | 36,465 |
+| link plane, first cut | **−3.241** | 42,130 — *did not fit* |
+| + read/write split (timing) | −0.312 | 39,055 |
+| + third apply stage | −0.113 | 38,390 |
+| + gravity fall split | +0.001 | 38,173 |
+| + link plane into RAM | +0.026 | 37,364 |
+| + DRCHAIN as an accumulator | *pending* | *pending* |
+
+Ship bar is **+0.10**, not "positive" — see `fit_verdict.sh`. The baseline shipped at
++0.118 and cliffed to −3.241 on the first real change; a picosecond-order hair is a seed
+lottery ticket, and tucks or a VS term would cash it negative immediately.
+
+Four path promotions, each structurally different, which is why the rule is **re-run
+`report_timing` after every fix and re-aim before building** — a remedy chosen against a
+stale path list is ritual, not engineering:
+
+    apply-sweep partner lookup  ->  gravity fall decision  ->  per-virus run/span walk
+                                ->  the DRCHAIN multiplier itself
+
+The third of those was BASELINE logic failing on pure congestion, which is what re-aimed
+the RAM conversion from "delete a mux" to "shed area". The fourth was the feature's own
+multiplier, dissolved by making the reward an accumulator.
+
+⚠ **`clk85` is NOT a copro-only clock.** It feeds the SDRAM controller and the EEPROM
+dpram, and `rtl/sdram.sv` pins its constants to that rate (`tRCD=20ns -> 2 cycles@85MHz`).
+Retuning it is a memory-timing change, never a timing-closure knob. If a clock lever is
+ever genuinely needed it is a DEDICATED `outclk_3` for the copro (VCO 429.545 / 6 =
+71.59 MHz), leaving clk85 alone — and then: fresh `report_timing` to confirm the relief
+lands on the copro domain, an end-to-end DONE re-measure rather than a percentage
+estimate, and a check that SDRAM and EEPROM are still on 85.909.
+
 ### Where a 128-entry register file's area actually goes
 
 Worth reading before optimizing anything here, because two of the three results are
