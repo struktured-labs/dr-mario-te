@@ -6,7 +6,7 @@
   "determinism": "verified: two builds byte-identical",
   "emitter": {
     "file": "patch_cartridge_copro.py",
-    "md5": "447404b2b7687924cffbeac6558e1858"
+    "md5": "49643affc1bc764344fca45780c7e430"
   },
   "flags": {
     "DRHUMAN": "1",
@@ -16,11 +16,11 @@
   },
   "git": {
     "branch": "driver-nav",
-    "commit": "9e47618ca84f37e8830710c3ae25ff4265fceeb5",
+    "commit": "9643b8b470741f500e862434dcc05b7a8eec10e5",
     "dirty": false
   },
   "output": {
-    "md5": "b9956bddae63fac84ab8c218585f2bdf",
+    "md5": "b9b06194b3e9c265d2ef8ecfe45640d8",
     "name": "verify_ctl.nes",
     "size": 98320
   },

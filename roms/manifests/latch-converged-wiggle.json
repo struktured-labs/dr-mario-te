@@ -6,7 +6,7 @@
   "determinism": "verified: two builds byte-identical",
   "emitter": {
     "file": "patch_cartridge_copro.py",
-    "md5": "888c145e2188bb18fee696486a2a0576"
+    "md5": "49643affc1bc764344fca45780c7e430"
   },
   "flags": {
     "DRCOLDINIT": "1",
@@ -17,11 +17,11 @@
   },
   "git": {
     "branch": "driver-nav",
-    "commit": "6ad849e2f1ad0667eef275191499ff562be1ae72",
+    "commit": "9643b8b470741f500e862434dcc05b7a8eec10e5",
     "dirty": false
   },
   "output": {
-    "md5": "71b1a6db14243c69bc93eb4a342f055f",
+    "md5": "d6daedbc150d47aaafae1a2d2ac94b69",
     "name": "latch_converged_wiggle.nes",
     "size": 98320
   },

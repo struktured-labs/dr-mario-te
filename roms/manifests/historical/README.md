@@ -39,7 +39,11 @@ mistaken for live recipes.
 
 The current equivalents of these recipes, which **do** rebuild from HEAD:
 
-- `latch-control` → `latch-control-v2` (`c8b13b97`)
-- `latch-converged` → `latch-converged-v2` (`95a15d48`)
-- `human-latchfix` → `pocket-human-latchfix` (`9b2eedc1`)
+- `latch-control` → `latch-control-v2`
+- `latch-converged` → `latch-converged-v2`
+- `human-latchfix` → `pocket-human-latchfix`
 - `_dwell_on` → superseded by the DRNAVDWELL title-hang fix; `_dwell_off` still reproduces
+
+Deliberately **no hashes here**: the live ones move whenever the shared path legitimately
+changes — the published-column hardening at `9643b8b` moved all nine at once — and a hash
+copied into prose goes stale silently. `tools/romgen.py list` is the live answer.

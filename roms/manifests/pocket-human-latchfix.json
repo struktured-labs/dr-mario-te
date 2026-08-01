@@ -6,7 +6,7 @@
   "determinism": "verified: two builds byte-identical",
   "emitter": {
     "file": "patch_cartridge_copro.py",
-    "md5": "8e66ed1d6093ee2ff061e92fa3cf2757"
+    "md5": "49643affc1bc764344fca45780c7e430"
   },
   "flags": {
     "DRHUMAN": "1",
@@ -17,11 +17,11 @@
   },
   "git": {
     "branch": "driver-nav",
-    "commit": "a0d4e63fb5a572f36fba4851c51fcf301ddf29ea",
+    "commit": "9643b8b470741f500e862434dcc05b7a8eec10e5",
     "dirty": false
   },
   "output": {
-    "md5": "9b2eedc11e71e7989db8a2bd6c8ed2b9",
+    "md5": "03a9ff90ebd12a0fcec0755f5d64a29d",
     "name": "POCKET_human_latchfix_v2.nes",
     "size": 98320
   },
