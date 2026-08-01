@@ -193,13 +193,28 @@ MIN_THINK = int(_os.environ.get("DRMINTHINK", "25"))
 # SLAM auto-disables. DRSLAM=0 rebuilds byte-exact to canonical (every add below is `if SLAM`-guarded).
 SLAM = (_os.environ.get("DRSLAM", "1") != "0") and ROTFIX
 # DRSLAM_MATURE (default 2, when SLAM): FAST_HI threshold on the search-latency HIGH byte (WDOGH2 =
-# latency in 256-hook units, ~5 hooks/frame). Arm the slam iff the last P2 search DONE'd in < FAST_HI*256
-# hooks. Derivation (tmp/driver_slam/round1_repro.py + tempo §2.3): warm depth-3 T_s ~= 60 f * 5 = ~300
-# hooks => WDOGH2=1; the cold-regression entry (an armed slam lands the pill ~106 f ~= 530 hooks, before
-# a slower DONE arrives) is WDOGH2=2. FAST_HI=2 (=512 hooks ~1.7 s) is the unique 256-hook-granular
-# threshold that sits ABOVE warm-typical (300, arms) and AT/below the regression entry (530, disarms) --
-# margin ~212 hooks over warm, and it disarms the moment a search crosses into the danger band. Byte-
-# patchable via the CMP #FAST_HI immediate. DRSLAM_MATURE=0 disables the gate (pre-fix slam, A/B).
+# latency in 256-hook units). Arm the slam iff the last P2 search DONE'd in < FAST_HI*256 hooks.
+# Derivation (tmp/driver_slam/round1_repro.py + tempo §2.3): warm depth-3 T_s ~= 300 hooks => WDOGH2=1;
+# the cold-regression entry (an armed slam lands the pill ~106 f, before a slower DONE arrives) is
+# WDOGH2=2. FAST_HI=2 is the unique 256-hook-granular threshold ABOVE warm-typical (300, arms) and
+# AT/below the regression entry (530, disarms). Byte-patchable via the CMP #FAST_HI immediate.
+# DRSLAM_MATURE=0 disables the gate (pre-fix slam, A/B).
+#
+# AUDITED 2026-08-01, and the wall-clock basis was WRONG before this. The old note read
+# "512 hooks ~1.7 s", which assumed ~5 hooks/frame. The hook rate is TWO per frame -- MEASURED, by
+# tracing the single NMI call site ($FFFA -> ... -> JSR $9134 -> getInputs -> addExpansionCTRL x2),
+# and corroborated by working silicon (autonav's 4-hook press window only functions at 2/frame).
+# So FAST_HI=2 is 512 hooks = 256 frames ~= 4.27 s, not 1.7 s.
+#
+# Why the audit happened: the Combo Stomper (chain180) made P2 searches ~1.83x longer, and this
+# threshold was tuned against the PRE-CHAIN brain. Crossing it does not freeze -- it silently disarms
+# the slam and placement falls back to the anytime path, i.e. it degrades play QUALITY invisibly. So
+# it needed re-deriving against the new latency rather than inheriting. Measured worst-case searches
+# vs the 4.27 s threshold:
+#     MiSTer  chain180 @ 85.909 MHz   0.78 s   = 18% of threshold
+#     Pocket  chain180 @ 54.669 MHz   1.23 s   = 29% of threshold  (projected)
+# Both safe, so the silicon-tuned immediate SHIPS AS-IS -- no constant change. Re-audit this if the
+# search latency changes again, or if a platform runs the copro slower than ~35 MHz.
 FAST_HI = int(_os.environ.get("DRSLAM_MATURE", "2"))
 MATURE = (FAST_HI > 0) and SLAM
 # DRCOLGATE=1 (default ON with ROTFIX): the confidence-gated slam (dn_p2, below) was originally
