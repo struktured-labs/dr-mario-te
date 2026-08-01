@@ -25,6 +25,13 @@
 # Sequential by design: two Quartus flows in one project directory corrupt each other's db
 # (that is what produced a phantom "92% fits" reading earlier in this work).
 #
+# ⚠ The project qsf ALREADY CARRIES a seed (`set_global_assignment -name SEED 5` at line
+# 55 of NES.qsf), so appending a second SEED line leaves TWO in the file and the result
+# depends on Quartus's last-wins behaviour. That is an ambiguity you cannot sign off on, so
+# every seed change here STRIPS existing SEED assignments first and writes exactly one.
+# Corollary worth knowing: the "default" fits in this campaign were never seed-less -- they
+# were SEED 5 all along.
+#
 # Usage: seed_sweep.sh [seed ...]        default: 2 3 4 5
 set -uo pipefail
 FORK=/home/struktured/projects/NES_MiSTer-winner
@@ -43,7 +50,10 @@ for s in "${SEEDS[@]}"; do
   echo
   echo "================ SEED $s  ($(date -Is)) ================"
   cp "$QSF.seedbak" "$QSF"
+  sed -i '/set_global_assignment -name SEED /d' "$QSF"
   printf '\nset_global_assignment -name SEED %s\n' "$s" >> "$QSF"
+  n=$(command grep -c 'name SEED ' "$QSF")
+  [ "$n" = 1 ] || { echo "qsf has $n SEED lines, expected exactly 1" >&2; exit 70; }
   ( cd "$FORK" && rm -rf db incremental_db output_files/NES.done \
     && ./run_fit.sh ) > "$OUT/fit_seed$s.log" 2>&1
   "$HERE/fit_verdict.sh" "$FORK" 2>&1 | tee "$OUT/verdict_seed$s.txt"

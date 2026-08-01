@@ -16,6 +16,13 @@
 # Rebuild recipe = re-pin this seed + refit + verify the same slack. The seed is recorded
 # in the manifest, because a shipped seed is PROVENANCE, not shame.
 #
+# ⚠ The project qsf ALREADY CARRIES a seed (`set_global_assignment -name SEED 5` at line
+# 55 of NES.qsf), so appending a second SEED line leaves TWO in the file and the result
+# depends on Quartus's last-wins behaviour. That is an ambiguity you cannot sign off on, so
+# every seed change here STRIPS existing SEED assignments first and writes exactly one.
+# Corollary worth knowing: the "default" fits in this campaign were never seed-less -- they
+# were SEED 5 all along.
+#
 # Usage: ship_build.sh <seed> [tag]
 set -uo pipefail
 SEED="${1:?usage: ship_build.sh <seed> [tag]}"
@@ -38,7 +45,10 @@ cp "$QSF" "$QSF.shipbak"
 restore() { [ -f "$QSF.shipbak" ] && mv "$QSF.shipbak" "$QSF"; }
 trap restore EXIT INT TERM
 
+sed -i '/set_global_assignment -name SEED /d' "$QSF"
 printf '\nset_global_assignment -name SEED %s\n' "$SEED" >> "$QSF"
+n=$(command grep -c 'name SEED ' "$QSF")
+[ "$n" = 1 ] || { echo "qsf has $n SEED lines, expected exactly 1" >&2; exit 70; }
 cp "$QSF" "$OUT/NES.qsf.used"          # the exact configuration, archived BEFORE the trap
 
 echo "== ship build: seed $SEED, RTL $(git -C "$FORK" rev-parse --short HEAD) =="
