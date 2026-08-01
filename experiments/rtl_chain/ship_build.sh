@@ -81,6 +81,36 @@ cp "$FORK/rtl/mappers/LeafEval.sv" "$FORK/rtl/mappers/CoproDrMario.sv" "$OUT/" 2
   echo "}"
 } > "$OUT/manifest.json"
 
+# ---- CROSS-VARIANT HASH DISTINCTNESS -------------------------------------------------
+# N labels must produce N distinct bitstreams. This exists because they once did not:
+# `quartus_cdb --update_mif` is a no-op for $readmemh-initialised memory, so three "arms"
+# came out as one identical rbf, every command exited 0, and the core would have run a
+# DIFFERENT BRAIN THAN ITS LABEL. A mislabelled arm that still plays well is the worst
+# case -- it looks like a bug in the feature rather than a build error.
+# No human in the loop: a collision with a differently-tagged build is an automatic FAIL.
+NEW_MD5=$(md5sum "$OUT/NES.rbf" 2>/dev/null | cut -d' ' -f1)
+if [ -n "$NEW_MD5" ]; then
+  clash=""
+  for m in "$(dirname "$OUT")"/*/manifest.json; do
+    [ -f "$m" ] || continue
+    [ "$(dirname "$m")" = "$OUT" ] && continue
+    other_md5=$(command grep -oE '"rbf_md5": *"[0-9a-f]+"' "$m" | command grep -oE '[0-9a-f]{32}')
+    other_tag=$(command grep -oE '"tag": *"[^"]+"' "$m" | cut -d'"' -f4)
+    other_seed=$(command grep -oE '"seed": *[0-9]+' "$m" | command grep -oE '[0-9]+')
+    [ "$other_md5" = "$NEW_MD5" ] && [ "$other_tag/$other_seed" != "$TAG/$SEED" ] \
+      && clash="$clash $other_tag(seed $other_seed)"
+  done
+  if [ -n "$clash" ]; then
+    echo
+    echo "❌ HASH COLLISION: this build's rbf is byte-identical to:$clash"
+    echo "   Different labels, same bitstream -- one of them is running the wrong firmware."
+    echo "   Do NOT deploy either until you know which."
+    rc=1
+  else
+    echo "distinctness: rbf $NEW_MD5 is unique across $(ls -d "$(dirname "$OUT")"/*/ 2>/dev/null | wc -l) archived builds"
+  fi
+fi
+
 echo
 echo "archived: $OUT"
 ls "$OUT"
