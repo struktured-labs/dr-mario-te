@@ -28,6 +28,24 @@ for f in "$FIT" "$STA"; do
   [ -f "$f" ] || { echo "missing $f -- has the flow finished?" >&2; exit 65; }
 done
 
+# ★ FRESHNESS. A slack read from a report older than the bitstream is not a number about
+# that bitstream. Added 2026-08-01 after a build quoted "+0.094" from an NES.sta.rpt half an
+# hour older than its own rbf: Quartus SMART RECOMPILATION had skipped the Timing Analyzer
+# (along with synthesis and the fitter), so the report described a DIFFERENT compile. The
+# verdict looked precise and was meaningless. Report UNKNOWN rather than a stale figure --
+# a confident wrong number is worse than an admitted gap.
+RBF=$FORK/output_files/NES.rbf
+if [ -f "$RBF" ]; then
+  for f in "$FIT" "$STA"; do
+    if [ "$f" -ot "$RBF" ]; then
+      echo "VERDICT: UNKNOWN -- $(basename "$f") is OLDER than NES.rbf." >&2
+      echo "  That report describes a different compile (Timing Analyzer or the Fitter was" >&2
+      echo "  skipped). Refusing to quote slack or utilisation for this bitstream." >&2
+      exit 66
+    fi
+  done
+fi
+
 used=$(command grep -E "Logic utilization" "$FIT" | command grep -oE "[0-9,]+ /" | head -1 | tr -d ' ,/')
 status=$(command grep -E "Fitter Status" "$FIT" | cut -d: -f2- | sed 's/^ *//')
 free=$((CAPACITY - used))
