@@ -33,3 +33,10 @@ drmario_cart.nes
 *.mp4
 # agent scratch
 .letta/
+
+# Verilator build outputs — generated, never source. Tracking these kept the tree
+# permanently dirty, which made the provenance dirty-check fire on every build and
+# trained us to ignore the one signal that matters.
+fpga/copro/obj_mister/
+fpga/copro/obj_leafeval/
+fpga/copro/build/
