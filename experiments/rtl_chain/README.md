@@ -71,7 +71,15 @@ the area work and the timing work were the same work.
 | + third apply stage | −0.113 | 38,390 |
 | + gravity fall split | +0.001 | 38,173 |
 | + link plane into RAM | +0.026 | 37,364 |
-| + DRCHAIN as an accumulator | *pending* | *pending* |
+| + DRCHAIN as an accumulator | +0.096 | 37,132 |
+| ship build (seed 2) | **+0.181** | **37,249** |
+
+⚠ **Every row above the ship build is SEED 5**, not a default seed — `NES.qsf` line 55
+already carried `set_global_assignment -name SEED 5` before this work began. The ladder is
+therefore still like-for-like (one seed throughout, only the RTL moving), but that was true
+by accident rather than by construction, and it is worth knowing before citing the table as
+a controlled experiment. Scripts here now strip existing SEED lines and write exactly one,
+asserting the count, so the ambiguity cannot recur.
 
 Ship bar is **+0.10**, not "positive" — see `fit_verdict.sh`. The baseline shipped at
 +0.118 and cliffed to −3.241 on the first real change; a picosecond-order hair is a seed
