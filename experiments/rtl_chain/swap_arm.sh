@@ -16,6 +16,12 @@
 # the SAME placement and the SAME routing, so nothing but the ROM contents differs. Any
 # behavioural difference on hardware is the brain, and cannot be a fitter artifact.
 #
+# ⚠ DRCOPRO_TUCK=1 IS NOT OPTIONAL HERE. The firmware currently deployed on the MiSTer
+# (751b6ce9) is the TUCK build -- verified by rebuilding it. An arm image built without
+# DRCOPRO_TUCK would silently DROP the tuck enumerator, shipping a regression disguised as
+# a brain upgrade. Every arm image below therefore carries tucks, and the two-byte assertion
+# is run on the TUCK pair, which is the pair that actually ships.
+#
 # Usage: swap_arm.sh <lnk1|stomp180|stomp360>  [out-dir]
 set -euo pipefail
 ARM="${1:?usage: swap_arm.sh <lnk1|stomp180|stomp360> [out-dir]}"
@@ -39,7 +45,7 @@ fi
 mkdir -p "$OUT"
 echo "== building firmware: a_fix=$FIX DRCHAIN=$DOSE =="
 ( cd "$CANON/fpga/copro" \
-  && DRCOPRO_ARM=1 DRFIX=$FIX DRCHAIN=$DOSE "$PY" dbg_build.py all 0 >/dev/null \
+  && DRCOPRO_TUCK=1 DRCOPRO_ARM=1 DRFIX=$FIX DRCHAIN=$DOSE "$PY" dbg_build.py all 0 >/dev/null \
   && cp copro_rom.hex "$FORK/copro_rom.hex" \
   && cp copro_rom.hex "$OUT/fw_$ARM.hex" )
 # leave the canonical tree on its default (shipped) firmware, not an arm build

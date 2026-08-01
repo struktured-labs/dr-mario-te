@@ -19,9 +19,9 @@ OUT="${1:-/home/struktured/projects/dr_mario_rl/tmp/rtl_chain/arms}"
 SHIPPED_MD5=c87e60a1736224cfc3fa29cfed7c6f16
 mkdir -p "$OUT"
 
-build() {  # build <name> <DRCOPRO_ARM> <DRFIX> <DRCHAIN>
+build() {  # build <name> <DRCOPRO_ARM> <DRFIX> <DRCHAIN> [DRCOPRO_TUCK]
   ( cd "$CANON/fpga/copro" \
-    && DRCOPRO_ARM=$2 DRFIX=$3 DRCHAIN=$4 "$PY" dbg_build.py all 0 >/dev/null 2>&1 \
+    && DRCOPRO_TUCK=${5:-0} DRCOPRO_ARM=$2 DRFIX=$3 DRCHAIN=$4 "$PY" dbg_build.py all 0 >/dev/null 2>&1 \
     && cp copro_rom.hex "$OUT/fw_$1.hex" ) \
   || { echo "firmware build FAILED: $1" >&2; exit 70; }
   printf "  %-10s a_fix=%s DRCHAIN=%-4s md5=%s\n" "$1" "$3" "$4" \
@@ -33,6 +33,11 @@ build default  0 0 0
 build lnk1     1 0 0
 build stomp180 1 1 180
 build stomp360 1 1 360
+# the images that actually SHIP: same arms, plus the tuck enumerator the deployed
+# firmware already carries
+build tucklnk1     1 0 0   1
+build tuckstomp180 1 1 180 1
+build tuckstomp360 1 1 360 1
 # leave the canonical tree on its shipped default, never on an arm build
 ( cd "$CANON/fpga/copro" && "$PY" dbg_build.py all 0 >/dev/null 2>&1 )
 
@@ -47,13 +52,14 @@ fi
 
 # lnk1 vs each Combo Stomper dose: exactly two differing lines, and they must be the
 # two select bytes -- not merely "two differences somewhere".
-for arm in stomp180 stomp360; do
-  n=$(diff "$OUT/fw_lnk1.hex" "$OUT/fw_$arm.hex" | command grep -c '^<')
+for arm in stomp180 stomp360 tuckstomp180 tuckstomp360; do
+  base=lnk1; case "$arm" in tuck*) base=tucklnk1 ;; esac
+  n=$(diff "$OUT/fw_$base.hex" "$OUT/fw_$arm.hex" | command grep -c '^<')
   if [ "$n" = 2 ]; then
-    lines=$(diff "$OUT/fw_lnk1.hex" "$OUT/fw_$arm.hex" | command grep -oE '^[0-9]+' | sort -un | tr '\n' ',')
-    echo "PASS  lnk1 vs $arm differ in exactly 2 bytes (offsets ${lines%,})"
+    lines=$(diff "$OUT/fw_$base.hex" "$OUT/fw_$arm.hex" | command grep -oE '^[0-9]+' | sort -un | tr '\n' ',')
+    echo "PASS  $base vs $arm differ in exactly 2 bytes (offsets ${lines%,})"
   else
-    echo "FAIL  lnk1 vs $arm differ in $n bytes, expected 2"; fail=1
+    echo "FAIL  $base vs $arm differ in $n bytes, expected 2"; fail=1
   fi
 done
 
