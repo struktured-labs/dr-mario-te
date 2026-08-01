@@ -1,0 +1,29 @@
+{
+  "base_rom": {
+    "md5": "7d307c3051ebc0f8a10e259e3c270acb",
+    "path": "drmario_v28cs.nes"
+  },
+  "determinism": "verified: two builds byte-identical",
+  "emitter": {
+    "file": "patch_cartridge_copro.py",
+    "md5": "d78d9c03fe42796a570326af0a8f9a12"
+  },
+  "flags": {
+    "DRCOLDINIT": "1",
+    "DRNAVDWELL": "0",
+    "DRNOFREEZE": "1",
+    "DRP1NATIVE": "1",
+    "DRRECOMMIT_NOFREEZE": "1"
+  },
+  "git": {
+    "branch": "driver-nav",
+    "commit": "9c386043ef5f988f9a2cdc67ef63aafe40a4743c",
+    "dirty": false
+  },
+  "output": {
+    "md5": "0454870fcff213e53bf61f38869592a1",
+    "name": "latch_converged_native.nes",
+    "size": 98320
+  },
+  "tag": "latch-converged-native"
+}
