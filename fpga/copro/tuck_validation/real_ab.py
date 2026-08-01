@@ -13,23 +13,24 @@ The driver used here has the h2_start invalidation moved after the pend/delay ea
 without that fix the descriptor is wiped before mv_p2 reads it and all three arms are
 identical (that is defect 2, demonstrated separately).
 """
-import sys, csv
+import os, sys, csv
 
-SP = "/tmp/claude-1000/-home-struktured-projects-dr-mario-rl/02493363-c6af-4da9-9c47-58ceef8174b6/scratchpad/tuck"
-sys.path.insert(0, SP)
-sys.path.insert(0, "/home/struktured/projects/dr-mario-canonical-wt/fpga/copro")
+HERE = os.path.dirname(os.path.abspath(__file__))
+CANON = os.environ.get("DRCANON", "/home/struktured/projects/dr-mario-canonical-wt")
+sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(CANON, "fpga", "copro"))
 import exec_tuck_sim_fixed as E
 from tuck_lib import enum_full, straight_rest, first_occ, COLS, ROWS, EMPTY
 from tuck_scan import ref_tuck_scan
 
-rows = open(SP + "/real_sub.txt").read().split("\n")
+rows = open(os.path.join(HERE, "data", "real_sub.txt")).read().split("\n")
 n = int(rows[0])
 boards = []
 for i in range(1, n + 1):
     t = rows[i].split()
     boards.append(([int(x, 16) for x in t[4:]], int(t[0]), int(t[1])))
 
-got = list(csv.DictReader(open(SP + "/out_tuck_real.csv")))
+got = list(csv.DictReader(open(os.path.join(HERE, "results", "out_tuck_real.csv"))))
 print("co-sim cases available: %d / %d" % (len(got), n))
 
 mismatch = 0

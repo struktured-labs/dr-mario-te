@@ -1,0 +1,134 @@
+[
+ {
+  "name": "empty",
+  "note": "no columns occupied at all",
+  "ref_tuck_col": 255,
+  "ref_tuck_row": 255
+ },
+ {
+  "name": "toprow_full",
+  "note": "all columns blocked at row 0",
+  "ref_tuck_col": 255,
+  "ref_tuck_row": 255
+ },
+ {
+  "name": "board_full",
+  "note": "every cell occupied",
+  "ref_tuck_col": 255,
+  "ref_tuck_row": 255
+ },
+ {
+  "name": "col0_full",
+  "note": "col 0 occupied rows 0-15",
+  "ref_tuck_col": 255,
+  "ref_tuck_row": 255
+ },
+ {
+  "name": "col0_col7_full",
+  "note": "both edge columns full",
+  "ref_tuck_col": 255,
+  "ref_tuck_row": 255
+ },
+ {
+  "name": "well_c3_only",
+  "note": "single empty column, all neighbours full",
+  "ref_tuck_col": 255,
+  "ref_tuck_row": 255
+ },
+ {
+  "name": "overhang_c0",
+  "note": "col0 lip at row 8, cavity below; approach must be col 1",
+  "ref_tuck_col": 1,
+  "ref_tuck_row": 9
+ },
+ {
+  "name": "overhang_c7",
+  "note": "col7 lip at row 8, cavity below; approach must be col 6",
+  "ref_tuck_col": 6,
+  "ref_tuck_row": 9
+ },
+ {
+  "name": "pocket_1cell_c3",
+  "note": "exactly one reachable cell (10,3) under a lip",
+  "ref_tuck_col": 2,
+  "ref_tuck_row": 10
+ },
+ {
+  "name": "approach_blocked_c3",
+  "note": "cavity under col3 lip, both neighbours full -> must publish NO tuck",
+  "ref_tuck_col": 255,
+  "ref_tuck_row": 255
+ },
+ {
+  "name": "approach_shallow_c3",
+  "note": "approach col cannot reach the trigger rows -> must publish NO tuck",
+  "ref_tuck_col": 1,
+  "ref_tuck_row": 4
+ },
+ {
+  "name": "misland_c3_high_lip",
+  "note": "trigger row 3 top-down; approach col2 bottoms out at row 7",
+  "ref_tuck_col": 1,
+  "ref_tuck_row": 9
+ },
+ {
+  "name": "misland_c0_lip2",
+  "note": "publishes (approach 1, row 3); col1 bottoms out at row 7 = Y 8",
+  "ref_tuck_col": 1,
+  "ref_tuck_row": 3
+ },
+ {
+  "name": "inert_c0_lip13",
+  "note": "publishes row 13; raw-compared that is Y 13 = the second row down",
+  "ref_tuck_col": 1,
+  "ref_tuck_row": 14
+ },
+ {
+  "name": "tie_two_floor_tucks",
+  "note": "two candidates both resting at row 15",
+  "ref_tuck_col": 0,
+  "ref_tuck_row": 9
+ },
+ {
+  "name": "latency_alt_row1",
+  "note": "maximises r-loop x fall-loop: fc=1, ra=15, cavity to the floor",
+  "ref_tuck_col": 1,
+  "ref_tuck_row": 2
+ },
+ {
+  "name": "latency_alt_row1_odd",
+  "note": "mirror of latency_alt_row1",
+  "ref_tuck_col": 0,
+  "ref_tuck_row": 2
+ },
+ {
+  "name": "latency_lip3",
+  "note": "three deep targets, both approaches empty to the floor",
+  "ref_tuck_col": 1,
+  "ref_tuck_row": 2
+ },
+ {
+  "name": "dense_jagged",
+  "note": "dense jagged stack, lips over deep cavities on cols 0/2/4/6",
+  "ref_tuck_col": 5,
+  "ref_tuck_row": 4
+ },
+ {
+  "name": "staircase",
+  "note": "descending lips, each column open above its lip",
+  "ref_tuck_col": 255,
+  "ref_tuck_row": 255
+ },
+ {
+  "name": "all_lip_row1",
+  "note": "every approach bottoms out at row 0 -> no tuck",
+  "ref_tuck_col": 255,
+  "ref_tuck_row": 255
+ },
+ {
+  "name": "well_c0_edge",
+  "note": "col0 open, col1 open only at the top two rows",
+  "ref_tuck_col": 255,
+  "ref_tuck_row": 255
+ }
+]

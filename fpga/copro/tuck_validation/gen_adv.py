@@ -3,8 +3,8 @@
 
 Board is row-major, 16 rows x 8 cols, index = r*8+c, row 0 = TOP.  0xFF = empty.
 """
-import sys, json
-sys.path.insert(0, "/home/struktured/projects/dr-mario-canonical-wt/fpga/copro")
+import os, sys, json
+sys.path.insert(0, os.path.join(os.environ.get("DRCANON", "/home/struktured/projects/dr-mario-canonical-wt"), "fpga", "copro"))
 from tuck_scan import ref_tuck_scan, ROWS, COLS, EMPTY
 
 VIRUS = 0xD0
@@ -180,7 +180,8 @@ add("well_c0_edge", b, "col0 open, col1 open only at the top two rows")
 
 
 def main():
-    out = sys.argv[1]
+    out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "data", "adv.txt")
     meta = []
     with open(out, "w") as f:
         f.write("%d\n" % len(BOARDS))

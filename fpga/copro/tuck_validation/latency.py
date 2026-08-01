@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Added DONE latency of tuck_scan, from paired co-sim runs (same boards, same RTL,
 only the firmware differs: c87e60a1 baseline vs 751b6ce9 tuck)."""
-import csv, sys
+import csv, os, sys
 
-SP = "/tmp/claude-1000/-home-struktured-projects-dr-mario-rl/02493363-c6af-4da9-9c47-58ceef8174b6/scratchpad/tuck"
+HERE = os.path.dirname(os.path.abspath(__file__))
+SP = os.path.join(HERE, "results")
 tag = sys.argv[1] if len(sys.argv) > 1 else "real"
 T = list(csv.DictReader(open("%s/out_tuck_%s.csv" % (SP, tag))))
 B = list(csv.DictReader(open("%s/out_base_%s.csv" % (SP, tag))))

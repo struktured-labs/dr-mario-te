@@ -1,0 +1,21 @@
+--- a/patch_cartridge_copro.py
++++ b/patch_cartridge_copro.py
+@@ -1021,13 +1021,13 @@
+         a.ins("LDA_imm", 1); a.ins16("STA_abs", wretry); a.ins16("STA_abs", pend)
+         a.jmp(f"{L}_done")
+         a.label(f"{L}_start")            # start a search: upload board+colors to THIS copro, GO
+-        if TUCK and idx == 2:
+-            # a new search invalidates any tuck from the PREVIOUS pill. Without this, stale
+-            # descriptor bytes would steer the next capsule to a pocket that no longer exists
+-            # -- the same class of bug as the uninitialised PEND/LASTY cold-state defect (P0.3).
+-            a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", TUCK_C2)
+         a.ins16("LDA_abs", pend); a.br("BNE", f"{L}_st1"); a.jmp(f"{L}_done"); a.label(f"{L}_st1")
+         a.ins16("LDA_abs", delay); a.br("BEQ", f"{L}_st2"); a.jmp(f"{L}_done"); a.label(f"{L}_st2")
++        if TUCK and idx == 2:
++            # FIXCANDIDATE: invalidate only when a search ACTUALLY starts. Emitted before the
++            # pend/delay early-outs, this ran on EVERY frame with armed==0 -- i.e. the whole
++            # descent -- so mv_p2 read 0xFF and the executor never steered to the approach column.
++            a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", TUCK_C2)
+         a.ins("LDX_imm", 0)
+         # NES playfield empties are 0xFF *or* 0x00 (per tile-encoding); the copro parser only
+         # treats 0xFF as empty, so a 0x00 cell reads as a PHANTOM yellow pill -> the color-heavy
