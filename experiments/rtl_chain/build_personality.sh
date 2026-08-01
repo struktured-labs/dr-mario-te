@@ -123,27 +123,32 @@ fi
 echo "   GATE 4 distinctness OK: $NEW is new"
 rm -f "$BASELINE"
 
-# ---- STA FRESHNESS: a slack from a stale report is not a number ----------------------
-STA="$FORK/output_files/NES.sta.rpt"
-if [ ! -f "$STA" ] || [ "$STA" -ot "$FORK/output_files/NES.rbf" ]; then
-  echo "FIT VERDICT: UNKNOWN -- NES.sta.rpt is missing or OLDER than the rbf." >&2
-  echo "  Timing Analyzer did not run for THIS bitstream; refusing to quote a slack." >&2
-  exit 73
-fi
-SLACK=$(command grep -oE 'Worst-case (setup )?slack is [-0-9.]+' "$STA" | head -1 | command grep -oE '[-0-9.]+$')
+# ---- FIT VERDICT: delegate to the script that knows which clock is which --------------
+# ⚠ THIS WAS A LOCAL PARSE AND IT WAS WRONG (caught on the racer build, 2026-08-01). It
+# took the report's global "Worst-case setup slack" with head -1. The Setup Summary is
+# sorted worst-first and the worst domain on this design is pll_hdmi at 0.094 -- a
+# PRE-EXISTING video-clock number that reads identically on the SHIPPED core. The copro
+# domain (emu|pll|...counter[0]) was at 0.181, comfortably over the +0.10 bar, so a
+# perfectly good bitstream was stamped "HOLD, below the bar".
+#
+# ★ The false alarm is the mild half. The number it printed does not depend on the copro
+# path AT ALL, so a genuinely degraded copro would have printed the SAME 0.094 -- the gate
+# could not separate a good build from a bad one in either direction while looking precise.
+# fit_verdict.sh parses per-domain, owns the bar, and checks ALM headroom too. One
+# authority, not two that can disagree.
 echo
 echo "personality : $ID ($DISPLAY)"
 echo "firmware    : $GOT"
 echo "rbf         : $NEW  -> $RBF"
-echo "worst slack : ${SLACK:-UNKNOWN} (from a report newer than the rbf)"
-if [ -z "${SLACK:-}" ]; then
-  echo "FIT VERDICT: UNKNOWN -- could not parse a slack from a fresh report." >&2; exit 73
-fi
-if [ "$(echo "$SLACK < 0.10" | bc -l 2>/dev/null)" = "1" ]; then
-  echo "FIT VERDICT: HOLD -- slack $SLACK is below the +0.10 bar on this pinned seed." >&2
-  echo "  Report it; do NOT seed-hunt." >&2
-  exit 71
-fi
-echo "FIT VERDICT: OK"
+"$HERE/fit_verdict.sh" "$FORK"
+FITRC=$?
+case $FITRC in
+  0) echo "FIT VERDICT: OK" ;;
+  66) echo "FIT VERDICT: UNKNOWN -- reports do not describe this build (see above)." >&2
+      exit 73 ;;
+  *)  echo "FIT VERDICT: HOLD -- a criterion above failed on this pinned seed." >&2
+      echo "  Report it; do NOT seed-hunt." >&2
+      exit 71 ;;
+esac
 echo
 echo "Deploy with a DEVICE-SIDE md5 check, and do not load it -- the user picks."

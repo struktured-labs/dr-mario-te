@@ -28,22 +28,38 @@ for f in "$FIT" "$STA"; do
   [ -f "$f" ] || { echo "missing $f -- has the flow finished?" >&2; exit 65; }
 done
 
-# ★ FRESHNESS. A slack read from a report older than the bitstream is not a number about
-# that bitstream. Added 2026-08-01 after a build quoted "+0.094" from an NES.sta.rpt half an
-# hour older than its own rbf: Quartus SMART RECOMPILATION had skipped the Timing Analyzer
-# (along with synthesis and the fitter), so the report described a DIFFERENT compile. The
-# verdict looked precise and was meaningless. Report UNKNOWN rather than a stale figure --
-# a confident wrong number is worse than an admitted gap.
-RBF=$FORK/output_files/NES.rbf
-if [ -f "$RBF" ]; then
+# ★ FRESHNESS. A slack read from a report that describes a DIFFERENT compile is not a number
+# about this bitstream. Added 2026-08-01 after a build quoted "+0.094" from an NES.sta.rpt
+# half an hour older than its own rbf: Quartus SMART RECOMPILATION had skipped the Timing
+# Analyzer (along with synthesis and the fitter). The verdict looked precise and was
+# meaningless. Report UNKNOWN rather than a stale figure.
+#
+# ⚠ CORRECTED 2026-08-01, same day: the first version of this block compared the reports
+# against NES.rbf, which is WRONG BY CONSTRUCTION. The flow order is
+#     Analysis & Synthesis -> Fitter (writes fit.*) -> Assembler (writes .sof/.rbf) -> STA
+# so NES.fit.summary is ALWAYS older than the rbf in a perfectly honest compile. The rule
+# fired UNKNOWN on the first clean build it ever saw (racer, 4/4 stages run, 0 skipped)
+# -- a gate that rejects only correct builds teaches you to ignore it.
+#
+# The mechanism the incident actually had is: a design input changed, and the stage that
+# consumes it did not re-run, so its report PREDATES that input. So that is what we assert
+# -- every report must post-date the newest design input -- plus flow ORDERING between the
+# reports themselves. Both hold for an honest run at any speed.
+NEWEST_IN=$(ls -t "$FORK/copro_rom.hex" "$FORK"/rtl/mappers/CoproDrMario.sv \
+                  "$FORK"/rtl/mappers/LeafEval.sv 2>/dev/null | head -1)
+if [ -n "$NEWEST_IN" ]; then
   for f in "$FIT" "$STA"; do
-    if [ "$f" -ot "$RBF" ]; then
-      echo "VERDICT: UNKNOWN -- $(basename "$f") is OLDER than NES.rbf." >&2
-      echo "  That report describes a different compile (Timing Analyzer or the Fitter was" >&2
-      echo "  skipped). Refusing to quote slack or utilisation for this bitstream." >&2
+    if [ "$f" -ot "$NEWEST_IN" ]; then
+      echo "VERDICT: UNKNOWN -- $(basename "$f") PREDATES $(basename "$NEWEST_IN")." >&2
+      echo "  The stage that consumes that input did not re-run for this build; the report" >&2
+      echo "  describes a different compile. Refusing to quote slack or utilisation." >&2
       exit 66
     fi
   done
+fi
+if [ "$STA" -ot "$FIT" ]; then
+  echo "VERDICT: UNKNOWN -- NES.sta.summary predates NES.fit.summary (flow order violated)." >&2
+  exit 66
 fi
 
 used=$(command grep -E "Logic utilization" "$FIT" | command grep -oE "[0-9,]+ /" | head -1 | tr -d ' ,/')
