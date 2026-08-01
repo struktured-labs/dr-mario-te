@@ -1092,7 +1092,22 @@ def build_main(level=11, speed=1):
             a.br("BEQ", f"{L}_start")
         a.ins16("LDA_abs", wdone); a.br("BEQ", f"{L}_search")    # DONE==0 -> still searching
         # publish result: best_col + orient4 -> game orient map {0xFF/0:3, 1:1, 2:0, 3:2}
-        a.ins16("LDA_abs", wcol); a.ins16("STA_abs", tgt_c)
+        # ★ PUBLISHED-COLUMN SANITY GUARD (unconditional -- every cart, every core). The
+        # playfield is 8 wide, so any column >= 8 is not a result, it is noise. Without this
+        # the driver trusts whatever the window returns, and on a core that does NOT decode a
+        # copro window the reads are OPEN BUS = the address high byte: $5085 yields $50 = 80.
+        # act_* then compares pillX (0-7) against 80, the BCC is always taken, and that player
+        # holds ONE direction for the rest of the match -- which is exactly what happened to P1
+        # on NES_tuckmb_20260731 (measured 2026-08-01: TGT_C1=$50, whole stack in the right
+        # wall, 48 viruses alive). It read as "the AI is stupid" for weeks; it was an
+        # undecoded address. On a bad read we now KEEP the previous target and still clear
+        # ARMED/WDOG below, so the driver neither adopts the garbage nor spins re-reading it.
+        # This costs 5 bytes per handle() and protects every future core revision.
+        a.ins16("LDA_abs", wcol)
+        a.ins("CMP_imm", 8); a.br("BCC", f"{L}_colok")
+        a.jmp(f"{L}_badcol")            # via JMP: the span to the teardown exceeds branch range
+        a.label(f"{L}_colok")
+        a.ins16("STA_abs", tgt_c)
         if TUCK and idx == 2:
             # latch the tuck descriptor alongside the column, from the SAME published result
             a.ins16("LDA_abs", W_TCOL); a.ins16("STA_abs", TUCK_C2)
@@ -1124,6 +1139,7 @@ def build_main(level=11, speed=1):
             a.ins("LDA_imm", 1); a.ins16("STA_abs", SLAM_ARM); a.jmp("mat_done")
             a.label("mat_slow"); a.ins("LDA_imm", 0); a.ins16("STA_abs", SLAM_ARM)
             a.label("mat_done")
+        a.label(f"{L}_badcol")   # rejected column lands here: teardown WITHOUT adopting the result
         a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
         a.jmp(f"{L}_done")
         a.label(f"{L}_search")           # 16-bit watchdog: d3 searches take seconds; abandon ~30s, re-queue once
@@ -1229,7 +1245,19 @@ def build_main(level=11, speed=1):
             a.br("BEQ", "nf2_untorn"); a.jmp("act_p1"); a.label("nf2_untorn")  # torn: keep old TGT (rel too far)
         else:
             a.br("BNE", "act_p1")                                              # torn read: keep old TGT
-        a.ins16("LDA_abs", 0x616D); a.ins16("STA_abs", TGT_C2)   # column: always refine (anytime)
+        # ★ SECOND SANITY GUARD, and the one that actually mattered. handle()'s guard is not
+        # enough: THIS path re-reads the live mailbox every hook and writes TGT_C2 directly,
+        # so on an undecoded window it re-adopted the open-bus column ($52 for the $5200
+        # window) immediately after handle() had rejected it. Caught only because the gate
+        # row simulates the dead window rather than trusting the guard -- the matrix reported
+        # TGT_C2=82 with the handle() guard already in. A bad column here means "no usable
+        # candidate", so fall through to nf2_hold: steer nothing this hook (no pin, the
+        # capsule keeps falling) rather than chase noise.
+        a.ins16("LDA_abs", 0x616D)
+        a.ins("CMP_imm", 8); a.br("BCC", "nf2_colok")
+        a.jmp("nf2_hold")
+        a.label("nf2_colok")
+        a.ins16("STA_abs", TGT_C2)                               # column: always refine (anytime)
         if ROTFIX:
             # FEASIBILITY-GATED retarget: refine the ORIENT only while pre-phase (orient not yet
             # committed). Once ROT_DONE2 latches, keep the committed orient so a late candidate

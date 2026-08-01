@@ -119,7 +119,12 @@ class Game:
     value change -- the GO write carries A = nB & 0x0F, so nB is set to 2, distinct
     from both DONE-flag values)."""
 
-    def __init__(self, P, unit1, labels, done_after_hooks=10 ** 9, prgram_garbage=False):
+    def __init__(self, P, unit1, labels, done_after_hooks=10 ** 9, prgram_garbage=False,
+                 openbus=False):
+        # openbus: model a core that does NOT decode the copro window. Every read of the
+        # window returns the address high byte ($50 for $50xx), which is what real NES open
+        # bus does -- so DONE reads nonzero forever and the "published" column is 80.
+        self.openbus = openbus
         self.P, self.labels = P, labels
         self.m = MPU()
         self.m.memory[BASE:BASE + len(unit1)] = unit1
@@ -148,6 +153,11 @@ class Game:
         self._sync_mbox()
 
     def _sync_mbox(self):
+        if self.openbus:
+            hi = (self.WB >> 8) & 0xFF
+            for off in (0x84, 0x85, 0x86):
+                self.m.memory[self.WB + off] = hi
+            return
         self.m.memory[self.WB + 0x84] = self.mbox_done
         self.m.memory[self.WB + 0x85], self.m.memory[self.WB + 0x86] = self.pub
 
@@ -284,6 +294,24 @@ def human_play_probe(P, u, L):
     return w
 
 
+def openbus_guard(P, u, L):
+    """True = healthy: an UNDECODED copro window cannot steer a player.
+
+    This is the live defect, not a hypothetical (measured 2026-08-01 on
+    NES_tuckmb_20260731): $5000 was not decoded, reads returned open bus $50, handle()
+    published column 80, and act_* then held ONE direction for the whole match because
+    pillX is always < 80. Healthy = the driver refuses the out-of-range column, keeps its
+    previous target, and does not pin itself waiting on the dead window either.
+    """
+    g = Game(P, u, L, done_after_hooks=25, openbus=True)
+    boot(g)
+    for _ in range(120):
+        g.frame_step(4)
+    tgt = g.m.memory[P.TGT_C2]
+    armed = g.m.memory[P.ARMED2]
+    return tgt < 8 and armed == 0
+
+
 def play_first_go(P, u, L):
     g = Game(P, u, L, done_after_hooks=25)
     boot(g)
@@ -388,6 +416,7 @@ def main():
             record("nav", cls, starts > 0)
         go = play_first_go(P, u, L)
         record("play", cls, go is not None and go <= 10)
+        record("guard", cls, openbus_guard(P, u, L))
         if cls in ("ab_control", "mister_human", "freeze_legacy"):
             record("defect_p0.3", cls, defect_p03_rematch(P, u, L), expect_fail=True)
             record("defect_p2.2", cls, defect_p22_relaunch(P, u, L), expect_fail=True)
