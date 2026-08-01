@@ -184,22 +184,121 @@ imported from `dr_mario_rl/tmp/combo_term`.
 
 ## DONE latency: what the pipelining actually cost
 
-Measured end-to-end through the real mapper (`donelat/run_arms.sh`), 6 real boards, tucks on
-both sides so it is like-for-like against what is deployed:
+Measured end-to-end through the real mapper (`donelat/run_arms.sh`), tucks on both sides so
+it is like-for-like against what is deployed.
 
-| arm | mean | worst | worst, in frames |
-|---|---|---|---|
-| deployed today (`751b6ce9`) | 29.02M clocks | 36.29M | **25.3** |
-| Combo Stomper 180 (`f4b6dfbf`) | 53.09M clocks | 67.13M | **46.9** |
+⚠ **The first version of this table was measured on 6 boards and UNDERSTATED the tail by
+22%.** Six boards cannot see a p95. Re-measured on the 69-board corpus, Combo Stomper 180
+(`f4b6dfbf`):
 
-**1.83x, against a ~80-frame budget — 59% used at worst.** Passes, but it is worth being
-straight that this is far more than the +25% measured before timing closure. Three timing
-splits and the RAM's read-latency bubbles all land on the clearing path, and they add up:
-per-NODE worst went 4,353 → 11,507 cycles across the campaign. Timing margin was bought
-with latency, and the budget is where it was spent.
+| statistic | clocks | frames @85.909 MHz |
+|---|---|---|
+| min | 26.1M | 18.2 |
+| median | 48.3M | 33.7 |
+| p90 | 59.2M | 41.3 |
+| p95 | 63.4M | 44.3 |
+| **max** | **81.9M** | **57.2** |
+
+The superseded worst-of-6 was 67.13M = **46.9 frames**; it is left visible here rather than
+overwritten, because the correction is the point. Against a ~80-frame budget the true worst
+case uses **72%**, not 59%.
+
+Roughly 1.8x the deployed `751b6ce9` arm — far more than the +25% measured before timing
+closure. Three timing splits and the RAM's read-latency bubbles all land on the clearing
+path, and they add up: per-NODE worst went 4,353 → 11,507 cycles across the campaign.
+Timing margin was bought with latency, and the budget is where it was spent.
 
 ⚠ The rig prints `@85.9MHz eff/2`. The `eff/2` is a STALE LABEL from when the copro sat on
 outclk_1 (42.95 MHz). It runs on `clk85` now — `CoproDrMario.clk_cpu` is wired to outclk_0
 with `RDY` tied high and no clock enable — so the seconds it prints are correct and the
 frame counts above are at the true rate. Worth knowing before someone halves them in their
 head: at 42.95 MHz the worst case would be ~94 frames and OVER budget.
+
+## Truncation: what a shorter budget actually costs (`sim_agree.cpp` + `analyse_agree.py`)
+
+The Pocket runs the same search on a slower clock against the same pill budget, so the
+question is not "is it slower" (it is) but **"does a truncated search commit a different
+move?"** Latency only matters through that.
+
+It is directly observable, because the firmware is genuinely anytime: `test_search_d3.py`
+publishes the running best into the result mailbox on every strict improvement, after
+writing `orient=0xFF` at search start as a "no candidate yet" sentinel. So the rig records
+every publish transition with its clock offset in ONE pass, and agreement at any truncation
+point K is then computed analytically instead of re-running per K.
+
+**Two gates, because a convergence curve is easy to fake accidentally.**
+
+| gate | what it would have caught | result |
+|---|---|---|
+| non-perturbation | sampling that slows the thing it measures | max \|T_peek − T_bus\| = **48 clocks** of ~50M vs `dist69.log` |
+| address | wrong wram index producing a plausible curve from unrelated bytes | peeked final move == bus-read move, **69/69** |
+
+Sampling reads the dpram array directly rather than issuing host bus cycles (`dpram_agree.v`
+adds `public_flat_rd` — sim-only file, read-only). The 48-clock residue is the old rig's
+48-clock poll quantisation, and it has the expected sign.
+
+**Result (69 boards, shipped `stomp180` arm):**
+
+| commit at f of the search | agree | differ |
+|---|---|---|
+| 0.05 | 65.2% | 24 |
+| 0.20 | 82.6% | 12 |
+| 0.50 | 95.7% | 3 |
+| 0.70 | 98.6% | 1 |
+| **0.80 and beyond** | **100%** | **0** |
+
+At the Pocket's 72.9M-clock budget, **68 of 69 boards finish outright**; the one that does
+not (board 58, 81.9M) gets **89.0%** of its search done and commits **the same move**. Force
+*every* board to 89% and agreement is still 69/69. So: **label = chain180, zero measured
+quality cost from truncation.**
+
+Two things keep that from being a vacuous result. First, agreement at f=0.05 is only 65%, so
+the search really does refine late on a third of boards — 100%-at-80% is earned, not
+automatic. Second, the early convergence has a **mechanism**, which is why it extrapolates to
+tail boards that were never sampled: phase 0 scores every legal root move at depth 1 into
+`TK1_K*`, and the deep loop's `mx1_loop` is an argmax-and-poison pass that walks that
+shortlist in DESCENDING shallow score. Depth 3 is best-first over a depth-1 ranking, so it
+commits the shallow favourite immediately and spends the rest confirming. A board twice as
+slow as anything observed would sit at 44% completion, which the curve prices directly.
+
+⚠ **What this does NOT measure.** Agreement is move identity, so 100% means zero cost — but a
+disagreement would not imply a *large* cost, since two moves can be near-equal in eval. And
+it models "the answer changed", not "the driver could still physically steer there"; late
+retargeting is separately constrained by the orient lock and RECOMMIT. If a future budget
+pushes boards below ~80% completion, the paired h2h should run on the diverging boards only
+(`analyse_agree.py` names them) and report eval delta alongside win rate.
+
+Incidental finding: the firmware stores col and orient as two consecutive instructions, so
+for ~7 clocks the mailbox reads (new col, PREVIOUS orient) — a pair that looks valid and
+never was a candidate. Total exposure across the corpus is 182 clocks in 3.44G
+(0.0000053%); the 0xFF sentinel does not mask this case. Real, not worth hardware.
+
+## Pocket sizing (`size_leafeval_pocket.sh`)
+
+Same delta instrument as `size_leafeval.sh` but on the Pocket part (5CEBA4F23C8) with the
+Pocket's own optimisation policy — its vendored `nes_pocket.qsf` ships **AGGRESSIVE AREA +
+OPTIMIZATION_TECHNIQUE AREA**, not the MiSTer's SPEED. AREA-mode synthesis makes different
+sharing decisions, so a delta measured under SPEED is not automatically the Pocket's delta.
+
+| variant | ALMs (of 18,480) | RAM blocks |
+|---|---|---|
+| `pbase` (pre-chain, `94f84404`) | 5,906 | 1 |
+| `pchain` (shipped chain engine, `80135f04`) | 6,696 | 2 |
+| **delta** | **+790** | +1 |
+
+The +790 lands within 6 ALMs of the +784 measured on the MiSTer part, so in this case the
+optimisation policy did not move the cost — worth knowing, but it had to be measured rather
+than assumed.
+
+Against the Pocket core's current fit (17,380 / 18,480 = **1,100 free**) that leaves ~310
+ALMs. But seed variance across the archived Pocket fits spans 17,380–18,008 — **±628 ALMs,
+larger than the margin itself.** So the standalone delta says "arithmetically fits on a good
+seed", not "fits"; only a whole-core trial fit decides it, and the standalone delta is not
+guaranteed to survive in-core sharing either.
+
+⚠ The Pocket's vendored `LeafEval.sv` is **code-identical** to the MiSTer pre-chain base
+(comment-stripped md5 `1cecf2fc` on both) — but its header comment still advertises the OLD
+eval constants (`60*setup`, `30*buried`, `12*rdy_ext`, `12*vrdy`) while the RTL underneath
+carries the coef-opt winner (`32/48/8/8`). Reading that comment suggests the Pocket is
+running a stale brain; it is not. Fix belongs in the canonical source + `sync_to_pocket.sh`,
+never by hand in the vendored tree.

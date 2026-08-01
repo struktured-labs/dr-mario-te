@@ -1,0 +1,55 @@
+NON-PERTURBATION GATE: max |T_peek - T_bus| = 48 clocks (board 52), tolerance 200
+  PASS -- clock counts reproduce the bus-polled rig, so peeking is free.
+ADDRESS GATE: peeked final move == bus-read move on 69/69
+  PASS -- the trace reads the same mailbox the NES does.
+
+CONVERGENCE PROFILE (69 boards, stomp180 = the shipped Combo Stomper arm)
+  settle fraction = clock of the LAST change to the published move / total search
+    min 0.0018  median 0.0356  p90 0.2980  p95 0.4699  max 0.7743
+  first-answer fraction = clock the FIRST candidate is published / total search
+    min 0.001781  median 0.033297  p90 0.037132  max 0.041445
+  publishes per search: min 2  max 9  mean 3.9
+
+AGREEMENT vs COMPLETION FRACTION  (commit best-so-far at f*T, compare to final)
+     f     agree   differ   no-answer
+   0.05     45     24      0       65.2% agree
+   0.10     50     19      0       72.5% agree
+   0.20     57     12      0       82.6% agree
+   0.30     63      6      0       91.3% agree
+   0.40     64      5      0       92.8% agree
+   0.50     66      3      0       95.7% agree
+   0.60     66      3      0       95.7% agree
+   0.70     68      1      0       98.6% agree
+   0.80     69      0      0      100.0% agree
+   0.88     69      0      0      100.0% agree
+   0.95     69      0      0      100.0% agree
+   1.00     69      0      0      100.0% agree
+
+ABSOLUTE BUDGET  (Pocket deadline is wall-clock, not a fraction)
+   budget(Mclk)  complete  truncated-agree  truncated-DIFFER  truncated-no-answer
+        40.0        5            64                0                0
+        50.0       37            32                0                0
+        60.0       62             7                0                0
+        72.9       68             1                0                0  <- Pocket
+        80.0       68             1                0                0
+       100.0       69             0                0                0
+
+WORST-CASE COMPLETION AT THE POCKET BUDGET (72.9M clocks)
+  slowest board 58 (T=81932227) gets 89.0% of its search done
+  agreement if EVERY board were truncated to that fraction: 69/69
+  Bounding the unsampled tail: a board 2x slower than anything observed here would sit at 44% completion,
+  and the normalised curve above prices that completion fraction directly.
+
+LATEST-SETTLING BOARDS (the deep search overturned the shallow favourite here)
+  board   8  settle  0.774 of T=  39176865  cands~4  final (1, 2)
+  board  65  settle  0.670 of T=  42669248  cands~3  final (5, 2)
+  board  39  settle  0.605 of T=  48672753  cands~4  final (3, 3)
+  board  22  settle  0.470 of T=  38673233  cands~3  final (1, 2)
+  board  40  settle  0.465 of T=  35852269  cands~3  final (6, 3)
+  board  34  settle  0.374 of T=  51659686  cands~3  final (2, 2)
+  board  46  settle  0.298 of T=  53402329  cands~5  final (2, 3)
+  board  24  settle  0.237 of T=  60115763  cands~3  final (1, 0)
+
+TORN-PAIR EXPOSURE: 26 windows, 182 clocks total of 3440893711 (0.0000053% of search time)
+  = mailbox showing (new col, previous orient). Real, but a host read lands in one
+  with probability ~1e-6 per poll; the sentinel does not mask this case.
