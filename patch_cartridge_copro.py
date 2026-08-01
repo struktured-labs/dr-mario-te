@@ -138,6 +138,13 @@ W_TCOL, W_TROW = 0x5087, 0x5088   # copro publishes the tuck descriptor here (0x
 # 0 = hold LEFT this pill, 1 = hold RIGHT. Toggled on the P1 new-pill edge. $617C is the next
 # free PRG-RAM byte (BUSY..$6185 is the free window; $6186+ is the DRPROBE ring header).
 WIG_DIR = 0x617C
+# DRP1NATIVE (see below): the P1 native-AI wrapper's own state. P1AI_Y is the per-pill search
+# cache key (last pill Y seen); P1AI_C/P1AI_O hold the search result. The results are copied
+# out of the AI's zero-page outputs IMMEDIATELY, because Z_TARGET is $00 = CTRL_exp1, which
+# get_CTRL_inputs rewrites on EVERY pad read -- reading it a hook later returns controller
+# bits, not a column.
+P1AI_Y, P1AI_C, P1AI_O = 0x617D, 0x617E, 0x617F
+P1AI_CPU, P1SWAP_CPU = 0x9000, 0x9200   # P1-mirrored d1 AI + its swap_eval, in unit1 (bank 2)
 import os as _os
 TUCK = _os.environ.get("DRTUCK", "0") == "1"   # tuck executor (see TUCK_C2 above)
 REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
@@ -277,6 +284,43 @@ P1WIGGLE = _os.environ.get("DRP1WIGGLE", "0") == "1"
 assert not (P1WIGGLE and HUMAN_P1), (
     "DRP1WIGGLE=1 with DRHUMAN=1 is refused: P1 is a human on a DRHUMAN cart and the cart "
     "must never press their buttons (spec P0.4). Build the wiggle on a CvC cart only.")
+# DRP1NATIVE=1 (SPECTATOR feature, default OFF -> every existing cart byte-identical): give P1
+# the v28cs NATIVE depth-1 6502 AI, with its soft-drop stripped so it plays slowly on purpose.
+# A middle rung between DRP1WIGGLE (alive but mindless) and a real copro opponent: v28cs-class
+# d1 clears ~9.1% ROM-faithful / ~6.7% live at L11 -- competent, clearly beatable, watchable.
+#
+# ★ WHY P1 NEEDS THIS AT ALL (measured 2026-08-01, save-state PRG-RAM): the deployed core
+# does NOT decode P1's copro window at $5000. Reads return open bus = the address high byte
+# $50, so handle(1)'s GO is read straight back as DONE, it publishes column $50 = 80, and
+# act_p1's `CMP TGT_C1 / BCC` is then ALWAYS true -> P1 held RIGHT forever and piled its whole
+# stack into the right wall (pre-wiggle board grids right-half 22 / left-half 6). So under
+# this flag handle(1) is DROPPED entirely: on this core it does not merely waste the ~5.4k-cycle
+# board upload, it actively publishes garbage. That also frees copro1 and, conveniently, removes
+# a spike that fired on the SAME new-pill edge as the native search.
+#
+# ★ COST, and why the obvious worry is the wrong one. The 0x37CF hook runs EXACTLY 2x per
+# frame and BOTH are inside the NMI (see the hook-location note above) -- there is no main-loop
+# invocation to move heavy work to. But the hook runs AFTER every PPU write in the NMI, so an
+# over-long invocation eats the main loop's share of the 29780-cycle frame rather than
+# corrupting the display; vblank is NOT the budget. Measured: the driver is ~400 cyc/hook
+# (p95 460), and one d1 search is 16-23k cyc ONCE PER PILL. So this costs about one hitched
+# frame per P1 pill (~1 in 200 at L11), and the only dangerous case -- overrunning a WHOLE
+# frame, so the next NMI re-enters -- is already caught by the BUSY guard.
+#
+# ★ THE TWO-PASS AND, which is the one real trap. getInputs calls the hook twice and ANDs the
+# two $F5 values, so BOTH passes of a frame must leave the SAME byte or the input vanishes
+# (this is the DRNAVDWELL failure shape). v28cs's per-pill cache already guarantees it: hook 1
+# sees a new pill Y, searches, and stores the key; hook 2 sees the key match, skips the search
+# and reuses the same target -> identical byte. P1AI_Y is that key. Any future per-pill work
+# here MUST preserve this; tests/test_p1_native.py asserts it directly.
+P1NATIVE = _os.environ.get("DRP1NATIVE", "0") == "1"
+assert not (P1NATIVE and HUMAN_P1), (
+    "DRP1NATIVE=1 with DRHUMAN=1 is refused: P1 is a human on a DRHUMAN cart and the cart "
+    "must never press their buttons (spec P0.4). Build the native P1 AI on a CvC cart only.")
+assert not (P1NATIVE and P1WIGGLE), (
+    "DRP1NATIVE=1 and DRP1WIGGLE=1 are mutually exclusive: both replace act_p1 outright, so "
+    "one would silently win. Pick the P1 personality you want.")
+P1_OWNED = P1WIGGLE or P1NATIVE   # act_p1 is replaced; the copro P1 path is not used at all
 RECOMMIT = (MATURE
             and (not NO_FREEZE or _os.environ.get("DRRECOMMIT_NOFREEZE", "0") == "1")
             and (_os.environ.get("DRRECOMMIT", "1") != "0"))
@@ -655,7 +699,14 @@ def build_main(level=11, speed=1):
         # pill 1 holds RIGHT and pill 2 LEFT. Which wall leads is arbitrary, but pin the
         # seed here: tests/test_p1_wiggle.py asserts the exact landing sequence.
         a.ins16("STA_abs", WIG_DIR)
+    if P1NATIVE:
+        # A==0: P1AI_Y=0 so the first pill (Y=15) trips the new-pill edge and gets a real
+        # search; P1AI_O=0 = the horizontal spawn orient, so no rotation is demanded before
+        # the first search has run.
+        a.ins16("STA_abs", P1AI_Y); a.ins16("STA_abs", P1AI_O)
     a.ins("LDA_imm", 3)                                     # sane targets pre-first-publish
+    if P1NATIVE:
+        a.ins16("STA_abs", P1AI_C)                          # centre column until the first search
     a.ins16("STA_abs", TGT_C1); a.ins16("STA_abs", TGT_O1)
     a.ins16("STA_abs", TGT_C2); a.ins16("STA_abs", TGT_O2)
     a.ins("LDA_imm", 2); a.ins16("STA_abs", TURN)          # fair-serve round-robin seed
@@ -1123,7 +1174,9 @@ def build_main(level=11, speed=1):
             a.ins16("STA_abs", wretry)                      # FIX(A): dropping this keeps the re-queue-once latch
         a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
         a.label(f"{L}_done")
-    if not HUMAN_P1:
+    if not HUMAN_P1 and not P1NATIVE:
+        # (DRP1NATIVE drops P1's copro search entirely -- see the flag note: on the deployed
+        #  core $5000 is undecoded, so this only ever published open-bus garbage.)
         handle(1, 0x5000, 0x0400, [0x0301, 0x0302, 0x031A, 0x031B], ARMED, WDOG, WRETRY, PEND1, DELAY1, TGT_C1, TGT_O1, WDOGH1, SEED1)
     handle(2, W2_BASE, 0x0500, [0x0381, 0x0382, 0x039A, 0x039B], ARMED2, WDOG2, WRETRY2, PEND2, DELAY2, TGT_C2, TGT_O2, WDOGH2, SEED2)
     a.jmp("act")
@@ -1132,10 +1185,11 @@ def build_main(level=11, speed=1):
     # (time-sharing wait was letting pills drop 2-4 rows before their target arrived ->
     # unreachable columns -> bad placements). Called from act below.
     a.label("freeze_pending")
-    if not HUMAN_P1 and not P1WIGGLE:
-        # (DRP1WIGGLE builds also skip it: the wiggle steers P1 for the WHOLE descent, so a
-        #  search-driven gravity pin would freeze the capsule mid-slide -- and P1's published
-        #  target is ignored anyway, so there is nothing to wait for.)
+    if not HUMAN_P1 and not P1_OWNED:
+        # (DRP1WIGGLE / DRP1NATIVE builds also skip it: both own P1's descent outright, so a
+        #  search-driven gravity pin would freeze the capsule mid-slide -- and neither reads
+        #  P1's copro target, so there is nothing to wait for. Under DRP1NATIVE handle(1) is
+        #  not even emitted, which would leave PEND1 latched at 1 forever -> a permanent pin.)
         # (DRHUMAN builds MUST skip this: handle(1) never runs, so PEND1 is uninitialized
         #  boot garbage — nonzero garbage pinned P1's gravity forever = capsule stuck at top,
         #  observed on Pocket hardware 2026-07-18.)
@@ -1348,6 +1402,40 @@ def build_main(level=11, speed=1):
         a.label("wig_left"); a.ins("LDA_imm", B_LEFT)
         a.label("wig_hold"); a.ins("STA_zp", 0xF5)
         a.jmp("act_done")
+    elif P1NATIVE:
+        # ---- NATIVE d1 AI for P1 (see DRP1NATIVE) -- the P1 mirror of v28cs's $FF54 wrapper.
+        # PER-PILL CACHE (and the two-pass AND guarantee): search only when P1's pill Y has
+        # RISEN above the last Y we saw, i.e. a new capsule spawned. Hook 1 of a frame does the
+        # search and then stores the key; hook 2 finds the key equal, skips, and reuses the same
+        # P1AI_C/P1AI_O -- so both passes write an IDENTICAL $F5 and survive the AND.
+        a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", P1AI_Y)
+        a.br("BCC", "p1n_nosearch"); a.br("BEQ", "p1n_nosearch")
+        a.jsr(build_p1_native()[1]["search_entry"])          # JSR the mirrored search (abs)
+        a.ins("LDA_zp", 0x00); a.ins16("STA_abs", P1AI_C)   # Z_TARGET -> ours NOW ($00 is
+        a.ins("LDA_zp", 0xDA); a.ins16("STA_abs", P1AI_O)   # CTRL_exp1, rewritten every read)
+        a.label("p1n_nosearch")
+        a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", P1AI_Y)
+        # ORIENT phase: press A until the capsule matches the searched orientation. $F7 is
+        # cleared first so each hook reads as a FRESH press edge -- without that, held==raw
+        # from the previous hook makes pressed==0 and rotation stops after one step. (This is
+        # the same idiom act_p2 uses on $F8/$F6, and it does NOT contradict the wiggle's
+        # "never write $F7": there we WANT held to persist so DAS accumulates; here we want a
+        # repeating edge.)
+        a.ins16("LDA_abs", 0x0325); a.ins16("CMP_abs", P1AI_O); a.br("BEQ", "p1n_col")
+        a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF7)
+        a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF5); a.jmp("act_done")
+        # COLUMN phase: steer toward the searched column.
+        a.label("p1n_col")
+        a.ins16("LDA_abs", 0x0305); a.ins16("CMP_abs", P1AI_C); a.br("BEQ", "p1n_aligned")
+        a.ins("LDY_imm", B_RIGHT); a.br("BCC", "p1n_store")   # pillX < target -> RIGHT
+        a.ins("LDY_imm", B_LEFT); a.jmp("p1n_store")
+        a.label("p1n_aligned")
+        # ★ THE DOWN-STRIP (the whole point of "deliberately slow"): v28cs puts LDY #$04 here
+        # to soft-drop the moment the column is reached. LDY #$00 presses nothing, so the
+        # capsule finishes its descent at natural gravity and P1 plays at a watchable pace.
+        a.ins("LDY_imm", 0x00)
+        a.label("p1n_store"); a.ins("STY_zp", 0xF5)
+        a.jmp("act_done")
     # skip P1 acting if we're currently searching for P1
     a.ins16("LDA_abs", ARMED); a.br("BEQ", "act_p1_go")    # not searching P1 -> steer it
     a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)       # searching P1 -> freeze + skip steer
@@ -1372,6 +1460,22 @@ def build_main(level=11, speed=1):
     a.label("act_done")
     a.ins("RTS")
     return a.assemble(), a.labels
+
+
+def build_p1_native():
+    """(ai_bytes, ai_labels, swap_bytes) for the P1-MIRRORED copy of the v28cs depth-1 AI.
+
+    The v28cs AI is still resident in every copro cart at $FB00 (only its 5-byte head is
+    repointed), but it reads P2's board $0500 and P2's colours $0381/$0382, so it cannot serve
+    P1 as-is. Re-emitting it with the P1 addresses is 11 substitutions and ~550 bytes of the
+    ~14.8 KB free in unit1 -- cheaper and far safer than the alternative of copying P1's board
+    into $0500 around a call, which would corrupt P2's live board if the NMI re-entered
+    mid-copy. Deterministic, so callers may invoke it freely instead of threading it through.
+    """
+    from patch_vs_cpu import build_v18_ai, build_swap_eval
+    body, labels = build_v18_ai(P1AI_CPU, with_rotation=True, color_swap=True,
+                                board=0x0400, ca=0x0301, cb=0x0302, swap_cpu=P1SWAP_CPU)
+    return body, labels, build_swap_eval(P1SWAP_CPU, labels["eval_pair"])
 
 
 def _sel(w, value):
@@ -1418,6 +1522,18 @@ def main():
     print(f"unit-1 main: {len(unit1)} B at ${UNIT1_CPU:04X}; main=${main_cpu:04X}")
     bank = bytearray(b"\x00" * 0x4000)
     bank[0:len(unit1)] = unit1
+    if P1NATIVE:
+        p1ai, p1lab, p1swap = build_p1_native()
+        assert UNIT1_CPU + len(unit1) <= P1AI_CPU, (
+            f"build_main output reaches ${UNIT1_CPU + len(unit1):04X}, which would collide with "
+            f"the P1 native AI at ${P1AI_CPU:04X}. Move P1AI_CPU up.")
+        assert P1AI_CPU + len(p1ai) <= P1SWAP_CPU, "P1 AI overruns its swap_eval"
+        assert P1SWAP_CPU + len(p1swap) <= UNIT1_CPU + 0x4000, "P1 swap_eval overruns the bank"
+        bank[P1AI_CPU - UNIT1_CPU:P1AI_CPU - UNIT1_CPU + len(p1ai)] = p1ai
+        bank[P1SWAP_CPU - UNIT1_CPU:P1SWAP_CPU - UNIT1_CPU + len(p1swap)] = p1swap
+        print(f"DRP1NATIVE: P1 d1 AI {len(p1ai)} B at ${P1AI_CPU:04X} "
+              f"(search_entry ${p1lab['search_entry']:04X}), swap_eval {len(p1swap)} B at "
+              f"${P1SWAP_CPU:04X}; handle(1) dropped, soft-drop stripped")
 
     wrap = build_wrapper(main_cpu)
     print(f"trampoline: {len(wrap)} B at ${WRAP_CPU:04X}")

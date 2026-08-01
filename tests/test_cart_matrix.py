@@ -46,26 +46,30 @@ SENT = 0x4FF2
 GRAV_TH = 13
 # every flag any class/arm sets: popped before each build so nothing leaks between builds
 _FLAGS = ("DRNOFREEZE", "DRHUMAN", "DRPOCKET", "DRRECOMMIT_NOFREEZE", "DRNAVDWELL",
-          "DRPENDBOUND", "DRCOLDINIT", "DRSLAM_KOPEN", "DRP1WIGGLE")
+          "DRPENDBOUND", "DRCOLDINIT", "DRSLAM_KOPEN", "DRP1WIGGLE", "DRP1NATIVE")
 
 CLASSES = [
     ("ab_control",   {"DRNOFREEZE": "1"},
-     dict(recommit=False, human=False, wb=0x5200)),
+     dict(recommit=False, human=False, h1=True, wb=0x5200)),
     ("mister_play",  {"DRNOFREEZE": "1", "DRRECOMMIT_NOFREEZE": "1"},
-     dict(recommit=True, human=False, wb=0x5200)),
+     dict(recommit=True, human=False, h1=True, wb=0x5200)),
     ("mister_human", {"DRHUMAN": "1", "DRNOFREEZE": "1", "DRRECOMMIT_NOFREEZE": "1"},
-     dict(recommit=True, human=True, wb=0x5200)),
+     dict(recommit=True, human=True, h1=False, wb=0x5200)),
     ("pocket_human", {"DRHUMAN": "1", "DRNAVDWELL": "0", "DRNOFREEZE": "1",
                       "DRPOCKET": "1", "DRRECOMMIT_NOFREEZE": "1"},
-     dict(recommit=True, human=True, wb=0x5000)),
+     dict(recommit=True, human=True, h1=False, wb=0x5000)),
     ("freeze_legacy", {"DRNOFREEZE": "0"},
-     dict(recommit=True, human=False, wb=0x5200)),
+     dict(recommit=True, human=False, h1=True, wb=0x5200)),
     # spectator CvC cart: P2 = the copro AI, P1 = the DRP1WIGGLE hold-one-direction dummy.
     # It is a CvC class, so it must still inject (human=False) and still autonav. The wiggle's
     # own behaviour is proven in tests/test_p1_wiggle.py; this row keeps the class in the
     # branch audit and guards the invariant that adding P1 code never breaks P2's search.
     ("cvc_wiggle",   {"DRNOFREEZE": "1", "DRRECOMMIT_NOFREEZE": "1", "DRP1WIGGLE": "1"},
-     dict(recommit=True, human=False, wb=0x5200)),
+     dict(recommit=True, human=False, h1=True, wb=0x5200)),
+    # spectator CvC cart, native-AI flavour: P1 runs the mirrored v28cs depth-1 AI, so its
+    # copro search is DROPPED (h1=False on a non-human class -- the reason `h1` is explicit).
+    ("cvc_native",   {"DRNOFREEZE": "1", "DRRECOMMIT_NOFREEZE": "1", "DRP1NATIVE": "1"},
+     dict(recommit=True, human=False, h1=False, wb=0x5200)),
 ]
 
 _seq = [0]
@@ -373,7 +377,7 @@ def main():
         record("build", cls, badbr == 0)
         record("struct", cls,
                ("h2_rcdone" in L) == exp["recommit"]
-               and ("h1_dz" in L) == (not exp["human"])
+               and ("h1_dz" in L) == exp["h1"]
                and P.W2_BASE == exp["wb"])
         starts, f5w = title_nav(P, u, L)
         if exp["human"]:

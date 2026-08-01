@@ -659,7 +659,8 @@ VIR_W = 32
 CELL_W = 2
 
 
-def build_v18_ai(ai_cpu, with_rotation=False, color_swap=False, burial_cpu=None):
+def build_v18_ai(ai_cpu, with_rotation=False, color_swap=False, burial_cpu=None,
+                 board=0x0500, ca=0x0381, cb=0x0382, swap_cpu=0xCF00):
     """Emit the v18 depth-1 simulation AI. Returns bytes. ai_cpu = CPU load addr.
 
     color_swap: after the normal V/H search, re-evaluate the SINGLE chosen column
@@ -719,10 +720,10 @@ def build_v18_ai(ai_cpu, with_rotation=False, color_swap=False, burial_cpu=None)
     if with_rotation:
         a.ins("STA_zp", 0xDA)        # Z_BORIENT default = 0 horizontal (A still 0)
     # build placement tiles 0x4C|color from $0381/$0382
-    a.ins("LDA_abs", 0x81, 0x03)     # LDA $0381 (color A)
+    a.ins("LDA_abs", ca & 0xFF, ca >> 8)     # LDA $0381 (color A)
     a.ins("ORA_imm", 0x4C)
     a.ins("STA_zp", Z_TILEA)
-    a.ins("LDA_abs", 0x82, 0x03)     # LDA $0382 (color B)
+    a.ins("LDA_abs", cb & 0xFF, cb >> 8)     # LDA $0382 (color B)
     a.ins("ORA_imm", 0x4C)
     a.ins("STA_zp", Z_TILEB)
 
@@ -816,7 +817,7 @@ def build_v18_ai(ai_cpu, with_rotation=False, color_swap=False, burial_cpu=None)
         # Z_TARGET ($00) and Z_BORIENT ($DA). The wrapper does orient+move.
         a.label("search_done")
         if color_swap:
-            a.jmp(0xCF00)            # re-eval chosen column swapped, then RTS (in swap_eval)
+            a.jmp(swap_cpu)            # re-eval chosen column swapped, then RTS (in swap_eval)
         else:
             a.ins("RTS")
         a.label("exit")
@@ -853,10 +854,10 @@ def build_v18_ai(ai_cpu, with_rotation=False, color_swap=False, burial_cpu=None)
     a.label("eval_pair")
     a.ins("LDX_zp", Z_OFFA)
     a.ins("LDA_zp", Z_TILEA)
-    a.ins16("STA_absX", 0x0500)
+    a.ins16("STA_absX", board)
     a.ins("LDX_zp", Z_OFFB)
     a.ins("LDA_zp", Z_TILEB)
-    a.ins16("STA_absX", 0x0500)
+    a.ins16("STA_absX", board)
     a.ins("LDA_imm", 0x00)
     a.ins("STA_zp", Z_CELLS)
     a.ins("STA_zp", Z_VIR)
@@ -886,9 +887,9 @@ def build_v18_ai(ai_cpu, with_rotation=False, color_swap=False, burial_cpu=None)
         a.jsr(burial_cpu)            # TEST: no-op burial to isolate JSR/placement
     a.ins("LDA_imm", 0xFF)            # A=$FF preserved across LDX/STA below
     a.ins("LDX_zp", Z_OFFA)
-    a.ins16("STA_absX", 0x0500)
+    a.ins16("STA_absX", board)
     a.ins("LDX_zp", Z_OFFB)
-    a.ins16("STA_absX", 0x0500)
+    a.ins16("STA_absX", board)
     a.jsr("score_update")
     a.ins("RTS")
 
@@ -902,7 +903,7 @@ def build_v18_ai(ai_cpu, with_rotation=False, color_swap=False, burial_cpu=None)
     a.ins("TXA")                     # A = column = offset of row 0
     a.ins("TAY")                     # Y walks down the column by +8
     a.label("lc_scan")
-    a.ins16("LDA_absY", 0x0500)      # LDA $0500,Y
+    a.ins16("LDA_absY", board)      # LDA $0500,Y
     a.ins("CMP_imm", 0xFF)
     a.br("BNE", "lc_hit")            # occupied -> landing is one row up
     # still empty: advance Y by 8; if Y >= 128 we've fallen off the bottom and
@@ -967,7 +968,7 @@ def build_v18_ai(ai_cpu, with_rotation=False, color_swap=False, burial_cpu=None)
     a.ins("CLC"); a.ins("ADC_imm", 120); a.ins("STA_zp", Z_MAX)
     a.label("sr_setcolor")            # shared tail: read color, scan, return
     a.ins("LDX_zp", Z_CELLOFF)
-    a.ins16("LDA_absX", 0x0500)
+    a.ins16("LDA_absX", board)
     a.ins("AND_imm", 0x03)
     a.ins("STA_zp", Z_MCOLOR)
     a.jsr("scan_run")
@@ -991,7 +992,7 @@ def build_v18_ai(ai_cpu, with_rotation=False, color_swap=False, burial_cpu=None)
     a.ins("CMP_zp", Z_MIN)
     a.br("BCC", "sr_backdone")               # below min -> stop
     a.ins("TAX")                             # X = candidate offset
-    a.ins16("LDA_absX", 0x0500)
+    a.ins16("LDA_absX", board)
     a.ins("CMP_imm", 0xFF)
     a.br("BEQ", "sr_backdone")               # empty -> stop
     a.ins("AND_imm", 0x03)
@@ -1006,14 +1007,14 @@ def build_v18_ai(ai_cpu, with_rotation=False, color_swap=False, burial_cpu=None)
     a.ins("STA_zp", Z_RUNVIR)
     a.label("sr_fwd")
     a.ins("LDX_zp", Z_SOFF)
-    a.ins16("LDA_absX", 0x0500)
+    a.ins16("LDA_absX", board)
     a.ins("CMP_imm", 0xFF)
     a.br("BEQ", "sr_commit")                 # empty -> run ends
     a.ins("AND_imm", 0x03)
     a.ins("CMP_zp", Z_MCOLOR)
     a.br("BNE", "sr_commit")                 # color change -> run ends
     a.ins("INC_zp", Z_RUNLEN)
-    a.ins16("LDA_absX", 0x0500)
+    a.ins16("LDA_absX", board)
     a.ins("CMP_imm", 0xD0)                   # virus tile? (>= 0xD0)
     a.br("BCC", "sr_novir")
     a.ins("INC_zp", Z_RUNVIR)
@@ -1089,6 +1090,25 @@ def build_v18_ai(ai_cpu, with_rotation=False, color_swap=False, burial_cpu=None)
     code = a.assemble()
     labels_cpu = {k: a.base + v for k, v in a.labels.items()}
     return code, labels_cpu
+
+
+def build_swap_eval(swap_cpu, eval_pair):
+    """Emit swap_eval at `swap_cpu`: re-evaluate the chosen column in the SWAPPED colour
+    order (orient = Z_BORIENT+2) and RTS. score_update keeps the result only if it scores
+    higher. `eval_pair` is the owning AI's eval_pair address, so a second, player-mirrored
+    copy of the AI can have its own swap_eval (see build_v18_ai's swap_cpu argument)."""
+    s = Asm6502(swap_cpu)
+    s.ins("LDA_zp", Z_BEST); s.br("BNE", "go"); s.ins("RTS"); s.label("go")  # guard
+    s.ins("LDA_zp", 0xD0); s.ins("STA_zp", Z_OFFA)   # restore best geometry
+    s.ins("LDA_zp", 0xD1); s.ins("STA_zp", Z_OFFB)
+    s.ins("LDA_zp", Z_OFFA)
+    s.ins("LSR_A"); s.ins("LSR_A"); s.ins("LSR_A"); s.ins("STA_zp", Z_HIROW)
+    s.ins("LDA_zp", 0x00); s.ins("STA_zp", Z_COL)    # Z_TARGET -> Z_COL (score_update reads)
+    s.ins("LDA_zp", 0xDA); s.ins("CLC"); s.ins("ADC_imm", 0x02); s.ins("STA_zp", Z_ORIENT)
+    s.ins("LDX_zp", Z_OFFA); s.ins("LDA_zp", Z_OFFB)  # swap which colour goes where
+    s.ins("STA_zp", Z_OFFA); s.ins("STX_zp", Z_OFFB)
+    s.jsr(eval_pair); s.ins("RTS")
+    return s.assemble()
 
 
 def _build_rotation_wrapper(wrapper_cpu, search_entry, rotate_exec=True):
@@ -1235,19 +1255,7 @@ def apply_patches_v18(input_path, output_path, with_rotation=False, rotate_exec=
             # the rotation wrapper. score_update keeps it only if it scores higher,
             # and the wrapper rotates to orient 2/3 (matching color order).
             SWAP_CPU, SWAP_OFF = 0xCF00, 0x4F10
-            ep = v18_labels["eval_pair"]
-            s = Asm6502(SWAP_CPU)
-            s.ins("LDA_zp", Z_BEST); s.br("BNE", "go"); s.ins("RTS"); s.label("go")  # guard
-            s.ins("LDA_zp", 0xD0); s.ins("STA_zp", Z_OFFA)   # restore best geometry
-            s.ins("LDA_zp", 0xD1); s.ins("STA_zp", Z_OFFB)
-            s.ins("LDA_zp", Z_OFFA)
-            s.ins("LSR_A"); s.ins("LSR_A"); s.ins("LSR_A"); s.ins("STA_zp", Z_HIROW)
-            s.ins("LDA_zp", 0x00); s.ins("STA_zp", Z_COL)    # Z_TARGET -> Z_COL (score_update reads)
-            s.ins("LDA_zp", 0xDA); s.ins("CLC"); s.ins("ADC_imm", 0x02); s.ins("STA_zp", Z_ORIENT)
-            s.ins("LDX_zp", Z_OFFA); s.ins("LDA_zp", Z_OFFB)  # swap which color goes where
-            s.ins("STA_zp", Z_OFFA); s.ins("STX_zp", Z_OFFB)
-            s.jsr(ep); s.ins("RTS")
-            sb = s.assemble()
+            sb = build_swap_eval(SWAP_CPU, v18_labels["eval_pair"])
             assert SWAP_OFF + len(sb) <= 0x4F40, "swap_eval overflows $CF00 run"
             rom_data[SWAP_OFF:SWAP_OFF + len(sb)] = sb
             print(f"✓ swap_eval at 0x{SWAP_OFF:04X} (CPU $CF00, {len(sb)} bytes) — color-swap")
