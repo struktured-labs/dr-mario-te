@@ -99,6 +99,38 @@ clearing placements **by design** — that divergence is the lnk1 payload. What 
 that PHASE1 LEAF and PHASE3 DELTA stay at 948/948 and 4494/4494, which is what proves the
 eval and the delta fast path were not disturbed.
 
+## Shipping: the fit verdict, then the same-placement A/B
+
+**`fit_verdict.sh`** prints the three numbers that decide whether the engine ships as-is,
+each with its own PASS/FAIL, and exits non-zero if any fails — the call is arithmetic, not
+judgement:
+
+| | criterion | why it is the one that matters |
+|---|---|---|
+| (a) | copro-domain setup slack **> 0** | the pre-link baseline had only **+0.118 ns** here |
+| (b) | `pll_hdmi` no worse than the **−0.012** baseline | pre-existing and not ours, but placement pressure can move it, and then it is ours to explain |
+| (c) | **≥ 1,500 ALMs free** | headroom floor for tucks and the VS lane behind this work |
+
+**`swap_arm.sh <lnk1\|stomp180\|stomp360>`** — the intended A/B METHODOLOGY, not just a
+convenience.
+
+The arm-select bytes live in the copro firmware, so on a **cart** they really are a
+two-byte patch of a file. On **MiSTer** they are not: `CoproDrMario.sv` pulls the firmware
+in with `initial $readmemh("copro_rom.hex", rom)`, which bakes it into the bitstream.
+Swapping arms therefore needs a new `.rbf` — but **not** a new fit:
+
+    quartus_cdb NES -c NES --update_mif      # re-read the hex into the fitted database
+    quartus_asm NES -c NES                   # re-emit the bitstream   (~2 min, not ~40)
+
+That is better than merely faster. Both arms come out of the **same placement and the same
+routing**, so nothing but the ROM contents differs between them. Any behavioural difference
+observed on hardware is the brain, and cannot be a fitter artifact — which is exactly the
+confound that two independently-fitted builds would leave open. Pair it with a fixed boot
+seed (same capsule stream) and the only free variable left is the brain.
+
+Deploy with a **device-side md5**: copy, then verify the hash on the MiSTer itself, never
+on the host.
+
 ## Environment
 
 `/home/struktured/projects/dr_mario_rl/tmp/venv/bin/python` (numba + py65). The kernels are
