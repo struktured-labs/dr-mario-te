@@ -1,28 +1,43 @@
 #!/usr/bin/env bash
 # Swap the copro brain in an ALREADY-FITTED core, without re-running place & route.
 #
-# WHY THIS EXISTS, and a correction worth reading. The arm-select bytes ($70E5 a_fix,
-# $70E6 DRCHAIN/4) live in the copro FIRMWARE, so on a CART they really are a two-byte
-# patch of a file. On MiSTer they are not: CoproDrMario.sv pulls the firmware in with
+# ⚠⚠ THIS SCRIPT DOES NOT WORK, AND IS KEPT ONLY AS THE RECORD OF WHY.
 #
-#     initial $readmemh("copro_rom.hex", rom);
+# The premise was: swap the copro firmware in an already-fitted core with
+# `quartus_cdb --update_mif` + `quartus_asm`, ~2 minutes instead of a ~40 minute refit, with
+# both arms coming out of the SAME placement so a hardware difference could not be a fitter
+# artifact. That premise is FALSE.
 #
-# which BAKES it into the bitstream. Swapping arms therefore needs a new .rbf -- but NOT a
-# new fit. `quartus_cdb --update_mif` re-reads the hex into the existing placed-and-routed
-# database and `quartus_asm` re-emits the bitstream, which is a couple of minutes instead
-# of ~40.
+# `--update_mif` only updates memories whose contents come from a MIF/HEX ASSIGNMENT (IP or
+# qsf). CoproDrMario.sv initialises the firmware ROM with
 #
-# That is better than a full rebuild for the A/B, not merely cheaper: both arms come out of
-# the SAME placement and the SAME routing, so nothing but the ROM contents differs. Any
-# behavioural difference on hardware is the brain, and cannot be a fitter artifact.
+#     initial $readmemh("copro_rom.hex", rom);      // CoproDrMario.sv:160
 #
-# ⚠ DRCOPRO_TUCK=1 IS NOT OPTIONAL HERE. The firmware currently deployed on the MiSTer
-# (751b6ce9) is the TUCK build -- verified by rebuilding it. An arm image built without
-# DRCOPRO_TUCK would silently DROP the tuck enumerator, shipping a regression disguised as
-# a brain upgrade. Every arm image below therefore carries tucks, and the two-byte assertion
-# is run on the TUCK pair, which is the pair that actually ships.
+# which Quartus resolves at SYNTHESIS. update_mif has nothing to update, exits successfully,
+# and quartus_asm re-emits the SAME bitstream. MEASURED -- three "different" arms:
+#
+#     ship build      NES.rbf   f7d3382a...
+#     swap stomp180   NES.rbf   f7d3382a...   identical
+#     swap stomp360   NES.rbf   f7d3382a...   identical
+#
+# The failure is quiet and it is dangerous: every command succeeds, and the core you deploy
+# runs whatever firmware was baked at synthesis. Here that was 751b6ce9, which writes no arm
+# bytes, so the arm registers power up to 0 and the core runs lnk1 -- a REAL 60.2% brain.
+# The wrong core would have played well, just not as the arm on the label, and the
+# investigation would have gone looking for a bug in a chain reward that never ran.
+#
+# LESSON: a flag existing is not a flag applying. Verify the ARTIFACT CHANGED, not that the
+# command exited 0. The acceptance check is now explicit in the ship path: the new rbf md5
+# must DIFFER from the previous arm's.
+#
+# TO ACTUALLY SWAP ARMS: full clean compile with the chosen firmware in place and the seed
+# pinned. The same-placement property is then established by REPRODUCTION -- identical RTL,
+# same pinned seed, only ROM contents differing, so matching slack is evidence the placement
+# reproduced -- rather than by construction.
 #
 # Usage: swap_arm.sh <lnk1|stomp180|stomp360>  [out-dir]
+echo "swap_arm.sh is DISABLED -- see the header. Use a full compile with the firmware in place." >&2
+exit 64
 set -euo pipefail
 ARM="${1:?usage: swap_arm.sh <lnk1|stomp180|stomp360> [out-dir]}"
 OUT="${2:-/home/struktured/projects/dr_mario_rl/tmp/rtl_chain/arms}"
