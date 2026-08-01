@@ -92,8 +92,26 @@ SLAM_ARM, LAST_LAT = 0x6172, 0x6173
 # NAV_1P is a diagnostic latch: set if the cart ever runs play-mode with $0727==1 (a 1P game or the
 # attract demo) = the nav did NOT land VS-CPU. Readable on hardware to score a cold-load gauntlet.
 NAV_STABLE, NAV_1P = 0x6174, 0x6175
-# RE-ENTRANCY GUARD latch (build_wrapper): the 0x37CF hook fires from BOTH the NMI and the main loop, so a
-# main-loop driver invocation can be INTERRUPTED by the NMI which RE-ENTERS the driver and clobbers the
+# ★ WHERE THE HOOK ACTUALLY RUNS (measured 2026-08-01 from the ROM itself; an earlier version of this
+# comment said "from BOTH the NMI and the main loop", which is WRONG and sent a design down an
+# impossible path -- there is no main-loop invocation to move work to):
+#   NMI vector $FFFA -> $8005; the NMI's LAST call before restoring registers is JSR $9134 =
+#   getInputs_checkMode, which has EXACTLY ONE call site in the whole 32K PRG (that one). In
+#   non-demo play it does `jsr getInputs; rts`, and getInputs calls addExpansionCTRL TWICE (the
+#   two-pass AND read). The 0x37CF hook is the tail of addExpansionCTRL.
+#   => THE DRIVER RUNS EXACTLY 2x PER FRAME, BOTH INSIDE THE NMI. Never from the main loop.
+#   Corroboration: autonav's `NAV_T & $1F < 4` press window is 4 hooks = 2 whole frames at 2/frame,
+#   which is what the two-pass AND needs; at the "~5/frame" this file assumes elsewhere it would be
+#   0.8 frames and the nav could not work at all. Several comments below still say ~5 calls/frame --
+#   they are calibration prose, not measured, and should be revisited before anyone RE-TUNES the
+#   hook-counted constants (MIN_THINK, the K_* stability gates, WDOG limits). The constants
+#   themselves were tuned empirically on silicon, so they are fine as shipped.
+#   Placement matters for budgeting: the hook runs AFTER every PPU write in the NMI (render_*,
+#   PPUSCROLL), so an over-long driver invocation does NOT corrupt the display -- it eats the main
+#   loop's share of the 29780-cycle frame. Only overrunning a WHOLE frame is dangerous, which is
+#   exactly the re-entrancy below.
+# RE-ENTRANCY GUARD latch (build_wrapper): because there is only the NMI, re-entry happens when a driver
+# invocation overruns a full frame -- the NEXT NMI fires and RE-ENTERS the driver, clobbering the
 # shared abs-addr state (armed/pend/wdog) -> the driver re-issues GO every hook -> the ~83M-clk search never
 # DONEs -> the game spins on $5084 = the R47 Pocket HARD-FREEZE (combo-port co-sim proven: cadence not
 # silicon, so div2 froze identically; SEI can't help -- NMI is non-maskable). A BUSY latch in free PRG-RAM
