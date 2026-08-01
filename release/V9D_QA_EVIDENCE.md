@@ -41,3 +41,46 @@ one run at a time.
 
 `qa_v9d/` (2P, 13/13), `qa_v9d_1p/` (1P, 11/11), `qa_v80_1p_hash/` (negative control),
 alongside the pre-existing `qa_v9/`, `qa_v9_1p/`, `qa_v82_1p/`.
+
+---
+
+# Addendum: are BOTH virus counters proven at a TWO-DIGIT value?
+
+Raised 2026-08-01, because below 10 **BCD and binary are identical** — so any observation at
+a count of 4 structurally cannot distinguish a BCD-correct render from the 48→"72" failure
+class that v9d exists to fix. Three separate questions, answered separately.
+
+**1. Does the digit truth table exercise two digits?  YES — it injects.**
+`prove_v9d_digits.py` feeds every value 0..99 to each counter, plus a boundary
+cross-product including 48, 84 and 99. Level 0 is irrelevant to it. Its docstring also
+records *why* the premise is stated explicitly: the v9b/v9c truth tables fed BINARY to the
+virus counters, self-consistent with the code's wrong assumption, so 656 passing runs
+proved nothing about the real format. A truth table that supplies its own input can never
+validate the source format — only the routine.
+
+**2. Is P1's source format confirmed at two digits?  YES, twice.**
+`qa_format/pause_digits.log` — 84 viruses at level 20, correct in play AND after the STUDY
+pause. Re-confirmed independently on 2026-08-01 against the ROM produced by applying the
+shipping BPS to a clean base: **P1 byte `$68`, BCD-decode 68, rendered 68, in study pause**
+(`qa_v9d_2digit/`).
+
+**3. Is P2's source format confirmed at two digits?  NOT DYNAMICALLY — and
+`format_probe.log` said so itself: `VC_P2: AMBIGUOUS (<10, rerun higher)`.** That rerun was
+never done; every observation of `$03A4` has been below 10. An attempt on 2026-08-01 to
+drive both players to a high level got P1 to 68 but could not move P2's level-select cursor
+via port-1 input under this Mesen build.
+
+**It is instead settled STATICALLY, which is the stronger argument.** Both players' counters
+are *the same variable*, maintained by *the same code*, with explicit decimal-adjust
+arithmetic (`prg/drmario_prg_game_logic.asm`):
+
+    decrement (:1524)   dec currentP_virusLeft / and #$0F / cmp #$0F
+                        bne .. / lda / sec / sbc #$06      <- BCD borrow fixup
+    increment (:3268)   inc currentP_virusLeft / and #$0F / cmp #$0A
+                        bne .. / lda / clc / adc #$06      <- BCD carry fixup
+
+`currentP_virusLeft` is swapped in and out of the per-player blocks by `p1RAM_toCurrentP` /
+`p2RAM_toCurrentP`, the same $30-byte copy used for the controller state. There is no
+P1-specific or P2-specific counter path. **So if P1's counter is BCD, P2's is BCD by
+construction** — for every value, not merely for the ones a probe happened to reach. The
+game's own arithmetic is the authority, exactly as it was for the original BCD discovery.
