@@ -126,6 +126,16 @@ int main(int argc, char** argv) {
       printf("latency %s : mean %ld  worst %ld cycles  (n=%ld)\n",
              f ? "fixpoint" : "cap-1   ", tot[f] / cnt[f], worst[f], cnt[f]);
   printf("cases with chain > 1 : %d\n", n_chained);
+  // Invariant witness for the link-RAM write-forward bypass. The collision FIRES often;
+  // what must stay zero is the number a consumer actually latches -- if that moves, a
+  // read-latency bubble was removed and the bypass became load-bearing.
+  {
+    unsigned fired = (unsigned)t->rootp->LeafEval__DOT__byp_fire;
+    unsigned used  = (unsigned)t->rootp->LeafEval__DOT__byp_used;
+    printf("bypass collisions    : %u fired, %u latched by a consumer%s\n",
+           fired, used, used ? "   <-- BYPASS IS NOW LOAD-BEARING" : "");
+    if (used) { printf("\nOVERALL: FAIL (bypass invariant broken)\n"); delete t; return 1; }
+  }
   // A dose run over a corpus with no cascades checks nothing: the reward term is only
   // live when chain > 1, so it would pass whether the RTL implemented it or not.
   if (chw && n_chained == 0) {
