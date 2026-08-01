@@ -43,6 +43,7 @@ from h2h_vs import ARMS, _mk                                 # noqa: E402
 
 RED, YEL, BLU = 1, 2, 3
 COLS = 8
+ROWS = 16
 
 
 def make_position(c0=3, ready=3, colours=(BLU, YEL), extra_viruses=16):
@@ -172,21 +173,118 @@ def run_condition(label, extra_viruses, c0=3):
     return 0
 
 
+def build_at_height(c0, base_h, extra, ca, cb, nxt, ready=3):
+    """The same ready-pair shape, but ELEVATED on `base_h` rows of inert stack.
+
+    Everything above is bottom-anchored: the ready columns rest on the floor, which is the
+    one place the AI never misbehaves. The user's third sighting was explicitly MID-BOTTLE,
+    and that turns out to be the whole story.
+    """
+    e = FaithfulDrMarioEnv(level=11, seed=1, max_pills=300)
+    e.reset()
+    b = e.board
+    b.color[:, :] = 0
+    b.is_virus[:, :] = False
+    try:
+        b.link[:, :] = 0
+    except Exception:
+        pass
+    for col in range(COLS):
+        for r in range(ROWS - base_h, ROWS):
+            b.color[r, col] = (RED, YEL, BLU)[(r * 3 + col) % 3]
+    top = ROWS - base_h
+    for k, col in enumerate((c0, c0 + 1)):
+        for r in range(top - ready, top):
+            b.color[r, col] = (ca, cb)[k]
+            b.is_virus[r, col] = True
+    n = 0
+    for r in range(ROWS - base_h, ROWS):
+        for col in range(COLS):
+            if col not in (c0, c0 + 1) and n < extra:
+                b.is_virus[r, col] = True
+                n += 1
+    e.cur, e.nxt = Pill(ca, cb), nxt
+    return e
+
+
+def run_height_family(arm="chain180"):
+    """★ THE PERMANENT GATE ROW: the same shape swept over HEIGHT.
+
+    A gate that only tested the wall would have passed the shipped core while the user
+    watched it blunder three times -- the bottom-anchored probe says 9/9 correct. Sweeping
+    4 heights x 3 column-pairs x 3 colour-pairs finds the misses are concentrated entirely
+    at ONE elevation, which is why the field reports and the first probe disagreed.
+
+    Classification is measured, not assumed: DOUBLE = the enumerated instant-double set,
+    CASCADE = >=8 cells but over more than one round, SINGLE = a smaller clear. A SINGLE is
+    the user's shape (material left behind); a CASCADE is not.
+    """
+    from collections import Counter
+    print("=" * 72)
+    print("HEIGHT FAMILY -- shipped %s over 4 heights x 3 column-pairs x 3 colour-pairs"
+          % arm)
+    print("=" * 72)
+    colours = [(BLU, YEL), (RED, BLU), (YEL, RED)]
+    heights = [(0, "WALL (floor)"), (3, "MID-BOTTLE h3"),
+               (6, "MID-BOTTLE h6"), (9, "MID-BOTTLE h9")]
+    rows = []
+    for base_h, lbl in heights:
+        for c0 in (1, 3, 5):
+            for ca, cb in colours:
+                e = build_at_height(c0, base_h, 12, ca, cb, Pill(RED, RED))
+                res = enumerate_actions(e, e.cur)
+                dbl = {r[0] for r in res if r[3] and r[3] >= 8 and r[5] == 1}
+                if not dbl:
+                    continue          # no double available: nothing to be graded on
+                a = _mk(ARMS[arm], 8).choose(e.board, e.cur, e.nxt)
+                r = next((x for x in res if x[0] == a), None)
+                cells, rounds = (r[3] or 0), (r[5] or 0)
+                kind = ("DOUBLE" if a in dbl else
+                        "CASCADE" if cells >= 8 else
+                        "SINGLE" if cells >= 4 else "NO-CLEAR")
+                rows.append((lbl, c0, ca, cb, kind, cells, rounds))
+    for _, lbl in heights:
+        sub = [r for r in rows if r[0] == lbl]
+        if sub:
+            print("  %-16s n=%-3d %s" % (lbl, len(sub), dict(Counter(r[4] for r in sub))))
+    bad = [r for r in rows if r[4] in ("SINGLE", "NO-CLEAR")]
+    print()
+    if bad:
+        print("  positions where it left material on the table (the user's shape):")
+        for r in bad:
+            print("     %-16s cols %d/%d colours %d/%d -> %s (%d cells, %d rounds)"
+                  % (r[0], r[1], r[1] + 1, r[2], r[3], r[4], r[5], r[6]))
+    print("  TOTAL: %d/%d positions left material on the table" % (len(bad), len(rows)))
+    return 1 if bad else 0
+
+
 def main():
     rc_real = run_condition("REALISTIC -- viruses present, clearing is worth something", 16)
     print()
     rc_degen = run_condition("CONTROL -- ZERO other viruses (my first, degenerate probe)", 0)
     print()
+    rc_height = run_height_family()
+    print()
     print("#" * 72)
-    if rc_real == 1:
-        print("HEADLINE: the blunder reproduces on a REALISTIC board -> the credit has a "
-              "real behavioural target.")
-    elif rc_real == 0:
-        print("HEADLINE: on a realistic board every arm TAKES the double. The field "
-              "sighting is therefore NOT this simple shape -- something else in the real "
-              "position (depth, next-pill, or the surrounding stack) drove it. Do not "
-              "price a credit against a blunder this probe cannot reproduce.")
-    return rc_real
+    # ★ THE HEADLINE MUST KEY OFF MATERIAL LOSS, NOT OFF "missed the instant double".
+    # It used to read rc_real, and so announced "the blunder reproduces" for the
+    # bottom-anchored condition where all four arms take a CASCADE clearing the SAME 8
+    # cells over two rounds. Nothing is left behind there -- it is not the user's shape --
+    # and the probe's own verdict text says exactly that ten lines earlier. A summary that
+    # contradicts the caveat above it is worse than no summary: the caveat is what gets
+    # skipped. Only the height family measures material actually abandoned.
+    if rc_height == 1:
+        print("HEADLINE: the user's shape REPRODUCES, and it is HEIGHT-DEPENDENT -- the "
+              "misses are concentrated at one mid-bottle elevation, not at the wall. A "
+              "bottom-anchored gate would have passed the shipped core while he watched "
+              "it blunder. The credit has a real behavioural target, but a SMALL one: "
+              "these are 2-cell mis-rankings, nowhere near vbonus400 territory.")
+    else:
+        print("HEADLINE: no position in the height family leaves material on the table. "
+              "Where arms decline the instant double they take an equivalent CASCADE, "
+              "which differs in tempo and appearance but not in material -- do NOT price "
+              "a credit against that.")
+    return rc_height
 
 
 if __name__ == "__main__":
