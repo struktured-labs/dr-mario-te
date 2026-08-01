@@ -4,7 +4,7 @@
     "an .rbf is generated on demand from the recipe below, because building one is a FULL",
     "clean Quartus compile (~40-70 min), not a hex patch.",
     "",
-    "★ WHY NOT A HEX PATCH: the firmware ROM is loaded with `initial $readmemh(",
+    "\u2605 WHY NOT A HEX PATCH: the firmware ROM is loaded with `initial $readmemh(",
     "'copro_rom.hex', rom)` (CoproDrMario.sv:160), which Quartus resolves at SYNTHESIS.",
     "`quartus_cdb --update_mif` therefore has nothing to update, EXITS 0, and quartus_asm",
     "re-emits an IDENTICAL bitstream. Measured: three 'different' arms all produced rbf",
@@ -12,7 +12,7 @@
     "in CoproDrMario.sv claiming arm-switching is 'a firmware hex patch -- NOT a two-hour",
     "resynthesis' is ASPIRATIONAL AND REFUTED; it is flagged for correction.",
     "",
-    "★ THE ACCEPTANCE GATE EXISTS BECAUSE THAT FAILURE IS SILENT AND DANGEROUS: a core",
+    "\u2605 THE ACCEPTANCE GATE EXISTS BECAUSE THAT FAILURE IS SILENT AND DANGEROUS: a core",
     "built from the wrong firmware still PLAYS WELL (arm registers power up to 0 = lnk1, a",
     "real 60.2% brain), so it looks fine while being mislabelled. Every build must assert",
     "the new rbf md5 DIFFERS from every other personality's. A flag existing is not a flag",
@@ -34,8 +34,16 @@
       "id": "racer",
       "display": "Racer",
       "arm": "lnk1",
-      "flags": { "DRCOPRO_TUCK": 1, "DRCOPRO_ARM": 1, "DRFIX": 0, "DRCHAIN": 0 },
-      "firmware": { "file": "arms/fw_tucklnk1.hex", "md5": "3493f864040a3ce3b28b2b22ce7e597a" },
+      "flags": {
+        "DRCOPRO_TUCK": 1,
+        "DRCOPRO_ARM": 1,
+        "DRFIX": 0,
+        "DRCHAIN": 0
+      },
+      "firmware": {
+        "file": "arms/fw_tucklnk1.hex",
+        "md5": "3493f864040a3ce3b28b2b22ce7e597a"
+      },
       "rbf": null,
       "honest_line": "60.2% [56.9, 63.4] vs the shipped winner, holdout-CONFIRMED and stronger on holdout than on tune. Wins by OUT-RACING, not attacking: ~99% of its wins are clear-first and garbage decides 5 matches in 800. Garbage-off it still scores 55.1%, so the edge is mostly a genuine SOLO speed edge."
     },
@@ -43,26 +51,55 @@
       "id": "stomper180",
       "display": "Combo Stomper (mild)",
       "arm": "chain180",
-      "flags": { "DRCOPRO_TUCK": 1, "DRCOPRO_ARM": 1, "DRFIX": 1, "DRCHAIN": 180 },
-      "firmware": { "file": "arms/fw_tuckstomp180.hex", "md5": "f4b6dfbf76c9beb80d19b3659fb99d26" },
-      "rbf": { "name": "NES_stomper180_20260801.rbf", "md5": "71d2de37", "status": "SHIPPED 2026-08-01, live on the MiSTer" },
+      "flags": {
+        "DRCOPRO_TUCK": 1,
+        "DRCOPRO_ARM": 1,
+        "DRFIX": 1,
+        "DRCHAIN": 180
+      },
+      "firmware": {
+        "file": "arms/fw_tuckstomp180.hex",
+        "md5": "f4b6dfbf76c9beb80d19b3659fb99d26"
+      },
+      "rbf": {
+        "name": "NES_stomper180_20260801.rbf",
+        "md5": "71d2de37",
+        "status": "SHIPPED 2026-08-01, live on the MiSTer"
+      },
       "honest_line": "70.9% at L11 / 76.5% at L17 vs the shipped winner. The edge is GARBAGE-MEDIATED: paired ON-minus-OFF is +16.8 [+11.7, +21.8], and without the attack channel it falls to 54.0%. It also never dies -- 400 losses across both levels contain ZERO topouts and ZERO stalls; it loses only by being cleared first."
     },
     {
       "id": "stomper360",
       "display": "Combo Stomper (spicy)",
       "arm": "chain360",
-      "flags": { "DRCOPRO_TUCK": 1, "DRCOPRO_ARM": 1, "DRFIX": 1, "DRCHAIN": 360 },
-      "firmware": { "file": "arms/fw_tuckstomp360.hex", "md5": "dcb5a6e5feba82292a215fd3ff48174c" },
+      "flags": {
+        "DRCOPRO_TUCK": 1,
+        "DRCOPRO_ARM": 1,
+        "DRFIX": 1,
+        "DRCHAIN": 360
+      },
+      "firmware": {
+        "file": "arms/fw_tuckstomp360.hex",
+        "md5": "dcb5a6e5feba82292a215fd3ff48174c"
+      },
       "rbf": null,
-      "honest_line": "★ A STYLE CHOICE, NOT A STRICT UPGRADE. 75.4% with garbage ON but 52.8% with it OFF, and that OFF confidence interval CONTAINS 50% -- i.e. NO MEASURABLE SOLO EDGE. Its whole win is the attack channel. Bigger chains to watch; do not read 'spicy' as 'stronger'."
+      "honest_line": "\u2605 A STYLE CHOICE, NOT A STRICT UPGRADE. 75.4% with garbage ON but 52.8% with it OFF, and that OFF confidence interval CONTAINS 50% -- i.e. NO MEASURABLE SOLO EDGE. Its whole win is the attack channel. Bigger chains to watch; do not read 'spicy' as 'stronger'."
     },
     {
       "id": "fixpoint",
       "display": "Fixpoint (control)",
       "arm": "lnkfix",
-      "flags": { "DRCOPRO_TUCK": 1, "DRCOPRO_ARM": 1, "DRFIX": 1, "DRCHAIN": 0 },
-      "firmware": { "file": "arms/fw_default.hex", "md5": "c87e60a1736224cfc3fa29cfed7c6f16" },
+      "flags": {
+        "DRCOPRO_TUCK": 1,
+        "DRCOPRO_ARM": 1,
+        "DRFIX": 1,
+        "DRCHAIN": 0
+      },
+      "firmware": {
+        "file": "arms/fw_fixpoint.hex",
+        "md5": "9c80651abd8406906159e67656cd2936",
+        "md5_CORRECTED": "was c87e60a1 -- that is the PLAIN DEFAULT image (no flags at all), so this personality's own flags (TUCK=1 ARM=1 FIX=1 CHAIN=0) could never have produced it. Gate 1 in build_personality.sh caught it and refused to compile, which is exactly the hour it exists to save. Measured 2026-08-01 by building those flags: 9c80651a."
+      },
       "rbf": null,
       "honest_line": "Fixpoint cascade resolution with NO chain reward -- the control that separates 'resolving cascades properly' from 'being rewarded for building them'. Included so the Stomper's edge can be attributed rather than assumed. Not tuned as a play arm."
     }
