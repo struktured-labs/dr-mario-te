@@ -46,7 +46,7 @@ SENT = 0x4FF2
 GRAV_TH = 13
 # every flag any class/arm sets: popped before each build so nothing leaks between builds
 _FLAGS = ("DRNOFREEZE", "DRHUMAN", "DRPOCKET", "DRRECOMMIT_NOFREEZE", "DRNAVDWELL",
-          "DRPENDBOUND", "DRCOLDINIT", "DRSLAM_KOPEN")
+          "DRPENDBOUND", "DRCOLDINIT", "DRSLAM_KOPEN", "DRP1WIGGLE")
 
 CLASSES = [
     ("ab_control",   {"DRNOFREEZE": "1"},
@@ -59,6 +59,12 @@ CLASSES = [
                       "DRPOCKET": "1", "DRRECOMMIT_NOFREEZE": "1"},
      dict(recommit=True, human=True, wb=0x5000)),
     ("freeze_legacy", {"DRNOFREEZE": "0"},
+     dict(recommit=True, human=False, wb=0x5200)),
+    # spectator CvC cart: P2 = the copro AI, P1 = the DRP1WIGGLE hold-one-direction dummy.
+    # It is a CvC class, so it must still inject (human=False) and still autonav. The wiggle's
+    # own behaviour is proven in tests/test_p1_wiggle.py; this row keeps the class in the
+    # branch audit and guards the invariant that adding P1 code never breaks P2's search.
+    ("cvc_wiggle",   {"DRNOFREEZE": "1", "DRRECOMMIT_NOFREEZE": "1", "DRP1WIGGLE": "1"},
      dict(recommit=True, human=False, wb=0x5200)),
 ]
 

@@ -116,6 +116,10 @@ TUCK_C2 = 0x6179   # approach column for the in-flight P2 capsule; 0xFF = no tuc
 TUCK_R2 = 0x617A   # steer to the FINAL column once pill Y <= this ($0386 counts UP from the floor)
 EFF_C2  = 0x617B   # effective target column this hook (approach or final)
 W_TCOL, W_TROW = 0x5087, 0x5088   # copro publishes the tuck descriptor here (0xFF = none)   # TITLE DWELL: frames dwelt at the title + last frameCounter($43) seen
+# DRP1WIGGLE (see below): per-pill alternating direction latch for the P1 spectator wiggle.
+# 0 = hold LEFT this pill, 1 = hold RIGHT. Toggled on the P1 new-pill edge. $617C is the next
+# free PRG-RAM byte (BUSY..$6185 is the free window; $6186+ is the DRPROBE ring header).
+WIG_DIR = 0x617C
 import os as _os
 TUCK = _os.environ.get("DRTUCK", "0") == "1"   # tuck executor (see TUCK_C2 above)
 REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
@@ -224,6 +228,37 @@ COLDINIT = _os.environ.get("DRCOLDINIT", "0") == "1"
 # game's own draw during play, and re-fills after the pause blank. Values/layout measured
 # (study_viruscount_probe.lua): tile IS the digit, Y=$BF/$2B, X=6E/76/83/8B + 6D/75/84/8C.
 STUDYCOUNTS = _os.environ.get("DRSTUDYCOUNTS", "0") == "1"
+# DRP1WIGGLE=1 (SPECTATOR feature, default OFF -> every existing cart byte-identical): on a
+# CvC cart the P1 side is a dud -- it stacks at the spawn column and tops out with all 48
+# viruses alive (user's MiSTer screen, 2026-08-01), so half the screen is dead within a
+# minute. WIGGLE gives P1 a deliberately dumb but *watchable* policy: alternate a HELD LEFT
+# and a HELD RIGHT for each pill's whole descent, so consecutive pills bank off opposite
+# walls and the stack spreads instead of growing one tower.
+#
+# ★ INPUT MODEL (from the game's own code, not guessed -- the BCD lesson). The 0x37CF hook
+# sits at the TAIL of addExpansionCTRL, i.e. INSIDE getInputs and BEFORE its _pressedVsHeld
+# pass. That pass (disasm prg/drmario_prg_general.asm:367) is:
+#       lda p1_btns_pressed,X / tay / eor p1_btns_held,X / and p1_btns_pressed,X
+#       sta p1_btns_pressed,X          ; pressed = raw & ~previous-held
+#       sty p1_btns_held,X             ; held    = raw
+# so $F5 is the RAW pad latch and the game DERIVES both $F5 (pressed, X=0) and $F7 (held)
+# from it. Therefore a HELD direction is "write $F5 = dir EVERY hook and never touch $F7":
+# held stays asserted, and the pressed edge fires exactly once (the first hook), which is
+# precisely a human pushing and holding the d-pad. Writing $F7 ourselves would mark the
+# button already-held and kill the edge (the original autonav injection bug, line ~750).
+# The direction bits must ride $F5 because fallingPill_checkXMove ($8DCF) reads
+# currentP_btnsPressed only to pick "instant move vs DAS", then reads currentP_btnsHELD for
+# the actual direction -- a pressed-only injection with held==0 moves NOTHING.
+#
+# Scope: CvC only. On a DRHUMAN cart P1 is a PERSON and the cart must never press their
+# buttons (spec P0.4) -- the assert below refuses the combination rather than silently
+# ignoring it. Under WIGGLE the driver OWNS P1's descent: act_p1's copro steering is
+# replaced outright and freeze_pending stops pinning GRAV_P1 (a pin would stall the very
+# descent we are steering). handle(1) still runs, so P1's $5000 copro traffic is unchanged.
+P1WIGGLE = _os.environ.get("DRP1WIGGLE", "0") == "1"
+assert not (P1WIGGLE and HUMAN_P1), (
+    "DRP1WIGGLE=1 with DRHUMAN=1 is refused: P1 is a human on a DRHUMAN cart and the cart "
+    "must never press their buttons (spec P0.4). Build the wiggle on a CvC cart only.")
 RECOMMIT = (MATURE
             and (not NO_FREEZE or _os.environ.get("DRRECOMMIT_NOFREEZE", "0") == "1")
             and (_os.environ.get("DRRECOMMIT", "1") != "0"))
@@ -597,6 +632,11 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", LASTY1); a.ins16("STA_abs", LASTY2)   # A==0: no suppressed first edge from garbage
         a.ins16("STA_abs", PEND1); a.ins16("STA_abs", PEND2)
         a.ins16("STA_abs", DELAY1); a.ins16("STA_abs", DELAY2)
+    if P1WIGGLE:
+        # A==0. The FIRST pill's spawn edge toggles this before act_p1 ever reads it, so
+        # pill 1 holds RIGHT and pill 2 LEFT. Which wall leads is arbitrary, but pin the
+        # seed here: tests/test_p1_wiggle.py asserts the exact landing sequence.
+        a.ins16("STA_abs", WIG_DIR)
     a.ins("LDA_imm", 3)                                     # sane targets pre-first-publish
     a.ins16("STA_abs", TGT_C1); a.ins16("STA_abs", TGT_O1)
     a.ins16("STA_abs", TGT_C2); a.ins16("STA_abs", TGT_O2)
@@ -922,6 +962,13 @@ def build_main(level=11, speed=1):
     a.ins("LDA_imm", 1); a.ins16("STA_abs", PEND1)
     a.ins("LDA_imm", 15); a.ins16("STA_abs", DELAY1)        # ~3 frames settle before upload
     a.ins("LDA_imm", 0); a.ins16("STA_abs", WRETRY)
+    if P1WIGGLE:
+        # SPECTATOR WIGGLE: flip the hold direction for the pill that just spawned. AND #1
+        # after the EOR so power-on garbage in PRG-RAM can only ever land on 0 or 1 (act_p1
+        # then maps those to LEFT/RIGHT) -- a raw EOR of the direction BITS could latch
+        # LEFT|RIGHT together, which the game accepts and which cancels to no net movement.
+        a.ins16("LDA_abs", WIG_DIR); a.ins("EOR_imm", 0x01); a.ins("AND_imm", 0x01)
+        a.ins16("STA_abs", WIG_DIR)
     a.label("no_p1_new")
     a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", LASTY1)
     a.ins16("LDA_abs", 0x0386); a.ins16("CMP_abs", LASTY2)
@@ -1067,7 +1114,10 @@ def build_main(level=11, speed=1):
     # (time-sharing wait was letting pills drop 2-4 rows before their target arrived ->
     # unreachable columns -> bad placements). Called from act below.
     a.label("freeze_pending")
-    if not HUMAN_P1:
+    if not HUMAN_P1 and not P1WIGGLE:
+        # (DRP1WIGGLE builds also skip it: the wiggle steers P1 for the WHOLE descent, so a
+        #  search-driven gravity pin would freeze the capsule mid-slide -- and P1's published
+        #  target is ignored anyway, so there is nothing to wait for.)
         # (DRHUMAN builds MUST skip this: handle(1) never runs, so PEND1 is uninitialized
         #  boot garbage — nonzero garbage pinned P1's gravity forever = capsule stuck at top,
         #  observed on Pocket hardware 2026-07-18.)
@@ -1267,6 +1317,19 @@ def build_main(level=11, speed=1):
     a.label("act_p1")
     if HUMAN_P1:
         a.jmp("act_done")                                   # human P1: never touch $F5/$F7/GRAV_P1
+    elif P1WIGGLE:
+        # SPECTATOR WIGGLE (see DRP1WIGGLE): P1's whole policy is "hold one direction for this
+        # pill". Write the RAW latch $F5 every hook and leave $F7 alone -- the game's own
+        # _pressedVsHeld pass turns that into held=dir with a single pressed edge on the first
+        # hook, which is what fallingPill_checkXMove needs to DAS the capsule to the wall. No
+        # gravity pin anywhere on this path, so the capsule falls at the natural rate while it
+        # slides. This REPLACES the copro steering below: the P1 search still runs (handle(1)
+        # is untouched) but its target is deliberately ignored -- the point is a dumb spread.
+        a.ins16("LDA_abs", WIG_DIR); a.br("BEQ", "wig_left")
+        a.ins("LDA_imm", B_RIGHT); a.jmp("wig_hold")
+        a.label("wig_left"); a.ins("LDA_imm", B_LEFT)
+        a.label("wig_hold"); a.ins("STA_zp", 0xF5)
+        a.jmp("act_done")
     # skip P1 acting if we're currently searching for P1
     a.ins16("LDA_abs", ARMED); a.br("BEQ", "act_p1_go")    # not searching P1 -> steer it
     a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)       # searching P1 -> freeze + skip steer
