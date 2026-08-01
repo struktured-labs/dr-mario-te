@@ -34,9 +34,11 @@ cost real hours and re-deriving them would cost the same again.
 | 5 | NES-pill eval retune | ❌ **HOLDOUT NEGATIVE** | tuning block was a seed artefact |
 | — | goal-metric h2h | ⚠ **INCONCLUSIVE** | 53.6% finishes-first (n=300), ≈chance |
 | — | MiSTer silicon A/B | ⚠ **BLOCKED** | autonav dead; known-good cart unrebuildable |
-| 5b | defence term gated on incoming garbage | ❌❌ **STANDING NEGATIVE — kills the whole family** | doubling `spawn`+`toprisk` moves the argmax **0 / 102** times in the target states |
-| 5b | argmax sensitivity under re-weighting | ✅ **SUCCESS** (instrument) | measures a term's real fire-rate ceiling before it is built |
-| 5c | VS garbage trigger (`cells>=7`) | ⚠ **HARNESS DEFECT** | 83% false positives *and* misses real doubles (off-by-2) |
+| 5b | ~~defence term gated on garbage: kills the family~~ | ⚠ **RETRACTED** — broken harness | replaced by 5b-R |
+| 5b-R | defence term gated on incoming garbage | ⚠ **NARROW NEGATIVE** | ×2 moves only 0.95% of decisions, but the terms are **not** saturated (range 5.08%, 27% in danger) |
+| 5b-R | self-play barely tops out | ★ **KEY** | **3.3%** of matches (was quoted 28% — floating-garbage artifact) → survival can't pay for itself in self-play |
+| 5b-R | argmax sensitivity under re-weighting | ✅ **SUCCESS** (instrument) | survives the retraction; must state the harness rev it sampled |
+| 5c | VS garbage channel | ⚠ **5 HARNESS DEFECTS**, all fixed | attack rate 1.12 → **7.02**/100 placements; `cells>=7` as *documented* was ROM-true all along |
 
 **Process failures worth naming too** (mine, all caught before they shipped):
 - ❌ characterised the latch defect from **synthetic** boards (8.3%) — real boards say 23.2%
@@ -237,76 +239,97 @@ defect measured on the real RTL, so it is independent of capsule modelling entir
 2.8/game (refuted), 1.0/game (wash), **2.2/game (works)**. Any override that wants to
 second-guess the search on more than a few moves a game has been wrong every time.
 
-## 5b. ❌❌ STANDING NEGATIVE — the eval's SURVIVAL side cannot be steered (2026-07-31)
+## 5b. ⚠ RETRACTED 2026-08-01 — measured on a broken harness
 
-★ **Kills the whole future family of "add a defence term when garbage is incoming".** Not
-one proposal — the family. Anything of that shape scales `spawn` and/or `toprisk`, and
-those two penalties **do not move the argmax**.
+> The 5b published on 2026-07-31 claimed the survival penalties were SATURATED and INERT,
+> and that this "killed the whole family" of garbage-gated defence terms. **Both headline
+> claims are false.** They were measured on a harness with five mechanics bugs that between
+> them suppressed garbage ~6.7x and faked top-outs. Numbers withdrawn; replaced by 5b-R.
+> The retraction is kept because the failure mode is the lesson: an argmax-sensitivity
+> curve is only as good as the STATE DISTRIBUTION it is sampled over, and that distribution
+> came from a game that was barely being played.
 
-Measured by re-running the *same* depth-3 search with the eval re-weighted and diffing the
-chosen move, over 9107 decisions of self-play VS (L11, real NES capsule stream, shipped
-`winner` brain both sides):
+## 5b-R. ⚠ NARROW NEGATIVE — doubling the survival penalties is weak, but they are NOT inert
 
-| re-weighting | move differs, ALL decisions | move differs, garbage inbound |
-|---|---|---|
-| `spawn` 150→300, `toprisk` 90→180 | 29 / 9107 = **0.32%** | **0 / 102** |
+Re-run on the consolidated ROM-true harness
+(`HARNESS_REV = vsharness-r1 / rom-attack-2026-08-01 (complete)`), 60 matches,
+**12694 decisions**, L11, real NES capsule stream, shipped `winner` brain both sides:
 
-Zero, in exactly the states the term is designed for. Then the full scaling sweep (3026
-decisions, 279 of them with spawn-lane h≥12) shows this is not a matter of nudging harder:
+| re-weighting | differs (all) | differs (danger, h≥12) | differs (just took garbage) |
+|---|---|---|---|
+| `spawn`×2 `toprisk`×2 (BRACE) | 0.95% | 4.69% | 1.13% |
+| ×4 | 1.61% | 7.55% | 2.26% |
+| ×8 | 2.11% | 9.49% | 2.71% |
+| ×20 | **3.07%** | **14.24%** | **3.84%** |
+| **0 — ablated** | **5.08%** | **27.02%** | **4.74%** |
 
-| scale | move differs (all) | move differs (danger, h≥12) |
-|---|---|---|
-| ×2 | 0.40% | 2.87% |
-| ×4 | 0.96% | 7.53% |
-| ×8 | 1.06% | 8.24% |
-| ×20 | **1.06%** | **8.24%** |
-| **0 — ablated entirely** | **1.19%** | **10.39%** |
+★ **WHAT CHANGED, and it is not a detail.** On the broken harness the curve flattened at
+×8 (×20 identical to ×8, decision for decision) and the full range was 1.19%. On correct
+mechanics **there is no saturation** — authority keeps climbing to ×20 — and the dynamic
+range is **5.08% overall and 27.02% in danger states**, roughly 5x and 2.6x the retracted
+figures. "These constants barely arbitrate the argmax" was an artifact of a game with
+almost no garbage in it.
 
-★ Two independent facts kill the family. **Up-scaling saturates at ×8** — ×20 is identical
-to ×8 down to the decision, so there is no "push harder" left to buy. And the **entire
-dynamic range of both penalties, from ablated to ×20, is 1.19% of decisions**. The depth-3
-search is already playing the survival move; these constants barely arbitrate the argmax.
+WHAT SURVIVES, stated narrowly:
+- **Doubling is a weak lever.** BRACE still moves only 0.95% of decisions, and only 1.13%
+  of the decisions immediately after taking a release — the states such a term targets.
+  So *that specific proposal* remains unpromising.
+- **The family is NOT dead.** The retracted "kills the whole family" claim is withdrawn.
+  Scaling continues to bite well past ×8, so a defence term with real authority is
+  available to anyone who wants one — it just has to push much harder than ×2.
 
-⚠ Read this precisely: low argmax authority is **not** "no value". 1.19% is ~1.8 moves a
-match, and those may be exactly the moves that avert a top-out. The claim is directional —
-you cannot buy *more* safety by scaling these up, whether or not they already earn their
-keep. Corollary: **we have no working headroom lever**; if the AI must play safer it cannot
-be asked to via these constants, and a garbage-gated version of them is dead before build.
+★ **THE DEEPER RESULT — why survival weighting does so little here.** On correct gravity,
+self-play at L11 **almost never tops out: 2/60 = 3.3%** (the previously quoted 28% and 25%
+were the floating-garbage defect). A term that trades efficiency for survival cannot pay
+for itself in a distribution where nobody dies. This is a fact about the SELF-PLAY
+DISTRIBUTION, not about the eval — and it points straight at why the user beats the AI:
+**humans generate top-outs that self-play never produces.** Tuning survival against
+self-play is measuring a rare event; the right instrument is human or adversarial play.
 
-★ **INSTRUMENT (reusable, cheap): ARGMAX SENSITIVITY UNDER RE-WEIGHTING.** Before building
-any gated/conditional eval term, replay real decisions and count how often the proposed
-re-weighting actually *changes the chosen move*. State frequency is only an upper bound —
-this measures the real ceiling on the term's fire rate, costs one extra decider call per
-decision, and refutes dead ideas in minutes instead of a build. It is what turned this
-candidate around before a line of RTL was written.
-`dr_mario_rl/tmp/vs_aware/size2.py`, `saturation.py`.
+★ **INSTRUMENT (reusable, cheap): ARGMAX SENSITIVITY UNDER RE-WEIGHTING.** Replay real
+decisions, re-run the same search with the proposed re-weighting, count how often the
+CHOSEN MOVE changes. State frequency is only an upper bound; this measures the real
+ceiling on a term's fire rate for one extra decider call per decision. It survives the
+retraction intact — it was the state distribution that was wrong, not the method. ⚠ And
+that is exactly its caveat: **always state the harness rev the curve was sampled under.**
+`dr_mario_rl/tmp/vs_aware/rebaseline.py`.
 
-## 5c. ⚠ HARNESS DEFECT — the VS garbage trigger fires on the wrong events
+## 5c. ⚠ HARNESS DEFECTS — five bugs in the VS garbage channel, all fixed 2026-08-01
 
-`tmp/champion/vs_env.py` detects an attack with `cells >= 7`, documented as a near-perfect
-proxy for a 2-simultaneous-line clear. It is wrong in **both directions at once**:
+★ The 5c published on 2026-07-31 said the `cells >= 7` trigger "OVER-fires on cascades".
+**That was backwards** — cascades SHOULD fire (see 1 below), and as DOCUMENTED the proxy
+was ROM-true all along: 99.9% precision, 100% recall over 6078 clears. The bug was in the
+IMPLEMENTATION, not the documented rule.
 
-- **OVER-fires.** `FaithfulBoard.resolve()` loops clear→gravity→clear and sums cells across
-  steps, so a *cascade of single-line clears* reaches the threshold. Audited every positive
-  over 12 matches: **83% are false**, and the dominant signature is `(1, 1)` — clear a line,
-  gravity, clear another. Sequential, not simultaneous; sends nothing.
-- **UNDER-fires (off-by-2, found by selfplay-opt).** Its `cells` is
-  `occupancy(before) − occupancy(after)`, but `env.step` places the pill (**+2 cells**)
-  before resolving. The delta is `cleared − 2`, so `>= 7` really demands **9** cleared
-  cells — while a genuine L-shaped double is 7. Real doubles land silently.
+Five defects, now consolidated into one rev-stamped harness with a test suite
+(`tmp/vs_aware/vs_harness.py`, `test_vs_harness.py`, frozen rule `rom_attack_rule.py`):
 
-Consequence: VS self-play has been running with a garbage channel keyed to the wrong
-events, so its top-out rate and any win-rate tuned against it are measurements of a
-different game. Line-accurate replacement counts **distinct maximal runs ≥ 4 per clear
-step**: `dr_mario_rl/tmp/vs_aware/attack.py`; audit `check_proxy2.py`.
+1. **TRIGGER (opening-book, task #12).** `currentP_comboCounter` increments per matched run
+   (game_logic.asm:1176/:1623), is never reset inside the cascade loop, and is consumed
+   once from a SINGLE call site — `action_checkAttack` (:2859), a per-ACTION step, not per
+   cascade step. **Runs from different cascade steps SUM: `[1,1]` attacks.** Confirmed on
+   real hardware in Mesen (comboCounter 1→2 across two clear steps 37 frames apart,
+   garbage delivered). The rule is `sum(steps) >= 2`. The step-local rule this project
+   used had **14.9% recall**; the shipped `cells>=9` off-by-2 had **23.5%**.
+2. **OFF-BY-2 (selfplay-opt).** vs_env's `cells` is `occupancy(before) − occupancy(after)`
+   with the pill (+2) already placed, making its `>=7` test really `cleared >= 9`.
+3. **PAYLOAD.** 2/3/4 tiles by accumulated `attackSize`, saturating at 4 — not a flat 2.
+   Two attacks between a receiver's placements MERGE into one capped release.
+4. **COLUMNS.** Size-2 start is `frameCounter & 3`, stride 4 → {0,4}/{1,5}/{2,6}/{3,7}.
+   **Columns 0 and 4 are NOT immune** (verified twice in Mesen by pinning frameCounter), so
+   "build through the immune columns" was never a real defence.
+5. ★ **GRAVITY — garbage never fell.** `FaithfulBoard.resolve()` applies gravity only
+   INSIDE its clear loop, so garbage forming no line was left FLOATING at row 0. Traced:
+   receiver heights `[9,9,10,10,9,…]` → `[16,9,10,10,16,…]` with nine empty rows beneath.
+   Column 4 is a spawn column, so a drop there read as an instantly blocked spawn.
+   **This faked every top-out rate this project has quoted.** Settle first, then resolve.
 
-⚠ **PENDING ROM-RULE CONFIRMATION.** "Truth" above means *≥2 runs cleared in one step*,
-which is `MECHANICS_NES.md`'s wording — **not** a citation of the ROM's send routine, and
-that doc's own evidence does not support it: `probe_attack.lua`'s log shows `single` clears
-producing 14–34 changed P2 cells, the same range as `double`, with changes in columns 0 and
-4 that the same doc calls garbage-**immune**. That is P2 redraw, not garbage. If the ROM
-counts cascade-formed lines, `attack.py` under-fires, the old proxy was accidentally closer,
-and the inbound-garbage regime grows ~6x. Owned by task #12; freeze one shared trigger.
+Net effect on the game being simulated: attack rate **1.12 → 7.02 per 100 placements**,
+match length 76 → 106 placements per player, top-out rate **28% → 3.3%**.
+
+★ **RULE ADOPTED: no VS number without a `HARNESS_REV` stamp.** Three generations of
+numbers exist in this record and only the stamp tells them apart. `rom_attack_rule.stamp()`
+names any missing mechanic explicitly, so a half-upgraded harness cannot pass as complete.
 
 ## 6. ✅ SUCCESS (tool) / ⚠ UNBUILT — tucks: availability confirmed, executor-limited
 
