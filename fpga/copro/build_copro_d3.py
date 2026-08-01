@@ -28,6 +28,12 @@ import nes_d3_golden as G3
 EMPTY = 0xFF
 STUB = 0xBF80            # MiSTer mapper hardcodes the copro reset to $BF80 (in-ROM)
 DONE = 0x61FF
+# DRCOPRO_TUCK=1: emit the 6502 tuck enumerator and call it after the search, so the copro
+# publishes a real tuck descriptor at $6139/$613A (cart $5087/$5088 once CoproDrMario's
+# xlate maps them). Default OFF keeps this builder's output byte-identical.
+EMIT_TUCK = os.environ.get("DRCOPRO_TUCK", "0") == "1"
+TUCK_ROM = 0xA800            # free: search ends ~$88E1, SQ tables start $B000
+TUCK_COL, TUCK_ROW = 0x6139, 0x613A
 SQ_ROM, PILL_ROM = 0xB000, 0xB030
 MAX_STEPS = 3_000_000_000
 
@@ -60,6 +66,15 @@ def build_image(board, cA, cB, nA, nB):
     assert len(code) <= SQ_ROM - 0x8000, f"search overruns ROM tables ({len(code)}B)"
     search_ep = 0x8000 + labels["search"]
 
+    tuck_code = b""
+    if EMIT_TUCK:
+        from tuck_scan import emit_tuck_scan
+        ta = Asm6502(TUCK_ROM)
+        emit_tuck_scan(ta, live=0x0500)          # self-contained: owns its first-occ scan
+        tuck_code = ta.assemble()
+        assert TUCK_ROM + len(tuck_code) <= SQ_ROM, "tuck_scan overruns the SQ tables"
+        assert 0x8000 + len(code) <= TUCK_ROM, "search overruns tuck_scan"
+
     stub = Asm6502(STUB)
     stub.ins("SEI"); stub.ins("CLD")
     stub.ins("LDX_imm", 0xFF); stub.ins("TXS")
@@ -67,7 +82,16 @@ def build_image(board, cA, cB, nA, nB):
     stub.label("cp2")
     stub.ins16("LDA_absX", PILL_ROM); stub.ins16("STA_absX", PILLA)
     stub.ins("DEX"); stub.br("BPL", "cp2")
+    if EMIT_TUCK:
+        # descriptor defaults BEFORE the search: wiring $5087/$5088 in CoproDrMario turned
+        # them from a scratch alias into real copro RAM, so an uninitialised pair would make
+        # a DRTUCK=1 driver steer to a random column. Gated so the SHIPPED firmware stays
+        # byte-identical -- an unconditional write here moved c87e60a1 to 44a7b37e.
+        stub.ins("LDA_imm", 0xFF)
+        stub.ins16("STA_abs", TUCK_COL); stub.ins16("STA_abs", TUCK_ROW)
     stub.jsr(search_ep)
+    if EMIT_TUCK:
+        stub.jsr(TUCK_ROM)
     stub.ins("LDA_zp", D_BC); stub.ins16("STA_abs", S_BEST_C)
     stub.ins("LDA_zp", D_BO); stub.ins16("STA_abs", S_BEST_O)
     stub.ins("LDA_imm", 1); stub.ins16("STA_abs", DONE)
@@ -77,6 +101,8 @@ def build_image(board, cA, cB, nA, nB):
 
     img = bytearray(0x10000)
     img[0x8000:0x8000 + len(code)] = code
+    if tuck_code:
+        img[TUCK_ROM:TUCK_ROM + len(tuck_code)] = tuck_code
     for i in range(17):
         img[SQ_ROM + i] = (i * i) & 0xFF
         img[SQ_ROM + 17 + i] = (i * i) >> 8
