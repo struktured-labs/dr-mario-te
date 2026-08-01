@@ -119,7 +119,7 @@ def idx_map():
             "setup": F.R_SETUP, "matched": F.R_MATCHED, "poll": F.R_POLL,
             "maxh": F.R_MAXH, "holes": F.R_HOLES, "toprisk": F.R_TOPRISK,
             "spawn": F.R_SPAWN, "vbonus": F.R_VBONUS, "cross": F.R_CROSS,
-            "wvir": F.R_WVIR}
+            "wvir": F.R_WVIR, "wcells": F.R_WCELLS}
 
 
 def _mk(cand, topk2=8):
