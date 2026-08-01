@@ -128,6 +128,21 @@ def main():
     rom = img[0x8000:0xC000]
     with open(os.path.join(HERE, "copro_rom.hex"), "w") as f:
         f.write("\n".join("%02x" % x for x in rom) + "\n")
+    # PROVENANCE (see provenance.py): stamp every firmware artifact at the moment it is
+    # created. copro_rom.hex c87e60a1 is deployed in four trees and NO builder
+    # reproduces it -- because nothing recorded the recipe at build time. A manifest
+    # written here cannot be forgotten later.
+    try:
+        import provenance
+        provenance.stamp(
+            os.path.join(HERE, "copro_rom.hex"), __file__,
+            inputs=[os.path.join(ROOT, "tests", "test_search_d3.py"),
+                    os.path.join(ROOT, "tests", "primitives.py"),
+                    os.path.join(ROOT, "tests", "nes_d3_golden.py"),
+                    os.path.join(HERE, "tuck_scan.py")],
+            env_keys=("DRCOPRO_TUCK",))
+    except Exception as _e:
+        print(f"  WARNING: provenance stamp failed: {_e}")
     print(f"copro_rom.hex written: d3 search={clen}B stub={slen}B rom={len(rom)}B "
           f"(topk1={D3.TOPK1} topk2=8 pills={D3.NPILLS} resolve={D3.RESOLVE_LBL} WIN={D3.WIN})")
 
