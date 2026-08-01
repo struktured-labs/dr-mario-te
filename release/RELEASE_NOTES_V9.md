@@ -87,6 +87,25 @@ the garble it is being used to rule out. See `LEVELSELECT_GARBLE_ASSERTION.md`.
 - Dr. Mario © Nintendo. This is an unofficial fan patch and distributes no Nintendo code —
   you must supply your own copy of the original ROM.
 - Training Edition hack, VS CPU AI, and Study Mode by Struktured Labs.
-- Disassembly reference: the community Dr. Mario disassembly, whose labelling of the input,
-  pause, and drawing routines made the Study Mode work possible.
+
+Two community disassemblies made this possible, and both were genuinely used, for
+different things:
+
+- **Nostaljipi** — [dr-mario-disassembly](https://github.com/Nostaljipi/dr-mario-disassembly)
+  (ASM6f, Rev A, fully labelled). The source of the symbol vocabulary this hack is written
+  against — the RAM/zero-page map and the input, pause, combo and drawing routines. Its
+  `unused/` directory, which documents each free region of the ROM, is a specific debt:
+  Study Mode's code lives at `$D2CC`, one of the regions catalogued there
+  (`unused/drmario_unused_data_d2cc.asm`). Finding that space by hand would have been the
+  hard part.
+- **Brian Huffman** — [drmario](https://github.com/brianhuffman/drmario) (ca65, builds
+  Rev 0 **and** Rev A with `make test` md5 verification). Used to establish that this
+  patch's base is the USA **Rev 0** ROM and not Rev A — the two are different images, and
+  a patch applied to the wrong one produces garbage.
+
+Nostaljipi's disassembly in turn credits Sour (author of the Mesen emulator, whose debugger
+this project also leans on heavily), Data Crystal, and The Cutting Room Floor.
+
 - Patch format: BPS (beat).
+- Dr. Mario is a trademark of Nintendo. This project is unaffiliated with and unendorsed by
+  Nintendo.
