@@ -148,16 +148,44 @@ def cmd_rebuild(a):
         print(f"  ✅ REPRODUCED byte-exact: {got}")
     else:
         print(f"  ❌ MISMATCH\n     want {man['output']['md5']}\n     got  {got}")
+        if cur != man["emitter"]["md5"]:
+            # An emitter that has legitimately moved on is the COMMON case, and reporting it
+            # as a bare MISMATCH reads as "we lost the ability to rebuild a shipped ROM" --
+            # a false alarm that costs an investigation every sweep. Say what it actually
+            # means and hand over the one command that settles it.
+            print(f"\n     This manifest records emitter {man['emitter']['md5'][:8]} at commit "
+                  f"{man['git']['commit']}, and HEAD's emitter is {cur[:8]}.\n"
+                  f"     A mismatch is EXPECTED when the emitter has moved on -- it does NOT "
+                  f"mean the record is bad.\n     Settle it (in a scratch tree, and restore "
+                  f"afterwards):\n"
+                  f"       git show {man['git']['commit']}:patch_cartridge_copro.py > "
+                  f"patch_cartridge_copro.py\n"
+                  f"     If it reproduces there, retire the manifest to "
+                  f"roms/manifests/historical/ rather than deleting it.")
         sys.exit(1)
+
+
+def _manifests(d):
+    return sorted(f for f in os.listdir(d) if f.endswith(".json"))
 
 
 def cmd_list(a):
     if not os.path.isdir(MANIFEST_DIR):
         print("no manifests yet"); return
-    for f in sorted(os.listdir(MANIFEST_DIR)):
+    for f in _manifests(MANIFEST_DIR):
         m = json.load(open(os.path.join(MANIFEST_DIR, f)))
         fl = " ".join(f"{k}={v}" for k, v in m["flags"].items()) or "(defaults)"
         print(f"{m['tag']:<26} {m['output']['md5']}  {fl}")
+    # Superseded recipes: real shipped carts whose emitter has moved on. Listed so they stay
+    # visible, under their own heading so nobody mistakes them for live recipes (or for
+    # breakage). See roms/manifests/historical/README.md for the reproducing commit of each.
+    hist = os.path.join(MANIFEST_DIR, "historical")
+    if os.path.isdir(hist) and _manifests(hist):
+        print("\nhistorical/ (shipped, but rebuild from their RECORDED commit -- not HEAD):")
+        for f in _manifests(hist):
+            m = json.load(open(os.path.join(hist, f)))
+            fl = " ".join(f"{k}={v}" for k, v in m["flags"].items()) or "(defaults)"
+            print(f"  {m['tag']:<24} {m['output']['md5']}  @{(m['git']['commit'] or '?')[:8]}  {fl}")
 
 
 p = argparse.ArgumentParser(description=__doc__,
