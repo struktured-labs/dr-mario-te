@@ -10,19 +10,21 @@
   },
   "flags": {
     "DRHUMAN": "1",
+    "DRMINTHINK": "12",
     "DRNAVDWELL": "0",
     "DRNOFREEZE": "1",
     "DRPOCKET": "1",
     "DRRECOMMIT_NOFREEZE": "1",
+    "DRSLAM_KOPEN": "32",
     "DRSTUDYCOUNTS": "1"
   },
   "git": {
     "branch": "driver-nav",
-    "commit": "a51218c03e4cf75beae48649468b9119e2ae7113",
+    "commit": "91b2bc61d69257e72ce1196fe5352d21bcd4b44f",
     "dirty": false
   },
   "output": {
-    "md5": "11735fbf2e7e871e521a634aba4a34d2",
+    "md5": "082b335c5bc48ddc3fb2ab4bf7e5a9cd",
     "name": "pocket_human_studycounts.nes",
     "size": 98320
   },
