@@ -286,17 +286,48 @@ pass (memory: `dr-mario-single-copro-fit`, "fits timing-clean, 87% ALM, MUST
 use SPEED qsf" — the margin should be re-checked after adding new
 registers/states, not assumed to still hold).
 
-**Scratch RAM**: `tuck_scan` today uses 10 bytes (`$61A1`-`$61AA`) inside a
-documented-free 32-byte block (`$61A1`-`$61C0`). A candidate LIST (capacity
-16, matching phase-2's measured max=14 with margin) storing
-`(approach, trigger, rest, orient)` = 4 bytes/candidate × 16 = **64 bytes —
-exceeds the documented-free 32-byte window.** This needs a NEW scratch
-allocation. Copro RAM is only `$0000`-`$0FFF` + `$6100`-`$61FF`
-(`test_search_d3.py`'s own HW-CONSTRAINT comment), `$0800`-`$08FF` aliases
-`$6100`-`$61FF`, and `WORK2` already lives at `$0B00` ("TK/TK1/pills end at
-`$0A7F`"). There is likely headroom beyond `WORK2`'s own footprint, but the
-exact free-byte accounting needs the lead's own map — **flagged as an open
-item**, not computed blind here.
+**Scratch RAM — UPDATED, implementation-final (stage 2, commits 7de4e62..2cdfcad,
+supersedes the estimate below the line)**: the shipped-in-stage-2 v3 enumerator
+(`tuck_scan_v3.py`) uses `CAPACITY = 14`, not 16, and 5 bytes/candidate, not 4 —
+the differential test harness (`test_tuck_scan_v3.py`) caught a missing `rest`
+field in the first draft (needed by the scoring loop to reconstruct cell offsets;
+`target`/`approach`/`trigger`/`orient` alone are insufficient), which forced this
+re-plan. Final layout, confirmed by the dynamic RAM audit tool
+(`ram_audit.py`/`copro_ram_map.json`) and by every differential test in
+`fpga/copro/tuck_validation/` passing against real firmware addresses (not just
+python-level constants):
+```
+CANDLIST = 0x61AC     14 x 5B (target,approach,trigger,rest,orient) = 70B, ends 0x61F1
+TS_CNT, TS_DROP = 0x61F6, 0x61F7
+TS_* scan scratch (11B): 0x61A1-0x61AB
+```
+This is **107 bytes total** (11 scratch + 70 candlist + 2 count/drop, with a
+4-byte gap at 0x61F2-0x61F5), well past the documented-free 32-byte window this
+section originally assumed — confirming the "flagged as open item" concern below
+was justified, not overcautious. It fits: the audit found this range clear of
+every other label/constant across `primitives.py`, `test_search_d3.py`,
+`land_place_at.py`, and `tuck_scan_v3.py` (grepped, not assumed — one apparent
+collision at `$61C1`, `NV_SH` from `test_delta6502.py`, was traced to an unwired
+prototype only imported by `test_resumable_incr.py`, not in `build_copro_d3.py`'s
+actual call graph, so non-conflicting).
+
+The scoring loop (candidate prep + slot-0 injection + duplicate ply-2 exploration
++ the root-extension candidate loop, all built in stage 2) needed its own zero
+page, allocated contiguously right after `EH_T0-EH_T3` ($6C-$6F) in the "TRUE
+zero page" range the codebase already reserves for `D_*` search state:
+```
+$70-$71  TI1L/TI1H        tuck imm1 (16-bit)
+$72-$78  TP_IDX..TP_ORIENT  candidate-prep scratch + the winning candidate's raw fields
+$79-$80  TK2_BBVL..TK2_TMPH  fixed theta-gate reference, win-kind flag, winner's
+                              approach/trigger, gate-compare scratch (1 byte gap at $7C)
+```
+17 bytes, all confirmed free by the same audit discipline. Everything else the
+scoring loop touches (`D_C2`/`D_O2`/`D_TKC`/`D_J`/`D_MKL`/`D_MKH`/`D_MI`/`D_B2L`/
+`D_B2H`/`D_I1L`/`D_I1H`/`D_I2L`/`D_I2H`/`D_L1L`/`D_L1H`/`D_V1L`/`D_V1H`/`D_V3L`/
+`D_V3H`/`D_EL`/`D_EH`, and the `TK_*` ply-2 candidate arrays) is **reused, not
+new** — the base search's own `search` subroutine has already returned by the
+time the tuck extension runs in one decision, so nothing is live-shared (proven
+by the slot-isolation assert, `test_tuck_slot_isolation.py`).
 
 **Search-time cost** (the number the lead already priced GO from
 `decisions_L{11,20}.json`, restated here for the doc's completeness, not
@@ -315,19 +346,49 @@ actual cycle count for a tuck-heavy decision becomes available; recommend
 treating today's budget table as sizing-grade but not silicon-timing-grade
 until that gate runs.
 
+**Status after stage 2 (not yet a re-measurement of this section's numbers)**:
+stage-2 implementation work built and differentially proved firmware
+CORRECTNESS (candidate enumeration, full-depth-3 scoring, the theta gate, the
+publish contract, slot isolation) on synthetic boards sized to exercise the
+real-K2/expectimax code paths, not real-stream tempo. The per-decision
+candidate-count and frame-budget numbers above are still the phase-1/phase-2
+offline-harness numbers the lead already priced GO from — they have NOT been
+re-measured against the actual assembled stage-2 firmware. That re-measurement
+(cycle-accurate, from the real firmware image via py65 `.call()` step counts or
+the Verilator co-sim) is the natural §5 final-gate follow-up, still open.
+
 ---
 
 ## Summary of open decisions for the lead
 
-1. Option A (RTL CMD-8 extension) vs Option B (software land + slot-copy,
-   zero RTL change) for search integration (§2) — recommend A.
-2. Both orientations vs vertical-only for the enumerator (§1) — recommend
-   both, given the 73%-horizontal fired-tuck finding.
-3. Scratch RAM allocation for a 16-candidate list (§7) — needs the lead's own
-   free-space map; not resolved here.
-4. Whether to apply the existing `d2_invalidation_fix.patch` as-is (§3) —
-   recommend yes.
-5. Retire (not just re-bless) `tuck_regression.py`'s D3 check (§3) — recommend
-   yes, with a replacement contract check.
+**All five resolved by the lead's stage-1/stage-2 rulings and implementation.
+Status as of commit 2cdfcad (stage 2, green end-to-end):**
 
-Implementation waits for review of all five.
+1. Option A (RTL CMD-8 extension) vs Option B (software land + slot-copy,
+   zero RTL change) for search integration (§2) — **RESOLVED: Option B,
+   explicit lead ruling** (not this doc's original recommendation of A). Built
+   and differentially verified end-to-end (`land_place_at.py` + slot-0
+   injection, `tuck_score.py`/`tuck_ply2_score.py`).
+2. Both orientations vs vertical-only for the enumerator (§1) — **RESOLVED:
+   both, implemented.** `tuck_scan_v3.py`/`tuck_scan_v3_ref.py`, 67-board
+   differential suite all pass.
+3. Scratch RAM allocation for the candidate list (§7) — **RESOLVED**: capacity
+   14 (not 16 — a `rest` field the original plan omitted forced this), 5
+   bytes/candidate, 107 bytes total at `$61A1`-`$61F7`, confirmed clear by the
+   dynamic RAM audit tool (`ram_audit.py`). See the updated §7 above.
+4. Whether to apply the existing `d2_invalidation_fix.patch` as-is (§3) —
+   **RESOLVED: yes, applied** (stage 1, `driver-nav` commit `b850159`).
+5. Retire (not just re-bless) `tuck_regression.py`'s D3 check (§3) —
+   **RESOLVED: retired** (stage 1, `qa-harness` commit `94ba998`). The
+   replacement contract check exists as the stage-2 differential suite
+   (`test_tuck_scan_v3.py`, `test_tuck_root_extension.py`) but is not yet
+   wired into `tuck_regression.py`'s own pinned suite — worth doing before
+   this graduates past `fpga/copro/tuck_validation/` scratch status.
+
+Remaining, NOT yet resolved (see §7's "Status after stage 2" note and the
+stage-2 completion report to the lead): EH_PLY1 excav+hang add-on integration
+for the tuck scoring path, a cycle-accurate re-measurement of search-time cost
+against the actual assembled firmware (today's numbers are still the
+phase-1/phase-2 offline-harness estimates), and wiring the stage-2 code into
+`build_copro_d3.py` itself (everything so far lives in
+`fpga/copro/tuck_validation/` as a scratch/validation area, not the real build).
