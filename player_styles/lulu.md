@@ -7,7 +7,7 @@
 
 | opponent | result | notes |
 |---|---|---|
-| Combo Stomper (stomp180, tucks+chain, Pocket docked, L11 MED, human P1 vs copro P2) | **3–2 lulu, series to lulu** (night one final) | includes ≥1 KO of the AI — the first topout in Stomper history (0 in 4,000 lab matches). Both AI wins were crush-outs; user's live call on game 5: "could have been 3-2 tho" |
+| Combo Stomper (stomp180, tucks+chain, Pocket docked, L11 MED, human P1 vs copro P2) | **series: lulu UNDEFEATED — the Stomper has never won a match; its best is a 3–2 loss** | includes ≥1 KO of the AI — the first topout in Stomper history (0 in 4,000 lab matches). Both AI wins were crush-outs; user's live call on game 5: "could have been 3-2 tho" |
 
 The AI's single win was a textbook combo-stomp: KO'd her from a 25–07 virus lead
 (photo evidence). When it beat her, it beat her in-character; when she beat it, she
