@@ -59,12 +59,12 @@ claims are qualitative reads of footage, not yet decoded board data. Update this
 as the sample grows — especially once capture-card recordings allow real
 attack-timing measurements.
 
-## Night-one closing state (2026-08-01, ~21:48)
+## Night-one closing state (2026-08-01)
 
-The final match of the night was **suspended at 2–2 in crowns** when dr. lulu retired.
-The Stomper's second crown of that match is documented
-(`evidence/stomper_stage_clear_2crowns_20260801.jpg`): **STAGE CLEAR at VIRUS 02|00**
-— it out-raced her to a full clear with two of her viruses still standing. Its round
-wins are real and photographed; **no completed match was lost — dr. lulu retires night one
-undefeated, with the rubber match unplayed.** The cliffhanger is the correct ending:
-the decider happens when the champion returns.
+The final match went the distance — **dr. lulu won it 3–2**. The decider itself went
+uncaptured (citation: the user's testimony, same night; the capture card exists and was
+not yet configured — never again). The Stomper's two crowns in that match are documented
+(`evidence/stomper_stage_clear_2crowns_20260801.jpg`, STAGE CLEAR at VIRUS 02|00 — it
+out-raced her to a full clear). **Night one final: dr. lulu undefeated, every completed
+match won, including the 3–2 thriller.** The machine's consolation: it made the household
+champion go five games.
