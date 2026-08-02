@@ -82,10 +82,22 @@ def main():
     bad = {hex(a): (hex(oam[a]), hex(v)) for a, v in expect.items() if oam[a] != v}
     assert not bad, "2P layout wrong (addr: got/want): %r" % bad
 
-    # B: 1P leaves every one of those bytes untouched (zeros in a fresh MPU)
-    m1 = one_hook(unit1, labels, players=1)
-    touched = {hex(a): hex(m1.memory[a]) for a in expect if m1.memory[a] != 0}
-    assert not touched, "1P hook wrote study-2P slots: %r" % touched
+    # B: 1P writes the 1P layout to slots 37-38 (the driver owns previews in BOTH modes now
+    # that part1 is letters-only) and leaves P2 slots + the STUDY lift untouched.
+    m1 = one_hook(unit1, labels, players=1, pv1=(1, 2))
+    expect_1p = {
+        0x0294: 0x45, 0x0295: 0x60 | 1, 0x0296: 0x02, 0x0297: 0xBE,   # slot 37: P1 L, 1P pos
+        0x0298: 0x45, 0x0299: 0x70 | 2, 0x029A: 0x02, 0x029B: 0xC6,   # slot 38: P1 R, 1P pos
+    }
+    bad1 = {hex(a): (hex(m1.memory[a]), hex(v)) for a, v in expect_1p.items() if m1.memory[a] != v}
+    assert not bad1, "1P layout wrong: %r" % bad1
+    untouched = [0x029C, 0x029D, 0x02A0, 0x02A1, 0x0280, 0x0290]
+    leaked = {hex(a): hex(m1.memory[a]) for a in untouched if m1.memory[a] != 0}
+    assert not leaked, "1P hook wrote P2/lift slots: %r" % leaked
+    # B2: the EVAC part1 blob is letters-only (no preview writes left to stomp the driver)
+    assert P.STUDY_BLOB_EVAC[:8] == bytes.fromhex("A980854220F68860"), \
+        "EVAC part1 is not the letters-only v2 form"
+    assert len(P.STUDY_BLOB_EVAC) == 52, "EVAC blob must fill the audited 52B run"
 
     # C: flag-off identity
     _, off1, _ = build(dict(human, DRSTUDY2P="0"))

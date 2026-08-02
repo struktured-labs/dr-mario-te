@@ -584,7 +584,15 @@ OLD_STUDY_BLOB4_V32 = bytes.fromhex( # v3.2 part3b @ $BE56 (11 B, ended RTS inst
 # an LDA $9FF8,X data table -> read-as-data every draw -> part3c $BC26 mis-parse -> $0301 KIL; part3b
 # $BE56 -> level-select junk.  v8.2 keeps part1 (STUDY + P1 preview) ending RTS, drops blobs 2-5, and
 # the caller restores the 4 sites to base.  See FREE_SPACE_MAP.md / dr-mario-te-freeze-rootcause.
-STUDY_BLOB_EVAC = STUDY_BLOB[:-3] + bytes.fromhex("60FFFF")   # part1 JMP $9FF8 -> RTS + pad (52 B)
+OLD_STUDY_BLOB_EVAC_V82 = STUDY_BLOB[:-3] + bytes.fromhex("60FFFF")   # v8.2 evac: part1 incl. P1 preview
+# EVAC v2 (task #39, probe round 2): the pause loop calls the repointed draw ($97D3 -> $D2CC)
+# EVERY spin iteration -- not once at entry (both $B654 waits are patched precisely because the
+# loop re-runs the draw). So an evac part1 that writes the P1 preview re-stomps its 1P-default
+# position over the DRSTUDY2P driver fix every paused frame (Mesen-proven: slots 39/40 fixed,
+# 37/38 stomped back each frame). The driver now owns slots 37-40 in 2P, and in 1P the game's
+# own paused buffer already shows the preview, so part1 shrinks to just the STUDY letters:
+#   LDA #$80; STA $42; JSR $88F6; RTS   (8 B; padded to fill the audited 52 B run)
+STUDY_BLOB_EVAC = bytes.fromhex("A9808542" "20F688" "60") + b"\xFF" * 44
 
 
 class StudyPatchError(Exception):
@@ -820,6 +828,41 @@ def build_main(level=11, speed=1):
         a.label("esc_rst")
         a.ins("LDA_imm", 0); a.ins16("STA_abs", ESC_CTL); a.ins16("STA_abs", ESC_CTH)
         a.label("esc_done")
+    if STUDY2P:
+        # ---- DRSTUDY2P: driver-owned pause previews, ALL play modes (task #39; see flag block).
+        # PRE-DISPATCH placement is load-bearing: it must run on 1P human hooks too ($04==0 never
+        # reaches the play path), and during pause $46 stays 4. Part1 (EVAC v2) draws ONLY the
+        # STUDY letters now -- probe round 2 proved the pause loop re-runs the draw call EVERY
+        # spin frame, so any preview part1 wrote would stomp this block's writes each frame.
+        # The driver therefore owns slots 37-40 outright: 1P layout when $0727==1, 2P when ==2.
+        # Invisible in play (the game's OAM rebuild runs after this hook); owns the pause.
+        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "s2p_no")
+        a.ins16("LDA_abs", 0x031A); a.ins("ORA_imm", 0x60); a.ins16("STA_abs", 0x0295)  # P1 L tile
+        a.ins16("LDA_abs", 0x031B); a.ins("ORA_imm", 0x70); a.ins16("STA_abs", 0x0299)  # P1 R tile
+        a.ins("LDA_imm", 0x02)                                                          # P1 attr
+        a.ins16("STA_abs", 0x0296); a.ins16("STA_abs", 0x029A)
+        a.ins16("LDA_abs", 0x0727); a.ins("CMP_imm", 2); a.br("BEQ", "s2p_2p")
+        a.ins("LDA_imm", 0x45)                                                          # 1P: Y=$45
+        a.ins16("STA_abs", 0x0294); a.ins16("STA_abs", 0x0298)
+        a.ins("LDA_imm", 0xBE); a.ins16("STA_abs", 0x0297)                              # 1P X (right box)
+        a.ins("LDA_imm", 0xC6); a.ins16("STA_abs", 0x029B)
+        a.jmp("s2p_no")
+        a.label("s2p_2p")
+        a.ins16("LDA_abs", 0x039A); a.ins("ORA_imm", 0x60); a.ins16("STA_abs", 0x029D)  # P2 L tile
+        a.ins16("LDA_abs", 0x039B); a.ins("ORA_imm", 0x70); a.ins16("STA_abs", 0x02A1)  # P2 R tile
+        a.ins("LDA_imm", 0x02)                                                          # P2 attr
+        a.ins16("STA_abs", 0x029E); a.ins16("STA_abs", 0x02A2)
+        a.ins("LDA_imm", 0x33)                                                          # Y all 4
+        a.ins16("STA_abs", 0x0294); a.ins16("STA_abs", 0x0298)
+        a.ins16("STA_abs", 0x029C); a.ins16("STA_abs", 0x02A0)
+        a.ins("LDA_imm", 0x38); a.ins16("STA_abs", 0x0297)                              # P1 X L
+        a.ins("LDA_imm", 0x40); a.ins16("STA_abs", 0x029B)                              # P1 X R
+        a.ins("LDA_imm", 0xB8); a.ins16("STA_abs", 0x029F)                              # P2 X L
+        a.ins("LDA_imm", 0xC0); a.ins16("STA_abs", 0x02A3)                              # P2 X R
+        a.ins("LDA_imm", STUDY_2P_Y)                                                    # STUDY lift
+        a.ins16("STA_abs", 0x0280); a.ins16("STA_abs", 0x0284); a.ins16("STA_abs", 0x0288)
+        a.ins16("STA_abs", 0x028C); a.ins16("STA_abs", 0x0290)
+        a.label("s2p_no")
     # ---- full-clear auto-advance (mode-independent): a player's virus count ($0324/$03A4) hit 0
     # => STAGE CLEAR screen. Inject START (press window) to advance it so the demo LOOPS instead
     # of halting. Gated by MATCH_ACTIVE (set once play dispatched) so boot-init count==0 can't
@@ -1098,32 +1141,6 @@ def build_main(level=11, speed=1):
             a.ins16("STA_abs", 0x0200 + sa * 4 + 2); a.ins16("STA_abs", 0x0200 + sb * 4 + 2)
             a.ins("LDA_imm", xa); a.ins16("STA_abs", 0x0200 + sa * 4 + 3)
             a.ins("LDA_imm", xb); a.ins16("STA_abs", 0x0200 + sb * 4 + 3)
-    if STUDY2P:
-        # ---- DRSTUDY2P: 2P-correct pause previews, driver-side (task #39; see flag block).
-        # Every play-mode hook in 2P/VS, rewrite the STUDY preview slots with the layout the
-        # evac'd tail was supposed to draw: slots 37-40 at Y=$33, P1 X=$38/$40 over P1's board,
-        # P2 tiles from $039A/$039B at X=$B8/$C0 over P2's, and the 5 STUDY letters lifted to
-        # Y=$08 clear of the 2P header. Invisible in play (the game rebuilds OAM after this
-        # hook); owns the pause from frame 2 (part1 draws its 1P defaults once at entry only).
-        a.ins16("LDA_abs", 0x0727); a.ins("CMP_imm", 2); a.br("BNE", "s2p_no")
-        a.ins16("LDA_abs", 0x031A); a.ins("ORA_imm", 0x60); a.ins16("STA_abs", 0x0295)  # P1 L tile
-        a.ins16("LDA_abs", 0x031B); a.ins("ORA_imm", 0x70); a.ins16("STA_abs", 0x0299)  # P1 R tile
-        a.ins16("LDA_abs", 0x039A); a.ins("ORA_imm", 0x60); a.ins16("STA_abs", 0x029D)  # P2 L tile
-        a.ins16("LDA_abs", 0x039B); a.ins("ORA_imm", 0x70); a.ins16("STA_abs", 0x02A1)  # P2 R tile
-        a.ins("LDA_imm", 0x02)                                                          # attr all 4
-        a.ins16("STA_abs", 0x0296); a.ins16("STA_abs", 0x029A)
-        a.ins16("STA_abs", 0x029E); a.ins16("STA_abs", 0x02A2)
-        a.ins("LDA_imm", 0x33)                                                          # Y all 4
-        a.ins16("STA_abs", 0x0294); a.ins16("STA_abs", 0x0298)
-        a.ins16("STA_abs", 0x029C); a.ins16("STA_abs", 0x02A0)
-        a.ins("LDA_imm", 0x38); a.ins16("STA_abs", 0x0297)                              # P1 X L
-        a.ins("LDA_imm", 0x40); a.ins16("STA_abs", 0x029B)                              # P1 X R
-        a.ins("LDA_imm", 0xB8); a.ins16("STA_abs", 0x029F)                              # P2 X L
-        a.ins("LDA_imm", 0xC0); a.ins16("STA_abs", 0x02A3)                              # P2 X R
-        a.ins("LDA_imm", STUDY_2P_Y)                                                    # STUDY lift
-        a.ins16("STA_abs", 0x0280); a.ins16("STA_abs", 0x0284); a.ins16("STA_abs", 0x0288)
-        a.ins16("STA_abs", 0x028C); a.ins16("STA_abs", 0x0290)
-        a.label("s2p_no")
     # ---- pill-lock edge detect (both players) ----
     a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", LASTY1)
     a.br("BCC", "no_p1_new"); a.br("BEQ", "no_p1_new")
