@@ -163,6 +163,34 @@ for how this reconciles with the lead's own sizing verdict.
 **Recommend both, not vertical-only** — see §1's 73%-horizontal finding.
 Vertical-only forfeits the majority of the measured win.
 
+**⚠ CUR RESET CATCH (stage-3 integration, caught via a firmware-vs-firmware
+A/B sanity rider, not on silicon)**: `land_place_at` only writes the tuck's
+own 2 cells and assumes the REST of `CUR` ($0700) already holds the correct
+base board — a deliberate, documented design choice (`land_place_at.py`'s own
+contract: it is not a full board-copy routine). The candidate loop MUST
+explicitly reset `CUR = LIVE` (via the existing `cp_live_cur` subroutine
+`eh_terms`'s own rebuild preamble already uses) at the top of EVERY iteration,
+before `land_place_at` runs — `CUR` is a heavily-mutated shared scratch board
+(the base search's own ply-1/ply-2 exploration, and every PRIOR tuck
+candidate's own `tuck_ply2_score` call, all write through it via
+`_e_copy`/`_e_node`), so skipping the reset applies each tuck's cells onto
+whatever the last operation happened to leave behind — not an obviously
+illegal or crashing state, just a silently WRONG board, giving every tuck
+candidate a systematically wrong (in the observed case, both wildly inflated
+*and* deflated depending on what CUR happened to hold) value. First
+discovered as "no tuck ever fires under the real firmware, on any board
+tried" during pre-launch sanity testing; root-caused by dumping the per-
+candidate value to a scratch RAM ring during real full-pipeline execution and
+comparing against an isolated single-candidate re-run, which is the sharper
+instrument once a discrepancy vs. an isolated re-run is suspected. Fixed in
+`fpga/copro/tuck_v3.py`'s `emit_tuck_root_extension` (canonical repo, commit
+`ab99fd1`) — one `jsr cp_live_cur_addr` per loop iteration, using the same
+raw-cross-image-address pattern already established for `resolve_capped`/
+`expectimax`/`eh_terms_scan`. **Any future per-candidate scoring loop that
+reuses `CUR` as its own working board (which any full-depth-3 scorer must, to
+reuse the existing NODE machinery) needs this same reset — it is not specific
+to tucks, it is a property of `CUR` being process-wide mutable scratch.**
+
 ---
 
 ## 3. Executor fixes (D1 / D2)
