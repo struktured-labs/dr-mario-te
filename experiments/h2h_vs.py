@@ -80,8 +80,25 @@ LNK1   = dict(WINNER, arm="lnk1")     # winner weights, link-faithful cap-1 phys
 LNKFIX = dict(WINNER, arm="lnkfix")   # winner weights, fixpoint cascade resolution
 CHAIN180 = dict(WINNER, arm="chain180")   # fixpoint + chain-depth reward w_chain=180
 CHAIN360 = dict(WINNER, arm="chain360")
+# ---- #26 instant-double arms -------------------------------------------------------------
+# Each is chain180 plus ONE change, so the h2h attributes an effect to that change alone.
+# ⚠ The two mechanisms fix DIFFERENT positions -- measured, not assumed:
+#   wcells60  the ONLY arm that fully flips the abandoned-material probe (3 -> 0). Global:
+#             it re-prices every clear, which is exactly what the --no-garbage control and
+#             the win rate exist to price.
+#   wcells15  reduces 3 -> 1 at a much lower dose. FALLBACK ONLY -- ships only if every
+#             full-fix arm regresses, and is labelled "reduces, does not eliminate".
+#   dbl100    the PURE tempo arm. It does NOT fix the blunder: at 100 it converts the h3
+#             CASCADES into DOUBLES (same cells, one round earlier) and leaves all three
+#             abandoned-material positions exactly as shipped. It makes no blunder claim, so
+#             it ships only on a win INCREASE. Surgical -- 1.5% of decisions move -- so the
+#             paired run must be sized for a SMALL effect.
+WCELLS60 = dict(CHAIN180, wcells=60)
+WCELLS15 = dict(CHAIN180, wcells=15)
+DBL100   = dict(WINNER, arm="dbl100")
 ARMS = {"r47": R47, "winner": WINNER, "lnk1": LNK1, "lnkfix": LNKFIX,
-        "chain180": CHAIN180, "chain360": CHAIN360}
+        "chain180": CHAIN180, "chain360": CHAIN360,
+        "wcells60": WCELLS60, "wcells15": WCELLS15, "dbl100": DBL100}
 
 _CFG = {}
 
@@ -98,6 +115,9 @@ def _init(cfg):
     if any(a.startswith("chain") for a in arms):
         import cascade_chain_x as C
         C.warmup_chain(topk2=cfg.get("topk2", 8))
+    if any(a.startswith("dbl") for a in arms):
+        import cascade_dbl_x as D
+        D.warmup_dbl(topk2=cfg.get("topk2", 8))
     _CFG = cfg
 
 
@@ -156,10 +176,21 @@ def _mk(cand, topk2=8):
         import cascade_chain_x as C
         return C.ChainRewardD3Decider(w, fl, topk2=topk2, maxpass=0,
                                       w_chain=int(arm[5:]))
+    if arm.startswith("dbl"):
+        # #26 instant-double credit, `imm += w_dbl` when round 1 clears >= 2 LINES.
+        # ★ w_chain stays pinned at 180 so this arm differs from chain180 in EXACTLY one
+        # term -- otherwise a win would be unattributable between the two rewards. The
+        # cascade and double terms are deliberately separate: a cascade clears the same
+        # cells over more rounds and earns w_chain only, a double earns w_dbl only, and a
+        # move that is both earns both. cascade_dbl_selfcheck asserts w_dbl=0 is
+        # bit-identical to chain180 and that w_dbl=100 provably moves decisions.
+        import cascade_dbl_x as D
+        return D.DblRewardD3Decider(w, fl, topk2=topk2, maxpass=0,
+                                    w_chain=180, w_dbl=int(arm[3:]))
     if arm != "ship":
         import cascade_link_x as L
         if arm not in ("lnk1", "lnkfix"):
-            raise KeyError(f"unknown arm {arm!r}; want ship|lnk1|lnkfix|chain<N>")
+            raise KeyError(f"unknown arm {arm!r}; want ship|lnk1|lnkfix|chain<N>|dbl<N>")
         return L.LinkedD3Decider(w, fl, topk2=topk2,
                                  maxpass=1 if arm == "lnk1" else 0)
     return F.FastShipD3DeciderEHDelta(w, fl, topk2=topk2)
