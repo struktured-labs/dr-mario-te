@@ -4,12 +4,38 @@
 //
 // Cell encoding (written by the host/copro): 0 = empty, else {vir, color[1:0]}
 // with color 1..3 (NES low nibble + 1). Interface:
-//   write board[i]  : wr=1, waddr=i (0..127), wdata[2:0]
+//   write board[i]  : wr=1, waddr=i (0..127), wdata[2:0], wlnk[2:0]
 //   start           : pulse start=1 (loads nothing; board regs already written)
 //   done            : high when finished; sco[15:0] (signed) & win valid
+//
+// LINK PLANE (`blink`, this revision).  The NES playfield byte is high-nibble = link
+// direction, low-nibble = colour; the wrapper used to decode only the $D virus test and
+// discard the link.  `blink` carries it so gravity drops LINKED BODIES -- a capsule half
+// falls with its partner until that partner is cleared -- instead of dropping every cell
+// independently.  Compact per-cell gravity over-predicts cascade viruses 3.2x, which is
+// what made a cascade reward unmeasurable.
+//
+// The link plane is a SEPARATE 3-bit array rather than a widening of `bcell`, because NO
+// EVAL TERM READS LINKS: every walk below (colwalk, per-virus run/span, pollution, setup,
+// and the whole CMD6/7 delta engine) reads only colour, occupancy and virus-ness through
+// col_of/occ_of/vir_of.  Holding bcell at 3 bits leaves all of those 128:1 muxes
+// byte-identical, so the link plane costs muxes only where links are actually read:
+// S_APPLY (partner un-linking) and the gravity sweep.
+//
+// Link codes match the offline reference kernel (cascade_link_x.py):
+//   0 NONE   1 UP   2 DOWN   3 LEFT   4 RIGHT   -- "which way the partner lies".
+//
+// GRAVITY ORDER.  The reference enumerates bodies row-major then STABLE-SORTS them
+// lowest-first before dropping each one row, repeating to fixpoint.  A 128-entry stable
+// sort is not affordable here, and it is also not necessary: body gravity is confluent
+// (bodies only ever move DOWN), so any drop order reaches the same settled board.
+// MEASURED, not assumed -- a plain bottom-up sweep matched the sorted reference on the
+// colour, virus AND link planes plus cells/viruses/chain over 96,540 real placements
+// (L11 6 games + L17 8 games, cap-1 and fixpoint):
+// dr_mario_rl/tmp/rtl_chain/gravity_order_test.py.
 // Bit-exact contract (validated vs the python goldens in tb_leafeval):
-//   sco = 5000 - 12*maxh - 20*holes - 90*toprisk - 150*spawn + 60*setup
-//         - 30*buried + 12*rdy_ext + 12*vrdy - 6*pollution + matched60   (16-bit wrap; buried color-aware + nearest-2 cap, R6 matched-cover pre-scaled; r47b5: vrdy 24->12, was over-weighted -- eval A/B)
+//   sco = 5000 - 12*maxh - 20*holes - 90*toprisk - 150*spawn + 32*setup
+//         - 48*buried + 8*rdy_ext + 8*vrdy - 6*pollution + matched60   (16-bit wrap; buried color-aware + nearest-2 cap, R6 matched-cover pre-scaled @48; r47b5: vrdy 24->12; eval-winner (coef-opt2): setup 60->32, buried 30->48, rdy_ext 12->8, vrdy 12->8, matched-cover 60->48 -- held-out -12.5 / TEST -11.0 paired-median pills vs vrdy12, RTL cost 21 vs 30 bits)
 //   win = (no virus on board)
 module LeafEval(
 	input             clk,
@@ -17,6 +43,7 @@ module LeafEval(
 	input             wr,          // board-window write into slot `wslot`
 	input       [6:0] waddr,
 	input       [2:0] wdata,
+	input       [2:0] wlnk,        // link code for the written cell (0 = none)
 	input       [1:0] wslot,       // 0=CUR 1=LIVE 2=WORK1 3=WORK2
 	input             start,       // legacy: LEAF on CUR
 	input       [3:0] cmd,         // 1=LEAF 2=CUR<-slot(a_sl) 3=slot(a_sl)<-CUR
@@ -27,13 +54,23 @@ module LeafEval(
 	input       [2:0] a_col,       // column 0..7
 	input       [1:0] a_ca,        // colors, ENGINE encoding 1..3 handled by wrapper (pass nibble+1)
 	input       [1:0] a_cb,
+	input             a_fix,       // 0 = stop after one clear round (lnk1 arm)
+	                               // 1 = resolve to fixpoint, counting rounds (chain arm)
+	input       [7:0] a_chw,       // DRCHAIN dose / 4. imm gains a_chw*4*(chain-1) when
+	                               // chain > 1, mirroring cascade_chain_x._imm_chain.
+	                               // 0 reproduces the no-reward arms EXACTLY (the term
+	                               // vanishes), which is what makes one bitstream serve
+	                               // lnk1, fixpoint+0 and fixpoint+dose. Scaling by 4 puts
+	                               // the measured doses (60/180/360, knee above 360) in a
+	                               // single patchable byte at 4-point granularity.
 	output reg        done,
 	output reg [15:0] sco,
 	output reg        win,
 	output reg        legal,
-	output reg  [5:0] rv_cells,
-	output reg  [3:0] rv_vir,
+	output reg  [6:0] rv_cells,    // widened for fixpoint: a cascade can clear > 63 cells
+	output reg  [5:0] rv_vir,      // widened for fixpoint: a cascade can clear > 15 viruses
 	output reg [15:0] imm,
+	output reg  [3:0] chain,       // clear ROUNDS performed (1 = plain clear, >1 = cascade)
 	output reg        dv_fallback   // CMD 7 (DELTA): placement clears -> host must re-issue as full NODE
 );
 
@@ -41,16 +78,105 @@ module LeafEval(
 // slots in ONE inferred BRAM (sequential access only: window writes + 130-cyc copies)
 // -- 3 register files didn't fit the device (fitter: 4246/4191 LABs).
 reg [2:0] bcell [0:127] /*verilator public_flat_rd*/;
+// link plane, same geometry. Only gravity and the clear-apply sweep read it.
+reg [2:0] blink [0:127] /*verilator public_flat_rd*/;
+// ONE read address, ONE read mux, for the WHOLE link plane.
+//
+// Four independent `blink[<expr>]` reads meant four independent 128:1 mux trees, and that
+// -- not the write decoders -- is where the area went. MEASURED: merging the link into a
+// 6-bit bcell, which shares the write decoders, changed the standalone cost by exactly 0
+// ALMs (8,674 either way). Sharing the READ port is the lever that actually moves.
+//
+// Every consumer already captures the value into a register on the next cycle (see the
+// timing split below), so each one simply drives bl_ra one state early and reads bl_rq.
+// That is also exactly the shape a BRAM wants, if the plane ever has to move into one.
+reg  [6:0] bl_ra;
+reg  [2:0] bl_rq;
+// SYNCHRONOUS read + ONE write port == the shape Quartus infers as a RAM, which is the
+// whole point: it moves 128x3 bits out of ALMs and takes the 128-way read mux and write
+// decode with them.
+// WRITE-FORWARD BYPASS, and exactly how far it is load-bearing -- MEASURED, because an
+// untested guard is false assurance.
+// The hazard is real and frequent: S_APPLY_U un-links a SURVIVING partner, and that
+// partner can be the cell the sweep reads next (partner at fwp2+1 under LK_RIGHT). The
+// collision condition fires **37,284 times** across the 53,568-placement corpus.
+// But **0 of those are ever latched by a consumer**: every consumed read is latched at the
+// end of a BUBBLE state (S_APPLY_W / S_GRAV_W / S_GRAV2_W / S_CP_W*), and no bubble state
+// drives bl_we. The read-latency bubbles that the RAM needed already serialise the hazard
+// away. Proven three ways: deleting the bypass passes the corpus, POISONING it with an
+// illegal link code passes the corpus, and the counters below report 37,284 / 0.
+// It is kept as defence-in-depth -- delete a bubble state and it becomes load-bearing
+// immediately -- and the assertion below is what tells you that has happened.
+always @(posedge clk)
+	bl_rq <= (bl_we && bl_wa == bl_ra) ? bl_wd : blink[bl_ra];
+`ifdef VERILATOR
+// Simulation-only invariant witness: costs nothing in silicon, and turns the bypass from
+// an untested guard into a documented one. byp_used must stay 0; if it ever moves, a
+// bubble state was removed and the bypass is now the only thing keeping the read correct.
+reg [31:0] byp_fire /*verilator public_flat_rd*/;
+reg [31:0] byp_used /*verilator public_flat_rd*/;
+always @(posedge clk) begin
+	if (rst) begin byp_fire <= 0; byp_used <= 0; end
+	else if (bl_we && bl_wa == bl_ra) begin
+		byp_fire <= byp_fire + 1;
+		if (st == S_APPLY_W || st == S_GRAV_W || st == S_GRAV2_W
+		    || st == S_CP_W || st == S_CP_W_P) byp_used <= byp_used + 1;
+	end
+end
+`endif
+
+// ---- link-plane WRITE PORTS -------------------------------------------------------
+// Ten separate `blink[<expr>] <=` statements give every one of the 128 registers a
+// ten-way enable and a ten-way data mux. Funnelling the FSM's writes through TWO explicit
+// ports leaves each register a 2-way enable and a 2:1 mux, with one shared address select
+// in front -- the same trick as bl_ra, applied to the write side. No state writes the same
+// address twice, so collapsing them loses no ordering.
+// (The host-window write keeps its own statement: it fires while the FSM is idle, and
+// leaving it separate preserves the original last-write-wins ordering for free.)
+wire       ap_phas = (ap_lk == LK_UP    && ap_i[6:3] != 4'd0)
+                  || (ap_lk == LK_DOWN  && ap_i[6:3] != 4'd15)
+                  || (ap_lk == LK_LEFT  && ap_i[2:0] != 3'd0)
+                  || (ap_lk == LK_RIGHT && ap_i[2:0] != 3'd7);
+wire [6:0] ap_pix  = (ap_lk == LK_UP)   ? ap_i - 7'd8
+                   : (ap_lk == LK_DOWN) ? ap_i + 7'd8
+                   : (ap_lk == LK_LEFT) ? ap_i - 7'd1
+                   :                      ap_i + 7'd1;
+reg  [6:0] bl_wa;
+reg  [2:0] bl_wd;
+reg        bl_we;
+always @* begin
+	bl_we = 1'b0; bl_wa = 7'd0; bl_wd = LK_NONE;
+	// The host window write only ever fires while the FSM is idle, so priority between
+	// the two is moot; giving it first refusal keeps the arms below mutually exclusive.
+	if (wr && wslot == 2'd0) begin
+		bl_we = 1'b1; bl_wa = waddr; bl_wd = wlnk;
+	end else case (st)
+	S_CP_R:     begin bl_we = 1'b1; bl_wa = fwp2;  bl_wd = sl_qb[5:3]; end
+	S_PLACE:    begin bl_we = 1'b1; bl_wa = off_a; bl_wd = a_o4[1] ? LK_RIGHT : LK_DOWN; end
+	S_PLACE_B:  begin bl_we = 1'b1; bl_wa = off_b; bl_wd = a_o4[1] ? LK_LEFT  : LK_UP;  end
+	S_APPLY_U:  if (ap_m && ap_unl) begin bl_we = 1'b1; bl_wa = ap_pixr; bl_wd = LK_NONE; end
+	S_APPLY2:   if (ap_m)           begin bl_we = 1'b1; bl_wa = ap_i;    bl_wd = LK_NONE; end
+	S_GRAV_MA:  if (g_do) begin bl_we = 1'b1; bl_wa = g_k0;        bl_wd = LK_NONE; end
+	S_GRAV_M:   if (g_do) begin bl_we = 1'b1; bl_wa = g_k0 + 7'd8; bl_wd = g_lnk;   end
+	S_GRAV2MA:  begin bl_we = 1'b1; bl_wa = gk1;         bl_wd = LK_NONE; end
+	S_GRAV2M:   begin bl_we = 1'b1; bl_wa = gk1 + 7'd8;  bl_wd = g_lnk;   end
+	S_DUNPL:    begin bl_we = 1'b1; bl_wa = off_a; bl_wd = LK_NONE; end
+	S_DUNPL_B:  begin bl_we = 1'b1; bl_wa = off_b; bl_wd = LK_NONE; end
+	default: ;
+	endcase
+end
 // snapshot slots in an EXPLICIT dpram (behavioral arrays fail BRAM inference in
 // Quartus Std -> got synthesized as 1.5k registers and blew the LAB budget).
 // port A = writes (host window / copy-out walk), port B = registered reads (copy-in).
+// The slot words were already 8 bits wide with only 3 used, so the link plane rides
+// along in bits [5:3] for FREE -- no extra BRAM, no second RAM, no wider address.
 reg  [8:0] sr_addr;
 reg  [6:0] cpw_p;
 wire [8:0] sr_waddr = {wslot, waddr};
 wire       sl_we    = (wr && wslot != 2'd0) || sl_cpw;
 reg        sl_cpw;                    // S_CP_W write strobe
 wire [8:0] sl_wa    = sl_cpw ? {a_sl, cpw_p} : sr_waddr;
-wire [7:0] sl_wd    = sl_cpw ? {5'd0, bcell[cpw_p]} : {5'd0, wdata};
+wire [7:0] sl_wd    = sl_cpw ? {2'd0, bl_rq, bcell[cpw_p]} : {2'd0, wlnk, wdata};
 wire [7:0] sl_qb;
 wire [2:0] slotq = sl_qb[2:0];
 dpram #(.widthad_a(9), .width_a(8)) slotram (
@@ -90,6 +216,42 @@ localparam S_IDLE=0, S_COLWALK=1, S_VNEXT=2, S_HRUN_L=3, S_HSPAN_L=4, S_HRUN_R=5
 // incremental-delta states (CMD 6 = BASE latch, CMD 7 = DELTA child)
 localparam S_DPOL=31, S_DNEW=32, S_DBUR=33, S_DADV=34, S_DRV=35,
            S_DRVFIN=36, S_DSETH=37, S_DUNPL=38, S_DSETV=39, S_DCOMB=40;
+// body gravity + fixpoint re-scan. S_GRAV keeps its number: it is now the bottom-up
+// body sweep instead of the old per-column compaction.
+localparam S_GRAV2=41,          // second cell of a two-cell body: READ
+           S_FPREP=42,          // clear the mark plane, arm the 24-line full scan
+// TIMING SPLIT. `blink` is a 128-entry register file, so a blink READ is a 128:1 mux and a
+// blink WRITE is a 128-way decode. Doing both in one cycle put mux -> decision logic ->
+// decode on a single path: MEASURED 14.16 ns against an 11.64 ns requirement on the copro
+// clock (worst setup paths were literally blink[92] -> blink[88]), turning the baseline's
+// +0.118 ns margin into -3.241. Each sweep is therefore split into a READ/DECIDE cycle
+// that ends at a register and a WRITE cycle whose operands are all registers. Costs 2x
+// cycles in the apply and gravity sweeps -- both clearing-path only.
+           S_APPLY_P=46,        // apply sweep: RESOLVE the partner (markb lookup)
+           S_GRAV_D=47,         // gravity: DECIDE (the k1-indexed blocker lookup)
+// SINGLE-WRITE-PORT serialisation. A RAM has one write port, so the five states that
+// wrote two link words now spread them over two cycles. Each extra state does ONLY the
+// second write, leaving the original state's branch logic untouched -- the alternative,
+// moving branch logic into a new tail state, is where this kind of refactor goes wrong.
+           S_APPLY_U=48,        // apply: un-link the surviving partner
+           S_GRAV_MA=49,        // gravity: vacate the source cell's link
+           S_GRAV2MA=50,        // gravity: vacate the partner's link
+           S_PLACE_B=51,        // place: second half's link
+           S_DUNPL_B=52,        // delta un-place: second cell's link
+// RAM READ LATENCY bubbles. A synchronous read presents its address one cycle and returns
+// data the next, so a consumer needs its address set TWO states earlier, not one. Each
+// consumer gets an explicit idle cycle rather than duplicating the FSM's address
+// arithmetic into a combinational next-address block -- which is exactly where an
+// off-by-one would hide.
+           S_APPLY_W=53,        // wait for blink[fwp2]
+           S_GRAV_W=54,         // wait for blink[cursor]
+           S_GRAV2_W=55,        // wait for blink[gk1]
+           S_CP_W_P=56,         // prime the copy-out walk
+           S_APPLY2=43,         // apply sweep: WRITE
+           S_GRAV_M=44,         // gravity: WRITE first cell
+           S_GRAV2M=45;         // gravity: WRITE partner cell
+// link codes -- "which way the partner lies" (cascade_link_x.py)
+localparam [2:0] LK_NONE=3'd0, LK_UP=3'd1, LK_DOWN=3'd2, LK_LEFT=3'd3, LK_RIGHT=3'd4;
 reg [3:0] cmd_l;
 reg [5:0] st;
 reg       node_leaf;           // CMD_NODE: run the leaf after resolve
@@ -105,15 +267,52 @@ reg [4:0]   srun;              // current run length
 reg [1:0]   smcol;             // current run color (0 = none)
 reg [7:0]   srstart;           // run start offset
 reg [6:0]   fwp2;              // apply sweep pointer 0..127
-reg [4:0]   gdest;             // gravity dest row
 reg         anyclear;
+// ---- body-gravity sweep (replaces the old per-cell compaction) ----
+reg [3:0]   gr;                // sweep row 14..0 (row 15 can never fall)
+reg [2:0]   gc;                // sweep col 0..7
+reg         gmoved;            // a body moved this pass -> another pass is due
+reg [6:0]   gk1;               // partner cell queued for its own move cycle
+// READ/DECIDE -> WRITE pipeline registers (see the S_GRAV_M / S_APPLY2 timing note)
+reg         g_do, g_has;       // this body falls / it has a second cell
+// Stage-A captures for the fall decision. The chain was blink mux -> k1 -> bcell mux ->
+// dofall: TWO 128:1 muxes in series feeding one register, and after the apply sweep was
+// fixed it became the worst path on the copro clock (-0.113 ns). Splitting it puts the
+// k0-indexed lookups (k0 is cursor-derived, so register-driven) in stage A and the single
+// k1-indexed blocker lookup in stage B, one mux deep each.
+reg         ga_isrep, ga_occ, ga_vir, ga_blk0;
+// DRCHAIN reward as an ACCUMULATOR, not a multiply. The multiplier form put a DSP's
+// clock-enable at the end of a bcell-indexed FSM branch (worst path was
+// bcell[64] -> Mult7~8|ENA_DFF0, +0.026 ns), and chain depth is small enough that
+// w_chain*(chain-1) is just "add w_chain on every round after the first". Costs an adder,
+// refunds a DSP, and takes the multiply off the critical path entirely.
+// Saturation: chain stops at 15, so the bonus stops with it -- the reward cannot run away
+// on a pathological board. Real boards top out at chain 3.
+reg [15:0]  chain_bonus;
+reg [6:0]   g_k0, g_k1;
+reg [2:0]   g_cell, g_lnk;     // the cell being moved, captured before it is cleared
+reg         ap_m, ap_vir;      // apply sweep: marked / was a virus
+reg [2:0]   ap_lk;
+reg [6:0]   ap_i;
+// Partner resolved in its OWN stage. `markb[ap_pix]` is a second 128:1 mux, and letting it
+// feed the blink write enable in the same cycle left the copro clock at -0.312 ns with
+// every failing path reading markb[..] -> blink[..]. Registering the lookup splits that
+// into (registers -> pix arith -> markb mux -> register) and (registers -> write decode).
+reg         ap_unl;            // partner survives and must be un-linked
+reg [6:0]   ap_pixr;           // its index
+// ---- full-board re-scan (chain rounds 2+) ----
+// Round 1 needs only the 4 lines through the placed cells: a settled parent has no run
+// >= 4 anywhere else. After gravity the surviving cells have moved arbitrarily, so
+// rounds 2+ must scan all 16 rows and all 8 columns.
+reg         fullscan;
+reg [4:0]   fli;               // full-scan line: 0..15 = rows, 16..23 = cols
 
 reg  [3:0] wc, wr_;            // column/row walk indices
 reg  [4:0] maxh /*verilator public_flat_rd*/;
 reg  [7:0] holes /*verilator public_flat_rd*/, toprisk /*verilator public_flat_rd*/, spawn /*verilator public_flat_rd*/, setup /*verilator public_flat_rd*/;
 reg [10:0] pollution /*verilator public_flat_rd*/;   // up to 48 viruses x 22 cells = 1056
 reg  [9:0] buried /*verilator public_flat_rd*/;   // up to 48 x 15 = 720
-reg [12:0] matched60 /*verilator public_flat_rd*/; // R6 matched-cover pre-scaled: +60 per virus w/ same-color cover directly on top
+reg [12:0] matched60 /*verilator public_flat_rd*/; // R6 matched-cover pre-scaled: +48 per virus w/ same-color cover directly on top (name historical; was +60)
 reg [15:0] rdy_ext /*verilator public_flat_rd*/, vrdy /*verilator public_flat_rd*/;
 reg        anyvir;
 reg        seen;               // column walk: first-occupied seen
@@ -140,7 +339,7 @@ reg        base_anyvir;
 reg  [9:0] od_bur, nd_bur;
 reg [15:0] od_rdy, nd_rdy, od_vrdy, nd_vrdy;
 reg  [7:0] od_set, nd_set;
-reg [12:0] dd_matched;                // matched60 delta (closed form: +60 per new same-color cover)
+reg [12:0] dd_matched;                // matched60 delta (closed form: +48 per new same-color cover)
 reg [10:0] dd_pol;                    // pollution delta (closed form)
 reg  [7:0] dd_holes;                  // holes delta (closed form from colh)
 reg  [1:0] pca, pcb;                  // placed colors landed at off_a / off_b (post o4-swap)
@@ -175,7 +374,10 @@ always @(posedge clk) begin
 		st <= S_IDLE; done <= 1'b0; sl_cpw <= 1'b0;
 		base_mode <= 1'b0; delta_mode <= 1'b0; dv_fallback <= 1'b0;
 	end else begin
-		if (wr && wslot == 2'd0) bcell[waddr] <= wdata;   // slot writes go via the dpram port
+		if (wr && wslot == 2'd0) begin                    // slot writes go via the dpram port
+			bcell[waddr] <= wdata;   // its link goes through the write port below
+		end
+		if (bl_we) blink[bl_wa] <= bl_wd;      // THE link-plane write port (see funnel above)
 		case (st)
 		S_IDLE: if (start || cmd_go) begin
 			done <= 1'b0;
@@ -193,6 +395,7 @@ always @(posedge clk) begin
 				delta_mode <= 1'b0; base_mode <= 1'b0;           // FIX: a fresh NODE must not inherit a stale mode
 				legal <= 1'b0; rv_cells <= 0; rv_vir <= 0; imm <= 0;
 				markb <= 128'd0; anyclear <= 1'b0;
+				chain <= 4'd0; chain_bonus <= 16'd0; fullscan <= 1'b0;
 				fwp <= 0;
 				st <= S_FO1;
 			end
@@ -208,6 +411,7 @@ always @(posedge clk) begin
 				delta_mode <= 1'b1; node_leaf <= 1'b0; dv_fallback <= 1'b0;
 				legal <= 1'b0; rv_cells <= 0; rv_vir <= 0; imm <= 0;
 				markb <= 128'd0; anyclear <= 1'b0; fwp <= 0;
+				chain <= 4'd0; chain_bonus <= 16'd0; fullscan <= 1'b0;
 				od_bur <= 0; nd_bur <= 0; od_rdy <= 0; nd_rdy <= 0; od_vrdy <= 0; nd_vrdy <= 0;
 				od_set <= 0; nd_set <= 0; dd_matched <= 13'd0; dd_pol <= 0; dd_holes <= 0; affbit <= 128'd0;
 				dphase <= 2'd0;
@@ -217,10 +421,10 @@ always @(posedge clk) begin
 
 		// copy CUR <- slot: pipelined BRAM read (addr set cycle N, data cycle N+1)
 		S_COPY: begin
-			fwp2 <= 0; cpw_p <= 0;
+			fwp2 <= 0; cpw_p <= 0; bl_ra <= 7'd0;   // bl_ra tracks cpw_p through the walk
 			sr_addr <= {a_sl, 7'd0};
 			if (cmd_l == 4'd2) st <= S_CP_P;
-			else begin sl_cpw <= 1'b1; st <= S_CP_W; end
+			else begin sl_cpw <= 1'b1; st <= S_CP_W_P; end
 		end
 		S_CP_P: begin                             // prime: cell 0 lands in slotq next cycle
 			sr_addr <= sr_addr + 1'b1;
@@ -235,7 +439,7 @@ always @(posedge clk) begin
 		// copy slot <- CUR: drive the dpram write port, 128 cycles
 		S_CP_W: begin
 			if (cpw_p == 7'd127) begin sl_cpw <= 1'b0; done <= 1'b1; st <= S_IDLE; end
-			else cpw_p <= cpw_p + 1'b1;
+			else begin cpw_p <= cpw_p + 1'b1; bl_ra <= cpw_p + 7'd2; end
 		end
 
 		// ---- landing: first_occ walks (col, then col+1 for horizontal) ----
@@ -271,8 +475,11 @@ always @(posedge clk) begin
 			// orient4 odd = color swap (B goes to offa/top/left)
 			bcell[off_a] <= {1'b0, a_o4[0] ? a_cb : a_ca};
 			bcell[off_b] <= {1'b0, a_o4[0] ? a_ca : a_cb};
+			// the two halves are LINKED: they fall as one body until one of them clears.
+			// S_FO1/S_FO2 always give off_a = LEFT (horizontal) or TOP (vertical).
+			// a_o4[1] selects horizontal, matching the landing walks above.
 			pca <= a_o4[0] ? a_cb : a_ca; pcb <= a_o4[0] ? a_ca : a_cb;   // placed colors (delta)
-			li <= 0; st <= S_SCAN;
+			li <= 0; st <= S_PLACE_B;
 			// initialize line 0 (row of off_a)
 			soff <= {1'b0, off_a[6:3], 3'd0}; sstep <= 4'd1; scnt <= 5'd8;
 			srun <= 0; smcol <= 0;
@@ -307,57 +514,186 @@ always @(posedge clk) begin
 				for (i = 0; i < 16; i = i + 1)
 					if (i < srun) markb[srstart[6:0] + i * sstep] <= 1'b1;
 			srun <= 0; smcol <= 0;
+			if (fullscan) begin : feol
+				// 24 lines: 0..15 = rows (stride 1, 8 cells), 16..23 = cols (stride 8, 16 cells)
+				reg [4:0] nx;
+				nx = fli + 5'd1;
+				if (fli == 5'd23) begin fwp2 <= 0; bl_ra <= 7'd0; st <= S_APPLY_W; end
+				else begin
+					fli <= nx;
+					if (nx < 5'd16) begin soff <= {nx[3:0], 3'd0}; sstep <= 4'd1; scnt <= 5'd8; end
+					else            begin soff <= {5'd0, nx[2:0]}; sstep <= 4'd8; scnt <= 5'd16; end
+					st <= S_SCAN;
+				end
+			end else
 			case (li)
 				2'd0: begin soff <= {5'd0, off_a[2:0]}; sstep <= 4'd8; scnt <= 5'd16; li <= 2'd1; st <= S_SCAN; end
 				2'd1: begin soff <= {1'b0, off_b[6:3], 3'd0}; sstep <= 4'd1; scnt <= 5'd8; li <= 2'd2; st <= S_SCAN; end
 				2'd2: begin soff <= {5'd0, off_b[2:0]}; sstep <= 4'd8; scnt <= 5'd16; li <= 2'd3; st <= S_SCAN; end
-				default: begin fwp2 <= 0; st <= S_APPLY; end
+				default: begin fwp2 <= 0; bl_ra <= 7'd0; st <= S_APPLY_W; end
 			endcase
 		end
 
-		S_APPLY: begin : apl
-			if (markb[fwp2]) begin
+		// apply sweep, stage 1: READ ONLY. The blink read mux ends at a register here so
+		// that it never feeds the blink write decode in the same cycle.
+		S_APPLY: begin
+			ap_m   <= markb[fwp2];
+			ap_lk  <= bl_rq;                  // == blink[fwp2]
+			ap_vir <= vir_of[fwp2];
+			ap_i   <= fwp2;
+			st <= S_APPLY_P;
+		end
+		// apply sweep, stage 2: RESOLVE the partner. One 128:1 mux (markb), ending at a
+		// register, so it shares a cycle with nothing else.
+		S_APPLY_P: begin
+			ap_pixr <= ap_pix;
+			ap_unl  <= ap_phas && !markb[ap_pix];
+			st <= S_APPLY_U;
+		end
+		S_APPLY_W:  st <= S_APPLY;   // RAM read latency
+		S_GRAV_W:   st <= S_GRAV;    // RAM read latency
+		S_GRAV2_W:  st <= S_GRAV2;   // RAM read latency
+		S_CP_W_P:   begin bl_ra <= 7'd1; st <= S_CP_W; end   // prime the copy-out read
+		S_PLACE_B:  st <= S_SCAN;    // second half's link (write port arm above)
+		S_APPLY_U:  st <= S_APPLY2;  // partner un-link  (write port arm above)
+		S_GRAV_MA:  st <= S_GRAV_M;  // vacate source    (write port arm above)
+		S_GRAV2MA:  st <= S_GRAV2M;  // vacate partner   (write port arm above)
+		// apply sweep, stage 4: WRITE, operands all registered.
+		// Clearing a cell also BREAKS THE LINK of a surviving partner: that partner
+		// becomes a loose single and falls on its own. If both halves are marked no
+		// unlink is needed -- they are both about to be blanked.
+		S_APPLY2: begin : apl
+			if (ap_m) begin
 				rv_cells <= rv_cells + 1'b1;
-				if (vir_of[fwp2]) rv_vir <= rv_vir + 1'b1;
-				bcell[fwp2] <= 3'd0;
+				if (ap_vir) rv_vir <= rv_vir + 1'b1;
+				bcell[ap_i] <= 3'd0;      // blink[ap_i] and the partner un-link: write funnel
 				anyclear <= 1'b1;
 			end
-			if (fwp2 == 7'd127) begin
-				wc <= 0; gdest <= 5'd15; fwp <= 5'd15;   // gravity: col wc, read row fwp
+			if (ap_i == 7'd127) begin
+				gr <= 4'd14; gc <= 3'd0; gmoved <= 1'b0; bl_ra <= {4'd14, 3'd0};  // arm the sweep
 				if (delta_mode) begin
-					if (anyclear || markb[7'd127]) begin      // clearing placement -> host does full NODE
+					if (anyclear || ap_m) begin               // clearing placement -> host does full NODE
 						dv_fallback <= 1'b1; done <= 1'b1; delta_mode <= 1'b0; st <= S_IDLE;
 					end else st <= S_DNEW;                     // non-clearing: child in CUR, run delta scans
+				end else if (anyclear || ap_m) begin
+					if (chain != 4'd15) begin
+						chain <= chain + 1'b1;
+						// every round AFTER the first pays w_chain: total = w_chain*(chain-1)
+						if (chain >= 4'd1) chain_bonus <= chain_bonus + {6'd0, a_chw, 2'b00};
+					end
+					st <= S_GRAV_W;
 				end else
-					st <= (anyclear || markb[7'd127]) ? S_GRAV : S_RESDONE;
-			end else
-				fwp2 <= fwp2 + 1'b1;
+					st <= S_RESDONE;                           // rescan found nothing: settled
+			end else begin
+				fwp2 <= fwp2 + 1'b1; bl_ra <= fwp2 + 1'b1;
+				st <= S_APPLY_W;
+			end
 		end
 
-		// gravity: per column bottom-up; viruses anchor (dest = read-1); pills fall to dest
+		// ---- BODY gravity: bottom-up sweep, repeated until a pass moves nothing ----
+		// The old code compacted each column independently, which drops a capsule half
+		// even when its partner is still supported -- that is the 3.2x cascade
+		// over-prediction. Here a linked pair falls only if BOTH halves are clear to move.
+		//
+		// Representative rule (removes the need for any `seen` bitmap): a vertical body is
+		// handled at its BOTTOM cell, a horizontal body at its LEFT cell. The sweep runs
+		// rows 14->0 and cols 0->7, so a body's partner is always a cell this pass has not
+		// reached yet, and nothing is processed twice. A link pointing off-board or at an
+		// empty cell is DANGLING and falls as a single, matching the reference kernel.
 		S_GRAV: begin : grv
-			reg [2:0] t;
-			t = bcell[{fwp[3:0], wc[2:0]}];
-			if (t != 3'd0) begin
-				if (t[2]) begin                       // virus: fixed anchor
-					gdest <= fwp - 1'b1;
-				end else begin
-					if (gdest != fwp) begin
-						bcell[{gdest[3:0], wc[2:0]}] <= t;
-						bcell[{fwp[3:0], wc[2:0]}] <= 3'd0;
-					end
-					gdest <= gdest - 1'b1;
-				end
+			reg [2:0] lk;
+			reg       isrep, haspt, blk, dofall;
+			reg [6:0] k0, k1;
+			k0 = {gr, gc};
+			lk = bl_rq;                       // == blink[k0]: bl_ra tracks the cursor (invariant)
+			haspt = 1'b0; k1 = 7'd0; isrep = 1'b1;
+			case (lk)
+				LK_UP:    if (gr != 4'd0 && occ_of[k0 - 7'd8]) begin haspt = 1'b1; k1 = k0 - 7'd8; end
+				LK_RIGHT: if (gc != 3'd7 && occ_of[k0 + 7'd1]) begin haspt = 1'b1; k1 = k0 + 7'd1; end
+				LK_DOWN:  if (gr != 4'd15 && occ_of[k0 + 7'd8]) isrep = 1'b0;  // partner below represents us
+				LK_LEFT:  if (gc != 3'd0 && occ_of[k0 - 7'd1]) isrep = 1'b0;   // partner to the left does
+				default: ;
+			endcase
+			// blocked if any body cell has an occupied cell beneath that is not body itself.
+			// gr <= 14 so k0+8 is on-board; k1's row is <= 14 for every representative case.
+			blk = occ_of[k0 + 7'd8];
+			if (haspt && occ_of[k1 + 7'd8] && (k1 + 7'd8) != k0) blk = 1'b1;
+			// stage A is READ ONLY -- capture the cell, the body shape, and every
+			// k0-indexed lookup. `blk` needs a k1-indexed one, so it waits for stage B.
+			g_has <= haspt; g_k0 <= k0; g_k1 <= k1;
+			g_cell <= bcell[k0]; g_lnk <= lk;
+			ga_isrep <= isrep; ga_occ <= occ_of[k0]; ga_vir <= vir_of[k0];
+			ga_blk0  <= occ_of[k0 + 7'd8];
+			st <= S_GRAV_D;
+		end
+		// gravity stage B: the one lookup that needed k1, now indexed by a REGISTER.
+		// A body falls only if every cell of it has an empty cell beneath that is not the
+		// body itself; g_k1 + 8 == g_k0 is the vertical pair resting on its own lower half.
+		S_GRAV_D: begin : grvd
+			reg blk;
+			blk = ga_blk0;
+			if (g_has && occ_of[g_k1 + 7'd8] && (g_k1 + 7'd8) != g_k0) blk = 1'b1;
+			g_do <= ga_occ && !ga_vir && ga_isrep && !blk;
+			st <= S_GRAV_MA;
+		end
+		// gravity stage 2: move the representative cell down one row, from registers.
+		S_GRAV_M: begin
+			if (g_do) begin
+				bcell[g_k0 + 7'd8] <= g_cell;   // link half handled by the write funnel
+				bcell[g_k0]        <= 3'd0;
+				gmoved <= 1'b1;
 			end
-			if (fwp == 5'd0) begin
-				if (wc == 3'd7) st <= S_RESDONE;
-				else begin wc <= wc + 1'b1; gdest <= 5'd15; fwp <= 5'd15; end
-			end else
-				fwp <= fwp - 1'b1;
+			if (g_do && g_has) begin
+				gk1 <= g_k1; bl_ra <= g_k1; st <= S_GRAV2_W;  // partner next: point at its link
+			end else begin
+				// cursor advance + end-of-pass (mirrored in S_GRAV2M). bl_ra follows the
+				// cursor so the next S_GRAV already has its link word waiting.
+				// st is assigned FIRST so the terminal arm below can override it -- the
+				// other order makes the last nonblocking write win and the sweep never ends.
+				st <= S_GRAV_W;
+				if (gc == 3'd7) begin
+					gc <= 3'd0;
+					if (gr == 4'd0) begin
+						if (gmoved || g_do) begin
+							gr <= 4'd14; gmoved <= 1'b0; bl_ra <= {4'd14, 3'd0};
+						end else st <= a_fix ? S_FPREP : S_RESDONE;
+					end else begin gr <= gr - 1'b1; bl_ra <= {gr - 4'd1, 3'd0}; end
+				end else begin gc <= gc + 1'b1; bl_ra <= {gr, gc + 3'd1}; end
+			end
+		end
+		// second cell of a two-cell body. For a vertical pair gk1 + 8 == the cell S_GRAV_M
+		// just vacated, so it must follow that write, not share the cycle. Read then write,
+		// same reason as above.
+		S_GRAV2: begin
+			g_cell <= bcell[gk1]; g_lnk <= bl_rq;   // S_GRAV_M pointed bl_ra at gk1
+			st <= S_GRAV2MA;
+		end
+		S_GRAV2M: begin
+			bcell[gk1 + 7'd8] <= g_cell;    // link half handled by the write funnel
+			bcell[gk1]        <= 3'd0;
+			// cursor advance + end-of-pass (gmoved is already 1 from S_GRAV_M)
+			if (gc == 3'd7) begin
+				gc <= 3'd0;
+				if (gr == 4'd0) begin gr <= 4'd14; gmoved <= 1'b0; bl_ra <= {4'd14, 3'd0}; end
+				else begin gr <= gr - 1'b1; bl_ra <= {gr - 4'd1, 3'd0}; end
+			end else begin gc <= gc + 1'b1; bl_ra <= {gr, gc + 3'd1}; end
+			st <= S_GRAV_W;
+		end
+		// settled with a_fix set: blank the mark plane and re-scan the WHOLE board for a
+		// follow-on clear. Round 1's 4-line targeted scan is not valid here because the
+		// survivors have moved.
+		S_FPREP: begin
+			markb <= 128'd0; anyclear <= 1'b0;
+			fullscan <= 1'b1; fli <= 5'd0;
+			soff <= 8'd0; sstep <= 4'd1; scnt <= 5'd8;
+			srun <= 0; smcol <= 0;
+			st <= S_SCAN;
 		end
 
 		S_RESDONE: begin
-			imm <= 16'd180 * rv_vir + 16'd10 * rv_cells;
+			// chain reward: only a real CASCADE pays, never a plain clear (chain == 1),
+			// so the term is gated on chain > 1 exactly as _imm_chain gates on ch > 1.
+			imm <= 16'd180 * rv_vir + 16'd10 * rv_cells + chain_bonus;
 			if (node_leaf) begin
 				maxh <= 0; holes <= 0; toprisk <= 0; spawn <= 0; setup <= 0;
 				pollution <= 0; buried <= 0; rdy_ext <= 0; vrdy <= 0; anyvir <= 0; matched60 <= 13'd0;
@@ -380,7 +716,7 @@ always @(posedge clk) begin
 					anyvir <= 1'b1;
 					// R6 matched-cover setup: a same-color non-virus cell resting directly on the virus
 					// (== the R1 exemption condition) counts a started vertical clear.
-					if (curcol == col_of[{wr_[3:0], wc[2:0]}]) matched60 <= matched60 + 13'd60;
+					if (curcol == col_of[{wr_[3:0], wc[2:0]}]) matched60 <= matched60 + 13'd48;
 					// R1 color-aware buried; R7b: charge only the 2 topmost viruses in the column.
 					if (vseen < 5'd2)
 						buried <= buried + fillcnt - ((curcol == col_of[{wr_[3:0], wc[2:0]}]) ? curlen : 5'd0);
@@ -589,11 +925,11 @@ always @(posedge clk) begin
 			     - 16'd20  * holes_p
 			     - 16'd90  * toprisk_p
 			     - 16'd150 * spawn_p
-			     + 16'd60  * setup_p
+			     + 16'd32  * setup_p
 			     + matched60_p
-			     - 16'd30  * buried_p
-			     + 16'd12  * rdy_ext_p
-			     + 16'd12  * vrdy_p
+			     - 16'd48  * buried_p
+			     + 16'd8   * rdy_ext_p
+			     + 16'd8   * vrdy_p
 			     - 16'd6   * pollution_p;
 			done <= 1'b1;
 			st <= S_IDLE;
@@ -607,9 +943,9 @@ always @(posedge clk) begin
 			ga = 8'd15 - {3'd0, colh[off_a[2:0]]} - {4'd0, off_a[6:3]};
 			gb = 8'd15 - {3'd0, colh[off_b[2:0]]} - {4'd0, off_b[6:3]};
 			dd_holes <= a_o4[1] ? (ga + gb) : 8'd0;
-			// matched60 delta: a placed cell resting directly on a same-color virus adds a cover (+60)
-			dd_matched <= ((off_a[6:3] != 4'd15 && vir_of[off_a + 7'd8] && col_of[off_a + 7'd8] == pca) ? 13'd60 : 13'd0)
-			            + ((off_b[6:3] != 4'd15 && vir_of[off_b + 7'd8] && col_of[off_b + 7'd8] == pcb) ? 13'd60 : 13'd0);
+			// matched60 delta: a placed cell resting directly on a same-color virus adds a cover (+48)
+			dd_matched <= ((off_a[6:3] != 4'd15 && vir_of[off_a + 7'd8] && col_of[off_a + 7'd8] == pca) ? 13'd48 : 13'd0)
+			            + ((off_b[6:3] != 4'd15 && vir_of[off_b + 7'd8] && col_of[off_b + 7'd8] == pcb) ? 13'd48 : 13'd0);
 			// pollution delta: scan the 2 placed cells' rows+cols for differently-colored viruses
 			dsoff <= {off_a[6:3], 3'd0}; dstep <= 4'd1; dscnt <= 5'd8; li <= 2'd0;
 			st <= S_DPOL;
@@ -689,11 +1025,13 @@ always @(posedge clk) begin
 			end else drow <= drow + 1'b1;
 		end
 		S_DUNPL: begin
-			bcell[off_a] <= 3'd0; bcell[off_b] <= 3'd0;   // placed cells were empty on the settled parent
+			// placed cells were empty on the settled parent; the funnel clears their links too
+			bcell[off_a] <= 3'd0; bcell[off_b] <= 3'd0;
 			dbur_new <= 1'b0; dcolstep <= 2'd0; dcol <= off_a[2:0]; drow <= 5'd0;
 			fillcnt <= 0; curcol <= 2'd0; curlen <= 5'd0; vseen <= 5'd0;
-			st <= S_DBUR;
+			st <= S_DUNPL_B;
 		end
+		S_DUNPL_B: st <= S_DBUR;   // second cell's link (write port arm above)
 
 		// rdy_ext/vrdy rescore: walk the placed cells' rows+cols, and for each same-color virus
 		// re-run the per-virus run/span machinery (reused) to get its old/new contribution.
