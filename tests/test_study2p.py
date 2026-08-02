@@ -98,9 +98,9 @@ def main():
     untouched = [0x029C, 0x029D, 0x02A0, 0x02A1]                       # P2 slots only
     leaked = {hex(a): hex(m1.memory[a]) for a in untouched if m1.memory[a] != 0}
     assert not leaked, "1P hook wrote P2 slots: %r" % leaked
-    # B2: the EVAC part1 blob is letters-only (no preview writes left to stomp the driver)
-    assert P.STUDY_BLOB_EVAC[:8] == bytes.fromhex("A980854220F68860"), \
-        "EVAC part1 is not the letters-only v2 form"
+    # B2: the EVAC part1 blob is a bare RTS (v3 -- NOTHING left to race the driver)
+    assert P.STUDY_BLOB_EVAC[0] == 0x60 and set(P.STUDY_BLOB_EVAC[1:]) == {0xFF}, \
+        "EVAC part1 is not the bare-RTS v3 form"
     assert len(P.STUDY_BLOB_EVAC) == 52, "EVAC blob must fill the audited 52B run"
 
     # C: flag-off identity
