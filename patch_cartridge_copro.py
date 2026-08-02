@@ -592,7 +592,14 @@ OLD_STUDY_BLOB_EVAC_V82 = STUDY_BLOB[:-3] + bytes.fromhex("60FFFF")   # v8.2 eva
 # 37/38 stomped back each frame). The driver now owns slots 37-40 in 2P, and in 1P the game's
 # own paused buffer already shows the preview, so part1 shrinks to just the STUDY letters:
 #   LDA #$80; STA $42; JSR $88F6; RTS   (8 B; padded to fill the audited 52 B run)
-STUDY_BLOB_EVAC = bytes.fromhex("A9808542" "20F688" "60") + b"\xFF" * 44
+OLD_STUDY_BLOB_EVAC_V2 = bytes.fromhex("A9808542" "20F688" "60") + b"\xFF" * 44   # v2: letters-only
+# EVAC v3 (task #39, probe round 3): even letters-only part1 stomps the driver's STUDY Y-lift
+# every pause frame -- $88F6 writes ALL FOUR OAM bytes per letter from its own template, Y
+# included. Same clobber pattern, last remaining field. So part1 retires completely (bare RTS;
+# the repointed draw call needs a safe target, nothing more) and the DRIVER draws the letters
+# too: tiles/X are static (probe-dumped), Y is mode-correct ($0F in 1P per the original
+# design, $08 in 2P clear of the header). One writer, zero races, slots 32-40 driver-owned.
+STUDY_BLOB_EVAC = b"\x60" + b"\xFF" * 51
 
 
 class StudyPatchError(Exception):
@@ -624,7 +631,8 @@ def apply_study_pause(rom, evac=False):
     if evac:                                               # v8.2: part1 (RTS) only; no 2P tail
         targets = [
             (STUDY_BLOB_CPU, STUDY_BLOB_EVAC, 52,
-             [OLD_STUDY_BLOB_V2, OLD_STUDY_BLOB_V3, OLD_STUDY_BLOB_V31, STUDY_BLOB]),
+             [OLD_STUDY_BLOB_V2, OLD_STUDY_BLOB_V3, OLD_STUDY_BLOB_V31, STUDY_BLOB,
+              OLD_STUDY_BLOB_EVAC_V82, OLD_STUDY_BLOB_EVAC_V2]),
         ]
     else:
         targets = [
@@ -837,11 +845,25 @@ def build_main(level=11, speed=1):
         # The driver therefore owns slots 37-40 outright: 1P layout when $0727==1, 2P when ==2.
         # Invisible in play (the game's OAM rebuild runs after this hook); owns the pause.
         a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "s2p_no")
+        # STUDY letters (part1 is a bare RTS now -- EVAC v3): tiles/X static per the probe's
+        # OAM dump, attr 0; Y is mode-correct below ($0F in 1P, STUDY_2P_Y in 2P).
+        for slot, (tile, x) in zip((32, 33, 34, 35, 36),
+                                   ((0x0D, 0x70), (0xA0, 0x78), (0x0C, 0x80),
+                                    (0xA1, 0x88), (0xA2, 0x90))):
+            base = 0x0200 + slot * 4
+            a.ins("LDA_imm", tile); a.ins16("STA_abs", base + 1)
+            a.ins("LDA_imm", x); a.ins16("STA_abs", base + 3)
+        a.ins("LDA_imm", 0x00)
+        for slot in (32, 33, 34, 35, 36):
+            a.ins16("STA_abs", 0x0200 + slot * 4 + 2)                                   # attr 0
         a.ins16("LDA_abs", 0x031A); a.ins("ORA_imm", 0x60); a.ins16("STA_abs", 0x0295)  # P1 L tile
         a.ins16("LDA_abs", 0x031B); a.ins("ORA_imm", 0x70); a.ins16("STA_abs", 0x0299)  # P1 R tile
         a.ins("LDA_imm", 0x02)                                                          # P1 attr
         a.ins16("STA_abs", 0x0296); a.ins16("STA_abs", 0x029A)
         a.ins16("LDA_abs", 0x0727); a.ins("CMP_imm", 2); a.br("BEQ", "s2p_2p")
+        a.ins("LDA_imm", 0x0F)                                                          # 1P: letters Y=$0F
+        a.ins16("STA_abs", 0x0280); a.ins16("STA_abs", 0x0284); a.ins16("STA_abs", 0x0288)
+        a.ins16("STA_abs", 0x028C); a.ins16("STA_abs", 0x0290)
         a.ins("LDA_imm", 0x45)                                                          # 1P: Y=$45
         a.ins16("STA_abs", 0x0294); a.ins16("STA_abs", 0x0298)
         a.ins("LDA_imm", 0xBE); a.ins16("STA_abs", 0x0297)                              # 1P X (right box)
