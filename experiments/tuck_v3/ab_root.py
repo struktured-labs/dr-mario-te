@@ -46,10 +46,11 @@ import root_search as RS
 _C = {}
 
 
-def _init(level, tuck, P, exec_only):
+def _init(level, tuck, P, exec_only, theta=0.0, log_decisions=False):
     FX.warmup_ship_eh(topk2=8)
     w, fl = FX.variant("winner")
-    _C.update(level=level, tuck=tuck, P=P, exec_only=exec_only, w=w, fl=fl)
+    _C.update(level=level, tuck=tuck, P=P, exec_only=exec_only, w=w, fl=fl, theta=theta,
+              log_decisions=log_decisions)
 
 
 def play(seed):
@@ -66,8 +67,11 @@ def play(seed):
 
     seg = {"open": [0, 0], "mid": [0, 0], "end": [0, 0]}
     fired = 0
+    fired_by_regime = {"open": 0, "mid": 0, "end": 0}
     cands_seen = 0
     unexecutable = 0
+    margins = []
+    decisions = []   # per-decision (n_cands, virus_count, fill_height), only when logging
     res = "stall"
 
     while True:
@@ -79,13 +83,17 @@ def play(seed):
                                                  frames_per_row=_C["P"],
                                                  exec_only=_C["exec_only"])
             cands_seen += len(tuck_cands)
+            if _C.get("log_decisions"):
+                decisions.append({"n": len(tuck_cands), "vc": vc,
+                                  "fill": RS.fill_height(fb)})
         else:
             tuck_cands = []
 
         pick = RS.choose_root_with_tucks(fb, env.cur, env.nxt, w, fl, topk2=8,
                                          frames_per_row=_C["P"],
                                          exec_only=_C["exec_only"],
-                                         tuck_cands=tuck_cands)
+                                         tuck_cands=tuck_cands,
+                                         theta=_C.get("theta", 0.0))
 
         k = "open" if vc > 32 else ("mid" if vc > 8 else "end")
 
@@ -116,6 +124,9 @@ def play(seed):
             env.cur = env.nxt
             env.nxt = env._rand_pill()
             fired += 1
+            fired_by_regime[k] += 1
+            if pick.get("margin") is not None:
+                margins.append(float(pick["margin"]))
             seg[k][0] += 1
             seg[k][1] += vc - b.virus_count()
             if b.virus_count() == 0:
@@ -139,8 +150,9 @@ def play(seed):
             break
 
     return {"seed": seed, "won": int(res == "clear"), "pills": env.pills_placed,
-            "fired": fired, "cands_seen": cands_seen, "unexecutable": unexecutable,
-            "seg": seg}
+            "fired": fired, "fired_by_regime": fired_by_regime,
+            "cands_seen": cands_seen, "unexecutable": unexecutable,
+            "margins": margins, "seg": seg, "decisions": decisions}
 
 
 def boot_ci(xs, stat=st.mean, n=10000, seed=12345):

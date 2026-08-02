@@ -212,10 +212,22 @@ def tuck_root_candidates(fb, pa, pb, frames_per_row=12, exec_only=True):
     return out
 
 
+def fill_height(fb):
+    """Tallest column's occupied height (ROWS - top_occ), for board-context reporting.
+    Same definition destroy.py's max_height uses."""
+    h = 0
+    for c in range(COLS):
+        t = fb.top_occ(c)
+        if ROWS - t > h:
+            h = ROWS - t
+    return h
+
+
 # ----------------------------------------------------------------- the root search
 def choose_root_with_tucks(fb, cur, nxt, w, fl, topk2=8,
                            w_excav=FX._W_EXCAV_SHIP, w_hang=FX._W_HANG_SHIP,
-                           frames_per_row=12, exec_only=True, tuck_cands=None):
+                           frames_per_row=12, exec_only=True, tuck_cands=None,
+                           theta=0.0):
     """The 32 shipped root actions PLUS executor-motion-legal tuck root actions, all
     scored by the identical depth-3 machinery. Returns a dict:
         kind        'base' or 'tuck'
@@ -223,10 +235,19 @@ def choose_root_with_tucks(fb, cur, nxt, w, fl, topk2=8,
         placement   TE.enumerate dict  (kind == 'tuck')
         ca, cb      colours to write at cells[0], cells[1]  (kind == 'tuck')
         val         the winning root value (for diagnostics / the equivalence test)
+        best_base_val   the best of the 32 base actions alone (for margin diagnostics)
         n_tuck_cands, n_tuck_legal   candidate counts, for fire-rate / coverage reporting
 
     `tuck_cands`, if given, is used instead of recomputing (lets a caller pass an empty
     list to run BASE-ONLY, the arm-off control and the equivalence self-test).
+
+    `theta` (phase 2, margin gate): a tuck may only be chosen if its value beats the
+    best BASE action's value by >= theta (eval units). theta=0.0 is EXACTLY phase 1's
+    plain argmax (no gate) -- eligibility collapses to `val >= best_val_base`, which is
+    automatically implied for any candidate that would have won an ungated argmax, so
+    this is provably a superset-preserving generalisation, not a behaviour change at
+    theta=0. Verified empirically too: `equivalence_selftest(theta=0.0)` and the phase-2
+    replay-vs-phase-1-JSON check in `calibrate_margins.py`.
     """
     col = np.frombuffer(bytes(fb.col), dtype=np.uint8).astype(np.int8)
     vir = np.frombuffer(bytes(fb.vir), dtype=np.uint8).astype(np.int8)
@@ -248,6 +269,9 @@ def choose_root_with_tucks(fb, cur, nxt, w, fl, topk2=8,
                 best_val = val
                 best = {"kind": "base", "action": var * 8 + cc, "val": val}
 
+    best_base_val = best_val   # exactly the max over the 32 base actions, nothing else
+                               # has been considered yet -- the margin reference point.
+
     if tuck_cands is None:
         tuck_cands = tuck_root_candidates(fb, ca, cb, frames_per_row, exec_only)
     n_legal = 0
@@ -257,12 +281,17 @@ def choose_root_with_tucks(fb, cur, nxt, w, fl, topk2=8,
         nv, cells = _expand_core_at(col, vir, r0, c0, r1, c1_, col0, col1, c1, v1)
         val = _root_value(c1, v1, nv, cells, na, nb, topk2, w_excav, w_hang, w, fl)
         n_legal += 1
+        if best_base_val is not None and val < best_base_val + theta:
+            continue                     # THE MARGIN GATE -- theta=0 never rejects a
+                                          # candidate that could have won the plain argmax
         if best_val is None or val > best_val:
             best_val = val
-            best = {"kind": "tuck", "placement": p, "ca": col0, "cb": col1, "val": val}
+            best = {"kind": "tuck", "placement": p, "ca": col0, "cb": col1, "val": val,
+                    "margin": val - best_base_val if best_base_val is not None else None}
 
     best["n_tuck_cands"] = len(tuck_cands)
     best["n_tuck_legal"] = n_legal
+    best["best_base_val"] = best_base_val
     return best
 
 
