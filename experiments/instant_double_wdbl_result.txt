@@ -1,0 +1,18 @@
+positions offering an instant double: 36
+
+w_dbl=0    material-left=3/36   {'WALL': {'DOUBLE': 9}, 'h3': {'CASCADE': 6, 'SINGLE': 3}, 'h6': {'DOUBLE': 9}, 'h9': {'DOUBLE': 9}}   <- chain180 as shipped
+w_dbl=20   material-left=3/36   {'WALL': {'DOUBLE': 9}, 'h3': {'CASCADE': 6, 'SINGLE': 3}, 'h6': {'DOUBLE': 9}, 'h9': {'DOUBLE': 9}}
+w_dbl=40   material-left=3/36   {'WALL': {'DOUBLE': 9}, 'h3': {'CASCADE': 6, 'SINGLE': 3}, 'h6': {'DOUBLE': 9}, 'h9': {'DOUBLE': 9}}
+w_dbl=60   material-left=3/36   {'WALL': {'DOUBLE': 9}, 'h3': {'CASCADE': 6, 'SINGLE': 3}, 'h6': {'DOUBLE': 9}, 'h9': {'DOUBLE': 9}}
+w_dbl=100  material-left=3/36   {'WALL': {'DOUBLE': 9}, 'h3': {'DOUBLE': 4, 'CASCADE': 2, 'SINGLE': 3}, 'h6': {'DOUBLE': 9}, 'h9': {'DOUBLE': 9}}
+w_dbl=150  material-left=1/36   {'WALL': {'DOUBLE': 9}, 'h3': {'DOUBLE': 8, 'SINGLE': 1}, 'h6': {'DOUBLE': 9}, 'h9': {'DOUBLE': 9}}
+
+material-left across the ladder: [3, 3, 3, 3, 3, 1]
+MONOTONE (never gets worse as the dose rises): True
+
+★ w_dbl NEVER reaches a full flip within 150.
+  The primary ship criterion (3->0) is NOT reachable by this mechanism at
+  these doses. Report that before spending h2h CPU on it.
+     ('h3', 3, 3, 2) : ['SINGLE', 'SINGLE', 'SINGLE', 'SINGLE', 'SINGLE', 'DOUBLE']
+     ('h3', 3, 1, 3) : ['SINGLE', 'SINGLE', 'SINGLE', 'SINGLE', 'SINGLE', 'SINGLE']
+     ('h3', 5, 2, 1) : ['SINGLE', 'SINGLE', 'SINGLE', 'SINGLE', 'SINGLE', 'DOUBLE']
