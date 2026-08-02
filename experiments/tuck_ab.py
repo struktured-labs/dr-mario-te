@@ -28,7 +28,45 @@ from fb import FB, COLS
 import destroy as D
 import tuck_enum as TE
 _C={}
-def _init(level,tuck,nes,P): D._init("winner",level,300,4,600,28,8,6); _C.update(level=level,tuck=tuck,nes=nes,P=P)
+def _init(level,tuck,nes,P):
+    import os as _o
+    D._init("winner",level,300,4,600,28,8,6)
+    # DRTUCK_GATE = minimum virus_count for the override to fire (0 = never gated, the
+    # default, byte-identical to every run before this flag existed). Set 8 to suppress
+    # tucks in the ENDGAME: paired NES runs show tucks help open+mid at BOTH L11 and L20,
+    # but the endgame contribution FLIPS sign with level (L11 38.0->34.7 pills, L20
+    # 39.9->43.3). Virus counts per regime are identical in both, so that is a real
+    # endgame regression, not a composition shift.
+    # DRTUCK_EXEC=1 restricts candidates to tucks the SHIPPED EXECUTOR can actually
+    # perform (fall in an approach column, ONE horizontal switch at a trigger row, then
+    # fall). The headline -8.51 pills was measured over the FULL gravity-legal tuck space;
+    # measured coverage of that space by the executor is 78.4% of boards but only 16.7% of
+    # tuck cells (tmp/tuck/exec_reachable.py). Publishing a tuck the executor cannot
+    # perform is WORSE than publishing none -- the capsule would steer to the approach
+    # column and then fail to reach the target, landing somewhere the search never scored.
+    _C.update(level=level,tuck=tuck,nes=nes,P=P,gate=int(_o.environ.get("DRTUCK_GATE","0")),
+              execonly=_o.environ.get("DRTUCK_EXEC","0")=="1")
+
+def _exec_reach_cells(fb):
+    """Rest cells reachable under the executor's one-switch model (see DRTUCK_EXEC)."""
+    from fb import ROWS as _R, COLS as _C2, EMPTY as _E
+    occ = lambda r,c: fb.col[r*_C2+c] != _E
+    def rest(c, r):
+        while r+1 < _R and not occ(r+1, c): r += 1
+        return r
+    def topdrop(c):
+        return None if occ(0,c) else rest(c,0)
+    out=set()
+    for c in range(_C2):
+        sd = topdrop(c); sdd = -1 if sd is None else sd
+        for a in (c-1, c+1):
+            if not (0 <= a < _C2): continue
+            ra = topdrop(a)
+            if ra is None or occ(ra, c): continue
+            rf = rest(c, ra)
+            if rf > sdd: out.add((rf, c))
+    return out
+
 
 def score_placement(fb, cells, ca, cb):
     """Apply a placement (cells in place_at order, colours ca/cb), resolve, score."""
@@ -57,7 +95,7 @@ def play(seed):
         if a is None: res="topout"; break
         vc=env.board.virus_count()
         tuck_play=None
-        if _C["tuck"]:
+        if _C["tuck"] and vc > _C.get("gate", 0):
             fb=FB.from_board(env.board); pa,pb=env.cur.a,env.cur.b
             base=D.child(fb,int(a)//COLS,int(a)%COLS,pa,pb)
             if base[0] is not None:
@@ -80,8 +118,18 @@ def play(seed):
                         if ch[0] is not None and ch[1][1] > best_sd_vir:
                             best_sd_vir = ch[1][1]
                 best=None
+                reach = _exec_reach_cells(fb) if _C.get("execonly") else None
                 for p in cands:
                     if not p.get("is_tuck"): continue
+                    if reach is not None:
+                        # APPROXIMATION, stated plainly: require the placement's DEEPEST
+                        # cell (the one that makes it a tuck) to be executor-reachable.
+                        # Exact two-cell reachability would also constrain the shallower
+                        # cell; this is the permissive direction, so it OVER-states the
+                        # executor's reach rather than under-stating it.
+                        r0,c0,r1,c1 = p["cells"]
+                        deep = (r0,c0) if r0 >= r1 else (r1,c1)
+                        if deep not in reach: continue
                     ca,cb = (pa,pb) if not p.get("flip") else (pb,pa)
                     r = score_placement(fb, p["cells"], ca, cb)
                     if r is None: continue

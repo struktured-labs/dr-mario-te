@@ -1,0 +1,41 @@
+{
+  "artifact": {
+    "md5": "68f153cdc227c349b1f280050f353c54",
+    "name": "copro_rom.hex",
+    "size": 49152
+  },
+  "builder": {
+    "argv": [
+      "build_copro_d3.py"
+    ],
+    "file": "build_copro_d3.py",
+    "md5": "e38722fc4ec6133e15ef890ac4793d64"
+  },
+  "determinism": "not checked (no rebuild callable supplied)",
+  "env": {
+    "DRCOPRO_TUCK": null
+  },
+  "git": {
+    "branch": "copro-qa-harness",
+    "commit": "6ab6113080b1ed389b588e1f8bf147bfb81ded38",
+    "dirty": true
+  },
+  "inputs": [
+    {
+      "md5": "25b0062ee3877ebeb5cf72f5f5b316d4",
+      "path": "/home/struktured/projects/dr-mario-qa-wt/tests/test_search_d3.py"
+    },
+    {
+      "md5": "3ea6ce30240252d35a951f195971fcb5",
+      "path": "/home/struktured/projects/dr-mario-qa-wt/tests/primitives.py"
+    },
+    {
+      "md5": "c23fbf450c8e5b4f41db67a45fae9ce5",
+      "path": "/home/struktured/projects/dr-mario-qa-wt/tests/nes_d3_golden.py"
+    },
+    {
+      "md5": "819e03fd7a04100e055f6f518908deaf",
+      "path": "/home/struktured/projects/dr-mario-qa-wt/fpga/copro/tuck_scan.py"
+    }
+  ]
+}

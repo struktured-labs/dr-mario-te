@@ -1,0 +1,15 @@
+=== pbase (Pocket 5CEBA4F23C8, AGGRESSIVE AREA) ===
+94f84404d58f2b8cdf3f57df30e0965b  /home/struktured/projects/dr_mario_rl/tmp/rtl_chain/donelat/LeafEval_base.sv
+Logic utilization (in ALMs) : 5,906 / 18,480 ( 32 % )
+Total registers : 1225
+Total block memory bits : 1,536 / 3,153,920 ( < 1 % )
+Total RAM Blocks : 1 / 308 ( < 1 % )
+Total DSP Blocks : 7 / 66 ( 11 % )
+=== pchain (Pocket 5CEBA4F23C8, AGGRESSIVE AREA) ===
+80135f049735aa06b5252e950a7b17fe  /home/struktured/projects/dr_mario_rl/tmp/rtl_chain/donelat/LeafEval.sv
+Logic utilization (in ALMs) : 6,696 / 18,480 ( 36 % )
+Total registers : 1355
+Total block memory bits : 3,456 / 3,153,920 ( < 1 % )
+Total RAM Blocks : 2 / 308 ( < 1 % )
+Total DSP Blocks : 7 / 66 ( 11 % )
+POCKET SIZING DONE

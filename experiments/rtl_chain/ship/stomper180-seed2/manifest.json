@@ -1,0 +1,66 @@
+{
+  "arm": "Combo Stomper (chain180)",
+  "arm_select": {
+    "$70E5_a_fix": 1,
+    "$70E6_DRCHAIN_div4": 45,
+    "dose": 180
+  },
+  "cart": {
+    "changed": false,
+    "md5": "d6daedbc150d47aaafae1a2d2ac94b69",
+    "note": "arm lives in the copro firmware inside the rbf; cart is driver+game and is UNCHANGED",
+    "path": "latch_converged_wiggle.nes"
+  },
+  "copro_md5": "212118452fadc920e7f21dc3b5b8677e",
+  "done_latency": {
+    "budget_frames": 80,
+    "clocks": {
+      "max": 81900000.0,
+      "mean": 49900000.0,
+      "median": 48300000.0,
+      "min": 26100000.0,
+      "p90": 59200000.0,
+      "p95": 63400000.0
+    },
+    "corpus": "69 real boards (hostdata_real), stomp180 arm, tucks both sides",
+    "mister_worst_frames": 57.2,
+    "mister_worst_frames_SUPERSEDED": 46.9,
+    "note": "46.9 was worst-of-6 and UNDERSTATED the tail by 22%. The 69-board corpus max is 81.9M clocks = 57.2 frames at 85.909 MHz. Quote 57.2.",
+    "pocket_projection": {
+      "boards_over": 1,
+      "budget_clocks": 72900000.0,
+      "of": 69,
+      "overrun": "~12% on the single board that exceeds",
+      "pct": 1.4
+    }
+  },
+  "firmware_flags": "DRCOPRO_TUCK=1 DRCOPRO_ARM=1 DRFIX=1 DRCHAIN=180",
+  "firmware_md5": "f4b6dfbf76c9beb80d19b3659fb99d26",
+  "firmware_note": "TUCKS INCLUDED -- the deployed baseline 751b6ce9 is the tuck build; omitting them would ship a regression",
+  "leafeval_md5": "80135f049735aa06b5252e950a7b17fe",
+  "rbf_md5": "71d2de37b1fbcabbb92701fc4094f833",
+  "rbf_must_differ_from": "f7d3382a422abde5559f612d838c4c94 (the lnk1 build; update_mif is a no-op for $readmemh)",
+  "rebuild": "re-pin SEED 2 (exactly one SEED line), copro_rom.hex = f4b6dfbf, clean full compile, expect +0.181",
+  "rtl_branch": "claude/winner-single-copro",
+  "rtl_commit": "887043e3f5be55419ee92f9274d2ae70f1f65435",
+  "seed": 2,
+  "seed_sweep_distribution": {
+    "default(SEED 5)": "+0.096 FAIL",
+    "note": "sweep config had 2 SEED lines; ship build re-established with exactly one",
+    "seed2": "+0.181 PASS",
+    "seeds3-5": "not sampled (winner found)"
+  },
+  "tag": "stomper180",
+  "timing": {
+    "alms": "37249/41910",
+    "bar_ns": 0.1,
+    "copro_slack_ns": 0.181,
+    "free": 4661,
+    "pll_hdmi_ns": 0.094
+  },
+  "validation": {
+    "gate_rtl": "LEAF 948/948, DELTA 4494/4494 unchanged",
+    "linknode_gate": "7282 cases, doses 0/180/360, 9/9 mutants",
+    "node_cosim": "53568 real placements L11+L17, all planes + chain"
+  }
+}

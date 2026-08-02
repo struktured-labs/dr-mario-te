@@ -1,0 +1,8 @@
+Fitter status : Successful - Sat Aug  1 19:42:36 2026
+ALMs          : 17774 / 18480  (706 free)
+copro slack   : 2.072 ns (outclk_4)
+worst setup   : 1.896 ns (any domain)
+
+POCKET TRIAL FIT: LANDED -- the chain engine fits this part on this seed.
+  NOT a ship verdict: seed variance across archived Pocket fits spans ~628 ALMs,
+  so confirm on the shipping seed before anyone stages an .rbf.

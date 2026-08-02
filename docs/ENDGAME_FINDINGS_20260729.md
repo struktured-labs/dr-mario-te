@@ -33,7 +33,10 @@ cost real hours and re-deriving them would cost the same again.
 | 5 | blanket plan-avoidance filter | ❌ **FAILURE** (earlier) | +6.98 pills, CI excludes any gain |
 | 5 | NES-pill eval retune | ❌ **HOLDOUT NEGATIVE** | tuning block was a seed artefact |
 | — | goal-metric h2h | ⚠ **INCONCLUSIVE** | 53.6% finishes-first (n=300), ≈chance |
-| — | MiSTer silicon A/B | ⚠ **BLOCKED** | autonav dead; known-good cart unrebuildable |
+| — | MiSTer silicon A/B | ⚠ **UNBLOCKED** (was BLOCKED) | both blockers closed — see below |
+| 9 | `DRNAVDWELL` title hang | ✅ **SUCCESS** (root cause + fix) | 1-hook START press vs the game's **two-pass `$F5` AND**; dwell-off byte-identical `4f5c9822` |
+| — | "known-good cart unrebuildable" | ✅ **RESOLVED** — was never true | wrong build script + self-inflicted base-ROM clobber; reproduces byte-exact |
+| 6 | tuck override, **played** (not just enumerated) | ⚠ **UNDER RE-ANALYSIS** | median pills improves **5/5** on NES, but pooled endgame p/v flips sign (+0.18/−0.52/+0.69/−0.52) |
 
 **Process failures worth naming too** (mine, all caught before they shipped):
 - ❌ characterised the latch defect from **synthetic** boards (8.3%) — real boards say 23.2%
@@ -44,6 +47,18 @@ cost real hours and re-deriving them would cost the same again.
 - ❌ patched the 1P return instead of the 2P one, so a fix verified as "not working" was
   actually never being called
 - ❌ drew a conclusion from a **failed build** whose md5 came back empty
+- ❌ printed `✅ S4 CONFIRMED` off a `git apply` that had **failed** — the fix was never
+  applied, so "before == after" was trivially true. Same shape as the empty-md5 error above:
+  **a broken step compared against itself always looks like a pass.** Gate the comparison on
+  the apply/build actually succeeding, not just on the hashes matching.
+- ❌ labelled two builds "dwell off" / "dwell on" without checking the flag's **default**.
+  `DRNAVDWELL` defaults to `"1"`, so both were dwell-*on*; the "regression" and the
+  "flag is inert" reading were both artefacts of my own labels. Read the default before
+  trusting an A/B that only sets one side.
+- ❌ diagnosed `DRNAVDWELL` for days from **state probes** (Mesen `$` dumps). Every driver
+  variable was correct; the defect was **press WIDTH**, which state probing cannot observe.
+  When every variable looks right and the behaviour is still wrong, the bug is in a
+  dimension the instrument doesn't measure.
 
 ---
 
