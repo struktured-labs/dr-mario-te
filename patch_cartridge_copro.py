@@ -190,6 +190,21 @@ SWD_S0, SWD_S1, SWD_S2 = 0x618D, 0x618E, 0x618F      # snapshot: $0385 / $0386 /
 SWD_CTL, SWD_CTH = 0x6190, 0x6191                    # 16-bit stuck-hook counter
 TUCK = _os.environ.get("DRTUCK", "0") == "1"   # tuck executor (see TUCK_C2 above)
 REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
+# DRBUSYESC (default OFF -- ship classes opt in): stale-BUSY escape for the re-entrancy guard.
+# SILICON BRICK 2026-08-02: BUSY lives in sticky PRG-RAM (FPGA BRAM survives load_core). The
+# freeze-4 recovery reloaded the core while an invocation was IN FLIGHT (BUSY=1) -> every boot
+# since inherited NAV_MAGIC=$A5 (warm) AND BUSY=1, so the trampoline bailed before the bank
+# switch on every hook and the driver body that clears BUSY could never run: a soft-brick that
+# survives reboots, ROM swaps and savestate hygiene (4 boots, 2 builds, NAV_T frozen at $28;
+# the attract demo's forced $0727=1 masqueraded as a "1P nav mis-land"). The cold-boot
+# bootstrap cannot help -- it keys on NAV_MAGIC, which is exactly as sticky as BUSY. Escape:
+# count CONSECUTIVE bails in BUSYSKP; at 255 (~2 s at the measured 2 hooks/frame) force-free
+# the latch and enter. Genuine re-entrancy bails 1-2 hooks. A live GO-storm spin is ALSO freed
+# after ~2 s, re-entering the driver -- acceptable: the storm family is closed (DRREENTRY +
+# DRWRETRY + DRPENDBOUND + DRSTALLWD) and the alternative is this brick. Any successful entry
+# resets the count. Unbrick without this flag: cycle menu.rbf then load_core (BRAM re-init).
+BUSYESC = _os.environ.get("DRBUSYESC", "0") == "1"
+BUSYSKP = 0x6192                                   # consecutive-bail counter (after DRSTALLWD's $6191)
 # DRWRETRY (default OFF -- touches build_main, so off keeps the goldens == published c300acb canonical;
 # the shipping cart opts in): fix the "re-queue once per pill" watchdog latch. Two bugs: (A) handle()'s
 # _start epilogue clears `wretry` every search START (so a re-queued timeout re-GOs indefinitely); (B) the
@@ -1722,9 +1737,23 @@ def build_wrapper(main_cpu):
         # it) force BUSY=0 -- else a garbage-set BUSY would bail forever = deadlock.
         w.ins16("LDA_abs", NAV_MAGIC); w.ins("CMP_imm", 0xA5); w.br("BEQ", "w_warm")
         w.ins("LDA_imm", 0); w.ins16("STA_abs", BUSY)             # cold boot -> clear garbage BUSY
+        if BUSYESC:
+            w.ins16("STA_abs", BUSYSKP)                           # A==0: garbage streak count too
         w.label("w_warm")
-        w.ins16("LDA_abs", BUSY); w.br("BEQ", "w_run"); w.ins("RTS")   # already running -> bail (no bank touch)
+        w.ins16("LDA_abs", BUSY); w.br("BEQ", "w_run")            # free -> enter
+        if BUSYESC:
+            # STALE-BUSY ESCAPE (DRBUSYESC, see flag block): a warm-inherited BUSY=1 (core reload
+            # mid-invocation) would bail here FOREVER -- nothing outside this guard ever clears it.
+            # 255 CONSECUTIVE bails (~2 s) cannot be genuine re-entrancy (1-2 hooks): force-free.
+            w.ins16("INC_abs", BUSYSKP)
+            w.ins16("LDA_abs", BUSYSKP); w.ins("CMP_imm", 0xFF); w.br("BCC", "w_bail")
+            w.ins("LDA_imm", 0); w.ins16("STA_abs", BUSY); w.ins16("STA_abs", BUSYSKP)
+            w.br("BEQ", "w_run")                                  # A==0 -> Z: branch-always into the body
+            w.label("w_bail")
+        w.ins("RTS")                                              # already running -> bail (no bank touch)
         w.label("w_run")
+        if BUSYESC:
+            w.ins("LDA_imm", 0); w.ins16("STA_abs", BUSYSKP)      # successful entry resets the streak
         w.ins("LDA_imm", 1); w.ins16("STA_abs", BUSY)            # mark running
     _sel(w, 2)
     w.jsr(main_cpu)
