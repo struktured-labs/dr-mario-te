@@ -1,9 +1,12 @@
 # Dr. Mario NES — FPGA AI Coprocessor
 
-> **ROM-hack release:** [Dr. Mario Training Edition v7](release/RELEASE_NOTES_V7.md) —
-> [download the BPS patch](release/drmario_te_v7.bps). This release carries the published
-> Training Edition v5 forward with crash-safe `TRAINING EDITION` title branding and a
-> `V7.00 STRUK LABS` title credit.
+> **ROM-hack release:** [Dr. Mario Training Edition v8.2](release/RELEASE_NOTES_V8_2.md) —
+> [download the BPS patch](release/drmario_te_v8_2.bps). A stability release that fixes a
+> hard freeze and level-select corruption present in every prior Training Edition (v6–v8);
+> a [v6.1 backport patch](release/drmario_te_v6_1.bps) exists for anyone on the published v6.
+> **v9 is at release-candidate** ([notes](release/RELEASE_NOTES_V9.md),
+> [submission kit](release/SUBMISSION_v9d.md)): it restores the 2-player STUDY pause —
+> both players' previews, lifted STUDY banner, BCD-correct virus counters.
 
 A hardware-accelerated depth-3 AI that plays Dr. Mario (NES) on a real
 [MiSTer](https://github.com/MiSTer-devel/Main_MiSTer/wiki) FPGA **and on the Analogue
@@ -16,10 +19,10 @@ alongside the game it is playing.
 ## Milestone — depth-3 on hardware at ~1 second per move
 
 The AI runs a **depth-3 expectimax search** (current pill + preview pill known, third pill
-averaged over a pill subset) with an endgame-tuned evaluation. In pure simulation the
-decision function clears **93.8%** of L11 boards solo (n=48, exact firmware model). The whole
-pipeline — search → firmware → cycle-accurate sim → Quartus → hardware — is validated
-cell-exact at each stage.
+averaged over a pill subset) with a coefficient-optimised evaluation. In pure simulation the
+shipped decision function clears **~96%** of L11 boards solo on the real NES capsule stream
+(115/120 in the latest paired baseline). The whole pipeline — search → firmware →
+cycle-accurate sim → Quartus → hardware — is validated cell-exact at each stage.
 
 **Latency, start of port → now:**
 
@@ -57,21 +60,67 @@ The AI itself crossed from "solver with pause privileges" to **honest real-time 
   buried viruses) and `g_hang` (a hovering capsule half whose gap-drop lands on a matching
   color pairs automatically when its partner clears — the delayed-drop setup). Computed by
   the 6502 once per ply-1 candidate on top of the RTL leaf; py65-gated bit-exact.
-- **Deterministic match entry** — auto-nav STARTs only when `$0727 == 2` (VS-CPU exactly);
-  no more mode roulette.
+- **Deterministic match entry** — the auto-nav writes coherent VS-CPU state
+  (`$0727=2, $04=1`) on every title hook, holds the title against the attract demo, and
+  gates START on `$04` (the only discriminator that isolates VS-CPU; gating on `$0727==2`
+  alone fires one toggle early into 2P-human and was refuted on silicon).
 - **Human-challenge carts** — `DRHUMAN=1` builds leave P1 as a pure human passthrough
-  (`drmario_copro_human.nes` for MiSTer, `DRPOCKET=1` single-window variant for Pocket).
+  (`drmario_copro_human.nes` for MiSTer, `DRPOCKET=1` single-window variant for Pocket),
+  with a driver-drawn STUDY pause overlay: both previews and the letters survive the pause
+  in 1P and 2P because the driver, not the evacuated ROM tail, owns those OAM slots.
 
 One canonical source (`fpga/copro/`) feeds both platforms: the Pocket tree vendors the RTL
 via `fpga/copro/sync_to_pocket.sh`, and one `copro_rom.hex` firmware ships everywhere.
 
+## Milestone 3 — "Combo Stomper": a chain-building champion, and a self-healing cart
+
+The evaluation grew a **chain-attack term** (`chain180`): credit for building multi-clear
+structures, priced against the ROM-true VS attack rule (the combo counter SUMS across
+cascade steps, so cascades of singles attack too — verified against the disassembly).
+Head-to-head on the real capsule stream it beats the previously shipped champion
+**70.9%** of matches — and the win is *garbage-mediated*: with attacks disabled the same
+eval only takes 54.0%, so the chains it builds are doing the winning, not generic board
+quality. A link-plane upgrade (`lnk1`, the first holdout-confirmed VS gain) rides along at
+**60.2%** on held-out seeds. The VS mechanism is out-racing, not defense: the winner
+absorbs ~46% more incoming volleys per ply and clears through them. This build runs live
+on the MiSTer as `NES_stomper180` — the standing house duel.
+
+The cartridge driver is now **self-healing** on real silicon, each guard reproduced from a
+captured hardware failure before it was fixed, and each gated by a py65 test that
+simulates the defect rather than asserting the guard exists:
+
+- **Menu-escape watchdog** (`DRNAVESC`) — a screen stuck ~10 s awaiting a START the nav
+  never sent gets a raw START burst (never during live play, never in the intro).
+- **Bounded search retry** (`DRWRETRY` + `DRPENDBOUND`) — a timed-out coprocessor search
+  re-queues once per pill instead of forever; kills a recurring ~4-minute stick/heal cycle.
+- **Play-stall watchdog** (`DRSTALLWD`) — a P2 pose frozen ~20 s mid-play with viruses
+  alive triggers a scoped search re-arm that preserves the committed targets.
+- **Stale-BUSY escape** (`DRBUSYESC`) — the re-entrancy guard's latch lives in sticky
+  FPGA BRAM and survives core reloads; a reload that interrupted an in-flight invocation
+  used to soft-brick the driver on every subsequent boot. 255 consecutive bails (~2 s)
+  now force-free the latch.
+- **Human-tempo retune** — measured dose-response on the slam gates (`MIN_THINK=12`,
+  `K_OPEN=32`): 62.0 frames/pill vs 68.0 shipped with zero wrong-column commits. The
+  rest of the human tempo gap is routing, not gate latency: ~52.5 f/pill is irreducible
+  for this executor (settle + DAS steer + slam descent).
+
+**In progress:** generalised root-action tucks (v3). Offline proof on the real stream:
+tuck placements as first-class depth-3 root actions with a priced fire gate (a tuck must
+beat the best normal move by a margin) give **−10.0 pills at L11** (CI excludes 0) and a
+*significant clear-rate improvement at L20* (96.2%→99.2%, p=0.039) at 2.8 fires/game.
+Firmware/RTL port is the open work; two known executor defects (coordinate space,
+per-frame descriptor wipe) ship with it.
+
 ## How it works
 
 - **Mapper 100** (`fpga/copro/CoproDrMario.sv`) = MMC1 banking + this block. A second 6502
-  (`copro6502.v`, Arlet core) free-runs at the core master clock (`clk85`), with a host
-  register window at `$5000–$51FF` (one window per player, dual-copro so P1/P2 never
-  time-share). The game CPU writes the board + pill colors, pulses GO, polls DONE, reads back
-  the chosen column + orientation.
+  (`copro6502.v`, Arlet core) free-runs at the core master clock, with a host register
+  window at `$5000–$51FF`. The game CPU writes the board + pill colors, pulses GO, polls
+  DONE, reads back the chosen column + orientation. The shipping MiSTer core is
+  **single-copro** (P2): the P1 window turned out to be stripped by the core integration
+  (open bus — P1 was never actually wired), and the single-copro variant fits the DE10
+  timing-clean at ~87% ALM. P1 in the CPU-vs-CPU duel carts is instead a deliberately
+  slower **native 6502 depth-1 AI** (`DRP1NATIVE`) so matches stay watchable and unequal.
 - **BoardEngine** (`fpga/copro/LeafEval.sv`) is the RTL accelerator at `$7000–$70FF`: a single
   `NODE` command does landing + placement + a capped targeted resolve + the full leaf eval,
   plus single-command snapshot/restore of the working boards. This is what collapsed the
@@ -124,15 +173,21 @@ they are mirrored into a local `NES_MiSTer` checkout for Quartus synthesis.
 
 ## Known open items
 
-- **Match clear-rate is unmeasured on hardware** — the screenshot OCR's hamming gate rejects
-  the near-clear virus-count reads, so the automated clear tally is currently blind. Fix the
-  detector before trusting a hardware clear-rate figure.
-- **Cascade-resolve: tested, rejected** — a full chained resolve in the search halved solo
-  clear-rate (100%→50%) chasing combos into topouts; the capped resolve is the better player.
-- **v4 AB-cart regression (quarantined)** — the CPU-vs-CPU cart built from the current patcher
-  stalls both players on hardware; the v2-era build (`tmp/ab_v2era.nes`, patcher @ `822579e`)
-  plays perfectly on the same rbf and is pinned for the duel. Root cause not yet found (byte
-  delta is confined to the nav region; branch-range overflow ruled out).
-- **Next programs** — expert player data (Twitch/DRMC VOD → frame OCR → (state, move) pairs;
-  the board OCR machinery exists), an NNUE-style learned eval in the idle DSP blocks, and
-  dual-copro parallel search on MiSTer once its controllers are back.
+- **Root-action tucks (v3) firmware port** — the offline win is proven (see Milestone 3);
+  the copro root enumeration, the priced fire gate, and the two executor defect fixes are
+  the open engineering. The leaf-gated shortcut was empirically refuted (+7.11 pills
+  *worse*) — cross-column reach scored at full depth is the only design that survives.
+- **Cascade-resolve in the search: tested, rejected** — a full chained resolve halved solo
+  clear-rate chasing combos into topouts; the capped resolve is the better player. (The
+  *eval-side* chain credit is a different mechanism — that one ships in Combo Stomper.)
+- **Personality knobs** — style presets (aggression, chain appetite, tempo) as first-class
+  cart options for the final release build.
+- **Next programs** — expert player data (DRMC tournament footage → (state, move) pairs;
+  the board OCR machinery exists and a first corpus run is done), player-style dossiers,
+  and an NNUE-style learned eval in the idle DSP blocks.
+
+Resolved since the last README revision, kept for the record: the v4 AB-cart stall family
+is closed (a chain of driver defects, each reproduced and gated — see the `DRNAVESC` /
+`DRWRETRY` / `DRPENDBOUND` / `DRSTALLWD` / `DRBUSYESC` flags in `patch_cartridge_copro.py`),
+and hardware match state is now read exactly (save-state RAM capture: board, driver
+mailbox, and watchdog state in one frame) instead of via screenshot OCR.
