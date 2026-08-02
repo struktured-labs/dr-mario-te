@@ -3,7 +3,7 @@
 ply1 rank + top-8 select (Pass 0) x [ply2 rank + top-8 select + expectimax over 8 pills],
 TARGETED capped resolve, 16-bit WIN=30000, integer expectimax. Validated vs decide_d3
 (firmware-faithful golden). Reuses the validated leaf_score_d3 + land/resolve/calc_imm."""
-import sys, random
+import sys, os, random
 HERE = "/home/struktured/projects/dr-mario-mods"
 sys.path.insert(0, HERE + "/tests"); sys.path.insert(0, HERE)
 import primitives as P
@@ -62,6 +62,18 @@ LEV_A_O4, LEV_A_COL, LEV_A_CA, LEV_A_CB, LEV_A_SL = 0x70E0, 0x70E1, 0x70E2, 0x70
 LEV_LEGAL, LEV_RVC, LEV_RVV, LEV_IMM = 0x70E8, 0x70E9, 0x70EA, 0x70EB
 LEV_DVFB = 0x70ED   # delta clearing-fallback flag (CoproDrMario read-mux $70xD)
 LEV_WSLOT, LEV_CMD = 0x70F3, 0x70F4
+# ---- LINK-ENGINE ARM SELECT (chain-capable LeafEval.sv only) ----------------------
+# The link engine resolves leaves under BODY gravity and can iterate to a fixpoint,
+# counting rounds. Two mailbox bytes pick the arm; both power up to the no-op value, so
+# firmware that writes neither gets lnk1 with no chain reward. Emitting them is OPT-IN
+# (DRCOPRO_ARM=1) purely so the default build stays byte-identical to the shipped
+# c87e60a1 -- the emitted bytes are patchable immediates, DRMINTHINK-style, which is what
+# makes the hardware A/B a hex patch rather than a two-hour resynthesis.
+LEV_A_FIX, LEV_A_CHW = 0x70E5, 0x70E6
+EMIT_ARM = os.environ.get("DRCOPRO_ARM", "0") == "1"
+DRFIX = int(os.environ.get("DRFIX", "0"))        # 0 = one clear round (lnk1), 1 = fixpoint
+DRCHAIN = int(os.environ.get("DRCHAIN", "0"))    # chain reward dose; measured 180 and 360,
+                                                 # knee above 360. Sent as dose/4 (one byte).
 USE_DELTA = False   # incremental-leaf: CMD-6 BASE per parent + CMD-7 DELTA per child (+ CMD-4 fallback)
 DELTA_P0 = DELTA_P2 = DELTA_P3 = None   # per-ply gates for bisection; None -> follow USE_DELTA
 DEBUG_VAL1 = False   # diagnostic: dump per-ply1-candidate (C1,O1,V1L,V1H) into copro RAM ring at DBG_RING
@@ -311,6 +323,14 @@ def _emit_eh_terms(a):
 
 def _emit_search_d3_engine(a):
     a.label("search")
+    if EMIT_ARM:
+        # Arm select. Written every search because the copro is reset on each GO; the
+        # engine's arg registers survive that reset, so this is idempotent and costs
+        # 12 cycles a pill. DRCHAIN is scaled by 4 to fit a byte (dose 720 -> 180).
+        assert 0 <= DRCHAIN <= 1020 and DRCHAIN % 4 == 0, \
+            "DRCHAIN must be 0..1020 in steps of 4 (it is sent as dose/4)"
+        a.ins("LDA_imm", 1 if DRFIX else 0); a.ins16("STA_abs", LEV_A_FIX)
+        a.ins("LDA_imm", DRCHAIN // 4);      a.ins16("STA_abs", LEV_A_CHW)
     a.ins("LDA_imm", 0xFF); a.ins("STA_zp", D_BO)
     a.ins16("STA_abs", S_BEST_O)                    # ANYTIME: live mailbox invalid until 1st cand
     a.ins("LDA_imm", 0x00); a.ins("STA_zp", D_BVL); a.ins("LDA_imm", 0x80); a.ins("STA_zp", D_BVH)
