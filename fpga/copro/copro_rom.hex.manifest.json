@@ -17,8 +17,8 @@
   },
   "git": {
     "branch": "copro-qa-harness",
-    "commit": "6ab6113080b1ed389b588e1f8bf147bfb81ded38",
-    "dirty": true
+    "commit": "5a3b4c75f6e4719c9a99a9f49328a555e5590177",
+    "dirty": false
   },
   "inputs": [
     {
