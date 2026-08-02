@@ -91,6 +91,7 @@ def build_image(board, cA, cB, nA, nB):
         resolve_capped_addr = 0x8000 + labels["resolve_capped"]
         expectimax_addr = 0x8000 + labels["expectimax"]
         eh_terms_scan_addr = 0x8000 + labels["eh_terms_scan"]
+        cp_live_cur_addr = 0x8000 + labels["cp_live_cur"]
         tv = Asm6502(TUCK_V3_ROM)
         TV.emit_tuck_scan_v3(tv, live=0x0500)
         TV.emit_land_place_at(tv, board=TV.CUR)
@@ -113,6 +114,7 @@ def build_image(board, cA, cB, nA, nB):
             S_BEST_C=S_BEST_C, S_BEST_O=S_BEST_O,
             D_V1L=D3.D_V1L, D_V1H=D3.D_V1H, D_I1L=D3.D_I1L, D_I1H=D3.D_I1H,
             resolve_capped_addr=resolve_capped_addr,
+            cp_live_cur_addr=cp_live_cur_addr,
         )
         tv.label("tuck_v3")
         tv.jsr("tuck_scan_v3")

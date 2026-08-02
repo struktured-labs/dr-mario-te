@@ -580,7 +580,8 @@ def emit_tuck_ply2_score(a, *, D_C2, D_O2, D_TKC, D_J, D_MKL, D_MKH, D_MI, D_B2L
 
 
 def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
-                              D_V1L, D_V1H, D_I1L, D_I1H, resolve_capped_addr):
+                              D_V1L, D_V1H, D_I1L, D_I1H, resolve_capped_addr,
+                              cp_live_cur_addr):
     a.label("tuck_o4_table")
     a.raw(*O4_TABLE)
 
@@ -594,6 +595,17 @@ def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
     a.ins("LDA_zp", TP_IDX); a.ins16("CMP_abs", TS_CNT)
     a.br("BCC", "tre_c1"); a.jmp("tre_done")
     a.label("tre_c1")
+    # RESET CUR TO THE ORIGINAL BOARD before land_place_at: land_place_at only writes the
+    # tuck's own 2 cells and assumes the REST of CUR already holds the correct base board
+    # (matching land_place_at.py's own documented contract). Without this reset, CUR still
+    # holds whatever the PREVIOUS operation left there -- the base search's own last
+    # eh_terms rebuild (before candidate 0) or the previous candidate's own tuck_ply2_score
+    # exploration (candidate 1+), both of which mutate CUR heavily via _e_copy/_e_node.
+    # Root-caused via a debug ring dumping D_V1 mid-loop during real execution: candidate
+    # 0's own imm1/D_V1 differed substantially (300/30300 in isolation vs 260/4892 with
+    # `search` run first) purely from CUR's stale content, not from any gate/eh/enumeration
+    # bug (all three independently verified correct before this was found).
+    a.jsr(cp_live_cur_addr)            # raw address (cross-image into the search's own code)
     a.jsr("tuck_cell_prep")
     a.jsr("land_place_at")
     a.jsr(resolve_capped_addr)         # raw address (cross-image into the search's own code)
