@@ -90,12 +90,14 @@ def main():
     expect_1p = {
         0x0294: 0x45, 0x0295: 0x60 | 1, 0x0296: 0x02, 0x0297: 0xBE,   # slot 37: P1 L, 1P pos
         0x0298: 0x45, 0x0299: 0x70 | 2, 0x029A: 0x02, 0x029B: 0xC6,   # slot 38: P1 R, 1P pos
+        0x0280: 0x0F, 0x0284: 0x0F, 0x0288: 0x0F, 0x028C: 0x0F, 0x0290: 0x0F,  # letters, 1P Y
+        0x0281: 0x0D, 0x0291: 0xA2, 0x0283: 0x70, 0x0293: 0x90,                # letter tiles/X (ends)
     }
     bad1 = {hex(a): (hex(m1.memory[a]), hex(v)) for a, v in expect_1p.items() if m1.memory[a] != v}
     assert not bad1, "1P layout wrong: %r" % bad1
-    untouched = [0x029C, 0x029D, 0x02A0, 0x02A1, 0x0280, 0x0290]
+    untouched = [0x029C, 0x029D, 0x02A0, 0x02A1]                       # P2 slots only
     leaked = {hex(a): hex(m1.memory[a]) for a in untouched if m1.memory[a] != 0}
-    assert not leaked, "1P hook wrote P2/lift slots: %r" % leaked
+    assert not leaked, "1P hook wrote P2 slots: %r" % leaked
     # B2: the EVAC part1 blob is letters-only (no preview writes left to stomp the driver)
     assert P.STUDY_BLOB_EVAC[:8] == bytes.fromhex("A980854220F68860"), \
         "EVAC part1 is not the letters-only v2 form"

@@ -844,7 +844,10 @@ def build_main(level=11, speed=1):
         # spin frame, so any preview part1 wrote would stomp this block's writes each frame.
         # The driver therefore owns slots 37-40 outright: 1P layout when $0727==1, 2P when ==2.
         # Invisible in play (the game's OAM rebuild runs after this hook); owns the pause.
-        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "s2p_no")
+        # entry: the block is >127B, out of relative-branch range -- short-branch over a JMP.
+        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BEQ", "s2p_go")
+        a.jmp("s2p_no")
+        a.label("s2p_go")
         # STUDY letters (part1 is a bare RTS now -- EVAC v3): tiles/X static per the probe's
         # OAM dump, attr 0; Y is mode-correct below ($0F in 1P, STUDY_2P_Y in 2P).
         for slot, (tile, x) in zip((32, 33, 34, 35, 36),
