@@ -58,3 +58,13 @@ n=4 matches, one evening, one level/speed (L11 MED), Pocket dock input path. All
 claims are qualitative reads of footage, not yet decoded board data. Update this file
 as the sample grows — especially once capture-card recordings allow real
 attack-timing measurements.
+
+## Night-one closing state (2026-08-01, ~21:48)
+
+The final match of the night was **suspended at 2–2 in crowns** when lulu retired.
+The Stomper's second crown of that match is documented
+(`evidence/stomper_stage_clear_2crowns_20260801.jpg`): **STAGE CLEAR at VIRUS 02|00**
+— it out-raced her to a full clear with two of her viruses still standing. Its round
+wins are real and photographed; **no completed match was lost — lulu retires night one
+undefeated, with the rubber match unplayed.** The cliffhanger is the correct ending:
+the decider happens when the champion returns.
