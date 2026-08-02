@@ -26,6 +26,7 @@ import os
 import json
 import random
 import argparse
+import hashlib
 import statistics as st
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
@@ -39,6 +40,11 @@ for _p in (HERE, ROOT + "/tmp/combo_term", ROOT + "/tmp/endgame", ROOT + "/tmp/t
         sys.path.insert(0, _p)
 
 _C = {}
+
+
+# fixed, arbitrary reference board used ONLY to fingerprint a worker's assembled image --
+# not a real game board, never passed through play()/decide()'s actual game loop.
+_HASH_BOARD = bytes([0xFF] * (10 * 8 + 5) + [0xD1] + [0xFF] * (128 - 10 * 8 - 6))
 
 
 def _init(level, tuck, drchain=180, drfix=1, arm=1):
@@ -57,7 +63,15 @@ def _init(level, tuck, drchain=180, drfix=1, arm=1):
     # not sufficient defense against that class of bug recurring -- the constructor is
     # now the single source of truth for its own env var.
     fd = FirmwareDecider(drchain=drchain, drfix=drfix, arm=arm, tuck=tuck)
-    _C.update(level=level, tuck=tuck, fd=fd)
+    img, _clen, _slen = fd.B.build_image(_HASH_BOARD, 0, 1, 1, 0)
+    image_hash = hashlib.sha256(bytes(img)).hexdigest()
+    _C.update(level=level, tuck=tuck, fd=fd, image_hash=image_hash)
+
+
+def _report_hash():
+    """Runs in a worker via ex.submit -- returns THIS worker's already-built image hash,
+    proving what _init actually assembled (not just what env var was requested)."""
+    return _C["image_hash"]
 
 
 def play(seed):
@@ -175,10 +189,27 @@ def _log_rss(tag):
 
 def run_level(level, seeds, workers, seed_offset=0):
     R = {}
+    arm_hashes = {}
     for tuck in (0, 1):
         rows = []
         with ProcessPoolExecutor(max_workers=workers, initializer=_init,
                                  initargs=(level, tuck)) as ex:
+            # STARTUP ASSERT (team-lead ruling, after the sanity-8-v3 arm-plumbing bug:
+            # both A/B arms silently built the identical tuck-enabled image because
+            # FirmwareDecider.__init__ hardcoded its env var, and nothing checked that
+            # the two arms' images actually differed). Hash the FIRST worker's already-
+            # assembled image for this arm and refuse to spend any compute on a run
+            # where the arms are provably not different builds -- a 2-second check
+            # instead of an hours-long run producing a degenerate delta-0.00 result.
+            arm_hashes[tuck] = ex.submit(_report_hash).result()
+            print(f"  L{level} tuck={tuck} image sha256={arm_hashes[tuck]}", flush=True)
+            if tuck == 1:
+                assert arm_hashes[0] != arm_hashes[1], (
+                    f"REFUSING TO RUN: off-arm and on-arm assembled images hash "
+                    f"IDENTICAL ({arm_hashes[1]}) -- the two A/B arms are not actually "
+                    f"different builds. This is exactly the sanity-8-v3 arm-plumbing "
+                    f"bug's signature (paired-pills delta stuck at 0.00 with nonzero "
+                    f"fires/game); do not proceed until the images provably diverge.")
             futs = [ex.submit(play, s) for s in range(seed_offset, seed_offset + seeds)]
             for i, f in enumerate(as_completed(futs)):
                 rows.append(f.result())
