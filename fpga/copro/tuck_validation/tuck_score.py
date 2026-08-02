@@ -87,13 +87,21 @@ def emit_tuck_imm1(a):
     a.ins("RTS")
 
 
-def emit_slot0_inject(a, board=CUR, dest_slot=2):
+def emit_slot0_inject(a, board=CUR, dest_slot=2, leaf1_lo=None, leaf1_hi=None):
     """Write `board` (128B, already resolved by land_place_at+resolve_capped) into RTL
     slot 0 (confirmed unused by the base search -- slots 1/2/3 are root-parent/b1/b2), load
     it as the active board (CMD2), then save it into `dest_slot` (CMD3) -- mirroring
     exactly what a base ply-1 candidate's `_e_copy(a, 2, False)` does after its own NODE
     lands, so the ply-2 loop that follows can restore CUR<-slot[dest_slot] between its own
-    32 children exactly as it already does for base candidates."""
+    32 children exactly as it already does for base candidates.
+
+    If leaf1_lo/leaf1_hi are given, ALSO issues a CMD1 (LEAF) on the just-loaded bcell
+    between CMD2 and CMD3, storing LEV_SCO there -- the tuck-path analog of "leaf1", the
+    raw ply-1 eval a base candidate's own NODE naturally produces as a byproduct (LEV_SCO
+    inside CMD4). The tuck path has no NODE call for its ply-1 landing (land_place_at is
+    pure software), so this is the only way to get a leaf1 value for the DISC temporal-
+    discount blend in the ply-2 scorer. CMD1 does not disturb bcell, so this is safe to
+    insert between CMD2 (load) and CMD3 (save) without affecting the save."""
     a.label("tuck_slot0_inject")
     a.ins("LDA_imm", 0); a.ins16("STA_abs", LEV_WSLOT)
     a.ins("LDX_imm", 0)
@@ -103,6 +111,11 @@ def emit_slot0_inject(a, board=CUR, dest_slot=2):
     # CMD 2: bcell <- slot0
     a.ins("LDA_imm", 0); a.ins16("STA_abs", LEV_A_SL)
     a.ins("LDA_imm", 2); a.ins16("STA_abs", LEV_CMD); _e_poll(a)
+    if leaf1_lo is not None:
+        # CMD 1: LEAF on bcell -> LEV_SCO (leaf1, pre-imm)
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", LEV_CMD); _e_poll(a)
+        a.ins16("LDA_abs", LEV_SCO); a.ins("STA_zp", leaf1_lo)
+        a.ins16("LDA_abs", LEV_SCO + 1); a.ins("STA_zp", leaf1_hi)
     # CMD 3: slot[dest_slot] <- bcell
     a.ins("LDA_imm", dest_slot); a.ins16("STA_abs", LEV_A_SL)
     a.ins("LDA_imm", 3); a.ins16("STA_abs", LEV_CMD); _e_poll(a)
