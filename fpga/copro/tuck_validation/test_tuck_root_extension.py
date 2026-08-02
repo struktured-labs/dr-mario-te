@@ -1,20 +1,27 @@
 #!/usr/bin/env python3
 """END-TO-END integration test for the tuck v3 candidate loop: ONE assembled image
-containing the real base `search` (test_search_d3, USE_ENGINE=True) + tuck_scan_v3 +
-tuck_cell_prep + land_place_at + resolve_capped + tuck_imm1 + tuck_slot0_inject +
-tuck_ply2_score + tuck_root_extension, run in ONE py65 Cpu instance with
-attach_engine_emu attached, driving all three stages (search -> tuck_scan_v3 ->
-tuck_root_extension) exactly as a real decision would on hardware.
+containing the real base `search` (test_search_d3, USE_ENGINE=True) + the full canonical
+fpga/copro/tuck_v3.py stack (tuck_scan_v3, tuck_cell_prep, land_place_at, tuck_imm1,
+tuck_slot0_inject, tuck_ply2_score, tuck_root_extension), run in ONE py65 Cpu instance
+with attach_engine_emu attached, driving all three stages (search -> tuck_scan_v3 ->
+tuck_root_extension) exactly as build_copro_d3.py's real pipeline does.
 
-Board: tuck_scan_v3_ref.py's own already-validated _cave_horizontal_board() (a lip over
-columns 4-6 at row 9 that blocks every straight-drop base action from reaching row 10
-underneath it), extended with a pre-existing colour-1 pair at row 10 columns 5-6 and a
-lone unreachable virus (keeps virus_count>0 so nothing hits the trivial WIN shortcut).
-The current pill is colour(1,1); tuck_scan_v3 finds exactly one geometric rescue
-(approach=2, target=3, trigger=10, rest=10) whose landing cells (row10, cols 3-4) are
-adjacent to the pre-existing pair, completing a 4-in-a-row CLEAR that no base action can
-replicate (nothing else reaches under the lip) -- this should clear the theta=150 gate by
-a wide margin and win the final argmax, exercising the FULL commit + publish path.
+PROMOTED TO EH_PLY1=True (the real, shipped config -- team-lead ruling, task #17 stage 3):
+imports fpga/copro/tuck_v3.py (canonical repo) DIRECTLY, including the cp_live_cur fix,
+instead of the qa-harness scratch modules used before this rewrite. The original board
+(a pre-existing colour-1 pair completing a plain 4-in-a-row) turned out to be too thin a
+margin under the real EH_PLY1=True config (base actions get eh credit too now, changing
+which one wins on that specific board) -- replaced with a board where the tuck reaches
+the board's ONLY remaining virus (a WIN, which trivially beats any non-winning base
+action regardless of theta, sidestepping the separate question of whether a given board's
+tuck clears theta=150 under real weights, which the actual A/B run answers statistically).
+
+Also recolours the cave board's lip (default colour 1, same as the virus/tuck placement
+below it) to a different colour: the lip's default colour let a straight vertical drop
+landing ON the lip chain straight through it to the virus via ordinary colour-run
+matching (a targeted-resolve column scan), giving a BASE action a free win too and making
+"only the tuck can win" false -- not a firmware bug, a board-construction confound caught
+via check_cave_win.py during the cp_live_cur investigation before being trusted here.
 
 A second, smaller test confirms the reject path: on a board with no reachable rescue
 (the SAME board with the lip removed, so a base action already gets the clear itself),
@@ -30,6 +37,7 @@ CANON = os.environ.get("DRCANON", "/home/struktured/projects/dr-mario-canonical-
 sys.path.insert(0, HERE)
 sys.path.insert(0, DRIVER)
 sys.path.insert(0, os.path.join(CANON, "tests"))
+sys.path.insert(0, os.path.join(CANON, "fpga", "copro"))
 
 from patch_vs_cpu import Asm6502                  # noqa: E402
 import patch_vs_cpu                               # noqa: E402
@@ -45,18 +53,13 @@ patch_vs_cpu.OPS.setdefault("ORA_zp", 0x05)
 patch_vs_cpu.OPS.setdefault("EOR_zp", 0x45)
 
 import primitives                                  # noqa: E402
-from land_place_at import emit_land_place_at, LA_OFFA, LA_OFFB, LA_CA, LA_CB  # noqa: E402
-from tuck_score import emit_tuck_imm1, emit_slot0_inject, TI1L, TI1H  # noqa: E402
-from tuck_ply2_score import emit_tuck_ply2_score    # noqa: E402
-from tuck_cell_prep import emit_tuck_cell_prep, TP_IDX, TP_TARGET, TP_APPROACH, TP_TRIGGER, TP_REST, TP_ORIENT  # noqa: E402
-from tuck_root_extension import emit_tuck_root_extension, TK2_BKIND, TK2_APP, TK2_TRIG  # noqa: E402
-from tuck_scan_v3 import emit_tuck_scan_v3, CANDLIST, TS_CNT   # noqa: E402
-from tuck_scan_v3_ref import _cave_horizontal_board             # noqa: E402
+from tuck_scan_v3_ref import _cave_horizontal_board  # noqa: E402
 from py65_harness import Cpu                        # noqa: E402
 import test_search_d3 as D3                          # noqa: E402
+import nes_d3_golden as G3                            # noqa: E402
+import tuck_v3 as TV                                  # noqa: E402
 
-# import-order hazard (documented in test_tuck_score.py / test_tuck_ply2_score.py) --
-# set AFTER all imports.
+# import-order hazard (documented throughout this directory) -- set AFTER all imports.
 primitives.BOARD = 0x0700
 primitives.LIVE_BOARD = 0x0700
 
@@ -66,65 +69,64 @@ CUR = 0x0700
 
 D3.USE_ENGINE = True
 D3.DISC = False
-D3.EH_PLY1 = False
+D3.EH_PLY1 = True
 D3.NPILLS, D3.SHIFT = 2, 1
 D3.DEBUG_VAL1 = False
+G3.W_EXCAV = 24
+G3.HANG_DEPTH_PROP = True
+G3.W_HANG_GAP = 20
+G3.HANG_VIRUS_COL_ONLY = True
 
-W_TCOL, W_TROW = 0x5087, 0x5088
+D3_CODE, D3_LABELS = D3.build()
+RESOLVE_CAPPED_ADDR = BASE + D3_LABELS["resolve_capped"]
+EXPECTIMAX_ADDR = BASE + D3_LABELS["expectimax"]
+EH_TERMS_SCAN_ADDR = BASE + D3_LABELS["eh_terms_scan"]
+CP_LIVE_CUR_ADDR = BASE + D3_LABELS["cp_live_cur"]
 
 
 def build():
-    a = Asm6502(BASE)
-    D3._emit_search_d3_engine(a)
-    D3._emit_expectimax_engine(a)
-    emit_tuck_scan_v3(a, live=0x0500)
-    emit_tuck_cell_prep(a, s_ca=D3.S_CA, s_cb=D3.S_CB)
-    emit_land_place_at(a, board=CUR)
-    primitives.emit_resolve_capped(a)
-    primitives.emit_find_clears(a)
-    primitives.emit_gravity(a)
-    emit_tuck_imm1(a)
-    emit_slot0_inject(a, board=CUR, dest_slot=2, leaf1_lo=D3.D_L1L, leaf1_hi=D3.D_L1H)
-    emit_tuck_ply2_score(
-        a,
+    tv = Asm6502(BASE + len(D3_CODE))
+    TV.emit_tuck_scan_v3(tv, live=0x0500)
+    TV.emit_tuck_cell_prep(tv, s_ca=D3.S_CA, s_cb=D3.S_CB)
+    TV.emit_land_place_at(tv, board=TV.CUR)
+    TV.emit_tuck_imm1(tv)
+    TV.emit_tuck_slot0_inject(tv, EH_TERMS_SCAN_ADDR, D3.D_L1L, D3.D_L1H, board=TV.CUR)
+    TV.emit_tuck_ply2_score(
+        tv,
         D_C2=D3.D_C2, D_O2=D3.D_O2, D_TKC=D3.D_TKC, D_J=D3.D_J,
         D_MKL=D3.D_MKL, D_MKH=D3.D_MKH, D_MI=D3.D_MI, D_B2L=D3.D_B2L, D_B2H=D3.D_B2H,
         D_I1L=D3.D_I1L, D_I1H=D3.D_I1H, D_I2L=D3.D_I2L, D_I2H=D3.D_I2H,
         D_L1L=D3.D_L1L, D_L1H=D3.D_L1H, D_V1L=D3.D_V1L, D_V1H=D3.D_V1H,
         D_V3L=D3.D_V3L, D_V3H=D3.D_V3H, D_EL=D3.D_EL, D_EH=D3.D_EH,
-        S_NA=D3.S_NA, S_NB=D3.S_NB,
+        D_ADL=D3.D_ADL, D_ADH=D3.D_ADH, S_NA=D3.S_NA, S_NB=D3.S_NB,
         TK_KL=D3.TK_KL, TK_KH=D3.TK_KH, TK_O=D3.TK_O, TK_C=D3.TK_C,
-        TK_IL=D3.TK_IL, TK_IH=D3.TK_IH,
-        LEV_LEGAL=D3.LEV_LEGAL, LEV_IMM=D3.LEV_IMM, LEV_WIN_R=D3.LEV_WIN_R,
-        LEV_CMD=D3.LEV_CMD,
-        WIN=D3.WIN, DISC=D3.DISC,
-        _e_copy=D3._e_copy, _e_node=D3._e_node, _e_score=D3._e_score, _e_poll=D3._e_poll,
+        TK_IL=D3.TK_IL, TK_IH=D3.TK_IH, WIN=D3.WIN, DISC=D3.DISC,
+        expectimax_addr=EXPECTIMAX_ADDR,
     )
-    emit_tuck_root_extension(
-        a,
+    TV.emit_tuck_root_extension(
+        tv,
         D_BVL=D3.D_BVL, D_BVH=D3.D_BVH, D_BC=D3.D_BC, D_BO=D3.D_BO,
         S_BEST_C=D3.S_BEST_C, S_BEST_O=D3.S_BEST_O,
-        D_V1L=D3.D_V1L, D_V1H=D3.D_V1H, TS_CNT=TS_CNT,
-        D_I1L=D3.D_I1L, D_I1H=D3.D_I1H, W_TCOL=W_TCOL, W_TROW=W_TROW,
-        TP_IDX=TP_IDX, TP_TARGET=TP_TARGET, TP_APPROACH=TP_APPROACH,
-        TP_TRIGGER=TP_TRIGGER, TP_ORIENT=TP_ORIENT,
-        TI1L=TI1L, TI1H=TI1H,
+        D_V1L=D3.D_V1L, D_V1H=D3.D_V1H, D_I1L=D3.D_I1L, D_I1H=D3.D_I1H,
+        resolve_capped_addr=RESOLVE_CAPPED_ADDR,
+        cp_live_cur_addr=CP_LIVE_CUR_ADDR,
     )
-    a.label("decide_with_tucks")
-    a.jsr("search")
-    a.jsr("tuck_scan_v3")
-    a.jsr("tuck_root_extension")
-    a.ins("RTS")
-    code = a.assemble()
-    return code, a.labels
+    tv.label("decide_with_tucks")
+    tv.jsr("tuck_scan_v3")
+    tv.jsr("tuck_root_extension")
+    tv.ins("RTS")
+    code = tv.assemble()
+    return code, tv.labels
 
 
-CODE, LABELS = build()
+TUCK_CODE, TUCK_LABELS = build()
+COMBINED = bytes(D3_CODE) + bytes(TUCK_CODE)
+DECIDE_ADDR = BASE + len(D3_CODE) + TUCK_LABELS["decide_with_tucks"]
 
 
 def run(board, ca0, cb0, na0, nb0, pillA, pillB):
     cpu = Cpu()
-    cpu.load(BASE, CODE)
+    cpu.load(BASE, COMBINED)
     cpu.set_board(board)
     D3.attach_engine_emu(cpu)
     cpu.mem[D3.S_CA] = ca0
@@ -134,23 +136,33 @@ def run(board, ca0, cb0, na0, nb0, pillA, pillB):
     for i in range(D3.NPILLS):
         cpu.mem[D3.PILLA + i] = pillA[i]
         cpu.mem[D3.PILLB + i] = pillB[i]
-    cpu.call(BASE + LABELS["decide_with_tucks"], max_steps=6_000_000_000)
+    cpu.call(BASE + D3_LABELS["search"], max_steps=3_000_000_000)
+    cpu.call(DECIDE_ADDR, max_steps=3_000_000_000)
     return {
         "D_BC": cpu.mem[D3.D_BC], "D_BO": cpu.mem[D3.D_BO],
         "D_BVL": cpu.mem[D3.D_BVL], "D_BVH": cpu.mem[D3.D_BVH],
         "S_BEST_C": cpu.mem[D3.S_BEST_C], "S_BEST_O": cpu.mem[D3.S_BEST_O],
-        "W_TCOL": cpu.mem[W_TCOL], "W_TROW": cpu.mem[W_TROW],
-        "TK2_BKIND": cpu.mem[TK2_BKIND],
-        "TS_CNT": cpu.mem[TS_CNT],
+        "W_TCOL": cpu.mem[TV.TUCK_COL], "W_TROW": cpu.mem[TV.TUCK_ROW],
+        "TK2_BKIND": cpu.mem[TV.TK2_BKIND],
+        "TS_CNT": cpu.mem[TV.TS_CNT],
     }
 
 
-def test_tuck_wins():
-    print("(1) TUCK RESCUE -- board where only a tuck reaches a clear under the lip")
+def _win_board():
     board = _cave_horizontal_board()
-    board[10 * 8 + 5] = 1
-    board[10 * 8 + 6] = 1
-    board[0 * 8 + 0] = 0xD0
+    # recolour the lip (default colour 1) so a straight vertical drop landing on it can't
+    # chain through to the virus below via ordinary colour-run matching (see module
+    # docstring) -- this test's own board instance only, not tuck_scan_v3_ref.py itself.
+    for c in (4, 5, 6):
+        board[9 * 8 + c] = 3
+    board[10 * 8 + 5] = 0xD1   # the board's ONLY virus -- clearing it via the tuck WINS
+    board[10 * 8 + 6] = 0x40 | 1
+    return board
+
+
+def test_tuck_wins():
+    print("(1) TUCK RESCUE -- board where only a tuck reaches the board's last virus (a WIN)")
+    board = _win_board()
     ca0, cb0, na0, nb0 = 1, 1, 2, 0
     pillA, pillB = [0, 2], [2, 1]
     r = run(board, ca0, cb0, na0, nb0, pillA, pillB)
@@ -164,16 +176,12 @@ def test_tuck_wins():
 
 
 def test_no_rescue_needed_publishes_none():
-    print("\n(2) NO RESCUE -- same board, lip removed (row 9 cleared): a base action")
-    print("    should already reach the pre-existing pair, so no tuck should be able to")
-    print("    beat it by theta=150 (identical placement, same value, gate needs STRICT")
-    print("    improvement over the fixed base reference) -- W_TCOL/W_TROW must be 0xFF")
-    board = _cave_horizontal_board()
+    print("\n(2) NO RESCUE -- same board, lip removed: a base action should already reach")
+    print("    the virus directly, so no tuck should be able to beat it (identical result,")
+    print("    gate needs STRICT improvement) -- W_TCOL/W_TROW must be 0xFF")
+    board = _win_board()
     for c in (4, 5, 6):
         board[9 * 8 + c] = EMPTY   # remove the lip
-    board[10 * 8 + 5] = 1
-    board[10 * 8 + 6] = 1
-    board[0 * 8 + 0] = 0xD0
     ca0, cb0, na0, nb0 = 1, 1, 2, 0
     pillA, pillB = [0, 2], [2, 1]
     r = run(board, ca0, cb0, na0, nb0, pillA, pillB)
@@ -187,7 +195,7 @@ def test_no_rescue_needed_publishes_none():
 def main():
     fails = test_tuck_wins()
     fails += test_no_rescue_needed_publishes_none()
-    print(f"\n{'ALL PASS' if not fails else f'{fails} FAILURES'} (code={len(CODE)}B)")
+    print(f"\n{'ALL PASS' if not fails else f'{fails} FAILURES'} (code={len(COMBINED)}B)")
     return fails == 0
 
 
