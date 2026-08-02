@@ -40,3 +40,4 @@ drmario_cart.nes
 fpga/copro/obj_mister/
 fpga/copro/obj_leafeval/
 fpga/copro/build/
+fpga/copro/obj_*/
