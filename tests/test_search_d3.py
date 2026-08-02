@@ -217,6 +217,15 @@ def _emit_eh_terms(a):
     a.ins16("LDA_abs", S_CB); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCB)
     a.jsr("land_place")                                   # legal by construction (Pass-0 kept it)
     a.jsr("resolve_capped")                               # targeted cap-1 resolve -> b1 in CUR
+    a.label("eh_terms_scan")
+    # ENTRY POINT FOR EXTERNAL CALLERS whose own ply-1 landing already resolved b1 into CUR
+    # by other means (e.g. the tuck v3 scoring path's land_place_at + resolve_capped) --
+    # skips the rebuild-from-root-plus-replay-candidate preamble above, which would
+    # otherwise DESTROY an already-placed non-base-action board. A label costs zero bytes
+    # and does not affect this build's own byte-identical flag-off output either way --
+    # see fpga/copro/tuck_v3.py's emit_eh_terms_scan_call for the JSR-by-raw-address
+    # caller (labels only resolve within their own Asm6502 image; a cross-image call needs
+    # this label's OWN resolved address, known once this file's code has been assembled).
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_ADL); a.ins("STA_zp", D_ADH)
     # ===================== g_excav: run^2 of the same-color pile-top over a buried virus =====
     a.ins("LDA_imm", 0); a.ins("STA_zp", EH_T0)           # EH_T0 = c
