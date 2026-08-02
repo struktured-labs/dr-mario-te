@@ -95,31 +95,47 @@ local function check_previews(tag)
   local np = rd(0x0727)
   local p1y1, p1y2 = oam(37,0), oam(38,0)
   local p1x1, p1x2 = oam(37,3), oam(38,3)
+  local p1t1, p1t2 = oam(37,1), oam(38,1)
   local p2y1, p2y2 = oam(39,0), oam(40,0)
   local p2x1, p2x2 = oam(39,3), oam(40,3)
+  local p2t1, p2t2 = oam(39,1), oam(40,1)
   local p2_present = not (p2y1 == 0xFF and p2y2 == 0xFF)
   local p1_is_2p_pos = (p1y1 == 0x33 and p1y2 == 0x33 and p1x1 == 0x38 and p1x2 == 0x40)
   local p1_is_1p_pos = (p1x1 == 0xBE and p1x2 == 0xC6)
+  local p1_is_1p_layout = (p1y1 == 0x45 and p1y2 == 0x45 and p1x1 == 0xBE and p1x2 == 0xC6)
   local p2_is_2p_pos = (p2y1 == 0x33 and p2y2 == 0x33 and p2x1 == 0xB8 and p2x2 == 0xC0)
+  -- tile-source cross-check: P1 preview tiles must track $031A/$031B (its next-pill colors),
+  -- P2 preview tiles must track $039A/$039B, per the STUDY_BLOB recipe tile=$60|colA / $70|colB.
+  local c031a, c031b, c039a, c039b = rd(0x031A) & 0x0F, rd(0x031B) & 0x0F, rd(0x039A) & 0x0F, rd(0x039B) & 0x0F
+  local p1_tile_live = (p1t1 == (0x60 | c031a) and p1t2 == (0x70 | c031b))
+  local p2_tile_live = (p2t1 == (0x60 | c039a) and p2t2 == (0x70 | c039b))
   local studyY = { oam(32,0), oam(33,0), oam(34,0), oam(35,0), oam(36,0) }
   local studyLifted = (studyY[1]==0x08 and studyY[2]==0x08 and studyY[3]==0x08 and studyY[4]==0x08 and studyY[5]==0x08)
+  local studyAccepted = (studyY[1]==0x0F and studyY[2]==0x0F and studyY[3]==0x0F and studyY[4]==0x0F and studyY[5]==0x0F)
   logf(string.format("[%s] $0727=%d $04=%d $0046=%d", tag, np, rd(0x04), rd(0x46)))
-  logf(string.format("[%s] P1 preview (37,38): Y=$%02X,$%02X X=$%02X,$%02X  -> %s",
-    tag, p1y1, p1y2, p1x1, p1x2,
+  logf(string.format("[%s] P1 preview (37,38): Y=$%02X,$%02X X=$%02X,$%02X tile=$%02X,$%02X (src $031A/B=$%X/$%X)  -> %s",
+    tag, p1y1, p1y2, p1x1, p1x2, p1t1, p1t2, c031a, c031b,
     p1_is_2p_pos and "2P-CORRECT (above P1/left board)" or (p1_is_1p_pos and "*** 1P-DEFAULT POSITION (floating bug signature) ***" or "UNKNOWN position")))
-  logf(string.format("[%s] P2 preview (39,40): Y=$%02X,$%02X X=$%02X,$%02X  -> %s",
-    tag, p2y1, p2y2, p2x1, p2x2, p2_present and (p2_is_2p_pos and "2P-CORRECT" or "present but wrong position") or "*** ABSENT (Y=$FF, never written) ***"))
-  logf(string.format("[%s] STUDY text Y (32-36) = %02X %02X %02X %02X %02X  (want $08 in 2P/VS, $0F in 1P)",
+  logf(string.format("[%s] P2 preview (39,40): Y=$%02X,$%02X X=$%02X,$%02X tile=$%02X,$%02X (src $039A/B=$%X/$%X)  -> %s",
+    tag, p2y1, p2y2, p2x1, p2x2, p2t1, p2t2, c039a, c039b,
+    p2_present and (p2_is_2p_pos and "2P-CORRECT" or "present but wrong position") or "*** ABSENT (Y=$FF, never written) ***"))
+  logf(string.format("[%s] STUDY text Y (32-36) = %02X %02X %02X %02X %02X  (want $08 in 2P/VS, $0F in 1P; $0F in 2P is an ACCEPTED cosmetic remainder per team-lead 2026-08-02)",
     tag, studyY[1], studyY[2], studyY[3], studyY[4], studyY[5]))
   dump_oam(tag .. " slots 32-40 (STUDY+previews)", 32, 40)
   dump_oam(tag .. " slots 0-3 (capsules)", 0, 3)
-  if tag == "PAUSED" then
-    results["PAUSED: P1 preview 2P-correct"] = p1_is_2p_pos
-    results["PAUSED: P2 preview 2P-correct"] = p2_is_2p_pos
-    results["PAUSED: STUDY text Y-lifted to $08"] = studyLifted
-    logf("VERDICT [" .. (p1_is_2p_pos and "PASS" or "FAIL") .. "] PAUSED P1 preview 2P-correct")
-    logf("VERDICT [" .. (p2_is_2p_pos and "PASS" or "FAIL") .. "] PAUSED P2 preview 2P-correct")
-    logf("VERDICT [" .. (studyLifted and "PASS" or "FAIL") .. "] PAUSED STUDY text Y-lifted to $08")
+  if tag == "PAUSED-2P" or tag == "PAUSED" then
+    results["PAUSED-2P: P1 preview 2P-correct"] = p1_is_2p_pos
+    results["PAUSED-2P: P2 preview 2P-correct"] = p2_is_2p_pos
+    results["PAUSED-2P: P1 tile tracks $031A/B"] = p1_tile_live
+    results["PAUSED-2P: P2 tile tracks $039A/B"] = p2_tile_live
+    logf("VERDICT [" .. (p1_is_2p_pos and "PASS" or "FAIL") .. "] PAUSED-2P P1 preview 2P-correct")
+    logf("VERDICT [" .. (p2_is_2p_pos and "PASS" or "FAIL") .. "] PAUSED-2P P2 preview 2P-correct")
+    logf("VERDICT [" .. (p1_tile_live and "PASS" or "FAIL") .. "] PAUSED-2P P1 tile tracks $031A/B")
+    logf("VERDICT [" .. (p2_tile_live and "PASS" or "FAIL") .. "] PAUSED-2P P2 tile tracks $039A/B")
+    logf("INFO STUDY text Y=" .. (studyLifted and "$08 (fully fixed)" or (studyAccepted and "$0F (ACCEPTED cosmetic remainder, not counted against PASS/FAIL)" or "unexpected value")))
+  elseif tag == "PAUSED-1P" then
+    results["PAUSED-1P: driver 1P branch correct (Y=$45 X=$BE/$C6)"] = p1_is_1p_layout
+    logf("VERDICT [" .. (p1_is_1p_layout and "PASS" or "FAIL") .. "] PAUSED-1P driver 1P branch correct")
   elseif tag == "PRE-PAUSE play" then
     local allBlank = true
     for slot = 32, 40 do if oam(slot, 0) ~= 0xFF then allBlank = false end end
@@ -171,7 +187,7 @@ emu.addEventCallback(function()
     snap("at_pause")
     logf("=== PAUSED STATE (f" .. frame .. ") ===")
     check_counts("PAUSED")
-    check_previews("PAUSED")
+    check_previews("PAUSED-2P")
     press({ start = true }, 6)
     resumedFrame = frame
     logf("injected START (resume) at f" .. frame)
@@ -186,11 +202,14 @@ emu.addEventCallback(function()
     local order = {
       "PRE-PAUSE play: slots 32-40 invisible (no leak into gameplay)",
       "PAUSED: virus counts present+correct",
-      "PAUSED: P1 preview 2P-correct",
-      "PAUSED: P2 preview 2P-correct",
-      "PAUSED: STUDY text Y-lifted to $08",
+      "PAUSED-2P: P1 preview 2P-correct",
+      "PAUSED-2P: P2 preview 2P-correct",
+      "PAUSED-2P: P1 tile tracks $031A/B",
+      "PAUSED-2P: P2 tile tracks $039A/B",
       "resume returns to PLAY (mode=4)",
     }
+    -- NOTE: STUDY text Y-lift ($0F vs $08) is intentionally NOT in this list -- team-lead
+    -- (2026-08-02) accepted $0F as a known cosmetic remainder; see the INFO line above.
     logf("=== SUMMARY ===")
     for _, k in ipairs(order) do
       local v = results[k]
