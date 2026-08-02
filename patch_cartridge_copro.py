@@ -161,6 +161,33 @@ NAVESC = _os.environ.get("DRNAVESC", "0") == "1"
 ESC_N = int(_os.environ.get("DRNAVESC_N", "1200"))   # hooks unchanged before escape (~10 s at 2 hooks/frame)
 ESC_S0, ESC_S1, ESC_S2 = 0x6180, 0x6181, 0x6182      # snapshot: $0046 / $F8 / $0386
 ESC_CTL, ESC_CTH = 0x6183, 0x6184                    # 16-bit stuck-hook counter
+# DRSTALLWD: play-mode P2 stall watchdog (task #40 follow-up; see experiments/freeze_20260801/
+# FREEZE4_ROOTCAUSE.md). NAVESC (above) detects a stuck SCREEN and presses START -- proven
+# ineffective against a mid-PLAY search-state wedge (freeze #4, 2026-08-02): pressing START during
+# mode 4 only toggles pause, which does not change $0046, so the driver's own dispatch (including
+# handle()'s watchdog) keeps running underneath the pause exactly as before -- NAVESC's remediation
+# is orthogonal to this bug class. DRSTALLWD instead watches P2's OWN pose ($0385/$0386/$03A5 --
+# column, row, orientation), all WRAM the GAME itself owns, for STALLWD_N hooks of zero movement
+# while mode==4 and P2 still has viruses (VCOUNT_P2 != 0; BCD-safe -- $00 reads identically in both
+# encodings). It deliberately does NOT key off the driver's own PEND2/ARMED2/DELAY2/WDOG2 scratch --
+# those are exactly the bytes in question during a wedge like the P0.2 lock-while-armed pin (freeze
+# #4's confirmed mechanism), and a single save-state snapshot of them proved impossible to reason
+# about after the fact (two non-atomic memory regions -- see the freeze #4 writeup). Remediation is
+# a SCOPED reset: force the search-state quintet back to "ready to launch a fresh search against the
+# live board" (ARMED2/WDOG2/WDOGH2=0, PEND2=1, DELAY2=0 -- skip the 15-tick settle, the board hasn't
+# changed) WITHOUT touching ROT_DONE2/STABLE_CT2/TGT_C2/TGT_O2, so a still-good orientation commit or
+# running argmax isn't discarded the way a full fake pill-lock edge would discard it. On the very
+# next hook handle(2)'s own `_start` gate (pend!=0 && delay==0) fires immediately and re-GOes the
+# copro. Never touches $F5/$F7/$F6/$F8 or pause state, so (unlike NAVESC) it is silent to a human on
+# any cart class and cannot itself cause a toggle-and-do-nothing loop. Default OFF (byte-exact
+# goldens); the counter re-arms after firing so a search that is merely legitimately slow (not
+# wedged) gets a full fresh STALLWD_N-hook grace window before the watchdog reconsiders -- it does
+# not spin-reset every hook (which would starve the fresh search of the time to ever complete).
+STALLWD = _os.environ.get("DRSTALLWD", "0") == "1"
+STALLWD_N = int(_os.environ.get("DRSTALLWD_N", "2400"))   # hooks of static P2 pose (~20s @ 2 hooks/frame)
+SWD_S0, SWD_S1, SWD_S2 = 0x618D, 0x618E, 0x618F      # snapshot: $0385 / $0386 / $03A5 (past the
+                                                      # DRPROBE/DRTRACE ring header at $6186-$618C)
+SWD_CTL, SWD_CTH = 0x6190, 0x6191                    # 16-bit stuck-hook counter
 TUCK = _os.environ.get("DRTUCK", "0") == "1"   # tuck executor (see TUCK_C2 above)
 REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
 # DRWRETRY (default OFF -- touches build_main, so off keeps the goldens == published c300acb canonical;
@@ -836,6 +863,36 @@ def build_main(level=11, speed=1):
         a.label("esc_rst")
         a.ins("LDA_imm", 0); a.ins16("STA_abs", ESC_CTL); a.ins16("STA_abs", ESC_CTH)
         a.label("esc_done")
+    if STALLWD:
+        # ---- DRSTALLWD play-mode P2 stall watchdog (task #40 follow-up; see the flag block above
+        # for the full rationale). Same tier as NAVESC above (runs every hook, ahead of the mode
+        # split), but keys off P2's game-owned pose instead of the driver's own search-state scratch.
+        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "swd_rst")   # not play -> re-arm
+        a.ins16("LDA_abs", VCOUNT_P2); a.br("BEQ", "swd_rst")                        # P2 cleared -> re-arm
+        a.ins16("LDA_abs", 0x0385); a.ins16("CMP_abs", SWD_S0); a.br("BNE", "swd_new")
+        a.ins16("LDA_abs", 0x0386); a.ins16("CMP_abs", SWD_S1); a.br("BNE", "swd_new")
+        a.ins16("LDA_abs", 0x03A5); a.ins16("CMP_abs", SWD_S2); a.br("BNE", "swd_new")
+        a.ins16("INC_abs", SWD_CTL); a.br("BNE", "swd_chk"); a.ins16("INC_abs", SWD_CTH)
+        a.label("swd_chk")
+        a.ins16("LDA_abs", SWD_CTH); a.ins("CMP_imm", (STALLWD_N >> 8) & 0xFF); a.br("BCC", "swd_done")
+        a.br("BNE", "swd_fire")                               # CTH > hi(N): past the window
+        a.ins16("LDA_abs", SWD_CTL); a.ins("CMP_imm", STALLWD_N & 0xFF); a.br("BCC", "swd_done")
+        a.label("swd_fire")
+        # STUCK >= N hooks: SCOPED reset -- re-arm handle(2)'s _start gate against the LIVE board
+        # without disturbing ROT_DONE2 / STABLE_CT2 / TGT_C2 / TGT_O2 (a still-good orientation
+        # commit or running argmax survives; only the wedged ARMED/WDOG/PEND/DELAY quintet moves).
+        a.ins("LDA_imm", 0)
+        a.ins16("STA_abs", ARMED2); a.ins16("STA_abs", WDOG2); a.ins16("STA_abs", WDOGH2)
+        a.ins16("STA_abs", DELAY2)                            # skip the settle wait: board is unchanged
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", PEND2)
+        a.jmp("swd_rst")                                      # re-arm: full grace window before refiring
+        a.label("swd_new")
+        a.ins16("LDA_abs", 0x0385); a.ins16("STA_abs", SWD_S0)
+        a.ins16("LDA_abs", 0x0386); a.ins16("STA_abs", SWD_S1)
+        a.ins16("LDA_abs", 0x03A5); a.ins16("STA_abs", SWD_S2)
+        a.label("swd_rst")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", SWD_CTL); a.ins16("STA_abs", SWD_CTH)
+        a.label("swd_done")
     if STUDY2P:
         # ---- DRSTUDY2P: driver-owned pause previews, ALL play modes (task #39; see flag block).
         # PRE-DISPATCH placement is load-bearing: it must run on 1P human hooks too ($04==0 never
