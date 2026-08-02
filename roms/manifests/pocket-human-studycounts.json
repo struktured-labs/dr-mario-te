@@ -13,7 +13,8 @@
     "DRNAVDWELL": "0",
     "DRNOFREEZE": "1",
     "DRPOCKET": "1",
-    "DRRECOMMIT_NOFREEZE": "1"
+    "DRRECOMMIT_NOFREEZE": "1",
+    "DRSTUDYCOUNTS": "1"
   },
   "git": {
     "branch": "driver-nav",
@@ -21,9 +22,9 @@
     "dirty": false
   },
   "output": {
-    "md5": "03a9ff90ebd12a0fcec0755f5d64a29d",
-    "name": "POCKET_human_latchfix_v2.nes",
+    "md5": "01ee0fc60d89e1f289a3e26cc85900bd",
+    "name": "pocket_human_studycounts.nes",
     "size": 98320
   },
-  "tag": "pocket-human-latchfix"
+  "tag": "pocket-human-studycounts"
 }

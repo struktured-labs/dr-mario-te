@@ -9,11 +9,8 @@
     "md5": "49643affc1bc764344fca45780c7e430"
   },
   "flags": {
-    "DRHUMAN": "1",
-    "DRNAVDWELL": "0",
-    "DRNOFREEZE": "1",
-    "DRPOCKET": "1",
-    "DRRECOMMIT_NOFREEZE": "1"
+    "DRCOLDINIT": "1",
+    "DRNOFREEZE": "1"
   },
   "git": {
     "branch": "driver-nav",
@@ -21,9 +18,9 @@
     "dirty": false
   },
   "output": {
-    "md5": "03a9ff90ebd12a0fcec0755f5d64a29d",
-    "name": "POCKET_human_latchfix_v2.nes",
+    "md5": "c02ef71eb9848cc4652d2ca27b09f490",
+    "name": "navdwell_branding_test.nes",
     "size": 98320
   },
-  "tag": "pocket-human-latchfix"
+  "tag": "navdwell-branding-test"
 }

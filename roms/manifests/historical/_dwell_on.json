@@ -1,0 +1,25 @@
+{
+  "base_rom": {
+    "md5": "7d307c3051ebc0f8a10e259e3c270acb",
+    "path": "drmario_v28cs.nes"
+  },
+  "determinism": "verified: two builds byte-identical",
+  "emitter": {
+    "file": "patch_cartridge_copro.py",
+    "md5": "447404b2b7687924cffbeac6558e1858"
+  },
+  "flags": {
+    "DRNOFREEZE": "1"
+  },
+  "git": {
+    "branch": "driver-nav",
+    "commit": "45f5cfb88c0347bf73eb4903a1fe8a6d0c23d1a3",
+    "dirty": false
+  },
+  "output": {
+    "md5": "8b1aaf0cc4faa87355c91d47aec6e8f2",
+    "name": "dwell_on.nes",
+    "size": 98320
+  },
+  "tag": "_dwell_on"
+}

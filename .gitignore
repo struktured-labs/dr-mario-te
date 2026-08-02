@@ -1,36 +1,32 @@
-# Virtual environment
-.venv/
-
-# Python cache
-__pycache__/
-*.pyc
-
-# ROMs (don't commit copyrighted content)
-*.nes
 
 # Emulator save states and configs
+# Python cache
+# ROMs (don't commit copyrighted content)
+# Scratch / scratchpad (ad-hoc debug + cross-check harnesses)
+# Virtual environment
+# agent scratch
+# expansion test ROMs
+# recorded gameplay clips (large binaries)
+# scratch manifests (leading underscore) — not shipped builds
+# transient emulator/run logs
+*.log
+*.mp4
+*.nes
+*.pyc
 *.sav
 *.srm
 *.state
-
-# Scratch / scratchpad (ad-hoc debug + cross-check harnesses)
-tmp/
-log/
-setenv.sh
-
-# transient emulator/run logs
-*.log
-mesen*.log
-
-# expansion test ROMs
-drmario_exp.nes
-/tmp/
-drmario_v28cs_exp.nes
-drmario_banktest.nes
-drmario_cart.nes
-
-# recorded gameplay clips (large binaries)
-*.mp4
-# agent scratch
 .letta/
 .venv
+.venv/
+/tmp/
+__pycache__/
+drmario_banktest.nes
+drmario_cart.nes
+drmario_exp.nes
+drmario_v28cs_exp.nes
+log/
+mesen*.log
+roms/manifests/_*.json
+setenv.sh
+tmp/

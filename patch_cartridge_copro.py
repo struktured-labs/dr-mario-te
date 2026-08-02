@@ -92,8 +92,26 @@ SLAM_ARM, LAST_LAT = 0x6172, 0x6173
 # NAV_1P is a diagnostic latch: set if the cart ever runs play-mode with $0727==1 (a 1P game or the
 # attract demo) = the nav did NOT land VS-CPU. Readable on hardware to score a cold-load gauntlet.
 NAV_STABLE, NAV_1P = 0x6174, 0x6175
-# RE-ENTRANCY GUARD latch (build_wrapper): the 0x37CF hook fires from BOTH the NMI and the main loop, so a
-# main-loop driver invocation can be INTERRUPTED by the NMI which RE-ENTERS the driver and clobbers the
+# ★ WHERE THE HOOK ACTUALLY RUNS (measured 2026-08-01 from the ROM itself; an earlier version of this
+# comment said "from BOTH the NMI and the main loop", which is WRONG and sent a design down an
+# impossible path -- there is no main-loop invocation to move work to):
+#   NMI vector $FFFA -> $8005; the NMI's LAST call before restoring registers is JSR $9134 =
+#   getInputs_checkMode, which has EXACTLY ONE call site in the whole 32K PRG (that one). In
+#   non-demo play it does `jsr getInputs; rts`, and getInputs calls addExpansionCTRL TWICE (the
+#   two-pass AND read). The 0x37CF hook is the tail of addExpansionCTRL.
+#   => THE DRIVER RUNS EXACTLY 2x PER FRAME, BOTH INSIDE THE NMI. Never from the main loop.
+#   Corroboration: autonav's `NAV_T & $1F < 4` press window is 4 hooks = 2 whole frames at 2/frame,
+#   which is what the two-pass AND needs; at the "~5/frame" this file assumes elsewhere it would be
+#   0.8 frames and the nav could not work at all. Several comments below still say ~5 calls/frame --
+#   they are calibration prose, not measured, and should be revisited before anyone RE-TUNES the
+#   hook-counted constants (MIN_THINK, the K_* stability gates, WDOG limits). The constants
+#   themselves were tuned empirically on silicon, so they are fine as shipped.
+#   Placement matters for budgeting: the hook runs AFTER every PPU write in the NMI (render_*,
+#   PPUSCROLL), so an over-long driver invocation does NOT corrupt the display -- it eats the main
+#   loop's share of the 29780-cycle frame. Only overrunning a WHOLE frame is dangerous, which is
+#   exactly the re-entrancy below.
+# RE-ENTRANCY GUARD latch (build_wrapper): because there is only the NMI, re-entry happens when a driver
+# invocation overruns a full frame -- the NEXT NMI fires and RE-ENTERS the driver, clobbering the
 # shared abs-addr state (armed/pend/wdog) -> the driver re-issues GO every hook -> the ~83M-clk search never
 # DONEs -> the game spins on $5084 = the R47 Pocket HARD-FREEZE (combo-port co-sim proven: cadence not
 # silicon, so div2 froze identically; SEI can't help -- NMI is non-maskable). A BUSY latch in free PRG-RAM
@@ -116,6 +134,17 @@ TUCK_C2 = 0x6179   # approach column for the in-flight P2 capsule; 0xFF = no tuc
 TUCK_R2 = 0x617A   # steer to the FINAL column once pill Y <= this ($0386 counts UP from the floor)
 EFF_C2  = 0x617B   # effective target column this hook (approach or final)
 W_TCOL, W_TROW = 0x5087, 0x5088   # copro publishes the tuck descriptor here (0xFF = none)   # TITLE DWELL: frames dwelt at the title + last frameCounter($43) seen
+# DRP1WIGGLE (see below): per-pill alternating direction latch for the P1 spectator wiggle.
+# 0 = hold LEFT this pill, 1 = hold RIGHT. Toggled on the P1 new-pill edge. $617C is the next
+# free PRG-RAM byte (BUSY..$6185 is the free window; $6186+ is the DRPROBE ring header).
+WIG_DIR = 0x617C
+# DRP1NATIVE (see below): the P1 native-AI wrapper's own state. P1AI_Y is the per-pill search
+# cache key (last pill Y seen); P1AI_C/P1AI_O hold the search result. The results are copied
+# out of the AI's zero-page outputs IMMEDIATELY, because Z_TARGET is $00 = CTRL_exp1, which
+# get_CTRL_inputs rewrites on EVERY pad read -- reading it a hook later returns controller
+# bits, not a column.
+P1AI_Y, P1AI_C, P1AI_O = 0x617D, 0x617E, 0x617F
+P1AI_CPU, P1SWAP_CPU = 0x9000, 0x9200   # P1-mirrored d1 AI + its swap_eval, in unit1 (bank 2)
 import os as _os
 TUCK = _os.environ.get("DRTUCK", "0") == "1"   # tuck executor (see TUCK_C2 above)
 REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
@@ -164,13 +193,28 @@ MIN_THINK = int(_os.environ.get("DRMINTHINK", "25"))
 # SLAM auto-disables. DRSLAM=0 rebuilds byte-exact to canonical (every add below is `if SLAM`-guarded).
 SLAM = (_os.environ.get("DRSLAM", "1") != "0") and ROTFIX
 # DRSLAM_MATURE (default 2, when SLAM): FAST_HI threshold on the search-latency HIGH byte (WDOGH2 =
-# latency in 256-hook units, ~5 hooks/frame). Arm the slam iff the last P2 search DONE'd in < FAST_HI*256
-# hooks. Derivation (tmp/driver_slam/round1_repro.py + tempo §2.3): warm depth-3 T_s ~= 60 f * 5 = ~300
-# hooks => WDOGH2=1; the cold-regression entry (an armed slam lands the pill ~106 f ~= 530 hooks, before
-# a slower DONE arrives) is WDOGH2=2. FAST_HI=2 (=512 hooks ~1.7 s) is the unique 256-hook-granular
-# threshold that sits ABOVE warm-typical (300, arms) and AT/below the regression entry (530, disarms) --
-# margin ~212 hooks over warm, and it disarms the moment a search crosses into the danger band. Byte-
-# patchable via the CMP #FAST_HI immediate. DRSLAM_MATURE=0 disables the gate (pre-fix slam, A/B).
+# latency in 256-hook units). Arm the slam iff the last P2 search DONE'd in < FAST_HI*256 hooks.
+# Derivation (tmp/driver_slam/round1_repro.py + tempo §2.3): warm depth-3 T_s ~= 300 hooks => WDOGH2=1;
+# the cold-regression entry (an armed slam lands the pill ~106 f, before a slower DONE arrives) is
+# WDOGH2=2. FAST_HI=2 is the unique 256-hook-granular threshold ABOVE warm-typical (300, arms) and
+# AT/below the regression entry (530, disarms). Byte-patchable via the CMP #FAST_HI immediate.
+# DRSLAM_MATURE=0 disables the gate (pre-fix slam, A/B).
+#
+# AUDITED 2026-08-01, and the wall-clock basis was WRONG before this. The old note read
+# "512 hooks ~1.7 s", which assumed ~5 hooks/frame. The hook rate is TWO per frame -- MEASURED, by
+# tracing the single NMI call site ($FFFA -> ... -> JSR $9134 -> getInputs -> addExpansionCTRL x2),
+# and corroborated by working silicon (autonav's 4-hook press window only functions at 2/frame).
+# So FAST_HI=2 is 512 hooks = 256 frames ~= 4.27 s, not 1.7 s.
+#
+# Why the audit happened: the Combo Stomper (chain180) made P2 searches ~1.83x longer, and this
+# threshold was tuned against the PRE-CHAIN brain. Crossing it does not freeze -- it silently disarms
+# the slam and placement falls back to the anytime path, i.e. it degrades play QUALITY invisibly. So
+# it needed re-deriving against the new latency rather than inheriting. Measured worst-case searches
+# vs the 4.27 s threshold:
+#     MiSTer  chain180 @ 85.909 MHz   0.78 s   = 18% of threshold
+#     Pocket  chain180 @ 54.669 MHz   1.23 s   = 29% of threshold  (projected)
+# Both safe, so the silicon-tuned immediate SHIPS AS-IS -- no constant change. Re-audit this if the
+# search latency changes again, or if a platform runs the copro slower than ~35 MHz.
 FAST_HI = int(_os.environ.get("DRSLAM_MATURE", "2"))
 MATURE = (FAST_HI > 0) and SLAM
 # DRCOLGATE=1 (default ON with ROTFIX): the confidence-gated slam (dn_p2, below) was originally
@@ -203,6 +247,95 @@ COLGATE = ROTFIX and (_os.environ.get("DRCOLGATE", "1") != "0")
 # converged orient is most likely to arrive after the latch. Opt-in keeps every existing
 # cart byte-identical; set this only for play carts. RECOMMIT self-gates (no-op unless DONE
 # lands above CROSS_LOWY), so on a slow copro it costs nothing.
+# DRPENDBOUND=1 (P0.2 fix, default OFF): bound the freeze_pending gravity pin to the settle
+# window (PEND && DELAY!=0). Unbounded, a lock-while-armed pill latches PEND2 and pins the next
+# capsule motionless until the STALE search DONEs or the watchdog fires (~minutes) -- the
+# leading mechanism for the open MiSTer opening-stall (#56). stagnate() skips PEND/ARMED so the
+# STUCK_LIM rescue can never fire during the pin.
+PENDBOUND = _os.environ.get("DRPENDBOUND", "0") == "1"
+# DRCOLDINIT=1 (P0.3 fix, default OFF): (a) cold-state init on ALL classes (the "anytime carts
+# never pin" justification for the NO_FREEZE gate is wrong -- freeze_pending pins P2 with no
+# class guard); (b) re-arm the init per MATCH (clear MATCH_ACTIVE on every menu hook, so the
+# first play frame of every rematch re-runs it); (c) LASTY1/2 in the power-on init. Without
+# this the strict Y>LASTY2 edge is suppressed after a topout (LASTY2 stuck at spawn row) and
+# the first pill of every rematch gets NO search: it hard-drops at the PREVIOUS match's target.
+COLDINIT = _os.environ.get("DRCOLDINIT", "0") == "1"
+# DRSTUDYCOUNTS=1 (task #7 copro half, default OFF): the base pause path blanks shadow-OAM
+# slots 8-15 (VIRUS counts 12-15, LEVEL digits 8-11); the STUDY part1 redraws text+preview but
+# not the counters, so on STUDY carts the paused board shows an EMPTY virus box (user's Pocket
+# photo). The driver hook runs every frame incl. pause frames ($46 stays 4 in the pause loop),
+# so rebuild the 8 sprites from $0324/$03A4/$0316/$0396 every play hook: idempotent vs the
+# game's own draw during play, and re-fills after the pause blank. Values/layout measured
+# (study_viruscount_probe.lua): tile IS the digit, Y=$BF/$2B, X=6E/76/83/8B + 6D/75/84/8C.
+STUDYCOUNTS = _os.environ.get("DRSTUDYCOUNTS", "0") == "1"
+# DRP1WIGGLE=1 (SPECTATOR feature, default OFF -> every existing cart byte-identical): on a
+# CvC cart the P1 side is a dud -- it stacks at the spawn column and tops out with all 48
+# viruses alive (user's MiSTer screen, 2026-08-01), so half the screen is dead within a
+# minute. WIGGLE gives P1 a deliberately dumb but *watchable* policy: alternate a HELD LEFT
+# and a HELD RIGHT for each pill's whole descent, so consecutive pills bank off opposite
+# walls and the stack spreads instead of growing one tower.
+#
+# ★ INPUT MODEL (from the game's own code, not guessed -- the BCD lesson). The 0x37CF hook
+# sits at the TAIL of addExpansionCTRL, i.e. INSIDE getInputs and BEFORE its _pressedVsHeld
+# pass. That pass (disasm prg/drmario_prg_general.asm:367) is:
+#       lda p1_btns_pressed,X / tay / eor p1_btns_held,X / and p1_btns_pressed,X
+#       sta p1_btns_pressed,X          ; pressed = raw & ~previous-held
+#       sty p1_btns_held,X             ; held    = raw
+# so $F5 is the RAW pad latch and the game DERIVES both $F5 (pressed, X=0) and $F7 (held)
+# from it. Therefore a HELD direction is "write $F5 = dir EVERY hook and never touch $F7":
+# held stays asserted, and the pressed edge fires exactly once (the first hook), which is
+# precisely a human pushing and holding the d-pad. Writing $F7 ourselves would mark the
+# button already-held and kill the edge (the original autonav injection bug, line ~750).
+# The direction bits must ride $F5 because fallingPill_checkXMove ($8DCF) reads
+# currentP_btnsPressed only to pick "instant move vs DAS", then reads currentP_btnsHELD for
+# the actual direction -- a pressed-only injection with held==0 moves NOTHING.
+#
+# Scope: CvC only. On a DRHUMAN cart P1 is a PERSON and the cart must never press their
+# buttons (spec P0.4) -- the assert below refuses the combination rather than silently
+# ignoring it. Under WIGGLE the driver OWNS P1's descent: act_p1's copro steering is
+# replaced outright and freeze_pending stops pinning GRAV_P1 (a pin would stall the very
+# descent we are steering). handle(1) still runs, so P1's $5000 copro traffic is unchanged.
+P1WIGGLE = _os.environ.get("DRP1WIGGLE", "0") == "1"
+assert not (P1WIGGLE and HUMAN_P1), (
+    "DRP1WIGGLE=1 with DRHUMAN=1 is refused: P1 is a human on a DRHUMAN cart and the cart "
+    "must never press their buttons (spec P0.4). Build the wiggle on a CvC cart only.")
+# DRP1NATIVE=1 (SPECTATOR feature, default OFF -> every existing cart byte-identical): give P1
+# the v28cs NATIVE depth-1 6502 AI, with its soft-drop stripped so it plays slowly on purpose.
+# A middle rung between DRP1WIGGLE (alive but mindless) and a real copro opponent: v28cs-class
+# d1 clears ~9.1% ROM-faithful / ~6.7% live at L11 -- competent, clearly beatable, watchable.
+#
+# ★ WHY P1 NEEDS THIS AT ALL (measured 2026-08-01, save-state PRG-RAM): the deployed core
+# does NOT decode P1's copro window at $5000. Reads return open bus = the address high byte
+# $50, so handle(1)'s GO is read straight back as DONE, it publishes column $50 = 80, and
+# act_p1's `CMP TGT_C1 / BCC` is then ALWAYS true -> P1 held RIGHT forever and piled its whole
+# stack into the right wall (pre-wiggle board grids right-half 22 / left-half 6). So under
+# this flag handle(1) is DROPPED entirely: on this core it does not merely waste the ~5.4k-cycle
+# board upload, it actively publishes garbage. That also frees copro1 and, conveniently, removes
+# a spike that fired on the SAME new-pill edge as the native search.
+#
+# ★ COST, and why the obvious worry is the wrong one. The 0x37CF hook runs EXACTLY 2x per
+# frame and BOTH are inside the NMI (see the hook-location note above) -- there is no main-loop
+# invocation to move heavy work to. But the hook runs AFTER every PPU write in the NMI, so an
+# over-long invocation eats the main loop's share of the 29780-cycle frame rather than
+# corrupting the display; vblank is NOT the budget. Measured: the driver is ~400 cyc/hook
+# (p95 460), and one d1 search is 16-23k cyc ONCE PER PILL. So this costs about one hitched
+# frame per P1 pill (~1 in 200 at L11), and the only dangerous case -- overrunning a WHOLE
+# frame, so the next NMI re-enters -- is already caught by the BUSY guard.
+#
+# ★ THE TWO-PASS AND, which is the one real trap. getInputs calls the hook twice and ANDs the
+# two $F5 values, so BOTH passes of a frame must leave the SAME byte or the input vanishes
+# (this is the DRNAVDWELL failure shape). v28cs's per-pill cache already guarantees it: hook 1
+# sees a new pill Y, searches, and stores the key; hook 2 sees the key match, skips the search
+# and reuses the same target -> identical byte. P1AI_Y is that key. Any future per-pill work
+# here MUST preserve this; tests/test_p1_native.py asserts it directly.
+P1NATIVE = _os.environ.get("DRP1NATIVE", "0") == "1"
+assert not (P1NATIVE and HUMAN_P1), (
+    "DRP1NATIVE=1 with DRHUMAN=1 is refused: P1 is a human on a DRHUMAN cart and the cart "
+    "must never press their buttons (spec P0.4). Build the native P1 AI on a CvC cart only.")
+assert not (P1NATIVE and P1WIGGLE), (
+    "DRP1NATIVE=1 and DRP1WIGGLE=1 are mutually exclusive: both replace act_p1 outright, so "
+    "one would silently win. Pick the P1 personality you want.")
+P1_OWNED = P1WIGGLE or P1NATIVE   # act_p1 is replaced; the copro P1 path is not used at all
 RECOMMIT = (MATURE
             and (not NO_FREEZE or _os.environ.get("DRRECOMMIT_NOFREEZE", "0") == "1")
             and (_os.environ.get("DRRECOMMIT", "1") != "0"))
@@ -251,8 +384,14 @@ NAV_HOLD = NAV_V4 and (_os.environ.get("DRNAV_HOLD", "1") != "0")
 # title logo is never seen). PURE frame-count gate placed IN FRONT of the nav VS-CPU write + stability gate
 # (both byte-INTACT downstream) -- does NOT touch the silicon-validated $51/mode/$04 stability logic. The $51
 # demo-hold above keeps running each dwell hook so the attract demo never trips. Counts real frames via the
-# game's frameCounter $43 (hook-rate-independent), saturates at DRNAVDWELL_F (no wrap), resets per title-visit
-# (cold-init + at the START injection). Gated on NAV_V4 so the DRNAVFIX=0 byte-goldens are unaffected.
+# game's frameCounter $43 (hook-rate-independent), saturates at DRNAVDWELL_F (no wrap), and re-arms PER BOOT
+# /RESET (cold-init + the mode-8 intro block, which fires at every power-on). It deliberately does NOT re-arm
+# at the START injection: that ran on the first injecting hook, so the next hook of the same press window
+# re-entered the dwell hold and RTSed before inject(), narrowing the press to ONE hook -- and the game ANDs
+# TWO raw passes of $F5, so a 1-hook press never registers and the title re-dwelled forever (the DRNAVDWELL
+# silicon hang). GENERAL RULE: any early-RTS between the window check and inject() silently narrows the press
+# below the two-pass AND threshold; injection must span the whole 4-hook window.
+# Gated on NAV_V4 so the DRNAVFIX=0 byte-goldens are unaffected.
 # DRNAVDWELL=0 reverts (byte-identical nav). py65: nav still lands VS-CPU, just ~DRNAVDWELL_F frames later.
 NAVDWELL = NAV_V4 and (_os.environ.get("DRNAVDWELL", "1") != "0")
 DWELL_FRAMES = int(_os.environ.get("DRNAVDWELL_F", "180"))   # ~3 s at 60 fps
@@ -275,6 +414,16 @@ K_OPEN     = int(_os.environ.get("DRSLAM_KOPEN",  "255"))
 K_END      = int(_os.environ.get("DRSLAM_KEND",   "255"))
 K_CROSS    = int(_os.environ.get("DRSLAM_KCROSS", "8"))
 VC_ENDGAME = int(_os.environ.get("DRSLAM_VCEND",  "10"))
+# ★ VCOUNT_P1/P2 ($0324/$03A4) are BCD, not binary (proven from the game's own draw code at
+# file offset 0x446: AND #$F0 / LSR x4 / AND #$0F, and from an empirical probe at L20 where
+# an 84-virus board reads $84, not $54). The gate below is a plain binary CMP, so it is only
+# correct while the threshold is <= 10: counts 0-9 have identical BCD and binary bytes, and
+# BCD 10 is $10 = 16 which still compares >= any threshold <= 10. At 12, BCD 11 ($11 = 17)
+# would compare ABOVE the threshold and silently classify the endgame as midgame.
+assert VC_ENDGAME <= 10, (
+    f"DRSLAM_VCEND={VC_ENDGAME} is unsafe: the virus counters are BCD and this gate is a "
+    "binary CMP, so thresholds above 10 misclassify counts 11-15. Either keep it <= 10 or "
+    "convert the gate to a BCD-aware comparison.")
 CROSS_LOWY = int(_os.environ.get("DRSLAM_LOWY",   "8"))
 VCOUNT_P1, VCOUNT_P2 = 0x0324, 0x03A4   # remaining virus counts (0 => that player cleared -> STAGE CLEAR)
 W2_BASE = 0x5200
@@ -556,7 +705,23 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", NAV_STABLE); a.ins16("STA_abs", NAV_1P)   # A==0: nav stability + 1P diag latch
     if NAVDWELL:
         a.ins16("STA_abs", DWELL_CNT); a.ins16("STA_abs", DWELL_LAST)   # A==0: title-dwell fresh at power-on
+    if COLDINIT:
+        a.ins16("STA_abs", LASTY1); a.ins16("STA_abs", LASTY2)   # A==0: no suppressed first edge from garbage
+        a.ins16("STA_abs", PEND1); a.ins16("STA_abs", PEND2)
+        a.ins16("STA_abs", DELAY1); a.ins16("STA_abs", DELAY2)
+    if P1WIGGLE:
+        # A==0. The FIRST pill's spawn edge toggles this before act_p1 ever reads it, so
+        # pill 1 holds RIGHT and pill 2 LEFT. Which wall leads is arbitrary, but pin the
+        # seed here: tests/test_p1_wiggle.py asserts the exact landing sequence.
+        a.ins16("STA_abs", WIG_DIR)
+    if P1NATIVE:
+        # A==0: P1AI_Y=0 so the first pill (Y=15) trips the new-pill edge and gets a real
+        # search; P1AI_O=0 = the horizontal spawn orient, so no rotation is demanded before
+        # the first search has run.
+        a.ins16("STA_abs", P1AI_Y); a.ins16("STA_abs", P1AI_O)
     a.ins("LDA_imm", 3)                                     # sane targets pre-first-publish
+    if P1NATIVE:
+        a.ins16("STA_abs", P1AI_C)                          # centre column until the first search
     a.ins16("STA_abs", TGT_C1); a.ins16("STA_abs", TGT_O1)
     a.ins16("STA_abs", TGT_C2); a.ins16("STA_abs", TGT_O2)
     a.ins("LDA_imm", 2); a.ins16("STA_abs", TURN)          # fair-serve round-robin seed
@@ -642,7 +807,7 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_slam_ok")
         a.ins("LDA_imm", 0); a.ins16("STA_abs", SLAM_ARM)
         a.label("ga_slam_ok")
-    if not NO_FREEZE:
+    if COLDINIT or not NO_FREEZE:
         # COLD-STATE INIT (freeze carts only): PEND1/2, DELAY1/2, LASTY1/2 are NOT in the power-on init
         # (boot garbage). On a freeze cart, garbage PEND2 makes freeze_pending pin GRAV_P2 on the first
         # frames and garbage LASTY2 mis-fires the pill-lock edge. Clear them on the first play frame of a
@@ -654,6 +819,16 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", PEND1); a.ins16("STA_abs", PEND2)
         a.ins16("STA_abs", DELAY1); a.ins16("STA_abs", DELAY2)
         a.ins16("STA_abs", LASTY1); a.ins16("STA_abs", LASTY2)
+        if COLDINIT:
+            # SOFT-RELAUNCH stall (P2.2 mechanism): PRG-RAM persists across a core relaunch, so a
+            # stale ARMED2=1 makes handle() wait on a copro that is not searching -- the FIRST pill
+            # pins until the STALE watchdog trips (minutes). Clear the search state per match too;
+            # a genuinely stale in-flight search is torn down safely (the next GO resets the copro).
+            a.ins16("STA_abs", ARMED2); a.ins16("STA_abs", WDOG2); a.ins16("STA_abs", WDOGH2)
+            a.ins16("STA_abs", WRETRY2)
+            if not HUMAN_P1:
+                a.ins16("STA_abs", ARMED); a.ins16("STA_abs", WDOG); a.ins16("STA_abs", WDOGH1)
+                a.ins16("STA_abs", WRETRY)
         a.label("ga_cold_ok")
     if USE_SEEDS:
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_on")  # first play frame of this match:
@@ -675,6 +850,8 @@ def build_main(level=11, speed=1):
     a.ins16("STA_abs", VSEEN1); a.ins16("STA_abs", VSEEN2)
     if NAVFIX:
         a.ins16("STA_abs", NAV_STABLE)                      # A==0: fresh confirm count each boot
+    if NAVDWELL:
+        a.ins16("STA_abs", DWELL_CNT)                       # A==0: fresh boot -> re-arm the title dwell
     if NAVFIX and not NAV_V4:
         # v3 ONLY: force the 1P baseline here. Silicon showed mode 8 RE-ENTERS during the title, so this
         # re-fires and fights the toggles (the 5/5-stuck regression). v4 needs no baseline -- it writes
@@ -683,6 +860,10 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", 0); a.ins("STA_zp", 0x04)          # $04 = 0 (VS flag clear -> coherent 1P)
     a.ins("RTS")                                            # intro/init: hands off otherwise
     a.label("menus")
+    if COLDINIT:
+        # left play -> the next match must re-run the cold-state init (rematch after topout
+        # keeps LASTY2 at the spawn row, suppressing the first pill's search edge)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", MATCH_ACTIVE)
     a.jsr("autonav")
     a.ins("LDA_zp", 0x04); a.br("BEQ", "m_done")
     a.ins("LDA_zp", 0xF5); a.ins("STA_zp", 0xF6)            # VS: mirror P1->P2 (level cursor)
@@ -811,18 +992,67 @@ def build_main(level=11, speed=1):
         # human IS P1 and navigates for themselves -- injecting here fights them for control
         # (measured 7/40 hooks). Leave an_st_go as a bare RTS so the nav path is inert.
         inject(B_START)
-    if NAVDWELL:
-        a.ins("LDA_imm", 0); a.ins16("STA_abs", DWELL_CNT)   # START fired -> re-arm the dwell for the next title
+    # NOTE: do NOT re-arm DWELL_CNT here. This runs on the FIRST hook that injects START, so the
+    # next hook of the SAME press window re-enters the dwell hold and RTSes before inject() --
+    # the press lasts one hook. The game ANDs TWO raw passes of $F5, so a 1-hook press can never
+    # register and the title re-dwells forever. Re-arm lives in the mode-8 intro block instead.
     a.ins("RTS")
 
     # ================= play-mode CPU-vs-CPU driver (time-shared FPGA) =================
     a.label("dispatch")
+    if STUDY and STUDYCOUNTS:
+        # STUDY counter redraw (see DRSTUDYCOUNTS). Stack-free: ones stays in A, tens in X.
+        # ★ THE TWO COUNTERS USE DIFFERENT ENCODINGS -- do not share a digit splitter.
+        # Proven from the BASE GAME's own draw/clamp code in drmario_v28cs.nes, which is the
+        # authority (it produces the number the player sees):
+        #   VIRUS $0324 is BCD  -- @0x446: LDA $0324 / AND #$F0 / LSR x4 / STA $2007, then
+        #                          AND #$0F for the ones. Nibble extraction, never a divide.
+        #   LEVEL $0316 is BINARY -- @0x1992: LDA $0316 / CMP #$15 / LDA #$14 / STA $0316
+        #                          clamps to 0x14 = 20 DECIMAL. A BCD clamp would be #$20.
+        # Splitting the BCD virus byte with a binary divide-by-10 renders 0x48 ("48" viruses
+        # at L11) as "72" -- the exact user-reported 48 -> 72. It gets worse with level:
+        # L15 (64) -> 100 and L20 (84) -> 132, which also overflows the 2-digit field.
+        for (csrc, sa, sb, xa, xb, ytop, tag, bcd) in (
+                (0x0324, 12, 13, 0x6E, 0x76, 0xBF, "v1", True),
+                (0x03A4, 14, 15, 0x83, 0x8B, 0xBF, "v2", True),
+                (0x0316, 8, 9, 0x6D, 0x75, 0x2B, "l1", False),
+                (0x0396, 10, 11, 0x84, 0x8C, 0x2B, "l2", False)):
+            if bcd:
+                # nibble extract: no loop, no backward branch -- which also retires the
+                # BCC-onto-JMP hazard entirely for these two counters.
+                a.ins16("LDA_abs", csrc); a.ins("AND_imm", 0x0F)
+                a.ins16("STA_abs", 0x0200 + sb * 4 + 1)              # ones tile
+                a.ins16("LDA_abs", csrc)
+                for _ in range(4):
+                    a.ins("LSR_A")                                   # high nibble -> tens
+                a.ins16("STA_abs", 0x0200 + sa * 4 + 1)              # tens tile
+            else:
+                a.ins16("LDA_abs", csrc); a.ins("LDX_imm", 0)
+                a.label(f"sc_{tag}")
+                a.ins("CMP_imm", 10); a.br("BCC", f"sc_{tag}_d")
+                a.ins("SBC_imm", 10); a.ins("INX"); a.jmp(f"sc_{tag}")
+                a.label(f"sc_{tag}_d")
+                a.ins16("STA_abs", 0x0200 + sb * 4 + 1)              # ones tile
+                a.ins("TXA"); a.ins16("STA_abs", 0x0200 + sa * 4 + 1)  # tens tile
+            a.ins("LDA_imm", ytop)
+            a.ins16("STA_abs", 0x0200 + sa * 4); a.ins16("STA_abs", 0x0200 + sb * 4)
+            a.ins("LDA_imm", 1)
+            a.ins16("STA_abs", 0x0200 + sa * 4 + 2); a.ins16("STA_abs", 0x0200 + sb * 4 + 2)
+            a.ins("LDA_imm", xa); a.ins16("STA_abs", 0x0200 + sa * 4 + 3)
+            a.ins("LDA_imm", xb); a.ins16("STA_abs", 0x0200 + sb * 4 + 3)
     # ---- pill-lock edge detect (both players) ----
     a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", LASTY1)
     a.br("BCC", "no_p1_new"); a.br("BEQ", "no_p1_new")
     a.ins("LDA_imm", 1); a.ins16("STA_abs", PEND1)
     a.ins("LDA_imm", 15); a.ins16("STA_abs", DELAY1)        # ~3 frames settle before upload
     a.ins("LDA_imm", 0); a.ins16("STA_abs", WRETRY)
+    if P1WIGGLE:
+        # SPECTATOR WIGGLE: flip the hold direction for the pill that just spawned. AND #1
+        # after the EOR so power-on garbage in PRG-RAM can only ever land on 0 or 1 (act_p1
+        # then maps those to LEFT/RIGHT) -- a raw EOR of the direction BITS could latch
+        # LEFT|RIGHT together, which the game accepts and which cancels to no net movement.
+        a.ins16("LDA_abs", WIG_DIR); a.ins("EOR_imm", 0x01); a.ins("AND_imm", 0x01)
+        a.ins16("STA_abs", WIG_DIR)
     a.label("no_p1_new")
     a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", LASTY1)
     a.ins16("LDA_abs", 0x0386); a.ins16("CMP_abs", LASTY2)
@@ -877,7 +1107,22 @@ def build_main(level=11, speed=1):
             a.br("BEQ", f"{L}_start")
         a.ins16("LDA_abs", wdone); a.br("BEQ", f"{L}_search")    # DONE==0 -> still searching
         # publish result: best_col + orient4 -> game orient map {0xFF/0:3, 1:1, 2:0, 3:2}
-        a.ins16("LDA_abs", wcol); a.ins16("STA_abs", tgt_c)
+        # ★ PUBLISHED-COLUMN SANITY GUARD (unconditional -- every cart, every core). The
+        # playfield is 8 wide, so any column >= 8 is not a result, it is noise. Without this
+        # the driver trusts whatever the window returns, and on a core that does NOT decode a
+        # copro window the reads are OPEN BUS = the address high byte: $5085 yields $50 = 80.
+        # act_* then compares pillX (0-7) against 80, the BCC is always taken, and that player
+        # holds ONE direction for the rest of the match -- which is exactly what happened to P1
+        # on NES_tuckmb_20260731 (measured 2026-08-01: TGT_C1=$50, whole stack in the right
+        # wall, 48 viruses alive). It read as "the AI is stupid" for weeks; it was an
+        # undecoded address. On a bad read we now KEEP the previous target and still clear
+        # ARMED/WDOG below, so the driver neither adopts the garbage nor spins re-reading it.
+        # This costs 5 bytes per handle() and protects every future core revision.
+        a.ins16("LDA_abs", wcol)
+        a.ins("CMP_imm", 8); a.br("BCC", f"{L}_colok")
+        a.jmp(f"{L}_badcol")            # via JMP: the span to the teardown exceeds branch range
+        a.label(f"{L}_colok")
+        a.ins16("STA_abs", tgt_c)
         if TUCK and idx == 2:
             # latch the tuck descriptor alongside the column, from the SAME published result
             a.ins16("LDA_abs", W_TCOL); a.ins16("STA_abs", TUCK_C2)
@@ -909,6 +1154,7 @@ def build_main(level=11, speed=1):
             a.ins("LDA_imm", 1); a.ins16("STA_abs", SLAM_ARM); a.jmp("mat_done")
             a.label("mat_slow"); a.ins("LDA_imm", 0); a.ins16("STA_abs", SLAM_ARM)
             a.label("mat_done")
+        a.label(f"{L}_badcol")   # rejected column lands here: teardown WITHOUT adopting the result
         a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
         a.jmp(f"{L}_done")
         a.label(f"{L}_search")           # 16-bit watchdog: d3 searches take seconds; abandon ~30s, re-queue once
@@ -959,7 +1205,9 @@ def build_main(level=11, speed=1):
             a.ins16("STA_abs", wretry)                      # FIX(A): dropping this keeps the re-queue-once latch
         a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
         a.label(f"{L}_done")
-    if not HUMAN_P1:
+    if not HUMAN_P1 and not P1NATIVE:
+        # (DRP1NATIVE drops P1's copro search entirely -- see the flag note: on the deployed
+        #  core $5000 is undecoded, so this only ever published open-bus garbage.)
         handle(1, 0x5000, 0x0400, [0x0301, 0x0302, 0x031A, 0x031B], ARMED, WDOG, WRETRY, PEND1, DELAY1, TGT_C1, TGT_O1, WDOGH1, SEED1)
     handle(2, W2_BASE, 0x0500, [0x0381, 0x0382, 0x039A, 0x039B], ARMED2, WDOG2, WRETRY2, PEND2, DELAY2, TGT_C2, TGT_O2, WDOGH2, SEED2)
     a.jmp("act")
@@ -968,14 +1216,22 @@ def build_main(level=11, speed=1):
     # (time-sharing wait was letting pills drop 2-4 rows before their target arrived ->
     # unreachable columns -> bad placements). Called from act below.
     a.label("freeze_pending")
-    if not HUMAN_P1:
+    if not HUMAN_P1 and not P1_OWNED:
+        # (DRP1WIGGLE / DRP1NATIVE builds also skip it: both own P1's descent outright, so a
+        #  search-driven gravity pin would freeze the capsule mid-slide -- and neither reads
+        #  P1's copro target, so there is nothing to wait for. Under DRP1NATIVE handle(1) is
+        #  not even emitted, which would leave PEND1 latched at 1 forever -> a permanent pin.)
         # (DRHUMAN builds MUST skip this: handle(1) never runs, so PEND1 is uninitialized
         #  boot garbage — nonzero garbage pinned P1's gravity forever = capsule stuck at top,
         #  observed on Pocket hardware 2026-07-18.)
         a.ins16("LDA_abs", PEND1); a.br("BEQ", "fp_p2")
+        if PENDBOUND:
+            a.ins16("LDA_abs", DELAY1); a.br("BEQ", "fp_p2")   # settle window closed -> no pin
         a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)
     a.label("fp_p2")
     a.ins16("LDA_abs", PEND2); a.br("BEQ", "fp_done")
+    if PENDBOUND:
+        a.ins16("LDA_abs", DELAY2); a.br("BEQ", "fp_done")     # settle window closed -> no pin
     a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
     a.label("fp_done")
     a.ins("RTS")
@@ -1004,7 +1260,19 @@ def build_main(level=11, speed=1):
             a.br("BEQ", "nf2_untorn"); a.jmp("act_p1"); a.label("nf2_untorn")  # torn: keep old TGT (rel too far)
         else:
             a.br("BNE", "act_p1")                                              # torn read: keep old TGT
-        a.ins16("LDA_abs", 0x616D); a.ins16("STA_abs", TGT_C2)   # column: always refine (anytime)
+        # ★ SECOND SANITY GUARD, and the one that actually mattered. handle()'s guard is not
+        # enough: THIS path re-reads the live mailbox every hook and writes TGT_C2 directly,
+        # so on an undecoded window it re-adopted the open-bus column ($52 for the $5200
+        # window) immediately after handle() had rejected it. Caught only because the gate
+        # row simulates the dead window rather than trusting the guard -- the matrix reported
+        # TGT_C2=82 with the handle() guard already in. A bad column here means "no usable
+        # candidate", so fall through to nf2_hold: steer nothing this hook (no pin, the
+        # capsule keeps falling) rather than chase noise.
+        a.ins16("LDA_abs", 0x616D)
+        a.ins("CMP_imm", 8); a.br("BCC", "nf2_colok")
+        a.jmp("nf2_hold")
+        a.label("nf2_colok")
+        a.ins16("STA_abs", TGT_C2)                               # column: always refine (anytime)
         if ROTFIX:
             # FEASIBILITY-GATED retarget: refine the ORIENT only while pre-phase (orient not yet
             # committed). Once ROT_DONE2 latches, keep the committed orient so a late candidate
@@ -1164,6 +1432,53 @@ def build_main(level=11, speed=1):
     a.label("act_p1")
     if HUMAN_P1:
         a.jmp("act_done")                                   # human P1: never touch $F5/$F7/GRAV_P1
+    elif P1WIGGLE:
+        # SPECTATOR WIGGLE (see DRP1WIGGLE): P1's whole policy is "hold one direction for this
+        # pill". Write the RAW latch $F5 every hook and leave $F7 alone -- the game's own
+        # _pressedVsHeld pass turns that into held=dir with a single pressed edge on the first
+        # hook, which is what fallingPill_checkXMove needs to DAS the capsule to the wall. No
+        # gravity pin anywhere on this path, so the capsule falls at the natural rate while it
+        # slides. This REPLACES the copro steering below: the P1 search still runs (handle(1)
+        # is untouched) but its target is deliberately ignored -- the point is a dumb spread.
+        a.ins16("LDA_abs", WIG_DIR); a.br("BEQ", "wig_left")
+        a.ins("LDA_imm", B_RIGHT); a.jmp("wig_hold")
+        a.label("wig_left"); a.ins("LDA_imm", B_LEFT)
+        a.label("wig_hold"); a.ins("STA_zp", 0xF5)
+        a.jmp("act_done")
+    elif P1NATIVE:
+        # ---- NATIVE d1 AI for P1 (see DRP1NATIVE) -- the P1 mirror of v28cs's $FF54 wrapper.
+        # PER-PILL CACHE (and the two-pass AND guarantee): search only when P1's pill Y has
+        # RISEN above the last Y we saw, i.e. a new capsule spawned. Hook 1 of a frame does the
+        # search and then stores the key; hook 2 finds the key equal, skips, and reuses the same
+        # P1AI_C/P1AI_O -- so both passes write an IDENTICAL $F5 and survive the AND.
+        a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", P1AI_Y)
+        a.br("BCC", "p1n_nosearch"); a.br("BEQ", "p1n_nosearch")
+        a.jsr(build_p1_native()[1]["search_entry"])          # JSR the mirrored search (abs)
+        a.ins("LDA_zp", 0x00); a.ins16("STA_abs", P1AI_C)   # Z_TARGET -> ours NOW ($00 is
+        a.ins("LDA_zp", 0xDA); a.ins16("STA_abs", P1AI_O)   # CTRL_exp1, rewritten every read)
+        a.label("p1n_nosearch")
+        a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", P1AI_Y)
+        # ORIENT phase: press A until the capsule matches the searched orientation. $F7 is
+        # cleared first so each hook reads as a FRESH press edge -- without that, held==raw
+        # from the previous hook makes pressed==0 and rotation stops after one step. (This is
+        # the same idiom act_p2 uses on $F8/$F6, and it does NOT contradict the wiggle's
+        # "never write $F7": there we WANT held to persist so DAS accumulates; here we want a
+        # repeating edge.)
+        a.ins16("LDA_abs", 0x0325); a.ins16("CMP_abs", P1AI_O); a.br("BEQ", "p1n_col")
+        a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF7)
+        a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF5); a.jmp("act_done")
+        # COLUMN phase: steer toward the searched column.
+        a.label("p1n_col")
+        a.ins16("LDA_abs", 0x0305); a.ins16("CMP_abs", P1AI_C); a.br("BEQ", "p1n_aligned")
+        a.ins("LDY_imm", B_RIGHT); a.br("BCC", "p1n_store")   # pillX < target -> RIGHT
+        a.ins("LDY_imm", B_LEFT); a.jmp("p1n_store")
+        a.label("p1n_aligned")
+        # ★ THE DOWN-STRIP (the whole point of "deliberately slow"): v28cs puts LDY #$04 here
+        # to soft-drop the moment the column is reached. LDY #$00 presses nothing, so the
+        # capsule finishes its descent at natural gravity and P1 plays at a watchable pace.
+        a.ins("LDY_imm", 0x00)
+        a.label("p1n_store"); a.ins("STY_zp", 0xF5)
+        a.jmp("act_done")
     # skip P1 acting if we're currently searching for P1
     a.ins16("LDA_abs", ARMED); a.br("BEQ", "act_p1_go")    # not searching P1 -> steer it
     a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)       # searching P1 -> freeze + skip steer
@@ -1188,6 +1503,22 @@ def build_main(level=11, speed=1):
     a.label("act_done")
     a.ins("RTS")
     return a.assemble(), a.labels
+
+
+def build_p1_native():
+    """(ai_bytes, ai_labels, swap_bytes) for the P1-MIRRORED copy of the v28cs depth-1 AI.
+
+    The v28cs AI is still resident in every copro cart at $FB00 (only its 5-byte head is
+    repointed), but it reads P2's board $0500 and P2's colours $0381/$0382, so it cannot serve
+    P1 as-is. Re-emitting it with the P1 addresses is 11 substitutions and ~550 bytes of the
+    ~14.8 KB free in unit1 -- cheaper and far safer than the alternative of copying P1's board
+    into $0500 around a call, which would corrupt P2's live board if the NMI re-entered
+    mid-copy. Deterministic, so callers may invoke it freely instead of threading it through.
+    """
+    from patch_vs_cpu import build_v18_ai, build_swap_eval
+    body, labels = build_v18_ai(P1AI_CPU, with_rotation=True, color_swap=True,
+                                board=0x0400, ca=0x0301, cb=0x0302, swap_cpu=P1SWAP_CPU)
+    return body, labels, build_swap_eval(P1SWAP_CPU, labels["eval_pair"])
 
 
 def _sel(w, value):
@@ -1234,6 +1565,18 @@ def main():
     print(f"unit-1 main: {len(unit1)} B at ${UNIT1_CPU:04X}; main=${main_cpu:04X}")
     bank = bytearray(b"\x00" * 0x4000)
     bank[0:len(unit1)] = unit1
+    if P1NATIVE:
+        p1ai, p1lab, p1swap = build_p1_native()
+        assert UNIT1_CPU + len(unit1) <= P1AI_CPU, (
+            f"build_main output reaches ${UNIT1_CPU + len(unit1):04X}, which would collide with "
+            f"the P1 native AI at ${P1AI_CPU:04X}. Move P1AI_CPU up.")
+        assert P1AI_CPU + len(p1ai) <= P1SWAP_CPU, "P1 AI overruns its swap_eval"
+        assert P1SWAP_CPU + len(p1swap) <= UNIT1_CPU + 0x4000, "P1 swap_eval overruns the bank"
+        bank[P1AI_CPU - UNIT1_CPU:P1AI_CPU - UNIT1_CPU + len(p1ai)] = p1ai
+        bank[P1SWAP_CPU - UNIT1_CPU:P1SWAP_CPU - UNIT1_CPU + len(p1swap)] = p1swap
+        print(f"DRP1NATIVE: P1 d1 AI {len(p1ai)} B at ${P1AI_CPU:04X} "
+              f"(search_entry ${p1lab['search_entry']:04X}), swap_eval {len(p1swap)} B at "
+              f"${P1SWAP_CPU:04X}; handle(1) dropped, soft-drop stripped")
 
     wrap = build_wrapper(main_cpu)
     print(f"trampoline: {len(wrap)} B at ${WRAP_CPU:04X}")

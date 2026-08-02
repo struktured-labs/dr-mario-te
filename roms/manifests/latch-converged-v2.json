@@ -9,10 +9,9 @@
     "md5": "49643affc1bc764344fca45780c7e430"
   },
   "flags": {
-    "DRHUMAN": "1",
+    "DRCOLDINIT": "1",
     "DRNAVDWELL": "0",
     "DRNOFREEZE": "1",
-    "DRPOCKET": "1",
     "DRRECOMMIT_NOFREEZE": "1"
   },
   "git": {
@@ -21,9 +20,9 @@
     "dirty": false
   },
   "output": {
-    "md5": "03a9ff90ebd12a0fcec0755f5d64a29d",
-    "name": "POCKET_human_latchfix_v2.nes",
+    "md5": "8317c6a1685c41af150105c8884a71f0",
+    "name": "latch_converged_v2.nes",
     "size": 98320
   },
-  "tag": "pocket-human-latchfix"
+  "tag": "latch-converged-v2"
 }
