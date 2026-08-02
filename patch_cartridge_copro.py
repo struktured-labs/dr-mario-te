@@ -283,6 +283,19 @@ COLDINIT = _os.environ.get("DRCOLDINIT", "0") == "1"
 # game's own draw during play, and re-fills after the pause blank. Values/layout measured
 # (study_viruscount_probe.lua): tile IS the digit, Y=$BF/$2B, X=6E/76/83/8B + 6D/75/84/8C.
 STUDYCOUNTS = _os.environ.get("DRSTUDYCOUNTS", "0") == "1"
+# DRSTUDY2P (task #39, default ON where STUDY is on): the copro carts ship the STUDY pause
+# in v8.2 EVAC form -- part1 only, the 2P tail parts dropped because their base-ROM homes
+# caused the $BC26 KIL and the $BE56 level-select garble, and the fixed bank has exactly ONE
+# dead run (the 52 B part1 already occupies; measured, not assumed). Price of the evac,
+# byte-proven by the 2026-08-02 Mesen probe on BOTH deployed carts: P1's preview frozen at
+# its 1P position over the wrong board, P2's preview never written, STUDY unlifted -- the
+# user-reported "floating pill". THE FIX LIVES WHERE THE SPACE IS: the driver hook runs
+# every frame INCLUDING pause frames (the STUDYCOUNTS mechanism), so unit1 redraws the
+# 2P-correct preview layout every play-mode hook. During play the game's own OAM rebuild
+# owns the frame (same invisibility as the digit redraw); during pause -- where part1 runs
+# ONCE at entry -- the hook's writes win from the next frame on. No base-ROM site touched,
+# no KIL/garble risk, works on every copro cart.
+_STUDY2P_ENV = _os.environ.get("DRSTUDY2P", "1") != "0"   # combined with STUDY below its def
 # DRP1WIGGLE=1 (SPECTATOR feature, default OFF -> every existing cart byte-identical): on a
 # CvC cart the P1 side is a dud -- it stacks at the spawn column and tops out with all 48
 # viruses alive (user's MiSTer screen, 2026-08-01), so half the screen is dead within a
@@ -477,6 +490,7 @@ B_SEL, B_START, B_LEFT, B_RIGHT = 0x20, 0x10, 0x02, 0x01
 #   carts run in VS-CPU mode; pause-reachability and 2P preview correctness are NOT emulator-
 #   verified. $D2CC-$D2FF must be confirmed dead in any deployed binary before surgical patching.
 STUDY = _os.environ.get("DRSTUDY", "1" if HUMAN_P1 else "0") != "0"
+STUDY2P = STUDY and _STUDY2P_ENV                     # driver-side 2P pause tail (see DRSTUDY2P above)
 # Anchor on the pause loop's START/$F7 check (LDA $F5;CMP #$10;BEQ;LDA $F7;CMP #$F0;BEQ) —
 # these bytes are NEVER touched by the edits, so the locator stays valid + idempotent even
 # after patching (all 5 edits sit just before/after this window, never inside it).
@@ -1084,6 +1098,32 @@ def build_main(level=11, speed=1):
             a.ins16("STA_abs", 0x0200 + sa * 4 + 2); a.ins16("STA_abs", 0x0200 + sb * 4 + 2)
             a.ins("LDA_imm", xa); a.ins16("STA_abs", 0x0200 + sa * 4 + 3)
             a.ins("LDA_imm", xb); a.ins16("STA_abs", 0x0200 + sb * 4 + 3)
+    if STUDY2P:
+        # ---- DRSTUDY2P: 2P-correct pause previews, driver-side (task #39; see flag block).
+        # Every play-mode hook in 2P/VS, rewrite the STUDY preview slots with the layout the
+        # evac'd tail was supposed to draw: slots 37-40 at Y=$33, P1 X=$38/$40 over P1's board,
+        # P2 tiles from $039A/$039B at X=$B8/$C0 over P2's, and the 5 STUDY letters lifted to
+        # Y=$08 clear of the 2P header. Invisible in play (the game rebuilds OAM after this
+        # hook); owns the pause from frame 2 (part1 draws its 1P defaults once at entry only).
+        a.ins16("LDA_abs", 0x0727); a.ins("CMP_imm", 2); a.br("BNE", "s2p_no")
+        a.ins16("LDA_abs", 0x031A); a.ins("ORA_imm", 0x60); a.ins16("STA_abs", 0x0295)  # P1 L tile
+        a.ins16("LDA_abs", 0x031B); a.ins("ORA_imm", 0x70); a.ins16("STA_abs", 0x0299)  # P1 R tile
+        a.ins16("LDA_abs", 0x039A); a.ins("ORA_imm", 0x60); a.ins16("STA_abs", 0x029D)  # P2 L tile
+        a.ins16("LDA_abs", 0x039B); a.ins("ORA_imm", 0x70); a.ins16("STA_abs", 0x02A1)  # P2 R tile
+        a.ins("LDA_imm", 0x02)                                                          # attr all 4
+        a.ins16("STA_abs", 0x0296); a.ins16("STA_abs", 0x029A)
+        a.ins16("STA_abs", 0x029E); a.ins16("STA_abs", 0x02A2)
+        a.ins("LDA_imm", 0x33)                                                          # Y all 4
+        a.ins16("STA_abs", 0x0294); a.ins16("STA_abs", 0x0298)
+        a.ins16("STA_abs", 0x029C); a.ins16("STA_abs", 0x02A0)
+        a.ins("LDA_imm", 0x38); a.ins16("STA_abs", 0x0297)                              # P1 X L
+        a.ins("LDA_imm", 0x40); a.ins16("STA_abs", 0x029B)                              # P1 X R
+        a.ins("LDA_imm", 0xB8); a.ins16("STA_abs", 0x029F)                              # P2 X L
+        a.ins("LDA_imm", 0xC0); a.ins16("STA_abs", 0x02A3)                              # P2 X R
+        a.ins("LDA_imm", STUDY_2P_Y)                                                    # STUDY lift
+        a.ins16("STA_abs", 0x0280); a.ins16("STA_abs", 0x0284); a.ins16("STA_abs", 0x0288)
+        a.ins16("STA_abs", 0x028C); a.ins16("STA_abs", 0x0290)
+        a.label("s2p_no")
     # ---- pill-lock edge detect (both players) ----
     a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", LASTY1)
     a.br("BCC", "no_p1_new"); a.br("BEQ", "no_p1_new")
