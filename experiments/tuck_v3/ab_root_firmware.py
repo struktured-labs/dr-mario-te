@@ -150,14 +150,34 @@ def sign_test_p(better, worse):
     return min(1.0, p)
 
 
-def run_level(level, seeds, workers):
+def _log_rss(tag):
+    """One-line RSS sum across every python process on the box -- per the team-lead's
+    ruling: OOM incidents were unbounded detached jobs, not the worker count itself, so
+    the mitigation is VISIBILITY (log growth in the log, not discover it via the kernel),
+    not a smaller cap."""
+    try:
+        import subprocess
+        out = subprocess.run(
+            ["bash", "-c",
+             "ps -o rss= -C python 2>/dev/null | awk '{s+=$1} END {print s+0}'"],
+            capture_output=True, text=True, timeout=10)
+        rss_kb = int(out.stdout.strip() or "0")
+        print(f"  [RSS] {tag}: {rss_kb/1024:.0f} MB across all python processes", flush=True)
+    except Exception as e:
+        print(f"  [RSS] {tag}: measurement failed ({e})", flush=True)
+
+
+def run_level(level, seeds, workers, seed_offset=0):
     R = {}
     for tuck in (0, 1):
         rows = []
         with ProcessPoolExecutor(max_workers=workers, initializer=_init,
                                  initargs=(level, tuck)) as ex:
-            for f in as_completed([ex.submit(play, s) for s in range(seeds)]):
+            futs = [ex.submit(play, s) for s in range(seed_offset, seed_offset + seeds)]
+            for i, f in enumerate(as_completed(futs)):
                 rows.append(f.result())
+                if (i + 1) % max(1, seeds // 10) == 0 or (i + 1) == seeds:
+                    _log_rss(f"L{level} tuck={tuck} after {i + 1}/{seeds} games")
         R[tuck] = {r["seed"]: r for r in rows}
         print(f"  L{level} FIRMWARE arm tuck={tuck} done ({len(rows)} games)", flush=True)
 
@@ -199,8 +219,117 @@ def run_level(level, seeds, workers):
           f"(tuck-only wins {won_only_on}, tuck-only losses {won_only_off}, "
           f"sign-test p={p_clear:.4f})")
     print(f"3. FIRES/GAME  {out['fires_per_game']:.2f}")
+    if level == 11:
+        # off-arm cross-validation rider (team-lead): the OFF arm's clear rate through
+        # firmware should land near the offline off-arm's ~95.8% -- grossly different
+        # means the game-loop wiring (gravity/stream/topout handling) diverges from the
+        # offline harness, and neither arm should be trusted until that's understood.
+        flag = "" if abs(c_off - 0.958) < 0.10 else "  <-- FAR FROM OFFLINE ~95.8%, INVESTIGATE BEFORE TRUSTING EITHER ARM"
+        print(f"4. OFF-ARM CROSS-VALIDATION  clear_off={c_off:.1%} vs offline reference ~95.8%{flag}")
 
     return out, R
+
+
+def report(out, level):
+    lo, hi = out["paired_pills_ci"]
+    verdict = "REAL" if (hi < 0 or lo > 0) else "WASH"
+    print(f"L{level}: paired pills {out['paired_pills_delta_mean']:+.2f} "
+          f"[{lo:+.2f},{hi:+.2f}] {verdict}   clear {out['clear_off']:.1%}->"
+          f"{out['clear_on']:.1%}   fires/g {out['fires_per_game']:.2f}")
+    return verdict
+
+
+def _write_json(out_prefix, level, out, R):
+    if not out_prefix:
+        return
+    fn = f"{out_prefix}_L{level}.json"
+    with open(fn, "w") as fh:
+        json.dump({"summary": out,
+                  "off": [R[0][s] for s in sorted(R[0])],
+                  "on": [R[1][s] for s in sorted(R[1])]}, fh)
+    print(f"wrote {fn}", flush=True)
+
+
+def _merge_R(r_a, r_b):
+    return {0: {**r_a[0], **r_b[0]}, 1: {**r_a[1], **r_b[1]}}
+
+
+def run_pass1(workers, out_prefix):
+    """Staged launch, per the team-lead's standing terms: L11 full n=120 (cheap, and the
+    arm with the -10.03 claim) + L20 seeds 0-79 first. Acceptance: L11 CI excludes 0 in
+    the right direction (negative -- fewer pills with tucks on) AND the L20 subset shows
+    no clear-rate regression signal (on >= off, allowing float noise) -> auto-launch L20
+    seeds 80-239 to complete the full n=240. If L11 fails to reproduce: STOP everything,
+    report -- that is the firmware-vs-model divergence finding itself, not a tuning
+    problem, and burning the L20 budget first would be waste."""
+    print("=== PASS 1: L11 full n=120 ===", flush=True)
+    out11, R11 = run_level(11, 120, workers, seed_offset=0)
+    _write_json(out_prefix, 11, out11, R11)
+    report(out11, 11)
+
+    l11_ci_excludes_0_negative = out11["paired_pills_ci"][1] < 0   # hi < 0 -> tucks use fewer pills
+    if not l11_ci_excludes_0_negative:
+        print("\n" + "=" * 70)
+        print("STOP: L11 did not reproduce (CI does not exclude 0 in the tuck-favourable")
+        print("direction). Per standing instruction, this is a firmware-vs-model")
+        print("divergence finding, not a tuning problem -- L20 is NOT launched.")
+        print("=" * 70)
+        return {11: out11}
+
+    print("\n=== PASS 1: L20 seeds 0-79 (subset) ===", flush=True)
+    out20a, R20a = run_level(20, 80, workers, seed_offset=0)
+    _write_json(out_prefix, "20_subset", out20a, R20a)
+    report(out20a, 20)
+
+    l20_subset_no_regression = out20a["clear_on"] >= out20a["clear_off"] - 1e-9
+    if not l20_subset_no_regression:
+        print("\n" + "=" * 70)
+        print("STOP: L20 subset (seeds 0-79) shows a clear-rate regression signal")
+        print(f"(clear_off={out20a['clear_off']:.1%} clear_on={out20a['clear_on']:.1%}).")
+        print("Per standing instruction, L20 seeds 80-239 are NOT auto-launched.")
+        print("=" * 70)
+        return {11: out11, 20: out20a}
+
+    print("\n=== PASS 1: L11 reproduced + L20 subset clean -> auto-launching L20 seeds 80-239 ===", flush=True)
+    out20b, R20b = run_level(20, 160, workers, seed_offset=80)
+    _write_json(out_prefix, "20_remainder", out20b, R20b)
+
+    R20_full = _merge_R(R20a, R20b)
+    # re-derive the full-n=240 statistics from the merged raw results rather than trying
+    # to combine two summary dicts (the bootstrap CI and sign test are not simply
+    # additive across sub-batches).
+    off, on = R20_full[0], R20_full[1]
+    all_seeds = sorted(set(off) & set(on))
+    both = [s for s in all_seeds if off[s]["won"] and on[s]["won"]]
+    d = [on[s]["pills"] - off[s]["pills"] for s in both]
+    lo, hi = boot_ci(d)
+    better = sum(1 for x in d if x < 0)
+    worse = sum(1 for x in d if x > 0)
+    c_off = sum(off[s]["won"] for s in all_seeds) / len(all_seeds)
+    c_on = sum(on[s]["won"] for s in all_seeds) / len(all_seeds)
+    disc = [(off[s]["won"], on[s]["won"]) for s in all_seeds if off[s]["won"] != on[s]["won"]]
+    won_only_on = sum(1 for o, n in disc if n)
+    won_only_off = len(disc) - won_only_on
+    p_clear = sign_test_p(won_only_on, won_only_off)
+    fires = [on[s]["fired"] for s in all_seeds]
+    out20_full = {
+        "level": 20, "seeds": len(all_seeds),
+        "paired_pills_delta_mean": st.mean(d) if d else float("nan"),
+        "paired_pills_ci": [lo, hi],
+        "paired_n": len(both), "better": better, "worse": worse, "tie": len(d) - better - worse,
+        "clear_off": c_off, "clear_on": c_on,
+        "discordant": len(disc), "tuck_only_wins": won_only_on, "tuck_only_losses": won_only_off,
+        "sign_test_p": p_clear,
+        "fires_per_game": st.mean(fires) if fires else 0.0,
+    }
+    _write_json(out_prefix, "20_full", out20_full, R20_full)
+    print(f"\n=== L20 FULL (n={len(all_seeds)}, merged 0-79 + 80-239) ===")
+    report(out20_full, 20)
+
+    print("\n=== PASS 1 SUMMARY ===")
+    report(out11, 11)
+    report(out20_full, 20)
+    return {11: out11, 20: out20_full}
 
 
 def main():
@@ -209,27 +338,24 @@ def main():
     ap.add_argument("--levels", type=int, nargs="+", default=[11])
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--out", type=str, default=None)
+    ap.add_argument("--pass1", action="store_true",
+                     help="run the staged L11 full + L20 0-79/auto-continue launch "
+                          "instead of the ad-hoc --seeds/--levels sweep")
     a = ap.parse_args()
+
+    if a.pass1:
+        run_pass1(a.workers, a.out)
+        return
 
     results = {}
     for level in a.levels:
         out, R = run_level(level, a.seeds, a.workers)
         results[level] = out
-        if a.out:
-            fn = f"{a.out}_L{level}.json"
-            with open(fn, "w") as fh:
-                json.dump({"summary": out,
-                          "off": [R[0][s] for s in sorted(R[0])],
-                          "on": [R[1][s] for s in sorted(R[1])]}, fh)
-            print(f"wrote {fn}")
+        _write_json(a.out, level, out, R)
 
     print("\n=== SUMMARY ===")
     for level, out in results.items():
-        lo, hi = out["paired_pills_ci"]
-        verdict = "REAL" if (hi < 0 or lo > 0) else "WASH"
-        print(f"L{level}: paired pills {out['paired_pills_delta_mean']:+.2f} "
-              f"[{lo:+.2f},{hi:+.2f}] {verdict}   clear {out['clear_off']:.1%}->"
-              f"{out['clear_on']:.1%}   fires/g {out['fires_per_game']:.2f}")
+        report(out, level)
 
 
 if __name__ == "__main__":

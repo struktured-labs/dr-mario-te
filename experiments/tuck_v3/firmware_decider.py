@@ -92,13 +92,25 @@ class FirmwareDecider:
         self.Cpu = Cpu
 
     def decide(self, col, vir, ca, cb, na, nb, max_steps=5_000_000_000):
-        """col/vir: int8[128] arrays (root_search.py convention, 0=empty/1..3=colour for
-        col, 0/1 for vir). ca/cb/na/nb: 0-indexed colours (root_search.py's own
-        `int(cur.a)` convention -- NOT offset here, matches build_image's own S_CA/S_CB
-        contract, which test_search_d3.py's _e_node masks with 0x0F and expects small
-        ints). Returns a `pick` dict shaped like root_search.choose_root_with_tucks()."""
+        """col/vir: int8[128] arrays (root_search.py/FaithfulBoard convention: col 0=empty,
+        1..3=colour; vir 0/1). ca/cb/na/nb: colours in the SAME 1..3 convention (matching
+        root_search.py's own `int(cur.a)`, which is what FaithfulBoard/NesPillSource
+        naturally produce -- confirmed via env.cur.a/b taking values in {1,2,3} directly).
+
+        ROOT-CAUSE BUG FIXED HERE (found via ab_root_firmware.py's sanity-8 rider tripping
+        at 0% clear both arms): this function used to pass ca/cb/na/nb straight through,
+        UNCHANGED, into build_image()'s S_CA/S_CB/S_NA/S_NB. But build_image()'s own
+        validated caller (build_copro_d3.py main()'s `problem()`, line ~215:
+        `return list(faithful_to_nes(fb)), ca - 1, cb - 1, na - 1, nb_ - 1`) SUBTRACTS 1
+        before calling build_image() -- the firmware's S_CA/S_CB mailbox speaks the 0..2
+        convention (matching arrays_to_nes's `col[i]-1` board-cell low nibble), NOT the
+        1..3 convention col[]/FaithfulBoard use. Every pill colour was off by one for the
+        entire life of this diagnostic and the A/B harness -- confirmed directly via
+        D_BVL/D_BVH firmware readback landing far from root_search._root_value's prediction
+        for the SAME reconstructed action, and via a topout-by-pill-23 game trace on a
+        seed that clears in 94 pills through the (correctly-1-indexed) python decider."""
         board = arrays_to_nes(col, vir)
-        img, _clen, _slen = self.B.build_image(board, ca, cb, na, nb)
+        img, _clen, _slen = self.B.build_image(board, ca - 1, cb - 1, na - 1, nb - 1)
         cpu = self.Cpu()
         for a, v in enumerate(img):
             cpu.mem[a] = v
