@@ -32,6 +32,7 @@ drmario_cart.nes
 drmario_exp.nes
 drmario_v28cs_exp.nes
 fpga/copro/build/
+fpga/copro/obj_*/
 fpga/copro/obj_leafeval/
 fpga/copro/obj_mister/
 log/
