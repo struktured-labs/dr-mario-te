@@ -6,23 +6,25 @@
   "determinism": "verified: two builds byte-identical",
   "emitter": {
     "file": "patch_cartridge_copro.py",
-    "md5": "f0e1d161ce4a20e403fc3aaa16f3d8e3"
+    "md5": "7abe2f410b1df0f7917adc18cd75648d"
   },
   "flags": {
     "DRCOLDINIT": "1",
+    "DRMINTHINK": "12",
     "DRNAVDWELL": "0",
     "DRNAVESC": "1",
     "DRNOFREEZE": "1",
     "DRP1NATIVE": "1",
-    "DRRECOMMIT_NOFREEZE": "1"
+    "DRRECOMMIT_NOFREEZE": "1",
+    "DRSLAM_KOPEN": "32"
   },
   "git": {
     "branch": "driver-nav",
-    "commit": "936fa0c815c6562dddaf99040957ade1914c9fae",
+    "commit": "91b2bc61d69257e72ce1196fe5352d21bcd4b44f",
     "dirty": false
   },
   "output": {
-    "md5": "016d84ea45b079e3b2295090cb1bf05e",
+    "md5": "56b45b29006227278e76eda94ffc1c2b",
     "name": "latch_converged_native.nes",
     "size": 98320
   },
