@@ -14,15 +14,17 @@
     "DRNAVDWELL": "0",
     "DRNAVESC": "1",
     "DRNOFREEZE": "1",
-    "DRSLAM_KOPEN": "32"
+    "DRPENDBOUND": "1",
+    "DRSLAM_KOPEN": "32",
+    "DRWRETRY": "1"
   },
   "git": {
     "branch": "driver-nav",
-    "commit": "91b2bc61d69257e72ce1196fe5352d21bcd4b44f",
+    "commit": "aacf3ec61b1ad791c9dac7931baf3cbeff2061b0",
     "dirty": false
   },
   "output": {
-    "md5": "312c34a36cc17a4063cb3b33f10edd21",
+    "md5": "fd9baafbf9540332a5c68bb459c62ab3",
     "name": "latch_control_v2.nes",
     "size": 98320
   },

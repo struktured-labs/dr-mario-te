@@ -15,16 +15,18 @@
     "DRNAVESC": "1",
     "DRNOFREEZE": "1",
     "DRP1WIGGLE": "1",
+    "DRPENDBOUND": "1",
     "DRRECOMMIT_NOFREEZE": "1",
-    "DRSLAM_KOPEN": "32"
+    "DRSLAM_KOPEN": "32",
+    "DRWRETRY": "1"
   },
   "git": {
     "branch": "driver-nav",
-    "commit": "91b2bc61d69257e72ce1196fe5352d21bcd4b44f",
+    "commit": "aacf3ec61b1ad791c9dac7931baf3cbeff2061b0",
     "dirty": false
   },
   "output": {
-    "md5": "38a57c2f7754bfd3840d321248309172",
+    "md5": "26fa5755595e7ad5beac4d838e4317a6",
     "name": "latch_converged_wiggle.nes",
     "size": 98320
   },
