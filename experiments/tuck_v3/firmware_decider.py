@@ -79,8 +79,19 @@ class FirmwareDecider:
     """One instance per WORKER (not per decision -- the D3/build_copro_d3 module load is
     the expensive one-time setup; each decision only re-runs build_image + a py65 call)."""
 
-    def __init__(self, drchain=180, drfix=1, arm=1):
-        os.environ["DRCOPRO_TUCKV3"] = "1"
+    def __init__(self, drchain=180, drfix=1, arm=1, tuck=1):
+        # ROOT-CAUSE BUG FIXED HERE (team-lead's sanity-8-v3 diagnostic: paired-pills
+        # delta exactly 0.00 on every pair yet fires/game=3.12 -- the signature of both
+        # A/B arms executing the SAME decider). This used to hardcode "1" unconditionally,
+        # clobbering whatever DRCOPRO_TUCKV3 the caller (ab_root_firmware.py's `_init`)
+        # had just set from its own `tuck` arg, BEFORE `_load_d3()` below ever imports
+        # build_copro_d3 (which reads the env var once, at import time). Every worker --
+        # off-arm or on-arm -- therefore always built the SAME EMIT_TUCK_V3=True image.
+        # Confirmed directly: constructing this class with DRCOPRO_TUCKV3 pre-set to "0"
+        # still left build_copro_d3.EMIT_TUCK_V3 == True and produced the identical
+        # image hash regardless of the caller's intent. Fix: accept `tuck` and set the
+        # env var FROM it, matching the pattern DRCOPRO_ARM/DRFIX already use here.
+        os.environ["DRCOPRO_TUCKV3"] = "1" if tuck else "0"
         os.environ["DRCOPRO_ARM"] = "1" if arm else "0"
         os.environ["DRFIX"] = "1" if drfix else "0"
         os.environ["DRCHAIN"] = str(drchain)
@@ -128,8 +139,28 @@ class FirmwareDecider:
 
         d_bc = cpu.mem[self.D3.D_BC]
         d_bo = cpu.mem[self.D3.D_BO]
-        tuck_col = cpu.mem[0x6139]
-        tuck_row = cpu.mem[0x613A]
+
+        # SECOND ROOT-CAUSE BUG FOUND (exposed only once the tuck-arg-clobber fix above
+        # let the off arm genuinely build with EMIT_TUCK_V3=False): build_copro_d3.py
+        # gates the TUCK_COL/TUCK_ROW=0xFF sentinel init behind
+        # `if EMIT_TUCK or EMIT_TUCK_V3` (its own comment: "Gated so the SHIPPED
+        # firmware stays byte-identical -- an unconditional write here moved
+        # c87e60a1 to 44a7b37e"), which is a real, load-bearing invariant of the
+        # production builder that must not be touched here. That means when
+        # EMIT_TUCK_V3 is False, $6139/$613A are NEVER WRITTEN by this image at all --
+        # reading them returns whatever py65 initialises unwritten RAM to (observed:
+        # 0x00, not 0xFF), which decide() used to misread as a real published tuck
+        # descriptor (target=D_BC, approach=0, trigger=0), then either crashed on the
+        # ref-enumerator match assert or, worse, could have spuriously matched a real
+        # candidate on some board and silently reconstructed a tuck action THE OFF-ARM
+        # FIRMWARE NEVER ACTUALLY COMPUTED. Fix: trust the build's own EMIT_TUCK_V3
+        # flag (ground truth for "did this image even assemble tuck code") rather than
+        # inspecting mailbox bytes that are only meaningfully written when tuck is on.
+        if self.B.EMIT_TUCK_V3:
+            tuck_col = cpu.mem[0x6139]
+            tuck_row = cpu.mem[0x613A]
+        else:
+            tuck_col = tuck_row = 0xFF
 
         if d_bo == 0xFF:
             return None    # no legal move at all (matches root_search's `best is None` case)
@@ -147,9 +178,13 @@ class FirmwareDecider:
             f"reproduce on the same board -- this is a REAL divergence between the "
             f"firmware and its reference, not a reconstruction bug; do not paper over it.")
         cand = match[0]
-        offa, offb = candidate_cells(cand["target"], cand["rest"], cand["orient"])
-        r0, c0 = offa // 8, offa % 8
-        r1, c1 = offb // 8, offb % 8
+        # candidate_cells (tuck_scan_v3_ref.py) returns (r0,c0,r1,c1) DIRECTLY -- a
+        # DIFFERENT function from land_place_at.py's cell_offsets(), which returns flat
+        # 0-127 offsets for the REAL 6502 path's LA_OFFA/LA_OFFB zero-page inputs. This
+        # function needs row/col pairs for env.board, not flat offsets for the 6502 --
+        # candidate_cells is already the right call; the bug was unpacking its 4-tuple
+        # as if it were a 2-tuple of flat offsets (confusing the two functions).
+        r0, c0, r1, c1 = candidate_cells(cand["target"], cand["rest"], cand["orient"])
         flip = _FLIP[cand["orient"]]
         col0, col1 = (ca, cb) if flip == 0 else (cb, ca)
         placement = {"cells": (r0, c0, r1, c1)}

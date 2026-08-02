@@ -50,7 +50,13 @@ def _init(level, tuck, drchain=180, drfix=1, arm=1):
     os.environ["DRFIX"] = "1" if drfix else "0"
     os.environ["DRCHAIN"] = str(drchain)
     from firmware_decider import FirmwareDecider
-    fd = FirmwareDecider(drchain=drchain, drfix=drfix, arm=arm)
+    # `tuck` MUST also be passed here, not just set into os.environ above --
+    # FirmwareDecider.__init__ used to hardcode DRCOPRO_TUCKV3="1" regardless of what the
+    # caller had just set, silently forcing both A/B arms onto the same tuck-enabled
+    # image (see firmware_decider.py's fix comment). Setting the env var here alone is
+    # not sufficient defense against that class of bug recurring -- the constructor is
+    # now the single source of truth for its own env var.
+    fd = FirmwareDecider(drchain=drchain, drfix=drfix, arm=arm, tuck=tuck)
     _C.update(level=level, tuck=tuck, fd=fd)
 
 
