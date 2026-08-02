@@ -283,6 +283,19 @@ COLDINIT = _os.environ.get("DRCOLDINIT", "0") == "1"
 # game's own draw during play, and re-fills after the pause blank. Values/layout measured
 # (study_viruscount_probe.lua): tile IS the digit, Y=$BF/$2B, X=6E/76/83/8B + 6D/75/84/8C.
 STUDYCOUNTS = _os.environ.get("DRSTUDYCOUNTS", "0") == "1"
+# DRSTUDY2P (task #39, default ON where STUDY is on): the copro carts ship the STUDY pause
+# in v8.2 EVAC form -- part1 only, the 2P tail parts dropped because their base-ROM homes
+# caused the $BC26 KIL and the $BE56 level-select garble, and the fixed bank has exactly ONE
+# dead run (the 52 B part1 already occupies; measured, not assumed). Price of the evac,
+# byte-proven by the 2026-08-02 Mesen probe on BOTH deployed carts: P1's preview frozen at
+# its 1P position over the wrong board, P2's preview never written, STUDY unlifted -- the
+# user-reported "floating pill". THE FIX LIVES WHERE THE SPACE IS: the driver hook runs
+# every frame INCLUDING pause frames (the STUDYCOUNTS mechanism), so unit1 redraws the
+# 2P-correct preview layout every play-mode hook. During play the game's own OAM rebuild
+# owns the frame (same invisibility as the digit redraw); during pause -- where part1 runs
+# ONCE at entry -- the hook's writes win from the next frame on. No base-ROM site touched,
+# no KIL/garble risk, works on every copro cart.
+_STUDY2P_ENV = _os.environ.get("DRSTUDY2P", "1") != "0"   # combined with STUDY below its def
 # DRP1WIGGLE=1 (SPECTATOR feature, default OFF -> every existing cart byte-identical): on a
 # CvC cart the P1 side is a dud -- it stacks at the spawn column and tops out with all 48
 # viruses alive (user's MiSTer screen, 2026-08-01), so half the screen is dead within a
@@ -477,6 +490,7 @@ B_SEL, B_START, B_LEFT, B_RIGHT = 0x20, 0x10, 0x02, 0x01
 #   carts run in VS-CPU mode; pause-reachability and 2P preview correctness are NOT emulator-
 #   verified. $D2CC-$D2FF must be confirmed dead in any deployed binary before surgical patching.
 STUDY = _os.environ.get("DRSTUDY", "1" if HUMAN_P1 else "0") != "0"
+STUDY2P = STUDY and _STUDY2P_ENV                     # driver-side 2P pause tail (see DRSTUDY2P above)
 # Anchor on the pause loop's START/$F7 check (LDA $F5;CMP #$10;BEQ;LDA $F7;CMP #$F0;BEQ) —
 # these bytes are NEVER touched by the edits, so the locator stays valid + idempotent even
 # after patching (all 5 edits sit just before/after this window, never inside it).
@@ -570,7 +584,22 @@ OLD_STUDY_BLOB4_V32 = bytes.fromhex( # v3.2 part3b @ $BE56 (11 B, ended RTS inst
 # an LDA $9FF8,X data table -> read-as-data every draw -> part3c $BC26 mis-parse -> $0301 KIL; part3b
 # $BE56 -> level-select junk.  v8.2 keeps part1 (STUDY + P1 preview) ending RTS, drops blobs 2-5, and
 # the caller restores the 4 sites to base.  See FREE_SPACE_MAP.md / dr-mario-te-freeze-rootcause.
-STUDY_BLOB_EVAC = STUDY_BLOB[:-3] + bytes.fromhex("60FFFF")   # part1 JMP $9FF8 -> RTS + pad (52 B)
+OLD_STUDY_BLOB_EVAC_V82 = STUDY_BLOB[:-3] + bytes.fromhex("60FFFF")   # v8.2 evac: part1 incl. P1 preview
+# EVAC v2 (task #39, probe round 2): the pause loop calls the repointed draw ($97D3 -> $D2CC)
+# EVERY spin iteration -- not once at entry (both $B654 waits are patched precisely because the
+# loop re-runs the draw). So an evac part1 that writes the P1 preview re-stomps its 1P-default
+# position over the DRSTUDY2P driver fix every paused frame (Mesen-proven: slots 39/40 fixed,
+# 37/38 stomped back each frame). The driver now owns slots 37-40 in 2P, and in 1P the game's
+# own paused buffer already shows the preview, so part1 shrinks to just the STUDY letters:
+#   LDA #$80; STA $42; JSR $88F6; RTS   (8 B; padded to fill the audited 52 B run)
+OLD_STUDY_BLOB_EVAC_V2 = bytes.fromhex("A9808542" "20F688" "60") + b"\xFF" * 44   # v2: letters-only
+# EVAC v3 (task #39, probe round 3): even letters-only part1 stomps the driver's STUDY Y-lift
+# every pause frame -- $88F6 writes ALL FOUR OAM bytes per letter from its own template, Y
+# included. Same clobber pattern, last remaining field. So part1 retires completely (bare RTS;
+# the repointed draw call needs a safe target, nothing more) and the DRIVER draws the letters
+# too: tiles/X are static (probe-dumped), Y is mode-correct ($0F in 1P per the original
+# design, $08 in 2P clear of the header). One writer, zero races, slots 32-40 driver-owned.
+STUDY_BLOB_EVAC = b"\x60" + b"\xFF" * 51
 
 
 class StudyPatchError(Exception):
@@ -602,7 +631,8 @@ def apply_study_pause(rom, evac=False):
     if evac:                                               # v8.2: part1 (RTS) only; no 2P tail
         targets = [
             (STUDY_BLOB_CPU, STUDY_BLOB_EVAC, 52,
-             [OLD_STUDY_BLOB_V2, OLD_STUDY_BLOB_V3, OLD_STUDY_BLOB_V31, STUDY_BLOB]),
+             [OLD_STUDY_BLOB_V2, OLD_STUDY_BLOB_V3, OLD_STUDY_BLOB_V31, STUDY_BLOB,
+              OLD_STUDY_BLOB_EVAC_V82, OLD_STUDY_BLOB_EVAC_V2]),
         ]
     else:
         targets = [
@@ -806,6 +836,58 @@ def build_main(level=11, speed=1):
         a.label("esc_rst")
         a.ins("LDA_imm", 0); a.ins16("STA_abs", ESC_CTL); a.ins16("STA_abs", ESC_CTH)
         a.label("esc_done")
+    if STUDY2P:
+        # ---- DRSTUDY2P: driver-owned pause previews, ALL play modes (task #39; see flag block).
+        # PRE-DISPATCH placement is load-bearing: it must run on 1P human hooks too ($04==0 never
+        # reaches the play path), and during pause $46 stays 4. Part1 (EVAC v2) draws ONLY the
+        # STUDY letters now -- probe round 2 proved the pause loop re-runs the draw call EVERY
+        # spin frame, so any preview part1 wrote would stomp this block's writes each frame.
+        # The driver therefore owns slots 37-40 outright: 1P layout when $0727==1, 2P when ==2.
+        # Invisible in play (the game's OAM rebuild runs after this hook); owns the pause.
+        # entry: the block is >127B, out of relative-branch range -- short-branch over a JMP.
+        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BEQ", "s2p_go")
+        a.jmp("s2p_no")
+        a.label("s2p_go")
+        # STUDY letters (part1 is a bare RTS now -- EVAC v3): tiles/X static per the probe's
+        # OAM dump, attr 0; Y is mode-correct below ($0F in 1P, STUDY_2P_Y in 2P).
+        for slot, (tile, x) in zip((32, 33, 34, 35, 36),
+                                   ((0x0D, 0x70), (0xA0, 0x78), (0x0C, 0x80),
+                                    (0xA1, 0x88), (0xA2, 0x90))):
+            base = 0x0200 + slot * 4
+            a.ins("LDA_imm", tile); a.ins16("STA_abs", base + 1)
+            a.ins("LDA_imm", x); a.ins16("STA_abs", base + 3)
+        a.ins("LDA_imm", 0x00)
+        for slot in (32, 33, 34, 35, 36):
+            a.ins16("STA_abs", 0x0200 + slot * 4 + 2)                                   # attr 0
+        a.ins16("LDA_abs", 0x031A); a.ins("ORA_imm", 0x60); a.ins16("STA_abs", 0x0295)  # P1 L tile
+        a.ins16("LDA_abs", 0x031B); a.ins("ORA_imm", 0x70); a.ins16("STA_abs", 0x0299)  # P1 R tile
+        a.ins("LDA_imm", 0x02)                                                          # P1 attr
+        a.ins16("STA_abs", 0x0296); a.ins16("STA_abs", 0x029A)
+        a.ins16("LDA_abs", 0x0727); a.ins("CMP_imm", 2); a.br("BEQ", "s2p_2p")
+        a.ins("LDA_imm", 0x0F)                                                          # 1P: letters Y=$0F
+        a.ins16("STA_abs", 0x0280); a.ins16("STA_abs", 0x0284); a.ins16("STA_abs", 0x0288)
+        a.ins16("STA_abs", 0x028C); a.ins16("STA_abs", 0x0290)
+        a.ins("LDA_imm", 0x45)                                                          # 1P: Y=$45
+        a.ins16("STA_abs", 0x0294); a.ins16("STA_abs", 0x0298)
+        a.ins("LDA_imm", 0xBE); a.ins16("STA_abs", 0x0297)                              # 1P X (right box)
+        a.ins("LDA_imm", 0xC6); a.ins16("STA_abs", 0x029B)
+        a.jmp("s2p_no")
+        a.label("s2p_2p")
+        a.ins16("LDA_abs", 0x039A); a.ins("ORA_imm", 0x60); a.ins16("STA_abs", 0x029D)  # P2 L tile
+        a.ins16("LDA_abs", 0x039B); a.ins("ORA_imm", 0x70); a.ins16("STA_abs", 0x02A1)  # P2 R tile
+        a.ins("LDA_imm", 0x02)                                                          # P2 attr
+        a.ins16("STA_abs", 0x029E); a.ins16("STA_abs", 0x02A2)
+        a.ins("LDA_imm", 0x33)                                                          # Y all 4
+        a.ins16("STA_abs", 0x0294); a.ins16("STA_abs", 0x0298)
+        a.ins16("STA_abs", 0x029C); a.ins16("STA_abs", 0x02A0)
+        a.ins("LDA_imm", 0x38); a.ins16("STA_abs", 0x0297)                              # P1 X L
+        a.ins("LDA_imm", 0x40); a.ins16("STA_abs", 0x029B)                              # P1 X R
+        a.ins("LDA_imm", 0xB8); a.ins16("STA_abs", 0x029F)                              # P2 X L
+        a.ins("LDA_imm", 0xC0); a.ins16("STA_abs", 0x02A3)                              # P2 X R
+        a.ins("LDA_imm", STUDY_2P_Y)                                                    # STUDY lift
+        a.ins16("STA_abs", 0x0280); a.ins16("STA_abs", 0x0284); a.ins16("STA_abs", 0x0288)
+        a.ins16("STA_abs", 0x028C); a.ins16("STA_abs", 0x0290)
+        a.label("s2p_no")
     # ---- full-clear auto-advance (mode-independent): a player's virus count ($0324/$03A4) hit 0
     # => STAGE CLEAR screen. Inject START (press window) to advance it so the demo LOOPS instead
     # of halting. Gated by MATCH_ACTIVE (set once play dispatched) so boot-init count==0 can't
