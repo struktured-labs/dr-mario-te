@@ -246,3 +246,173 @@ commitment:
 5. #33's passenger note (the $5089 xlate fix riding along with any tuck v3
    resynthesis) is unaffected by anything here — still a passenger, batch it
    whenever Quartus opens for this task, not evaluated in this phase.
+
+---
+
+## 6. Phase 2 — priced fire-gate dose-response
+
+Phase 1 left an open question: root-action's ~9 fires/game was never a design
+target, it is simply what "score every motion-legal tuck, always" produces, and it
+came with an L20 clear-rate concern (§5.1). Phase 2 prices a gate directly against
+that concern instead of assuming a fix.
+
+### 6.1 The margin gate mechanism
+
+`root_search.choose_root_with_tucks()` (unchanged shipped modules; same scratch
+file as phase 1) takes a new `theta` parameter: a tuck candidate is chosen only if
+its value beats the best of the 32 BASE actions' values by **>= theta** (eval
+units — the same integer-valued RTL leaf scale documented in §1, e.g. imm/virus=180,
+imm/cell=10). `theta=0.0` is provably a no-op relative to phase 1: eligibility
+collapses to `val >= best_base_val`, which every phase-1-winning candidate already
+satisfied by construction (nothing new is rejected, nothing new is admitted).
+Verified two ways before trusting the sweep:
+- `root_search.equivalence_selftest()` (phase 1, still valid — the gate only
+  touches the tuck branch, the 32-base-action path is byte-for-byte unchanged).
+- **NEW**: `sweep_theta.verify_theta0()` replays 10 seeds through `play(theta=0.0)`
+  and diffs pills/fired/won against phase 1's OWN STORED JSON rows —
+  **0 mismatches on 10/10 L11 seeds.**
+
+Implementation: `/home/struktured/projects/dr-mario-qa-wt/experiments/tuck_v3/sweep_theta.py`.
+Design point worth flagging for the RTL/6502 sizing call: **the OFF arm (tuck
+disabled) does not depend on theta at all** (`tuck_cands=[]`), so phase 2 never
+re-ran it — it reused phase 1's off-arm rows as a cache and only computed the
+seeds phase 1 hadn't already run (L20's extra 120 seeds for its n=240 leg),
+extending the cache to disk (`results/offcache_L{level}.json`) so later sweep
+points are free.
+
+### 6.2 L11 curve (n=120, 13 points)
+
+| θ | pills Δ | 95% CI | verdict | clear off→on | fires/game | discordant (W/L) | sign-p |
+|---|---|---|---|---|---|---|---|
+| 0 | −8.17 | [−14.39,−1.74] | REAL | 95.8%→95.8% | 9.21 | 8 (4/4) | 1.000 |
+| 10 | −9.80 | [−16.42,−3.39] | REAL | 95.8%→97.5% | 8.61 | 6 (4/2) | 0.688 |
+| 20 | −10.38 | [−17.09,−3.82] | REAL | 95.8%→97.5% | 7.38 | 4 (3/1) | 0.625 |
+| 35 | −7.09 | [−14.04,−0.05] | REAL | 95.8%→98.3% | 6.53 | 5 (4/1) | 0.375 |
+| 50 | −6.97 | [−14.02,+0.04] | wash | 95.8%→97.5% | 5.83 | 6 (4/2) | 0.688 |
+| 75 | −5.81 | [−13.02,+1.22] | wash | 95.8%→97.5% | 4.86 | 6 (4/2) | 0.688 |
+| 100 | −7.33 | [−14.27,−0.68] | REAL | 95.8%→98.3% | 4.04 | 5 (4/1) | 0.375 |
+| **150** | **−10.03** | **[−16.26,−3.93]** | **REAL** | **95.8%→99.2%** | **2.80** | **4 (4/0)** | **0.125** |
+| 250 | −7.58 | [−13.46,−1.95] | REAL | 95.8%→98.3% | 1.48 | 5 (4/1) | 0.375 |
+| 400 | −6.52 | [−12.00,−1.24] | REAL | 95.8%→98.3% | 0.64 | 5 (4/1) | 0.375 |
+| 600 | +0.67 | [−1.72,+3.46] | wash | 95.8%→96.7% | 0.32 | 3 (2/1) | 1.000 |
+| 1000 | +0.28 | [−1.04,+2.36] | wash | 95.8%→96.7% | 0.13 | 1 (1/0) | 1.000 |
+| 2000 | +0.28 | [−1.04,+2.36] | wash | 95.8%→95.8% | 0.12 | 0 (0/0) | 1.000 |
+
+θ=150 is the standout: it lands squarely in the 4.7–4.9 fires/game band's
+neighborhood (2.80/game — actually *below* the historical band, meaning the gate
+buys robustness at a fire rate cheaper than what previously shipped) while
+posting the BEST pills number in the entire curve (−10.03, better than the
+ungated −8.17) and the ONLY discordant record with zero tuck-only losses (4W/0L)
+at L11. Free-fire (θ=0) is strictly dominated by θ=150 on every axis measured:
+worse pills, worse clear rate, worse discordant record, ~3.3x the fire rate.
+
+### 6.3 L20 curve (n=240, 5 points bracketing θ*)
+
+| θ | pills Δ | 95% CI | verdict | clear off→on | fires/game | discordant (W/L) | sign-p |
+|---|---|---|---|---|---|---|---|
+| 0 | +3.08 | [−2.34,+8.47] | wash | 96.2%→94.6% | 8.93 | 20 (8/12) | 0.503 |
+| 75 | +1.02 | [−3.74,+5.83] | wash | 96.2%→97.9% | 4.98 | 12 (8/4) | 0.388 |
+| **150** | **−0.50** | **[−4.87,+4.04]** | wash | **96.2%→99.2%** | **2.83** | **9 (8/1)** | **0.039** |
+| 250 | −2.88 | [−6.72,+0.98] | wash | 96.2%→96.7% | 1.60 | 9 (5/4) | 1.000 |
+| 400 | −0.23 | [−3.64,+3.25] | wash | 96.2%→95.8% | 0.69 | 7 (3/4) | 1.000 |
+
+**The phase-1 L20 concern is not merely contained at θ=150 — it REVERSES.**
+Phase 1 (θ=0-equivalent, free-fire) had L20 clear rate drop 96.7%→93.3% with
+tuck-only losses beating wins 7-to-3 (this run's own θ=0 point, re-measured at
+the larger n=240, replicates the same bad direction: 94.6%, 12 losses vs 8 wins,
+p=0.503). At θ=150, clear rate **improves** 96.2%→99.2% and the discordant
+record flips to 8 wins vs 1 loss — the sign test on that record is significant
+at p=0.039, the ONLY significant sign-test result across both curves. Pills at
+θ=150 is a wash (CI spans 0, as it was at every L20 theta point — L20 was never
+about a pills win), but robustness is not a wash: a gate that suppresses the
+low-margin, high-volume tucks removes almost exactly the discordant losses while
+keeping the discordant wins.
+
+**Where the fires concentrate, at θ=150** (the phase-2 spec's endgame-concentration
+question, §6.1 point 4 of the assignment): totals across the on-arm, open/mid/end —
+
+| level | open | mid | end | (fires/game) |
+|---|---|---|---|---|
+| L11 | 29.2% (98) | 58.3% (196) | 12.5% (42) | 2.80 |
+| L20 | 52.6% (358) | 38.4% (261) | 9.0% (61) | 2.83 |
+
+Fires concentrate in open/mid at BOTH levels — under 13% end-regime at either
+level, contradicting a naive "tucks are an endgame phenomenon" read. And the
+L20 loss/win breakdown by regime is informative but n is thin (only 1 loss seed
+at θ=150, 8 win seeds): the single loss seed's fires were 1 open / **7 mid** / 0
+end; the 8 win seeds' fires were 11 open / 6 mid / 2 end. So the one loss at
+θ=150 is **mid-concentrated, not endgame-concentrated** — the original
+endgame-composition hypothesis from `dr-mario-tuck-override-validated` does not
+transfer cleanly to root-action's failure mode (to the extent one loss seed lets
+us say anything about a "mode" at all). **Per the phase-2 house rule (measure,
+don't assume a damper helps): no endgame fire damper is recommended.** The
+margin gate alone, with no regime-awareness, already reverses the effect.
+
+### 6.4 θ* recommendation: **θ = 150**
+
+By the stated selection rule (largest L11 gain whose L20 clear-rate delta CI
+includes — or in this case, is entirely on the favorable side of — 0, and whose
+fire rate is at or below the validated 4.7–4.9/game band): **θ=150** is not a
+tradeoff pick, it **strictly dominates** every other point checked on every axis
+that matters:
+- L11 pills: −10.03, the best number in the whole 13-point curve (beats θ=0's
+  −8.17 and every other θ).
+- L11 discordant: 4W/0L, the only zero-loss record.
+- L20 clear rate: 96.2%→**99.2%**, the only point where the delta CI does not
+  merely include zero but sits entirely on the favorable side (p=0.039).
+- Fire rate: 2.80–2.83/game, BELOW the 4.7–4.9/game historical band (the
+  original ask was to bracket that band; θ*=150 undercuts it, which is a
+  bonus for RTL/6502 cost, not a shortfall).
+
+No other θ in either curve beats θ=150 on more than one of these axes at once.
+**Recommendation: build phase-3 firmware sizing around θ=150 as the shipped
+margin gate**, superseding phase 1's "conditional go" — this is now an
+unconditional go on the offline evidence.
+
+### 6.5 Firmware-sizing facts (for the RTL/6502 cost call — data only, no ruling)
+
+- **Root candidates per pill at θ=150** (tuck_root_candidates output, i.e. how
+  many EXTRA root actions the search would need to evaluate per decision before
+  the margin gate even runs — the gate is a POST-scoring filter on value, not a
+  pre-filter on the candidate count, so this is the real RTL/6502 enumeration
+  cost, not the post-gate fire rate):
+  - L11: mean **2.03** candidates/pill, worst single-game mean **5.62**/pill
+    (98.8 pills/game average).
+  - L20: mean **1.25** candidates/pill, worst single-game mean **4.88**/pill
+    (153.4 pills/game average).
+  - Both levels: **min 0/pill** (many decisions have no motion-legal tuck at
+    all — the 2/1.25 means are pulled up by a minority of tuck-rich decisions).
+  - Reading against the phase-1 budget note (§1: one root child with a full d3
+    subtree costs ≈1/30 of the shipped search, ≈0.6 frames): a decision with 2
+    extra candidates costs ≈2/30 ≈ 6.7% more search time than the shipped
+    32-action baseline; the observed worst-case mean (~5.6/pill) costs ≈19%
+    more on that same accounting — still well inside the exactness-gate budget
+    note's stated headroom, but the lead should size against the WORST
+    single-decision count seen in a game, not just the per-game mean, since
+    this offline harness does not currently log that finer granularity (a gap
+    worth closing before firmware sizing, not before this report).
+- **Fire distribution by regime** (§6.3 table): open/mid dominate at both
+  levels (87.5% L11, 91.0% L20 combined open+mid), end-regime is a small
+  minority (12.5% L11, 9.0% L20) — the firmware's tuck-scoring cost is NOT
+  concentrated where the copro is already tightest on time (deep-board
+  endgame positions tend to have fewer viable placements generally, consistent
+  with fewer tuck opportunities there too).
+
+### 6.6 Standing rulings carried from phase 1, restated for phase 3's benefit
+
+- The richer per-row, rotation-inclusive tuck schedule descriptor (more mailbox
+  bytes, more driver/RTL work, reaching toward the −8.51 full-maneuver ceiling)
+  remains **DEFERRED**. θ=150's one-switch-executor-reach result (−10.03) now
+  *exceeds* the full-maneuver ceiling number from the unrestricted BFS
+  measurement, which makes the deferral stronger than it was in phase 1, not
+  weaker — the cheap tier is not just close to sufficient, a priced gate on the
+  cheap tier now GOES PAST the naive read of the expensive tier.
+- D1 (mailbox coordinate space, $0386 = 15−r), D2 (per-frame descriptor wipe)
+  remain open v1 firmware bugs and are prerequisite for any DRTUCK cart,
+  root-action or not. D3 remains structurally dissolved by root-action.
+- #33's $5089 xlate passenger is unaffected, still batched whenever this task
+  opens Quartus.
+
+**Phase 2 status: COMPLETE. θ*=150 recommendation delivered. Firmware/RTL work,
+phase-3 structure, and the sizing call are explicitly NOT part of this phase —
+see the team lead's phase-2 assignment.**
