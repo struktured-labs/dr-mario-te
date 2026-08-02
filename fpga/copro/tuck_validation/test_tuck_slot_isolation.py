@@ -25,6 +25,11 @@ legitimate observable: a rich, board-wide sum over many terms (buried/setup/etc.
 match after the full tuck pipeline runs is strong evidence of byte-level equality, not
 just proof against gross corruption -- a single-cell change anywhere on a 128-cell board
 overwhelmingly changes at least one of those terms.
+
+PROMOTED TO EH_PLY1=True (task #17 stage 3, team-lead ruling): inherits this from
+test_tuck_root_extension.py's own build (`R.COMBINED`/`R.D3_LABELS`/`R.DECIDE_ADDR`),
+which now targets fpga/copro/tuck_v3.py (canonical repo) directly under the real shipped
+config, including the cp_live_cur fix.
 """
 import os
 import sys
@@ -36,10 +41,9 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, DRIVER)
 sys.path.insert(0, os.path.join(CANON, "tests"))
 
-import test_tuck_root_extension as R   # noqa: E402 -- reuses its already-built CODE/LABELS
+import test_tuck_root_extension as R   # noqa: E402 -- reuses its already-built COMBINED image
 from py65_harness import Cpu           # noqa: E402
 import test_search_d3 as D3            # noqa: E402
-from tuck_scan_v3_ref import _cave_horizontal_board   # noqa: E402
 
 BASE = 0x8000
 LEV_BOARD, LEV_A_SL, LEV_CMD, LEV_GO = 0x7000, 0x70E4, 0x70F4, 0x70F8
@@ -62,8 +66,8 @@ def _reference_leaf(board):
     wslot), then leaf it -- the ground-truth (sco, win) for the UNPERTURBED original
     board, independent of anything the tuck pipeline does."""
     cpu = Cpu()
-    cpu.load(BASE, R.CODE)   # code is irrelevant, only need a valid image; attach_engine_emu
-                              # intercepts LEV_* writes regardless of what 6502 runs
+    cpu.load(BASE, R.COMBINED)   # code is irrelevant, only need a valid image;
+                                   # attach_engine_emu intercepts LEV_* writes regardless
     D3.attach_engine_emu(cpu)
     for i, v in enumerate(board):
         cpu.mem[LEV_BOARD + i] = v
@@ -72,10 +76,9 @@ def _reference_leaf(board):
 
 def test_slot1_unperturbed():
     print("(1) SLOT 1 (root parent) unperturbed by a full tuck-enabled decision")
-    board = _cave_horizontal_board()
-    board[10 * 8 + 5] = 1
-    board[10 * 8 + 6] = 1
-    board[0 * 8 + 0] = 0xD0
+    board = R._win_board()   # reuses test_tuck_root_extension's own board construction --
+                              # a third hand-copy of the same board would drift out of
+                              # sync with it silently (already happened once this session).
     ca0, cb0, na0, nb0 = 1, 1, 2, 0
     pillA, pillB = [0, 2], [2, 1]
 
@@ -83,7 +86,7 @@ def test_slot1_unperturbed():
     print(f"  reference leaf(original board): sco={ref_sco} win={ref_win}")
 
     cpu = Cpu()
-    cpu.load(BASE, R.CODE)
+    cpu.load(BASE, R.COMBINED)
     cpu.set_board(board)
     D3.attach_engine_emu(cpu)
     cpu.mem[D3.S_CA] = ca0
@@ -93,9 +96,10 @@ def test_slot1_unperturbed():
     for i in range(D3.NPILLS):
         cpu.mem[D3.PILLA + i] = pillA[i]
         cpu.mem[D3.PILLB + i] = pillB[i]
-    cpu.call(BASE + R.LABELS["decide_with_tucks"], max_steps=6_000_000_000)
+    cpu.call(BASE + R.D3_LABELS["search"], max_steps=3_000_000_000)
+    cpu.call(R.DECIDE_ADDR, max_steps=3_000_000_000)
 
-    tk2_bkind = cpu.mem[R.TK2_BKIND]
+    tk2_bkind = cpu.mem[R.TV.TK2_BKIND]
     after_sco, after_win = leaf_of_slot(cpu, 1)
     print(f"  TK2_BKIND={tk2_bkind} (expect 1 -- confirms the tuck path actually ran and "
           f"touched slot 0/slot 2 extensively, making this a meaningful test)")
