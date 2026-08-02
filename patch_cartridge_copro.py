@@ -1303,7 +1303,17 @@ def build_main(level=11, speed=1):
             a.br("BNE", f"{L}_armed"); a.jmp(f"{L}_start"); a.label(f"{L}_armed")  # trampoline (maturity code widens the span)
         else:
             a.br("BEQ", f"{L}_start")
-        a.ins16("LDA_abs", wdone); a.br("BEQ", f"{L}_search")    # DONE==0 -> still searching
+        a.ins16("LDA_abs", wdone)
+        if TUCK and idx == 2:
+            # far branch: TUCK's D1/D2 fix bytes (both gated behind `if TUCK and idx==2`,
+            # elsewhere in this function) push {L}_search out of the +-127 relative-branch
+            # range. Invert-and-JMP, same idiom as the nf2_untorn site above ("rel too far").
+            # Gated so a DRTUCK=0 (or P1/idx==1) build keeps the ORIGINAL short branch and
+            # stays byte-identical -- this fix must not cost bytes on carts that never asked
+            # for it.
+            a.br("BNE", f"{L}_wdone_ok"); a.jmp(f"{L}_search"); a.label(f"{L}_wdone_ok")
+        else:
+            a.br("BEQ", f"{L}_search")    # DONE==0 -> still searching
         # publish result: best_col + orient4 -> game orient map {0xFF/0:3, 1:1, 2:0, 3:2}
         # ★ PUBLISHED-COLUMN SANITY GUARD (unconditional -- every cart, every core). The
         # playfield is 8 wide, so any column >= 8 is not a result, it is noise. Without this
@@ -1324,7 +1334,13 @@ def build_main(level=11, speed=1):
         if TUCK and idx == 2:
             # latch the tuck descriptor alongside the column, from the SAME published result
             a.ins16("LDA_abs", W_TCOL); a.ins16("STA_abs", TUCK_C2)
-            a.ins16("LDA_abs", W_TROW); a.ins16("STA_abs", TUCK_R2)
+            # D1 FIX: tuck_scan publishes a BOARD ROW (0 = top); the executor compares it
+            # against $0386, which the game stores as 15 - row (meatfighter DrMarioAI.java:69,
+            # `y = 15 - readCPU(CURRENT_Y)`). Convert here so TUCK_R2 is in $0386's own units --
+            # without this the raw row reads as a near-top trigger and the switch barely fires,
+            # or fires at the wrong point in the fall (dr-mario-tuck-executor-gap D1).
+            a.ins("LDA_imm", 15); a.ins("SEC"); a.ins16("SBC_abs", W_TROW)
+            a.ins16("STA_abs", TUCK_R2)
         a.ins16("LDA_abs", wor); a.ins("CMP_imm", 0xFF); a.br("BNE", f"{L}_map")
         a.ins("LDA_imm", 3); a.jmp(f"{L}_pst")
         a.label(f"{L}_map")
@@ -1366,13 +1382,18 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", 1); a.ins16("STA_abs", wretry); a.ins16("STA_abs", pend)
         a.jmp(f"{L}_done")
         a.label(f"{L}_start")            # start a search: upload board+colors to THIS copro, GO
-        if TUCK and idx == 2:
-            # a new search invalidates any tuck from the PREVIOUS pill. Without this, stale
-            # descriptor bytes would steer the next capsule to a pocket that no longer exists
-            # -- the same class of bug as the uninitialised PEND/LASTY cold-state defect (P0.3).
-            a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", TUCK_C2)
         a.ins16("LDA_abs", pend); a.br("BNE", f"{L}_st1"); a.jmp(f"{L}_done"); a.label(f"{L}_st1")
         a.ins16("LDA_abs", delay); a.br("BEQ", f"{L}_st2"); a.jmp(f"{L}_done"); a.label(f"{L}_st2")
+        if TUCK and idx == 2:
+            # D2 FIX: invalidate only when a search ACTUALLY starts (pend/delay checks above
+            # already passed). Emitted BEFORE those checks, this ran on EVERY frame with
+            # armed==0 -- the whole descent, including the frame immediately after the
+            # descriptor was published -- so the executor read 0xFF and never steered
+            # (dr-mario-tuck-executor-gap D2; matches QA/fpga/copro/tuck_validation/
+            # d2_invalidation_fix.patch, applied here as-is). PROVEN by differential: the
+            # SAME test with THIS code reverted to the old placement fails "1 of 40 frames"
+            # (the documented signature) -- see commit message.
+            a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", TUCK_C2)
         a.ins("LDX_imm", 0)
         # NES playfield empties are 0xFF *or* 0x00 (per tile-encoding); the copro parser only
         # treats 0xFF as empty, so a 0x00 cell reads as a PHANTOM yellow pill -> the color-heavy
