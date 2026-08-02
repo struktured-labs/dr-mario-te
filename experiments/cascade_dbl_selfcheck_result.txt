@@ -1,0 +1,6 @@
+positions compared : 480  (8 seeds x up to 60 plies)
+w_dbl=0   mismatches vs cascade_chain_x : 0
+w_dbl=100 decisions moved                : 7 (1.5%)
+
+NEUTRALITY OK: w_dbl=0 reproduces cascade_chain_x on all 480 positions.
+POTENCY OK: w_dbl=100 moves 7/480 decisions -- the knob is real.
