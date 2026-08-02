@@ -1,0 +1,35 @@
+{
+  "base_rom": {
+    "md5": "7d307c3051ebc0f8a10e259e3c270acb",
+    "path": "drmario_v28cs.nes"
+  },
+  "determinism": "verified: two builds byte-identical",
+  "emitter": {
+    "file": "patch_cartridge_copro.py",
+    "md5": "661ffa62f7f84428566cb72bf0d968bd"
+  },
+  "flags": {
+    "DRBUSYESC": "1",
+    "DRHUMAN": "1",
+    "DRMINTHINK": "12",
+    "DRNAVDWELL": "0",
+    "DRNOFREEZE": "1",
+    "DRPENDBOUND": "1",
+    "DRRECOMMIT_NOFREEZE": "1",
+    "DRSLAM_KOPEN": "32",
+    "DRSTALLWD": "1",
+    "DRSTUDYCOUNTS": "1",
+    "DRWRETRY": "1"
+  },
+  "git": {
+    "branch": "driver-nav",
+    "commit": "d8971ecbd69dc5ddb07c61c251e60652ac14ce3c",
+    "dirty": false
+  },
+  "output": {
+    "md5": "383402edc12e21c688ce482b354816cb",
+    "name": "mister_human_studycounts.nes",
+    "size": 98320
+  },
+  "tag": "mister-human-studycounts"
+}
