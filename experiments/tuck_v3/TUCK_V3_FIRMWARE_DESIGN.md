@@ -242,6 +242,30 @@ else leave them at the START-time `0xFF` default. This is the direct firmware
 analogue of `choose_root_with_tucks`'s `best["kind"]` tag in the offline
 proof.
 
+**⚠ ADDRESS-SPACE CATCH (stage-3 integration, caught before it shipped, not
+on silicon)**: `TUCK_COL`/`TUCK_ROW` are **two DIFFERENT addresses depending
+on which side of the mailbox you're on**, and this is a real, easy-to-make
+mistake — the same D1-coordinate-space defect CLASS as the original
+`15−r` row-units bug (§3), just on the *address* axis instead of the *value*
+axis. The copro's own RAM is ONLY `$0000-$0FFF` + `$6100-$61FF`
+(`test_search_d3.py`'s HW-CONSTRAINT comment) — it can **only** write
+`TUCK_COL=$6139`/`TUCK_ROW=$613A` (v1's already-established addresses,
+`tuck_scan.py:44`). `CoproDrMario.sv`'s read-mux `xlate` table
+(`CoproDrMario.sv:227-229`) translates those into the CART's address space
+(`$5087`/`$5088`, driver-nav's `W_TCOL`/`W_TROW`) for the driver to read —
+the copro never writes `$5087`/`$5088` directly, and *cannot*: that address
+is outside its RAM entirely. The stage-2 qa-harness scratch validation
+(`fpga/copro/tuck_validation/`) wrote `$5087`/`$5088` directly from the
+firmware-emission code, which only "worked" because py65's flat 64KB memory
+model does not enforce the real hardware's copro-RAM/cart-RAM split — it
+would have been a silent no-op (or worse, an aliasing hazard) on real
+silicon. Caught during the stage-3 canonical-repo integration by cross-
+checking against v1's already-correct `TUCK_COL`/`TUCK_ROW` constants before
+wiring the publish step, not discovered on hardware. **Any future publish-
+contract change must write the COPRO-side address ($6139/$613A), never the
+cart-side address ($5087/$5088) — the mnemonic is: the copro only ever
+touches its own RAM; the cart-side view is the RTL's problem, not firmware's.**
+
 ---
 
 ## 5. Gate plan
