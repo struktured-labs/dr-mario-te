@@ -146,6 +146,21 @@ WIG_DIR = 0x617C
 P1AI_Y, P1AI_C, P1AI_O = 0x617D, 0x617E, 0x617F
 P1AI_CPU, P1SWAP_CPU = 0x9000, 0x9200   # P1-mirrored d1 AI + its swap_eval, in unit1 (bank 2)
 import os as _os
+# DRNAVESC: stuck-screen escape watchdog (task #38). Three silicon freezes 2026-08-01/02
+# (evidence: qa-wt experiments/freeze_20260801/) shared one shape: the game parked on a
+# screen awaiting a START the nav never sends -- mode 3 falls through autonav's dispatch
+# (only 0/1/7 are handled) and mode-4 round-waits never reach autonav at all. The escape
+# watches the tuple ($0046 mode, $F8 screen, $0386 P2 pill row); if UNCHANGED for ESC_N
+# consecutive hooks it injects START for a 4-hook press window (2 frames -- survives the
+# game's two-pass AND), then re-arms. $0386 moves every frame during real play, so the
+# watchdog structurally CANNOT fire mid-game; mode 8 (intro) is excluded per the standing
+# hands-off rule; on firing it OWNS THE FRAME (inject + RTS, the fc_clear pattern) so a
+# downstream act_p1 writer (wiggle/native) cannot clobber the press. NEVER emitted on
+# HUMAN_P1 carts -- a human's pause would read as "stuck" and the escape would unpause them.
+NAVESC = _os.environ.get("DRNAVESC", "0") == "1"
+ESC_N = int(_os.environ.get("DRNAVESC_N", "1200"))   # hooks unchanged before escape (~10 s at 2 hooks/frame)
+ESC_S0, ESC_S1, ESC_S2 = 0x6180, 0x6181, 0x6182      # snapshot: $0046 / $F8 / $0386
+ESC_CTL, ESC_CTH = 0x6183, 0x6184                    # 16-bit stuck-hook counter
 TUCK = _os.environ.get("DRTUCK", "0") == "1"   # tuck executor (see TUCK_C2 above)
 REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
 # DRWRETRY (default OFF -- touches build_main, so off keeps the goldens == published c300acb canonical;
@@ -762,6 +777,35 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", PR_CNT + 1); a.ins16("STA_abs", RINGP + 0xC2)
         a.label("pr_done")
     a.ins16("INC_abs", NAV_T)                               # tick every hook call (autonav only ticked in menus)
+    if NAVESC and not HUMAN_P1:
+        # ---- DRNAVESC stuck-screen escape (task #38; see flag block for the full rationale).
+        # Runs EVERY hook, ahead of the mode split, so mode-3 holes and mode-4 round-waits are
+        # both covered. Fires only after ESC_N hooks (~10 s) with ($0046,$F8,$0386) frozen --
+        # $0386 changes every frame of real play, so live matches structurally cannot trip it.
+        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x08); a.br("BEQ", "esc_rst")   # intro: hands off
+        a.ins16("CMP_abs", ESC_S0); a.br("BNE", "esc_new")
+        a.ins("LDA_zp", 0xF8); a.ins16("CMP_abs", ESC_S1); a.br("BNE", "esc_new")
+        a.ins16("LDA_abs", 0x0386); a.ins16("CMP_abs", ESC_S2); a.br("BNE", "esc_new")
+        a.ins16("INC_abs", ESC_CTL); a.br("BNE", "esc_chk"); a.ins16("INC_abs", ESC_CTH)
+        a.label("esc_chk")
+        a.ins16("LDA_abs", ESC_CTH); a.ins("CMP_imm", (ESC_N >> 8) & 0xFF); a.br("BCC", "esc_done")
+        a.br("BNE", "esc_win")                                # CTH > hi(N): inside/past window (reset caps it)
+        a.ins16("LDA_abs", ESC_CTL); a.ins("CMP_imm", ESC_N & 0xFF); a.br("BCC", "esc_done")
+        a.label("esc_win")
+        # CT >= N: 4-hook press window [N, N+4), then reset to re-arm another full period.
+        a.ins16("LDA_abs", ESC_CTL); a.ins("SEC"); a.ins("SBC_imm", ESC_N & 0xFF)
+        a.ins("CMP_imm", 4); a.br("BCS", "esc_rst")           # window over -> re-arm
+        a.ins("LDA_imm", B_START); a.ins("STA_zp", 0xF5)      # inject START (raw latch ONLY, never $F7)
+        a.ins16("STA_abs", 0x6148)                            # DBG: last injected (shared with nav inject)
+        a.ins16("INC_abs", 0x614B)                            # DBG: inject count
+        a.ins("RTS")                                          # OWN THE FRAME: no downstream $F5 writer
+        a.label("esc_new")
+        a.ins16("LDA_abs", 0x0046); a.ins16("STA_abs", ESC_S0)
+        a.ins("LDA_zp", 0xF8); a.ins16("STA_abs", ESC_S1)
+        a.ins16("LDA_abs", 0x0386); a.ins16("STA_abs", ESC_S2)
+        a.label("esc_rst")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", ESC_CTL); a.ins16("STA_abs", ESC_CTH)
+        a.label("esc_done")
     # ---- full-clear auto-advance (mode-independent): a player's virus count ($0324/$03A4) hit 0
     # => STAGE CLEAR screen. Inject START (press window) to advance it so the demo LOOPS instead
     # of halting. Gated by MATCH_ACTIVE (set once play dispatched) so boot-init count==0 can't
