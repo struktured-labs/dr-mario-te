@@ -6,22 +6,23 @@
   "determinism": "verified: two builds byte-identical",
   "emitter": {
     "file": "patch_cartridge_copro.py",
-    "md5": "49643affc1bc764344fca45780c7e430"
+    "md5": "f0e1d161ce4a20e403fc3aaa16f3d8e3"
   },
   "flags": {
     "DRCOLDINIT": "1",
     "DRNAVDWELL": "0",
+    "DRNAVESC": "1",
     "DRNOFREEZE": "1",
     "DRP1NATIVE": "1",
     "DRRECOMMIT_NOFREEZE": "1"
   },
   "git": {
     "branch": "driver-nav",
-    "commit": "9643b8b470741f500e862434dcc05b7a8eec10e5",
+    "commit": "936fa0c815c6562dddaf99040957ade1914c9fae",
     "dirty": false
   },
   "output": {
-    "md5": "aac2853a4d2e404b56cc2204a6a888b4",
+    "md5": "016d84ea45b079e3b2295090cb1bf05e",
     "name": "latch_converged_native.nes",
     "size": 98320
   },
