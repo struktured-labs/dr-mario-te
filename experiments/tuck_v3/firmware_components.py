@@ -236,8 +236,22 @@ def score_base_and_tuck(col, vir, ca, cb, na, nb, base_var, base_col,
     cpu2.call(BASE + D3_LABELS["search"], max_steps=3_000_000_000)
     cpu2.mem[TV.LA_OFFA] = tuck_offa
     cpu2.mem[TV.LA_OFFB] = tuck_offb
-    cpu2.mem[TV.LA_CA] = tuck_ta
-    cpu2.mem[TV.LA_CB] = tuck_tb
+    # ROOT-CAUSE BUG FOUND HERE (post-localization re-check, task #17 stage 3): tuck_ta/
+    # tuck_tb arrive in the SAME 1..3 convention as ca/cb/na/nb (tuck_enum.py's own
+    # "colors" field, matching pill_a/pill_b's 1..3 docstring contract) -- but LA_CA/
+    # LA_CB, like S_CA/S_CB above, expect the 0..2 tile low-nibble convention. This was
+    # the EXACT off-by-one class already found and fixed twice this session
+    # (firmware_decider.decide's S_CA/S_CB, and the harvest's own board encoding) --
+    # missed here because ca0/cb0/na0/nb0 got the -1 conversion at the top of this
+    # function but tuck_ta/tuck_tb, arriving as separate parameters, did not. Caught by
+    # noticing the 20-board localization's own summary line: "mean fw-offline diff imm1
+    # base=+0.0 tuck=-308.5" -- imm1 matched EXACTLY for base (no colour involved beyond
+    # the already-converted S_CA/S_CB) but was systematically wrong for tuck, the
+    # signature of the tuck's placed cells resolving under the WRONG colour and
+    # therefore not clearing when the (correctly-computed) offline model said they
+    # should.
+    cpu2.mem[TV.LA_CA] = tuck_ta - 1
+    cpu2.mem[TV.LA_CB] = tuck_tb - 1
     cpu2.call(RUN_RESOLVE_ADDR, max_steps=200_000)
     cpu2.call(RUN_SCORE_ADDR, max_steps=3_000_000_000)
     t_i1 = _s16(cpu2.mem[D3.D_I1L], cpu2.mem[D3.D_I1H])
