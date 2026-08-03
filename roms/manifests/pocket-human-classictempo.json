@@ -1,0 +1,34 @@
+{
+  "base_rom": {
+    "md5": "7d307c3051ebc0f8a10e259e3c270acb",
+    "path": "drmario_v28cs.nes"
+  },
+  "determinism": "verified: two builds byte-identical",
+  "emitter": {
+    "file": "patch_cartridge_copro.py",
+    "md5": "661ffa62f7f84428566cb72bf0d968bd"
+  },
+  "flags": {
+    "DRBUSYESC": "1",
+    "DRHUMAN": "1",
+    "DRNAVDWELL": "0",
+    "DRNOFREEZE": "1",
+    "DRPENDBOUND": "1",
+    "DRPOCKET": "1",
+    "DRRECOMMIT_NOFREEZE": "1",
+    "DRSTALLWD": "1",
+    "DRSTUDYCOUNTS": "1",
+    "DRWRETRY": "1"
+  },
+  "git": {
+    "branch": "driver-nav",
+    "commit": "b8501596469dd94d00abd6c5945958bb10a9958a",
+    "dirty": false
+  },
+  "output": {
+    "md5": "982291efb6a1dab2d2a8ad54bf41c15b",
+    "name": "pocket_human_classic_tempo.nes",
+    "size": 98320
+  },
+  "tag": "pocket-human-classictempo"
+}

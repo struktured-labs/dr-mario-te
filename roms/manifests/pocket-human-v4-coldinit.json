@@ -1,0 +1,37 @@
+{
+  "base_rom": {
+    "md5": "7d307c3051ebc0f8a10e259e3c270acb",
+    "path": "drmario_v28cs.nes"
+  },
+  "determinism": "verified: two builds byte-identical",
+  "emitter": {
+    "file": "patch_cartridge_copro.py",
+    "md5": "661ffa62f7f84428566cb72bf0d968bd"
+  },
+  "flags": {
+    "DRBUSYESC": "1",
+    "DRCOLDINIT": "1",
+    "DRHUMAN": "1",
+    "DRMINTHINK": "12",
+    "DRNAVDWELL": "0",
+    "DRNOFREEZE": "1",
+    "DRPENDBOUND": "1",
+    "DRPOCKET": "1",
+    "DRRECOMMIT_NOFREEZE": "1",
+    "DRSLAM_KOPEN": "32",
+    "DRSTALLWD": "1",
+    "DRSTUDYCOUNTS": "1",
+    "DRWRETRY": "1"
+  },
+  "git": {
+    "branch": "driver-nav",
+    "commit": "ea2f6b7acfce6775b9c6a9f0b4715cd7a9dfea4d",
+    "dirty": false
+  },
+  "output": {
+    "md5": "24dcd9dca5db8b7a21c93b2bb30f124b",
+    "name": "pocket_human_v4_coldinit.nes",
+    "size": 98320
+  },
+  "tag": "pocket-human-v4-coldinit"
+}
