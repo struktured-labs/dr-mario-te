@@ -47,11 +47,17 @@ directory: a still frame gives stack shape and virus count but nothing about the
 rotation slip) that resolve within a frame or two. Concretely:
 1. **Capture-card video, not stills** — the single highest-leverage upgrade for both
    household players once the device is configured.
-2. **Unused phone video already exists** for struktured's 2026-08-02 session
-   (`~/Pictures/PXL_20260802_013409485.mp4`, `_014130748.mp4`, `_013954971.mp4`, also in
-   `Photos-1-001*.zip`) — frame-extraction around drops would let a rotation slip or tuck
-   actually be observed instead of inferred from its aftermath. Cheaper than the capture
-   card and available today.
+2. **Checked, and it's not struktured's** — `~/Pictures/PXL_20260802_013409485.mp4`,
+   `_014130748.mp4`, `_013954971.mp4` looked like unused footage of his 2026-08-02
+   session by filename, but their embedded `creation_time` is UTC while every JPEG EXIF
+   in this corpus is local (+4h/EDT) — converting puts all three at 2026-08-01
+   ~21:34-21:41 local, matching [[dr_lulu]]'s night-one window and her cited "47 s
+   film-study clip" almost exactly (duration 47.77s). **Trap for future sessions**:
+   Pixel video filenames/`creation_time` encode UTC; Pixel JPEG EXIF encodes local time.
+   The same calendar date in a filename can be the previous evening once you cross a
+   4-hour offset past midnight UTC — verify with `ffprobe -show_entries
+   format_tags=creation_time` and convert before trusting a video's date-in-name.
+   No footage of struktured's actual session exists yet in `~/Pictures`.
 3. **DRMC-side capture** — the M2b corpus (`dr-mario-m2b-corpus-run`) measured an
    aggregate tourney-player attack-given-clear rate of 17.1% (~2x our AI at the time).
    Neither roburrito nor davesmithsays has a per-player number computed against that

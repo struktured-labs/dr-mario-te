@@ -41,16 +41,29 @@ snapshots:
   mid-to-late frame — consistent with [[dr-mario-lnk1-vs-confirmed]]'s "wins by
   out-racing" finding, not by out-building or superior stack quality.
 - **Rotation-slip (A/B confusion) check** — self-reported ("I make lots of mistakes by
-  hitting A instead of B... I grew up on just A"). **Inconclusive from these stills**:
-  phone-photo-of-screen blur and JPEG compression make individual cell colors unreliable
-  to call at this resolution, and a pause frame only shows the buried aftermath, not the
-  drop that caused it — a flip is only visible in the instant it happens. Two boards
-  (virus 40|31 and 41|32, not pictured here) show a single tall near-monochrome column
-  that could be a mis-rotated dump or could be deliberate well-building; can't
-  disambiguate from a still. Real video exists and is unused for this purpose —
-  `~/Pictures/PXL_20260802_013409485.mp4`, `_014130748.mp4`, `_013954971.mp4` (same
-  session, also in the `Photos-1-001*.zip` archives) — frame-extracting around each drop
-  would catch a rotation slip in the act, which no still can. Not yet attempted.
+  hitting A instead of B... I grew up on just A"). **Still inconclusive, and still no
+  video of his own session**: phone-photo-of-screen blur and JPEG compression make
+  individual cell colors unreliable to call at STUDY-still resolution, and a pause frame
+  only shows the buried aftermath, not the drop that caused it — a flip is only visible
+  in the instant it happens. Two boards (virus 40|31 and 41|32, not pictured here) show a
+  single tall near-monochrome column that could be a mis-rotated dump or could be
+  deliberate well-building; can't disambiguate from a still.
+  **Correction (2026-08-03)**: an earlier draft of this section claimed
+  `~/Pictures/PXL_20260802_013409485.mp4`, `_014130748.mp4`, `_013954971.mp4` were "the
+  same session" as his 2026-08-02 photos and proposed frame-extracting them. That was
+  wrong — checked and reverted. Those filenames encode the date/time in **UTC**
+  (confirmed by cross-checking a Motion Photo whose JPEG EXIF gives local time while its
+  filename encodes the same instant in UTC, a fixed +4h/EDT offset), while the
+  `stomper_matches` STUDY-photo EXIF is already local. Converting: all three clips were
+  shot **2026-08-01 ~21:34-21:41 local — the previous evening**, not his 2026-08-02
+  session. Duration (47.77s) and the visibly clean/flat 1P stack in that footage line up
+  with [[dr_lulu]]'s "47 s film-study clip" citation almost exactly — this is very likely
+  her footage, not his. **No video of struktured's own session exists in `~/Pictures` as
+  of this check** (nothing else in the tree carries a UTC timestamp matching his
+  ~19:36-19:48 EDT / ~23:36-23:48 UTC window on 2026-08-02). The rotation-slip claim
+  remains genuinely untested — confirming or refuting it needs either a fresh recording
+  of his own session or the capture-card device once configured, not a re-scan of
+  existing files.
 
 ## Why this matters to the project
 
