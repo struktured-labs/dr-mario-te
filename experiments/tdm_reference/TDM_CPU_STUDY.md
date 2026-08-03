@@ -87,55 +87,96 @@ window needed. Confirmed working API surface for this build:
 - `--enableStdout` + a file-based log (not `emu.log()`, whose routing to
   real stdout wasn't confirmed) is the reliable way to see script output
   from a backgrounded, headless launch.
-- The title screen's Start-press timing is **not duty-cycle sensitive in the
-  way expected** — sparse presses (1 per 400 frames) took far longer to
-  clear the intro than frequent ones (1 per 90 frames), suggesting the game
-  samples input in short windows during the attract-mode cycle. Empirically
-  measured on this ROM: **exactly 11 Start presses (300 frames apart, ~5s
-  apart at 60fps, 8-frame hold each)** clears the ELORG/Nintendo legal
-  screen, the alternating "Dr. Mario & Tetris" / "Tetris & Dr. Mario" logo
-  loop, and lands on the **unconfirmed Game Select screen** (cursor
-  defaults to the Tetris icon, top-left). A 12th Start press immediately
-  confirms Tetris — so reaching Dr. Mario requires inserting a **Right**
-  press between press #11 and the next Start.
+- **The entire intro is on a fixed timer, independent of input.** Confirmed
+  decisively: booting with **zero button presses at all** (only a continuous
+  forced RAM write, see below) still clears the ELORG/Nintendo legal screen,
+  the "Dr. Mario & Tetris"/"Tetris & Dr. Mario" logo loop, lands on Game
+  Select by frame ~3000, auto-advances into the **Tetris** submenu, and
+  keeps going all the way into live A-Type Tetris gameplay by frame 4800 —
+  with nobody ever touching a control. This means every "duty cycle" theory
+  from earlier in the session (sparse vs. frequent Start presses seeming to
+  matter) was very likely a red herring: the screen was going to advance to
+  Game Select around frame ~3000-3050 regardless of whether Start was ever
+  pressed. What we'd been calling "navigation" for most of this session was
+  actually racing against — not driving — the game's own uninterruptible
+  attract-mode demo.
 
 Game Select screen layout (confirmed via screenshot): Tetris icon top-left,
 **Dr. Mario icon top-right**, Mixed Match icon bottom-left, "GAME SELECT" /
 "PRESS START BUTTON" / Nintendo copyright bottom-right.
 
+### Experiment 0 (team-lead directive): the PAR code as a nav bypass
+
+Tried the unseen64.net PAR code `7E1E7203` (unlocks the cut Dr. Mario
+options menu, §2) two ways, both from a fresh boot with **no button
+presses at all**, to see if it could reroute the auto-advancing attract
+demo away from Tetris and into a Dr. Mario/options context directly:
+
+1. `emu.addCheat("7E1E7203", emu.cheatType.snesProActionReplay)` —
+   **failed with "invalid cheat code"** despite the 8-hex-digit format
+   matching Mesen2's own validator regex (`^[a-f0-9]{8}$`) and the enum
+   ordinal (`snesProActionReplay = 6`, confirmed by dumping
+   `emu.cheatType`'s contents) being exactly right. Root cause not
+   determined — the C++ parser (`CheatManager::ConvertFromSnesProActionReplay`
+   in `Core/Shared/CheatManager.cpp`) looked correct on inspection, so this
+   may be a genuine Mesen2 bug in this build, or something subtle about how
+   `LuaCallHelper` reads the packed `char[16]` cheat-code buffer. Not worth
+   more time given the direct-write alternative below achieves the same
+   effect.
+2. Bypassed the cheat parser entirely: `emu.write(0x1E72, 0x03,
+   emu.memType.snesWorkRam)` called **every single frame** from boot
+   onward (this is literally what a real PAR/GameShark cheat does
+   internally — sustained per-frame override, confirmed no write errors).
+   **Result: no observable effect.** With this write active continuously
+   from frame 1, the attract-mode demo proceeded exactly as it does with no
+   cheat at all — legal screen, logos, Game Select, auto-confirm into the
+   Tetris submenu, into live A-Type gameplay — never showing an options
+   screen. Either the unseen64 code needs to be applied at a specific
+   *already-in-game* state (not from a cold, pre-menu boot) that this test
+   didn't reach, or the address mapping/game state machine differs from
+   what unseen64 documented (possible ROM revision difference, though our
+   hash matches a standard USA retail dump — see §1).
+
 ### Navigation wall (stopping point)
 
 Reaching Dr. Mario requires moving the Game Select cursor off the default
-Tetris icon before confirming. **This did not work and is where this
-session stopped**, per the task brief's own guidance to report a wall
-rather than brute-force it further:
+Tetris icon before the auto-advance confirms it. **This did not work
+across six independent timing variants and is where this session stopped**,
+per the task brief's own guidance to report a wall rather than brute-force
+it further:
 
 - Sending `{right=true}` or `{down=true}` via `emu.setInput` immediately
   after arriving at Game Select, with *no* further Start press, produces no
-  observable cursor movement over a 90-frame hold (6 screenshots at 15-frame
-  intervals show either no change or a transition into what looks like an
-  attract-mode demo intro, never a moved cursor).
-- Every attempt — 5 variants across increasing hold durations and gap
-  timings — landed back in the **Tetris** submenu (1 Player / 2 Player /
-  VS.COM), never Dr. Mario, regardless of whether Right, Down, or nothing was
-  held during the gap after arriving at Game Select.
-- This is consistent with (but not confirmed as) an attract-mode idle
-  timeout on the Game Select screen: if no *new, distinguishable* input
-  arrives within roughly 1-2 seconds of landing there, the game appears to
-  auto-advance past it (into a demo or directly into the default Tetris
-  submenu) independent of whatever direction is currently held. The
-  `"right"`/`"down"` key names themselves are correct (verified against
+  observable cursor movement over a 90-frame hold.
+- **Pre-holding Right starting well *before* Game Select even renders**
+  (asserted continuously from frame 2900, ~150 frames ahead of the ~3050
+  arrival) — the experiment specifically designed to rule out a "screen
+  ignores new input for its first few frames" effect — **still landed in
+  the Tetris submenu**, identical to every other variant. This rules out
+  that hypothesis: it isn't that Right arrives too late, it's that Right
+  appears to have no effect on this screen's cursor at all, at any offset
+  tested.
+- Every attempt — 6 variants now, spanning hold durations, gap timings, and
+  pre-vs-post-render timing — landed back in the **Tetris** submenu (1
+  Player / 2 Player / VS.COM), never Dr. Mario, regardless of whether
+  Right, Down, or nothing was held.
+- The `"right"`/`"down"` key names themselves are correct (verified against
   `Core/SNES/Input/SnesController.cpp`'s `GetKeyNameAssociations()` in the
   Mesen2 source: lowercase `up`/`down`/`left`/`right`/`start`/`select`/`a`
-  /`b`/`x`/`y`/`l`/`r`), so this isn't a button-name typo — something about
-  *how* or *when* the direction is sampled on this screen specifically
-  differs from how Start was sampled on the title screen.
-- Not yet tried: holding the direction *before* the 11th Start press lands
-  (i.e., pre-loading Right so it's already held the instant Game Select
-  renders, rather than starting it afterward) — plausible next experiment
-  if this resumes, since it would rule out a "first frame(s) of a screen
-  don't accept new directional input" behavior distinct from an idle
-  timeout.
+  /`b`/`x`/`y`/`l`/`r`), so this isn't a button-name typo.
+- Given the §3 discovery that the *entire* intro sequence, including Game
+  Select, auto-advances on a fixed timer with zero input, the most likely
+  explanation is that this attract-mode auto-play is simply
+  **non-interruptible by direction input** on this particular screen (Start
+  clearly *is* respected — it's what let us confirm into Tetris in earlier
+  runs — but Right/Down apparently are not, at least not via
+  `emu.setInput`). Whether a *real* player's controller would fare any
+  differently is untested; this may be specific to how Mesen2's SNES core
+  samples D-pad state versus Start/A/B during this demo mode, or it may be
+  a genuine, surprising fact about the retail game's own attract-mode
+  design (auto-play locked into showing off Tetris specifically, ignoring
+  direction until Start is pressed to break out of *some* different, not
+  yet identified, interaction path).
 
 **Everything downstream of this point — an actual VS COM Dr. Mario match,
 RAM recon (§4), and the behavioral profile (§5) — was not reached this
@@ -176,14 +217,22 @@ knob space, which is a clean two-point calibration for E/M/H tuning.
 
 - ROM + hashes: §1, no further work needed.
 - Prior art: §2, complete for this session's search budget.
-- Working Lua script (final v10 diagnostic variant) is saved at
-  `experiments/tdm_reference/lua/nav_probe.lua`. Key screenshots saved at
-  `experiments/tdm_reference/shots/`: `gameselect_unconfirmed.png` (the
-  reproducible target state after 11 Start pulses), `right_hold_075_
-  autoadvance.png` (what appears ~75 frames into holding Right with no
-  Start — looks like an attract/demo transition, not a moved cursor), and
-  `down_hold_075_tetris_submenu.png` (where every attempt ended up: the
-  Tetris submenu, never Dr. Mario).
+- Working Lua script (final "pre-hold Right" decisive-test variant) is
+  saved at `experiments/tdm_reference/lua/nav_probe.lua`. Key screenshots
+  saved at `experiments/tdm_reference/shots/`:
+  - `gameselect_unconfirmed.png` — the reproducible unconfirmed Game
+    Select screen (Tetris/Dr. Mario/Mixed Match icons visible).
+  - `right_hold_075_autoadvance.png` — ~75 frames into holding Right with
+    no Start, mid-transition to something else (not a moved cursor).
+  - `down_hold_075_tetris_submenu.png` — where every early attempt ended
+    up: the Tetris submenu, never Dr. Mario.
+  - `prehold_right_at_gameselect_f3050.png` — Game Select, with Right
+    already held continuously since frame 2900 (150 frames before this
+    shot) — cursor still shows no sign of having moved off Tetris.
+  - `prehold_right_then_start_lands_tetris_f3130.png` — the very next
+    Start pulse after that sustained Right hold still confirms **Tetris**,
+    not Dr. Mario — the decisive negative result that closed off the
+    "input arrives too late" hypothesis.
 - **Deterministic, reproducible recipe to reach the unconfirmed Game Select
   screen** (the part that *does* work, 100% reproducible from power-on):
   11 Start pulses, each 8 frames held, 300 frames apart (i.e. pulse at
@@ -192,25 +241,40 @@ knob space, which is a clean two-point calibration for E/M/H tuning.
   independent runs (v8, v9, v10 all agree).
 - **Open problem to hand off:** getting off the default Tetris cursor at
   Game Select. See the "Navigation wall" callout in §3 for what was tried
-  and ruled out. Suggested next experiments, in order of cheapness:
-  1. Pre-hold Right *before* the 11th Start pulse's screenshot frame (i.e.,
-     start holding Right at frame ~2900, before Game Select even renders,
-     so it's already asserted when the screen appears) — tests whether the
-     first few frames of Game Select ignore new direction changes but
-     honor an already-held one.
-  2. Try `l`/`r` shoulder buttons instead of d-pad `right`/`down` — some
-     Nintendo menus of this era use shoulder buttons for icon-grid
-     navigation instead of the d-pad.
-  3. Take a screenshot every single frame (not every 15) for the first
-     30 frames after Game Select renders, to see the *exact* frame the
-     auto-advance (if that's what it is) fires, then aim a direction press
-     to land strictly before that frame.
-  4. Try `emu.addMemoryCallback` on a CPU-exec range instead of
+  and ruled out (now 6 variants, including pre-holding Right before Game
+  Select even renders — that was the strongest remaining hypothesis and it
+  was refuted). Suggested next experiments, in order of cheapness:
+  1. Try `l`/`r` shoulder buttons, and separately `a`/`b`/`x`/`y`, instead
+     of d-pad `right`/`down` for Game Select cursor movement — some
+     Nintendo menus of this era use shoulder buttons or face buttons for
+     icon-grid navigation instead of the d-pad. Cheap to try (same script
+     structure, swap the button name) and not yet tested at all.
+  2. Take a screenshot **every single frame** (not every 15) from frame
+     3000 to 3300, with Right held the whole time, to see frame-by-frame
+     whether *anything at all* changes on screen in response to Right —
+     even a half-pixel cursor nudge that later reverts would tell us
+     input is reaching the game but being overridden, versus truly inert.
+  3. Try `emu.addMemoryCallback` on a CPU-exec range instead of
      `startFrame` for input injection — `emu.createSavestate` already
      requires this callback type (see §3), so it's possible input sampled
      via this contract is also more reliable, and it would additionally
      unblock true savestate checkpoints (skip replaying 3000+ frames per
-     experiment).
+     experiment, which would make iteration much faster).
+  4. RAM-diff the Game Select screen's state between two runs — one with
+     Right held, one without — to see if *any* WRAM byte differs at all
+     during the hold. If literally nothing differs, that's strong evidence
+     Right truly isn't reaching the controller-read routine in this state
+     (a Mesen2 SNES-core quirk specific to this game/screen), and the next
+     step would be to test on a second SNES core (e.g. via `retroarch` +
+     a libretro SNES core, both present on this box) to see if the same
+     wall reproduces outside Mesen2 — if it doesn't, the bug is in Mesen2,
+     not the game.
+  5. As a fallback if the wall persists: try genuinely random/exploratory
+     input (all 12 buttons individually, held then released, one at a time,
+     from the Game-Select-unconfirmed state) — brute-force but bounded
+     (12 short experiments), and would definitively answer "does *any*
+     button move this cursor" before concluding the auto-advance is
+     unconditionally locked to Tetris.
 - Mesen2-specific traps worth remembering for next time (cost real time
   this session):
   - `emu.setInput(buttonsTable, port)` — table first, port second (an

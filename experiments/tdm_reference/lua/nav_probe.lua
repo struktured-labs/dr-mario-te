@@ -1,12 +1,14 @@
--- T&DM navigation probe v10: isolate the effect of directional input on
--- Game Select, WITHOUT ever pressing Start again, so we can see raw cursor
--- movement (if any) uncontaminated by a confirm action. Try Right held long,
--- screenshotting every 15 frames; then try Down held long, same cadence.
+-- Final decisive nav test: no Start presses at all (auto-advance handles
+-- legal/logo/title -> Game Select on its own, confirmed by exp0v2). Hold
+-- Right STARTING BEFORE Game Select even renders (frame 2900, well ahead
+-- of the ~3008 arrival we've measured), continuing through and past it,
+-- then a Start pulse. Tests whether the auto-advance timer only respects
+-- input that's already asserted when the screen initializes.
 local OUT = "/tmp/claude-1000/-home-struktured-projects-dr-mario-rl/02493363-c6af-4da9-9c47-58ceef8174b6/scratchpad/tdm/"
 local frame = 0
 
 local logf = io.open(OUT .. "nav_log.txt", "w")
-logf:write("v10 script loaded\n")
+logf:write("final decisive test loaded\n")
 logf:flush()
 
 local function save_shot(tag)
@@ -22,34 +24,28 @@ local function save_shot(tag)
 	logf:flush()
 end
 
-local PRESS_EVERY = 300
-local PRESS_HOLD = 8
-local NUM_PRESSES = 11
-local PHASE1_END = (NUM_PRESSES - 1) * PRESS_EVERY + PRESS_HOLD  -- 3008
-
-local RIGHT_HOLD_START = PHASE1_END + 10   -- 3018
-local RIGHT_HOLD_END = RIGHT_HOLD_START + 90  -- 3108
-local DOWN_HOLD_START = RIGHT_HOLD_END + 40   -- 3148
-local DOWN_HOLD_END = DOWN_HOLD_START + 90    -- 3238
+local RIGHT_START = 2900
+local RIGHT_END = 3100
+local START2_START = 3105
+local START2_END = 3115
 
 emu.addEventCallback(function()
 	frame = frame + 1
 
-	if frame <= PHASE1_END and frame % PRESS_EVERY < PRESS_HOLD then
-		pcall(emu.setInput, { start = true }, 0)
-	elseif frame >= RIGHT_HOLD_START and frame < RIGHT_HOLD_END then
+	-- keep the PAR-code target forced too, in case it matters combined
+	-- with actual navigation into Dr. Mario's own submenu this time.
+	pcall(emu.write, 0x1E72, 0x03, emu.memType.snesWorkRam)
+
+	if frame >= RIGHT_START and frame < RIGHT_END then
 		pcall(emu.setInput, { right = true }, 0)
-		local rel = frame - RIGHT_HOLD_START
-		if rel % 15 == 0 then
-			save_shot(string.format("right_hold_%03d", rel))
-		end
-	elseif frame >= DOWN_HOLD_START and frame < DOWN_HOLD_END then
-		pcall(emu.setInput, { down = true }, 0)
-		local rel = frame - DOWN_HOLD_START
-		if rel % 15 == 0 then
-			save_shot(string.format("down_hold_%03d", rel))
-		end
+	elseif frame >= START2_START and frame < START2_END then
+		pcall(emu.setInput, { start = true }, 0)
 	else
 		pcall(emu.setInput, {}, 0)
+	end
+
+	if frame == 2850 or frame == 2950 or frame == 3050 or frame == 3090
+		or frame == 3130 or frame == 3200 or frame == 3400 or frame == 3700 then
+		save_shot(string.format("f%05d", frame))
 	end
 end, emu.eventType.startFrame)
