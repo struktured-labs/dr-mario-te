@@ -47,7 +47,7 @@ _C = {}
 _HASH_BOARD = bytes([0xFF] * (10 * 8 + 5) + [0xD1] + [0xFF] * (128 - 10 * 8 - 6))
 
 
-def _init(level, tuck, drchain=180, drfix=1, arm=1):
+def _init(level, tuck, drchain=180, drfix=1, arm=1, theta=150):
     """Runs once per WORKER PROCESS. Sets the env vars BEFORE any firmware module is
     imported in this process, then does the one-time (expensive) module load + assembly
     setup, stashed in _C for `play()` to reuse across all decisions in this worker."""
@@ -61,11 +61,12 @@ def _init(level, tuck, drchain=180, drfix=1, arm=1):
     # caller had just set, silently forcing both A/B arms onto the same tuck-enabled
     # image (see firmware_decider.py's fix comment). Setting the env var here alone is
     # not sufficient defense against that class of bug recurring -- the constructor is
-    # now the single source of truth for its own env var.
-    fd = FirmwareDecider(drchain=drchain, drfix=drfix, arm=arm, tuck=tuck)
+    # now the single source of truth for its own env var. `theta` is the same story
+    # (DRCOPRO_TUCKV3_THETA), added for the theta mini-sweep (task #17 stage 3).
+    fd = FirmwareDecider(drchain=drchain, drfix=drfix, arm=arm, tuck=tuck, theta=theta)
     img, _clen, _slen = fd.B.build_image(_HASH_BOARD, 0, 1, 1, 0)
     image_hash = hashlib.sha256(bytes(img)).hexdigest()
-    _C.update(level=level, tuck=tuck, fd=fd, image_hash=image_hash)
+    _C.update(level=level, tuck=tuck, theta=theta, fd=fd, image_hash=image_hash)
 
 
 def _report_hash():

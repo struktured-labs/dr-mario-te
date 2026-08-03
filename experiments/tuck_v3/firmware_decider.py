@@ -79,7 +79,7 @@ class FirmwareDecider:
     """One instance per WORKER (not per decision -- the D3/build_copro_d3 module load is
     the expensive one-time setup; each decision only re-runs build_image + a py65 call)."""
 
-    def __init__(self, drchain=180, drfix=1, arm=1, tuck=1):
+    def __init__(self, drchain=180, drfix=1, arm=1, tuck=1, theta=150):
         # ROOT-CAUSE BUG FIXED HERE (team-lead's sanity-8-v3 diagnostic: paired-pills
         # delta exactly 0.00 on every pair yet fires/game=3.12 -- the signature of both
         # A/B arms executing the SAME decider). This used to hardcode "1" unconditionally,
@@ -95,6 +95,11 @@ class FirmwareDecider:
         os.environ["DRCOPRO_ARM"] = "1" if arm else "0"
         os.environ["DRFIX"] = "1" if drfix else "0"
         os.environ["DRCHAIN"] = str(drchain)
+        # theta mini-sweep build knob (task #17 stage 3, team-lead directive): tuck_v3.THETA
+        # reads this once at import time, same hazard/pattern as DRCOPRO_TUCKV3 above -- set
+        # BEFORE any firmware module import in this process. Default "150" preserves every
+        # prior build byte-for-byte (tuck_v3.py's own default).
+        os.environ["DRCOPRO_TUCKV3_THETA"] = str(theta)
         self.D3 = _load_d3()
         import build_copro_d3 as B
         assert B.D3 is self.D3, "build_copro_d3 imported a different test_search_d3"
