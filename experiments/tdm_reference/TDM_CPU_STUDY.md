@@ -178,6 +178,62 @@ it further:
   direction until Start is pressed to break out of *some* different, not
   yet identified, interaction path).
 
+### Decisive discriminator (team-lead directive): is emulated input even alive?
+
+The zero-input auto-advance discovery (§3) raised a sharper question: what if
+*no* emulated input has ever reached the game at all, and the whole session's
+apparent Start-press "confirms" were coincidental with the auto-advance's own
+timer? Tested directly: two cold boots with an identical screenshot schedule
+(same 17 checkpoint frames from 30 to 3900), one with **zero** input, one with
+**Start held continuously from frame 0**.
+
+**Result: input is alive.** Every checkpoint from frame 30 through 3000
+matched byte-for-byte between the two runs (identical PNG sizes at every
+single frame) — expected, since both runs are on the same auto-advance timer
+before anything Start-sensitive happens. But at **frame 3100**, the two runs
+diverge sharply: zero-input shows a blank black frame (247 bytes,
+`discriminator_zero_f3100_blank.png`), while Start-held already shows a
+rendering scene (1562 bytes, `discriminator_start_held_f3100_rendering.png`)
+— visibly different content, not just a compression-size coincidence. This is
+exactly the frame range where a Start-triggered confirm (title → Game Select,
+or Game Select → Tetris submenu) would first become visible, so this is
+strong, causal evidence that **Start reaches the game and measurably changes
+its state** relative to no input at all. The "no input has ever reached the
+game" hypothesis is refuted for Start specifically.
+
+**Follow-up fix attempt** (the one the budget allowed): if a *continuous*
+hold perturbs the state machine (as just proven for Start) where our earlier
+*pulsed* Right/Down attempts didn't, maybe Right needed to be held
+continuously **from true frame 0** — every earlier Right/Down experiment in
+this session only started the hold once already near Game Select (frame
+~2900 at the earliest). Tried it: Right held from frame 1 onward, Start added
+in from frame 3200 to attempt a confirm. Byte sizes at frames 1200-2700 *do*
+diverge from both the zero-input and Start-held baselines (proving Right is
+also reaching the game and perturbing state, just as Start does) — but the
+final outcome at frame 4500 is, again, **live Tetris A-Type gameplay**, not
+Dr. Mario (`right_from_boot_still_tetris_f4500.png`). So the picture is now:
+**both Start and Right demonstrably reach the game and perturb its internal
+state** — this is not a dead-input or wrong-port problem — **but Right
+specifically never flips the Game Select outcome away from the default
+Tetris selection**, across all 7 variants tried (6 from the original wall
+plus this one). The remaining puzzle is narrower than it looked an hour ago:
+it's not "is input plumbed correctly," it's "why does this one screen's
+cursor logic not respond to direction the way Start responds to confirm."
+
+Per the team lead's budget (discriminator + one fix attempt), this is the
+stopping point. Untried candidates most worth a future session's time, given
+what's now known:
+- Shoulder (`l`/`r`) or face (`a`/`b`/`x`/`y`) buttons for Game Select cursor
+  movement — genuinely untested, and now higher-priority than before since
+  we've ruled out "input is dead" as an explanation and there's precedent
+  for non-d-pad menu navigation in some Nintendo titles of this era.
+- Cross-core verification (`retroarch` + a libretro SNES core, or
+  `snes9x-gtk`, both present on this box) to see if the same Right-inert
+  result reproduces outside Mesen2 — if a second, independent SNES core
+  shows the *same* wall, that's strong evidence it's a real fact about the
+  game (or about how *all* emulators handle its input), not a Mesen2-specific
+  quirk.
+
 **Everything downstream of this point — an actual VS COM Dr. Mario match,
 RAM recon (§4), and the behavioral profile (§5) — was not reached this
 session.**
@@ -217,22 +273,25 @@ knob space, which is a clean two-point calibration for E/M/H tuning.
 
 - ROM + hashes: §1, no further work needed.
 - Prior art: §2, complete for this session's search budget.
-- Working Lua script (final "pre-hold Right" decisive-test variant) is
-  saved at `experiments/tdm_reference/lua/nav_probe.lua`. Key screenshots
-  saved at `experiments/tdm_reference/shots/`:
+- Three Lua scripts saved at `experiments/tdm_reference/lua/`:
+  `nav_probe.lua` (the pre-hold-Right decisive-test variant from the
+  original 6-variant wall), `discriminator.lua` (the zero-input vs
+  Start-held A/B comparison, mode selected via a `discriminator_mode.txt`
+  marker file — see the script header for the launch recipe), and
+  `right_from_boot.lua` (the Right-held-from-frame-0 follow-up). Key
+  screenshots saved at `experiments/tdm_reference/shots/`:
   - `gameselect_unconfirmed.png` — the reproducible unconfirmed Game
     Select screen (Tetris/Dr. Mario/Mixed Match icons visible).
-  - `right_hold_075_autoadvance.png` — ~75 frames into holding Right with
-    no Start, mid-transition to something else (not a moved cursor).
-  - `down_hold_075_tetris_submenu.png` — where every early attempt ended
-    up: the Tetris submenu, never Dr. Mario.
-  - `prehold_right_at_gameselect_f3050.png` — Game Select, with Right
-    already held continuously since frame 2900 (150 frames before this
-    shot) — cursor still shows no sign of having moved off Tetris.
-  - `prehold_right_then_start_lands_tetris_f3130.png` — the very next
-    Start pulse after that sustained Right hold still confirms **Tetris**,
-    not Dr. Mario — the decisive negative result that closed off the
-    "input arrives too late" hypothesis.
+  - `right_hold_075_autoadvance.png` / `down_hold_075_tetris_submenu.png`
+    / `prehold_right_at_gameselect_f3050.png` /
+    `prehold_right_then_start_lands_tetris_f3130.png` — the original
+    6-variant wall (all landed in Tetris regardless of Right/Down timing).
+  - `discriminator_zero_f3100_blank.png` vs
+    `discriminator_start_held_f3100_rendering.png` — the proof that Start
+    input reaches the game (blank vs. rendering content at the identical
+    frame, zero-input vs. Start-held).
+  - `right_from_boot_still_tetris_f4500.png` — the 7th variant (Right held
+    from true frame 0, combined with Start later): still Tetris.
 - **Deterministic, reproducible recipe to reach the unconfirmed Game Select
   screen** (the part that *does* work, 100% reproducible from power-on):
   11 Start pulses, each 8 frames held, 300 frames apart (i.e. pulse at
@@ -240,35 +299,44 @@ knob space, which is a clean two-point calibration for E/M/H tuning.
   `frame <= 3008`). Confirmed by screenshot at frame 3048 across 3
   independent runs (v8, v9, v10 all agree).
 - **Open problem to hand off:** getting off the default Tetris cursor at
-  Game Select. See the "Navigation wall" callout in §3 for what was tried
-  and ruled out (now 6 variants, including pre-holding Right before Game
-  Select even renders — that was the strongest remaining hypothesis and it
-  was refuted). Suggested next experiments, in order of cheapness:
+  Game Select. This is now narrower than it first looked. Confirmed facts
+  (see the "Decisive discriminator" callout in §3):
+  - Emulated input is **not dead** — both Start and Right demonstrably
+    reach the game and perturb its internal state (proven by frame-exact
+    PNG divergence against a zero-input control, across 2 independent
+    A/B comparisons).
+  - Right specifically never changes the Game Select outcome, across **7**
+    independent variants (hold-after-arrival, pre-hold-before-render,
+    continuous-hold-from-frame-0, combined with a later Start, at multiple
+    hold durations) — always Tetris, never Dr. Mario.
+  - So the wall is not "is input plumbed correctly" (settled: yes) — it's
+    "why doesn't Right's *effect* on the state machine ever manifest as
+    moving this specific screen's default selection." Suggested next
+    experiments, in order of cheapness:
   1. Try `l`/`r` shoulder buttons, and separately `a`/`b`/`x`/`y`, instead
      of d-pad `right`/`down` for Game Select cursor movement — some
      Nintendo menus of this era use shoulder buttons or face buttons for
      icon-grid navigation instead of the d-pad. Cheap to try (same script
-     structure, swap the button name) and not yet tested at all.
-  2. Take a screenshot **every single frame** (not every 15) from frame
+     structure, swap the button name) and not yet tested at all. Now the
+     single highest-priority untried lead.
+  2. Cross-core verification: try `retroarch` + a libretro SNES core, or
+     `snes9x-gtk` (both present on this box, `snap list` confirms
+     `snes9x-gtk`), to see if the same "Right never flips Game Select"
+     result reproduces outside Mesen2. If it doesn't reproduce on a second,
+     independent core, the bug is Mesen2-specific; if it does, it's a real
+     fact about the game (or a fact about all current SNES emulators'
+     handling of this specific input sequence).
+  3. Take a screenshot **every single frame** (not every 15) from frame
      3000 to 3300, with Right held the whole time, to see frame-by-frame
-     whether *anything at all* changes on screen in response to Right —
-     even a half-pixel cursor nudge that later reverts would tell us
-     input is reaching the game but being overridden, versus truly inert.
-  3. Try `emu.addMemoryCallback` on a CPU-exec range instead of
+     whether the divergence we found (proof Right perturbs *some* WRAM
+     state) ever shows up as a visible cursor movement that then silently
+     reverts, versus never appearing at all.
+  4. Try `emu.addMemoryCallback` on a CPU-exec range instead of
      `startFrame` for input injection — `emu.createSavestate` already
      requires this callback type (see §3), so it's possible input sampled
      via this contract is also more reliable, and it would additionally
      unblock true savestate checkpoints (skip replaying 3000+ frames per
      experiment, which would make iteration much faster).
-  4. RAM-diff the Game Select screen's state between two runs — one with
-     Right held, one without — to see if *any* WRAM byte differs at all
-     during the hold. If literally nothing differs, that's strong evidence
-     Right truly isn't reaching the controller-read routine in this state
-     (a Mesen2 SNES-core quirk specific to this game/screen), and the next
-     step would be to test on a second SNES core (e.g. via `retroarch` +
-     a libretro SNES core, both present on this box) to see if the same
-     wall reproduces outside Mesen2 — if it doesn't, the bug is in Mesen2,
-     not the game.
   5. As a fallback if the wall persists: try genuinely random/exploratory
      input (all 12 buttons individually, held then released, one at a time,
      from the Game-Select-unconfirmed state) — brute-force but bounded
