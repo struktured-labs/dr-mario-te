@@ -1,0 +1,92 @@
+# struktured — player style profile
+
+*DRMC handle: **TBD** — asked, not yet confirmed. Filed under the household/git handle
+"struktured" in the meantime; rename this file once the real handle comes back.*
+*Household co-pilot on this project; also the AI's primary test opponent.*
+
+## Record vs the AI
+
+| opponent | result | notes |
+|---|---|---|
+| Combo Stomper (982291ef "classic-tempo" cart, Pocket, L11 MED, 2026-08-02 evening, "match 1") | **Loss (topout)** | EXIF+virus-counter reconstruction from 16 STUDY-pause photos recovers this as two separate games, not one — see below |
+| Combo Stomper (v4 fast+coldinit cart, Pocket, L11 MED, 2026-08-02 evening, "match 2") | **Stomper won 3–1** | one of the 4 games ended in an AI self-topout (consistent with the loss-autopsy's ~45% self-inflicted-loss rate); no photos for this sub-session, self-reported same night |
+| Combo Stomper (stomp180 build, Pocket, 2026-08-03, "tonight") | **0–3** | reported via task assignment relay; no photos/capture yet — first thing to fill in once available |
+
+Unlike [[dr_lulu]], no KO of the AI is recorded for struktured yet in either the
+photographed corpus or self-reports. The one detailed loss we can reconstruct
+(match 1) ended in *his* topout, not the AI's — the inverse of dr. lulu's KO pattern.
+
+## Observed style (film study, n=16 stills across 2 games, 2026-08-02 — qualitative)
+
+Source: `~/Pictures/stomper_matches/match_01.jpg`-`match_16.jpg`, phone photos of the
+Pocket's STUDY (pause) screen. Sorting all 16 by EXIF capture time and reading the
+on-screen virus counter turns them into two short time series instead of 16 disconnected
+snapshots:
+
+- **Game A** (19:36:37→19:42:42): 40|31 → 30|17 → 22|09 → 22|05 → 21|04 → 20|04 → 18|04 →
+  17|03 → **16|03, topout** (`evidence/struktured_topout_gameA_20260802.jpg` — a red X
+  stamped over a virus icon on the 1P side, "START" beneath: a loss frame, not a clear).
+  Over that span he cleared ~24 viruses to the Stomper's ~28 — a comparable clear *rate* —
+  but still went down with 16 viruses on the board. Reads as burial/stack-height failure,
+  not a race loss. This matches this session's own contemporaneous self-report ("I lost
+  but... several should-have-beens both directions") and the "match 1" arc already logged
+  above (48-48→43-36→30-17→18-04) — which turns out, once sorted by EXIF, to actually
+  splice together the tail of Game A with the head of Game B below; the text log
+  compressed two resets into one described arc, which this photo pass now separates out.
+- **Game B** (19:46:32→19:48:06, fresh rack — `evidence/struktured_gameB_freshrack_20260802.jpg`
+  is the 48|48 opening frame): 48|48 → 47|42 → 43|36 → 41|32 → 40|31 (unfinished in this
+  photo set). Over ~90s he cleared 8 viruses to the Stomper's 17 — worse than 2x — a
+  closer match to the "Stomper pulled ahead steadily" self-report than Game A.
+- **Net across both games**: the AI side is at or below his virus count in every
+  mid-to-late frame — consistent with [[dr-mario-lnk1-vs-confirmed]]'s "wins by
+  out-racing" finding, not by out-building or superior stack quality.
+- **Rotation-slip (A/B confusion) check** — self-reported ("I make lots of mistakes by
+  hitting A instead of B... I grew up on just A"). **Inconclusive from these stills**:
+  phone-photo-of-screen blur and JPEG compression make individual cell colors unreliable
+  to call at this resolution, and a pause frame only shows the buried aftermath, not the
+  drop that caused it — a flip is only visible in the instant it happens. Two boards
+  (virus 40|31 and 41|32, not pictured here) show a single tall near-monochrome column
+  that could be a mis-rotated dump or could be deliberate well-building; can't
+  disambiguate from a still. Real video exists and is unused for this purpose —
+  `~/Pictures/PXL_20260802_013409485.mp4`, `_014130748.mp4`, `_013954971.mp4` (same
+  session, also in the `Photos-1-001*.zip` archives) — frame-extracting around each drop
+  would catch a rotation slip in the act, which no still can. Not yet attempted.
+
+## Why this matters to the project
+
+- struktured is both the AI's designer and its most frequent human opponent — his losses
+  are the project's clearest window into "does the shipped champion feel good to lose to,"
+  separate from win-rate metrics. The topout-not-race-loss pattern in Game A is a UX signal
+  (burial under time pressure), not a strength signal for the AI.
+- The self-reported A/B rotation confusion, if confirmed on video, would be a concrete,
+  narrow target for a coaching/practice mode or a single-rotate control option in TE —
+  worth confirming before building anything, per [[test-defect-not-fix]] (simulate the
+  fault, don't just assert the guard).
+- Contrast with [[dr_lulu]] (household champion, undefeated, wins via timed pressure) gives
+  the project two very different human baselines from the same hardware/cart family —
+  useful for any opponent-aware VS evaluation work (task #15).
+
+## Evidence
+
+- `evidence/struktured_topout_gameA_20260802.jpg` — Game A's loss frame (16|03, red X).
+- `evidence/struktured_gameB_freshrack_20260802.jpg` — Game B's fresh-rack opening (48|48).
+- Full 16-photo set remains at `~/Pictures/stomper_matches/` (not all copied into the
+  repo); a fuller placement-by-placement writeup of the same analysis lives at
+  `experiments/player_styles/struktured.md` on the `copro-qa-harness` branch of this repo
+  (task #36's first pass, done before this file's location/format was corrected to match
+  [[dr_lulu]]'s convention).
+- Capture-card video pending (device on hand per the task brief, not yet configured) —
+  will convert his matches to (state, move) pairs per the player-data program
+  (`dr-mario-player-data`) for quantitative profiling, same plan as dr_lulu.md.
+
+## Caveats
+
+n=16 stills covering 2 games from one evening (2026-08-02), plus 2 self-reported
+match summaries without photos, plus one bare score ("0-3 vs stomp180," today,
+2026-08-03) with no evidence at all yet. All style claims above are qualitative reads
+of footage or self-report, not decoded board data. The 1P=struktured attribution for
+the 2026-08-02 photos rests on the pre-existing first-person self-reports tied to the
+same date and cart-build tags (982291ef / v4 fast+coldinit) — those tags don't appear
+anywhere in [[dr_lulu]]'s corpus (stomp180, 2026-08-01), so the two players' sessions
+don't overlap. Update this file once the DRMC handle is confirmed and once tonight's
+0-3 session has any capture to point to.
