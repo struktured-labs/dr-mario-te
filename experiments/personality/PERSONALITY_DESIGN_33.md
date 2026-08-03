@@ -53,9 +53,11 @@ public "arcade" release build.
 
 ## 4. Phasing
 
-1. **P0 (this week, cart-side only):** ship the roster as named cart files (STOMPER /
-   CLASSIC already exist; SHOWOFF = one romgen build with the wcells15 dose flag;
-   SPARRING exists as the CvC P1). Zero new architecture; personalities = SD menu entries.
+1. **P0 (this week, cart-side only):** ship what exists as named cart files — STOMPER
+   and CLASSIC (built), SPARRING (the CvC P1 path). CORRECTION from first draft: SHOWOFF's
+   wcells15 dose and RACER's lnk1 are EVAL-side (RTL synthesis constants), so they cannot
+   join via cart flags — they arrive at P1 (register weights) or via their own compiled
+   cores, which is a per-personality Quartus cost P1 exists to avoid.
 2. **P1 (one Quartus cycle):** weights-in-registers refactor + held-button select →
    single cart, all personalities. Ride-along: the $5089 xlate passenger (#33's original
    note) and any tuck-v3 mailbox needs if #17 revives.
