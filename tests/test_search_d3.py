@@ -76,8 +76,21 @@ DRCHAIN = int(os.environ.get("DRCHAIN", "0"))    # chain reward dose; measured 1
                                                  # knee above 360. Sent as dose/4 (one byte).
 USE_DELTA = False   # incremental-leaf: CMD-6 BASE per parent + CMD-7 DELTA per child (+ CMD-4 fallback)
 DELTA_P0 = DELTA_P2 = DELTA_P3 = None   # per-ply gates for bisection; None -> follow USE_DELTA
-DEBUG_VAL1 = False   # diagnostic: dump per-ply1-candidate (C1,O1,V1L,V1H) into copro RAM ring at DBG_RING
+DEBUG_VAL1 = False   # diagnostic: dump per-ply1-candidate (C1,O1,V1L,V1H,B2L,B2H) into copro
+                     # RAM ring at DBG_RING (stride 8, X=D_J1*8 -- unchanged), PLUS a SECOND
+                     # ring at DBG_RING2 (imm1/leaf1/eh: I1L,I1H,L1L,L1H,ADL,ADH), reusing the
+                     # SAME X value. Two 8-byte-stride rings, not one 16-byte-stride ring,
+                     # because X is an 8-bit 6502 register: TOPK1=32 candidates * 16 would
+                     # need X up to 31*16=496, which overflows/wraps mod 256 and would alias
+                     # ring entries -- caught before emitting it, not after. 31*8=248 fits.
+                     # Extended (task #17 stage 3, tuck-vs-offline localization) so a specific
+                     # ply-1 candidate's full component breakdown (imm1, leaf1, best2-raw,
+                     # blend, eh, total) can be read back and compared against
+                     # root_search.py's offline components term-by-term -- gated behind this
+                     # same flag (default False), so every existing build (DEBUG_VAL1 never
+                     # set True in production) is byte-identical to before this change.
 DBG_RING = 0x0C00    # free copro RAM (LIVE$0500 WORK1$0600 CUR$0700 MARK$0780 WORK2$0B00 -> $0C00 free)
+DBG_RING2 = 0x0D00   # second ring, right after DBG_RING's 32*8=256B span (0x0C00-0x0CFF)
 DELTA_P2_LOOP = True   # diagnostic: False keeps ply2 base-latch but uses full-node loop (engine vs orch)
 def _d(flag):
     return USE_DELTA if flag is None else flag
@@ -510,7 +523,10 @@ def _emit_search_d3_engine(a):
         a.ins("CLC"); a.ins("LDA_zp", D_V1L); a.ins("ADC_zp", D_ADL); a.ins("STA_zp", D_V1L)
         a.ins("LDA_zp", D_V1H); a.ins("ADC_zp", D_ADH); a.ins("STA_zp", D_V1H)
     a.label("o_cand")
-    if DEBUG_VAL1:                                    # dump (C1,O1,V1L,V1H,B2L,B2H) at ring[D_J1*8] (pre-jitter)
+    if DEBUG_VAL1:                                    # dump (C1,O1,V1L,V1H,B2L,B2H) at
+                                                        # ring[D_J1*8] (pre-jitter), PLUS
+                                                        # (I1L,I1H,L1L,L1H,ADL,ADH) at
+                                                        # ring2[D_J1*8] (SAME X, no recompute)
         a.ins("LDA_zp", D_J1); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("TAX")
         a.ins("LDA_zp", D_C1);  a.ins16("STA_absX", DBG_RING + 0)
         a.ins("LDA_zp", D_O1);  a.ins16("STA_absX", DBG_RING + 1)
@@ -518,6 +534,12 @@ def _emit_search_d3_engine(a):
         a.ins("LDA_zp", D_V1H); a.ins16("STA_absX", DBG_RING + 3)
         a.ins("LDA_zp", D_B2L); a.ins16("STA_absX", DBG_RING + 4)
         a.ins("LDA_zp", D_B2H); a.ins16("STA_absX", DBG_RING + 5)
+        a.ins("LDA_zp", D_I1L); a.ins16("STA_absX", DBG_RING2 + 0)
+        a.ins("LDA_zp", D_I1H); a.ins16("STA_absX", DBG_RING2 + 1)
+        a.ins("LDA_zp", D_L1L); a.ins16("STA_absX", DBG_RING2 + 2)
+        a.ins("LDA_zp", D_L1H); a.ins16("STA_absX", DBG_RING2 + 3)
+        a.ins("LDA_zp", D_ADL); a.ins16("STA_absX", DBG_RING2 + 4)
+        a.ins("LDA_zp", D_ADH); a.ins16("STA_absX", DBG_RING2 + 5)
     a.ins("LDA_zp", D_SEED); a.br("BEQ", "o_nj")
     a.ins("LDA_zp", D_O1); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ORA_zp", D_C1)
     a.ins("EOR_zp", D_SEED); a.ins("STA_zp", D_JT)
