@@ -376,6 +376,9 @@ def main():
     ap.add_argument("--levels", type=int, nargs="+", default=[11])
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--out", type=str, default=None)
+    ap.add_argument("--seed-offset", type=int, default=0,
+                     help="first seed to run (e.g. 120 to extend an existing n=120 "
+                          "sample to seeds 120-239 for a combined n=240)")
     ap.add_argument("--pass1", action="store_true",
                      help="run the staged L11 full + L20 0-79/auto-continue launch "
                           "instead of the ad-hoc --seeds/--levels sweep")
@@ -387,7 +390,7 @@ def main():
 
     results = {}
     for level in a.levels:
-        out, R = run_level(level, a.seeds, a.workers)
+        out, R = run_level(level, a.seeds, a.workers, seed_offset=a.seed_offset)
         results[level] = out
         _write_json(a.out, level, out, R)
 
