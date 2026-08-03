@@ -37,7 +37,13 @@ REPLACEMENT = '''        a.label(f"{L}_start")            # start a search: uplo
 def _fix(src):
     assert ANCHOR in src, (
         "D2 anchor not found in driver-nav/patch_cartridge_copro.py -- the emitter has moved. "
-        "Re-derive the fix rather than measuring the unfixed driver.")
+        "Re-derive the fix rather than measuring the unfixed driver. "
+        "MOST LIKELY CAUSE (2026-08-02): the real fix landed for real in driver-nav commit "
+        "b850159 (task #17 phase 3 stage 1) -- the emitter no longer needs this in-memory "
+        "transform at all. This harness going stale is a SIGN THE FIX SHIPPED, not that this "
+        "directory rotted; retire this file (and real_ab.py, which imports it) in favour of "
+        "measuring driver-nav's patch_cartridge_copro.py directly, the way "
+        "qa-harness/experiments/tuck_regression.py's D2/D2b checks already do.")
     return src.replace(ANCHOR, REPLACEMENT)
 
 

@@ -1,0 +1,711 @@
+{
+ "windows": [
+  [
+   0,
+   4096
+  ],
+  [
+   24832,
+   25088
+  ]
+ ],
+ "touched_addrs": [
+  64,
+  65,
+  66,
+  67,
+  68,
+  69,
+  70,
+  71,
+  72,
+  73,
+  74,
+  75,
+  76,
+  77,
+  78,
+  79,
+  80,
+  81,
+  82,
+  83,
+  84,
+  85,
+  86,
+  87,
+  88,
+  89,
+  90,
+  91,
+  92,
+  93,
+  94,
+  95,
+  96,
+  97,
+  98,
+  99,
+  100,
+  101,
+  102,
+  103,
+  104,
+  105,
+  106,
+  107,
+  108,
+  109,
+  110,
+  111,
+  202,
+  203,
+  204,
+  205,
+  206,
+  207,
+  208,
+  209,
+  210,
+  211,
+  212,
+  213,
+  220,
+  222,
+  224,
+  225,
+  226,
+  227,
+  228,
+  229,
+  230,
+  1280,
+  1792,
+  1920,
+  2304,
+  2336,
+  2368,
+  2400,
+  2432,
+  2464,
+  2496,
+  2504,
+  2560,
+  2592,
+  2624,
+  2656,
+  24868,
+  24869,
+  24870,
+  24871,
+  24884,
+  24885,
+  24889,
+  24890,
+  24993,
+  24994,
+  24995,
+  24996,
+  24997,
+  24998,
+  24999,
+  25000,
+  25001,
+  25002,
+  25087
+ ],
+ "touched_detail": {
+  "0x47": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x6135": [
+   "STA_abs"
+  ],
+  "0x44": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x45": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x6124": [
+   "LDA_abs"
+  ],
+  "0x66": [
+   "EOR_zp",
+   "LDA_zp",
+   "ORA_zp",
+   "STA_zp"
+  ],
+  "0x6125": [
+   "LDA_abs"
+  ],
+  "0x500": [
+   "LDA_absX"
+  ],
+  "0x65": [
+   "CMP_zp",
+   "CPX_zp",
+   "INC_zp",
+   "LDX_zp",
+   "STA_zp"
+  ],
+  "0x41": [
+   "INC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x40": [
+   "INC_zp",
+   "LDA_zp",
+   "ORA_zp",
+   "STA_zp"
+  ],
+  "0x5e": [
+   "ADC_zp",
+   "LDA_zp",
+   "SBC_zp",
+   "STA_zp"
+  ],
+  "0x5f": [
+   "ADC_zp",
+   "LDA_zp",
+   "SBC_zp",
+   "STA_zp"
+  ],
+  "0x4f": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x50": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0xa00": [
+   "LDA_absX",
+   "SBC_absX",
+   "STA_absX"
+  ],
+  "0xa20": [
+   "LDA_absX",
+   "SBC_absX",
+   "STA_absX"
+  ],
+  "0xa40": [
+   "LDA_absX",
+   "STA_absX"
+  ],
+  "0xa60": [
+   "LDA_absX",
+   "STA_absX"
+  ],
+  "0x64": [
+   "INC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x53": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x54": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x55": [
+   "LDX_zp",
+   "STA_zp",
+   "STX_zp"
+  ],
+  "0x42": [
+   "ADC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x43": [
+   "ADC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x68": [
+   "ADC_zp",
+   "SBC_zp",
+   "STA_zp"
+  ],
+  "0x69": [
+   "ADC_zp",
+   "SBC_zp",
+   "STA_zp"
+  ],
+  "0x62": [
+   "ADC_zp",
+   "LDA_zp",
+   "SBC_zp",
+   "STA_zp"
+  ],
+  "0x63": [
+   "LDA_zp",
+   "SBC_zp",
+   "STA_zp"
+  ],
+  "0x4c": [
+   "CMP_zp",
+   "CPX_zp",
+   "INC_zp",
+   "LDA_zp",
+   "LDX_zp",
+   "STA_zp"
+  ],
+  "0x49": [
+   "INC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x48": [
+   "INC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x6126": [
+   "LDA_abs"
+  ],
+  "0x6127": [
+   "LDA_abs"
+  ],
+  "0x900": [
+   "LDA_absX",
+   "SBC_absX",
+   "STA_absX"
+  ],
+  "0x920": [
+   "LDA_absX",
+   "SBC_absX",
+   "STA_absX"
+  ],
+  "0x980": [
+   "LDA_absX",
+   "STA_absX"
+  ],
+  "0x9a0": [
+   "LDA_absX",
+   "STA_absX"
+  ],
+  "0x940": [
+   "LDA_absX",
+   "STA_absX"
+  ],
+  "0x960": [
+   "LDA_absX",
+   "STA_absX"
+  ],
+  "0x4d": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x4e": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x56": [
+   "INC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x51": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x52": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x60": [
+   "ADC_zp",
+   "STA_zp"
+  ],
+  "0x61": [
+   "ADC_zp",
+   "STA_zp"
+  ],
+  "0x6a": [
+   "ADC_zp",
+   "STA_zp"
+  ],
+  "0x6b": [
+   "ADC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x67": [
+   "EOR_zp",
+   "STA_zp"
+  ],
+  "0x46": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x6134": [
+   "STA_abs"
+  ],
+  "0x58": [
+   "LDA_zp",
+   "ROR_zp",
+   "STA_zp"
+  ],
+  "0x59": [
+   "LDA_zp",
+   "ROR_zp",
+   "STA_zp"
+  ],
+  "0x5a": [
+   "LDA_zp",
+   "ROR_zp",
+   "STA_zp"
+  ],
+  "0x57": [
+   "INC_zp",
+   "LDA_zp",
+   "LDX_zp",
+   "STA_zp"
+  ],
+  "0x5b": [
+   "ADC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x5c": [
+   "ADC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x5d": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x4b": [
+   "INC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x4a": [
+   "INC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x9c0": [
+   "LDA_absX",
+   "STA_absX"
+  ],
+  "0x9c8": [
+   "LDA_absX"
+  ],
+  "0xe2": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0xe3": [
+   "ADC_zp",
+   "LDA_zp",
+   "LDX_zp",
+   "STA_zp"
+  ],
+  "0xe4": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0xe5": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x6c": [
+   "INC_zp",
+   "LDA_zp",
+   "LDY_zp",
+   "STA_zp"
+  ],
+  "0x700": [
+   "LDA_absX",
+   "LDA_absY",
+   "STA_absX",
+   "STA_absY"
+  ],
+  "0x6d": [
+   "CMP_zp",
+   "LDA_zp",
+   "STA_zp",
+   "STY_zp"
+  ],
+  "0x6e": [
+   "CMP_zp",
+   "LDA_zp",
+   "LDX_zp",
+   "SBC_zp",
+   "STA_zp",
+   "STX_zp"
+  ],
+  "0x6f": [
+   "CPY_zp",
+   "LDA_zp",
+   "STY_zp"
+  ],
+  "0xe6": [
+   "CMP_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0xdc": [
+   "LDA_zp",
+   "LDX_zp",
+   "STA_zp"
+  ],
+  "0xde": [
+   "LDA_zp",
+   "LDX_zp",
+   "STA_zp"
+  ],
+  "0xca": [
+   "ADC_zp",
+   "INC_zp",
+   "LDA_zp",
+   "LDX_zp",
+   "STA_zp"
+  ],
+  "0xcb": [
+   "LDA_zp",
+   "LDX_zp",
+   "STA_zp"
+  ],
+  "0xcc": [
+   "ADC_zp",
+   "CMP_zp",
+   "LDA_zp",
+   "LDX_zp",
+   "STA_zp"
+  ],
+  "0xcd": [
+   "CPY_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0x780": [
+   "LDA_absX",
+   "STA_absX"
+  ],
+  "0xd4": [
+   "INC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0xd5": [
+   "INC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0xd3": [
+   "LDA_zp",
+   "ORA_zp",
+   "STA_zp"
+  ],
+  "0xce": [
+   "INC_zp",
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0xcf": [
+   "CMP_zp",
+   "STA_zp"
+  ],
+  "0xd0": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0xd2": [
+   "LDA_zp",
+   "STA_zp"
+  ],
+  "0xd1": [
+   "DEC_zp",
+   "STA_zp"
+  ],
+  "0xe0": [
+   "ADC_zp",
+   "STA_zp"
+  ],
+  "0xe1": [
+   "ADC_zp",
+   "STA_zp"
+  ],
+  "0x6139": [
+   "STA_abs"
+  ],
+  "0x613a": [
+   "STA_abs"
+  ],
+  "0x61a7": [
+   "CMP_abs",
+   "LDA_abs",
+   "STA_abs"
+  ],
+  "0x61a1": [
+   "ADC_abs",
+   "LDA_abs",
+   "LDX_abs",
+   "STA_abs"
+  ],
+  "0x61a2": [
+   "CMP_abs",
+   "LDA_abs",
+   "STA_abs"
+  ],
+  "0x61a9": [
+   "LDA_abs",
+   "LDX_abs",
+   "STA_abs"
+  ],
+  "0x61a3": [
+   "LDA_abs",
+   "LDX_abs",
+   "STA_abs"
+  ],
+  "0x61a4": [
+   "CMP_abs",
+   "STA_abs"
+  ],
+  "0x61a5": [
+   "LDA_abs",
+   "STA_abs"
+  ],
+  "0x61a8": [
+   "LDA_abs",
+   "LDX_abs",
+   "STA_abs"
+  ],
+  "0x61a6": [
+   "LDA_abs",
+   "STA_abs"
+  ],
+  "0x61aa": [
+   "LDA_abs",
+   "LDX_abs",
+   "STA_abs"
+  ],
+  "0x61ff": [
+   "STA_abs"
+  ]
+ },
+ "free_runs": [
+  [
+   0,
+   64
+  ],
+  [
+   112,
+   202
+  ],
+  [
+   214,
+   220
+  ],
+  [
+   221,
+   222
+  ],
+  [
+   223,
+   224
+  ],
+  [
+   231,
+   1280
+  ],
+  [
+   1281,
+   1792
+  ],
+  [
+   1793,
+   1920
+  ],
+  [
+   1921,
+   2304
+  ],
+  [
+   2305,
+   2336
+  ],
+  [
+   2337,
+   2368
+  ],
+  [
+   2369,
+   2400
+  ],
+  [
+   2401,
+   2432
+  ],
+  [
+   2433,
+   2464
+  ],
+  [
+   2465,
+   2496
+  ],
+  [
+   2497,
+   2504
+  ],
+  [
+   2505,
+   2560
+  ],
+  [
+   2561,
+   2592
+  ],
+  [
+   2593,
+   2624
+  ],
+  [
+   2625,
+   2656
+  ],
+  [
+   2657,
+   4096
+  ],
+  [
+   24832,
+   24868
+  ],
+  [
+   24872,
+   24884
+  ],
+  [
+   24886,
+   24889
+  ],
+  [
+   24891,
+   24993
+  ],
+  [
+   25003,
+   25087
+  ]
+ ],
+ "total_touched": 103,
+ "total_free": 4249,
+ "tuck_v3_candlist_reservation": [
+  25003,
+  25067
+ ],
+ "tuck_v3_candlist_reservation_hits": []
+}

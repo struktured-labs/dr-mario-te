@@ -227,20 +227,34 @@ check(True, "D1 control: no tuck leaves it on the straight drop",
 check(False, "D1: raw trigger must not land off the scored column",
       raw[0] == BEST_COL, "raw locked in column %d, search scored column %d" % (raw[0], BEST_COL))
 
-# D3 -- over a spread of geometries, the enumerated target must BE best_col
-mismatch = []
-for name, bd, _ in GOLDEN:
-    ee = enum_full(bd)
-    if ee is None:
-        continue
-    for bc in range(COLS):
-        if first_occ(bd, bc) == 0:
-            continue
-        if ee["target"] != bc:
-            mismatch.append((name, bc, ee["target"]))
-check(False, "D3: descriptor is enumerated FOR best_col, not deepest-over-all",
-      not mismatch,
-      "%d (board, best_col) pairs get a descriptor computed for another column" % len(mismatch))
+# D3 -- RETIRED (task #17 phase-3 decision #5, team-lead approved 2026-08-02). This check
+# tested the v1 single-descriptor architecture, where `tuck_scan`'s own "deepest wins over
+# ALL columns" opinion could disagree with the search's `best_col` -- exactly the coupling
+# root-action design (TUCK_V3_FIRMWARE_DESIGN.md) eliminates by construction: under
+# root-action there is no independent enumerator opinion to disagree with the search, because
+# every tuck candidate is scored under its OWN landing column and the search's own argmax
+# picks among them. Kept here (commented, not deleted) as the record of what v1 got wrong;
+# `enum_full` above is now DEAD to this file otherwise. REPLACEMENT (stage 2, once the
+# multi-candidate enumerator + candidate loop land): "published column equals the WINNING
+# candidate's column, value taken from the search's own argmax -- never recomputed
+# producer-side" -- cannot be written as a real test yet because there is no consumer (no
+# multi-candidate loop) for it to check against; a python-side stand-in here would repeat
+# the exact mistake D3 punished (asserting a plausible model of the consumer instead of the
+# consumer's actual semantics). Land it in stage 2 against the real enumerator, not before.
+#
+# mismatch = []
+# for name, bd, _ in GOLDEN:
+#     ee = enum_full(bd)
+#     if ee is None:
+#         continue
+#     for bc in range(COLS):
+#         if first_occ(bd, bc) == 0:
+#             continue
+#         if ee["target"] != bc:
+#             mismatch.append((name, bc, ee["target"]))
+# check(False, "D3: descriptor is enumerated FOR best_col, not deepest-over-all",
+#       not mismatch,
+#       "%d (board, best_col) pairs get a descriptor computed for another column" % len(mismatch))
 
 # D2 -- the descriptor must survive the descent in the real driver bytes
 try:
@@ -282,10 +296,101 @@ try:
             mpu.step(); k += 1
         if mem[M.TUCK_C2] != 0xFF:
             live += 1
-    check(False, "D2: descriptor survives the descent (real driver bytes)",
+    check(True, "D2: descriptor survives the descent (real driver bytes)",
           live > 1, "TUCK_C2 non-0xFF on %d of 40 frames (1 == wiped by h2_start)" % live)
+
+    # ---- D2b: the OTHER half of the defect -- a genuine new-pill edge MUST still clear it.
+    # Stage-1 house rule: simulate the fault, assert the outcome (not "the STA moved lines").
+    # Reuses the same image/M from the D2 block above. Sequence: hold Y low (settled/locked)
+    # for a few frames (must survive, matching the D2 check just above), then jump Y UP to a
+    # fresh-spawn value -- the real p2-new-pill detector (LASTY2 compare, same code the whole
+    # driver relies on, not re-derived here) must fire PEND2/DELAY2, and once the settle timer
+    # runs out and the search genuinely launches, TUCK_C2 must become 0xFF.
+    mem[M.TUCK_C2] = 3                      # sentinel: "has a valid descriptor from a prior pill"
+    mem[0x6161] = 0                         # ARMED2 = 0 (not searching -- post-publish, descending)
+    mem[0x614F] = 0                         # PEND2 = 0 (no pending search yet)
+    mem[0x615F] = 0                         # DELAY2 = 0
+    mem[0x0385], mem[0x0386] = X_SPAWN, 2   # low Y = settled near the floor
+    mem[0x6155] = 2                         # LASTY2 matches -> no transition yet
+
+    def step_frame():
+        mem[0xF6] = 0
+        mpu.sp = 0xFD
+        mem[0x100 + mpu.sp] = ((SENT - 1) >> 8) & 0xFF; mpu.sp = (mpu.sp - 1) & 0xFF
+        mem[0x100 + mpu.sp] = (SENT - 1) & 0xFF; mpu.sp = (mpu.sp - 1) & 0xFF
+        mpu.pc = mc; k = 0
+        while mpu.pc != SENT and k < 40000:
+            mpu.step(); k += 1
+
+    pre_edge_survived = True
+    for _ in range(3):
+        step_frame()
+        if mem[M.TUCK_C2] != 3:
+            pre_edge_survived = False
+    check(True, "D2b control: survives while Y is unchanged (pre-edge)",
+          pre_edge_survived, "descriptor was wiped before the edge even fired")
+
+    mem[0x0386] = 15                        # EDGE: Y jumps up -> genuine new-pill spawn
+    cleared_at = None
+    for f in range(30):
+        step_frame()
+        if mem[M.TUCK_C2] == 0xFF and cleared_at is None:
+            cleared_at = f
+    check(True, "D2b: new-pill edge eventually clears the descriptor",
+          cleared_at is not None,
+          "TUCK_C2 never became 0xFF in 30 frames after a genuine new-pill Y-jump"
+          if cleared_at is None else "cleared %d frames after the edge" % cleared_at)
+    _edge_ok = cleared_at is None or cleared_at > 0
+    check(False, "D2b: does not clear ON the edge frame itself (still settling)",
+          _edge_ok,
+          ("waited %d frame(s) before clearing -- not eager" % cleared_at) if _edge_ok
+          else "cleared on the very first post-edge frame -- suspiciously eager, check settle logic")
 except Exception as exc:                                  # environment, not the code under test
     print("  [SKIP] D2 real-driver check unavailable: %s" % exc)
+
+# ---- D1: TUCK_R2 == 15 - W_TROW in the REAL driver bytes (not the python mirror above)
+try:
+    sys.path.insert(0, DRIVER)
+    import importlib.util
+    from py65.devices.mpu6502 import MPU
+    for k in ("DRNOFREEZE", "DRROTFIX", "DRHUMAN", "DRPOCKET", "DRSLAM", "DRTUCK",
+              "DRNAVDWELL", "DRRECOMMIT_NOFREEZE"):
+        os.environ.pop(k, None)
+    os.environ.update({"DRHUMAN": "1", "DRNAVDWELL": "0", "DRNOFREEZE": "1",
+                       "DRPOCKET": "1", "DRRECOMMIT_NOFREEZE": "1", "DRTUCK": "1"})
+    spec = importlib.util.spec_from_file_location("fs2", DRIVER + "/patch_cartridge_copro.py")
+    M2 = importlib.util.module_from_spec(spec); sys.modules["fs2"] = M2; spec.loader.exec_module(M2)
+    code, lab = M2.build_main(11, 1)
+    rom = open(DRIVER + "/drmario_v28cs.nes", "rb").read()
+    TOG = rom[16 + (rom[4] * 16384 - 0x4000) + (0xFF30 - 0xC000):][:28]
+    mpu = MPU(); mem = [0] * 0x10000; mpu.memory = mem
+    for i, v in enumerate(code):
+        mem[0x8000 + i] = v
+    for i, v in enumerate(TOG):
+        mem[0xFF30 + i] = v
+    mem[0x6149] = 0xA5; mem[0x46] = 4; mem[0x04] = 1; mem[0x6164] = 1
+    mem[0x0324] = mem[0x03A4] = 20
+    mem[0x6161] = 1; mem[0x614F] = 0; mem[0x615F] = 0
+    mem[0x616E] = 0; mem[0x6162] = 0; mem[0x6166] = 0
+    mem[0x0385], mem[0x0386], mem[0x03A5] = X_SPAWN, 15, 0
+    mem[0x6155] = 15; mem[0x6159] = X_SPAWN; mem[0x615A] = 15
+    W_TROW_TEST = 9
+    mem[0x5086], mem[0x5085], mem[0x5084] = 0, BEST_COL, 1
+    mem[0x5087], mem[0x5088] = 1, W_TROW_TEST
+    SENT, mc = 0x400, 0x8000 + lab["main"]
+    mem[0xF6] = 0
+    mpu.sp = 0xFD
+    mem[0x100 + mpu.sp] = ((SENT - 1) >> 8) & 0xFF; mpu.sp = (mpu.sp - 1) & 0xFF
+    mem[0x100 + mpu.sp] = (SENT - 1) & 0xFF; mpu.sp = (mpu.sp - 1) & 0xFF
+    mpu.pc = mc; k = 0
+    while mpu.pc != SENT and k < 40000:
+        mpu.step(); k += 1
+    expect = (15 - W_TROW_TEST) & 0xFF
+    got_r2 = mem[M2.TUCK_R2]
+    check(True, "D1: TUCK_R2 == 15 - W_TROW in the real driver bytes",
+          got_r2 == expect, "W_TROW=%d -> TUCK_R2=%d, expected %d" % (W_TROW_TEST, got_r2, expect))
+except Exception as exc:
+    print("  [SKIP] D1 real-driver check unavailable: %s" % exc)
 
 # ---------------------------------------------------------------- verdict
 print()
@@ -293,10 +398,13 @@ if fails:
     print("FAILED (%d): %s" % (len(fails), ", ".join(fails)))
     sys.exit(1)
 if xfails:
-    print("invariants PASS; %d contract check(s) still open (expected on v1 firmware): %s"
+    print("invariants PASS; %d contract check(s) still open: %s"
           % (len(xfails), ", ".join(xfails)))
-    print("★ these must be fixed TOGETHER -- D1+D2 without D3 takes off-scored-column")
-    print("  landings from 11.2% to 45.6% on real L11 boards.")
+    print("★ stage 1 (task #17 phase 3) landed: D1+D2 are HARD-validated against the real")
+    print("  driver bytes above (not just this python mirror), and D3 is RETIRED -- root-action")
+    print("  eliminates it by construction (see TUCK_V3_FIRMWARE_DESIGN.md). The remaining")
+    print("  xfails are the OLD single-descriptor python model's own raw/fixed comparison,")
+    print("  now superseded by the real-driver D1 check; kept for provenance, not load-bearing.")
     sys.exit(0)
 print("ALL PASS -- enumerator goldens and the full executor contract hold.")
 sys.exit(0)
