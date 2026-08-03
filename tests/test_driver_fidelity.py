@@ -44,12 +44,16 @@ _KNOB_ENV = {"kopen": "DRSLAM_KOPEN", "kend": "DRSLAM_KEND", "kcross": "DRSLAM_K
              "vcend": "DRSLAM_VCEND", "lowy": "DRSLAM_LOWY", "minthink": "DRMINTHINK"}
 
 
-def load_build(rotfix, slam=True, mature=2, human=False, pocket=False, patcher=WT, **knobs):
+def load_build(rotfix, slam=True, mature=2, human=False, pocket=False, coldinit=False, patcher=WT, **knobs):
     """Import the patcher fresh (module-level env is read at import) and return build_main bytes.
     slam=True/False sets DRSLAM; mature sets DRSLAM_MATURE (FAST_HI threshold; 0 disables the gate);
-    human/pocket select the shipped variants (DRHUMAN/DRPOCKET); **knobs override the phase table
-    (kopen/kend/kcross/vcend/lowy) and the min-think floor (minthink) so scenarios stay deterministic."""
-    for k in ("DRNOFREEZE", "DRROTFIX", "DRHUMAN", "DRPOCKET", "DRSLAM", "DRSLAM_MATURE", "DRNAVFIX", *_KNOB_ENV.values()):
+    human/pocket select the shipped variants (DRHUMAN/DRPOCKET); coldinit sets DRCOLDINIT (P0.3 fix:
+    per-match state reset incl. ARMED2/WDOG2/LASTY1-2, and re-arms MATCH_ACTIVE on every menu hook so a
+    rematch without a power-cycle re-runs the cold-state init -- task #43 opening-quality instrument);
+    **knobs override the phase table (kopen/kend/kcross/vcend/lowy) and the min-think floor (minthink)
+    so scenarios stay deterministic."""
+    for k in ("DRNOFREEZE", "DRROTFIX", "DRHUMAN", "DRPOCKET", "DRSLAM", "DRSLAM_MATURE", "DRNAVFIX",
+              "DRCOLDINIT", *_KNOB_ENV.values()):
         os.environ.pop(k, None)
     os.environ["DRNOFREEZE"] = "1"
     os.environ["DRROTFIX"] = "1" if rotfix else "0"
@@ -62,6 +66,8 @@ def load_build(rotfix, slam=True, mature=2, human=False, pocket=False, patcher=W
         os.environ["DRHUMAN"] = "1"
     if pocket:
         os.environ["DRPOCKET"] = "1"
+    if coldinit:
+        os.environ["DRCOLDINIT"] = "1"
     for name, val in knobs.items():
         os.environ[_KNOB_ENV[name]] = str(val)
     wtdir = os.path.dirname(patcher)
@@ -69,7 +75,7 @@ def load_build(rotfix, slam=True, mature=2, human=False, pocket=False, patcher=W
         if p not in sys.path:
             sys.path.insert(0, p)
     # unique module name per (patcher, config) so env changes take effect (module body re-runs)
-    key = f"pc_{abs(hash((patcher, rotfix, slam, mature, human, pocket, tuple(sorted(knobs.items()))))):x}"
+    key = f"pc_{abs(hash((patcher, rotfix, slam, mature, human, pocket, coldinit, tuple(sorted(knobs.items()))))):x}"
     spec = importlib.util.spec_from_file_location(key, patcher)
     m = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = m
