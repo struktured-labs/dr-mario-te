@@ -7,6 +7,16 @@ the actual copro firmware + driver. **Nothing here is implemented.** Every
 recommendation is written so the lead can approve, redirect, or reject each
 piece independently before any RTL/6502 edit lands.
 
+> **Stage 3 result, see `TUCK_V3_FIRMWARE_SAGA.md`.** This document's design was
+> built and correctly implements what it specifies (stage-2 differential proofs
+> all green). Stage 3's within-firmware A/B, however, found the shipped
+> firmware does not reproduce the offline design's value at n=240 real games,
+> even after re-validating the design itself under the RTL-faithful leaf
+> (REAL at every θ tested). The design and this build of it are CORRECT; the
+> VALUE the design was proven to deliver offline does not show up on real
+> hardware-faithful play. Read the saga doc before treating anything below as
+> the final word on whether this firmware should ship.
+
 Repos referenced (read-only for this phase):
 - `CANON` = `/home/struktured/projects/dr-mario-canonical-wt` (copro firmware + RTL)
 - `DRIVER` = `/home/struktured/projects/dr-mario-mods-wt/driver-nav` (NES cart driver, `patch_cartridge_copro.py`)

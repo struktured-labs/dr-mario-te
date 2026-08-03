@@ -3,6 +3,16 @@
 Task #17. Phase: **scoping + offline proof only** — no RTL edits, no cart emission
 changes, nothing committed. This document is the deliverable; the lead commits.
 
+> **SUPERSEDED, read `TUCK_V3_FIRMWARE_SAGA.md` first.** This document's θ\*=150
+> recommendation was computed under `fast_rtl_x.py`'s eval weights, which are NOT
+> the real firmware's weights (the leaf eval runs entirely in RTL). Stage 3 found
+> the design is REAL at every θ once re-scored under the RTL-faithful leaf
+> (`fpga/copro/leaf_r47.py`) — but the REAL ASSEMBLED FIRMWARE, at n=240 real
+> games, still washes. The design is validated; the firmware does not deliver it.
+> This document's numbers below are historically accurate for what they measured
+> (the offline proof under the wrong ruler) but are NOT the shipped-firmware
+> verdict — see the saga doc for the full arc and the current bottom line.
+
 ## 1. Reconnaissance
 
 The existing tuck infrastructure, located and reused (none of it modified):
