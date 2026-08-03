@@ -68,3 +68,44 @@ not yet configured — never again). The Stomper's two crowns in that match are 
 out-raced her to a full clear). **Night one final: dr. lulu undefeated, every completed
 match won, including the 3–2 thriller.** The machine's consolation: it made the household
 champion go five games.
+
+## Execution-consistency addendum (frame-level film study, 2026-08-03)
+
+This is a first, small down payment on the "capture-card video... convert to (state,move)
+pairs" plan above, done early using found footage rather than the capture card: the
+`~/Pictures/PXL_20260802_013409485.mp4` (47.77s) and `PXL_20260802_013954971.mp4` (93.67s)
+clips are two of the videos from her night-one session (see provenance note below), both
+120fps slow-motion recordings of the Pocket screen, legible enough after cropping to the
+1P playfield to read individual pill-half colors frame by frame.
+
+**Method**: for each spawn, read the 2-color preview icon's left/right order, then track
+that specific pill through its descent to see whether it locked horizontal (order
+necessarily unchanged — no ambiguity possible) or vertical (top/bottom order is only
+meaningful, and only readable, when the two halves are different colors).
+
+**Result**: one fully unambiguous example, captured at 15fps around t≈5s of the first
+clip. Preview showed pink (left) / blue (right); the piece rotated to vertical during
+its descent and locked as pink (top) / blue (bottom) — an exact, unflipped translation
+of the preview order. No inconsistent (flipped) placement was confidently identified in
+either clip.
+
+**Honest limits on this result**: n=1 is not a rate, it's a single data point. Roughly
+40 additional seconds of footage were traced across 5 more high-frame-rate windows in
+both clips without producing a second equally-confident read — about half the pill pairs
+sampled happened to be same-color (pink|pink, yellow|yellow, light-blue|light-blue),
+which can't test rotation handedness at all since both halves look identical regardless
+of orientation, and several other candidates were lost to motion blur during the
+rotation animation itself, fast piece-cycling at this level/speed, or camera jostle.
+This isn't a claim about her execution accuracy — it's a claim that the pipeline works
+(a clean spawn-to-lock transition is readable) and that the one clean trial available
+showed no flip. A real rate needs either more, steadier footage of two-different-color
+drops, or the capture card's cleaner signal.
+
+**Provenance note**: these two clips were originally checked while investigating
+struktured's self-reported A/B rotation confusion (see `struktured.md`), on the mistaken
+assumption — from filename date alone — that they were his footage. They're actually
+hers: embedded video `creation_time` is UTC, and converting it (this whole corpus's
+JPEG EXIF is local, +4h/EDT) places both clips at 2026-08-01 ~21:34-21:41 local, matching
+this file's night-one window; the first clip's 47.77s duration also matches the "47 s
+film-study clip" already cited above almost exactly. Struktured's own rotation-slip
+question remains open and untested — no footage of his session exists yet.

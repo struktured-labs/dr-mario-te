@@ -13,21 +13,21 @@ deleted, since it has some analysis (per-frame stack-shape notes) not repeated h
 
 | Player | File | Photos / footage | Readable board? | Confidence |
 |---|---|---|---|---|
-| dr. lulu | `dr_lulu.md` | 205-photo series + film-study clip + evidence photo, 2026-08-01 | Yes | Highest in this set: n=4 matches, undefeated, one confirmed AI KO |
-| struktured | `struktured.md` | 16 STUDY-pause stills (2 games, 2026-08-02) + 2 self-reported match summaries + 1 bare score (2026-08-03, no photos) | Yes for the 16 stills | Medium: solid EXIF/virus-counter reconstruction for the photographed games; DRMC handle still TBD |
+| dr. lulu | `dr_lulu.md` | 205-photo series + 2 film-study clips + evidence photo, 2026-08-01 | Yes | Highest in this set: n=4 matches, undefeated, one confirmed AI KO, plus one frame-level execution data point (2026-08-03 addendum) |
+| struktured | `struktured.md` | 16 STUDY-pause stills (2 games, 2026-08-02) + 2 self-reported set summaries (Set A 3-2, Set B 3-1) | Yes for the 16 stills | Medium: solid EXIF/virus-counter reconstruction for the photographed games; DRMC handle confirmed ("struktured") |
 | roburrito | `roburrito.md` | 1 identity photo, DRMC Philadelphia 2026 | No — no screen in frame | Very low: identity only |
 | davesmithsays | `davesmithsays.md` | 1 identity photo, DRMC Philadelphia 2026 | No — CRT present but out of focus | Very low: identity only |
 
 ## Open questions blocking further work
-- **struktured's DRMC handle** — asked, awaiting reply. `struktured.md` is filed under
-  the household/git handle in the meantime.
-- **Tonight's "0-3 vs stomp180" session** (2026-08-03) — recorded in struktured.md as a
-  bare score per the task-assignment relay; no photos or capture exist for it yet. First
-  thing to backfill once available.
+- **struktured's rotation-slip claim (self-reported A/B confusion)** — still untested.
+  No video of his own session exists in `~/Pictures`; the only candidate clips turned out
+  to be dr. lulu's (see below). Needs either a fresh recording of his session or the
+  capture-card device.
 - **Capture-card device** — on hand per the task brief, not yet configured for either
   struktured or dr. lulu. Once live, both dossiers upgrade from film-study prose to
   measured attack-timing/tempo stats, same plan as `dr_lulu.md`'s "Capture-card video
-  pending" note.
+  pending" note. The 2026-08-03 execution-consistency addendum to `dr_lulu.md` is a
+  small early down payment on this using found footage instead.
 
 ## `~/Pictures` scan for more DRMC/player material
 Confirmed only two player-named files exist (`DRMC Philadelphia 2026-40 roburrito.jpg`,
@@ -57,7 +57,11 @@ rotation slip) that resolve within a frame or two. Concretely:
    The same calendar date in a filename can be the previous evening once you cross a
    4-hour offset past midnight UTC — verify with `ffprobe -show_entries
    format_tags=creation_time` and convert before trusting a video's date-in-name.
-   No footage of struktured's actual session exists yet in `~/Pictures`.
+   No footage of struktured's actual session exists yet in `~/Pictures`. Redirected the
+   pipeline to the correct player instead: `dr_lulu.md`'s 2026-08-03 addendum used it to
+   get one confirmed clean spawn-to-lock read (n=1, no flip) — see that file for the
+   full method and honest limits (roughly half the sampled pill pairs were same-color and
+   structurally can't test rotation handedness at all).
 3. **DRMC-side capture** — the M2b corpus (`dr-mario-m2b-corpus-run`) measured an
    aggregate tourney-player attack-given-clear rate of 17.1% (~2x our AI at the time).
    Neither roburrito nor davesmithsays has a per-player number computed against that
