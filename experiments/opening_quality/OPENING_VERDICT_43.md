@@ -157,41 +157,68 @@ real board/clears, proven working 2026-07-26 evidence, but not headless, not pat
 and with no per-pill logger yet) remains the recommended fuller-fidelity follow-up instrument
 if that confirmation comes in.
 
-## Residual item: B2 (does a CvC auto-rematch ever reach the COLDINIT fix at all?)
+## B2: does a CvC auto-rematch ever reach the COLDINIT fix at all? — REFUTED (empirically, n=400)
 
 Team-lead sub-hypothesis, raised after the field data was clarified as a MiSTer CvC duel
-observation (Stomper cart, `DRCOLDINIT=1` already set) rather than Pocket: does the CvC
-auto-rematch flow ever reach the `"menus"` dispatch where `DRCOLDINIT`'s `MATCH_ACTIVE` clear
-lives, or does it structurally bypass it — which would mean the fix in this write-up doesn't
-even apply to the duel cart that showed the symptom?
+observation (the actually-deployed "Stomper" probe cart, `DRCOLDINIT=1` already set) rather
+than Pocket: does the CvC auto-rematch flow (probe ring: modes `7→3→8→4`) ever reach the
+`"menus"` dispatch where `DRCOLDINIT`'s `MATCH_ACTIVE` clear lives, or does an earlier gate
+(the `fc_clear` "full-clear auto-advance" block, `:963-989`, which owns the frame and RTSs
+before the mode-4/mode-8 dispatch chain, gated only on `MATCH_ACTIVE!=0` + `VCOUNT`/`VSEEN`,
+never on `$0046`) structurally bypass it on every mode in that sequence?
 
-**Direct factual answer**: yes, mode 3 (and every mode except 4 and 8) reaches `"menus"`
-(`patch_cartridge_copro.py:1042-1043`: `CMP #8; BNE "menus"` — only mode 8 skips it) and gets
-the `if COLDINIT:` `MATCH_ACTIVE` clear at `:1061-1064`. Mode 8 itself gets an **unconditional**
-`MATCH_ACTIVE`/`VSEEN1`/`VSEEN2` clear (`:1043-1048`), regardless of `DRCOLDINIT`. So the
-probe-ring-observed `7→3→8→4` sequence passes through two different code paths that both clear
-`MATCH_ACTIVE`, on paper.
+**A first static read said "maybe" and was corrected by the empirical arm — this is exactly
+the scenario the test-the-defect house rule exists for.** The static trace initially
+established that `fc_clear` runs before the mode dispatch and doesn't read `$0046`, which is
+true, but missed a second gate: `patch_cartridge_copro.py:975` (inside the `NAV_V4` block,
+`NAV_V4` defaulting **on** for the whole driver lineage — `NAVFIX` defaults `"1"`, `DRNAV_V4`
+defaults `"1"`) adds `LDA $0046; CMP #4; BCC "fc_no"` **immediately before** `fc_clear`'s own
+`MATCH_ACTIVE`/`VCOUNT`/`VSEEN` check. This unconditionally routes **any mode < 4** straight to
+`fc_no` (ordinary dispatch), regardless of `fc_clear`'s own gate state. Mode 7 (≥4) gets no such
+exemption and IS blocked by `fc_clear` as the static trace predicted; but mode 3 (<4), which is
+part of the actually-observed `7→3→8→4` sequence, is **structurally immune** to `fc_clear` by
+construction — it reaches `"menus"` and the `DRCOLDINIT` `MATCH_ACTIVE` clear every time,
+regardless of what `VCOUNT`/`VSEEN` say.
 
-**But there's an earlier gate that can make this moot**: the "full-clear auto-advance" block
-(`:963-989`) runs *before* the mode==4/mode==8 dispatch chain entirely, and its condition
-(`MATCH_ACTIVE!=0` and a player's `VCOUNT==0` with `VSEEN` set for that player) never reads
-`$0046` at all (the `NAV_V4` addition at `:975` only adds a `mode>=4` floor, which mode 3 and 8
-both clear or fail on their own terms — mode 3 fails it, mode 8 passes it, so this floor doesn't
-save mode 3 specifically). When this gate is true, the driver injects `START` and `RTS`s
-(`:989`) *before* reaching the mode-3/mode-8 clears described above, on every hook, regardless
-of what mode value the underlying game is in. Since `VSEEN1/2` are cleared by nothing except
-that same mode-8 unconditional reset, whether this gate stays true throughout `7→3→8→4` depends
-entirely on **when the base game repopulates the players' virus counts relative to those mode
-transitions** — that's base-game engine behavior, not something in the driver patch, and this
-write-up did not determine it (would need base ROM disassembly or an instrumented run
-correlating `$0046` against `VCOUNT_P1`/`VCOUNT_P2` frame-by-frame, e.g. from the probe ring if
-it captured `VCOUNT`, or a fourth harness arm). Left open rather than asserted either way.
+**Empirical confirmation** (`run_opening_quality.py`'s new `play_through_autorematch` method
+and `MISTER_ARM_SPECS`, driving the real compiled bytes of the exact deployed cart —
+`driver-nav/roms/manifests/latch-converged-native-probe.json`, commit `ee32402e`, `DRP1NATIVE=1`
+CvC duel config, NOT the `DRHUMAN` Pocket arms above, which compile `fc_clear`'s `START`
+injection out entirely per `:984-988` and so can't exercise this path). Forced an
+abandoned in-flight search (matching the P0.2 "soft-relaunch" signature), triggered the STAGE
+CLEAR condition (`VCOUNT_P2=0` with `VSEEN2` set), then drove hooks through modes 7, 3, 8 in
+that order with `VCOUNT_P2` held at 0 throughout (the worst case — viruses not repopulated
+until mode 4 resumes) before restoring it and observing 8 pills, n=50 seeds:
 
-**Practical takeaway for the fix**: regardless of how this resolves, moving the `MATCH_ACTIVE`
-clear (or the fuller per-match reset) to fire the moment `fc_clear` detects a completed match
-(`:982`) rather than depending on reaching `"menus"`/mode-8 — as already recommended in the
-team-lead thread — sidesteps this whole question, since it acts before the ambiguity can matter
-for any mode-transition path, auto-rematch or human-menu-driven alike.
+| arm | zero-lateral rate | mean think-hooks | starts injected/seed | ARMED2 unchanged start-to-end of transit |
+|---|---|---|---|---|
+| `mister-probe` (as shipped, `DRCOLDINIT=1`) | 11.8% | 70.6 | 4.0 | 50/50 |
+| `mister-probe-nocoldinit` (control) | 100.0% | 1127.0 | 9.0 | 50/50 |
+
+`mister-probe` is statistically flat against the 12.5% chance baseline established elsewhere in
+this write-up — **the actually-deployed cart already cures the auto-rematch case in this
+harness.** (The `injected_starts` counts differ 4 vs 9 between the two arms because
+`mister-probe`'s search resolves and pill locks complete faster once state is clean, consuming
+fewer of the fixed 60-hook transit window's press-eligible ticks — not evidence of anything
+being blocked; both arms' `ARMED2` is provably untouched for the full 60-hook transit in every
+one of the 100 combined trials, confirming `fc_clear` genuinely owns mode 7 in both cases, and
+the difference is entirely down to what happens once mode 3 is reached.) The same pattern holds
+for the Pocket `v2/v3/v4-form` arms run through the identical `7→3→8→4` sequence (`v2/v3-form`:
+100% zero-lateral; `v4-form`: 11.8%, flat) — consistent, though as noted those arms can't test
+the `START`-injection half of the mechanism since it's compiled out for `DRHUMAN`.
+
+**Conclusion: B2 does not hold for any cart in the current lineage, because `NAV_V4` (on by
+default, installed years earlier for an unrelated title-mis-land fix) already guarantees an
+escape hatch through any mode-3-like state in the transition.** The practical implication for
+the "design a fix" ask that followed the original B2 hypothesis: **no fix is needed** — moving
+the reset to fire at `fc_clear`'s own detection point is not required, because the auto-rematch
+path already reaches the existing `DRCOLDINIT` fix by a different route than assumed. This
+result was reported back before any fix code was written, since building a fix for a defect
+that doesn't reproduce would risk exactly the landmine flagged in that discussion for no
+benefit. If the live MiSTer duel report is confirmed as real, it now needs a different
+explanation than B2 — the leading candidate is simply that the observation was of P1 (the
+deliberately crude `DRP1NATIVE` AI on this exact cart), which the team lead's own second
+message already flagged as the likely alternate reading.
 
 ## Ship recommendation
 
@@ -207,9 +234,13 @@ them; `DRCOLDINIT` is the one load-bearing addition.
 ```
 cd experiments/opening_quality
 /home/struktured/projects/dr_mario_rl/tmp/venv/bin/python run_opening_quality.py \
-    --seeds 50 --pills 8 --stress --stress-gravth 10 --out results.json
+    --seeds 50 --pills 8 --stress --stress-gravth 10 --autorematch --out results.json
 ```
 
-Wall time: ~2 minutes (400 game-simulations x 8 pills, well under the 2h budget). Full raw
-per-pill records for every (arm, condition, seed, pill) are in `results.json`
-(`_stress` key holds the stress-sweep records).
+Wall time: ~2 minutes (400 game-simulations x 8 pills per arm/condition, well under the 2h
+budget). Full raw per-pill records for every (arm, condition, seed, pill) are in
+`results.json` (`_stress` holds the A' stress-sweep records; `_autorematch` holds the B2
+`mister-probe`/`mister-probe-nocoldinit` records — call `run_autorematch_sweep(arm_specs=
+ARM_SPECS)` directly for the Pocket-arm B2 comparison, saved separately as
+`autorematch_pocket.json` in this directory; `autorematch_mister.json` duplicates the
+default `_autorematch` key standalone).

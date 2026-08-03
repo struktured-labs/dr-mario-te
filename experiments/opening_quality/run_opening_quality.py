@@ -59,7 +59,24 @@ ARM_SPECS = {
                      DRSLAM_KOPEN="32", DRWRETRY="1", DRPENDBOUND="1", DRSTALLWD="1",
                      DRBUSYESC="1", DRCOLDINIT="1"),
 }
-ALL_FLAGS = sorted({k for spec in ARM_SPECS.values() for k in spec} | {"DRCOLDINIT"})
+
+# B2 (2026-08-02): the "v2/v3/v4-form" arms above are all DRHUMAN=1 (Pocket carts). fc_clear's
+# START injection is compiled out entirely `if not HUMAN_P1` (patch_cartridge_copro.py:984-988)
+# -- a human is expected to press their own START -- so those arms cannot exercise the
+# auto-injection path the MiSTer field report is actually about. The live "Stomper" probe cart
+# is a CvC duel (DRP1NATIVE=1, no DRHUMAN/DRPOCKET); flags below are copied EXACTLY from
+# driver-nav/roms/manifests/latch-converged-native-probe.json (git commit ee32402e, the deployed
+# build), which already carries DRCOLDINIT=1 -- matching the cart the user actually observed.
+MISTER_PROBE_SPEC = dict(DRBUSYESC="1", DRCOLDINIT="1", DRMINTHINK="12", DRNAVDWELL="0",
+                          DRNAVESC="1", DRNOFREEZE="1", DRP1NATIVE="1", DRPENDBOUND="1",
+                          DRRECOMMIT_NOFREEZE="1", DRSLAM_KOPEN="32", DRSTALLWD="1", DRWRETRY="1")
+MISTER_ARM_SPECS = {
+    "mister-probe": dict(MISTER_PROBE_SPEC),
+    "mister-probe-nocoldinit": {k: v for k, v in MISTER_PROBE_SPEC.items() if k != "DRCOLDINIT"},
+}
+
+ALL_FLAGS = sorted({k for spec in list(ARM_SPECS.values()) + list(MISTER_ARM_SPECS.values())
+                     for k in spec} | {"DRCOLDINIT"})
 
 
 def build(flags):
@@ -153,6 +170,8 @@ class Game:
         m.memory[0x0385], m.memory[0x0386] = self.x, self.y
         m.memory[0x03A5] = self.orient
         m.memory[0xF6] = 0
+        m.memory[0xF5] = 0    # P1 raw pad latch: no physical controller -> reads 0 unless the
+                               # driver itself injects a button this hook (autonav/fc_clear START)
         m.memory[0x1FE], m.memory[0x1FF] = (SENT - 1) & 0xFF, (SENT - 1) >> 8
         m.sp = 0xFD
         m.pc = self.labels["main"]
@@ -161,6 +180,11 @@ class Game:
             m.step()
             n += 1
         assert m.pc == SENT, "runaway pc=%04X frame=%d" % (m.pc, self.frame)
+        if m.memory[0xF5] != 0 and hasattr(self, "injected_starts"):
+            # checked HERE, not after frame_step(): frame_step() calls hook() twice
+            # (HOOKS_PER_FRAME=2) and the second hook's $F5=0 clear-at-entry would erase
+            # any injection the first hook made before an external caller could observe it.
+            self.injected_starts += 1
         if m.memory[self.WB + 0x84] != self.mbox_done:   # driver wrote GO (mailbox +0x84 changed)
             self.armed_live = True
             self.search_hooks = 0
@@ -270,6 +294,44 @@ class Game:
         self.spawn_hook = self.hook_n
         self.lateral_seen = False
 
+    def play_through_autorematch(self, search_hooks=20, transit_hooks=20):
+        """B2 (team-lead sub-hypothesis, 2026-08-02): does a CvC AUTO-rematch (no human hand
+        on a menu) ever reach the "menus"/mode-8 MATCH_ACTIVE clear at all? The probe ring
+        showed the real transition is modes 7->3->8->4, never touching 0/1 (a human-driven
+        menu). This drives the REAL compiled fc_clear ("full-clear auto-advance",
+        patch_cartridge_copro.py:963-989) through that exact scenario rather than asserting
+        what it does: set VCOUNT_P2 nonzero for a few real play hooks so the driver's own code
+        naturally latches VSEEN2=1 (:1039), then zero VCOUNT_P2 (a player "cleared their
+        board" -- the STAGE CLEAR trigger, :977-981) while MATCH_ACTIVE stays 1, then drive
+        hooks through modes 7, 3, 8 in that order with VCOUNT_P2 still 0 throughout (matching
+        the realistic case where the base game does not repopulate viruses until the new
+        match's play-mode actually begins) before restoring VCOUNT_P2 and resuming mode 4.
+        fc_clear's gate (:976, MATCH_ACTIVE!=0) never reads $0046, so if it keeps firing across
+        all three intervening modes, the driver never reaches EITHER the "menus" COLDINIT
+        clear or the mode-8 unconditional clear, regardless of the DRCOLDINIT flag -- this
+        method measures whether that is what actually happens, not just what the static trace
+        implies. force_stuck matches play_through_rematch: an abandoned in-flight search,
+        not a coincidentally-resolved one."""
+        VCOUNT_P2 = 0x03A4
+        self.force_stuck = True
+        self.m.memory[VCOUNT_P2] = 40           # let the driver's own code see a live count
+        for _ in range(search_hooks):
+            self.frame_step(4)                   # real play hooks -> VSEEN2 latches (:1037-1040)
+        self.force_stuck = False
+        self.injected_starts = 0                 # diagnostic: did fc_clear actually fire?
+        armed_before = self.m.memory[0x6161]     # ARMED2, for the "did dispatch ever resume" check
+        self.m.memory[VCOUNT_P2] = 0             # "P2 cleared the board" -> STAGE CLEAR trigger
+        for mode in (7, 3, 8):
+            for _ in range(transit_hooks):
+                self.frame_step(mode)             # injected_starts counted inside hook() itself
+        self.armed_frozen_through_transit = (self.m.memory[0x6161] == armed_before)
+        self.m.memory[VCOUNT_P2] = 40            # new match's board populated -> fc_clear gate clears
+        self.records = []
+        self.y, self.x, self.orient = 15, 3, 0
+        self._spawn_x = 3
+        self.spawn_hook = self.hook_n
+        self.lateral_seen = False
+
     def run_n_pills(self, n, max_frames=10000):
         for _ in range(max_frames):
             self.frame_step(4)
@@ -287,6 +349,42 @@ def run_arm_condition(arm, condition, seed, n_pills=8, stress=False, grav_th=GRA
         g.play_through_rematch()
     recs = g.run_n_pills(n_pills)
     return recs
+
+
+def run_autorematch_sweep(seeds=50, pills=8, arm_specs=None):
+    """B2: the third, empirically-driven arm x condition -- CvC auto-rematch (fc_clear-owned
+    modes 7/3/8, no human menu hand) vs the "menu-flow warm" condition already covered by
+    run_arm_condition's "warm". Becomes the permanent regression gate for the fc_clear-bypass
+    mechanism once a fix lands. Defaults to MISTER_ARM_SPECS: the DRHUMAN Pocket arms compile
+    out fc_clear's START injection entirely (:984-988) and so cannot exercise this path the
+    way the actual MiSTer CvC field report does."""
+    arm_specs = MISTER_ARM_SPECS if arm_specs is None else arm_specs
+    out = {}
+    for arm in arm_specs:
+        all_recs = []
+        starts_total = 0
+        frozen_count = 0
+        for seed in range(seeds):
+            P, unit1, labels = build(arm_specs[arm])
+            rng = random.Random(seed)
+            g = Game(P, unit1, labels, rng)
+            g.boot_cold()
+            g.play_through_autorematch()
+            starts_total += g.injected_starts
+            frozen_count += int(g.armed_frozen_through_transit)
+            recs = g.run_n_pills(pills)
+            for r in recs:
+                r["seed"] = seed
+            all_recs.extend(recs)
+        out[arm] = all_recs
+        n = len(all_recs)
+        zl = sum(r["zero_lateral"] for r in all_recs) / n if n else 0
+        wc = sum(r["wrong_column"] for r in all_recs) / n if n else 0
+        mean_hooks = sum(r["think_hooks"] for r in all_recs) / n if n else 0
+        print(f"AUTOREMATCH {arm:10s} n={n:4d}  zero_lateral={zl:5.1%}  wrong_column={wc:5.1%}  "
+              f"mean_think_hooks={mean_hooks:6.1f}  mean_starts_injected/seed={starts_total/seeds:5.1f}  "
+              f"armed_frozen_through_transit={frozen_count}/{seeds}")
+    return out
 
 
 def run_stress_sweep(seeds=50, pills=8, grav_th=10):
@@ -318,6 +416,7 @@ def main():
     ap.add_argument("--out", default=str(Path(__file__).parent / "results.json"))
     ap.add_argument("--stress", action="store_true", help="also run the hyp-A' fast-gravity stress sweep")
     ap.add_argument("--stress-gravth", type=int, default=10)
+    ap.add_argument("--autorematch", action="store_true", help="also run the B2 CvC auto-rematch sweep")
     args = ap.parse_args()
 
     out = {}
@@ -340,6 +439,10 @@ def main():
         print()
         stress_out = run_stress_sweep(seeds=args.seeds, pills=args.pills, grav_th=args.stress_gravth)
         out["_stress"] = stress_out
+    if args.autorematch:
+        print()
+        autorematch_out = run_autorematch_sweep(seeds=args.seeds, pills=args.pills)
+        out["_autorematch"] = autorematch_out
     with open(args.out, "w") as f:
         json.dump(out, f, indent=1)
     print(f"\nwrote {args.out}")
