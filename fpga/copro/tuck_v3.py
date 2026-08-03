@@ -39,6 +39,8 @@ range ($40-$6F) and primitives.py's soft scratch ($CA-$E6/$DC/$DE).
 """
 from __future__ import annotations
 
+import os
+
 # ============================================================ tuck_scan_v3 (enumerator) ==
 CAPACITY = 14
 CANDLIST = 0x61AC              # 14 x 5B: target, approach, trigger, rest, orient
@@ -65,7 +67,16 @@ TK2_BKIND = 0x7B                              # 0 = base won, 1 = a tuck won
 TK2_APP, TK2_TRIG = 0x7D, 0x7E                # winning candidate's approach/trigger
 TK2_TMPL, TK2_TMPH = 0x7F, 0x80               # gate-compare scratch
 
-THETA = 150
+# Build knob (team-lead directive, task #17 stage 3 -- firmware theta mini-sweep after
+# pass-1's L11 wash: fires/game 4.38 in firmware vs 2.80 at the offline theta*=150,
+# indicating theta=150 is a LOOSER gate in shipped-eval units than in the offline coef-
+# winner python units it was calibrated in). Read once at import time, same pattern as
+# EMIT_TUCK_V3 in build_copro_d3.py -- each worker process must set this env var BEFORE
+# importing tuck_v3/build_copro_d3 (a ProcessPoolExecutor initializer, one arm per
+# worker), never mutate it mid-process. Default "150" preserves pass-1's exact build
+# byte-for-byte (verified: unset DRCOPRO_TUCKV3_THETA -> THETA=150, identical to every
+# prior build in this file's history).
+THETA = int(os.environ.get("DRCOPRO_TUCKV3_THETA", "150"))
 
 # orient (H/V/RH/RV) -> o4 (test_depth2.py's convention: 0-1 vertical, 2-3 horizontal).
 # Derivation + self-check: fpga/copro/tuck_validation/tuck_orient_map.py (qa-harness).
