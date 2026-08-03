@@ -157,6 +157,42 @@ real board/clears, proven working 2026-07-26 evidence, but not headless, not pat
 and with no per-pill logger yet) remains the recommended fuller-fidelity follow-up instrument
 if that confirmation comes in.
 
+## Residual item: B2 (does a CvC auto-rematch ever reach the COLDINIT fix at all?)
+
+Team-lead sub-hypothesis, raised after the field data was clarified as a MiSTer CvC duel
+observation (Stomper cart, `DRCOLDINIT=1` already set) rather than Pocket: does the CvC
+auto-rematch flow ever reach the `"menus"` dispatch where `DRCOLDINIT`'s `MATCH_ACTIVE` clear
+lives, or does it structurally bypass it — which would mean the fix in this write-up doesn't
+even apply to the duel cart that showed the symptom?
+
+**Direct factual answer**: yes, mode 3 (and every mode except 4 and 8) reaches `"menus"`
+(`patch_cartridge_copro.py:1042-1043`: `CMP #8; BNE "menus"` — only mode 8 skips it) and gets
+the `if COLDINIT:` `MATCH_ACTIVE` clear at `:1061-1064`. Mode 8 itself gets an **unconditional**
+`MATCH_ACTIVE`/`VSEEN1`/`VSEEN2` clear (`:1043-1048`), regardless of `DRCOLDINIT`. So the
+probe-ring-observed `7→3→8→4` sequence passes through two different code paths that both clear
+`MATCH_ACTIVE`, on paper.
+
+**But there's an earlier gate that can make this moot**: the "full-clear auto-advance" block
+(`:963-989`) runs *before* the mode==4/mode==8 dispatch chain entirely, and its condition
+(`MATCH_ACTIVE!=0` and a player's `VCOUNT==0` with `VSEEN` set for that player) never reads
+`$0046` at all (the `NAV_V4` addition at `:975` only adds a `mode>=4` floor, which mode 3 and 8
+both clear or fail on their own terms — mode 3 fails it, mode 8 passes it, so this floor doesn't
+save mode 3 specifically). When this gate is true, the driver injects `START` and `RTS`s
+(`:989`) *before* reaching the mode-3/mode-8 clears described above, on every hook, regardless
+of what mode value the underlying game is in. Since `VSEEN1/2` are cleared by nothing except
+that same mode-8 unconditional reset, whether this gate stays true throughout `7→3→8→4` depends
+entirely on **when the base game repopulates the players' virus counts relative to those mode
+transitions** — that's base-game engine behavior, not something in the driver patch, and this
+write-up did not determine it (would need base ROM disassembly or an instrumented run
+correlating `$0046` against `VCOUNT_P1`/`VCOUNT_P2` frame-by-frame, e.g. from the probe ring if
+it captured `VCOUNT`, or a fourth harness arm). Left open rather than asserted either way.
+
+**Practical takeaway for the fix**: regardless of how this resolves, moving the `MATCH_ACTIVE`
+clear (or the fuller per-match reset) to fire the moment `fc_clear` detects a completed match
+(`:982`) rather than depending on reaching `"menus"`/mode-8 — as already recommended in the
+team-lead thread — sidesteps this whole question, since it acts before the ambiguity can matter
+for any mode-transition path, auto-rematch or human-menu-driven alike.
+
 ## Ship recommendation
 
 **Ship v4-form (or any Pocket build with `DRCOLDINIT=1`) for the Pocket cart.** It is the only
