@@ -294,24 +294,38 @@ class Game:
         self.spawn_hook = self.hook_n
         self.lateral_seen = False
 
-    def play_through_autorematch(self, search_hooks=20, transit_hooks=20):
-        """B2 (team-lead sub-hypothesis, 2026-08-02): does a CvC AUTO-rematch (no human hand
-        on a menu) ever reach the "menus"/mode-8 MATCH_ACTIVE clear at all? The probe ring
+    def play_through_autorematch(self, search_hooks=20, transit_hooks=20, transit_modes=(7, 3, 8)):
+        """B2 (team-lead sub-hypothesis, 2026-08-02): does an auto-rematch (no human hand on a
+        menu) ever reach the "menus"/mode-8 MATCH_ACTIVE clear at all? The MiSTer CvC probe ring
         showed the real transition is modes 7->3->8->4, never touching 0/1 (a human-driven
         menu). This drives the REAL compiled fc_clear ("full-clear auto-advance",
         patch_cartridge_copro.py:963-989) through that exact scenario rather than asserting
         what it does: set VCOUNT_P2 nonzero for a few real play hooks so the driver's own code
         naturally latches VSEEN2=1 (:1039), then zero VCOUNT_P2 (a player "cleared their
         board" -- the STAGE CLEAR trigger, :977-981) while MATCH_ACTIVE stays 1, then drive
-        hooks through modes 7, 3, 8 in that order with VCOUNT_P2 still 0 throughout (matching
-        the realistic case where the base game does not repopulate viruses until the new
-        match's play-mode actually begins) before restoring VCOUNT_P2 and resuming mode 4.
-        fc_clear's gate (:976, MATCH_ACTIVE!=0) never reads $0046, so if it keeps firing across
-        all three intervening modes, the driver never reaches EITHER the "menus" COLDINIT
-        clear or the mode-8 unconditional clear, regardless of the DRCOLDINIT flag -- this
-        method measures whether that is what actually happens, not just what the static trace
-        implies. force_stuck matches play_through_rematch: an abandoned in-flight search,
-        not a coincidentally-resolved one."""
+        hooks through transit_modes in order with VCOUNT_P2 still 0 throughout (matching the
+        realistic case where the base game does not repopulate viruses until the new match's
+        play-mode actually begins) before restoring VCOUNT_P2 and resuming mode 4. fc_clear's
+        gate (:976, MATCH_ACTIVE!=0) never reads $0046, so if it keeps firing across every
+        transit mode, the driver never reaches EITHER the "menus" COLDINIT clear or the mode-8
+        unconditional clear, regardless of the DRCOLDINIT flag -- this method measures whether
+        that is what actually happens, not just what a static trace implies.
+
+        transit_modes default (7,3,8) matches the measured MiSTer CvC probe-ring sequence, where
+        mode 3 (<4) is structurally exempt from fc_clear via the NAV_V4 floor at :975 (default
+        ON) and lets DRCOLDINIT's fix through. Pass transit_modes=(7,) to test the team-lead's
+        2026-08-02 scope-check hypothesis instead: a HUMAN cart's real rematch flow may go
+        straight from the results screen (mode 7, presumed) to play (mode 4) via the player's
+        own physical START press, with NO intervening mode<4 menu screen -- in which case the
+        NAV_V4 escape this write-up found for the CvC case never applies, and DRCOLDINIT alone
+        would NOT be enough even though fc_clear's own injection is compiled out for DRHUMAN
+        (:984-988) and so isn't what's making the human's real button work in the first place
+        (that flows through the base game's own controller read, independent of this driver
+        hook's dispatch decisions -- fc_clear's early-RTS only gates the DRIVER's OWN downstream
+        state-reset code, not the human's ability to press START).
+
+        force_stuck matches play_through_rematch: an abandoned in-flight search, not a
+        coincidentally-resolved one."""
         VCOUNT_P2 = 0x03A4
         self.force_stuck = True
         self.m.memory[VCOUNT_P2] = 40           # let the driver's own code see a live count
@@ -321,7 +335,7 @@ class Game:
         self.injected_starts = 0                 # diagnostic: did fc_clear actually fire?
         armed_before = self.m.memory[0x6161]     # ARMED2, for the "did dispatch ever resume" check
         self.m.memory[VCOUNT_P2] = 0             # "P2 cleared the board" -> STAGE CLEAR trigger
-        for mode in (7, 3, 8):
+        for mode in transit_modes:
             for _ in range(transit_hooks):
                 self.frame_step(mode)             # injected_starts counted inside hook() itself
         self.armed_frozen_through_transit = (self.m.memory[0x6161] == armed_before)
@@ -351,13 +365,14 @@ def run_arm_condition(arm, condition, seed, n_pills=8, stress=False, grav_th=GRA
     return recs
 
 
-def run_autorematch_sweep(seeds=50, pills=8, arm_specs=None):
-    """B2: the third, empirically-driven arm x condition -- CvC auto-rematch (fc_clear-owned
-    modes 7/3/8, no human menu hand) vs the "menu-flow warm" condition already covered by
+def run_autorematch_sweep(seeds=50, pills=8, arm_specs=None, transit_modes=(7, 3, 8), label="AUTOREMATCH"):
+    """B2: the third, empirically-driven arm x condition -- auto-rematch (fc_clear-owned
+    transit, no human menu hand) vs the "menu-flow warm" condition already covered by
     run_arm_condition's "warm". Becomes the permanent regression gate for the fc_clear-bypass
-    mechanism once a fix lands. Defaults to MISTER_ARM_SPECS: the DRHUMAN Pocket arms compile
-    out fc_clear's START injection entirely (:984-988) and so cannot exercise this path the
-    way the actual MiSTer CvC field report does."""
+    mechanism once a fix lands. Defaults to MISTER_ARM_SPECS/(7,3,8) (the measured CvC probe-ring
+    sequence); pass transit_modes=(7,) for the human-direct-START scope check (team-lead
+    2026-08-02) -- DRHUMAN arms compile out fc_clear's START injection (:984-988) but that's
+    irrelevant to this specific check (see play_through_autorematch's docstring)."""
     arm_specs = MISTER_ARM_SPECS if arm_specs is None else arm_specs
     out = {}
     for arm in arm_specs:
@@ -369,7 +384,7 @@ def run_autorematch_sweep(seeds=50, pills=8, arm_specs=None):
             rng = random.Random(seed)
             g = Game(P, unit1, labels, rng)
             g.boot_cold()
-            g.play_through_autorematch()
+            g.play_through_autorematch(transit_modes=transit_modes)
             starts_total += g.injected_starts
             frozen_count += int(g.armed_frozen_through_transit)
             recs = g.run_n_pills(pills)
@@ -381,7 +396,7 @@ def run_autorematch_sweep(seeds=50, pills=8, arm_specs=None):
         zl = sum(r["zero_lateral"] for r in all_recs) / n if n else 0
         wc = sum(r["wrong_column"] for r in all_recs) / n if n else 0
         mean_hooks = sum(r["think_hooks"] for r in all_recs) / n if n else 0
-        print(f"AUTOREMATCH {arm:10s} n={n:4d}  zero_lateral={zl:5.1%}  wrong_column={wc:5.1%}  "
+        print(f"{label} {arm:10s} n={n:4d}  zero_lateral={zl:5.1%}  wrong_column={wc:5.1%}  "
               f"mean_think_hooks={mean_hooks:6.1f}  mean_starts_injected/seed={starts_total/seeds:5.1f}  "
               f"armed_frozen_through_transit={frozen_count}/{seeds}")
     return out

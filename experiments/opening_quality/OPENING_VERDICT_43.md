@@ -220,6 +220,42 @@ explanation than B2 — the leading candidate is simply that the observation was
 deliberately crude `DRP1NATIVE` AI on this exact cart), which the team lead's own second
 message already flagged as the likely alternate reading.
 
+## Residual watch-item: the mode<4-skipping transition (no fix built — YAGNI, tied to the ring)
+
+A follow-up scope check asked whether a HUMAN cart's real rematch flow (results screen → the
+player's own physical START press → play) might skip mode 3 entirely and go straight from mode
+7 to mode 4 — in which case the `NAV_V4` escape hatch that saves the measured `7→3→8→4` CvC
+sequence would never apply, and `DRCOLDINIT` alone would not be enough even for a human cart.
+This was tested empirically (`play_through_autorematch(transit_modes=(7,))`, n=50 seeds,
+`autorematch_direct.json`): with a single mode-7-only transit and no mode<4 hook at all,
+**every arm — including `v4-form` and `mister-probe`, both with `DRCOLDINIT=1` — reproduced the
+full 100% zero-lateral defect**, identical to their own `nocoldinit` controls:
+
+| arm | transit | zero-lateral rate | mean think-hooks |
+|---|---|---|---|
+| `v4-form` | `(7,3,8)` (measured CvC sequence) | 11.8% (clean) | 74.0 |
+| `v4-form` | `(7,)` (direct, no menu) | 100.0% (broken) | 1127.0 |
+| `mister-probe` | `(7,3,8)` (measured CvC sequence) | 11.8% (clean) | 70.6 |
+| `mister-probe` | `(7,)` (direct, no menu) | 100.0% (broken) | 1127.0 |
+
+So the hypothesis is correct in principle: a mode-3-skipping transition would defeat
+`DRCOLDINIT` on any cart, human or CvC. **A fix was designed and prototyped** (a one-shot
+`FC_RST` latch at `fc_clear`'s own detection point, running the same cold-state reset used
+elsewhere without touching `MATCH_ACTIVE` itself — verified byte-identical to the pre-fix
+emission for every non-`DRCOLDINIT` flag combination tested, passed all pre-existing driver-nav
+regression tests, `run tests/test_nav_fullclear.py test_cart_matrix.py test_stallwd.py
+test_busyesc.py test_pocket_wretry.py test_pocket_reentry.py test_p1_native.py
+test_pocket_freeze.py`, and confirmed to cure the `(7,)` scenario for both `v4-form` and
+`mister-probe`) — **but it was not shipped.** The team lead's call: this is a real mechanism
+but a conjectured trigger — there is no field evidence a real cart's mode sequence ever
+skips mode 3, and building surgical `MATCH_ACTIVE`-adjacent code for a hypothetical path (with
+its own landmine risk, however carefully handled) is exactly the case for YAGNI. The probe ring
+(`DRPROBE`) now permanently records mode sequences on every live duel; if a real capture ever
+shows a transition that skips mode<4 entirely, that observed sequence — not this conjectured
+one — is what a fix should be built and tested against. `autorematch_direct.json` (this
+directory) is the retained evidence for that future decision; the fix itself was reverted and
+is not in either repo's history.
+
 ## Ship recommendation
 
 **Ship v4-form (or any Pocket build with `DRCOLDINIT=1`) for the Pocket cart.** It is the only
