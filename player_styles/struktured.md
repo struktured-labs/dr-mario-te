@@ -1,20 +1,19 @@
 # struktured — player style profile
 
-*DRMC handle: **TBD** — asked, not yet confirmed. Filed under the household/git handle
-"struktured" in the meantime; rename this file once the real handle comes back.*
+*DRMC handle: **struktured** (user-confirmed 2026-08-03 — same as his name here).*
 *Household co-pilot on this project; also the AI's primary test opponent.*
 
 ## Record vs the AI
 
 | opponent | result | notes |
 |---|---|---|
-| Combo Stomper (982291ef "classic-tempo" cart, Pocket, L11 MED, 2026-08-02 evening, "match 1") | **Loss (topout)** | EXIF+virus-counter reconstruction from 16 STUDY-pause photos recovers this as two separate games, not one — see below |
-| Combo Stomper (v4 fast+coldinit cart, Pocket, L11 MED, 2026-08-02 evening, "match 2") | **Stomper won 3–1** | one of the 4 games ended in an AI self-topout (consistent with the loss-autopsy's ~45% self-inflicted-loss rate); no photos for this sub-session, self-reported same night |
-| Combo Stomper (stomp180 build, Pocket, 2026-08-03, "tonight") | **0–3** | reported via task assignment relay; no photos/capture yet — first thing to fill in once available |
+| Combo Stomper (v3 "classic-tempo" cart, 982291ef, Pocket, L11 MED, 2026-08-02 evening, "Set A") | **Stomper won 3–2** | final game: he "busted at 46" — self-reported blunders + a played-for-fun caveat (team-lead, 2026-08-03). The 16-photo EXIF reconstruction below covers 2 of this set's games directly (not necessarily including the "busted at 46" game specifically) |
+| Combo Stomper (v4 fast+coldinit cart, Pocket, L11 MED, 2026-08-02 evening, "Set B", later than Set A) | **Stomper won 3–1** | one of the 4 games ended in an AI self-topout (consistent with the loss-autopsy's ~45% self-inflicted-loss rate); no photos for this sub-session, self-reported same night |
 
 Unlike [[dr_lulu]], no KO of the AI is recorded for struktured yet in either the
-photographed corpus or self-reports. The one detailed loss we can reconstruct
-(match 1) ended in *his* topout, not the AI's — the inverse of dr. lulu's KO pattern.
+photographed corpus or self-reports. The one detailed loss we can reconstruct from
+photos (Game A below, part of Set A) ended in *his* topout, not the AI's — the inverse
+of dr. lulu's KO pattern.
 
 ## Observed style (film study, n=16 stills across 2 games, 2026-08-02 — qualitative)
 
@@ -95,11 +94,15 @@ snapshots:
 ## Caveats
 
 n=16 stills covering 2 games from one evening (2026-08-02), plus 2 self-reported
-match summaries without photos, plus one bare score ("0-3 vs stomp180," today,
-2026-08-03) with no evidence at all yet. All style claims above are qualitative reads
-of footage or self-report, not decoded board data. The 1P=struktured attribution for
-the 2026-08-02 photos rests on the pre-existing first-person self-reports tied to the
-same date and cart-build tags (982291ef / v4 fast+coldinit) — those tags don't appear
-anywhere in [[dr_lulu]]'s corpus (stomp180, 2026-08-01), so the two players' sessions
-don't overlap. Update this file once the DRMC handle is confirmed and once tonight's
-0-3 session has any capture to point to.
+set summaries (Set A 3-2, Set B 3-1) without photos of their own. All style claims
+above are qualitative reads of footage or self-report, not decoded board data. The
+1P=struktured attribution for the 2026-08-02 photos rests on the pre-existing
+first-person self-reports tied to the same date and cart-build tags (982291ef / v4
+fast+coldinit) — those tags don't appear anywhere in [[dr_lulu]]'s corpus (stomp180,
+2026-08-01), so the two players' sessions don't overlap.
+
+**Correction (2026-08-03)**: an earlier draft of this file carried a third record-table
+row, "0-3 vs stomp180, tonight," sourced from the task-assignment message itself. Asked
+team-lead directly — they have no such score in their own session data, and it isn't
+a citable source. Removed per the "no orphan scores in dossiers" rule rather than
+guessing at where it came from.
