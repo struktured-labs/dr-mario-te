@@ -313,3 +313,50 @@ analysis are the next session's implementation work, not this one's.
 evaluation. The current firmware implementation does not deliver that
 value. Stage 3 closes here as a validated negative with a named next step,
 not an unresolved question.**
+
+## Dissection RESULTS (2026-08-04, n=40 firmware trajectories, 4876 decisions)
+
+Harness: dissect_trajectory.py (firmware θ150 drives; mirror shadow-queried
+per decision; both picks scored under the leaf_r47 mirror ruler). Analyzer:
+dissect_analyze.py. Data: results/dissect/dissect_L11_n40.jsonl.
+
+1. **ENUMERATOR-SET DIVERGENCE, CONFIRMED AT SCALE: 62.3%** (109/175) of the
+   firmware's actually-fired tucks do NOT exist in the python proof's
+   candidate list (RS.tuck_root_candidates, exec_only, fpr=12). The
+   divergence is concentrated in HORIZONTAL tucks: 71% of out-of-set fires
+   are horizontal vs 29% of in-set. tuck_scan_v3 reaches horizontal
+   slide-unders the proof never enumerated. THE MIRROR PROOF AND THE
+   FIRMWARE WERE NEVER TESTING THE SAME ACTION SPACE.
+
+2. **Firmware fire quality is NOT the problem**: mean mirror-margin of
+   firmware fires +507.7 (median +196) vs the mirror's own fires +514.2
+   (median +245). The out-of-set fires carry NEGATIVE regret (mean −561.7):
+   under the true ruler they are BETTER than the mirror's own best action on
+   the same board.
+
+3. **The two tuck channels nearly cancel**: firmware misses 109
+   mirror-visible tucks (fw_base_mir_tuck, +55,150 total regret, mean +506)
+   while gaining −58,421 from its out-of-set fires. Net tuck channel ≈ −3.3k
+   (slightly firmware-favourable). The steady bleed is BASE-ACTION
+   divergence: 376 base_diff events × 42.9 mean = +16,143 (leaf1-residual
+   flips, consistent with the earlier 20-board localization).
+
+4. **Regime flip**: firmware policy loses mirror-value in open (+9.4/dec)
+   and mid (+14.1/dec) but WINS endgame (−11.7/dec). Fires: 61% mid, 22%
+   end. Misses skew earlier (33% open) — the missed tucks are
+   opening/mid-game, where trajectory compounding has the most room.
+
+5. **Gate calibration**: 29.7% of firmware fires sit below θ=150 under the
+   mirror ruler (firmware's own margin computation admits them).
+
+**Reading**: the REAL-vs-WASH gap is NOT bad fires. Leads, in order:
+(a) missed early-game tucks (the mirror's −12.94 plausibly lives in
+opening/mid fires the firmware declines); (b) base-action divergence
+compounding; (c) below-θ drag. Named next experiment: offline UNION-
+enumerator A/B under the mirror ruler (candidates = union of both sets) to
+measure the ceiling, then align enumerators toward whichever set the union
+proves out — the horizontal-tuck reach gap is the concrete engineering item.
+
+Status: #17 dissection phase CLOSED with mechanism named. Enumerator
+alignment is future work; #47 (abandoned material) took priority per the
+user's field session of 2026-08-03.
