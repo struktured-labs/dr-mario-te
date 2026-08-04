@@ -178,3 +178,9 @@ race in at least matches 1 and 5 and still lost them. First human SET WIN over
 the Combo Stomper on record (dr_lulu's wins were individual KOs; struktured
 takes a full set). Player was tired/careless by their own account — a rested
 rematch on the Dock (big screen) is the natural follow-up.
+
+**Player correction (same night):** "all my own topouts were human blunders
+(the computer added some pressure tho)" — matches 3 and 4 were unforced
+errors under fatigue, not AI-engineered kills. Amends the set read: the AI's
+two wins were gifted, not earned; its pressure was a contributing background
+factor at most. The AI won zero games on its own merits this set.
