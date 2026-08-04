@@ -163,3 +163,18 @@ AI's junk debt mature.
   unresolved). AI cleared only 12/48 viruses vs the tired player's 13; junk
   strata sealing its field again. Both AI wins tonight came from opponent
   self-topouts, not its own conversion.
+
+- Match 5: **WIN by AI self-topout at 27–24** (no photo — the end screen
+  cleared to the W/GAME OVER dialog before the player could capture it; this
+  prompted the final-board-hold feature request, task #48). The AI was AHEAD
+  on the race (24 left vs 27) and died anyway — "I had better structure...
+  it loses to itself on the Pocket, or maybe from my small amount of counter
+  pressure." **Set final: 3–2 struktured.**
+
+**Set summary (2026-08-03, Pocket v4):** ALL FIVE games ended in self-topouts
+(AI: matches 1, 2, 5; struktured: 3, 4) — zero clears either side. The set was
+decided entirely by junk-debt maturity, not clear speed. The AI led the virus
+race in at least matches 1 and 5 and still lost them. First human SET WIN over
+the Combo Stomper on record (dr_lulu's wins were individual KOs; struktured
+takes a full set). Player was tired/careless by their own account — a rested
+rematch on the Dock (big screen) is the natural follow-up.
