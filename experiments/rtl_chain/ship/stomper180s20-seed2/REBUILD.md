@@ -45,3 +45,8 @@ never touch), or modest copro MHz reduction.
 **The Pocket build is unaffected**: its own fit carries +1.586 worst setup
 slack (15x the MiSTer margin) on a different device; the strand20 Pocket
 payload ships regardless.
+
+**RESOLUTION**: seed 7 = **+0.156 slack, TNS 0.000**, ALM 37,661 — deployed
+2026-08-04 ~10:15 as `NES_stomper180s20b_20260804.rbf` (72d5a92f), duel
+relaunched via combo_stomper_s20b_probe.mgl. s20b supersedes the seed-2 rbf
+for the MiSTer; seed-2 kept on device per keep-all-versions.
