@@ -50,3 +50,10 @@ payload ships regardless.
 2026-08-04 ~10:15 as `NES_stomper180s20b_20260804.rbf` (72d5a92f), duel
 relaunched via combo_stomper_s20b_probe.mgl. s20b supersedes the seed-2 rbf
 for the MiSTer; seed-2 kept on device per keep-all-versions.
+
+s20b freeze #1 at ~13:45 (~3.5h post-deploy; frozen-counts class). Better than
+seed2 (48min) but likely still above chain180 baseline. NEW WORKING THEORY if
+rate stays elevated at matched slack: CMD-8 adds ~28 GO transactions/decision
+(~2x mailbox traffic) -> proportional exposure to the KNOWN copro-wait/GO-storm
+freeze class (see freeze #4/#40 + unfixed stale-ARMED2 defect). Remedy would be
+the driver-side ARMED2 fix, not further reseeds.
