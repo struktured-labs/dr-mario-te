@@ -380,3 +380,26 @@ enumerators on the union — concretely, characterize the set difference
 extend tuck_scan_v3 (the validated 6502/RTL scanner) to cover the RS-only
 class, and re-prove the converged set under the mirror before any firmware
 build. Data: results/union_theta150.json.
+
+## Set-difference characterization (2026-08-04, 20 games / 2,433 decisions)
+
+characterize_setdiff.py: physically-normalized candidate sets per decision:
+
+- shared **2,208 (28%)** — the enumerators barely overlap
+- RS-only **1,527 (19%)**: 88% HORIZONTAL, concentrated DEEP (rows 10-15;
+  254 at the floor row itself) — these are the missed early/mid-game tucks
+  behind the dissection's +55k regret channel
+- FW-only **4,219 (53%)**: all orientations (H 1242, RH 1917, V 411, RV 649),
+  mass at rows 8-12 — the mid-board slide-unders whose fires beat even the
+  mirror's own best actions
+
+Scanner-extension design target: tuck_scan_v3 must additionally reach the
+DEEP HORIZONTAL class (floor-adjacent resting rows with longer lateral
+travel under overhangs) that RS's executability model admits and scan_v3's
+reach model currently rejects. RS's own gap (everything scan_v3 sees that it
+doesn't) needs no fix — the proof side simply adopts the union via
+union_cands() for scoring. Sequence: (1) extend ref_tuck_scan_v3 + assert it
+now covers RS-only class on this corpus; (2) port the extension to the 6502
+scanner + bit-exact gate vs ref (67-board discipline); (3) re-prove the
+converged set under the mirror (expect ≈ −20); (4) firmware θ recalibration
+(more candidates -> more fires; θ may need raising); (5) silicon.
