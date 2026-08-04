@@ -132,3 +132,12 @@ die before converting — the abandoned-material weakness struktured has
 flagged twice before. Working hypothesis strengthened: struktured beats
 machine tempo by OUT-LASTING — stay clean, survive the early race, let the
 AI's junk debt mature.
+
+- Match 3: **LOSS by own self-topout at 41–39** (photo:
+  evidence/drm_2p_20260803_game3_loss.jpg; crown tracker 2–1 struktured).
+  Early-game death: struktured's bottle blocked by a center junk column at the
+  neck with 41 viruses still up — the AI won on the opponent's unforced error,
+  not by clearing (its own field still virus-dense at 39). Player was "too busy
+  playing" to grade the rematch openings (task #46 field check still open).
+  Note the symmetry: in this rivalry BOTH sides' losses tonight are
+  self-topouts — the matchup is race-vs-survival on both boards.
