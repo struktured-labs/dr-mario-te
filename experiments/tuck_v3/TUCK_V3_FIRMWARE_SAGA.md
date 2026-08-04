@@ -360,3 +360,23 @@ proves out — the horizontal-tuck reach gap is the concrete engineering item.
 Status: #17 dissection phase CLOSED with mechanism named. Enumerator
 alignment is future work; #47 (abandoned material) took priority per the
 user's field session of 2026-08-03.
+
+## UNION-ENUMERATOR VERDICT (2026-08-04, n=120, mirror ruler, θ=150)
+
+union_mirror.py, same seeds/protocol as the mirror curve (RS-only arm
+REPRODUCED the original −12.94 [−20.43,−5.48] exactly — rig sanity holds):
+
+- **UNION vs off: −20.02 [−27.11,−13.19] REAL** (clear 95.8→97.5%)
+- **UNION vs RS-only: −7.83 [−13.57,−2.30] REAL** — the firmware's
+  out-of-proof candidates (2.12 of 5.11 fires/g; predominantly horizontal
+  slide-unders) carry additive value the proof never measured.
+
+**The proof's enumerator was the limiter.** The dissection's two cancelling
+channels are now explained as one defect seen from both sides: each
+enumerator holds value the other can't see. The tuck ceiling is ~−20
+pills/game, 1.5x the original prize. NAMED NEXT BUILD: converge the
+enumerators on the union — concretely, characterize the set difference
+(which RS-visible candidates tuck_scan_v3 misses, and vice versa), then
+extend tuck_scan_v3 (the validated 6502/RTL scanner) to cover the RS-only
+class, and re-prove the converged set under the mirror before any firmware
+build. Data: results/union_theta150.json.
