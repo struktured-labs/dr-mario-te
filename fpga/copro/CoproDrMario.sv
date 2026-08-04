@@ -127,6 +127,7 @@ wire  [6:0] lev_rvc;
 wire  [5:0] lev_rvv;
 wire  [3:0] lev_chain;         // clear ROUNDS the resolve performed (1 = plain, >1 = cascade)
 wire        lev_dv_fallback;   // delta (CMD 7) hit a clearing placement -> firmware re-issues CMD 4
+wire  [6:0] lev_strand;        // CMD 8 (#47): stranded-half count of the engine's current board
 LeafEval leafeval(
 	.clk   (clk_cpu),
 	.rst   (cpu_rst),
@@ -153,7 +154,8 @@ LeafEval leafeval(
 	.rv_vir(lev_rvv),
 	.imm   (lev_imm),
 	.chain (lev_chain),
-	.dv_fallback(lev_dv_fallback)
+	.dv_fallback(lev_dv_fallback),
+	.strand(lev_strand)
 );
 reg [7:0] lev_q;
 always @(posedge clk_cpu)
@@ -161,6 +163,7 @@ always @(posedge clk_cpu)
 		4'h0: lev_q <= lev_sco[7:0];
 		4'h1: lev_q <= lev_sco[15:8];
 		4'h2: lev_q <= {7'b0, lev_win};
+		4'h3: lev_q <= {1'b0, lev_strand};        // $70x3 (#47): CMD-8 stranded-half count
 		4'h8: lev_q <= (AB[7:4] == 4'hE) ? {7'b0, lev_legal} : {7'b0, lev_done};
 		4'h9: lev_q <= {1'b0, lev_rvc};
 		4'hA: lev_q <= {2'b0, lev_rvv};

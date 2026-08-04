@@ -52,6 +52,9 @@ def build_image(board, cA, cB, nA, nB):
     D3.USE_ENGINE = True         # full BoardEngine: land/resolve/leaf/copies in RTL
     D3.DISC = True               # temporal discount d=0.5 (dual-end fix, +14% solo efficiency)
     D3.EH_PLY1 = True            # ply-1 excav+hang firmware add-on (eh_terms -> D_AD)
+    # #47 stranded-half root cost (env DRSTRAND, default 0 = byte-identical firmware;
+    # dose 20 = the mirror+VS-gated config, see eval47/SILICON_PLAN.md).
+    D3.DRSTRAND = int(os.environ.get("DRSTRAND", "0"))
     import nes_d3_golden as _G
     _G.DISC_SHIFT = 1            # golden must match for the py65 gate
     _G.EXCAV_HANG_PLY1 = True    # golden must match for the py65 gate
