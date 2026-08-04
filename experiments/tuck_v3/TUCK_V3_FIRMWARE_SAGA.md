@@ -457,3 +457,24 @@ approximations (v4 iters 1-4, best 84%/−16.56 REAL) are OBSOLETE as the
 target; they remain as the fallback if the BFS port doesn't fit ROM. Value
 gate of the TE-free set under the mirror: running (te_mirror.log). Next:
 6502 BFS port + bit-exact vs TE-free + θ recal + capacity policy.
+
+## Enumerator value table — day's end (2026-08-04, all n=120, mirror, θ=150)
+
+| enumerator | pills vs off | fires/g |
+|---|---|---|
+| RS (old proof) | −12.94 [−20.43,−5.48] | 3.17 |
+| v4 masks (84% union) | −16.56 [−24.11,−9.11] | 4.39 |
+| UNION (RS ∪ v3) | −20.02 [−27.11,−13.19] | 5.11 |
+| TE-free (full truth) | −15.56 [−24.09,−6.91] | 7.96 |
+
+All REAL; CIs overlap heavily — the BETWEEN-variant differences are not
+individually resolved at n=120. What IS established: richer-than-RS
+enumeration is worth −15..−20 (vs the shipped firmware's ~0), and fires/g
+scales with pool size ⇒ **θ=150 is calibrated for a ~3-fire pool; the
+bigger pools over-fire.** Next lever: per-enumerator θ sweep (expect
+TE-free's optimum at θ≥250 to match or beat the union's −20).
+
+DAY VERDICT: convergence question CLOSED (TE-free BFS = the portable
+motion truth; free≡gravity; v3 ⊂ TE-free; timing never binds). Remaining
+engineering, in order: θ sweep on TE-free set → 6502 BFS port (512-state,
+bit-exact vs TE-free) → capacity policy → firmware A/B → silicon.
