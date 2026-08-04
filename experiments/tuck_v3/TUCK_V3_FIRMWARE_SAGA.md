@@ -403,3 +403,19 @@ now covers RS-only class on this corpus; (2) port the extension to the 6502
 scanner + bit-exact gate vs ref (67-board discipline); (3) re-prove the
 converged set under the mirror (expect ≈ −20); (4) firmware θ recalibration
 (more candidates -> more fires; θ may need raising); (5) silicon.
+
+## Corridor-rule coverage (2026-08-04) — extension design CLOSED
+
+corridor_coverage.py, same 20-game corpus: a generalized-approach corridor
+rule (entry column-pair with open sky to trigger row r, clear corridor at r,
+lateral budget |s−c| ≤ K·(rf−r+1)) covers the RS-only class at:
+
+- horizontal: K=1 → 94.9%, **K=2 → 99.3% = the K=∞ geometric ceiling**
+  (the residual 0.7% needs multi-row pathing; not worth the complexity)
+- vertical: **100% at K=1**
+
+**Design decision: scan_v4 = scan_v3 + corridor walk with K=2**, all
+first_occ-table arithmetic (6502-amenable, no new primitives). Next:
+implement ref_tuck_scan_v4 + corpus coverage assert (>= 99% of union),
+mirror re-prove the v4-enumerated set (expect ≈ −20), then 6502 port +
+bit-exact gate, θ recalibration, silicon.
