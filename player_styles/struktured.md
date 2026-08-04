@@ -106,3 +106,19 @@ row, "0-3 vs stomp180, tonight," sourced from the task-assignment message itself
 team-lead directly — they have no such score in their own session data, and it isn't
 a citable source. Removed per the "no orphan scores in dossiers" rule rather than
 guessing at where it came from.
+
+## Field report — 2026-08-03 evening (self-reported, no footage)
+
+First match of the evening session (Pocket, presumed v4 fast+coldinit 24dcd9dc —
+the ship config on their SD): **struktured WIN by AI self-topout at 26–15**
+(virus counts; the AI was ahead on clears — "it was faster"). Player's own read:
+"it had stacks of columns with crap it couldn't clear."
+
+Style significance: this is the second AI self-topout against this player
+(first: Set B, 2026-08-02) and zero self-topouts occurred in 400 logged CvC
+losses — the failure mode appears to be human-specific. The described mechanism
+(racing virus clears while abandoning off-color pill halves into unexcavated
+towers) matches the abandoned-material weakness struktured has flagged twice
+before. Working hypothesis: struktured wins by OUT-LASTING, not out-racing —
+survive the AI's early tempo, let its junk debt mature. Not yet corroborated by
+footage; player said recording will come later ("phone it is").
