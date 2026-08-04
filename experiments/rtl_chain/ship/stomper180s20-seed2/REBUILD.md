@@ -30,3 +30,18 @@ Deployed to the user's MiSTer 2026-08-04 02:45 as `_Console/NES_stomper180s20_20
 - VS vs chain180 n=60: 54.2% [45.8,62.5], atk 11.87v11.31 (attack channel intact)
 - tb_strand 200/200 (incl. user-flagged silicon fixture); co-sim GATE PASS CELL-EXACT
 - byte-identity: DRSTRAND unset reproduces c87e60a1 (baseline) AND f4b6dfbf (ship)
+
+## Silicon stability addendum (2026-08-04 morning)
+
+The seed-2 MiSTer build (+0.102 slack) froze **3x in ~7h** of duel soak
+(03:33 black-screen save-refusal; 08:35 frozen-counts; ~10:00 frozen-counts)
+vs chain180's (+0.181) historical ~1.5/day. All three are pre-existing freeze
+classes, but the RATE convicts the thin margin in practice. Seed sweep:
+seed2 +0.102 / seed3 −0.327 / seed5 −0.049 / seed7 (pending). Duel reverted
+to chain180 at ~10:02 pending a passing build. If no seed clears ~+0.15, the
+next lever is a dedicated copro-clock retime (NOT clk85 — SDRAM/EEPROM clock,
+never touch), or modest copro MHz reduction.
+
+**The Pocket build is unaffected**: its own fit carries +1.586 worst setup
+slack (15x the MiSTer margin) on a different device; the strand20 Pocket
+payload ships regardless.
