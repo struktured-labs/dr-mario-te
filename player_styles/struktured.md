@@ -151,3 +151,15 @@ AI's junk debt mature.
   eval blind spot, third sighting tonight. Post-rematch board otherwise
   structurally sane (lateral spread, no spawn-column wedge) — soft field
   evidence FOR v4's rematch cure (#46).
+
+- Match 4: **LOSS by own self-topout at 35–36** (photo:
+  evidence/drm_2p_20260803_game4_loss.jpg; crowns 2–2). Player self-report:
+  "careless and tired from work," Pocket screen size hurting readability.
+  Player-flagged AI error, confirmed on zoom: red-over-blue VERTICAL at the
+  AI's left wall on a yellow shelf — both halves matching nothing (4th
+  abandoned-material sighting tonight). Caveat: could alternatively be two
+  VS-garbage singles from the player's own double-clears (sprite detail at
+  photo blur limit; player asked whether any doubles landed that game —
+  unresolved). AI cleared only 12/48 viruses vs the tired player's 13; junk
+  strata sealing its field again. Both AI wins tonight came from opponent
+  self-topouts, not its own conversion.
