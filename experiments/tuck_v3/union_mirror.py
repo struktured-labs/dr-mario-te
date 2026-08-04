@@ -38,7 +38,8 @@ for _p in (HERE, ROOT + "/tmp/combo_term", ROOT + "/tmp/endgame", ROOT + "/tmp/t
         sys.path.insert(0, _p)
 
 _C = {}
-THETA = 150.0
+import os as _os0
+THETA = float(_os0.environ.get("UM_THETA", "150"))
 
 
 def _init(level, arm):

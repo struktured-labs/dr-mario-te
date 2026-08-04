@@ -478,3 +478,17 @@ DAY VERDICT: convergence question CLOSED (TE-free BFS = the portable
 motion truth; free≡gravity; v3 ⊂ TE-free; timing never binds). Remaining
 engineering, in order: θ sweep on TE-free set → 6502 BFS port (512-state,
 bit-exact vs TE-free) → capacity policy → firmware A/B → silicon.
+
+## TE-free θ curve — FINAL (2026-08-04 evening, n=120 mirror)
+
+| θ | pills vs off | fires/g |
+|---|---|---|
+| 150 | −15.56 [−24.09,−6.91] | 7.96 |
+| **250** | **−18.05 [−25.69,−10.63]** | **4.84** |
+| 400 | −13.04 [−19.67,−6.49] | 2.59 |
+
+**Ship config for the port: TE-free enumerator @ θ=250** (−18.05, statistically
+indistinguishable from the union's −20.02, on the exact motion-truth set the
+executor can perform). #17 next session: 6502 BFS port (512-state, bit-exact
+vs TE-free), capacity policy, firmware A/B at θ250, then silicon — with the
+driver stale-ARMED2 fix as the freeze-exposure companion work.
