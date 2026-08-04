@@ -57,3 +57,8 @@ rate stays elevated at matched slack: CMD-8 adds ~28 GO transactions/decision
 (~2x mailbox traffic) -> proportional exposure to the KNOWN copro-wait/GO-storm
 freeze class (see freeze #4/#40 + unfixed stale-ARMED2 defect). Remedy would be
 the driver-side ARMED2 fix, not further reseeds.
+
+s20b freeze #2 @ ~19:00 (~5.3h after #1). s20b rate ~5.5/day vs chain180
+~1.5/day at near-matched slack (+0.156 vs +0.181) — timing largely EXONERATED;
+GO-traffic/ARMED2 exposure theory now primary. Named fix: driver stale-ARMED2
+re-entrancy repair (dr-mario-p0-defects-verified), next silicon session.
