@@ -438,3 +438,22 @@ reach-mask extension) meets (3); mirror value A/B n=120 running (v4_mirror.log)
 answers (1). If v4 lands ≈ −18..−20 REAL, the missed candidates were
 low-value and the design closes; if ≈ −13, the miss class carries the value
 and the sweep needs the supported-slide mode.
+
+## THE CONVERGENCE ANSWER (2026-08-04 afternoon)
+
+Three measurements settle the enumerator question:
+1. TE path dumps for the stable miss class: every missed candidate uses
+   SOFT-DROP + MID-FLIGHT ROTATION — geometry+rotation binds, timing does not.
+2. **TE free ≡ TE gravity on 1,094 real boards (5,474 tucks, ZERO diff either
+   way)** — at 12 f/row with soft drop, the frame budget NEVER binds.
+3. **100% of scan_v3's out-of-RS candidates are TE-free-legal** — no phantom
+   value in the union's −20.02; RS's deficit was its extra reach filter, not
+   motion truth.
+
+**Converged enumerator = TE-free's tuck set** (⊇ union ⇒ mirror value ≥
+−20.02): a pure geometry+rotation BFS over (x, y, orient) = 512 states,
+64-byte visited plane — cleanly portable to 6502 (and RTL). Mask-sweep
+approximations (v4 iters 1-4, best 84%/−16.56 REAL) are OBSOLETE as the
+target; they remain as the fallback if the BFS port doesn't fit ROM. Value
+gate of the TE-free set under the mirror: running (te_mirror.log). Next:
+6502 BFS port + bit-exact vs TE-free + θ recal + capacity policy.

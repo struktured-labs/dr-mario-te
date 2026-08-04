@@ -46,12 +46,28 @@ def _reach_rows_h(board):
             if not occ(board, r, c) and not occ(board, r, c + 1):
                 m |= 1 << c
         open_m[r] = m
+    # support mask: pair at (r,c) is SUPPORTED if either cell below is occupied
+    sup = [0] * ROWS
+    for r in range(ROWS):
+        m = 0
+        for c in range(COLS - 1):
+            below = (r + 1 >= ROWS) or occ(board, r + 1, c) or occ(board, r + 1, c + 1)
+            if below:
+                m |= 1 << c
+        sup[r] = m
     reach = [0] * ROWS
     prev = open_m[0]                      # anything open at the top row is enterable
     for r in range(ROWS):
         cur = (prev & open_m[r]) if r > 0 else open_m[0]
         for _ in range(K):
             cur |= ((cur << 1) | (cur >> 1)) & open_m[r]
+        # supported-slide fixpoint: while resting on support, lateral moves are
+        # free (no descent consumed) -- dilate within open&sup until stable
+        for _ in range(COLS):
+            nxt = cur | (((cur << 1) | (cur >> 1)) & open_m[r] & sup[r])
+            if nxt == cur:
+                break
+            cur = nxt
         reach[r] = cur
         prev = cur
     return reach
@@ -67,12 +83,25 @@ def _reach_rows_v(board):
             if not occ(board, r, c) and not occ(board, r - 1, c):
                 m |= 1 << c
         open_m[r] = m
+    sup = [0] * ROWS
+    for r in range(1, ROWS):
+        m = 0
+        for c in range(COLS):
+            below = (r + 1 >= ROWS) or occ(board, r + 1, c)
+            if below:
+                m |= 1 << c
+        sup[r] = m
     reach = [0] * ROWS
     prev = open_m[1] if ROWS > 1 else 0
     for r in range(1, ROWS):
         cur = (prev & open_m[r]) if r > 1 else open_m[1]
         for _ in range(K):
             cur |= ((cur << 1) | (cur >> 1)) & open_m[r]
+        for _ in range(COLS):
+            nxt = cur | (((cur << 1) | (cur >> 1)) & open_m[r] & sup[r])
+            if nxt == cur:
+                break
+            cur = nxt
         reach[r] = cur
         prev = cur
     return reach

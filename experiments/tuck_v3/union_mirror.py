@@ -110,6 +110,11 @@ def play(seed):
         elif arm == "rs":
             import root_search as RS
             tc = RS.tuck_root_candidates(fb, ca, cb, 12, True)
+        elif arm == "te":
+            import tuck_enum as _TE
+            tc = [{"cells": tuple(p["cells"]), "colors": tuple(p["colors"]), "src": "te"}
+                  for p in _TE.enumerate(fb, ca, cb, mode="free")
+                  if p["is_tuck"] and p["reachable"]]
         elif arm == "v4":
             import numpy as np
             from scan_v4 import scan_v4 as _sv4
