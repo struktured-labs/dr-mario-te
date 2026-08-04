@@ -184,3 +184,24 @@ rematch on the Dock (big screen) is the natural follow-up.
 errors under fatigue, not AI-engineered kills. Amends the set read: the AI's
 two wins were gifted, not earned; its pressure was a contributing background
 factor at most. The AI won zero games on its own merits this set.
+
+## Field report — 2026-08-04 evening: FIRST strand20 session (TV, 13-frame photo series)
+
+Opponent: **strand20** (the #47 stranded-half fix, installed on the Pocket SD
+core this same evening), v4 cart, displayed on the living-room TV. Photos:
+match_17-29 (~19:14-19:24), the densest capture set to date (the live album
+poller's first outing — user: "holy crap ur live album poller worked").
+
+**Result: struktured 3-0 SWEEP; game 3 won by FULL CLEAR (virus 00-02, three
+crowns) — the first recorded human full-clear victory over any Stomper
+build.** Game 1 (match_27): AI topped out AHEAD at 33-11 — the
+dies-while-ahead pattern persists across brains. Its visible death-board
+region shows NO marooned verticals / towers (stranded fix style improvement
+suggestive), but the X + doctor overlays hide the lower rows — #48
+final-board-hold would have settled it.
+
+Working conclusion: #47 fixed the STYLE disease; the SURVIVAL disease
+(spawn-area congestion under human counter-pressure while racing) is a
+separate mechanism — candidate remedy: height/spawn-lane pricing re-tested
+UNDER GARBAGE PRESSURE rather than clean solo boards (the wt term interfered
+offline in solo; VS-vs-human is its real habitat).
