@@ -141,3 +141,13 @@ AI's junk debt mature.
   playing" to grade the rematch openings (task #46 field check still open).
   Note the symmetry: in this rivalry BOTH sides' losses tonight are
   self-topouts — the matchup is race-vs-survival on both boards.
+
+  **Match-3 frame close-read (zoomed crops)**: the winning frame catches the
+  AI mid-clear — a 4-cell red PILL-junk pop (no viruses in the match) with the
+  orphaned yellow half about to fall. The player-flagged error, confirmed on
+  zoom: a red-red vertical pill parked at height (~col 6) on yellow/blue
+  support with no red beneath it — marooned, while its own red disposal
+  column was popping two columns left in the same frame. Abandoned-material
+  eval blind spot, third sighting tonight. Post-rematch board otherwise
+  structurally sane (lateral spread, no spawn-column wedge) — soft field
+  evidence FOR v4's rematch cure (#46).
