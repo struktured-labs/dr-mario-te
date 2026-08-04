@@ -71,7 +71,8 @@ module LeafEval(
 	output reg  [5:0] rv_vir,      // widened for fixpoint: a cascade can clear > 15 viruses
 	output reg [15:0] imm,
 	output reg  [3:0] chain,       // clear ROUNDS performed (1 = plain clear, >1 = cascade)
-	output reg        dv_fallback   // CMD 7 (DELTA): placement clears -> host must re-issue as full NODE
+	output reg        dv_fallback,  // CMD 7 (DELTA): placement clears -> host must re-issue as full NODE
+	output reg  [6:0] strand       // CMD 8 (#47): stranded-half count of the current bcell board
 );
 
 // CUR as registers (the eval/scan walks index it combinationally); the 3 snapshot
@@ -250,6 +251,10 @@ localparam S_GRAV2=41,          // second cell of a two-cell body: READ
            S_APPLY2=43,         // apply sweep: WRITE
            S_GRAV_M=44,         // gravity: WRITE first cell
            S_GRAV2M=45;         // gravity: WRITE partner cell
+// CMD 8 stranded scan (#47): READ/DECIDE split per the blink timing lesson above --
+// the 128:1 col_of muxes land in registers in S_STR_R, the compare+count runs on
+// registers only in S_STR_D.
+localparam S_STR_R=57, S_STR_D=58;
 // link codes -- "which way the partner lies" (cascade_link_x.py)
 localparam [2:0] LK_NONE=3'd0, LK_UP=3'd1, LK_DOWN=3'd2, LK_LEFT=3'd3, LK_RIGHT=3'd4;
 reg [3:0] cmd_l;
@@ -259,6 +264,10 @@ reg       node_leaf;           // CMD_NODE: run the leaf after resolve
 reg [4:0]   fo1, fo2, fwp;     // first-occ results + walk pointer
 reg [6:0]   off_a, off_b;      // placed cell offsets
 reg [127:0] markb;             // targeted-clear mark bits
+// ---- CMD 8 stranded scan (#47) working regs ----
+reg [6:0]   str_i;             // cell cursor 0..127
+reg [1:0]   rs_c, rs_u, rs_d, rs_l, rs_r;   // registered self + 4 neighbour colours
+reg         rs_p;              // self is an occupied NON-virus (pill) cell
 reg [1:0]   li;                // scan line index 0..3
 reg [7:0]   soff;              // scan offset
 reg [3:0]   sstep;             // scan step (1 or 8)
@@ -416,6 +425,13 @@ always @(posedge clk) begin
 				od_set <= 0; nd_set <= 0; dd_matched <= 13'd0; dd_pol <= 0; dd_holes <= 0; affbit <= 128'd0;
 				dphase <= 2'd0;
 				st <= S_FO1;
+			end
+			else if (cmd == 4'd8) begin                          // STRANDED count of bcell (#47)
+				// Read-only over bcell; deliberately touches NO leaf/delta/base mode
+				// state, so it can run between a root NODE/DELTA eval and the next
+				// command without perturbing the search flow.
+				strand <= 7'd0; str_i <= 7'd0;
+				st <= S_STR_R;
 			end
 		end
 
@@ -1117,6 +1133,26 @@ always @(posedge clk) begin
 					dws <= (off_a[6:3] >= 4'd2) ? (off_a[6:3] - 4'd2) : 4'd0;
 				end else st <= dbur_new ? S_DUNPL : S_DCOMB;      // setup done -> unplace / combine
 			end else dws <= dws + 1'b1;
+		end
+		// ================= CMD 8: stranded-half scan (#47) =================
+		// A pill cell with NO same-colour orthogonal neighbour can never match
+		// without excavation (terms47.g_stranded / cascade_stranded_x, both
+		// offline gates green). Read-only over bcell; runs after a NODE/DELTA
+		// left the child board in bcell. 2 cycles/cell = 256 cycles ~ 5us.
+		S_STR_R: begin         // READ: register the 128:1 muxed colours
+			rs_c <= col_of[str_i];
+			rs_p <= occ_of[str_i] && !vir_of[str_i];
+			rs_u <= (str_i >= 7'd8)      ? col_of[str_i - 7'd8] : 2'd0;
+			rs_d <= (str_i <= 7'd119)    ? col_of[str_i + 7'd8] : 2'd0;
+			rs_l <= (str_i[2:0] != 3'd0) ? col_of[str_i - 7'd1] : 2'd0;
+			rs_r <= (str_i[2:0] != 3'd7) ? col_of[str_i + 7'd1] : 2'd0;
+			st <= S_STR_D;
+		end
+		S_STR_D: begin         // DECIDE: compare on registers only
+			if (rs_p && rs_c != rs_u && rs_c != rs_d && rs_c != rs_l && rs_c != rs_r)
+				strand <= strand + 7'd1;
+			if (str_i == 7'd127) begin done <= 1'b1; st <= S_IDLE; end
+			else begin str_i <= str_i + 7'd1; st <= S_STR_R; end
 		end
 		default: st <= S_IDLE;
 		endcase

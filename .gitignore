@@ -34,3 +34,5 @@ drmario_cart.nes
 # agent scratch
 .letta/
 .venv
+fpga/copro/obj_strand/
+fpga/copro/strand_cases.txt
