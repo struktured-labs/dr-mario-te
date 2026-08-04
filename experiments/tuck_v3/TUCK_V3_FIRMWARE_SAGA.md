@@ -419,3 +419,22 @@ first_occ-table arithmetic (6502-amenable, no new primitives). Next:
 implement ref_tuck_scan_v4 + corpus coverage assert (>= 99% of union),
 mirror re-prove the v4-enumerated set (expect ≈ −20), then 6502 port +
 bit-exact gate, θ recalibration, silicon.
+
+## scan_v4 iterations + the VALUE-gate pivot (2026-08-04 midday)
+
+Candidate-set-isomorphism with TE-gravity proved the wrong gate: TE is a
+frame-accurate BFS (per-frame button schedule, DAS, rotation) — no cheap
+scanner reproduces its set exactly. Iterations: flat corridor K=2 = 97.25%
+coverage but 2.7x OVER-admission; rigid staircase = 84.8%/+30%; row-sweep
+reach masks (byte-wide, 6502-ideal) = 84.0%/+21%, stable miss class (~1.1k
+RS-horizontal) ⇒ TE admits supported-slide / rotation paths the sweep
+doesn't model.
+
+**PIVOT: gate on VALUE, not set equality.** What ships is whatever set the
+converged scanner emits; the requirements are (1) it scores ≈ −20 under the
+mirror, (2) low over-admission (executability — over-admitted fires are the
+proof-vs-silicon divergence class), (3) 6502-portable. v4 (v3-parity +
+reach-mask extension) meets (3); mirror value A/B n=120 running (v4_mirror.log)
+answers (1). If v4 lands ≈ −18..−20 REAL, the missed candidates were
+low-value and the design closes; if ≈ −13, the miss class carries the value
+and the sweep needs the supported-slide mode.

@@ -110,6 +110,14 @@ def play(seed):
         elif arm == "rs":
             import root_search as RS
             tc = RS.tuck_root_candidates(fb, ca, cb, 12, True)
+        elif arm == "v4":
+            import numpy as np
+            from scan_v4 import scan_v4 as _sv4
+            from common import arrays_to_nes
+            col_ = np.frombuffer(bytes(fb.col), dtype=np.uint8).astype(np.int8)
+            vir_ = np.frombuffer(bytes(fb.vir), dtype=np.uint8).astype(np.int8)
+            tc = [{"cells": d["cells"], "colors": d["colors"], "src": "v4"}
+                  for d in _sv4(arrays_to_nes(col_, vir_), ca, cb)]
         else:
             tc, n_rs, n_u = union_cands(fb, ca, cb)
         best = ML.choose_root_with_tucks_mirrored(fb, env.cur, env.nxt, w, topk2=8,
@@ -200,13 +208,16 @@ def main():
     a = ap.parse_args()
     print(f"=== UNION-ENUMERATOR MIRROR A/B, L{a.level}, n={a.seeds}, theta={THETA} ===",
           flush=True)
+    import os as _os
+    arms = _os.environ.get("UM_ARMS", "rs,union").split(",")
     off = run_arm(a.level, a.seeds, a.workers, "off")
-    rs = run_arm(a.level, a.seeds, a.workers, "rs")
-    un = run_arm(a.level, a.seeds, a.workers, "union")
-    r1 = compare(off, rs, "RS-only vs off  ")
-    r2 = compare(off, un, "UNION  vs off  ")
-    r3 = compare(rs, un, "UNION  vs RS   ")
-    if a.out:
+    results = {}
+    for armname in arms:
+        results[armname] = run_arm(a.level, a.seeds, a.workers, armname)
+    for armname in arms:
+        compare(off, results[armname], f"{armname:>6s} vs off")
+    r1 = r2 = r3 = None
+    if a.out and r1 is not None:
         with open(f"{a.out}.json", "w") as fh:
             json.dump({"rs": r1, "union": r2, "union_vs_rs": r3,
                        "rows": {"off": [off[s] for s in sorted(off)],
