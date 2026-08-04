@@ -107,18 +107,27 @@ team-lead directly — they have no such score in their own session data, and it
 a citable source. Removed per the "no orphan scores in dossiers" rule rather than
 guessing at where it came from.
 
-## Field report — 2026-08-03 evening (self-reported, no footage)
+## Field report — 2026-08-03 evening: vs the SNES T&DM CPU (photo-corroborated)
 
-First match of the evening session (Pocket, presumed v4 fast+coldinit 24dcd9dc —
-the ship config on their SD): **struktured WIN by AI self-topout at 26–15**
-(virus counts; the AI was ahead on clears — "it was faster"). Player's own read:
-"it had stacks of columns with crap it couldn't clear."
+**CORRECTION**: an earlier draft attributed these games to the Pocket Combo
+Stomper (v4). The player's end-state photo (evidence/tdm_20260803_win2.jpg,
+match 2) shows they were actually playing **Tetris & Dr. Mario (SNES)** vs its
+built-in CPU — L11 vs L11, MED difficulty, mixed VS mode — the benchmark
+opponent of task #45, not our copro AI. Both wins below are vs the T&DM CPU.
 
-Style significance: this is the second AI self-topout against this player
-(first: Set B, 2026-08-02) and zero self-topouts occurred in 400 logged CvC
-losses — the failure mode appears to be human-specific. The described mechanism
-(racing virus clears while abandoning off-color pill halves into unexcavated
-towers) matches the abandoned-material weakness struktured has flagged twice
-before. Working hypothesis: struktured wins by OUT-LASTING, not out-racing —
-survive the AI's early tempo, let its junk debt mature. Not yet corroborated by
-footage; player said recording will come later ("phone it is").
+- Match 1: **WIN by CPU self-topout at 26–15** (self-reported; "it was faster
+  but had stacks of columns with crap it couldn't clear").
+- Match 2: **WIN by CPU self-topout at 26–24** (photo): the CPU's board died
+  under multi-column yellow/red/blue junk towers with its viruses still buried;
+  struktured's own board is low and virus-dominant (little junk). Crown tracker
+  shows 2 match wins.
+
+Style significance (cross-opponent): the T&DM CPU — which dr_lulu rates "good
+and fast (but doesn't do combos)" — loses to struktured by the SAME mechanism
+our Combo Stomper showed in Set B (2026-08-02): out-race early, abandon
+off-color material into towers, self-topout before converting. Two different
+AIs, one human, one failure mode. Strengthens the OUT-LAST hypothesis: this
+player beats machine tempo by staying clean and letting junk debt mature —
+and it is evidence the weakness is generic to greedy-tempo AIs, not specific
+to our eval. Useful #45 datapoint: MED-difficulty CPU is beatable by
+out-lasting; its junk discipline under pressure is poor.
