@@ -157,8 +157,13 @@ print()
 print("=" * 78)
 print("TEST 3 -- two-sided defect test: commit-6-shaped, generous-window, and 1-column cases")
 print("=" * 78)
-DAS_HOOKS_PER_EDGE = 32
-GRAV_HOOKS_PER_ROW = 26
+# SILICON-MEASURED (2026-08-05, see patch_cartridge_copro.py's DIST_DASEDGE/DIST_GRAVROW comment
+# for the full methodology and footage sources) -- same numbers the gate itself now uses as its
+# defaults, kept in sync here so the simulation and the mechanism under test share one source of
+# truth. Superseded the original 32/26 pair, which was never measured (inherited a stale
+# hooks-per-frame conversion bug from an old code comment).
+DAS_HOOKS_PER_EDGE = 12
+GRAV_HOOKS_PER_ROW = 30
 cOn, lOn, mOn = build({**V4_PROFILE, "DRDISTGATE": "1"})
 cOff, lOff, mOff = build(V4_PROFILE)
 
@@ -253,22 +258,44 @@ def simulate_commit(code, lab, spawn_col, true_col, flip_hook, start_y, total_ho
     return locked_col, down_fired, down_hook
 
 
-# 3a: commit-6-shaped (3-column distance). flip_hook=0 -- best-case instant convergence, isolating
-# "is a commit achievable AT ALL" from convergence-timing effects (already covered by Test E in
-# test_task49_slamarm_race.py). start_y=2 -> DIST_TABLE[2]=1 column of budget (a critically-
-# stacked board leaves little room); total_hooks=80 is generous enough that the ONLY thing that
-# can prevent a commit is the raw target being unreachable, not simply running out of the window.
+# 3a: REDESIGNED after the constants correction (see patch_cartridge_copro.py's DIST_DASEDGE/
+# DIST_GRAVROW comment). Under the corrected, much-faster DAS numbers, a literal "commit-6-shaped"
+# 3-column-in-40-hooks scenario no longer demonstrates infeasibility: 3 columns now cost 3*12=36
+# hooks, which FITS inside a 40-hook window (this itself is a major finding -- see
+# CART_FIX_REPORT.md). Attempting to reconstruct a tight, gate-still-matters scenario at
+# intermediate Y values ran into a genuine, correctly-behaving property of the mechanism, not a
+# bug: because the clamp is recomputed fresh each hook relative to the CAPSULE'S CURRENT position
+# (not spawn), once DAS makes real progress the reachable ceiling advances right along with it
+# (correctly -- "how far MORE can I get from HERE, given remaining time" is the right recursive
+# definition, not a fixed spawn-relative cap) -- so for any Y > 0 the clamp converges toward
+# "effectively unclamped" as soon as movement starts, UNLESS the window is so short that NEITHER
+# the clamped nor unclamped build can align in time (in which case there is nothing to
+# demonstrate either way).
+#
+# The one place the clamp is UNCONDITIONALLY, non-rubber-band binding is the TRUE FLOOR: Y=0
+# gives DIST_TABLE[0]=0 by explicit design (no more fall-room, full stop), so EFF_DIST2=PX2
+# immediately regardless of how much DAS progress has or hasn't happened. Testing THAT case
+# instead -- which is also the most realistic "critically stacked" state DISTGATE targets.
 lock_off, fired_off, hook_off = simulate_commit(cOff, lOff, spawn_col=4, true_col=7, flip_hook=0,
-                                                 start_y=2, total_hooks=80)
+                                                 start_y=0, total_hooks=20)
 lock_on, fired_on, hook_on = simulate_commit(cOn, lOn, spawn_col=4, true_col=7, flip_hook=0,
-                                              start_y=2, total_hooks=80)
-check("3a WITHOUT gate: chasing the unreachable 3-column target, dn_p2 is never ALIGNED -> "
-      "never commits (defect: falls back to whatever natural gravity does, undemonstrated tempo "
-      "cost, not a wrong-column slam)", not fired_off,
+                                              start_y=0, total_hooks=20)
+check("3a WITHOUT gate, Y=0 (true floor): chasing the unreachable target, dn_p2 never ALIGNED -> "
+      "never commits; natural DAS accumulation alone (not an accelerated commit) rests it at "
+      "col5, closer to the true target than spawn", not fired_off and lock_off == 5,
       f"down_fired={fired_off} resting_col={lock_off} (spawn=4, unreachable target=7)")
-check("3a WITH gate: clamps to the 1-column-reachable target (col5), reaches alignment, and "
-      "COMMITS there once stability saturates", fired_on and lock_on == 5,
-      f"down_fired={fired_on} at hook={hook_on} locked_col={lock_on} (want col5)")
+check("3a WITH gate, Y=0: EFF_DIST2=PX2 immediately (0 fall-room = 0 budget, by design) -> "
+      "ALIGNED from hook 0 -> COMMITS via an accelerated slam at col4 (spawn -- no progress) "
+      "once stability saturates, ~8 hooks earlier than any natural alternative", fired_on and lock_on == 4,
+      f"down_fired={fired_on} at hook={hook_on} locked_col={lock_on} (spawn=4)")
+print("  -> HONEST READING, not a clean win: at Y=0 the gate trades a NUMERICALLY WORSE resting")
+print("     column (4, spawn, vs the uncommitted case's natural col5) for an EARLIER, DEFINITE")
+print("     commit. Whether that is actually better depends on what the REAL game does in the")
+print("     few hooks between Y reading 0 and genuine physical collision -- if natural DAS could")
+print("     still gain ground in that window (plausible: Y=0 does not necessarily mean")
+print("     'collides THIS hook'), the gate's immediate freeze may cost real distance the")
+print("     uncommitted case would have kept gaining. Flagged as a genuine, not-fully-resolved")
+print("     trade-off in CART_FIX_REPORT.md rather than claimed as an unambiguous improvement.")
 
 # 3b: generous window (the SAME 3-column distance, but flip happens immediately and the window is
 # long enough to complete the full DAS traverse without any gate at all) -- the gate must NOT

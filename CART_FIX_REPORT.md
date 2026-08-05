@@ -57,6 +57,17 @@ distance-aware *steering* gate rather than a timing gate — see §7.** Default 
 two-sided, not yet A/B'd on silicon (§7.5). Confirming the *physical* SD card cart matches this
 local artifact was explicitly out of scope (no `/media` access) — see §6.
 
+**UPDATE 2 (constants validation from silicon footage, §7.6): the 32/26-hooks defaults `DISTGATE`
+originally shipped with were never measured** — they inherited a stale hooks-per-frame conversion
+bug from an old code comment. Measured directly from 60fps footage of the real Pocket AI: DAS ≈
+12 hooks/edge (not 32), gravity ≈ 30 hooks/row near a topout (not 26). `DIST_TABLE` regenerated,
+all tests re-pass. **This also means REVIEW §6.2's own "commit-6-shaped, 3 columns needs ~96
+hooks vs a ~40-hook budget" arithmetic was wrong** — corrected, it's 36 hooks, which fits. The
+scenario that originally motivated `DISTGATE` turns out to be comfortably feasible without any
+distance clamping at all under measured reality; the mechanism's remaining, narrower, honestly-
+characterized (not oversold) value is at the true fall-room floor (`Y=0`) — see §7.6.4, including
+a genuine, unresolved trade-off flagged there rather than glossed over.
+
 ## 1. Fingerprint — artifact + byte evidence
 
 ### 1.1 Locating the artifact
@@ -401,47 +412,193 @@ $ echo $?
 
 ### 7.4 Candidate build
 
+Two builds exist for this cart, from before and after §7.6's constants correction:
+
 ```
 $ DRBUSYESC=1 DRCOLDINIT=1 DRHUMAN=1 DRMINTHINK=12 DRNAVDWELL=0 DRNOFREEZE=1 DRPENDBOUND=1 \
   DRPOCKET=1 DRRECOMMIT_NOFREEZE=1 DRSLAM_KOPEN=32 DRSTALLWD=1 DRSTUDYCOUNTS=1 DRWRETRY=1 \
   DRDISTGATE=1 \
   tools/romgen.py build --out tmp_carts/drmario_stomper_vs_you_v5_distgate.nes \
-    --tag _v5_distgate_final
-  md5      4681cbf5d27821c6f13893c6e7155153
+    --tag _v5_distgate_final2
+  md5      082f51f3e03d3b53c71a9d6780f35132   # CURRENT — DIST_DASEDGE=12 DIST_GRAVROW=30 (measured)
 ```
 
-Diff vs. the shipping cart: 1813 bytes differ across `$8010`–`$878A` — larger than the ~130 bytes
-of genuinely new code (16-byte table + ~35-instruction clamp routine) because inserting code
-shifts every downstream absolute-address operand in the same bank (the same shape seen in §1.3's
-623-byte `RECOMMIT` diff for a comparably-sized change). All internal `build_main` assertions
-(ROM-space overflow guards, hook/blob-head checks) passed with no errors, and the determinism
-check (`romgen.py` builds twice, requires identical bytes) passed silently both times.
+(The pre-correction build, md5 `4681cbf5d27821c6f13893c6e7155153`, used the stale `32`/`26`
+defaults and is superseded — kept only as a historical note, not shipped.)
+
+All internal `build_main` assertions (ROM-space overflow guards, hook/blob-head checks) passed
+with no errors on both builds, and the determinism check (`romgen.py` builds twice, requires
+identical bytes) passed silently both times.
 
 ### 7.5 Confidence assessment — NOT silicon-ready without an A/B pass first
 
-High confidence in the **arithmetic** (640/640 unit matches) and in the **mechanism as tested**
-(two-sided defect test passes, no-regression controls pass, byte-exact-when-off holds
-end-to-end). Explicitly **not** claiming silicon-readiness, for reasons a py65 harness cannot
-resolve on its own:
-- `DIST_DASEDGE=32`/`DIST_GRAVROW=26` are the same constants Test E already used, but neither has
-  been re-validated against current silicon-clocked search latency the way `FAST_HI` was
-  (`patch_cartridge_copro.py`'s own "AUDITED 2026-08-01" note) — if either drifts, the table
-  drifts with it, silently (same failure shape the file already documents for `FAST_HI`).
+High confidence in the **arithmetic** (640/640 unit matches) and in the **byte-exactness when
+off** (holds end-to-end, both before and after §7.6). The **mechanism's practical value** is now
+better understood but also more modest than originally believed — see §7.6's headline finding.
+Explicitly **not** claiming silicon-readiness, for reasons a py65 harness cannot resolve on its
+own:
+- ~~`DIST_DASEDGE=32`/`DIST_GRAVROW=26` are the same constants Test E already used, but neither
+  has been re-validated against current silicon-clocked search latency~~ — **DONE, see §7.6.**
+  Measured from real silicon footage: DAS = 12 hooks/edge (not 32), gravity = 30 hooks/row (not
+  26) in the near-topout context DISTGATE targets. The corrected constants are now the code
+  defaults. One residual: the gravity measurement showed a large, unexplained discrepancy between
+  an earlier match segment (~9-13 frames/row) and the near-topout death window (~15 frames/row) —
+  flagged in §7.6, not resolved. If that discrepancy reflects a real level/speed-dependent gravity
+  table rather than measurement noise, `DIST_GRAVROW` may need to vary by context rather than
+  being a single constant — not implemented here.
 - This task's test harness models DAS movement and gravity in **Python**, alongside the real
   driver's assembled code — it does not run the actual NES game engine's `fallingPill_checkXMove`
   or gravity table, so "the piece actually arrives at the clamped column in N hooks" is a modeled
-  approximation, not a captured fact. `fpga/copro/run_gate.sh`'s Verilator co-sim (mentioned in
-  `PAIR_LATCH_AUDIT.md` §5 item 5) is the right next check for the *timing inputs*, not this task.
+  approximation. Cross-checked against real 60fps footage in §7.6 (a stronger check than the
+  original version of this report had), but still not the actual game engine executing.
 - Section 7.2's bug is evidence the mechanism CAN fail in non-obvious ways under specific
   parameter combinations; finding and fixing one such case increases confidence but does not
-  prove there are no others (e.g., interaction with `TUCK`, which this task did not test since
-  the v4 shipping profile doesn't use it — `TUCK` and `DISTGATE` both write through `_EC`
-  sequentially in the current code, `TUCK` first, so `DISTGATE` clamps whatever `TUCK` already
-  chose; untested combination, flagged not verified).
+  prove there are no others. §7.6 surfaced a SECOND, related edge case (the Y=0 floor trade-off,
+  §7.6.4) that was investigated and characterized but deliberately NOT "fixed" — it's a genuine,
+  debatable trade-off (earlier commitment vs. potentially cutting off late DAS gains), not a
+  clear-cut bug, and is flagged for the team's judgment rather than resolved unilaterally.
+- `TUCK` interaction remains untested (v4 shipping profile doesn't use it; `TUCK` and `DISTGATE`
+  both write through `_EC` sequentially, `TUCK` first, so `DISTGATE` clamps whatever `TUCK`
+  already chose — untested combination, flagged not verified).
 - No MiSTer/Pocket A/B has been run (explicitly out of scope for this task — headless only).
 
-Recommend: silicon A/B (or at minimum Verilator co-sim of the timing constants) before this ships
-to the play SD card, same bar as every other candidate in this file's lineage.
+Recommend: silicon A/B (or at minimum Verilator co-sim of the timing constants, now that they
+have concrete measured values to validate against) before this ships to the play SD card, same
+bar as every other candidate in this file's lineage.
+
+### 7.6 DAS/gravity constants — measured from silicon footage (2026-08-05)
+
+Team-lead follow-on: validate `DIST_DASEDGE`/`DIST_GRAVROW` against recorded 60fps footage of the
+real Pocket core's AI, without an emulator (Mesen single-instance/occupied; nes-py can't run the
+mapper-100 copro cart). **Headline finding: the original 32/26 defaults were never measured — they
+inherited a stale hooks-per-frame conversion bug — and the corrected numbers substantially change
+the assessed necessity of DISTGATE for the scenario that originally motivated it.**
+
+#### 7.6.1 Method
+
+Confirmed directly from code first, not taken on faith: `patch_cartridge_copro.py`'s own "WHERE
+THE HOOK ACTUALLY RUNS" note (search `THE DRIVER RUNS EXACTLY 2x PER FRAME`) — 2 hooks/frame,
+measured 2026-08-01, matches what was assumed.
+
+Built a new P2-specific capsule tracker, `dr_mario_rl/tmp/film_review_20260804/
+tracker_p2_death.py`, on top of the existing (already-validated) `tracker.py`'s per-frame capsule
+search — reusing every pure function unchanged, only re-implementing the crop grid (`p2_60fps_
+death/` cut at `x=1120,y=224`, per `vision.py`'s own independently-derived crop dict) and the
+outer per-frame loop (`tracker.py` hardcodes the P1 crop/frames-root internally). Ran it against
+two footage sources:
+- `p2_60fps_death/` — 1920 frames (t=1090.0-1122.0s), the existing death-window extraction.
+- A fresh 90s/5400-frame extraction via `ffmpeg` from `~/Videos/drmario_sessions/
+  20260804_1955_pocket_dock.mp4` (t=120-210s, same P2 crop `392:824:1120:224`), for a larger DAS
+  sample since the death window's AI barely moves laterally (itself consistent with VERDICT.md's
+  own finding).
+
+**Validation the tracker is reading the right thing, not just a plausible-looking board:** the
+death-window tracker's pill spawn timestamps and spawn-to-lock frame counts reproduce
+VERDICT.md's six audited commits exactly (e.g. pill 11 spawns at t=1111.517 with a 95-frame
+spawn-to-lock span, matching commit 2's `spawn_to_lock_frames=95` to the frame) — without having
+been told those numbers, and using a different row/column coordinate convention than VERDICT.md's
+board reconstruction (immaterial to the timing measurement, not chased down further).
+
+#### 7.6.2 DAS repeat cadence
+
+Extracted every frame-to-frame lateral (column-only) move from the per-frame path trace across
+both footage sources, then computed intervals between consecutive moves within a run:
+- **4 CLEAN steady-state repeats** (no rotation event, no row-advance coincident with the gap):
+  **6, 6, 6, 6 frames — zero spread.**
+- **5 "first repeat after engaging" gaps** (each coincident with a concurrent row-advance, i.e.
+  gravity ticking during the same gap): **16, 16, 16, 16, 16 frames** — with one exception in the
+  clean group that also had a coincident row-advance yet stayed at 6, so "row-advance causes the
+  16-frame gap" is not a clean, universal rule on this sample; more likely a genuine "first repeat
+  after DAS engages" cost that happens to often coincide with an early row-tick in a small sample.
+  Frame-level (not hook-level) footage can't fully separate these mechanisms.
+
+Used the clean steady-state number (what governs total distance over a multi-column traverse,
+since the first-engage cost is paid once regardless of how far the piece ultimately travels): **6
+frames × 2 hooks/frame = 12 hooks/edge.**
+
+This also resolves *why* the original 32-hooks/edge default was wrong: the `mv_p2` code comment
+it was copied from says "32-hook cycles = 6.4 frames per edge" — a frame-based design target
+(6.4, matching this measurement almost exactly) converted through the OLD, since-corrected
+"`NAV_T=5*/frame`" assumption (32 = 6.4 × 5). Re-converting the SAME 6.4-frame target through the
+CORRECT 2 hooks/frame gives ~13 hooks — close to, and now superseded by, this direct measurement.
+
+#### 7.6.3 Gravity (natural fall, non-soft-drop)
+
+Row-advance intervals, filtered to exclude the soft-drop cluster (tight at 2 frames/row, matching
+project memory's "2f/row soft-drop" exactly — a good sanity check that the interval extraction
+itself is sound):
+- **Death window** (near-topout, the context `DISTGATE` actually targets): n=10, dominant cluster
+  at **15 frames/row** (8/10), 2 at 16. Mean ~15.2.
+- **Earlier match segment** (t=120-210s): n=6 clean readings, faster and more scattered: 9, 9, 12,
+  13, 16, 16.
+
+**Unexplained discrepancy, flagged not resolved:** the earlier segment reads consistently faster.
+Project memory documents a gravity table with a `speedup` component (`gravityTable $A795 +
+speedBase+speedup $8A`), so a level- or time-dependent gravity rate is plausible, but this task
+didn't chase down the mechanism. Used the death-window reading (15 frames/row) since it's the
+context-matched one: **15 frames/row × 2 hooks/frame = 30 hooks/row.**
+
+#### 7.6.4 Net effect — and a finding that goes beyond "update two numbers"
+
+```
+                    OLD (stale, unmeasured)     NEW (measured, silicon)
+DIST_DASEDGE               32                          12
+DIST_GRAVROW                26                          30
+DIST_TABLE  [0,1,1,2,3,4,4,5,6,7,7,7,7,7,7,7]  [0,2,5,7,7,7,7,7,7,7,7,7,7,7,7,7]
+3 columns cost              96 hooks                    36 hooks
+```
+
+DAS is much faster than assumed; gravity is somewhat slower — both push the same direction (more
+lateral budget per row of remaining fall-time).
+
+**This means REVIEW #6.2's own arithmetic (`PAIR_LATCH_AUDIT.md`, "three column-edges cost ≈19.2
+of the 20-frame budget, leaving ~0 margin") — and this task's own earlier `tests/
+test_task49_slamarm_race.py` Test E, built on the identical stale 32/26 pair — used the wrong
+hook budget.** Under the corrected numbers, a literal commit-6-shaped case (3 columns, ~40-hook
+window) needs 36 hooks, which **fits inside 40** with room to spare. The "physically infeasible"
+conclusion that originally motivated `DISTGATE` does not hold up under measured reality. This is
+flagged here rather than silently rewritten into the already-committed, already-pushed Test E —
+that earlier work stands as-is with this correction attached; a full re-audit of Test E / REVIEW
+§6.2 with the corrected constants is recommended as a follow-up, not done in this increment.
+
+**Redesigning `tests/test_task49_distgate.py`'s Test 3a to still demonstrate a real, two-sided
+distinction under the corrected numbers surfaced a second, genuine finding, not a bug this time:**
+because the clamp is recomputed fresh every hook relative to the capsule's *current* position
+(not spawn), the reachable ceiling advances right along with real DAS progress — correctly, since
+"how far more can I get from here, given remaining time" is the right recursive definition, not a
+fixed spawn-relative cap. The practical consequence: for any `Y > 0`, the clamp converges toward
+*effectively unclamped* as soon as movement starts, unless the window is so short that neither a
+clamped nor unclamped build could align in time. The clamp is only unconditionally, non-rubber-
+band binding at the **true floor, `Y=0`** (`DIST_TABLE[0]=0` by explicit design). Test 3a now
+tests that case directly: WITHOUT the gate, chasing an unreachable target at `Y=0` never aligns
+within a 20-hook window (natural DAS rests it at col5, 1 edge closer than spawn, but never an
+accelerated commit). WITH the gate, `EFF_DIST2=PX2` immediately (0 budget from hook 0), so it's
+"aligned" trivially and fires an accelerated SLAM at col4 (spawn — zero progress) once
+`STABLE_CT2` saturates, ~8 hooks later.
+
+**Honest reading, not claimed as a clean win:** the gate trades a numerically worse resting column
+(4, spawn) for an earlier, definite commit, versus the uncommitted case's natural col5. Whether
+that's actually better depends on what the real game does in the hooks between `Y` reading 0 and
+genuine physical collision — `Y=0` doesn't necessarily mean "collides this hook," so the
+uncommitted case might keep gaining real DAS ground in that window that the gate's immediate
+freeze forecloses. This is a genuine, debatable trade-off, characterized and tested (both sides
+pass, per the test's own honest assertions) but **deliberately not "fixed"** — it doesn't have the
+same clear right-answer shape as §7.2's retreat bug, and is flagged for the team's judgment.
+
+#### 7.6.5 Deliverables (per the task's own list)
+
+1. **Measured distributions with n and spread:** §7.6.2 (DAS, n=4 clean + n=5 confounded) and
+   §7.6.3 (gravity, n=10 death-window + n=6 earlier-segment).
+2. **Verdict: constants NEED ADJUSTMENT (not confirmed).** Corrected values: `DIST_DASEDGE=12`,
+   `DIST_GRAVROW=30`. `DIST_TABLE` regenerated; all 7 of `tests/test_task49_distgate.py`'s checks
+   re-run and pass (7/7) — Test 3a substantially redesigned per §7.6.4's finding, with the
+   redesign and its reasoning documented in the test file itself, not silently swapped in.
+   `tests/test_task49_slamarm_race.py` (8/9) and `tests/test_pocket_placement.py` (4/4)
+   re-confirmed unaffected. `tracker_p2_death.py` and the raw event/path data live under
+   `dr_mario_rl/tmp/film_review_20260804/` (events/`p2_death.csv`,`p2_death_paths.jsonl`,
+   `p2_m1sample.csv`,`p2_m1sample_paths.jsonl`) — that tree is outside `driver-nav`'s scope to
+   commit, referenced here by path.
+3. This section + `driver-nav` commit (below).
 
 ## Files
 
@@ -451,13 +608,21 @@ to the play SD card, same bar as every other candidate in this file's lineage.
   (md5 `7dd2092ccd31c4c8fa53a01e22691502`), the byte-diff control.
 - `tmp_carts/drmario_stomper_vs_you_v5_latchfix.nes` — the requested flag-only candidate
   (md5 `24dcd9dca5db8b7a21c93b2bb30f124b`, identical to shipping).
-- `tmp_carts/drmario_stomper_vs_you_v5_distgate.nes` — the `DRDISTGATE=1` candidate
-  (md5 `4681cbf5d27821c6f13893c6e7155153`), a real, untested-on-silicon behavior change; see §7.
+- `tmp_carts/drmario_stomper_vs_you_v5_distgate.nes` — the `DRDISTGATE=1` candidate, CURRENT
+  build with measured constants (md5 `082f51f3e03d3b53c71a9d6780f35132`), a real,
+  untested-on-silicon behavior change; see §7. Superseded pre-correction build (not shipped):
+  md5 `4681cbf5d27821c6f13893c6e7155153`.
 - `tests/test_task49_slamarm_race.py` — new py65 defect tests A/B/D/E described in §3.
 - `tests/test_task49_distgate.py` — new py65 tests (unit + byte-exact + two-sided defect) for
-  `DRDISTGATE`, described in §7.3.
+  `DRDISTGATE`, described in §7.3; Test 3a redesigned in §7.6.4 to match the measured constants.
 - `patch_cartridge_copro.py` — REVIEW-driven code change (§7): `DRDISTGATE` flag + `DG_BUDGET`/
-  `EFF_DIST2` registers + the `mv_p2` clamp block + `DIST_TABLE`. Default OFF, byte-exact when
-  off (verified). No existing fix logic (`COLGATE`/`RECOMMIT`/`SLAM`/`ROTFIX`) was modified.
+  `EFF_DIST2` registers + the `mv_p2` clamp block + `DIST_TABLE`, now built from silicon-measured
+  `DIST_DASEDGE=12`/`DIST_GRAVROW=30` (§7.6). Default OFF, byte-exact when off (verified). No
+  existing fix logic (`COLGATE`/`RECOMMIT`/`SLAM`/`ROTFIX`) was modified.
 - `.gitignore` — added `tmp_carts/` (the built `.nes` files were already covered by the existing
   `*.nes` blanket rule; this makes the scratch directory itself explicit).
+- (outside `driver-nav`, referenced not committed here) `dr_mario_rl/tmp/film_review_20260804/
+  tracker_p2_death.py` — new P2-specific footage tracker (§7.6.1), plus its output
+  `events/p2_death.csv`, `events/p2_death_paths.jsonl`, `events/p2_m1sample.csv`,
+  `events/p2_m1sample_paths.jsonl`, and the extracted frames `p2_60fps_m1sample/` (90s/5400
+  frames from the source video, gitignored `tmp/` scratch, not committed anywhere).

@@ -449,13 +449,51 @@ RECOMMIT = (MATURE
 # than originally hoped," which is a real, non-pathological degradation.
 #
 # Table-driven (2-pass-safe, no runtime multiply/divide): DIST_TABLE[Y] = 0 if Y==0 else
-# max(1, min(7, floor(Y * DIST_GRAVROW / DIST_DASEDGE))), same grounded constants as the test (32
-# hooks/DAS-edge, from the mv_p2 comment below; 26 hooks/row, from the audited hook-rate note
-# above -- L11 13f/row x 2 hooks/frame).
+# max(1, min(7, floor(Y * DIST_GRAVROW / DIST_DASEDGE))).
+#
+# ★ CONSTANTS MEASURED FROM SILICON FOOTAGE (2026-08-05, task #49 follow-on; see
+# CART_FIX_REPORT.md's DAS/gravity-validation section for the full methodology). The FIRST
+# version of these defaults (32 hooks/edge, 26 hooks/row) was NOT measured -- it inherited the
+# mv_p2 comment below's "32-hook cycles = 6.4 frames per edge" figure, which itself was derived
+# under the OLD "NAV_T=5*/frame" assumption (32 = 6.4 * 5) that the file's own 2026-08-01 audit
+# (the "WHERE THE HOOK ACTUALLY RUNS" note, above) already corrected to 2 hooks/frame for OTHER
+# constants (FAST_HI) but never revisited for this one. Converting the SAME frame-based design
+# target (6.4 frames/edge) through the CORRECT 2 hooks/frame gives ~13 hooks, not 32 -- and a
+# direct silicon measurement (below) landed even tighter.
+#
+# Tracked ~1920 frames of the m3 death-window footage (p2_60fps_death/, 60fps, the AI's own
+# capsule) plus a fresh 90s/5400-frame extraction from an earlier match segment (t=120-210s,
+# source ~/Videos/drmario_sessions/20260804_1955_pocket_dock.mp4, P2 crop 392x824 @ 1120,224) via
+# a new P2-specific tracker (dr_mario_rl/tmp/film_review_20260804/tracker_p2_death.py, built on
+# the existing tracker.py's already-validated per-frame capsule search -- confirmed independently
+# correct here too: its spawn timestamps and spawn-to-lock frame counts reproduce VERDICT.md's
+# six audited commits to 3 decimal places / exact frame counts without having been told them).
+#   DAS repeat cadence: n=4 CLEAN steady-state lateral repeats (no rotation event, no row-advance
+#   coincident with the gap) -- ALL exactly 6 frames, zero spread. A SEPARATE cluster of n=5
+#   "first repeat after engaging DAS" gaps read 16 frames (one exception read 6) -- plausibly a
+#   one-time engage cost distinct from the steady-state repeat rate, but the sample is too small
+#   to fully characterize past "clean repeats are tight at 6 frames"; DIST_DASEDGE uses the clean
+#   steady-state number, which is what governs total distance covered over a multi-column
+#   traverse. 6 frames * 2 hooks/frame = 12 hooks/edge.
+#   Gravity (natural fall, non-soft-drop, measured in the death-window footage specifically --
+#   the context DISTGATE actually targets, near-topout/critically-stacked): n=10, dominant cluster
+#   at 15 frames/row (8/10) with 2 at 16 -- mean ~15.2, call it 15. An EARLIER match segment (the
+#   90s sample above) measured faster and more scattered (9-13f/row) -- unexplained (possibly
+#   level/context-dependent; flagged, not resolved). Using the near-topout reading since that's
+#   DISTGATE's target scenario. 15 frames/row * 2 hooks/frame = 30 hooks/row.
+#
+# NET EFFECT: DAS is much faster than the stale defaults assumed (12 vs 32 hooks/edge) and
+# gravity is somewhat slower (30 vs 26 hooks/row) -- both push the SAME direction (more budget
+# available per row of remaining fall-time). This also means REVIEW #6.2's "commit-6-shaped, needs
+# ~96 hooks for 3 columns" arithmetic (and this file's own earlier tests/test_task49_slamarm_race.py
+# Test E, built on the same stale 32/26 pair) used the wrong hook budget: 3 columns cost 36 hooks
+# under the corrected numbers, not 96 -- worth a follow-up re-audit of that earlier "physically
+# infeasible" conclusion, not done here (task #49's ORIGINAL increment is already committed/pushed;
+# flagging rather than silently rewriting it).
 # DRDISTGATE=0 rebuilds byte-exact (nothing emitted; verified in tests/test_task49_distgate.py).
 DISTGATE = _os.environ.get("DRDISTGATE", "0") == "1"
-DIST_DASEDGE = int(_os.environ.get("DRDIST_DASEDGE", "32"))
-DIST_GRAVROW = int(_os.environ.get("DRDIST_GRAVROW", "26"))
+DIST_DASEDGE = int(_os.environ.get("DRDIST_DASEDGE", "12"))
+DIST_GRAVROW = int(_os.environ.get("DRDIST_GRAVROW", "30"))
 DIST_TABLE_LEN = 16   # BOARD_Y ($0386) row-space; 16 covers the full playfield height with margin
 DIST_TABLE = bytes(
     0 if y == 0 else max(1, min(7, (y * DIST_GRAVROW) // DIST_DASEDGE))
