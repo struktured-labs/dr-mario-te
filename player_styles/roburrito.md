@@ -60,10 +60,28 @@ actual gameplay footage, not a still of hands on a controller.
 - `evidence/roburrito_drmc_philadelphia_2026.jpg` — identity photo only, DRMC
   Philadelphia 2026 (EXIF 2026-07-02 00:51:43). No board content.
 
+### Top-up attempt (2026-08-05, same pass): found a second match, n did NOT improve
+
+Found a second Rob Burrito match in the SAME Red Bracket video: t≈1940-2900s, vs. Packie (seed
+1), this time Rob Burrito on the opposite side (P1, not P2 — the per-player direction was flipped
+accordingly, confirmed by nameplate at both the start and end of the window, same crown tally
+progressing, genuinely one continuous match). **Result: own clears jumped 49→227 (real, healthy
+new data) but attributed volleys stayed at 12 — the second window contributed ZERO volleys in
+~960s of play.** Combined fit:
+`eval47/results/style_ensemble_v1/red_bracket_RobBurrito_topup2_sending_fit.json`. Still
+LOW-CONFIDENCE (n=12).
+
+This is NOT read as "Rob Burrito doesn't apply pressure" — it's the second independent match
+(after davesmithsays vs Larvae) where clear activity is healthy but the settled-cover volley
+detector finds almost nothing, suggesting a possible general low-recall limitation of the
+detection method for some matches, not a trait of any specific player. See
+`eval47/STYLE_ENSEMBLE_V1.md` §8a.
+
 ## Caveats
 
 The photo-only section above (n=0 matches, hand-posture guess only) is superseded by the
 2026-08-05 footage-observed section — Rob Burrito now has one LOW-CONFIDENCE (n=12) pressure
-profile from real Red Bracket gameplay. Still thin: one ~5-minute window, per-player-separated but
-not yet cross-validated against a second match. Next step: additional Red Bracket segments for
-Rob Burrito (same video, other rounds, unexplored) to push n toward the OK-confidence line.
+profile from real Red Bracket gameplay, now backed by TWO match windows (960 more seconds of play
+tried, but it didn't add volleys — see the top-up note above). Next step per
+`eval47/STYLE_ENSEMBLE_V1.md` §9: investigate the volley detector's apparent low recall before
+assuming more footage alone will help.
