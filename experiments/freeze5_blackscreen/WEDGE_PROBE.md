@@ -210,6 +210,17 @@ anything designed today: the wedge requires the DUEL CORE ACTIVELY PLAYING,
 not merely powered/booted. Combined with the IPC-exoneration result, the
 trigger is core+framework interaction under continuous CvC gameplay.
 
+**Correction (see "AUTO-RECOVERY POST-MORTEM" below):** a probe bug during
+this exact window meant `FW_PID` detection missed the framework's bare
+(no core+mgl argv) invocation, so every raw `fw_state`/`fw_threads`/
+`cmd_dev` field logged across these 9h19m reads `DEAD` — the framework was
+actually alive and idle-at-menu the whole time, the probe just couldn't see
+it. Read those raw per-poll fields as "not observed," not as
+confirmed-alive-and-idle. The headline conclusion above (zero wedges) is
+unaffected — the `AUTO_REBOOT` count is read directly from
+`wedge_probe_recovery.log` and never depended on `FW_PID` resolving — this
+correction is about the log's wording, not the finding.
+
 ## A/B ARM 1 STARTED (2026-08-05 22:22:46Z): pre-strand20 core
 
 AB_wedge_old180.mgl (rbf NES_stomper180_20260801 = the shipped champion
@@ -347,3 +358,26 @@ builds exhibit under continuous CvC play. Consequences:
 resetting between alerts on the old core, unlike s20b's clean monotonic
 climb — possibly a milder "bout" signature rather than a permanent spin;
 unresolved, do not over-read.
+
+Two more ALERT_ONLY events fired after this verdict was written, same
+pattern, roughly 3 min apart: 22:35:05Z and 22:38:10Z. The two polls right
+after 22:35:05Z show load climbing to 2.01 then 2.40 (vs ~1.0 everywhere
+else tonight) and memfree dropping ~12MB over 2 minutes — worth watching in
+case unrecovered state is now accumulating rather than the box cleanly
+re-arming between bouts; not yet confirmed either way.
+
+## VANILLA-CORE DISCRIMINATOR — prepared, not yet run
+
+`experiments/freeze5_blackscreen/vanilla_core_ab.sh` implements the
+suspect (3) test above as one command: deploys a stock `NES_20240408.rbf` +
+`Battletoads (U) [p1].nes` (both already on the SD card, neither related to
+our cart family) via a new `AB_vanilla_control.mgl`, loads it through
+`/dev/MiSTer_cmd`, and watches `wedge_probe_recovery.log` for up to 30 min
+or 3 trigger events. Prints a verdict (survives ⇒ fault is in our RTL/cart
+family; wedges too ⇒ framework/firmware-level, pin a known-good build).
+Deliberately does not restore the previous core on exit — prints the
+one-liner to reload the duel probe instead, so it never fights whatever the
+team wants running next. Requires the device to be reachable and
+`wedge_probe.sh` already running (checks both before deploying anything);
+has not been executed yet since it needs the same SSH-mutation permission
+this session is currently blocked on.
