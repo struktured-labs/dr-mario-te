@@ -572,3 +572,106 @@ not asserted away.
 - `translatable.py` (tuck-bfs agent's file, read not modified: `tier_of`,
   `MAX_TIER`, `TIER4_MAX_STEER`, the tier-ladder cost documentation this
   section's cost table is sourced from)
+
+## ITERATION 5 — V1.1 CITATION NUMBERS
+
+**Date:** 2026-08-05 · `BURSTY_V1_RESULTS.md` section 5 found the bursty
+pressure model's original fit (v1) was pool-contaminated: roughly half its
+61 volleys were the AI copro's own sending events, not struktured's, which
+pulled the fit toward faster/more-reliable attack behavior than an honest
+human-only fit supports. v1.1 (struktured-only separated stream, n=28
+volleys) is the corrected model. The paired tier CURVE (Iteration 4) is
+unaffected — v1 vs v1.1 applies identically to both sides of every paired
+arm, so contamination cancels — but the ABSOLUTE numbers any silicon
+manifest quotes must come from v1.1.
+
+Reused `run_bursty_v1_1_validity.py`'s `build_v1_1()` — the documented
+single source of truth for "what v1.1 is," rebuilt in-process from
+`bursty_model.fit_struktured_20260804()`'s live `raw_events` +
+`fit_ensemble_source.fit_per_player()`, not a saved-JSON copy.
+`bursty_model.py` was NOT imported directly or edited (reactive-mode owns
+it). v1.1 fit reproduced exactly: n_volleys=28, n_clears=89,
+volley_size_mean=2.679, gap_mean=27.42s — matching `BURSTY_V1_RESULTS.md`
+section 5's own table digit-for-digit.
+
+### Cross-check: base32's v1.1 numbers independently reproduce the other
+### agent's own v1.1 validity rerun
+
+`base32` here (reach_root.py's bit-exact reproduction of the SHIPPED
+strand20 decider, `ab47.py::_choose_base(wt=0, ws=20)`) is the same
+configuration `BURSTY_V1_RESULTS.md` section 5 calls "ws=20 (shipped)" in
+its own, separately-run `pressure_rig.py`-based validity rerun. The two
+numbers agree exactly: **bad-ends 20/120 (16.7%), dies-ahead 9/120 (7.5%)**
+in both. Two independent rigs (this task's `reach_root_ab.py` vs
+reactive-mode's `pressure_rig.py`), two independent v1.1 reconstructions,
+same seeds-from-model convention, same answer — strong evidence the v1.1
+model object is being applied correctly here, not a script artifact.
+
+### The three arms, n=120 paired, bursty v1.1
+
+| comparison | pills Δ | 95% CI | verdict | bad-ends | dies-ahead | McNemar (rescued/harmed, p) |
+|---|---|---|---|---|---|---|
+| tier≤3 vs base32 | −23.49 | [−36.06,−11.87] | REAL | 20→18 | 7.5%→8.3% | 15/13, **p=0.851** |
+| tier≤3 vs reachfull2 (oracle) | +0.00 | [+0.00,+0.00] | WASH (exact) | 18→18 | 8.3%→8.3% | 0/0, p=nan (0 moved) |
+| reachfull2 vs base32 (context) | −23.49 | [−36.06,−11.87] | REAL | 20→18 | 7.5%→8.3% | 15/13, p=0.851 |
+
+**tier≤3 == reachfull2 oracle: CONFIRMED under v1.1 too** (bad-ends 18 vs
+18, dies-ahead 8.3% vs 8.3%, 0/120 McNemar-discordant pairs, pills delta
+exactly `+0.00 [+0.00,+0.00]`) — not assumed, directly re-measured. The
+`tier≤3 vs base32` and `reachfull2 vs base32` rows being bit-identical is
+the expected, consistent consequence of that equivalence, not a
+coincidence or a bug.
+
+### The honest finding: significance does NOT survive under v1.1, and the
+### manifest citation must say so
+
+**The bad-ends improvement is directionally the same (fewer bad-ends with
+tier-3) but is NOT statistically distinguishable from noise at n=120 under
+the corrected pressure model.** McNemar p=0.851 (15 rescued, 13 harmed — an
+essentially even split), and dies-ahead does not improve at all — it ticks
+UP slightly, 7.5%→8.3%. This is a materially different picture from every
+earlier iteration's v1-based numbers, where the same base32-vs-oracle/tier
+comparison was highly significant (p=0.016, bad-ends 32→18, a 44% relative
+cut). The mean-pills metric alone still reads REAL (CI excludes 0,
+−23.49), but per this program's own standing convention the DISEASE metric
+(bad-ends, McNemar) — not mean pills among already-won games — is the one
+that answers "does this help the AI stop dying," and that metric is a wash
+here.
+
+**Why:** v1.1's honest `base32` control is already much healthier (16.7%
+bad-ends) than v1's contaminated control was (26.7%) — `BURSTY_V1_RESULTS.
+md` section 5 already established this (v1.1's shipped-ws=20 arm nearly
+halves v1's dies-ahead reading, 13.3%→7.5%). With less disease left to
+cure in the honest regime, tier-3's incremental value ON TOP OF the
+already-defended shipped decider has less room to show a measurable effect
+at n=120 — the mechanism (tier≤3 == full oracle reach, confirmed again
+here) is unchanged, but its measured payoff against the honest baseline is
+smaller and not yet distinguishable from sampling noise.
+
+**The citation line, delivered with its required caveat, not bare:**
+
+> Under honest human cadence (bursty v1.1), tier-3 cuts bad-ends 20/120
+> (16.7%) → 18/120 (15.0%), dies-ahead 7.5% → 8.3%. **This delta is NOT
+> statistically significant at n=120 (McNemar p=0.85)** — cite the
+> mechanism (tier-3 reaches full-oracle parity, confirmed under both
+> pressure models) as established; do not cite this specific bad-ends/
+> dies-ahead delta as a proven win. A larger n or a sharper (non-bursty,
+> or higher-pressure) gate would be needed to resolve whether the true
+> effect is real-but-small or genuinely zero against the honest baseline.
+
+**Recommendation for the silicon manifest:** cite `tier-3 == reachfull2
+oracle` (mechanism, confirmed twice, under both pressure models) and the
+tier-knee cost table (Iteration 4) as the load-bearing claims — both are
+solid. Do NOT cite a specific "tier-3 fixes bursty pressure deaths"
+percentage-point claim against the honest v1.1 baseline; the evidence for
+that specific claim is currently a wash, not a proof.
+
+### Files (this iteration)
+
+- `run_v1_1_citation.py` (new; reuses `run_bursty_v1_1_validity.py`'s
+  `build_v1_1()`, `reach_root_ab.py`'s `run_arm`/`compare`, and
+  `run_tier_sweep.py`'s `run_tier_arm` — no protected file touched or
+  edited)
+- `results/v1_1_citation_n120.json` (summaries + raw per-seed rows for all
+  three arms)
+- `tmp_logs/v1_1_citation_n120.log` (full run log)
