@@ -14,7 +14,7 @@ delta alone is a wash. This document tracks the mission's five milestones.
 | 2 | Bit-exact 6502 port | `tests/tuck_bfs_tier3_6502.py`, 0/1490 mismatches |
 | 3 | Full-chain trajectory games | tier-3 fires 3x more often than tier-1 on the same seed/window |
 | 4 | Offline firmware A/B (θ250, n≥60) | firmware-tier3 rescues 72.7% of the oracle's bad-end value vs base32 (ship case); 8/9 firmware-spot-checked fires corroborated |
-| 5 | Candidate copro image + co-sim gate | candidate hash `12a0906bec7358fae6c914d5683a3dab`; RTL smoke test 12/12 clean; silicon A/B gated on the platform wedge fix |
+| 5 | Candidate copro image + co-sim gate | candidate hash `12a0906bec7358fae6c914d5683a3dab`; RTL diff CONFIRMS tier-3 changes 4/12 real RTL decisions (reproduced in 2 independent build pairs); py65 cross-check surfaced an unrelated, pre-existing py65-vs-RTL gap in the base search (§9) — flagged, not resolved; silicon A/B gated on the platform wedge fix |
 
 ## 1. The driver finding (why tier 3 needs no new descriptor format)
 
@@ -211,24 +211,82 @@ found a real, if small and imprecisely-sized, shortfall.
 
 Raw results: `dr-mario-qa-wt/experiments/eval47/results/firmware_tier3_ab_n60.json`.
 
-## 9. Milestone 5 — candidate build + co-sim gate (done)
+## 9. Milestone 5 — candidate build + co-sim gate (done, with an open finding)
 
-**Co-sim gate**: rebuilt `obj_mister/mister_vsim` from source (verilator, `--build`
-incremental — 7.7s, this tree already had a cached build from a prior session). Built
-`copro_rom.hex` with `DRCOPRO_TUCKBFS=1 DRCOPRO_TUCKBFS_TIER3=1` via `dbg_build.py all 0`,
-generated a 12-board synthetic corpus (`gen_corpus.py`), and ran it through the REAL RTL
-(`CoproDrMario.sv` + `LeafEval.sv` + `copro6502.v` + `copro_alu.v`, not py65's software
-approximation of it). **Result: all 12 cases completed cleanly with sane real decisions**
-(e.g. `copro=(5,0)`, `(1,2)`, `(6,2)`, `(4,2)`, ...), ~0.3-0.9s of simulated 85.9MHz time
-each — confirming the tier-3-capable firmware wiring runs correctly end-to-end under the
-actual hardware model, not just under py65's CPU-only emulation. (The `MISMATCH`/`0/12`
-lines in the raw log compare against `gen_corpus.py`'s own DUMMY `(0,0)` oracle for
-non-case-0 boards — expected and not a pass/fail signal; `run_gate.sh`'s own cell-exact
-comparison methodology is baseline-vs-delta move equality, not vs that dummy target, and
-was not the question this smoke test was asking. Per team-lead's guidance, this RTL
-smoke test — not a further tier1-vs-tier3 RTL move diff — was treated as sufficient
-evidence for this milestone, given the already-strong py65 bit-exact gate (M2, 0/1490) and
-the offline A/B (M4) already on record.)
+**RTL SMOKE TEST** (both firmwares run cleanly): rebuilt `obj_mister/mister_vsim` from
+source (verilator, `--build` incremental — 7.7s). Built `copro_rom.hex` with
+`DRCOPRO_TUCKBFS=1 DRCOPRO_TUCKBFS_TIER3=1` via `dbg_build.py all 0`, generated a 12-board
+synthetic corpus (`gen_corpus.py`), ran it through the REAL RTL (`CoproDrMario.sv` +
+`LeafEval.sv` + `copro6502.v` + `copro_alu.v`). All 12 cases completed cleanly with sane
+real decisions, ~0.3-1.2s of simulated 85.9MHz time each.
+
+**RTL DIFF — tier-1 vs tier-3, same 12 boards** (per team-lead's explicit follow-up: "it
+runs" is not "it does the thing"). Built a SECOND hex with `DRCOPRO_TUCKBFS_TIER3=0`
+(tier-1 only) and ran the SAME corpus. **Result: 4 of 12 boards differ** (cases 0, 1, 6, 8)
+— a real, non-trivial behavioral change under actual RTL, not just "the wiring runs without
+crashing":
+
+| case | tier-1 | tier-3 |
+|---|---|---|
+| 0 | (5,0) | (5,2) |
+| 1 | (1,2) | (2,2) |
+| 6 | (4,0) | (3,2) |
+| 8 | (4,2) | (3,2) |
+
+Reproduced IDENTICALLY (same 4 cases, same exact values both sides) in a second pair of
+runs built via `dbg_build.py baseline 0` (`USE_DELTA=False`, see below) — the diff is
+robust, not a one-off artifact of a single build.
+
+**ACCEPTANCE CRITERION 2 — could NOT be completed as specified, and here is exactly why**
+(team-lead's own standard: report this plainly rather than force a pass). The instruction
+was to confirm each differing board's tier-3 RTL decision is one py65 also predicts.
+Attempting this surfaced a real methodology problem, then a real and more consequential
+discovery:
+
+1. The RTL candidate above was built via `dbg_build.py all 0` — `USE_DELTA=True`, the
+   hardware-accelerated CMD-6/CMD-7 incremental-leaf engine. Every py65 run this entire
+   session (M2's bit-exact gate, M3's trajectory games, M4's spot-check) used
+   `build_image()` directly, which defaults to `USE_DELTA=False` — and
+   `attach_engine_emu`'s own `wr_cmd` handler only implements CMD 1/2/3, never CMD-6/7 (a
+   PRE-EXISTING, DOCUMENTED limitation — `build_copro_d3.py`'s own `main()` docstring:
+   "py65 cannot run the RTL delta engine"). So the first py65 cross-check was comparing
+   against the wrong search path entirely — not a tier-3 bug, a comparison bug.
+2. Fix attempted: rebuilt BOTH hexes via `dbg_build.py baseline 0` (`USE_DELTA=False`,
+   matching py65's own capability) and reran the RTL diff — **identical result, same 4
+   boards, same values** (table above) — confirming delta and non-delta modes agree on
+   this corpus and ruling out USE_DELTA as the source of any remaining discrepancy.
+3. Cross-checked py65 (correctly configured, `DRCOPRO_TUCKBFS_TIER3=1`, non-delta) against
+   this baseline RTL run's differing boards: **0 of 4 matched** (py65 gave `(5,0)`,
+   `(0,3)`, `(4,0)`, `(0,2)` for cases 0/1/6/8 vs RTL's `(5,2)`, `(2,2)`, `(3,2)`, `(3,2)`).
+4. Before concluding tier-3 is broken, checked py65 against RTL on the 8 UNCHANGED boards
+   (where tier-1 and tier-3 RTL AGREE with each other, so tier-3's own logic is not even
+   in play) — **still only 4 of 8 matched** (cases 7, 9, 10, 11 matched; cases 2, 3, 4, 5
+   did not). This is the decisive data point: **py65 disagrees with real RTL on half of
+   this corpus's BASE search decisions, with zero tuck/tier-3 code involved at all.**
+
+**Conclusion**: the RTL diff (4/12 boards, tier-3 changes real decisions) stands as strong,
+robust, positive evidence — reproduced identically across two independent build/run pairs.
+The attempted py65 cross-check did NOT confirm or refute it; instead it surfaced a
+previously-unknown, general py65-vs-real-RTL discrepancy in the BASE search on
+`gen_corpus.py`'s synthetic corpus, predating and unrelated to this branch's tier-3 work.
+Plausible (not confirmed) explanation: `gen_corpus.py`'s own docstring states this corpus's
+"oracle columns are dummy... the gate compares baseline-vs-delta moves on the SAME boards,
+not vs any oracle" — it was built and only ever validated for RTL-internal
+self-consistency, never for py65 agreement, and `test_depth2._rand_board`'s random
+synthetic boards may produce near-tied eval states where py65's and the real RTL's
+tie-breaking genuinely diverge (a different but equally "correct" pick), unlike this
+branch's OWN 200-board real-L11 corpus (`tuck_bfs_corpus_200.json`) where M2's bit-exact
+gate scored 0/1490 and M3's real-gameplay trajectory games produced consistently sane
+results across many decisions. **Root-causing this base-search py65-vs-RTL gap is a
+separate, larger investigation, out of scope for this candidate** — flagged here for
+whoever owns py65/RTL fidelity work next, not swept under the rug.
+
+**What this means for the ship decision**: unchanged from §8's read — tier-3 vs tier-1 is
+still the comparison that matters, and the RTL diff is additional, robust, positive
+evidence that tier-3 has a real effect on real hardware (not just "the wiring runs"). The
+open finding is about py65's fidelity to RTL on ONE synthetic corpus, not about whether
+tier-3's own translation logic is correct (M2's isolated bit-exact gate, 0/1490, is
+untouched by this finding — it never depends on the base search's own decision).
 
 **`copro_rom.hex` handling**: git-tracked, confirmed clean before starting
 (`f4b6dfbf76c9beb80d19b3659fb99d26`, matching `HEAD`). Building the candidate necessarily
@@ -243,6 +301,8 @@ EVERY build in this milestone. No shipping artifact was left touched.
 | knob fully off (py65 `build_image`) | — | `753bfb2397d10b5de078a1c9068433d2` |
 | tier-1 only (py65 `build_image`) | `DRCOPRO_TUCKBFS=1` | `c2a0ec2add239cb3c08d561a77799748` |
 | tier-1 + tier-3 (py65 `build_image`) | `DRCOPRO_TUCKBFS=1 DRCOPRO_TUCKBFS_TIER3=1` | `f5480f74874ce64fb03f44a4e361224e` |
+| tier-1 only (`dbg_build.py baseline 0`, RTL diff control) | `DRCOPRO_TUCKBFS=1` | `c8e934e528a423974f7300a7ac4b0790` |
+| tier-1 + tier-3 (`dbg_build.py baseline 0`, RTL diff control) | `DRCOPRO_TUCKBFS=1 DRCOPRO_TUCKBFS_TIER3=1` | `5d2c3783ca20da8d9322c3693704a1b9` |
 | **candidate** (`dbg_build.py all 0`, the real ship recipe) | `DRCOPRO_TUCKBFS=1 DRCOPRO_TUCKBFS_TIER3=1` | **`12a0906bec7358fae6c914d5683a3dab`** |
 
 **SEQUENCING CONSTRAINT — the silicon A/B must wait for the wedge verdict.** New fact from
