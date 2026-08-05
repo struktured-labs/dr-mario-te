@@ -92,3 +92,8 @@ black-screen events occurred during overnight unattended soak; if #6
 follows within ~1-2h, suspect a time/uptime-correlated resource leak
 rather than a per-game race — instrument accordingly (pre-death RAM
 snapshot ring + core watchdog remain the named instruments).
+
+**s20b freeze #6 (2026-08-05 ~02:2x): mid-play family (frozen counts
+4,43,23), recovered by menu cycle. Rate: 6 in ~32h. Tally: mid-play 4,
+black-screen 2. The soak has done its job — the freeze-rate curve is
+measured; remedies land with the next silicon session.**
