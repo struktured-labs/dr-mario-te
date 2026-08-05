@@ -1,0 +1,227 @@
+{
+ "44": {
+  "seed": 44,
+  "result": "stall",
+  "checks": [
+   {
+    "pill_idx": 5,
+    "mirror_placement": {
+     "cells": [
+      10,
+      3,
+      10,
+      4
+     ],
+     "orient": 2,
+     "col": 3,
+     "row": 10
+    },
+    "firmware": {
+     "best_c": 3,
+     "best_o": 3,
+     "tucked": true,
+     "tuck_col": 3,
+     "tuck_row": 10,
+     "steps": 3065543
+    },
+    "firmware_also_fired": true
+   },
+   {
+    "pill_idx": 15,
+    "mirror_placement": {
+     "cells": [
+      9,
+      4,
+      9,
+      5
+     ],
+     "orient": 0,
+     "col": 4,
+     "row": 9
+    },
+    "firmware": {
+     "best_c": 2,
+     "best_o": 2,
+     "tucked": true,
+     "tuck_col": 2,
+     "tuck_row": 7,
+     "steps": 3270402
+    },
+    "firmware_also_fired": true
+   },
+   {
+    "pill_idx": 16,
+    "mirror_placement": {
+     "cells": [
+      9,
+      6,
+      9,
+      7
+     ],
+     "orient": 2,
+     "col": 6,
+     "row": 9
+    },
+    "firmware": {
+     "best_c": 6,
+     "best_o": 3,
+     "tucked": true,
+     "tuck_col": 6,
+     "tuck_row": 9,
+     "steps": 3390309
+    },
+    "firmware_also_fired": true
+   }
+  ]
+ },
+ "0": {
+  "seed": 0,
+  "result": "stall",
+  "checks": [
+   {
+    "pill_idx": 17,
+    "mirror_placement": {
+     "cells": [
+      11,
+      3,
+      12,
+      3
+     ],
+     "orient": 3,
+     "col": 3,
+     "row": 12
+    },
+    "firmware": {
+     "best_c": 3,
+     "best_o": 0,
+     "tucked": true,
+     "tuck_col": 5,
+     "tuck_row": 12,
+     "steps": 3380931
+    },
+    "firmware_also_fired": true
+   },
+   {
+    "pill_idx": 18,
+    "mirror_placement": {
+     "cells": [
+      12,
+      1,
+      13,
+      1
+     ],
+     "orient": 1,
+     "col": 1,
+     "row": 13
+    },
+    "firmware": {
+     "best_c": 1,
+     "best_o": 1,
+     "tucked": true,
+     "tuck_col": 2,
+     "tuck_row": 11,
+     "steps": 3345589
+    },
+    "firmware_also_fired": true
+   },
+   {
+    "pill_idx": 19,
+    "mirror_placement": {
+     "cells": [
+      14,
+      2,
+      14,
+      3
+     ],
+     "orient": 2,
+     "col": 2,
+     "row": 14
+    },
+    "firmware": {
+     "best_c": 2,
+     "best_o": 3,
+     "tucked": true,
+     "tuck_col": 2,
+     "tuck_row": 14,
+     "steps": 3441036
+    },
+    "firmware_also_fired": true
+   }
+  ]
+ },
+ "41": {
+  "seed": 41,
+  "result": "stall",
+  "checks": [
+   {
+    "pill_idx": 6,
+    "mirror_placement": {
+     "cells": [
+      9,
+      0,
+      9,
+      1
+     ],
+     "orient": 0,
+     "col": 0,
+     "row": 9
+    },
+    "firmware": {
+     "best_c": 3,
+     "best_o": 0,
+     "tucked": false,
+     "tuck_col": 255,
+     "tuck_row": 255,
+     "steps": 2940873
+    },
+    "firmware_also_fired": false
+   },
+   {
+    "pill_idx": 7,
+    "mirror_placement": {
+     "cells": [
+      9,
+      2,
+      9,
+      3
+     ],
+     "orient": 0,
+     "col": 2,
+     "row": 9
+    },
+    "firmware": {
+     "best_c": 1,
+     "best_o": 3,
+     "tucked": true,
+     "tuck_col": 1,
+     "tuck_row": 9,
+     "steps": 3276981
+    },
+    "firmware_also_fired": true
+   },
+   {
+    "pill_idx": 11,
+    "mirror_placement": {
+     "cells": [
+      11,
+      4,
+      11,
+      5
+     ],
+     "orient": 0,
+     "col": 4,
+     "row": 11
+    },
+    "firmware": {
+     "best_c": 4,
+     "best_o": 2,
+     "tucked": true,
+     "tuck_col": 4,
+     "tuck_row": 11,
+     "steps": 3440671
+    },
+    "firmware_also_fired": true
+   }
+  ]
+ }
+}
