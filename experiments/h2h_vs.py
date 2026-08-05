@@ -187,6 +187,15 @@ def _mk(cand, topk2=8):
         import cascade_dbl_x as D
         return D.DblRewardD3Decider(w, fl, topk2=topk2, maxpass=0,
                                     w_chain=180, w_dbl=int(arm[3:]))
+    if arm.startswith("strand"):
+        # #47 stranded-half root cost on top of the chain reward: arm
+        # "strand<w_chain>_<ws>" (e.g. strand180_20). Decider is a mechanical
+        # copy of chain's root loop + ONE term; ws=0 selfchecked bit-identical
+        # (cascade_stranded_x.selfcheck, 200 boards).
+        import cascade_stranded_x as S
+        chain_s, ws_s = arm[6:].split("_")
+        return S.StrandedChainD3Decider(w, fl, topk2=topk2, maxpass=0,
+                                        w_chain=int(chain_s), ws=int(ws_s))
     if arm != "ship":
         import cascade_link_x as L
         if arm not in ("lnk1", "lnkfix"):
