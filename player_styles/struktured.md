@@ -236,3 +236,18 @@ best thing" — deliberation past the gravity clock instead of satisficing.
 Measurable from footage: time-per-placement distribution + outcome quality of
 long-deliberation vs snap placements. Mirror-image of the AI's failure mode
 (instant confident junk). Both classes now baselined by tonight's recording.
+
+**Recorded set FINAL: strand20 3–1 over struktured (2026-08-04 evening) — the
+AI's FIRST SET WIN over this player.** Full 25-min recording secured
+(~/Videos/drmario_sessions/20260804_1955_pocket_dock.mkv + project backup).
+m1: AI win (earned-vs-gifted = film review). m2: AI win (user "messing
+around"). m3: user win — STOMPER SUICIDE ON TAPE (first recorded specimen of
+the dies-while-ahead disease). m4: AI win ("DAMNIT").
+
+**Blunder class 3 (self-reported): ENDGAME SPEED PANIC** — "my end game
+sucks... due to speed panic, it gets way faster." Structural note: the NES
+speedup curve means the human's panic phase coincides with the AI's best
+phase (fixed compute latency, panic-immune) — the AI's real edge vs humans
+is late-game; the player's winning line is closing early. Film review queued:
+m3 suicide autopsy, m1 verdict, rotation-slip count, latency distribution,
+speed-phase quality curve, strand20 style confirmation.
