@@ -97,10 +97,65 @@ the original report's own note). `reach32`/`reach32t` still only match on
 and human-recognizable placement for physical feasibility on this board
 family, exactly as `REACH_ROOT_M3CASE.md` §5 found for `reach32` alone.
 
+## 5. Late-start (decision-latency) sensitivity — team-lead follow-on
+
+**Question:** §3's zero-divergence result assumes steering can begin AT
+SPAWN (hook 0). If the search itself burns hooks before a target column is
+even known, the EFFECTIVE budget at the moment steering can actually start
+is smaller than what `reach32t`/`reachfull2t` compute from a spawn-time
+snapshot. Does accounting for that latency change §3's picks — i.e. does the
+zero-divergence result "localize the mechanism in late decision arrival
+(search latency), not movement physics," as hypothesized?
+
+**Method:** `tmp_logs/m3case_sensitivity.py` (new, read-only — does not touch
+the shipped `reach_root.py` choosers) re-scores the same 6 boards' reachable
+candidates with `hooks_available` reduced by a `late_start_hooks` penalty
+swept over 0 (the as-shipped assumption), 10, 20 (the requested probe point),
+30, 40, 50, 60, 70, 80, 84 (the maximum possible `hooks_available`, at which
+point every non-spawn-column candidate is excluded by construction).
+
+**Result: NO flip at the requested 20-hook probe point, or anywhere up to
+40.** Only 3 of the 6 boards (4, 5, 6) flip at all in the full sweep, and not
+until a MUCH larger penalty:
+
+| commit | flips at late_start_hooks= | from → to | at 20 (requested probe) |
+|---|---|---|---|
+| 1 | never (0-84) | — | no flip (pick is already col4, a spawn column, 0 edges — immune by construction) |
+| 2 | never (0-84) | — | no flip (pick is col3, also a spawn column) |
+| 3 | never (0-84) | — | no flip (base32-reachable, 0 edges, all arms agree already) |
+| 4 | 70 | col1 → col3 | no flip |
+| 5 | 50 | col0 → col1 (further: 70→col2, 80→col3) | no flip |
+| 6 | 50 | col0 → col1 (further: 70→col2, 80→col3) | no flip |
+
+**Reading:** commits 1, 2, 3 never flip because `reachfull2t`'s pick on those
+boards was ALREADY a spawn-adjacent column (0 edges needed) — there's no
+budget left to squeeze. Commits 5 and 6 (both picking `col0`, 3 edges, the
+SAME far column `base32`/`reachfull2` prefer) DO eventually get squeezed
+toward nearer columns, but only once the penalty reaches ~50-60 hooks
+(25-30 frames, ~0.4-0.5s of decision latency) — more than double the
+requested 20-hook probe, and commit 4 not until ~70 hooks. **This refutes
+the "late decision arrival" hypothesis AT THE REQUESTED PROBE POINT**: a
+20-hook (10-frame, ~0.17s) decision-latency assumption changes nothing on
+any of the 6 boards. Whether a real depth-3 copro search actually burns
+50+ hooks (~0.4-0.5s) before a target column is known is NOT established by
+this task (no search-latency measurement is cited or made here) — flagged as
+the open question this sensitivity check narrows but does not close. Given
+the bursty-pressure gate's statistical (not modeled) evidence already shows
+`reachfull2t` harmful under real play (`REACH_ROOT_BURSTY2.md`), this
+sensitivity result doesn't change the ship recommendation — it does show
+that IF a "late decision arrival" story is going to rescue the time filter,
+it needs a decision-latency figure well north of 20 hooks, on real evidence,
+not an assumption.
+
+Raw data: `tmp_logs/m3case_sensitivity_raw.json`.
+
 ## Files
 
 - Runner: `eval47/tmp_logs/m3case2.py` (new; `m3case.py` untouched)
 - Raw JSON: `eval47/tmp_logs/m3case2_raw.json`
+- Late-start sensitivity: `eval47/tmp_logs/m3case_sensitivity.py` (new,
+  read-only re-scoring, does not modify `reach_root.py`), raw data
+  `eval47/tmp_logs/m3case_sensitivity_raw.json`
 - Modes under test: `eval47/reach_root.py` (`choose_reachfull2`/
   `choose_reach32t`/`choose_reachfull2t`, `_selftest_reachfull2_never_
   unreachable_base` for the defect test, `_selftest_dist_table_matches_

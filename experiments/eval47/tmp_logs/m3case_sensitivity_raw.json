@@ -1,0 +1,524 @@
+[
+  {
+    "commit_index": 1,
+    "n_reach": 18,
+    "base32_col": 6,
+    "sweep": {
+      "0": {
+        "n_within_budget": 18,
+        "pick_col": 4,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "10": {
+        "n_within_budget": 18,
+        "pick_col": 4,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "20": {
+        "n_within_budget": 18,
+        "pick_col": 4,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "30": {
+        "n_within_budget": 18,
+        "pick_col": 4,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "40": {
+        "n_within_budget": 18,
+        "pick_col": 4,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "50": {
+        "n_within_budget": 14,
+        "pick_col": 4,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "60": {
+        "n_within_budget": 14,
+        "pick_col": 4,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "70": {
+        "n_within_budget": 10,
+        "pick_col": 4,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "80": {
+        "n_within_budget": 6,
+        "pick_col": 4,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "84": {
+        "n_within_budget": 6,
+        "pick_col": 4,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      }
+    }
+  },
+  {
+    "commit_index": 2,
+    "n_reach": 18,
+    "base32_col": 7,
+    "sweep": {
+      "0": {
+        "n_within_budget": 18,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "10": {
+        "n_within_budget": 18,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "20": {
+        "n_within_budget": 18,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "30": {
+        "n_within_budget": 18,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "40": {
+        "n_within_budget": 18,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "50": {
+        "n_within_budget": 14,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "60": {
+        "n_within_budget": 14,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "70": {
+        "n_within_budget": 10,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "80": {
+        "n_within_budget": 6,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "84": {
+        "n_within_budget": 6,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      }
+    }
+  },
+  {
+    "commit_index": 3,
+    "n_reach": 18,
+    "base32_col": 3,
+    "sweep": {
+      "0": {
+        "n_within_budget": 18,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": false
+      },
+      "10": {
+        "n_within_budget": 18,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": false
+      },
+      "20": {
+        "n_within_budget": 18,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": false
+      },
+      "30": {
+        "n_within_budget": 18,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": false
+      },
+      "40": {
+        "n_within_budget": 18,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": false
+      },
+      "50": {
+        "n_within_budget": 14,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": false
+      },
+      "60": {
+        "n_within_budget": 14,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": false
+      },
+      "70": {
+        "n_within_budget": 10,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": false
+      },
+      "80": {
+        "n_within_budget": 6,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": false
+      },
+      "84": {
+        "n_within_budget": 6,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": false
+      }
+    }
+  },
+  {
+    "commit_index": 4,
+    "n_reach": 18,
+    "base32_col": 7,
+    "sweep": {
+      "0": {
+        "n_within_budget": 18,
+        "pick_col": 1,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "10": {
+        "n_within_budget": 18,
+        "pick_col": 1,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "20": {
+        "n_within_budget": 18,
+        "pick_col": 1,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "30": {
+        "n_within_budget": 18,
+        "pick_col": 1,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "40": {
+        "n_within_budget": 18,
+        "pick_col": 1,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "50": {
+        "n_within_budget": 14,
+        "pick_col": 1,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "60": {
+        "n_within_budget": 14,
+        "pick_col": 1,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "70": {
+        "n_within_budget": 10,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "80": {
+        "n_within_budget": 6,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "84": {
+        "n_within_budget": 6,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      }
+    }
+  },
+  {
+    "commit_index": 5,
+    "n_reach": 18,
+    "base32_col": 0,
+    "sweep": {
+      "0": {
+        "n_within_budget": 18,
+        "pick_col": 0,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": true
+      },
+      "10": {
+        "n_within_budget": 18,
+        "pick_col": 0,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": true
+      },
+      "20": {
+        "n_within_budget": 18,
+        "pick_col": 0,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": true
+      },
+      "30": {
+        "n_within_budget": 18,
+        "pick_col": 0,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": true
+      },
+      "40": {
+        "n_within_budget": 18,
+        "pick_col": 0,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": false,
+        "human_family": true
+      },
+      "50": {
+        "n_within_budget": 14,
+        "pick_col": 1,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "60": {
+        "n_within_budget": 14,
+        "pick_col": 1,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "70": {
+        "n_within_budget": 10,
+        "pick_col": 2,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "80": {
+        "n_within_budget": 6,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "84": {
+        "n_within_budget": 6,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      }
+    }
+  },
+  {
+    "commit_index": 6,
+    "n_reach": 18,
+    "base32_col": 7,
+    "sweep": {
+      "0": {
+        "n_within_budget": 18,
+        "pick_col": 0,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": true
+      },
+      "10": {
+        "n_within_budget": 18,
+        "pick_col": 0,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": true
+      },
+      "20": {
+        "n_within_budget": 16,
+        "pick_col": 0,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": true
+      },
+      "30": {
+        "n_within_budget": 16,
+        "pick_col": 0,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": true
+      },
+      "40": {
+        "n_within_budget": 16,
+        "pick_col": 0,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": true
+      },
+      "50": {
+        "n_within_budget": 12,
+        "pick_col": 1,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "60": {
+        "n_within_budget": 12,
+        "pick_col": 1,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "70": {
+        "n_within_budget": 8,
+        "pick_col": 2,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "80": {
+        "n_within_budget": 6,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      },
+      "84": {
+        "n_within_budget": 6,
+        "pick_col": 3,
+        "kind": "timed-base",
+        "fell_back_to_untimed": false,
+        "diverges_from_base32": true,
+        "human_family": false
+      }
+    }
+  }
+]

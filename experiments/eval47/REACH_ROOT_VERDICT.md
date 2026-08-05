@@ -208,7 +208,18 @@ by pressure regime:
   byte-identical to `reachfull2` (same −11.15 [−19.03,−3.23] pills delta).
 - **M3 real death-board case study (`REACH_ROOT_M3CASE2.md`):** also a
   complete no-op — 0/6 commits, `n_within_budget == n_reach` on every one,
-  even though these are real near-topout, critically-stacked boards.
+  even though these are real near-topout, critically-stacked boards. **Team-
+  lead follow-on check (§5 of that report):** is this zero-divergence an
+  artifact of assuming steering starts at spawn, and would a "late decision
+  arrival" (search-latency) penalty flip it, localizing the mechanism there
+  instead of in movement physics? Swept a `late_start_hooks` penalty 0-84 —
+  **no flip at the requested 20-hook probe, or anywhere up to 40.** 3 of 6
+  boards do eventually flip, but only past ~50-70 hooks (25-35 frames,
+  ~0.4-0.6s) of assumed decision latency, well beyond the probe point and
+  not independently established by any search-latency measurement in this
+  program. The "late decision arrival" hypothesis is refuted at the
+  requested probe point; whether it holds at a much larger, unverified
+  latency figure is an open question this check narrows but does not close.
 - **Bursty-pressure gate, n=120 (`REACH_ROOT_BURSTY2.md`):** here the filter
   DOES bind (diagnostic: mean `time_frac` — the share of BFS-reachable
   candidates that also clear the time budget — is 0.982 for `reach32t`
@@ -278,6 +289,9 @@ frame budget beyond what the original `reachfull` port already priced.
 - `reach_root_ab.py` (added `time_frac`/`fallback_time_frac` diagnostics;
   `base32`/`reach32`/`reachfull` paths untouched)
 - `tmp_logs/m3case2.py`, `tmp_logs/m3case2_raw.json` (new M3 runner/raw data)
+- `tmp_logs/m3case_sensitivity.py`, `tmp_logs/m3case_sensitivity_raw.json`
+  (team-lead follow-on: late-decision-arrival sweep, read-only, does not
+  modify `reach_root.py`'s shipped choosers)
 - `reach_divergence2.py`, `results/reach_divergence2_n40.json` (new
   divergence-by-height instrumentation for `reach32t`)
 - `results/reach_root_bursty_n120_iter2_*.json`,
