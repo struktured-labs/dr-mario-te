@@ -82,3 +82,13 @@ the stale-ARMED2/commit-path remedies target the mid-play family; the
 black-screen family remains uncharacterized (no state capture possible by
 definition) — needs a different instrument (e.g. periodic RAM-snapshot
 BEFORE death, or core-side watchdog register).
+
+**s20b freeze #5 (2026-08-05 ~01:40, logged 01:58): black-screen class
+AGAIN** — 1KB blank screenshot (wedge3_0157.png), STALE x5, identical
+signature to freeze #4 one hour earlier. Recovery clean (post_recovery3,
+8KB). Rate: 5 in ~31h, black-screen family now 2/5 and accelerating
+(2 in the last 2 hours vs 0 in the first 27). Pattern watch: both
+black-screen events occurred during overnight unattended soak; if #6
+follows within ~1-2h, suspect a time/uptime-correlated resource leak
+rather than a per-game race — instrument accordingly (pre-death RAM
+snapshot ring + core watchdog remain the named instruments).
