@@ -1,34 +1,28 @@
 #!/usr/bin/env python3
-"""ITERATION 4 PREP (task #67, team-lead follow-on): tier-parametric sweep
-harness for the executability-tier knee sweep. Generalizes iteration 3's
-reachexec reconciliation into an N-arm paired sweep over max_tier values,
-using reach_root.py's choose_reach_tier(..., max_tier, tier_fn).
+"""ITERATION 4 -- TIER KNEE (task #67): tier-parametric sweep harness for the
+executability-tier knee sweep. Generalizes iteration 3's reachexec
+reconciliation into an N-arm paired sweep over max_tier values, using
+reach_root.py's choose_reach_tier(..., max_tier, tier_fn).
 
-STUB VALIDATION (this run): tier_fn defaults to reach_root._stub_tier_of, a
-TWO-TIER PLACEHOLDER (tier1 = TL.executable, tier2 = STUB_MAX_TIER =
-everything) standing in for the tuck-bfs agent's eventual tier_of(col,
-candidate) -> int (BFS-parent-chain-derived executability tiers, exact
-number/definition of tiers is that agent's call). Sweeping max_tier over
-(1, STUB_MAX_TIER) with this stub MUST reproduce choose_reachexec
-(max_tier=1) and choose_reachfull2 (max_tier=STUB_MAX_TIER) EXACTLY -- both
-at the fast decision level (reach_root.py's own
-`_selftest_reach_tier_endpoints`, run separately, 0/60 mismatches) AND here,
-end-to-end, by diffing this run's own max_tier=1/max_tier=STUB_MAX_TIER
-per-seed game rows against the already-committed n=120 iteration-3 numbers
-(results/reachexec_bursty_n120.json). This double proof (unit-level +
-full-game-level) is the self-test that the sweep MACHINERY (this script's
-own game loop, McNemar plumbing, N-arm pairing) adds nothing of its own --
-only the chooser function differs.
+HISTORY: the first run of this file (2026-08-05, pre tier_of landing) used
+`tier_fn` defaulting to reach_root._stub_tier_of, a two-tier placeholder
+(tier1 = TL.executable, tier2 = STUB_MAX_TIER = everything), and validated
+that sweeping (1, STUB_MAX_TIER) with the stub reproduced choose_reachexec
+and choose_reachfull2 EXACTLY -- both at the fast decision level
+(reach_root.py's `_selftest_reach_tier_endpoints`, 0/60 mismatches) and here,
+end-to-end (0/120 seeds differed at either endpoint vs the already-committed
+iteration-3 numbers, results/reachexec_bursty_n120.json). That run is the
+self-test proving the sweep MACHINERY adds nothing of its own -- only the
+chooser function differs. See git history for that version if the stub
+comparison is ever needed again.
 
-ONE-LINE INVOCATION FOR WHEN REAL TIERS LAND: once the tuck-bfs agent's
-extended translatable.py exposes tier_of(col, candidate) -> int, change
-TIER_SWEEP below to the real tier range (e.g. `range(1, N + 1)`) and pass
-`tier_fn=translatable.tier_of` into every `RR.choose_reach_tier(...)` call
-in `play()` (currently omitted so the stub default applies) -- nothing else
-in this file changes. Concretely:
-    TIER_SWEEP = range(1, N + 1)                    # was (1, RR.STUB_MAX_TIER)
-    RR.choose_reach_tier(fb, col, vir, ca, cb, na, nb, max_tier,
-                          tier_fn=translatable.tier_of)   # add tier_fn=...
+REAL TIERS (this run): the tuck-bfs agent's translatable.tier_of(col,
+candidate) -> int landed 2026-08-05 (5 tiers, translatable.MAX_TIER=5,
+independently validated 0/1490 disagreements / 0 unreachable leaks on their
+200-board corpus). TIER_SWEEP below now covers the real tier range and
+`play()` passes `tier_fn=translatable.tier_of` into every
+`RR.choose_reach_tier(...)` call -- exactly the one-line change this file's
+prior version documented as the swap point, applied here.
 """
 from __future__ import annotations
 import sys
@@ -44,17 +38,17 @@ for _p in (HERE,):
 import reach_root as RR
 import reach_root_ab as AB
 import bursty_model
+import translatable  # noqa: E402 -- the tuck-bfs agent's real tier_of(), landed 2026-08-05
 
 SEEDS = 120
 WORKERS = 6
 LEVEL = 11
 
-# The sweep: which max_tier values to run, each paired against base32 AND
-# the reachfull2 oracle. With the two-tier stub these ARE the exact
-# endpoints (1 = reachexec-equivalent, STUB_MAX_TIER = reachfull2-
-# equivalent) -- see the module docstring for what changes when real tiers
-# land.
-TIER_SWEEP = (1, RR.STUB_MAX_TIER)
+# REAL TIERS (task #67, ITERATION 4): translatable.tier_of() landed with 5 tiers
+# (translatable.MAX_TIER). This is the "one-line change" documented in the
+# module docstring above -- was `TIER_SWEEP = (1, RR.STUB_MAX_TIER)` / stub
+# default in play() below.
+TIER_SWEEP = tuple(range(1, translatable.MAX_TIER + 1))
 
 _C = {}
 
@@ -103,10 +97,9 @@ def play(seed):
             break
         col, vir = RS.board_flat_from_fb(fb)
         ca, cb, na, nb = int(env.cur.a), int(env.cur.b), int(env.nxt.a), int(env.nxt.b)
-        # tier_fn omitted -> reach_root.choose_reach_tier defaults to the
-        # stub. See module docstring for the one-line change when real
-        # tiers land.
-        best = RR.choose_reach_tier(fb, col, vir, ca, cb, na, nb, max_tier)
+        # REAL TIERS (ITERATION 4): translatable.tier_of landed 2026-08-05.
+        best = RR.choose_reach_tier(fb, col, vir, ca, cb, na, nb, max_tier,
+                                    tier_fn=translatable.tier_of)
 
         occ_before = int(np.count_nonzero(env.board.color)) if pressure == "bursty" else 0
 
@@ -259,16 +252,28 @@ def main():
 
     # ---- END-TO-END STUB VALIDATION: diff against the committed          --
     # ---- iteration-3 numbers (results/reachexec_bursty_n120.json)        --
-    print("\n=== STUB ENDPOINT VALIDATION vs already-committed iteration-3 rows ===")
+    print("\n=== ENDPOINT VALIDATION vs already-committed iteration-3 rows ===")
+    # tier<=1 is ALWAYS the reachexec-equivalent endpoint (tier_of(col,p)<=1
+    # <=> is_translatable(col,p), by the tier_fn contract both the stub and
+    # the real translatable.tier_of honor). tier<=MAX(TIER_SWEEP) is the
+    # reachfull2-equivalent (unbounded) endpoint UNDER WHATEVER TIER_SWEEP IS
+    # ACTIVE -- with the two-tier stub that was tier<=STUB_MAX_TIER(=2); with
+    # the real 5-tier ladder it's tier<=5. Deriving it from max(TIER_SWEEP)
+    # instead of hardcoding RR.STUB_MAX_TIER is the fix for a real bug this
+    # run caught: the hardcoded version compared tier<=2 (a real, NARROWER
+    # tier under the 5-tier ladder) against the reachfull2 oracle and
+    # reported a false FAIL -- tier<=2 legitimately differs from reachfull2
+    # now; tier<=max(TIER_SWEEP) is the correct oracle-equivalent endpoint.
     prior_path = f"{HERE}/results/reachexec_bursty_n120.json"
     validation = {"skipped": True, "reason": "prior file not found"}
     if os.path.exists(prior_path):
         prior = json.load(open(prior_path))
         prior_reachexec = {r["seed"]: r for r in prior["raw"]["reachexec"]}
         prior_reachfull2 = {r["seed"]: r for r in prior["raw"]["reachfull2"]}
+        top_tier = max(TIER_SWEEP)
 
         n_diff_lo, ex_lo = _diff_rows(tier_rows[1], prior_reachexec)
-        n_diff_hi, ex_hi = _diff_rows(tier_rows[RR.STUB_MAX_TIER], prior_reachfull2)
+        n_diff_hi, ex_hi = _diff_rows(tier_rows[top_tier], prior_reachfull2)
         # also cross-check THIS run's own freshly-computed reachfull2 arm
         # against the prior committed reachfull2 rows (both should be
         # identical too -- same deterministic seeds, same code path).
@@ -277,23 +282,23 @@ def main():
         ok = n_diff_lo == 0 and n_diff_hi == 0 and n_diff_fresh == 0
         print(f"  max_tier=1 vs prior reachexec rows:            "
               f"{n_diff_lo}/{SEEDS} seeds differ  {'PASS' if n_diff_lo == 0 else 'FAIL ' + str(ex_lo)}")
-        print(f"  max_tier={RR.STUB_MAX_TIER} vs prior reachfull2 rows:            "
+        print(f"  max_tier={top_tier} (top of sweep) vs prior reachfull2 rows: "
               f"{n_diff_hi}/{SEEDS} seeds differ  {'PASS' if n_diff_hi == 0 else 'FAIL ' + str(ex_hi)}")
         print(f"  this run's fresh reachfull2 vs prior reachfull2 rows: "
               f"{n_diff_fresh}/{SEEDS} seeds differ  {'PASS' if n_diff_fresh == 0 else 'FAIL ' + str(ex_fresh)}")
-        print(f"\n  STUB ENDPOINT VALIDATION: {'PASS' if ok else 'FAIL'}")
+        print(f"\n  ENDPOINT VALIDATION: {'PASS' if ok else 'FAIL'}")
         validation = {"skipped": False, "pass": ok, "n_diff_tier1_vs_reachexec": n_diff_lo,
-                      "n_diff_tierN_vs_reachfull2": n_diff_hi,
+                      "n_diff_top_tier_vs_reachfull2": n_diff_hi, "top_tier": top_tier,
                       "n_diff_fresh_reachfull2_vs_prior": n_diff_fresh}
     else:
         print(f"  SKIPPED: {prior_path} not found")
 
-    out = {"tier_sweep": list(TIER_SWEEP), "stub_max_tier": RR.STUB_MAX_TIER,
+    out = {"tier_sweep": list(TIER_SWEEP),
            "summaries": {str(k): v for k, v in summaries.items()},
            "bad_ends_survival_curve": curve,
            "base32_bad_ends": base_bad, "reachfull2_bad_ends": oracle_bad,
-           "stub_endpoint_validation": validation}
-    out_path = f"{HERE}/results/tier_sweep_bursty_n120_stub.json"
+           "endpoint_validation": validation}
+    out_path = f"{HERE}/results/tier_sweep_bursty_n120_real.json"
     with open(out_path, "w") as fh:
         json.dump(out, fh)
     print(f"\nwrote {out_path}")

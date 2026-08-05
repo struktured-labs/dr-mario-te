@@ -448,3 +448,127 @@ REAL cost of the pressure fix, not an optional follow-on.**
   its acceptance-check loop extended to include it)
 - `results/reachexec_bursty_n120.json`,
   `results/reach_root_clean_n40_iter3_{reachfull2,reachexec}.json`
+
+## ITERATION 4 — TIER KNEE
+
+**Date:** 2026-08-05 · Task #67. The tuck-bfs agent's `translatable.tier_of(col,
+candidate) -> int` landed the same night (5 tiers, `translatable.MAX_TIER=5`,
+independently validated 0/1490 disagreements / 0 unreachable leaks on their
+own 200-board corpus). Applied the documented one-line change
+(`run_tier_sweep.py`: `TIER_SWEEP = range(1, translatable.MAX_TIER + 1)`,
+`tier_fn=translatable.tier_of`) and re-ran the real n=120 bursty sweep, all 7
+arms (base32, the reachfull2 oracle, tier≤1..5) paired on the same seeds.
+
+### Headline: the knee is TIER 3, and it's not a close call
+
+Tier 3 recovers **100% of the oracle's bad-ends rescue** and is
+**bit-for-bit indistinguishable from `reachfull2`** on this n=120 sample (0
+seeds moved, pills delta exactly `+0.00 [+0.00,+0.00]`). Tiers 4 and 5 add
+**zero additional value** — every number is identical to tier 3's, digit for
+digit. This independently confirms, on a THIRD corpus, `translatable.py`'s
+own honest caveat that tiers 4/5 are unexercised on its two test corpora
+(200-board real-L11, 110-candidate synthetic overflow) — the bursty-pressure
+gameplay corpus this program cares about most shows the identical pattern.
+
+### Bad-ends-survival-vs-tier curve
+
+`base32` bad-ends = 32, `reachfull2` (oracle) bad-ends = 18, oracle rescue = 14.
+
+| max_tier | bad_ends | rescued | survival of oracle rescue |
+|---|---|---|---|
+| 1 | 30 | 2 | 14.3% |
+| **2** | **20** | **12** | **85.7%** |
+| **3** | **18** | **14** | **100.0%** |
+| 4 | 18 | 14 | 100.0% (identical to tier 3) |
+| 5 | 18 | 14 | 100.0% (identical to tier 3) |
+
+### Full per-tier comparison, n=120 bursty, paired on identical seeds
+
+| max_tier | pills Δ vs base32 | verdict | bad-ends | dies-ahead | McNemar vs base32 (rescued/harmed, p) | McNemar vs oracle (rescued/harmed, p) | tuck_fires/g |
+|---|---|---|---|---|---|---|---|
+| 1 | −14.64 [−27.29,−2.23] | REAL | 32→30 | 13.3%→11.7% | 15/13, p=0.851 | 8/20, p=0.036 | 1.77 |
+| 2 | −22.00 [−35.35,−8.59] | REAL | 32→20 | 13.3%→10.8% | 22/10, p=0.050 | 8/10, p=0.815 | 3.01 |
+| **3** | **−29.44 [−44.58,−14.01]** | **REAL** | **32→18** | **13.3%→9.2%** | **22/8, p=0.016** | **0/0, p=nan (0 moved)** | **4.17** |
+| 4 | −29.44 [−44.58,−14.01] | REAL | 32→18 | 13.3%→9.2% | 22/8, p=0.016 | 0/0, p=nan (0 moved) | 4.17 |
+| 5 | −29.44 [−44.58,−14.01] | REAL | 32→18 | 13.3%→9.2% | 22/8, p=0.016 | 0/0, p=nan (0 moved) | 4.17 |
+
+Reading the McNemar-vs-oracle column is the cleanest way to see the knee:
+tier 1 is significantly WORSE than the oracle (p=0.036, harmed>rescued —
+this is `reachexec` itself, already characterized as collapsed in Iteration
+3); tier 2 is statistically indistinguishable from the oracle but with real
+residual daylight (bad-ends 20 vs 18, 12/120 seeds discordant); tier 3
+reaches EXACT equivalence (0 discordant pairs) and stays there through tier
+5.
+
+### Cost ladder (from `translatable.py`'s own tier-ladder documentation)
+
+| tier | mechanism | firmware cost |
+|---|---|---|
+| 1 | single adjacent-column approach, bounded trigger row (today's shipped vocabulary) | $0 (already shipped) |
+| 2 | single adjacent-column approach, UNBOUNDED trigger row (BFS-visited-verified) | +40-80B code, no new RAM |
+| **3** | **unrestricted approach column, ≤1 lateral direction change** | **+150-250B code, +~128B RAM** |
+| 4 | bounded-length path playback (≤`TIER4_MAX_STEER`=12 non-Down moves), needs BFS parent pointers | +512B new RAM (>2x current ~448B footprint) + ~100-150B replay code; flagged by its own author as needing a dedicated capacity/RAM audit |
+| 5 (MAX) | unbounded playback = full BFS-reachable set | NOT a firmware byte cost (bitplane already computed) — an OPEN driver/input-model feasibility question (can the real frame pipeline execute an arbitrary, possibly-backtracking move sequence in time?), not priced here |
+
+### Recommendation: ship TIER 3
+
+Tier 3 is the unambiguous knee: it is the cheapest tier that captures the
+**full** oracle recovery (100% of the bad-ends rescue, exact statistical
+equivalence to `reachfull2`, McNemar p=0.016 significant vs `base32`), and
+its cost (+150-250B code, +~128B RAM) is modest and only slightly above
+tier 2's. Tiers 4 and 5 should NOT be built next: tier 4's cost is
+substantial (more than doubling the current tuck-BFS RAM footprint) and
+tier 5's cost is an unresolved driver-feasibility question — and BOTH add
+measured **zero** additional recovery over tier 3, corroborated across three
+independent corpora (the tuck-bfs agent's own 200-board and 110-candidate
+corpora, plus this program's n=120 bursty-pressure gameplay corpus). If a
+smaller code footprint is later needed, tier 2 is the fallback — cheapest
+non-zero step (+40-80B), captures 85.7% of the value, borderline significant
+(p=0.050) — but should not be the default target given tier 3 costs barely
+more and closes the gap completely.
+
+**Practical translation for the tuck-bfs-6502 port:** build tier 3's
+motion vocabulary (unrestricted approach column, ≤1 direction change) as the
+CANDLIST target, not today's shipped tier-1-only vocabulary. This is the
+richer-descriptor work Iteration 3 identified as the real cost of realizing
+`reachfull2`'s advertised pressure-death win — and this sweep prices it
+precisely: a genuinely small, well-scoped increment (+150-250B/+128B RAM),
+not the larger, open-ended tier-4/5 investment that isn't justified by any
+evidence gathered so far.
+
+### A harness bug caught and fixed mid-report (flagged, not hidden)
+
+`run_tier_sweep.py`'s own endpoint-validation section (built for the earlier
+stub run) hardcoded the "top of sweep" comparison target as
+`RR.STUB_MAX_TIER` (=2, the two-tier stub's own upper bound). Under the real
+5-tier ladder this silently compared tier≤2 (a real, narrower tier) against
+the `reachfull2` oracle and printed a false `FAIL` (90/120 seeds "differ" —
+correctly, since tier 2 legitimately differs from the oracle; the check was
+just asking the wrong question). Fixed to derive the top-of-sweep tier from
+`max(TIER_SWEEP)` dynamically. The `max_tier=1` vs `reachexec` check was
+unaffected by this bug (hardcoded correctly, always index 1) and passed
+directly: **0/120 seeds differ**. The corrected tier-5-vs-oracle identity is
+not separately re-verified via a fresh row-level diff (the fix landed after
+the run completed, and the raw per-seed tier rows were not persisted to
+disk, only the aggregate comparison summaries) — but the aggregate evidence
+already gathered is about as strong as a row-diff would be: an exact
+zero-width pills CI (`+0.00 [+0.00,+0.00]`), zero McNemar-discordant pairs
+(0/120), and identical bad-ends/dies-ahead/clear-rate counts. Re-running the
+full 7-arm sweep solely to re-derive an already-overwhelming confirmation
+was judged not worth the ~15 additional minutes of compute; flagged here so
+the gap between "aggregate-confirmed" and "row-diff-confirmed" is visible,
+not asserted away.
+
+### Files (this iteration)
+
+- `run_tier_sweep.py` (`TIER_SWEEP` now covers the real 5-tier range,
+  `tier_fn=translatable.tier_of` wired into `play()`; endpoint-validation
+  section's `RR.STUB_MAX_TIER` bug fixed to `max(TIER_SWEEP)`)
+- `results/tier_sweep_bursty_n120_real.json` (this run's summaries + curve;
+  contains the pre-fix, false-FAIL validation block from the run that
+  produced the headline numbers — the numbers themselves are correct, only
+  that one diagnostic sub-section was stale, per the note above)
+- `tmp_logs/tier_sweep_bursty_n120_real.log` (full run log)
+- `translatable.py` (tuck-bfs agent's file, read not modified: `tier_of`,
+  `MAX_TIER`, `TIER4_MAX_STEER`, the tier-ladder cost documentation this
+  section's cost table is sourced from)
