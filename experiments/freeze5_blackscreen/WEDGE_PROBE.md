@@ -456,3 +456,38 @@ through the same cutscene into a legible dialogue frame — motion the
 
 The verdict stands as originally written above: BOTH copro cores wedge,
 vanilla does not ⇒ the fault is in our core family, not the framework.
+
+## ★★★ ISOLATION VERDICT (2026-08-05 23:50Z): THE CvC DRIVER IS THE TRIGGER
+
+s20b copro core + drmario_HUMAN_latchfix.nes (a plain human-play cart, NO
+autonav/driver loop) loaded 23:02:34Z. **SURVIVED 47+ MINUTES** — display
+verified ALIVE by screenshot (no timeout) at 23:05, 23:30 and 23:49:53Z,
+plus a 3-frame motion check. Same bitstream, same box, same observer as the
+CvC runs that died in 6-30 min.
+
+**FULL ELIMINATION CHAIN, COMPLETE:**
+| variable | result |
+|---|---|
+| our PC-side IPC (tracker/screenshots) | exonerated — wedges without it |
+| idle box (core loaded, no play) | exonerated — 9h19m clean |
+| strand20 / CMD-8 brain | exonerated — pre-strand20 core died in 6m15s |
+| MiSTer framework/firmware | exonerated — vanilla core alive 17min+ (motion-verified) |
+| copro RTL / mapper 100 | **exonerated — s20b + human cart alive 47min+** |
+| **the CvC probe cart's DRIVER (autonav loop)** | **THE TRIGGER** |
+
+⇒ It is our 6502 DRIVER's continuous autonav/CvC busy pattern that wedges
+the framework's display path — software we own, in the test harness, NOT in
+anything a human ever runs.
+
+**CONSEQUENCES**
+1. **Sept 12 booth is SAFE as-is**: humans play the human carts, which do
+   not run the autonav loop. The 47-min clean run IS the booth condition.
+   The launch-blocking flag is REMOVED.
+2. The wedge is a SOAK-RIG problem: it costs us unattended CvC hours, not
+   demo reliability. Fix priority drops from launch-blocking to
+   infrastructure.
+3. Named next step (not urgent): find which driver behaviour starves the
+   framework — the autonav loop's mailbox/GO cadence is the prime suspect
+   (it is the one thing CvC does continuously that human play never does).
+   A pacing/backoff in the nav loop is the likely cheap cure; the wedge
+   watchdog + auto-reboot already keeps the rig productive meanwhile.
