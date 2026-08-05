@@ -118,6 +118,20 @@ assert not (EMIT_TUCK and EMIT_TUCK_BFS), "EMIT_TUCK (v1) and EMIT_TUCK_BFS are 
 assert not (EMIT_TUCK_V3 and EMIT_TUCK_BFS), \
     "EMIT_TUCK_V3 and EMIT_TUCK_BFS are alternative enumerators for the same tuck_v3 scoring"
 TUCK_BFS_ROM = TUCK_V3_ROM
+# DRCOPRO_TUCKBFS_TIER3=1: tier-3 mission (2026-08-05) -- widens tuck_bfs's CANDLIST
+# translation (tests/tuck_bfs_translate_6502.py, tier 1: target+/-1 approach columns) to
+# tests/tuck_bfs_tier3_6502.py's tier-3 vocabulary (any approach column, mono-reachable-
+# verified) as a FALLBACK tried only when tier 1 finds nothing for a candidate -- see
+# tuck_bfs_tier3_6502.py's own module docstring for the driver investigation that makes
+# this safe (mv_p2's steering was already general over all 8 columns; only the search's
+# own translation was narrow). ADDITIVE on top of EMIT_TUCK_BFS, not an alternative to it
+# (asserted below) -- swaps ONE call (tr_translate -> tr_translate_tier3) in the tuck_bfs_v3
+# entry point; tuck_bfs_6502.py and tuck_bfs_translate_6502.py are never modified, so
+# DRCOPRO_TUCKBFS=1 alone (this knob off) keeps its existing byte-for-byte behaviour.
+EMIT_TUCK_BFS_TIER3 = os.environ.get("DRCOPRO_TUCKBFS_TIER3", "0") == "1"
+assert not (EMIT_TUCK_BFS_TIER3 and not EMIT_TUCK_BFS), \
+    "DRCOPRO_TUCKBFS_TIER3 requires DRCOPRO_TUCKBFS=1 (tier 3 is a translation upgrade, " \
+    "not a standalone enumerator)"
 SQ_ROM, PILL_ROM = 0xB000, 0xB030
 MAX_STEPS = 3_000_000_000
 
@@ -219,6 +233,11 @@ def build_image(board, cA, cB, nA, nB):
         TRB.emit_translate(tvb)                  # translation: "tr_translate" label,
                                                    # writes tuck_v3.py's own CANDLIST/TS_CNT/
                                                    # TS_DROP -- same bytes tuck_scan_v3 would
+        translate_entry = "tr_translate"
+        if EMIT_TUCK_BFS_TIER3:
+            import tuck_bfs_tier3_6502 as T3
+            T3.emit_tier3(tvb)                   # adds tr_derive_cascade/tr_translate_tier3
+            translate_entry = "tr_translate_tier3"  # tier1-then-tier3, same CANDLIST bytes
         TV.emit_land_place_at(tvb, board=TV.CUR)
         TV.emit_tuck_cell_prep(tvb, s_ca=S_CA, s_cb=S_CB)
         TV.emit_tuck_imm1(tvb)
@@ -251,7 +270,7 @@ def build_image(board, cA, cB, nA, nB):
         tvb.ins16("LDA_abs", S_CA); tvb.ins("STA_zp", TB.PILL_A)
         tvb.ins16("LDA_abs", S_CB); tvb.ins("STA_zp", TB.PILL_B)
         tvb.jsr("tuck_bfs")
-        tvb.jsr("tr_translate")
+        tvb.jsr(translate_entry)
         tvb.jsr("tuck_root_extension")
         tvb.ins("RTS")
         tuck_bfs_code = tvb.assemble()

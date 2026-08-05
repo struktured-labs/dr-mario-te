@@ -125,6 +125,7 @@ def play_game(seed, arm, level=11, max_pills=300, progress_every=10):
 
     import build_copro_d3 as B
     print(f"[trajectory] arm={arm} EMIT_TUCK_BFS={B.EMIT_TUCK_BFS} "
+          f"EMIT_TUCK_BFS_TIER3={getattr(B, 'EMIT_TUCK_BFS_TIER3', False)} "
           f"EMIT_TUCK_V3={B.EMIT_TUCK_V3}", flush=True)
 
     env = FaithfulDrMarioEnv(level=level, seed=seed, max_pills=max_pills)
@@ -257,7 +258,7 @@ def play_game(seed, arm, level=11, max_pills=300, progress_every=10):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, required=True)
-    ap.add_argument("--arm", choices=["bfs", "v3"], required=True)
+    ap.add_argument("--arm", choices=["bfs", "v3", "tier3"], required=True)
     ap.add_argument("--level", type=int, default=11)
     ap.add_argument("--max-pills", type=int, default=300)
     ap.add_argument("--out", default=None)
