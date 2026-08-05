@@ -37,3 +37,7 @@ drmario_cart.nes
 # scratch manifests (leading underscore) — not shipped builds
 roms/manifests/_*.json
 release/kit_out/
+
+# task #49 fingerprint/candidate-build scratch carts (built artifacts, *.nes already ignored
+# above, but the whole dir is scratch and shouldn't be scanned/committed as source)
+tmp_carts/
