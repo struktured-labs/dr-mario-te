@@ -80,6 +80,7 @@ def play(seed):
     garbage_injected = 0
     n_reach_sum = n_base_sum = n_reach_calls = 0   # reach32 diagnostics
     n_tuck_legal_sum = n_tuck_calls = 0            # reachfull diagnostics
+    n_within_budget_sum = n_time_calls = n_fallback_time = 0   # *t modes (ITERATION 2)
     v_at_topout = None   # matches pressure_rig.py's own convention exactly
 
     for _ in range(300):
@@ -96,6 +97,15 @@ def play(seed):
             n_reach_sum += best.get("n_reach", 0)
             n_reach_calls += 1
         if mode == "reachfull" and "n_tuck_legal" in best:
+            n_tuck_legal_sum += best["n_tuck_legal"]
+            n_tuck_calls += 1
+        if mode in ("reach32t", "reachfull2t") and "n_reach" in best:
+            n_base_sum += best.get("n_base_legal", 0) or 0
+            n_reach_sum += best.get("n_reach", 0) or 0
+            n_within_budget_sum += best.get("n_within_budget", 0) or 0
+            n_time_calls += 1
+            n_fallback_time += int(bool(best.get("fallback_time", False)))
+        if mode == "reachfull2" and "n_tuck_legal" in best:
             n_tuck_legal_sum += best["n_tuck_legal"]
             n_tuck_calls += 1
 
@@ -169,6 +179,14 @@ def play(seed):
         row["reach_frac"] = n_reach_sum / n_base_sum if n_base_sum else float("nan")
     if n_tuck_calls:
         row["tuck_legal_per_decision"] = n_tuck_legal_sum / n_tuck_calls
+    if n_time_calls:
+        # time_frac: of the BFS-reachable candidates, what share also clear the
+        # DRDISTGATE time budget? fallback_time_frac: what share of decisions had
+        # >=1 reachable candidate but ZERO within budget (forced the fallback to
+        # reach32's own, un-timed choice)?
+        row["time_frac"] = n_within_budget_sum / n_reach_sum if n_reach_sum else float("nan")
+        row["fallback_time_frac"] = n_fallback_time / n_time_calls
+        row["n_time_calls"] = n_time_calls
     return row
 
 
@@ -235,6 +253,12 @@ def compare(ctrl, on, tag):
     fired = st.mean([on[s]["fired_tuck"] for s in ss])
     gb0 = st.mean([ctrl[s]["garbage_injected"] for s in ss])
     gb1 = st.mean([on[s]["garbage_injected"] for s in ss])
+    time_rows = [on[s] for s in ss if "time_frac" in on[s]]
+    time_note = ""
+    if time_rows:
+        tf = st.mean([r["time_frac"] for r in time_rows])
+        ff = st.mean([r["fallback_time_frac"] for r in time_rows])
+        time_note = f"  time_frac(within_budget/reach) {tf:.3f}  fallback_time_frac {ff:.3f}"
     verdict = "REAL" if (hi < 0 or lo > 0) else "WASH"
     print(f"{tag}: pills {st.mean(d) if d else float('nan'):+.2f} [{lo:+.2f},{hi:+.2f}] "
           f"{verdict}  clear {c0:.1%}->{c1:.1%}  bad_ends {tp0}->{tp1}  "
@@ -244,7 +268,7 @@ def compare(ctrl, on, tag):
           f"mcnemar rescued={rescued} harmed={harmed} p={mcp:.4g} "
           f"(moved {disc}/{len(ss)}={disc/len(ss):.1%} of seeds)  "
           f"tuck_fires/g {fired:.2f}  garbage/g {gb0:.2f}->{gb1:.2f}  "
-          f"moved={len(ss)}/{max(len(ctrl), len(on))}", flush=True)
+          f"moved={len(ss)}/{max(len(ctrl), len(on))}{time_note}", flush=True)
     return {"tag": tag, "delta": st.mean(d) if d else None, "ci": [lo, hi],
             "verdict": verdict, "clear0": c0, "clear1": c1,
             "bad_ends0": tp0, "bad_ends1": tp1,
@@ -253,7 +277,9 @@ def compare(ctrl, on, tag):
             "mcnemar_rescued": rescued, "mcnemar_harmed": harmed,
             "mcnemar_disc": disc, "mcnemar_p": mcp,
             "fired_tuck": fired,
-            "garbage0": gb0, "garbage1": gb1, "moved_seeds": len(ss)}
+            "garbage0": gb0, "garbage1": gb1, "moved_seeds": len(ss),
+            "time_frac_mean": st.mean([r["time_frac"] for r in time_rows]) if time_rows else None,
+            "fallback_time_frac_mean": st.mean([r["fallback_time_frac"] for r in time_rows]) if time_rows else None}
 
 
 def main():

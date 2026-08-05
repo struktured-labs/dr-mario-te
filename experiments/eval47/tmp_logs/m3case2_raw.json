@@ -1,0 +1,890 @@
+[
+  {
+    "commit_index": 1,
+    "t_video": 1109.9,
+    "pill": "BB",
+    "next": "BY",
+    "tape_placement": {
+      "cells": [
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "orient": "V",
+      "moved_laterally": true,
+      "n_rotations": 1,
+      "spawn_to_lock_frames": 50
+    },
+    "shipped_strand20_chosen": {
+      "col": 6,
+      "o4": 0,
+      "orient": "V",
+      "cells": [
+        [
+          10,
+          6
+        ],
+        [
+          11,
+          6
+        ]
+      ],
+      "val": 4191.0,
+      "stranded_final": 4
+    },
+    "base32": {
+      "kind": "base",
+      "col": 6,
+      "orient": "V",
+      "val": 4191.0,
+      "reachable": false,
+      "human_family": true,
+      "edges_from_spawn": 2,
+      "hooks_needed_historical_32perEdge": 64,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 24,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": null,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": null
+    },
+    "reach32": {
+      "kind": "base",
+      "col": 4,
+      "orient": "V",
+      "val": 4093.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
+    "reachfull": {
+      "kind": "base",
+      "col": 6,
+      "orient": "V",
+      "val": 4191.0,
+      "reachable": false,
+      "human_family": true,
+      "edges_from_spawn": 2,
+      "hooks_needed_historical_32perEdge": 64,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 24,
+      "diverges_from_base32": false,
+      "n_base_legal": null,
+      "n_reach": null,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": null
+    },
+    "reach32t": {
+      "kind": "base",
+      "col": 4,
+      "orient": "V",
+      "val": 4093.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": 18,
+      "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "reachfull2": {
+      "kind": "base",
+      "col": 4,
+      "orient": "V",
+      "val": 4093.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
+    "reachfull2t": {
+      "kind": "base",
+      "col": 4,
+      "orient": "V",
+      "val": 4093.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": 18,
+      "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "base32_argmax_reachable": false
+  },
+  {
+    "commit_index": 2,
+    "t_video": 1111.517,
+    "pill": "BY",
+    "next": "YR",
+    "tape_placement": {
+      "cells": [
+        [
+          5,
+          4
+        ],
+        [
+          6,
+          4
+        ]
+      ],
+      "orient": "V",
+      "moved_laterally": false,
+      "n_rotations": 1,
+      "spawn_to_lock_frames": 95
+    },
+    "shipped_strand20_chosen": {
+      "col": 7,
+      "o4": 1,
+      "orient": "V",
+      "cells": [
+        [
+          11,
+          7
+        ],
+        [
+          12,
+          7
+        ]
+      ],
+      "val": 4203.0,
+      "stranded_final": 6
+    },
+    "base32": {
+      "kind": "base",
+      "col": 7,
+      "orient": "V",
+      "val": 4203.0,
+      "reachable": false,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": null,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": null
+    },
+    "reach32": {
+      "kind": "base",
+      "col": 3,
+      "orient": "H",
+      "val": 4051.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
+    "reachfull": {
+      "kind": "base",
+      "col": 7,
+      "orient": "V",
+      "val": 4203.0,
+      "reachable": false,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": null,
+      "n_reach": null,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": null
+    },
+    "reach32t": {
+      "kind": "base",
+      "col": 3,
+      "orient": "H",
+      "val": 4051.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": 18,
+      "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "reachfull2": {
+      "kind": "base",
+      "col": 3,
+      "orient": "H",
+      "val": 4051.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
+    "reachfull2t": {
+      "kind": "base",
+      "col": 3,
+      "orient": "H",
+      "val": 4051.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": 18,
+      "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "base32_argmax_reachable": false
+  },
+  {
+    "commit_index": 3,
+    "t_video": 1113.617,
+    "pill": "YR",
+    "next": "BB",
+    "tape_placement": {
+      "cells": [
+        [
+          5,
+          3
+        ],
+        [
+          6,
+          3
+        ]
+      ],
+      "orient": "V",
+      "moved_laterally": false,
+      "n_rotations": 1,
+      "spawn_to_lock_frames": 33
+    },
+    "shipped_strand20_chosen": {
+      "col": 3,
+      "o4": 3,
+      "orient": "H",
+      "cells": [
+        [
+          4,
+          3
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "val": 3728.0,
+      "stranded_final": 6
+    },
+    "base32": {
+      "kind": "base",
+      "col": 3,
+      "orient": "H",
+      "val": 3728.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": null,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": null
+    },
+    "reach32": {
+      "kind": "base",
+      "col": 3,
+      "orient": "H",
+      "val": 3728.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
+    "reachfull": {
+      "kind": "base",
+      "col": 3,
+      "orient": "H",
+      "val": 3728.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": false,
+      "n_base_legal": null,
+      "n_reach": null,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": null
+    },
+    "reach32t": {
+      "kind": "base",
+      "col": 3,
+      "orient": "H",
+      "val": 3728.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": 18,
+      "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "reachfull2": {
+      "kind": "base",
+      "col": 3,
+      "orient": "H",
+      "val": 3728.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
+    "reachfull2t": {
+      "kind": "base",
+      "col": 3,
+      "orient": "H",
+      "val": 3728.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": 18,
+      "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "base32_argmax_reachable": true
+  },
+  {
+    "commit_index": 4,
+    "t_video": 1114.467,
+    "pill": "BB",
+    "next": "YR",
+    "tape_placement": {
+      "cells": [
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "orient": "V",
+      "moved_laterally": false,
+      "n_rotations": 1,
+      "spawn_to_lock_frames": 65
+    },
+    "shipped_strand20_chosen": {
+      "col": 7,
+      "o4": 0,
+      "orient": "V",
+      "cells": [
+        [
+          11,
+          7
+        ],
+        [
+          12,
+          7
+        ]
+      ],
+      "val": 3698.0,
+      "stranded_final": 5
+    },
+    "base32": {
+      "kind": "base",
+      "col": 7,
+      "orient": "V",
+      "val": 3698.0,
+      "reachable": false,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": null,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": null
+    },
+    "reach32": {
+      "kind": "base",
+      "col": 1,
+      "orient": "V",
+      "val": 3524.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 2,
+      "hooks_needed_historical_32perEdge": 64,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 24,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
+    "reachfull": {
+      "kind": "base",
+      "col": 7,
+      "orient": "V",
+      "val": 3698.0,
+      "reachable": false,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": null,
+      "n_reach": null,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": null
+    },
+    "reach32t": {
+      "kind": "base",
+      "col": 1,
+      "orient": "V",
+      "val": 3524.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 2,
+      "hooks_needed_historical_32perEdge": 64,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 24,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": 18,
+      "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "reachfull2": {
+      "kind": "base",
+      "col": 1,
+      "orient": "V",
+      "val": 3524.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 2,
+      "hooks_needed_historical_32perEdge": 64,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 24,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
+    "reachfull2t": {
+      "kind": "base",
+      "col": 1,
+      "orient": "V",
+      "val": 3524.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 2,
+      "hooks_needed_historical_32perEdge": 64,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 24,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": 18,
+      "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "base32_argmax_reachable": false
+  },
+  {
+    "commit_index": 5,
+    "t_video": 1116.033,
+    "pill": "YR",
+    "next": "RB",
+    "tape_placement": {
+      "cells": [
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "orient": "H",
+      "moved_laterally": true,
+      "n_rotations": 4,
+      "spawn_to_lock_frames": 42
+    },
+    "shipped_strand20_chosen": {
+      "col": 0,
+      "o4": 0,
+      "orient": "V",
+      "cells": [
+        [
+          12,
+          0
+        ],
+        [
+          13,
+          0
+        ]
+      ],
+      "val": 3212.0,
+      "stranded_final": 6
+    },
+    "base32": {
+      "kind": "base",
+      "col": 0,
+      "orient": "V",
+      "val": 3212.0,
+      "reachable": true,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": null,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": null
+    },
+    "reach32": {
+      "kind": "base",
+      "col": 0,
+      "orient": "V",
+      "val": 3212.0,
+      "reachable": true,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
+    "reachfull": {
+      "kind": "base",
+      "col": 0,
+      "orient": "V",
+      "val": 3212.0,
+      "reachable": true,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": null,
+      "n_reach": null,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": null
+    },
+    "reach32t": {
+      "kind": "base",
+      "col": 0,
+      "orient": "V",
+      "val": 3212.0,
+      "reachable": true,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": 18,
+      "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "reachfull2": {
+      "kind": "base",
+      "col": 0,
+      "orient": "V",
+      "val": 3212.0,
+      "reachable": true,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
+    "reachfull2t": {
+      "kind": "base",
+      "col": 0,
+      "orient": "V",
+      "val": 3212.0,
+      "reachable": true,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": 18,
+      "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "base32_argmax_reachable": true
+  },
+  {
+    "commit_index": 6,
+    "t_video": 1117.083,
+    "pill": "RB",
+    "next": "YR",
+    "tape_placement": {
+      "cells": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "orient": "V",
+      "moved_laterally": false,
+      "n_rotations": 1,
+      "spawn_to_lock_frames": 20
+    },
+    "shipped_strand20_chosen": {
+      "col": 7,
+      "o4": 0,
+      "orient": "V",
+      "cells": [
+        [
+          11,
+          7
+        ],
+        [
+          12,
+          7
+        ]
+      ],
+      "val": 2963.0,
+      "stranded_final": 4
+    },
+    "base32": {
+      "kind": "base",
+      "col": 7,
+      "orient": "V",
+      "val": 2963.0,
+      "reachable": false,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": null,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": null
+    },
+    "reach32": {
+      "kind": "base",
+      "col": 0,
+      "orient": "V",
+      "val": 2299.0,
+      "reachable": true,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
+    "reachfull": {
+      "kind": "base",
+      "col": 7,
+      "orient": "V",
+      "val": 2963.0,
+      "reachable": false,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": null,
+      "n_reach": null,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": null
+    },
+    "reach32t": {
+      "kind": "base",
+      "col": 0,
+      "orient": "V",
+      "val": 2299.0,
+      "reachable": true,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": 18,
+      "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "reachfull2": {
+      "kind": "base",
+      "col": 0,
+      "orient": "V",
+      "val": 2299.0,
+      "reachable": true,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
+    "reachfull2t": {
+      "kind": "base",
+      "col": 0,
+      "orient": "V",
+      "val": 2299.0,
+      "reachable": true,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": 18,
+      "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "base32_argmax_reachable": false
+  }
+]
