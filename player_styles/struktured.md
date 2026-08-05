@@ -229,3 +229,10 @@ tournament-standard skill. NOT a defect to engineer around (no remap). Support
 = measurement: track slip rate per recorded session as the retrain's learning
 curve; tonight's footage is the baseline. Possible future TE feature: a
 rotation-drill practice mode.
+
+**Blunder taxonomy (self-reported, same recorded session), class 2: DECISION
+LATENCY** — "not acting fast enough to do a reasonable thing even if not the
+best thing" — deliberation past the gravity clock instead of satisficing.
+Measurable from footage: time-per-placement distribution + outcome quality of
+long-deliberation vs snap placements. Mirror-image of the AI's failure mode
+(instant confident junk). Both classes now baselined by tonight's recording.
