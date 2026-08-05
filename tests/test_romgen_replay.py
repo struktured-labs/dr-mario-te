@@ -34,7 +34,7 @@ import os
 import subprocess
 import sys
 
-REPO = "/home/struktured/projects/dr-mario-finalboard-wt"
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROMGEN = os.path.join(REPO, "tools", "romgen.py")
 sys.path.insert(0, os.path.join(REPO, "tools"))
 import romgen  # noqa: E402  (needs sys.path set first)

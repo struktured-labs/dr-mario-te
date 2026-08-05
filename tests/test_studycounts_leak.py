@@ -22,7 +22,7 @@ import importlib.util
 
 from py65.devices.mpu6502 import MPU
 
-REPO = "/home/struktured/projects/dr-mario-finalboard-wt"
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EMITTER = os.path.join(REPO, "patch_cartridge_copro.py")
 sys.path.insert(0, REPO)
 
