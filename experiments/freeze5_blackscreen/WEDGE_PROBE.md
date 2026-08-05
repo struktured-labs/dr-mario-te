@@ -199,3 +199,21 @@ Next diagnostic steps (in order):
 3. If the shipped core also wedges: framework/core-interaction bug, needs
    the MiSTer framework source; consider pinning a known-good framework
    build for the booth.
+
+## ★ IDLE CONTROL (accidental, 2026-08-05 13:02→22:22Z): 9h19m WEDGE-FREE
+
+After the 13:02Z auto-reboot the box was left at MENU (the duel was never
+relaunched — the auto-relaunch feature was still being built). It sat idle
+for **9 hours 19 minutes with ZERO wedges** (AUTO_REBOOT count stayed 3,
+load pinned 1.00 the whole time). That is a far stronger control than
+anything designed today: the wedge requires the DUEL CORE ACTIVELY PLAYING,
+not merely powered/booted. Combined with the IPC-exoneration result, the
+trigger is core+framework interaction under continuous CvC gameplay.
+
+## A/B ARM 1 STARTED (2026-08-05 22:22:46Z): pre-strand20 core
+
+AB_wedge_old180.mgl (rbf NES_stomper180_20260801 = the shipped champion
+71d2de37, same cart/probe as s20b's mgl) loaded and playing. Measurement:
+time-to-first-wedge vs s20b's measured ~30 min (worst 3 min) under
+identical idle-observer conditions (tracker + preventive loop remain OFF).
+Read AUTO_REBOOT count/timestamps in wedge_probe.log.
