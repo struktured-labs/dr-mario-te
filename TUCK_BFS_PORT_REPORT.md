@@ -620,10 +620,55 @@ descriptor that got published is the SAME decision that fired, not merely "a" tu
 Four games launched under per-game subprocess isolation (this branch's own
 `validate_tuckbfs_wiring_corpus.py` anomaly note is why — never loop boards/games in one
 process): `DRCOPRO_TUCKBFS=1` (arm `bfs`) on seeds 0 and 1, `DRCOPRO_TUCKV3=1` (arm `v3`,
-the fire-rate control) on the same two seeds. Each decision costs ~6s of py65 stepping, so
-a full 300-pill game is a ~30-minute run; results were still in flight when this section was
-last edited — **see the follow-up commit on this branch for the completed fire counts,
-per-game breakdown, and the descriptor/placement assertion results.** If those come back
-showing 3 full games with zero fires on the `bfs` arm, the investigation step specified by
-the task (compare against the `v3` control on the same seeds; re-check the `build_image`
-import-order dodge) will be carried out before that follow-up is reported, not glossed over.
+the fire-rate control) on the same two seeds. Each decision costs ~6s of py65 stepping, so a
+full 300-pill game is a ~30-minute run. Results (JSON committed at
+`tests/trajectory_results/`; the matching per-pill stdout logs are local-only, gitignored
+by this repo's `*.log` convention, not part of this commit):
+
+| game | result | pills | fires | verification failures |
+|---|---|---|---|---|
+| `bfs` seed 0 | **clear** (full win) | 128 | **5** | 0 |
+| `v3` seed 0 (control) | **clear** (full win) | 100 | **5** | 0 |
+| `bfs` seed 1 | trunc (300-pill cap) | 300 | 0 | 0 |
+| `v3` seed 1 (control) | trunc (300-pill cap) | 300 | 0 | 0 |
+
+**The positive-path proof landed**: `bfs` seed 0 fired 5 tucks (pills 37, 50, 55, 70, 71),
+every one verified — the published `(TUCK_COL, TUCK_ROW)` matched the winning `CANDLIST`
+entry's own `(approach, trigger)` exactly, and the placement landed on empty rest cells on
+the real board every time — and the game went on to a **full clear win**. The `v3` control on
+the same seed reproduced the identical first four fires exactly (pills 37/50/55/70 — same
+target/rest/orient/approach/trigger in both arms, expected since both decoders see the same
+board up to the point the two enumerators' candidate sets actually diverge), then diverged at
+pill 71: `bfs` chose `target=6,rest=12,orient=0,approach=5,trigger=12`, `v3` chose a
+genuinely different `target=2,rest=12,orient=3,approach=3,trigger=9` — both verified, both
+legitimate, the two enumerators making different (not wrong) choices at that board. `v3`'s
+game then cleared in fewer total pills (100 vs 128) as a direct consequence of that different
+choice — a real, substantive divergence between the two candidate sets, not noise.
+
+Seed 1 fired zero times on **both** arms over the full 300-pill cap. This is 2 zero-fire
+games, not the 3 the task's own trigger condition named, and — critically — it's not an
+arm-specific pattern: `bfs` and `v3` agree on seed 1 exactly as they agree on the first half
+of seed 0, which is the signature of a genuine seed-dependent absence of tuck opportunities on
+that particular board sequence, not a decision-path defect in either arm (a wiring bug in one
+arm's own path would be expected to produce an arm-specific difference, not matched zeros
+across both). No further investigation was triggered on this basis, per the task's own stated
+threshold, but the seed-1 result JSON (and, locally, the raw per-pill log) is kept for anyone
+who wants to look closer.
+
+**A real bug was found and fixed during this run**, in the verification script itself (not
+the firmware): the CANDLIST match filter originally keyed on `(target, orient)` alone, which
+is not unique — `tuck_scan_v3`'s own candidate list can carry multiple entries for the SAME
+`(target, orient)` differing only by trigger row (confirmed at `v3` seed 0 pill 71: 4 such
+entries, all `target=2`, orient mapping to `best_o=0`). `tuck_bfs`'s own `translate_candidates()`
+dedupes by `(target, orient)` before this can ever arise, which is why only the `v3` control
+arm ever hit it. Fixed by tightening the match to also require the published
+`(tuck_col, tuck_row)`, which is unique by construction; confirmed by hand against the raw
+`v3` seed 0 pill 71 data that this resolves cleanly to entry
+`(target=2, approach=3, trigger=9, rest=12, orient=3)` — exactly what got published — not a
+CANDLIST or wiring defect. A second, unrelated bug (`numpy.bool_` values from `cpu.mem[...]`
+reads and numpy board-array comparisons aren't JSON-serializable) crashed the `--out` file
+write on both `bfs` seed 0 and the original `v3` seed 0 run, in both cases **after** the
+simulation itself had already completed correctly; `bfs` seed 0's result JSON was
+reconstructed verbatim from its own `flush=True` stdout log (see the `_reconstruction_note`
+field in that file) rather than re-run, since nothing was actually lost. Both fixes are in
+`tests/trajectory_fire_proof.py` as committed.

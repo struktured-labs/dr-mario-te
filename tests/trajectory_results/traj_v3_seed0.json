@@ -1,0 +1,56 @@
+{
+ "seed": 0,
+ "arm": "v3",
+ "level": 11,
+ "result": "clear",
+ "pills": 100,
+ "n_fires": 5,
+ "fires": [
+  {
+   "pill": 37,
+   "target": 5,
+   "rest": 9,
+   "orient": 0,
+   "approach": 4,
+   "trigger": 9,
+   "verified": true
+  },
+  {
+   "pill": 50,
+   "target": 4,
+   "rest": 11,
+   "orient": 1,
+   "approach": 3,
+   "trigger": 11,
+   "verified": true
+  },
+  {
+   "pill": 55,
+   "target": 0,
+   "rest": 13,
+   "orient": 1,
+   "approach": 1,
+   "trigger": 12,
+   "verified": true
+  },
+  {
+   "pill": 70,
+   "target": 6,
+   "rest": 12,
+   "orient": 1,
+   "approach": 5,
+   "trigger": 12,
+   "verified": true
+  },
+  {
+   "pill": 71,
+   "target": 2,
+   "rest": 12,
+   "orient": 3,
+   "approach": 3,
+   "trigger": 9,
+   "verified": true
+  }
+ ],
+ "verification_failures": []
+}
