@@ -221,3 +221,11 @@ account for a third of blunders — AI wins vs this player partly beat the
 controller. Session context: strand20 up 2-0 in the recorded set (match 1 =
 first-ever AI win over this player; match 2 user "messing around" per
 self-report, footage to adjudicate).
+
+**Reframe (same session, user clarification):** the A/B slips are DELIBERATE
+TRAINING COST — he is retraining from single-button (childhood) to two-button
+rotation ("because I'm training for that... still not natural"), the
+tournament-standard skill. NOT a defect to engineer around (no remap). Support
+= measurement: track slip rate per recorded session as the retrain's learning
+curve; tonight's footage is the baseline. Possible future TE feature: a
+rotation-drill practice mode.
