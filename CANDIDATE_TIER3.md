@@ -123,13 +123,53 @@ CANDLIST entry and landed on empty cells.
   current design can close without a genuinely richer descriptor (out of scope for this
   ship target).
 
-## 8. Milestone 4 — offline firmware A/B (in progress)
+## 8. Milestone 4 — offline firmware A/B (done)
 
-Approach: `translate_ref_tier3.py`'s cascade is bit-exact-validated against the real 6502
-firmware (§3), so it stands in as a fast, faithful firmware model for a large-n sweep — the
-mirror-rig protocol's own established pattern (a Python mirror decider, not full py65
-execution, for the bulk of a sweep). A handful of py65-executed seeds serve as the
-firmware-truth spot-check on top of the mirror result, not a replacement for it.
+**Context**: `dr-mario-qa-wt/experiments/eval47/run_tier_sweep.py` (commit `414a1e8`,
+another agent, task #67) already ran an n=120 sweep using `translatable.tier_of()`'s
+ABSTRACT classification as the tuck-eligibility filter, and found tier≤3 bit-for-bit
+indistinguishable from the `reachfull2` oracle (0/120 seeds moved). That's a ceiling —
+"if the search could pick ANY tier≤3-classified candidate, does it match the oracle" — not
+a measurement of whether THIS FIRMWARE (which only finds a publishable descriptor for
+97.7% of that population, §2/§3) actually delivers that value.
+
+**This milestone**: new script `dr-mario-qa-wt/experiments/eval47/firmware_tier3_ab.py`
+(pushed to `copro-qa-harness`). A new `tier_fn`, `firmware_tier_of`, wraps the ACTUAL
+firmware-validated cascade (`translate_ref.derive_verified` for tier 1,
+`translate_ref_tier3.derive_tier3_verified` as the fallback — the exact same code path
+bit-exact-validated against the 6502 in §3) instead of the abstract `tier_of()` ladder.
+`play()` duplicates `run_tier_sweep.py`'s own loop (same convention that file's docstring
+documents: new file over refactor-in-place), calling `reach_root.choose_reach_tier(...,
+max_tier=1, tier_fn=firmware_tier_of)` — `reach_root.py` itself untouched (owned by
+another agent mid-run; read-only import, same as `run_tier_sweep.py`'s own pattern).
+
+**Result, n=60 (bursty pressure, L11), three paired arms (base32, firmware-tier3,
+reachfull2 oracle)**:
+
+| comparison | pills | clear rate | bad-ends | mcnemar | seeds moved |
+|---|---|---|---|---|---|
+| firmware-tier3 vs base32 | −17.57 [−36.46,+2.30] wash | 68.3%→81.7% | 19→11 | rescued=12 harmed=4, p=0.077 | 16/60 (26.7%) |
+| firmware-tier3 vs reachfull2 | +0.67 [−3.18,+6.37] wash | 86.7%→81.7% | 8→11 | rescued=0 harmed=3, p=0.25 | 3/60 (5.0%) |
+
+Firmware-tier3 rescues **8 of the oracle's 11 total bad-end rescues (72.7%)** relative to
+base32 — a clear, directional win over what's currently shipped (tier 1 only), though at
+n=60 the pills CI is wide and the vs-base32 mcnemar p=0.077 doesn't clear the conventional
+0.05 bar (worth a larger n if a tighter number is ever needed).
+
+**The honest gap this milestone was built to surface**: the firmware does NOT achieve
+game-outcome parity with the oracle the way the abstract tier≤3 classification promised.
+It diverges from `reachfull2` on 3/60 seeds (5%), and — notably — all 3 are losses relative
+to the oracle (mcnemar rescued=0, harmed=3), not a wash of wins and losses. This is
+consistent with, and gives real weight to, the 2.3% per-candidate coverage gap documented
+in §2/§3: a small number of missed descriptors evidently CAN cascade into a worse game
+outcome on the seed where they matter, even though the abstract classification (which
+doesn't know the firmware fails to publish some of those candidates) reported zero gap at
+n=120. Not statistically nailed down at n=60 (p=0.25 on the 3 moved seeds), but the
+DIRECTION (100% harmed, 0% helped, among the seeds that moved) is exactly what "the
+firmware, not the python model, actually delivers the value" was asking to check, and it
+found a real, if small and imprecisely-sized, shortfall.
+
+Raw results: `dr-mario-qa-wt/experiments/eval47/results/firmware_tier3_ab_n60.json`.
 
 ## 9. Milestone 5 — candidate build + co-sim gate (in progress)
 
