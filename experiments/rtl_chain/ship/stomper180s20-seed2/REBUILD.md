@@ -62,3 +62,12 @@ s20b freeze #2 @ ~19:00 (~5.3h after #1). s20b rate ~5.5/day vs chain180
 ~1.5/day at near-matched slack (+0.156 vs +0.181) — timing largely EXONERATED;
 GO-traffic/ARMED2 exposure theory now primary. Named fix: driver stale-ARMED2
 re-entrancy repair (dr-mario-p0-defects-verified), next silicon session.
+
+**s20b freeze #3 (2026-08-04 ~23:38, logged 23:45):** mid-PLAY wedge, display
+alive, in-play counts frozen at (4, 41-25) across 3 tracker captures
+(233830/234134/234437 .ss = evidence). Same copro-wait/ARMED2-family
+signature as #1/#2. Detection: frozen-counts alarm (3rd live catch).
+Recovery: menu.rbf cycle + mgl relaunch, clean (post_recovery_2346.png,
+fresh game 46-46). Freeze rate now 3 in ~29h. Remedy unchanged: stale-ARMED2
+driver fix + the #49 COLGATE port (audit found the pair-latch fix never
+shipped in this lineage's driver either — same root repair session).
