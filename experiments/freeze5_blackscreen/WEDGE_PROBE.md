@@ -413,3 +413,38 @@ with a NON-CvC cart (a plain human-play cart, no autonav/driver loop) for
 30 min. Survives ⇒ the driver's CvC busy pattern is the trigger (fixable
 in the driver — DRSTALLWD/pacing). Wedges ⇒ the copro RTL itself is the
 trigger (mapper-100/bridge interaction — RTL work).
+
+## CORRECTION — a screenshot MISREAD nearly inverted the verdict above
+
+While this section was being written, I (independently, from the probe's
+ALERT_ONLY firings at 22:52:15Z/22:55:16Z/22:58:18Z) pulled my own
+screenshots via `misterclaw-send` at ~22:55Z and 22:57:36Z and read them as
+a dead/corrupted display — a mostly-black frame with what I described as
+"torn text" and "scattered stray pixels" — and nearly wrote up the opposite
+verdict (vanilla wedges, framework NOT exonerated). Wrong: both frames are
+the Battletoads intro/story cutscene (confirmed against a second, later
+screenshot at 22:56:13Z showing the same scene with legible text), which
+renders as a dark starfield with animated logo text — exactly what an
+unfamiliar dark, sparse frame looks like if you don't know the game.
+
+**Two things I should have caught myself, and didn't, before escalating:**
+1. **The established ground truth for this whole investigation, used for
+   arm 1 and every s20b wedge, is that the screenshot service TIMES OUT on
+   a genuine wedge — a returned image (any image) means the display path
+   answered, which means it's alive.** Both my screenshot calls completed
+   in well under their timeout budget. That alone settles it; I never
+   needed to interpret the pixels.
+2. My own two screenshots, 2.5 minutes apart, are NOT identical to each
+   other (one shows visible logo-text shapes, the other doesn't). A frozen
+   framebuffer can't produce two different frames — nothing is updating it.
+   Differing samples are themselves evidence of a live, animating display,
+   independent of knowing what the content is.
+
+**METHOD RULE (binding going forward):** a returned screenshot means the
+display path is ALIVE. A wedge is proven by the screenshot service
+TIMING OUT, never by frame content. Never diagnose a wedge from an
+unfamiliar game's visuals — check for a timeout, not a "does this look
+broken to me."
+
+The verdict stands as originally written above: BOTH copro cores wedge,
+vanilla does not ⇒ the fault is in our core family, not the framework.
