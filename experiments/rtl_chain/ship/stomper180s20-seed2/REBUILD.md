@@ -71,3 +71,14 @@ Recovery: menu.rbf cycle + mgl relaunch, clean (post_recovery_2346.png,
 fresh game 46-46). Freeze rate now 3 in ~29h. Remedy unchanged: stale-ARMED2
 driver fix + the #49 COLGATE port (audit found the pair-latch fix never
 shipped in this lineage's driver either — same root repair session).
+
+**s20b freeze #4 (2026-08-05 ~00:40, logged 00:52): FIRST BLACK-SCREEN-CLASS
+on s20b** — display fully blank (wedge2_0051.png, 1KB), save-state captures
+STALE x5 (the freeze-#5/task-#42 signature: states return nothing), distinct
+from freezes #1-3 (mid-play, display alive). Recovery: menu.rbf cycle +
+relaunch, clean (post_recovery2_0052.png, brightness 55.6). Rate: 4 freezes
+in ~30h, now TWO distinct families on this core. Stability workstream note:
+the stale-ARMED2/commit-path remedies target the mid-play family; the
+black-screen family remains uncharacterized (no state capture possible by
+definition) — needs a different instrument (e.g. periodic RAM-snapshot
+BEFORE death, or core-side watchdog register).
