@@ -599,6 +599,32 @@ W_BOARD, W_CA, W_GO, W_DONE, W_COL, W_OR = 0x5000, 0x5080, 0x5084, 0x5084, 0x508
 # NES pad bits on $F5 (pressed-this-frame): A=$80 B=$40 Sel=$20 Start=$10 U=$08 D=$04 L=$02 R=$01
 B_SEL, B_START, B_LEFT, B_RIGHT = 0x20, 0x10, 0x02, 0x01
 
+# DRHOLDBOARD=1 (task #48, default OFF -> byte-identical when off): keep BOTH bottles fully
+# visible after a match ends -- inter-match STAGE CLEAR (RB24F_CHECK_WIN/RB337_STAGE_CLEAR)
+# and set-final GAME OVER (L958A_TOP_7) -- until START, instead of the banner/dialog text.
+# STUDY's technique (defer the pause blank by patching $978E's own body) does NOT transfer:
+# unlike pause, RB337_STAGE_CLEAR (and TOP_7's RB894_FILL_PAGES) destroy the PLAYFIELD RAM
+# MODEL ITSELF ($0400/$0500, fill-with-$FF + message bytes), not just the PPU nametable, and
+# they do it IMMEDIATELY/synchronously the moment virus==0 or a topout is dispatched -- there
+# is no START-gated checkpoint before the overwrite in either routine (read directly from the
+# disassembly: RB24F_CHECK_WIN calls RB337_STAGE_CLEAR before ever touching $F5/$F7, and
+# L958A_TOP_7 fills+prints before its own wait-loop). So the mechanism here is SNAPSHOT+REDRAW:
+# continuously mirror both boards into PRG-RAM while a match is live (cheap relative to the
+# alternative of trying to intercept a synchronous write mid-instruction), then, once a
+# match-end is detected, overwrite $0400/$0500 back from the mirror and re-trigger the game's
+# OWN row-redraw drain (L0300/L0380_UPDATE_ROW=$0F, the same mechanism RB337_STAGE_CLEAR/
+# R96D4_GAME_OVER themselves use) every hook until the human's own START (checked the same way
+# the vanilla wait-loops do: ($F5|$F7)&$10) releases it. COST: the continuous mirror is a
+# 2x256B copy every "dispatch" hook (~5.9k cyc measured-equivalent instruction count, 2x/frame
+# during ALL of active play) -- see FINAL_BOARD_HOLD_REPORT.md for the honest accounting; the
+# existing BUSY-guard (DRBUSYESC) already covers the rare case this pushes a hook past budget.
+HOLDBOARD = _os.environ.get("DRHOLDBOARD", "0") == "1"
+HOLDBOARD_F = int(_os.environ.get("DRHOLDBOARD_F", "600"))   # CvC safety cap: ~10s at 60fps
+HOLD_ACTIVE = 0x6195                       # PRG-RAM: !=0 while the final board is held
+HOLD_LASTCLK = 0x6196                      # last-seen $43 clock byte (edge-detect real frames)
+HOLD_CNT = 0x6197                          # 16-bit ($6197 lo, $6198 hi): frames held so far
+HOLD_BUF1, HOLD_BUF2 = 0x6300, 0x6400      # 256B mirrors of $0400 (P1) / $0500 (P2) playfields
+
 # DRSTUDY=1 -> "study pause": freeze game logic on pause but keep the last gameplay frame
 # rendered instead of the vanilla blank+"PAUSE". Default ON for human carts (DRHUMAN=1) so a
 # paused board can be studied. Mechanism (base pause routine at CPU $978E; verified on base
@@ -949,6 +975,48 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", PR_CNT + 1); a.ins16("STA_abs", RINGP + 0xC2)
         a.label("pr_done")
     a.ins16("INC_abs", NAV_T)                               # tick every hook call (autonav only ticked in menus)
+    if HOLDBOARD:
+        # RESTORE + RELEASE: runs FIRST, every hook, ahead of the mode split entirely -- HOLD_ACTIVE
+        # can be true while $0046 reads 4 (STAGE CLEAR's own blocking wait) OR 5/6/7 (the topout ->
+        # TOP_5 -> TOP_7 GAME OVER sequence), and this must win the race against BOTH of those
+        # screens' own destructive writes on every single hook, not just the one that armed it.
+        a.ins16("LDA_abs", HOLD_ACTIVE); a.br("BEQ", "hb_skip")
+        a.ins("LDX_imm", 0)
+        a.label("hb_restore_lp")
+        a.ins16("LDA_absX", HOLD_BUF1); a.ins16("STA_absX", 0x0400)
+        a.ins16("LDA_absX", HOLD_BUF2); a.ins16("STA_absX", 0x0500)
+        a.ins("INX"); a.br("BNE", "hb_restore_lp")
+        # re-trigger the game's OWN row-redraw drain (same mechanism RB337_STAGE_CLEAR and
+        # R96D4_GAME_OVER themselves use) so the restored RAM actually reaches the PPU.
+        a.ins("LDA_imm", 0x0F); a.ins16("STA_abs", 0x0300); a.ins16("STA_abs", 0x0380)
+        # release on the human's own START -- read exactly like the vanilla wait-loops do
+        # (($F5|$F7)&$10), so the SAME press that satisfies the game's own blocking loop
+        # satisfies ours; no double-press, no injected button on a HUMAN_P1 cart.
+        a.ins("LDA_zp", 0xF5); a.ins("ORA_zp", 0xF7); a.ins("AND_imm", 0x10); a.br("BEQ", "hb_no_start")
+        a.label("hb_release")
+        # RTS immediately -- own the whole hook, like fc_clear's fc_ret. MATCH_ACTIVE is being
+        # cleared THIS instant; if the rest of main() below ran afterward in the SAME hook, it
+        # would read MATCH_ACTIVE==0 and go_ai would treat this as "first frame of a NEW match"
+        # (re-arming SLAM_ARM/cold-state/VSEEN etc. mid-release) -- caught by test_holdboard.py's
+        # scenario A2, which failed exactly this way with a plain fall-through/jmp.
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", HOLD_ACTIVE); a.ins16("STA_abs", MATCH_ACTIVE)
+        a.ins("RTS")
+        a.label("hb_no_start")
+        if not HUMAN_P1:
+            # CvC safety cap: a nav cart auto-presses START almost immediately (autonav's own
+            # mode==7 / fc_clear's not-HUMAN_P1 injection), so this rarely fires in practice --
+            # but it is the hold's ONLY release path if that injection is ever skipped/late for
+            # any reason, so the soak rig cannot wedge on a hold that never sees a press.
+            a.ins("LDA_zp", 0x43); a.ins16("CMP_abs", HOLD_LASTCLK); a.br("BEQ", "hb_no_tick")
+            a.ins16("STA_abs", HOLD_LASTCLK)
+            a.ins16("INC_abs", HOLD_CNT); a.br("BNE", "hb_cnt_ok"); a.ins16("INC_abs", HOLD_CNT + 1)
+            a.label("hb_cnt_ok")
+            a.ins16("LDA_abs", HOLD_CNT + 1); a.ins("CMP_imm", (HOLDBOARD_F >> 8) & 0xFF)
+            a.br("BCC", "hb_no_tick"); a.br("BNE", "hb_release")
+            a.ins16("LDA_abs", HOLD_CNT); a.ins("CMP_imm", HOLDBOARD_F & 0xFF); a.br("BCC", "hb_no_tick")
+            a.jmp("hb_release")
+            a.label("hb_no_tick")
+        a.label("hb_skip")
     if NAVESC and not HUMAN_P1:
         # ---- DRNAVESC stuck-screen escape (task #38; see flag block for the full rationale).
         # Runs EVERY hook, ahead of the mode split, so mode-3 holes and mode-4 round-waits are
@@ -1080,6 +1148,18 @@ def build_main(level=11, speed=1):
     a.ins16("LDA_abs", VCOUNT_P2); a.br("BNE", "fc_no")
     a.ins16("LDA_abs", VSEEN2); a.br("BEQ", "fc_no")
     a.label("fc_clear")                                     # full clear -> own the frame (skip normal dispatch)
+    if HOLDBOARD:
+        # ARM (inter-match path): fires on EVERY hook that reaches fc_clear, i.e. every hook of
+        # the STAGE CLEAR wait (mode stays 4 the whole time -- RB24F_CHECK_WIN is its own
+        # blocking routine, confirmed from the disassembly), not just the press-window hooks
+        # below. Idempotent: only the FIRST such hook actually arms. Does NOT touch MATCH_ACTIVE
+        # (fc_clear's own gate depends on it staying set for the whole wait -- clearing it here
+        # would make the NEXT hook fall through to go_ai's match-START init mid-STAGE-CLEAR).
+        a.ins16("LDA_abs", HOLD_ACTIVE); a.br("BNE", "hb_fc_armed")
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", HOLD_ACTIVE)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", HOLD_CNT); a.ins16("STA_abs", HOLD_CNT + 1)
+        a.ins("LDA_zp", 0x43); a.ins16("STA_abs", HOLD_LASTCLK)
+        a.label("hb_fc_armed")
     a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 4); a.br("BCS", "fc_ret")
     if not HUMAN_P1:
         # $F5 is P1's controller latch. On a HUMAN_P1 cart P1 is a PERSON, so injecting
@@ -1140,6 +1220,23 @@ def build_main(level=11, speed=1):
     a.label("ga_vd")
     a.jmp("dispatch")
     a.label("not_play")
+    if HOLDBOARD:
+        # ARM (set-final / topout path): a topout leaves VCOUNT nonzero for the losing player, so
+        # fc_clear's virus==0 check never fires -- L46_TOP_STATE instead transitions 4->5->7
+        # (TOP_5 does book-keeping then jumps to TOP_7, which is its own blocking GAME OVER wait,
+        # confirmed from the disassembly). We land here on that FIRST non-4 hook with MATCH_ACTIVE
+        # still set from the just-ended match. Unlike the fc_clear arm, this DOES need MATCH_ACTIVE
+        # cleared afterward (own action, not left to DRCOLDINIT) -- otherwise, once the hold
+        # releases and HOLD_ACTIVE goes back to 0, the NEXT idle menu hook would see MATCH_ACTIVE
+        # still nonzero and re-arm a hold with nothing to hold (a stale snapshot, forever, at the
+        # title screen). Idempotent: HOLD_ACTIVE!=0 (already armed via fc_clear or a prior pass
+        # through here) skips straight past.
+        a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BEQ", "hb_np_skip")
+        a.ins16("LDA_abs", HOLD_ACTIVE); a.br("BNE", "hb_np_skip")
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", HOLD_ACTIVE)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", HOLD_CNT); a.ins16("STA_abs", HOLD_CNT + 1)
+        a.ins("LDA_zp", 0x43); a.ins16("STA_abs", HOLD_LASTCLK)
+        a.label("hb_np_skip")
     if STUDY and STUDYCOUNTS:
         # GARBLE FIX (user-reported, tape f0075.jpg): STUDYCOUNTS (above, in "dispatch") writes
         # live digit sprites into OAM slots 8-15 every PLAY-mode hook ($0046==4), but previously
@@ -1315,6 +1412,17 @@ def build_main(level=11, speed=1):
 
     # ================= play-mode CPU-vs-CPU driver (time-shared FPGA) =================
     a.label("dispatch")
+    if HOLDBOARD:
+        # Continuously mirror both boards while a match is live and pre-clear (dispatch is only
+        # reached before either player's virus count has hit 0 -- see fc_clear above), so the
+        # hold-arm code below always has a same-frame-fresh "last good" snapshot to fall back to
+        # (RB337_STAGE_CLEAR/TOP_7 destroy $0400/$0500 synchronously, before this hook can react
+        # to the SAME frame's transition -- see the DRHOLDBOARD flag comment).
+        a.ins("LDX_imm", 0)
+        a.label("hb_snap_lp")
+        a.ins16("LDA_absX", 0x0400); a.ins16("STA_absX", HOLD_BUF1)
+        a.ins16("LDA_absX", 0x0500); a.ins16("STA_absX", HOLD_BUF2)
+        a.ins("INX"); a.br("BNE", "hb_snap_lp")
     if STUDY and STUDYCOUNTS:
         # STUDY counter redraw (see DRSTUDYCOUNTS). Stack-free: ones stays in A, tens in X.
         # ★ THE TWO COUNTERS USE DIFFERENT ENCODINGS -- do not share a digit splitter.
