@@ -40,3 +40,12 @@ mesen*.log
 roms/manifests/_*.json
 setenv.sh
 tmp/
+
+
+
+
+
+
+
+
+release/kit_out/
