@@ -1,10 +1,11 @@
-# Final board hold + level-select garble fix
+# Final board hold + level-select garble fix + build-ID stamp
 
 Worktree: `dr-mario-finalboard-wt` (branch `feature/final-board-hold`, off `origin/driver-nav`).
-Commits: `dbd15c2` (garble fix), `4cce693` (DRHOLDBOARD). No SD/MiSTer/hardware touched. Mesen
-used read-only for the garble diagnosis (confirmed free via `pgrep -x Mesen` before each use);
-never used for the copro-cart work (mapper 100 is not Mesen-emulable). All new builds live under
-`tmp_carts/` (gitignored); the reproducibility record is `roms/manifests/boardhold-v6.json`.
+Commits: `dbd15c2` (garble fix), `4cce693` (DRHOLDBOARD), `484272d` (DRBUILDID). No SD/MiSTer/
+hardware touched. Mesen used read-only for diagnosis (confirmed free via `pgrep -x Mesen` before
+each use); never used for the copro-cart work itself (mapper 100 is not Mesen-emulable). All new
+builds live under `tmp_carts/` (gitignored); reproducibility records are `roms/manifests/
+boardhold-v6.json` and `roms/manifests/boardhold-v6b.json`.
 
 ## Job 1 — level-select garble
 
@@ -169,12 +170,101 @@ that commit via `tools/romgen.py rebuild roms/manifests/boardhold-v6.json`. Base
 same v4-coldinit flag set used by the shipping Pocket/MiSTer human cart, plus `DRHOLDBOARD=1` on
 top of Job 1's garble fix (which is unconditional, not flag-gated — it's a bugfix, not a feature).
 
+## Job 3 — visible build ID (`DRBUILDID`)
+
+**Location + rationale:** the settings screen ("2 PLAYER GAME"), row 25, columns 6-14 — the
+exact row Job 1's STUDYCOUNTS leak garbled. Chosen over the `DRNAVDWELL` title dwell for two
+reasons: (1) on a `HUMAN_P1` cart the settings screen is shown before **every** match, matching
+the spec's "always checkable" language, where the title dwell is a transient boot-time state that
+a human cart doesn't necessarily even linger on; (2) reusing row 25 needed zero new "is this
+region actually free" research — Job 1 had already established, empirically, that it's blank in
+vanilla and untouched by this driver's writes. Verified before relying on any of it (not assumed
+by analogy to Job 1):
+- **Font**: the settings screen's background print-table font is NOT the STUDY sprite font
+  (`S/T/U/D/Y = $0D/$A0/$0C/$A1/$A2`, a different CHR bank). Decoded off a real nametable dump
+  of already-rendered strings ("2 PLAYER GAME", VIRUS LEVEL, MUSIC TYPE, FEVER, CHILL, OFF,
+  SPEED) and cross-checked: **18 independently-placed letters** all satisfy `tile = $0A +
+  (letter_index_from_A)` with zero mismatches — i.e. A=$0A, B=$0B, ..., Z=$23, consecutively.
+  Digit tile = digit value directly (`'2'` confirmed as `$02` in "2 PLAYER GAME").
+- **No leak into play mode** (the exact bug class Job 1 fixed, checked the same way, not by
+  assumption): entering PLAY redraws the *entire* nametable from a different print table
+  (`LC5F9`), and a live Mesen probe shows row 25 is fully overwritten by the bottle-border
+  graphic — confirmed byte-for-byte before this location was trusted. The write is *also*
+  hard-gated on `$0046==1` so it cannot fire during play regardless — belt and suspenders, not
+  reliance on the overwrite alone.
+
+**Drift-proof stamping mechanism:** the on-screen tag is `<=4-char DRBUILDID_TAG> <4-hex-nibble
+content-hash prefix>`. Two sources, both build inputs, neither hand-maintained:
+- `DRBUILDID_TAG`: `tools/romgen.py`'s `build --tag` now derives this automatically from the
+  *same* `--tag` string it already records in the manifest (`"".join(alnum chars).upper()[:4]`)
+  — one input feeds both the manifest's tag and the on-cart stamp, so they cannot name two
+  different things. An explicit `DRBUILDID_TAG` env var overrides (same "env wins if set"
+  convention already used for every other `DR*` flag in this file).
+- Hash prefix: computed from *this exact build's own image*, the same way the fingerprint work
+  in `CART_FIX_REPORT.md` did (full-file md5). Chicken-and-egg (the hash covers a file that
+  contains the hash) resolved by the standard trick, applied in the natural build order rather
+  than as a separate mask-then-hash pass: the 4 hash-nibble tile bytes are written as `$FF`
+  placeholders during assembly, the *complete* built file is hashed with those placeholders
+  still in place (equivalent to "hash of image with the stamp region masked to a fixed
+  sentinel" — nothing else needs masking, because nothing else about the stamp is unknown at
+  hash time), then exactly those 4 already-known byte offsets are patched in the already-written
+  file afterward. Those bytes are pure display data with no code depending on their value, so
+  patching them cannot perturb anything the hash is meant to fingerprint — the same reasoning
+  the mapper-byte fixup at the end of `main()` already relies on. Two builds with identical
+  inputs produce identical bytes (both `romgen.py`'s own determinism check and
+  `test_buildid.py` scenario B confirm this independently).
+
+**Test results** (`tests/test_buildid.py`, py65, all pass):
+- **A** — statically decodes the assembled `LDA_imm/STA $2007` write sequence (a straight-line,
+  unrolled, branch-free run of instructions, so a static decode *is* decoding what would reach
+  the PPU in order, not an approximation) and confirms it matches the requested tag exactly.
+  **A2** — an unsafe/short `DRBUILDID_TAG` (`"ok!"`) sanitizes to `"OKXX"` rather than crashing
+  or emitting an out-of-alphabet tile.
+- **B** — the patched hash bytes, read back from the actual built file, independently reproduce
+  as `hash(image, stamp region reset to $FF)` — proving the mechanism does what it claims, not
+  just that *some* value got written.
+- **C** — py65 execution: running the hook with `$0046==4` (play) leaves `$2006`/`$2007`
+  completely untouched (sentinel values survive) — the leak-class check, done by actually
+  running the code and observing zero writes, not by inspecting whether a gate exists. **C2** —
+  the same hook with `$0046==1` (settings) *does* write, confirming the path isn't just
+  correctly gated but also actually reachable.
+- **D** — `DRBUILDID=0` emission is deterministic and byte-identical to the pre-feature build;
+  `DRBUILDID=1` differs. Full existing regression suite (17 files, listed below) re-passes.
+
+**Reproducibility caveat, stated plainly rather than left for someone to discover later:**
+`DRBUILDID` defaults ON for `HUMAN_P1` carts — matching `DRSTUDY`'s existing default expression
+in this same file (`"1" if HUMAN_P1 else "0"`), not a new pattern. Consequence: any **pre-
+existing** human-profile manifest recorded before commit `484272d` (e.g.
+`pocket-human-v4-coldinit.json`, the one the deployed v4/v6 SD carts trace to) will no longer
+`rebuild` byte-exact via a plain replay, because `DRBUILDID` now silently activates for it where
+it was previously simply absent. This was verified, not guessed — `tools/romgen.py rebuild
+roms/manifests/pocket-human-v4-coldinit.json` was actually run against this commit and produces
+the expected `❌ MISMATCH`. This is the same class of drift `romgen.py`'s own "emitter differs
+from the manifest" path already exists to handle (documented there as expected, not a failure);
+it is called out here explicitly because the *cause* this time is a new default rather than
+incidental emitter evolution, and because the user's SD currently holds carts built from exactly
+this manifest. No old manifests were modified or retired as part of this task — that's a
+judgment call for whoever next needs a byte-exact replay of one of those specific past carts
+(either pass `DRBUILDID=0` explicitly, or retire the manifest to `roms/manifests/historical/`).
+
+**Candidate:** `tmp_carts/drmario_stomper_vs_you_v6b_buildid.nes` — md5
+`7ec0b6a792580ba20aa55fe2d410a388`, 98,320 bytes, v4-coldinit profile + `DRHOLDBOARD=1` +
+`DRBUILDID=1 DRBUILDID_TAG=V6BH` on top of Job 1's garble fix. On-screen stamp reads `V6BH
+F5F0`. Recipe recorded at `roms/manifests/boardhold-v6b.json` and **reproduces byte-exact** from
+commit `484272d` via `tools/romgen.py rebuild roms/manifests/boardhold-v6b.json` (re-verified
+directly, not assumed). **Not deployed** — v4 and v6 stay live on the user's SD; this build is
+for review only, per instruction.
+
 ## Blockers
 
-None for either job — both are code-complete, tested two-sided at the RAM/OAM level (the only
-level reachable without a mapper-100-capable emulator; Mesen cannot run this cart, per project
-notes), and committed. Not done, and explicitly out of scope per the task: a real Mesen/MiSTer
-visual confirmation of either fix (mapper 100 isn't Mesen-emulable; no hardware access was
-authorized for this task), and no A/B of the ~40% active-play cost against real hardware timing —
-flagged above as the one place a smarter implementation (page-alternating mirror) is available if
-the current cost turns out to matter in practice.
+None for any of the three jobs — all are code-complete, tested two-sided at the RAM/OAM/PPU-
+write level (the only level reachable without a mapper-100-capable emulator; Mesen cannot run
+this cart, per project notes, though it WAS used read-only for real-ROM font/overwrite/garble
+evidence gathering on the base ROM), and committed. Not done, and explicitly out of scope per the
+task: a real Mesen/MiSTer visual confirmation of any of the three fixes on the actual mapper-100
+cart (no hardware access was authorized for this task), and no A/B of Job 2's ~40% active-play
+cost against real hardware timing — flagged in that section as the one place a smarter
+implementation (page-alternating mirror) is available if the current cost turns out to matter in
+practice. Job 3's reproducibility caveat (pre-existing human-profile manifests no longer replay
+byte-exact without an explicit `DRBUILDID=0`) is stated above, not a blocker but worth the
+reviewer's attention given the deployed SD traces to exactly one of those manifests.
