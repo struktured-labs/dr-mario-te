@@ -16,6 +16,13 @@ full table and what a genuine archetype read would need. This is not a wasted pa
 correct, necessary refactor, and it surfaces a real methodological finding — pooled match-level
 "OK confidence" numbers were partly an illusion of combining two players' events into one count.
 
+**Highest-priority consequence of this pass: the same contamination was in the RIG's shipped
+bursty model all along.** §6a/§6b — the pooled struktured fit that seeded every prior bursty rig
+experiment (`BURSTY_V1_RESULTS.md`, reactive-mode arms, reach-root gates) was ~half AI-copro
+cadence, not human. Refit as "bursty v1.1" from the separated stream and re-ran the validity
+check: qualitative conclusions survive, but the dies-ahead baseline drops materially (13.3%→7.5%)
+under honest human cadence — full details in `BURSTY_V1_RESULTS.md` §5.
+
 ## 1-4. Inventory / sources / calibration / attribution — unchanged from passes 1-2
 
 See prior sections (not reproduced) for the `/mnt/data/drmario/expert_vods/` inventory, the
@@ -69,6 +76,38 @@ sending profile" here is really "how struktured's board reacted to the AI's clea
 partly about struktured's receiving behavior in disguise — flagged, not overclaimed.)
 
 Full JSON: `results/style_ensemble_v1/struktured_20260804_{P1,P2}_sending_fit.json`.
+
+## 6a. Downstream consequence: bursty v1 (the rig's shipped model) was pool-contaminated
+
+**This self-test result is not just a dossier correction — it's a defect in every rig experiment
+run before today.** `bursty_model.fit_struktured_20260804()`'s pooled fit (n=61 volleys) is
+exactly what `pressure_rig.py --model bursty` used for BURSTY_V1_RESULTS.md, the reactive-mode
+arms, and the reach-root gates. §6 shows 33 of those 61 volleys were the AI copro's OWN sending
+events, not struktured's — and the AI's attack cadence is governed by a near-deterministic ROM
+rule (see §6b), not human variability. So the rig has been simulating pressure that's roughly
+half AI-cadence: faster and more reliably-following-through than an honest human profile.
+
+**Fit "bursty v1.1" from struktured's separated P1 sending stream (n=28, the one player where
+this clears OK confidence) and re-ran the validity check.** Full parameter deltas and the n=120
+paired rerun (does bursty still beat volume-matched drip; does ws=20 still help-not-cure; does the
+dies-ahead baseline survive) are in `BURSTY_V1_RESULTS.md` §5 — not duplicated here. Headline: the
+qualitative conclusions survive, but **the dies-ahead baseline drops materially (13.3%→7.5%,
+nearly halved)** under honest human cadence — the number to cite going forward for "how often does
+the shipped build die ahead under bursty pressure" is 7.5%, not 13.3%. Paired comparisons already
+run under v1 stay internally valid (same contaminated model both sides of every arm); v1 is
+superseded only for absolute-rate claims.
+
+## 6b. Calibration check, logged as its own line
+
+**The AI copro's separated sending profile (90.9% follow-through at 7-10 cells, the fastest gap in
+the entire style-ensemble table, n=33 clearing the confidence line on its own) is an implicit
+end-to-end validation of the extraction pipeline.** The ROM's attack rule is independently known
+from disassembly to be a near-deterministic trigger (`comboCounter` sums across cascade steps and
+fires on essentially every qualifying clear), not a stylistic choice. Two completely independent
+measurement methods — ROM-level static analysis and footage-based computer-vision extraction —
+agree on the qualitative signature (the AI attacks reliably and fast). That agreement is evidence
+the vision/extraction pipeline reads true, not an artifact of convenient fitting code. It does NOT
+make "the AI's fitted cadence" independently useful for anything beyond this check.
 
 ## 7. Per-player table (all four new matches split)
 

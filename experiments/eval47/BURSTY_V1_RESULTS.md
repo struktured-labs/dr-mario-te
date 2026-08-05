@@ -129,3 +129,98 @@ lever (drip could not show any of this); task #49's commit-path defect is not ru
 - Driver log: `tmp_logs/bursty_n120.log`.
 - Drip comparison baseline: `PRESSURE_TAX_RESULTS.md` (control 24/120, ws=20 7/120, garbage/g
   30.20/26.86).
+
+## 5. v1 → v1.1: pool-contamination correction (2026-08-05)
+
+**Everything above this section was fit from a POOL that is roughly half AI copro, not human.**
+The style-ensemble program's per-player separation (`STYLE_ENSEMBLE_V1.md` pass 3) split the 61
+volleys the §2 fit was built from: 33 of them were the AI copro's own sending events (its clears
+provoking a counter-volley on struktured's board), not struktured's. The AI's attack behavior is
+governed by a near-deterministic ROM rule (`comboCounter` sums across cascade steps and fires an
+attack on ~every qualifying clear — see the project's ROM-true attack rule memo), so pooling it in
+with struktured's own, genuinely-variable human cadence systematically pulled the fitted model
+toward **faster, more reliable** attack behavior than an honest human-only fit supports.
+
+### v1 vs v1.1 parameter table
+
+| metric | v1 (pooled, CONTAMINATED) | v1.1 (struktured-only sending stream) | AI copro-only (context, not used in the rig) |
+|---|---|---|---|
+| n_volleys | 61 | **28** | 33 |
+| n_clears | 188 | **89** | 99 |
+| volley_size_mean | 2.54 [2.33, 2.79] | **2.68 [2.32, 3.11]** | 2.42 [2.18, 2.70] |
+| inter_volley_gap_mean_s | 22.70 [17.19, 28.55] | **27.42 [18.04, 37.33]** | 18.79 [13.38, 25.69] |
+| P(volley≤5s \| clear 4-6 cells) | 32.1% (n=156) | **28.2% (n=71)** | 35.3% (n=85) |
+| P(volley≤5s \| clear 7-10 cells) | 74.1% (n=27) | **62.5% (n=16)** | 90.9% (n=11) |
+| P(volley≤5s \| clear 11+ cells) | 40.0% (n=5) | **50.0% (n=2, too thin)** | 33.3% (n=3, too thin) |
+
+**The deltas are the contamination measurement, and they all point one direction**: v1 is faster
+and more reliable than the honest human-only fit on every axis that matters for the rig —
+inter-volley gap 4.7s shorter (22.7s vs the true 27.4s), P(volley|clear 7-10) inflated by 11.6
+points (74.1% vs the true 62.5%). Both deltas move toward the AI copro's own numbers (18.79s gap,
+90.9% follow-through), confirming the direction: **v1 overstated human burstiness/aggression by
+partially measuring the AI instead.**
+
+### Calibration check, logged on its own (not buried in the contamination note)
+
+**The AI copro's separated sending profile (90.9% follow-through at 7-10 cells, the fastest gap in
+the whole style-ensemble table, n=33 clearing the confidence line) is an implicit end-to-end
+validation of the extraction pipeline.** The ROM's attack rule is independently known from
+disassembly to be a near-deterministic trigger, not a stylistic choice — `comboCounter` sums
+across cascade steps and fires on essentially every qualifying clear. Two completely independent
+measurement methods — ROM-level static analysis and footage-based computer-vision extraction —
+agree on the qualitative signature (the AI attacks reliably and fast). That agreement is evidence
+the vision/extraction pipeline reads true, not an artifact of the fitting code doing something
+convenient. (It does NOT make the fitted magnitude of "the AI's cadence" independently useful for
+anything — it's a calibration signal, not a new result to build on.)
+
+### Validity rerun (n=120 paired, L11, control + ws=20 under bursty v1.1)
+
+Source: `results/bursty_v1_1_n120_wt0_ws20.json`, driver log `tmp_logs/bursty_v1_1_n120.log`,
+runner `run_bursty_v1_1_validity.py` (rebuilds v1.1 in-process from
+`fit_struktured_20260804()`'s live `raw_events` + `fit_ensemble_source.fit_per_player()` — not a
+saved-JSON copy, so this script is the single source of truth for "what v1.1 is").
+
+| arm | bad-ends | dies-ahead | garbage/g | vs v1 (§3) |
+|---|---|---|---|---|
+| control wt=0 ws=0 | **47/120 (39.2%)** | **33/120 (27.5%)** | 52.64 | v1: 52/120 (43.3%), dies-ahead 37/120 (30.8%), garbage/g 58.56 |
+| ws=20 (shipped) | **20/120 (16.7%)** | **9/120 (7.5%)** | 52.92 | v1: 32/120 (26.7%), dies-ahead 16/120 (13.3%), garbage/g 63.62 |
+
+Paired pills (both-won, n varies): −9.56 [−23.17, +4.06] WASH (v1 was +13.52 [−3.04, +30.50] WASH
+— both wash, so this specific comparison doesn't change the picture either way).
+
+**Verdict on each load-bearing conclusion, checked against honest human-cadence pressure:**
+
+1. **"Bursty kills the control at roughly 2x drip's rate" — SURVIVES, direction and rough
+   magnitude intact.** Drip's control (`PRESSURE_TAX_RESULTS.md`) is 24/120 (20.0%). v1.1's
+   control is 39.2% — 1.96x drip's rate, versus v1's 2.17x. Still materially elevated, still
+   roughly-2x, not a different qualitative story.
+2. **"ws=20 helps but doesn't cure" — SURVIVES, and reads slightly BETTER than v1 suggested.**
+   ws=20 cuts bad-ends 39.2%→16.7% under v1.1 (57.4% relative reduction) vs. 43.3%→26.7% under v1
+   (38.3% relative reduction) — honest human pressure is easier for ws=20 to handle than the
+   AI-contaminated pressure was. 16.7% is still well above drip's cured 5.8% (7/120), so "helps,
+   doesn't cure" still holds — the gap to a full cure just isn't as wide as v1 implied (2.9x
+   drip's cured rate now, vs. 4.6x under v1).
+3. **"Dies-ahead ~13.3% baseline" — DOES NOT SURVIVE AT THE SAME MAGNITUDE. Drops to 7.5% —
+   material, and this is the number that recalibrates the disease baseline.** Nearly halved
+   (13.3%→7.5%, a 44% relative drop). **The qualitative SIGNATURE is robust and unchanged**: of
+   the games that DO fail, close to the same fraction fail near the doorstep under both models
+   (control: 37/52=71.2% of v1's bad-ends were dies-ahead vs. 33/47=70.2% under v1.1; ws=20:
+   16/32=50.0% under v1 vs. 9/20=45.0% under v1.1 — both essentially unchanged). What changes is
+   the ABSOLUTE PROBABILITY of a given game failing at all under honest human cadence, which
+   pulls the dies-ahead rate down proportionally. **Cite 7.5% going forward, not 13.3%, for "how
+   often does the shipped build die-ahead under bursty human pressure" — the mechanism is
+   confirmed real and unchanged, the field-comparable magnitude is smaller than first reported.**
+
+**Bottom line for the silicon manifest:** every qualitative conclusion in this document survives
+under honest human-cadence pressure. The quantitative dies-ahead baseline does not — 7.5%, not
+13.3%, is the number to carry forward.
+
+### Status of v1
+
+**Kept, not deleted** — every PAIRED comparison already run under v1 (this file, the reactive-mode
+arms, the reach-root gates) stays internally valid, since the SAME contaminated model was applied
+identically to both sides of every paired arm; contamination cancels in a same-model comparison.
+**Superseded for absolute rates** — any claim of the form "bursty pressure kills N% of games" or
+"dies-ahead is M%" sourced from v1 should be read as measured-under-partially-AI-cadence-pressure,
+not measured-under-honest-human-cadence-pressure. v1.1 is the source of truth for absolute rates
+going forward; v1 remains on disk and in this doc as the paired-comparison historical record.
