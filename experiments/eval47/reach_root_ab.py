@@ -47,6 +47,7 @@ import reach_root as RR
 _C = {}
 
 GARBAGE_MIN_PILLS = 25   # matches pressure_rig.py's own convention exactly
+DIES_AHEAD_VIRUS_THRESHOLD = 12  # matches pressure_rig.py's own convention exactly
 
 
 def _init(level, mode, pressure, bursty_model_obj=None):
@@ -79,6 +80,7 @@ def play(seed):
     garbage_injected = 0
     n_reach_sum = n_base_sum = n_reach_calls = 0   # reach32 diagnostics
     n_tuck_legal_sum = n_tuck_calls = 0            # reachfull diagnostics
+    v_at_topout = None   # matches pressure_rig.py's own convention exactly
 
     for _ in range(300):
         fb = FB.from_board(env.board)
@@ -124,6 +126,7 @@ def play(seed):
                 break
             if b.spawn_blocked():
                 res = "topout"
+                v_at_topout = b.virus_count()
                 break
             if env.pills_placed >= 300:
                 break
@@ -134,6 +137,8 @@ def play(seed):
             _, _, term, trunc, info = env.step(int(action))
             if term:
                 res = "clear" if info["won"] else "topout"
+                if res == "topout":
+                    v_at_topout = env.board.virus_count()
                 break
             if trunc:
                 break
@@ -150,11 +155,16 @@ def play(seed):
                 break
             if env.board.spawn_blocked():
                 res = "topout"
+                v_at_topout = env.board.virus_count()
                 break
 
+    dies_ahead = int(res == "topout" and v_at_topout is not None
+                      and v_at_topout <= DIES_AHEAD_VIRUS_THRESHOLD)
     row = {"seed": seed, "won": int(res == "clear"), "topout": int(res == "topout"),
            "stall": int(res == "stall"), "pills": env.pills_placed,
-           "fired_tuck": fired_tuck, "garbage_injected": garbage_injected}
+           "fired_tuck": fired_tuck, "garbage_injected": garbage_injected,
+           "viruses_left_at_end": v_at_topout if v_at_topout is not None else env.board.virus_count(),
+           "dies_ahead": dies_ahead}
     if n_reach_calls:
         row["reach_frac"] = n_reach_sum / n_base_sum if n_base_sum else float("nan")
     if n_tuck_calls:
@@ -184,6 +194,28 @@ def run_arm(level, seeds, workers, mode, pressure, bursty_model_obj):
     return {r["seed"]: r for r in rows}
 
 
+def _bad_end(row):
+    return bool(row["topout"] or row["stall"])
+
+
+def mcnemar(ctrl, on, seeds):
+    """Exact two-sided binomial McNemar on bad-end discordants, same
+    convention as analyze_reactive.py's mcnemar() / BURSTY_V1_RESULTS.md's
+    "rescued/harmed" language: rescued = ctrl bad-end, on NOT bad-end;
+    harmed = on bad-end, ctrl NOT bad-end."""
+    from scipy.stats import binomtest
+    rescued = harmed = 0
+    for s in seeds:
+        c_bad, o_bad = _bad_end(ctrl[s]), _bad_end(on[s])
+        if c_bad and not o_bad:
+            rescued += 1
+        elif o_bad and not c_bad:
+            harmed += 1
+    disc = rescued + harmed
+    p = binomtest(rescued, disc, 0.5).pvalue if disc else float("nan")
+    return rescued, harmed, disc, p
+
+
 def compare(ctrl, on, tag):
     ss = sorted(set(ctrl) & set(on))
     both = [s for s in ss if ctrl[s]["won"] and on[s]["won"]]
@@ -193,17 +225,34 @@ def compare(ctrl, on, tag):
     c1 = sum(on[s]["won"] for s in ss) / len(ss)
     tp0 = sum(ctrl[s]["topout"] + ctrl[s]["stall"] for s in ss)
     tp1 = sum(on[s]["topout"] + on[s]["stall"] for s in ss)
+    da0 = sum(ctrl[s].get("dies_ahead", 0) for s in ss)
+    da1 = sum(on[s].get("dies_ahead", 0) for s in ss)
+    v0_xs = [ctrl[s]["viruses_left_at_end"] for s in ss if _bad_end(ctrl[s])]
+    v1_xs = [on[s]["viruses_left_at_end"] for s in ss if _bad_end(on[s])]
+    v0 = st.mean(v0_xs) if v0_xs else float("nan")
+    v1 = st.mean(v1_xs) if v1_xs else float("nan")
+    rescued, harmed, disc, mcp = mcnemar(ctrl, on, ss)
     fired = st.mean([on[s]["fired_tuck"] for s in ss])
     gb0 = st.mean([ctrl[s]["garbage_injected"] for s in ss])
     gb1 = st.mean([on[s]["garbage_injected"] for s in ss])
     verdict = "REAL" if (hi < 0 or lo > 0) else "WASH"
     print(f"{tag}: pills {st.mean(d) if d else float('nan'):+.2f} [{lo:+.2f},{hi:+.2f}] "
           f"{verdict}  clear {c0:.1%}->{c1:.1%}  bad_ends {tp0}->{tp1}  "
+          f"dies-ahead(v<={DIES_AHEAD_VIRUS_THRESHOLD}) {da0}/{len(ss)}({da0/len(ss):.1%})->"
+          f"{da1}/{len(ss)}({da1/len(ss):.1%})  "
+          f"viruses@death {v0:.2f}->{v1:.2f}  "
+          f"mcnemar rescued={rescued} harmed={harmed} p={mcp:.4g} "
+          f"(moved {disc}/{len(ss)}={disc/len(ss):.1%} of seeds)  "
           f"tuck_fires/g {fired:.2f}  garbage/g {gb0:.2f}->{gb1:.2f}  "
           f"moved={len(ss)}/{max(len(ctrl), len(on))}", flush=True)
     return {"tag": tag, "delta": st.mean(d) if d else None, "ci": [lo, hi],
             "verdict": verdict, "clear0": c0, "clear1": c1,
-            "bad_ends0": tp0, "bad_ends1": tp1, "fired_tuck": fired,
+            "bad_ends0": tp0, "bad_ends1": tp1,
+            "dies_ahead0": da0, "dies_ahead1": da1, "n_seeds": len(ss),
+            "viruses_at_death0": v0, "viruses_at_death1": v1,
+            "mcnemar_rescued": rescued, "mcnemar_harmed": harmed,
+            "mcnemar_disc": disc, "mcnemar_p": mcp,
+            "fired_tuck": fired,
             "garbage0": gb0, "garbage1": gb1, "moved_seeds": len(ss)}
 
 
