@@ -317,3 +317,33 @@ a marginal one. A genuine improvement here would need either a signal that
 doesn't depend on sustained CPU%, or a human-confirmed ground-truth log
 ("wedge reported at frame X" vs "confirmed playing fine at frame Y") to
 calibrate against, which does not exist yet.
+
+## ★★ A/B ARM 1 VERDICT (2026-08-05 22:35Z): THE OLD CORE WEDGES TOO
+
+The pre-strand20 shipped champion (NES_stomper180_20260801, rbf 71d2de37 —
+the core that ran for weeks as the champion) was loaded at 22:22:46Z with
+the identical cart and zero external IPC. It hit the wedge trigger at
+**22:29:01Z — 6m15s after load** (ALERT_ONLY; auto-reboot was disabled on
+the device at the time, see post-mortem), again at 22:32:03Z and 22:35:05Z.
+INDEPENDENTLY CONFIRMED by me, not just by the detector: at 22:35Z the
+screenshot service times out (display path dead) while ssh works and the
+core reports NES — the same dead-capture/alive-box signature as every s20b
+wedge.
+
+**⇒ s20b / CMD-8 is EXONERATED. The wedge is NOT our brain regression.**
+It is a platform-level (core-framework interaction) failure that both core
+builds exhibit under continuous CvC play. Consequences:
+1. The Sept-12 risk is real but NOT fixable by reverting the AI work.
+2. The next suspects, in order: (a) the MiSTer framework/firmware version on
+   this box (pin a known-good build and re-run this same 6-minute test),
+   (b) something common to BOTH cores — i.e. the shared copro/mapper-100
+   RTL or the CvC probe cart's own driver behaviour (an autonav/driver
+   busy-pattern that starves the framework), (c) hardware/environment.
+3. Cheap discriminator available next: run a VANILLA NES core (no copro) on
+   an ordinary NES ROM under the same conditions. If vanilla survives, the
+   fault is in our RTL/cart family, not the framework — that separates (a)
+   from (b) in one measurement.
+⚠ Non-monotonic detail worth keeping: busy_frac dipped to 54% with consec
+resetting between alerts on the old core, unlike s20b's clean monotonic
+climb — possibly a milder "bout" signature rather than a permanent spin;
+unresolved, do not over-read.
