@@ -161,7 +161,7 @@ def main():
     print(f"boards where base32's own argmax is BFS-unreachable: "
           f"{len(unreach_boards)}/{len(report)} "
           f"(commits {[r['commit_index'] for r in unreach_boards]})")
-    for mode in ("reachfull", "reachfull2", "reachfull2t"):
+    for mode in ("reachfull", "reachfull2", "reachfull2t", "reachexec"):
         n_div = sum(1 for r in unreach_boards if r[mode]["diverges_from_base32"])
         n_still_unreach = sum(1 for r in unreach_boards
                               if r[mode]["kind"] == "base" and r[mode]["reachable"] is False)

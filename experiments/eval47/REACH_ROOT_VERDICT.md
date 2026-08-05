@@ -296,3 +296,155 @@ frame budget beyond what the original `reachfull` port already priced.
   divergence-by-height instrumentation for `reach32t`)
 - `results/reach_root_bursty_n120_iter2_*.json`,
   `results/reach_root_clean_n40_iter2_*.json` (raw A/B results)
+
+## ITERATION 3 — EXECUTABLE SUBSET
+
+**Date:** 2026-08-05 · Team-lead follow-on, the final gate before `reachfull2`
+goes to the silicon manifest. The tuck-bfs-6502 wiring landed the same night
+with a hard finding: the CANDLIST execution vocabulary only accepts a
+`~11%` MEDIAN OF `tuck_scan_v3`'s own broader candidate space (median 2/36
+raw candidates/board; single-adjacent-column descriptors) — `reachfull2`'s
+9.2% bursty dies-ahead was measured over the FULL BFS-reachable tuck set,
+but silicon can only EXECUTE the translatable subset. New arm **`reachexec`**
+= `reachfull2` with tuck-class candidates additionally filtered by
+`translatable.py`'s `TL.executable()` (wraps `dr-mario-canonical-wt/tests/
+translate_ref.py`'s already-validated CANDLIST derivation, 0/1846
+disagreements vs the real 6502 chain — not re-validated here, only wired
+in). Implementation: `reach_root.py::choose_reachexec` (new), `_tuck_branch_
+pick` gained an optional `extra_filter` parameter (default `None`, so
+`choose_reachfull2`/`choose_reachfull2t` are byte-for-byte unaffected) that
+`reachexec` uses to compose `is_tuck and reachable and TL.executable(...)`.
+New wiring-sanity selftest #6: every tuck `reachexec` ever picks is
+independently re-confirmed executable by a fresh `TL.executable()` call
+(0 mismatches over 60 boards) — the predicate's own correctness is upstream
+and out of scope here; this only checks the plumbing didn't invert or
+misdirect it. Note on the acceptance-rate sanity check inside that selftest:
+it measures ~34% (88/258) against `TE.enumerate(..., mode="free")`'s
+`is_tuck and reachable` candidate set specifically (the same denominator
+`reachfull2`'s own tuck branch already uses, averaging ~3-4 candidates/board
+per `tuck_enum.py`'s own corpus stats) — a DIFFERENT, smaller-count
+denominator than `tuck_scan_v3`'s own "36 raw candidates/board" figure, so
+the two percentages are not directly comparable; flagged as a counting-
+convention difference, not a contradiction, since `TL.executable()` itself
+is unmodified and independently verified against its own reference on each
+call.
+
+### 1. Bursty gate, n=120 (the decisive number)
+
+Three-way paired run (`run_reachexec_bursty.py`, same 120 seeds across all
+three arms so every comparison below is truly paired, not re-derived from
+separate runs):
+
+| comparison | pills Δ | 95% CI | verdict | clear rate | bad-ends | dies-ahead | McNemar (rescued/harmed, p) | tuck_fires/g |
+|---|---|---|---|---|---|---|---|---|
+| **reachfull2 vs base32** | −29.44 | [−44.58,−14.01] | REAL | 73.3%→85.0% | 32→18 | 13.3%→**9.2%** | 22/8, p=0.016 | 4.17 |
+| **reachexec vs base32** | −14.64 | [−27.29,−2.23] | REAL | 73.3%→75.0% | 32→30 | 13.3%→**11.7%** | 15/13, **p=0.851** | 1.77 |
+| **reachexec vs reachfull2** | +12.54 | [−1.99,+27.10] | WASH (barely) | 85.0%→75.0% | 18→30 | 9.2%→11.7% | 8/20, **p=0.036** | — |
+
+**How much of reachfull2's win survives the executable subset, by metric:**
+
+| metric | survival fraction |
+|---|---|
+| pills (mean, both-won pairs) | 49.7% |
+| dies-ahead percentage-point reduction | 39.0% |
+| bad-ends rescue count | **14.3%** |
+| clear-rate gain | **14.5%** |
+
+The two metrics this program treats as the disease definition (bad-ends,
+McNemar rescued/harmed — the same convention `BURSTY_V1_RESULTS.md` and
+`REACH_ROOT_BURSTY.md` both use) retain only ~14% of reachfull2's win, and
+`reachexec` vs `base32` on that metric is statistically indistinguishable
+from doing nothing at all (p=0.851, 15 rescued vs 13 harmed — a coin flip).
+The DIRECT paired comparison against reachfull2 is the most decisive number
+here: restricting to the executable subset causes a STATISTICALLY
+SIGNIFICANT regression (p=0.036, 8 rescued vs 20 harmed) — not sampling
+noise, a real cost. The weaker mean-pills metric retains about half the
+value and stays nominally REAL (CI excludes 0), so the picture isn't a total
+zero, but it is not the headline win reachfull2 advertised.
+
+### 2. M3 case study: does reachexec still diverge from base32 on the 4 unreachable-argmax boards?
+
+**Yes — 4/4, matching `reachfull2` exactly.** On all 6 M3 boards,
+`reachexec`'s pick is IDENTICAL to `reachfull2`'s (`col4V`/`col3H`/`col3H`/
+`col1V`/`col0V`/`col0V` on commits 1-6 respectively) — every commit resolves
+to `kind=base`, meaning on this specific 6-board set no tuck candidate
+survives BOTH the reachability filter AND `TL.executable()` AND the
+theta=250 margin over the base branch. The base-branch fix (the actual
+defect this program cares about most, per `REACH_ROOT_M3CASE2.md`) is
+completely unaffected by the executable-subset question — it's a base-
+branch phenomenon, `reachexec` only touches the tuck branch.
+
+### 3. Clean L11 spot check, n=40: how much of the tuck value survives?
+
+| arm | pills Δ vs base32 | 95% CI | verdict | tuck_fires/g |
+|---|---|---|---|---|
+| reachfull2 | −11.15 | [−19.03,−3.23] | REAL | 3.73 |
+| reachexec | −6.23 | [−12.54,+0.03] | WASH (barely — upper bound +0.03) | 1.57 |
+
+Paired directly (same 40 seeds, reachfull2 as the control instead of
+base32): **reachexec vs reachfull2 = +4.92 [−3.90,+14.46] pills, WASH** —
+not statistically distinguishable from reachfull2 at n=40, but the point
+estimate says exec gives back roughly half the clean-board tuck value
+(−6.23 of −11.15 ≈ 56% survives vs base32) and tuck-fire rate drops by more
+than half (3.73 → 1.57/game), consistent with the ~34% (this wiring's
+measured rate, see note above) tuck-candidate acceptance rate.
+
+### 4. Ship call
+
+**COLLAPSES, on the metric that matters for a pressure-death mitigation —
+say it plainly, per the pre-registered guide.** `reachfull2`'s headline
+result (13.3%→9.2% dies-ahead, bad-ends 32→18, McNemar p=0.016) was measured
+over the full BFS-reachable tuck set, which the real firmware cannot
+execute. Restricted to what `translatable.py`'s validated CANDLIST predicate
+says silicon can actually play (`reachexec`), the bad-ends/McNemar disease
+metric — this program's own primary metric, not the mean-pills side metric —
+is statistically INDISTINGUISHABLE from doing nothing at all (`reachexec` vs
+`base32`, p=0.851), and the DIRECT paired comparison against `reachfull2`
+shows a STATISTICALLY SIGNIFICANT regression (p=0.036) from restricting to
+the executable subset. This is not a modest haircut — on bad-ends/clear-rate
+specifically only ~14% of the win survives. The single-adjacent-column
+CANDLIST vocabulary was mostly gating out the deep candidates that did the
+actual disease-metric work, exactly the "COLLAPSES" branch of the
+pre-registered interpretation guide: **the richer-descriptor work (extending
+CANDLIST beyond a single adjacent-column approach/trigger pair) is now the
+REAL cost of the pressure fix, not an optional follow-on.**
+
+**Practical recommendation, not just a verdict label:**
+1. **Do not present `reachfull2`'s 9.2% dies-ahead figure as the silicon
+   result anywhere** — it's a software-oracle upper bound the current
+   CANDLIST vocabulary cannot deliver. That number belongs to the
+   Iteration-2 record as the CEILING this vocabulary is priced against, not
+   a shipped result.
+2. **Ship `reachexec`, not `reachfull2`, if the tuck-bfs-6502 port ships at
+   all in its current vocabulary.** `reachexec` is the only arm whose
+   candidate set the driver can actually execute, and it does carry a real
+   (if much smaller) improvement over `base32` on mean pills (−14.64 REAL,
+   CI excludes 0) with a favorable-but-not-significant dies-ahead trend
+   (13.3%→11.7%) and zero measured downside anywhere tested. There is no
+   evidence it's worse than shipping nothing; there is decisive evidence
+   it's worse than the number that was about to justify the copro budget.
+3. **Re-scope the ask before spending more silicon budget on this
+   mechanism.** The tuck-bfs-6502 capacity-64/memory-map spend (§3, prior
+   iteration) was justified by `reachfull2`'s aggregate win; that win is now
+   known not to transfer to the executable vocabulary. Before committing
+   further hardware budget to ship `reachexec` as the pressure-death answer,
+   price the richer-descriptor CANDLIST extension (multi-switch or
+   multi-trigger-row descriptors) against how much of the missing 86% of the
+   bad-ends win it would recover — that costing is the real open question
+   this iteration surfaces, not done here.
+
+### Files (this iteration)
+
+- `reach_root.py` (`choose_reachexec`, `_tuck_branch_pick`'s new
+  `extra_filter` param — additive, default `None`, `choose_reachfull2`/
+  `choose_reachfull2t` unaffected; new selftest #6
+  `_selftest_reachexec_wiring`)
+- `translatable.py` (team-lead's file, unmodified — wrapped, not
+  re-derived; wraps `dr-mario-canonical-wt/tests/translate_ref.py`)
+- `run_reachexec_bursty.py` (new; reuses `reach_root_ab.run_arm`/`compare`
+  directly for a 3-way paired base32/reachfull2/reachexec bursty run so the
+  vs-base32 AND vs-reachfull2 McNemar comparisons share one set of games)
+- `tmp_logs/m3case2.py` (MODES-driven, automatically picked up `reachexec`;
+  its acceptance-check loop extended to include it)
+- `results/reachexec_bursty_n120.json`,
+  `results/reach_root_clean_n40_iter3_{reachfull2,reachexec}.json`

@@ -124,7 +124,7 @@ def _within_time_budget(target_row, target_col):
     return _edges_from_spawn(target_col) <= _dist_table_budget_edges(target_row)
 
 
-MODES = ("base32", "reach32", "reachfull", "reach32t", "reachfull2", "reachfull2t")
+MODES = ("base32", "reach32", "reachfull", "reach32t", "reachfull2", "reachfull2t", "reachexec")
 
 _L = {}
 
@@ -334,19 +334,26 @@ def _scored_base_candidates(fb, col, vir, ca, cb, na, nb, ws, topk2):
 
 
 def _tuck_branch_pick(fb, col, vir, ca, cb, na, nb, ws, theta, topk2,
-                      best_base_val, best_out):
+                      best_base_val, best_out, extra_filter=None):
     """The theta-gated tuck-candidate scoring loop, factored out so
     `choose_reachfull2` and `choose_reachfull2t` share ONE copy instead of
     duplicating eval arithmetic three times (a correctness risk this task
     can't afford) -- same shape as `choose_reachfull`'s own inline loop,
-    which is left untouched, not imported from here."""
+    which is left untouched, not imported from here.
+
+    `extra_filter`, if given, is an additional predicate(p) applied ON TOP
+    of the existing is_tuck+reachable filter (ITERATION 3's `reachexec`
+    passes `translatable.executable`-backed predicate here; default None
+    preserves `choose_reachfull2`/`choose_reachfull2t`'s exact prior
+    behavior -- neither caller changed by adding this parameter)."""
     L = _lazy()
     TE, g_stranded, RS, FX = L["TE"], L["g_stranded"], L["RS"], L["FX"]
     w, fl = L["w"], L["fl"]
     c1 = np.empty(L["FS"].NCELL, dtype=np.int8)
     v1 = np.empty(L["FS"].NCELL, dtype=np.int8)
     tuck_cands = [p for p in TE.enumerate(fb, ca, cb, mode="free")
-                  if p["is_tuck"] and p["reachable"]]
+                  if p["is_tuck"] and p["reachable"]
+                  and (extra_filter is None or extra_filter(p))]
     n_legal = 0
     best_val, best_pick = best_base_val, best_out
     for p in tuck_cands:
@@ -482,9 +489,50 @@ def choose_reachfull2t(fb, col, vir, ca, cb, na, nb, ws=WS, theta=THETA_FULL,
     return best_pick
 
 
+# ============================================================================
+# ITERATION 3 (REACH_ROOT_VERDICT.md "## ITERATION 3 -- EXECUTABLE SUBSET",
+# task #60): the reconciliation arm. reachfull2's tuck branch scores every
+# BFS-reachable tuck candidate as if unconditionally executable -- it isn't:
+# the real 6502 firmware only fires a tuck via a CANDLIST single-adjacent-
+# column (approach, trigger) descriptor, and tuck-bfs-6502 measured only
+# ~11% of BFS-reachable tuck candidates have one (translatable.py, wrapping
+# dr-mario-canonical-wt/tests/translate_ref.py's validated derivation, 0/1846
+# disagreements vs the real 6502 chain). `reachexec` = reachfull2 with the
+# tuck branch additionally filtered to that executable subset.
+# ============================================================================
+def choose_reachexec(fb, col, vir, ca, cb, na, nb, ws=WS, theta=THETA_FULL,
+                     topk2=TOPK2):
+    """reachfull2, with tuck-class candidates additionally filtered to the
+    REAL executable subset (translatable.executable, imported lazily below
+    so a missing dr-mario-canonical-wt checkout only breaks THIS mode, not
+    the whole module). Base branch is unchanged from reachfull2 (straight
+    drops bypass CANDLIST entirely -- translatable.py's own is_straight_drop
+    says so, and reachfull2's base branch is already reachability-filtered,
+    which is the only gate a straight drop needs)."""
+    import translatable as TL
+    cands = _scored_base_candidates(fb, col, vir, ca, cb, na, nb, ws, topk2)
+    reach_cands = [c for c in cands if c["reachable"]]
+    n_base_legal, n_reach = len(cands), len(reach_cands)
+    pool = reach_cands if reach_cands else cands
+    fallback_unreachable = not bool(reach_cands)
+
+    best = max(pool, key=lambda c: c["val"])
+    best_base_val = best["val"]
+    best_out = {"kind": "base", "action": best["action"], "val": best_base_val}
+
+    visited = TL.precompute_visited(col)
+    exec_filter = lambda p: TL.executable(col, p, visited=visited)  # noqa: E731
+    best_pick = _tuck_branch_pick(fb, col, vir, ca, cb, na, nb, ws, theta, topk2,
+                                  best_base_val, best_out, extra_filter=exec_filter)
+    best_pick["n_base_legal"] = n_base_legal
+    best_pick["n_reach"] = n_reach
+    best_pick["fallback_unreachable"] = fallback_unreachable
+    return best_pick
+
+
 CHOOSERS = {"base32": choose_base32, "reach32": choose_reach32, "reachfull": choose_reachfull,
             "reach32t": choose_reach32t, "reachfull2": choose_reachfull2,
-            "reachfull2t": choose_reachfull2t}
+            "reachfull2t": choose_reachfull2t, "reachexec": choose_reachexec}
 
 
 def choose(mode, fb, col, vir, ca, cb, na, nb, ws=WS, theta=THETA_FULL, topk2=TOPK2):
@@ -503,6 +551,8 @@ def choose(mode, fb, col, vir, ca, cb, na, nb, ws=WS, theta=THETA_FULL, topk2=TO
         return choose_reachfull2(fb, col, vir, ca, cb, na, nb, ws=ws, theta=theta, topk2=topk2)
     if mode == "reachfull2t":
         return choose_reachfull2t(fb, col, vir, ca, cb, na, nb, ws=ws, theta=theta, topk2=topk2)
+    if mode == "reachexec":
+        return choose_reachexec(fb, col, vir, ca, cb, na, nb, ws=ws, theta=theta, topk2=topk2)
     raise ValueError(f"unknown mode {mode!r}, want one of {MODES}")
 
 
@@ -726,6 +776,40 @@ def _selftest_dist_table_matches_driver():
             "table_len": PC.DIST_TABLE_LEN, "mismatches": mism, "pass": ok}
 
 
+def _selftest_reachexec_wiring(n_boards=60, seed=20260806):
+    """Wiring sanity for ITERATION 3's reconciliation arm (`reachexec`):
+    (1) whenever `reachexec` picks a tuck, `translatable.executable()`
+    independently confirms it -- catches a wrong-array or inverted-predicate
+    wiring bug (the predicate ITSELF is already validated upstream, 0/1846
+    disagreements vs the real 6502 chain -- not re-checked here); (2) the
+    tuck acceptance rate this wiring produces is in the right ballpark of
+    the team-lead's own measured ~11% (median 2/36 candidates/board)."""
+    import translatable as TL
+    L = _lazy()
+    FB, TE = L["FB"], L["TE"]
+    rnd = random.Random(seed)
+    n_tuck_total = n_tuck_accept = mismatch = checked = 0
+    for _ in range(n_boards):
+        grid = _rand_board(rnd, max_height=16, holes=True)
+        fb = FB(grid)
+        col, vir = L["RS"].board_flat_from_fb(fb)
+        ca, cb = rnd.randint(1, 3), rnd.randint(1, 3)
+        na, nb = rnd.randint(1, 3), rnd.randint(1, 3)
+        out = choose_reachexec(fb, col, vir, ca, cb, na, nb, ws=WS)
+        checked += 1
+        if out["kind"] == "tuck" and not TL.executable(col, out["placement"]):
+            mismatch += 1
+        tuck_cands = [p for p in TE.enumerate(fb, ca, cb, mode="free")
+                      if p["is_tuck"] and p["reachable"]]
+        n_tuck_total += len(tuck_cands)
+        n_tuck_accept += sum(1 for p in tuck_cands if TL.executable(col, p))
+    accept_rate = n_tuck_accept / n_tuck_total if n_tuck_total else float("nan")
+    ok = checked == n_boards and mismatch == 0
+    return {"name": "reachexec_wiring", "boards": checked, "mismatch": mismatch,
+            "n_tuck_total": n_tuck_total, "n_tuck_accept": n_tuck_accept,
+            "accept_rate": accept_rate, "pass": ok}
+
+
 def run_selftests():
     r1 = _selftest_base32_matches_shipped()
     print(f"[1] base32 vs shipped (ab47._choose_base wt=0 ws={WS}): "
@@ -752,11 +836,17 @@ def run_selftests():
               f"(DIST_DASEDGE={r5['driver_constants'][0]}, DIST_GRAVROW={r5['driver_constants'][1]}): "
               f"{r5['table_len']} entries, mismatches {len(r5['mismatches'])} "
               f"-> {'PASS' if r5['pass'] else 'FAIL'}")
-    return r1, r2, r3, r4, r5
+    r6 = _selftest_reachexec_wiring()
+    print(f"[6] reachexec wiring: {r6['boards']} boards, "
+          f"tuck accept rate {r6['accept_rate']:.1%} ({r6['n_tuck_accept']}/{r6['n_tuck_total']}), "
+          f"executable() mismatches on reachexec's own tuck picks {r6['mismatch']} "
+          f"-> {'PASS' if r6['pass'] else 'FAIL'}")
+    return r1, r2, r3, r4, r5, r6
 
 
 if __name__ == "__main__":
-    r1, r2, r3, r4, r5 = run_selftests()
-    ok = r1["pass"] and r2["pass"] and r3["pass"] and r4["pass"] and r5["pass"]
+    r1, r2, r3, r4, r5, r6 = run_selftests()
+    ok = (r1["pass"] and r2["pass"] and r3["pass"] and r4["pass"] and r5["pass"]
+          and r6["pass"])
     print("\nSELF-TEST " + ("PASS" if ok else "FAIL"))
     sys.exit(0 if ok else 1)

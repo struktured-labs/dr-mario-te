@@ -145,6 +145,24 @@
       "fallback_time": false,
       "fallback_unreachable": false
     },
+    "reachexec": {
+      "kind": "base",
+      "col": 4,
+      "orient": "V",
+      "val": 4093.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
     "base32_argmax_reachable": false
   },
   {
@@ -291,6 +309,24 @@
       "n_reach": 18,
       "n_within_budget": 18,
       "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "reachexec": {
+      "kind": "base",
+      "col": 3,
+      "orient": "H",
+      "val": 4051.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
       "fallback_unreachable": false
     },
     "base32_argmax_reachable": false
@@ -441,6 +477,24 @@
       "fallback_time": false,
       "fallback_unreachable": false
     },
+    "reachexec": {
+      "kind": "base",
+      "col": 3,
+      "orient": "H",
+      "val": 3728.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 0,
+      "hooks_needed_historical_32perEdge": 0,
+      "exceeds40_historical": false,
+      "hooks_needed_corrected_12perEdge": 0,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
     "base32_argmax_reachable": true
   },
   {
@@ -587,6 +641,24 @@
       "n_reach": 18,
       "n_within_budget": 18,
       "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "reachexec": {
+      "kind": "base",
+      "col": 1,
+      "orient": "V",
+      "val": 3524.0,
+      "reachable": true,
+      "human_family": false,
+      "edges_from_spawn": 2,
+      "hooks_needed_historical_32perEdge": 64,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 24,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
       "fallback_unreachable": false
     },
     "base32_argmax_reachable": false
@@ -737,6 +809,24 @@
       "fallback_time": false,
       "fallback_unreachable": false
     },
+    "reachexec": {
+      "kind": "base",
+      "col": 0,
+      "orient": "V",
+      "val": 3212.0,
+      "reachable": true,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": false,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
+      "fallback_unreachable": false
+    },
     "base32_argmax_reachable": true
   },
   {
@@ -883,6 +973,24 @@
       "n_reach": 18,
       "n_within_budget": 18,
       "fallback_time": false,
+      "fallback_unreachable": false
+    },
+    "reachexec": {
+      "kind": "base",
+      "col": 0,
+      "orient": "V",
+      "val": 2299.0,
+      "reachable": true,
+      "human_family": true,
+      "edges_from_spawn": 3,
+      "hooks_needed_historical_32perEdge": 96,
+      "exceeds40_historical": true,
+      "hooks_needed_corrected_12perEdge": 36,
+      "diverges_from_base32": true,
+      "n_base_legal": 24,
+      "n_reach": 18,
+      "n_within_budget": null,
+      "fallback_time": null,
       "fallback_unreachable": false
     },
     "base32_argmax_reachable": false
