@@ -162,9 +162,35 @@ partly an opponent-selection artifact rather than a spread across the named play
 exactly the kind of thing per-player separation exists to catch. **Flagged as a hypothesis worth
 testing with more footage, not asserted.**
 
+## 8a. Top-up attempt (Rob Burrito, second match window) — a genuine negative, logged honestly
+
+Tried the §9 top-up strategy on Rob Burrito first (lowest-effort target: he was already n=12,
+closest to the confidence line). Found a SECOND match window for him in the same Red Bracket
+video via nameplate localization: t≈1940-2900s, "(17) Rob Burrito" vs "(1) Packie" — this time
+Rob Burrito is on the OPPOSITE side (P1, not P2, so the per-player filter direction had to flip
+for this window; confirmed via on-screen nameplate at both t=2100 and t=2870, same pairing/crown
+tally progressing, genuinely one continuous match, not two different pairings merged by mistake).
+
+**Result: n_clears jumped 49→227 (real, substantial new data) but n_volleys stayed at 12 — window2
+contributed ZERO attributed volleys in ~960s of play.** Combined fit:
+`results/style_ensemble_v1/red_bracket_RobBurrito_topup2_sending_fit.json`. The top-up did NOT
+move Rob Burrito past LOW-CONFIDENCE.
+
+**Not a bug — likely a real limitation of the settled-cover volley detector for some matches.**
+This is the SECOND independent match (after davesmithsays/Larvae, §7) where clear activity is
+healthy but volleys are near-zero. The detector's signature is narrow by design (two columns
+exactly 4 apart must BOTH gain a new same-row cell in the same second — see `bursty_model.py`'s
+own docstring on why that specific geometry was chosen), and it may simply be low-recall for
+matches where players aren't exchanging synchronized multi-column volleys often, regardless of who
+is playing. **Flagged as a possible systematic gap in the extraction method, not a player
+attribute** — worth investigating before trusting "n=0/n=2" readings as meaningful absences of
+pressure exchange rather than instrument blind spots.
+
 ## 9. Next step
 
-Same three options as pass 2's §7, re-ranked given this pass's result:
+Same three options as pass 2's §7, re-ranked given this pass's result (and the top-up attempt
+above, which shows the top-up strategy itself is NOT reliably productive — the detector may need
+attention before more footage helps):
 1. **More footage per named player is now the clear priority** (not more separation work — that's
    done and correct). Every named player has exactly one ~5-minute match window; the same
    Red/White/Green Bracket videos likely have 2-3 more segments each for these players across
