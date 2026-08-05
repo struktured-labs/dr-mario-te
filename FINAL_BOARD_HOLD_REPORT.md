@@ -255,16 +255,75 @@ commit `484272d` via `tools/romgen.py rebuild roms/manifests/boardhold-v6b.json`
 directly, not assumed). **Not deployed** — v4 and v6 stay live on the user's SD; this build is
 for review only, per instruction.
 
+## Job 4 — default-proof manifest replay (closing Job 3's caveat)
+
+**The rule chosen:** two-tier, not a single blanket rule, because the blanket version was
+checked and found unsafe.
+
+1. **New manifests get a full flag snapshot.** `patch_cartridge_copro.py` monkeypatches
+   `os.environ.get` immediately after `import os as _os` (the one point every `DR*` lookup in
+   the file already goes through — verified this needs no call-site edits, since `os` and `_os`
+   are the same module object and even `main()`'s bare `os.environ.get("DRLEVEL", ...)` gets
+   caught). Every `DR*`-prefixed lookup's *resolved* value — the caller's override, or the
+   code's own hardcoded default — is recorded and printed as one JSON line
+   (`##DRFLAGSNAPSHOT##`) at the end of `main()`. `tools/romgen.py`'s `build` captures it into
+   the manifest as `flag_snapshot`; `rebuild` sets exactly that env when present. This makes the
+   replay self-contained — it no longer depends on "what the code currently defaults to" for
+   anything, so no future default change, on any knob, can ever move it again.
+2. **Legacy manifests (no snapshot) get a targeted ledger, not a blanket rule.** The blanket
+   version — "force every `DR*` key absent from the manifest to off" — was tried first and
+   *rejected*, not just left untested: `DRSTUDY` also defaults on for `DRHUMAN=1` and predates
+   every live manifest, so forcing it off during legacy replay would silently disable a feature
+   that was genuinely active in the original build — a second, different regression while fixing
+   the first. Instead, `NEW_KNOBS` in `tools/romgen.py` lists exactly what this task introduced
+   (`DRHOLDBOARD`, `DRHOLDBOARD_F`, `DRBUILDID`, `DRBUILDID_TAG`); only those, when absent from a
+   legacy manifest, get forced to their pre-existence value. The resolution logic was factored
+   out into `resolve_replay_flags()` specifically so it's unit-testable without running the real
+   emitter each time.
+
+One bug found and fixed in passing, not by design: `romgen.py`'s CLI dispatch (`p.parse_args();
+a.fn(a)`) had no `if __name__ == "__main__":` guard, so `import romgen` — needed to call
+`resolve_replay_flags()` directly from a test — ran argparse against the *importer's* own
+`sys.argv` and exited. Found because the new test failed at import time, not by inspection.
+
+**Test results** (`tests/test_romgen_replay.py`, all pass):
+- **A** — `pocket-human-v4-coldinit.json`, the manifest the deployed SD cards trace to, no
+  longer silently activates `DRBUILDID` on replay. Checked twice, not once: at the unit level
+  (`resolve_replay_flags` forces only the four ledger knobs and leaves `DRSTUDY` and every
+  recorded flag untouched) and end-to-end (actually running `romgen.py rebuild` as a subprocess
+  and confirming `"DRBUILDID stamp:"` is absent from its output). Independently cross-checked
+  outside the test too: the resulting md5 (`25ad1c16...`) exactly matches a from-scratch build
+  using commit `dbd15c2`'s emitter checked out into a scratch directory with the same flags —
+  legacy replay now reproduces *exactly* what the last pre-`DRHOLDBOARD`/`DRBUILDID` commit
+  would have produced. (It still can't match this manifest's *originally* recorded md5,
+  `24dcd9dc...` — that gap is Job 1's intentional garble-fix bytes, a legitimate emitter
+  evolution already covered by `romgen.py`'s existing "emitter differs from the manifest"
+  messaging, not a provenance bug, and not something in scope to undo.)
+- **B** — `boardhold-v6b.json`, rebuilt fresh under the new `flag_snapshot` format, replays
+  byte-exact. Also re-checked `boardhold-v6.json` (a `DRHOLDBOARD`-era-but-pre-`DRBUILDID`
+  legacy manifest) outside the formal test suite: it still reproduces its recorded md5 exactly,
+  confirming the ledger forces only what a given manifest is actually missing, not everything.
+- **C** — a synthetic knob (`DRFAKEKNOB`, not one of the four real ones) proves the mechanism
+  generalizes rather than only covering this task's specific knobs: a `flag_snapshot` manifest
+  is immune to a hypothetical future default flip without ever needing to know the knob's name
+  in advance; a legacy manifest is protected the identical way the real regression was closed,
+  once one ledger entry is added for it.
+
+Full existing regression suite (18 files total, including the two new ones from this task) still
+re-passes.
+
 ## Blockers
 
-None for any of the three jobs — all are code-complete, tested two-sided at the RAM/OAM/PPU-
+None for any of the four jobs — all are code-complete, tested two-sided at the RAM/OAM/PPU-
 write level (the only level reachable without a mapper-100-capable emulator; Mesen cannot run
 this cart, per project notes, though it WAS used read-only for real-ROM font/overwrite/garble
 evidence gathering on the base ROM), and committed. Not done, and explicitly out of scope per the
-task: a real Mesen/MiSTer visual confirmation of any of the three fixes on the actual mapper-100
-cart (no hardware access was authorized for this task), and no A/B of Job 2's ~40% active-play
-cost against real hardware timing — flagged in that section as the one place a smarter
-implementation (page-alternating mirror) is available if the current cost turns out to matter in
-practice. Job 3's reproducibility caveat (pre-existing human-profile manifests no longer replay
-byte-exact without an explicit `DRBUILDID=0`) is stated above, not a blocker but worth the
-reviewer's attention given the deployed SD traces to exactly one of those manifests.
+task: a real Mesen/MiSTer visual confirmation of any of the three cart-side fixes on the actual
+mapper-100 cart (no hardware access was authorized for this task), and no A/B of Job 2's ~40%
+active-play cost against real hardware timing — flagged in that section as the one place a
+smarter implementation (page-alternating mirror) is available if the current cost turns out to
+matter in practice. Job 3's reproducibility caveat is now closed by Job 4: `pocket-human-v4-
+coldinit.json` (the manifest the deployed SD cards trace to) once again replays without
+`DRBUILDID` silently activating, verified both at the unit level and end-to-end. My lane is
+complete; the branch is pushed and awaits review for the `driver-nav` merge. Whether/when to
+deploy `v6b` to the SD stays a user decision, unchanged from Job 3.
