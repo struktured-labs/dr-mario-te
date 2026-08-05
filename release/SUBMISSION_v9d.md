@@ -25,8 +25,11 @@ published v6.
 
 Two additions to Dr. Mario (USA):
 
-**VS CPU** — a third menu option (1 PLAYER → 2 PLAYER → VS CPU) where Player 2 is played by
-a heuristic AI with a human-like move cadence.
+**VS CPU** — press SELECT on the title screen until the heart sits on 2 PLAYER GAME, then
+SELECT once more to arm CPU control of Player 2 (the level-select screen pins both players
+together when armed — that's the confirmation). Player 2 is then played by a heuristic AI
+with a human-like move cadence. No separate menu line yet; a visible "VS CPU" label is
+planned.
 
 **Study Mode** — pressing START freezes the game *with the screen still drawn*, instead of
 the vanilla blank "PAUSE". The bottle, every virus, the falling capsule, the next-pill

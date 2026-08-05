@@ -38,8 +38,12 @@ defects v6 shipped with. If you are running v6, this is a recommended upgrade.
 
 ## Features
 
-- **VS CPU mode** — a 3rd menu option (1 PLAYER → 2 PLAYER → VS CPU) where Player 2 is
-  driven by a heuristic AI, with a human-like move cadence.
+- **VS CPU mode** — press SELECT on the title screen until the heart sits on
+  2 PLAYER GAME, then press SELECT once more to arm CPU control of Player 2
+  (the level-select screen pins both players' level/speed together when armed —
+  that is your confirmation). Player 2 is then driven by a heuristic AI with a
+  human-like move cadence. There is no separate menu line yet; a visible
+  "VS CPU" label is planned.
 - **Study Mode pause** — pressing START during play freezes the game while keeping the
   screen rendered, so positions can be studied:
   - "STUDY" text at the top of the screen instead of "PAUSE"
