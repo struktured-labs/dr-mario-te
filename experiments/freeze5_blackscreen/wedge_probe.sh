@@ -58,21 +58,18 @@ BUSY_FRAC_PCT=85        # sustained CPU-time >= 85% of one core over the interva
 CLK_TCK=$(getconf CLK_TCK 2>/dev/null); CLK_TCK=${CLK_TCK:-100}   # confirmed 100 on this device; fall back if getconf is absent
 MIN_REBOOT_GAP=1800     # 30 min between auto-reboots (bounds); a second trigger inside the window escalates instead
 
-# RE-ENABLED 2026-08-05T22:2xZ after a brief, mistaken disable. I initially read the three
-# 2026-08-05 auto-reboots (11:59:15Z/12:29:35Z/13:02:26Z) as false positives from a coarse
-# side-by-side of fw_state/load/memfree against CAPTURE #1. That comparison was too weak to
-# support the conclusion: WEDGE_PROBE.md's own "AUTO-RECOVERY FIRING #1" section has the
-# stronger evidence (wchan=0 + EMPTY /proc/<pid>/stack + State=R + nonvoluntary>>voluntary
-# ctxt switches at the moment of firing -- consistent with a genuine non-blocking userspace
-# spin), and the follow-on controlled experiment (ruling out the team's own IPC traffic) plus
-# the idle-at-menu control (zero triggers over 9h19m with no core loaded) both support "this is
-# a real, intrinsic wedge under active CvC play," not a healthy-play false positive. An A/B
-# experiment (arm 1, pre-strand20 shipped core) was already in flight when I nearly shipped the
-# disable -- its readout depends on AUTO_REBOOT firing, so leaving it off would have silently
-# blinded that experiment to a real wedge. Left ON. The two independent bugs this incident did
-# surface for real (FW_PID regex blind spot on bare argv, and the missing self-cleanup-on-start)
-# are fixed below regardless of this reversal. See WEDGE_PROBE.md "AUTO-RECOVERY POST-MORTEM".
-ENABLE_AUTO_REBOOT=1
+# TEMPORARILY DISABLED 2026-08-05 ~22:4xZ, DELIBERATELY, per team-lead's explicit request --
+# distinct from the earlier mistaken disable (full account in WEDGE_PROBE.md "AUTO-RECOVERY
+# POST-MORTEM"). The vanilla-core discriminator arm (stock NES_20240408 + an ordinary ROM, no
+# copro/cart-family code involved, loaded 22:41:18Z as AB_vanilla_test.mgl) needs to be able to
+# report ALL of its trigger events, not just the first one, so the measurement isn't cut off by
+# a reboot partway through. ALERT_ONLY logging (this file's existing behavior when the flag is
+# 0) is exactly what's wanted for this window. RE-ENABLE after this arm reads out (~60 min from
+# load, i.e. ~23:41Z) -- do not leave this off longer than that without another explicit reason;
+# every prior window this session showed the discriminator correctly needs reboot authority to
+# do its job. Log clearly (as this file already does via ALERT_ONLY vs AUTO_REBOOT lines) which
+# mode was live for which time window, since WEDGE_PROBE.md analysis depends on knowing that.
+ENABLE_AUTO_REBOOT=0
 
 CONSEC=0
 

@@ -381,3 +381,35 @@ team wants running next. Requires the device to be reachable and
 `wedge_probe.sh` already running (checks both before deploying anything);
 has not been executed yet since it needs the same SSH-mutation permission
 this session is currently blocked on.
+
+## ★★★ VANILLA DISCRIMINATOR (2026-08-05 22:41-22:48Z): FRAMEWORK EXONERATED
+
+Stock MiSTer core NES_20240408.rbf + a commercial ROM (Battletoads), none
+of our RTL, no copro, no cart of ours, loaded 22:41:18Z on a freshly
+rebooted box.
+
+**RESULT: NO WEDGE.** At 22:47:47Z (6m29s after load — past the 6m15s at
+which the pre-strand20 copro core died) the screenshot service returned a
+NORMAL 8KB FRAME (the Battletoads intro, vanilla_t6min.png). The display
+path is ALIVE. ALERT_ONLY count did tick to 4, i.e. the probe's
+consec/busy_frac heuristic FIRES ON HEALTHY VANILLA PLAY TOO — so that
+detector alone cannot distinguish wedged from busy; the SCREENSHOT-PATH
+test is the ground truth, as used for the arm-1 verdict.
+
+**Consequences (the hypothesis space is now cut in half):**
+- The MiSTer framework/firmware on this box is EXONERATED — it renders
+  fine indefinitely under a stock core. No pinned-firmware workaround
+  needed for Sept 12.
+- Both COPRO cores (s20b AND pre-strand20 71d2de37) wedge; vanilla does
+  not ⇒ **the fault is in OUR core family** — the shared copro/mapper-100
+  RTL, or the CvC probe cart's driver behaviour (an autonav/driver busy
+  pattern that starves the framework), NOT the strand20/CMD-8 brain work
+  (already exonerated by arm 1).
+- Elevated load (2-4) and slow memfree drift appear on VANILLA too ⇒ those
+  are NOT wedge predictors either. Only the dead display path is.
+
+**Next isolation step (cheap, splits the last two):** run the copro core
+with a NON-CvC cart (a plain human-play cart, no autonav/driver loop) for
+30 min. Survives ⇒ the driver's CvC busy pattern is the trigger (fixable
+in the driver — DRSTALLWD/pacing). Wedges ⇒ the copro RTL itself is the
+trigger (mapper-100/bridge interaction — RTL work).
