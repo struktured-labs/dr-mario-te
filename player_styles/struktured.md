@@ -251,3 +251,10 @@ phase (fixed compute latency, panic-immune) — the AI's real edge vs humans
 is late-game; the player's winning line is closing early. Film review queued:
 m3 suicide autopsy, m1 verdict, rotation-slip count, latency distribution,
 speed-phase quality curve, strand20 style confirmation.
+
+**Self-report 4: OVER-SETUP tendency** (elaborate multi-clear construction
+over simple takes — consistent with the optimizer/latency profile).
+**METHOD COMMITMENT (user-requested): the film review is BLIND-FIRST** —
+conclusions drawn from footage before consulting commentary; the four
+self-reports are hypotheses to test, not priors. Divergences between
+self-perception and tape are first-class findings.
