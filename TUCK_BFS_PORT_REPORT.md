@@ -542,3 +542,88 @@ py65's RTL-engine emulation):
    output arrays only) — confirmed genuinely unnecessary for this path specifically, since
    `tuck_cell_prep` re-derives colour from `S_CA`/`S_CB` directly, independent of anything
    `tuck_bfs` emits.
+
+## 9. Closing items: import-order fix (done) + positive-path trajectory proof (in flight)
+
+### 9.1 The `eh_terms_scan` import-order KeyError — structural fix, not another dodge
+
+Root cause (traced via `Asm6502.label` call-sequence comparison between a working and a
+broken import order, which are identical except the broken one is missing exactly one
+`eh_terms_scan` label call): `test_vrdy.py` and `test_readiness_ext.py` each do an
+**unconditional** `sys.path.insert(0, "/home/struktured/projects/dr-mario-mods" + ...)`,
+not gated on "already present". `build_copro_d3.py`'s own source imports them (via
+`import test_vrdy, test_readiness_ext`) **before** `import test_search_d3 as D3` — so if
+those two modules load first, Python resolves the *next* `import test_search_d3` against
+whatever `sys.path` now points at first, and the `dr-mario-mods` sibling worktree's own
+(genuinely different, `study-pause`-branch, missing-that-label) copy of `test_search_d3.py`
+silently wins. No error at the import site — the failure surfaces later and confusingly, as
+`KeyError: 'eh_terms_scan'` deep inside `build_image()`. Confirmed by printing
+`test_search_d3.__file__` in the broken scenario: it resolves to the stale sibling.
+
+**Fix** (`fpga/copro/build_copro_d3.py`, inserted immediately after the module's own
+`sys.path.insert(...)` lines, before anything else is imported): a self-healing guard that
+force-registers the correct `tests/test_search_d3.py` into `sys.modules["test_search_d3"]`
+via `importlib.util.spec_from_file_location` if that slot is either **empty** or
+**specifically holds the known-stale sibling** (checked via `__file__`). This is the
+`dbg_build.py`-style force-preload pattern already established in this codebase for exactly
+this class of problem, moved into the library itself so every entry point inherits it —
+not a new one-off workaround, and it doesn't touch `dbg_build.py`'s own separate override
+(different `__file__`, never matches the "stale sibling" condition). A second assertion
+right after the ordinary `import test_search_d3 as D3` line makes any future regression fail
+loudly instead of silently: `assert "dr-mario-mods/" not in D3.__file__`.
+
+**Regression test** (`tests/test_import_order_guard.py`, subprocess-isolated so no
+`sys.modules` state leaks in from the test process itself):
+- **Scenario 1** — `build_copro_d3.py`'s own internal bad order (the literal reported bug,
+  entirely inside its own module body). `build_image()` now succeeds.
+- **Scenario 2** — the broader case: some *other* code imports `test_vrdy`/
+  `test_readiness_ext` **before** `build_copro_d3` is ever imported (pollution the guard
+  didn't cause but must still recover from). `build_image()` now succeeds.
+
+Both scenarios assert not just "didn't crash" but the exact **known-good knob-off hash**
+(`753bfb2397d10b5de078a1c9068433d2`). Result: **both PASS**.
+```
+[scenario1_internal_bad_order] returncode=0 ok=True
+[scenario2_external_pollution_before_import] returncode=0 ok=True
+PASS
+```
+
+**Byte-reproduction of the baseline hashes, re-confirmed after the fix landed:**
+- `753bfb2397d10b5de078a1c9068433d2` (knob-off `build_image()` image) — a fresh git-stash
+  round-trip on `build_copro_d3.py` (fix out, then fix back in) gives this **exact same
+  hash both ways**, in a clean process with the normal (non-polluted) import order. The fix
+  changes import *robustness* only, not output.
+- `c87e60a1` (the historical `copro_rom.hex` recipe hash) — **not reproduced**, but this is
+  a **pre-existing, already-documented, unrelated gap**: `provenance.py`'s own docstring
+  explicitly records `copro_rom.hex` (`c87e60a1`) as an "ORPHAN" that none of
+  `dbg_build.py`'s five current modes reproduce, predating this session's work entirely.
+  What *is* directly checked here instead: `dbg_build.py`'s own "all-0" mode hash
+  (`c8d010507c78249b7235e567368d6d46`, computed in memory, never writing `copro_rom.hex`)
+  is identical before/after the fix via the same git-stash round-trip. That is the
+  methodologically sound claim available — the fix doesn't perturb what `dbg_build.py`
+  currently produces, whatever its relationship to the orphaned `c87e60a1` recipe turns out
+  to be.
+
+### 9.2 Positive-path trajectory proof — status
+
+`tests/trajectory_fire_proof.py` drives a full real-L11 game (`FaithfulDrMarioEnv` +
+`NesPillSource`, up to 300 pills) decision-by-decision through the **actual wired
+firmware** — a fresh `build_image()` + py65 stub-flow `reset→DONE` per decision, exactly
+like the shipped driver would invoke it — rather than a Python mirror model. On a tuck
+win (`TUCK_COL != 0xFF`), it cross-checks the winning `(S_BEST_C, S_BEST_O)` against the
+`CANDLIST` entry it must correspond to (via the `O4_TABLE` orientation map), asserts the
+published `(TUCK_COL, TUCK_ROW)` equals that entry's own `(approach, trigger)`, applies the
+placement directly to the real board at `(target, rest, orient)`, and asserts the two
+target cells were actually empty on the real board before writing them — i.e. it proves the
+descriptor that got published is the SAME decision that fired, not merely "a" tuck.
+
+Four games launched under per-game subprocess isolation (this branch's own
+`validate_tuckbfs_wiring_corpus.py` anomaly note is why — never loop boards/games in one
+process): `DRCOPRO_TUCKBFS=1` (arm `bfs`) on seeds 0 and 1, `DRCOPRO_TUCKV3=1` (arm `v3`,
+the fire-rate control) on the same two seeds. Each decision costs ~6s of py65 stepping, so
+a full 300-pill game is a ~30-minute run; results were still in flight when this section was
+last edited — **see the follow-up commit on this branch for the completed fire counts,
+per-game breakdown, and the descriptor/placement assertion results.** If those come back
+showing 3 full games with zero fires on the `bfs` arm, the investigation step specified by
+the task (compare against the `v3` control on the same seeds; re-check the `build_image`
+import-order dodge) will be carried out before that follow-up is reported, not glossed over.

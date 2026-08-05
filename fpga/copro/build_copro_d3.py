@@ -13,6 +13,65 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(ROOT, "tests")); sys.path.insert(0, ROOT)
+
+# ---- IMPORT-ORDER GUARD (root-caused 2026-08-05, task #17) -----------------------
+# test_vrdy.py and test_readiness_ext.py each unconditionally `sys.path.insert(0, ...)`
+# a HARDCODED sibling worktree ("/home/struktured/projects/dr-mario-mods"), not
+# gated on "already present" the way this file's own inserts are effectively gated
+# by running first. If anything below imports them (directly or transitively)
+# BEFORE `import test_search_d3`, that worktree's copy -- which can be on a
+# different branch and genuinely stale -- silently wins the name resolution instead
+# of THIS tree's tests/test_search_d3.py, because Python only resolves a module by
+# path on its FIRST import; whichever sys.path entry is first at that moment wins,
+# silently, with no error. Traced via a `Asm6502.label` call-sequence diff between a
+# working and a broken import order: identical up to one line, where the broken run
+# silently skips emitting the "eh_terms_scan" label (added on this tree's branch,
+# absent from dr-mario-mods' study-pause-branch copy) -- confirmed by printing
+# `test_search_d3.__file__` in the broken scenario: it resolved to dr-mario-mods,
+# not this file's own tests/. See TUCK_BFS_PORT_REPORT.md for the day's fuller
+# investigation log (the original bug report + workaround before this fix).
+#
+# FIX: force-register the CORRECT test_search_d3 (this tree's own tests/) into
+# sys.modules before anything else has a chance to import it under a polluted
+# path -- the same force-preload dbg_build.py already uses for its own (deliberate,
+# delta-emitter) override, just moved into the library so every entry point
+# inherits the protection instead of needing to know about this trap.
+#
+# Guard condition is "absent OR specifically the known-stale sibling", not just
+# "absent" -- a plain "not in sys.modules" only protects THIS file's own internal
+# import order (test_vrdy/test_readiness_ext are imported below, by this file,
+# AFTER this guard runs, so a bare presence check would suffice for that). But the
+# same trap can also be sprung by code OUTSIDE this file that imports test_vrdy/
+# test_readiness_ext (or anything else that pollutes sys.path the same way) before
+# ever importing build_copro_d3 -- in that case "test_search_d3" is ALREADY in
+# sys.modules by the time this guard runs, just pointing at the wrong file, and a
+# bare presence check would wrongly treat that as "already claimed, leave it
+# alone". Detecting the SPECIFIC known-bad path and re-registering over it handles
+# both cases while still never touching a genuinely different, deliberate override
+# (dbg_build.py's own incr-delta emitter has a different __file__ entirely, so it
+# never matches this condition and is left untouched).
+#
+# LIMIT: this can only fix module-registry resolution from this point forward. A
+# caller that already did its own `import test_search_d3 as D3` (or `from
+# test_search_d3 import X`) before ever importing build_copro_d3 has already bound
+# ITS OWN name to whatever was cached at that moment -- re-registering the sys.
+# modules entry here cannot retroactively fix a reference the caller already holds.
+# That is a different, narrower failure mode than the one this guard closes (this
+# file's own internal resolution, and any OTHER code's later resolution of the
+# name), and is inherent to how Python's import cache works, not fixable from a
+# library's own import block.
+_bad_cached = ("test_search_d3" in sys.modules
+               and "dr-mario-mods/" in getattr(sys.modules["test_search_d3"], "__file__", ""))
+if "test_search_d3" not in sys.modules or _bad_cached:
+    import importlib.util as _ilu
+    _spec = _ilu.spec_from_file_location(
+        "test_search_d3", os.path.join(ROOT, "tests", "test_search_d3.py"))
+    _mod = _ilu.module_from_spec(_spec)
+    sys.modules["test_search_d3"] = _mod
+    _spec.loader.exec_module(_mod)
+    del _ilu, _spec, _mod
+del _bad_cached
+
 import patch_vs_cpu
 patch_vs_cpu.OPS.setdefault("SEI", 0x78)
 patch_vs_cpu.OPS.setdefault("TXS", 0x9A)
@@ -20,6 +79,9 @@ from patch_vs_cpu import Asm6502
 from py65_harness import Cpu
 import test_vrdy, test_readiness_ext
 import test_search_d3 as D3
+assert "dr-mario-mods/" not in D3.__file__, (
+    f"test_search_d3 resolved to the known-stale sibling worktree: {D3.__file__} "
+    "-- the import-order guard above should have prevented this; see its comment")
 from test_search_d3 import (THIRD, PILLA, PILLB, D_BC, D_BO, make_fewlegal)
 from test_depth2 import S_CA, S_CB, S_NA, S_NB, S_BEST_C, S_BEST_O
 import primitives as P
