@@ -8,9 +8,30 @@
 Not applicable yet. roburrito has never played the Combo Stomper; the only material we
 have is a single tournament photo unrelated to our AI.
 
-## Observed style (n=0 — no board data)
+## Observed style — board data now exists (footage-observed, 2026-08-05)
 
-None. The one photo we have (`evidence/roburrito_drmc_philadelphia_2026.jpg`) is a
+**Updates the n=0/photo-only status below.** *Attribution: HIGH confidence — on-screen nameplate
+"(17) Rob Burrito" matches the Red Bracket's own `.description` roster line ("17 - Rob Burrito")
+exactly.* Footage:
+`youtube-drmc-official-2024/003_20241113_wgiLIw19TFA_THE_2024_DrMC_Championship_-_Red_Bracket.mp4`,
+t≈350-650s, top-pair slot of the 4-way-split broadcast, vs. Jenny G (seed 48). Located by
+pixel-diff matching the pre-existing reference frame `captions/hud_frame_2024_Red_Championship.png`
+against every extracted 1fps frame (best match at t=500s, mean abs pixel diff 6.05/255). Part of
+the style-ensemble program (`eval47/STYLE_ENSEMBLE_V1.md`), not the standard metric battery
+(declined-clear rate, rotation/lateral correction, latency, endgame seal — still not run).
+
+**Fit confidence LOW** (n=18 volleys, just under the n=20 confidence line). **Match-pooled**
+(events summed with Jenny G's, not separated by sender/receiver — see the style-ensemble report
+for why per-player separation isn't done yet): volley size mean 2.44 cells [2.06, 2.89] — close to
+struktured's reference session (2.54) — but both counter-volley follow-through rates run
+markedly lower than struktured's: P(volley|clear 4-6)=21.9% (n=73) vs struktured's 32.1%;
+P(volley|clear 7-10)=25.0% (n=12) vs struktured's 74.1%. Directionally: similar typical volley
+scale to struktured's session, but this match returned pressure less reflexively. Not resolved
+whether that's Rob Burrito's trait, Jenny G's, or the pairing's.
+
+### Prior state (photo-only, kept for context)
+
+None beyond the photo. The one photo we have (`evidence/roburrito_drmc_philadelphia_2026.jpg`) is a
 close-up on hands and a wired NES-style controller, resting in the player's lap — no
 playfield, no virus counter, no STUDY/pause screen, nothing to read. The only thing
 visible is grip: two-handed hold, right-hand index/middle fingers pre-staged over both A

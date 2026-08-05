@@ -25,14 +25,32 @@ One recording exists, and it is the best expert-move material we own:
   2026-08-04 vision/tracker stack (built for clean capture-card footage) is
   NOT expected to work on it without a perspective-rectification front end.
 
-## Style (n=0 processed — nothing extracted yet)
+## Style (footage-observed, 2026-08-05 — bursty pressure fit only, not the full metric battery)
 
-Nothing measured. The manifest's own note frames the value: "bidwell side =
-expert-move data; struktured side = personal baseline for agreement-scoring
-contrast." When the footage (or any future clean recording of bidwell) is
-processed, compute the standard metric battery per the standing rule:
-declined-clear rate, rotation/lateral correction classes, latency split,
-endgame seal ledger — every metric with its own control.
+**Supersedes the note above that the only footage is the never-publish TMG handheld clip.**
+Broadcast footage of Bidwell exists and is usable: the 2024 DrMC Championship archived every
+bracket on YouTube, and Bidwell competed in the White Bracket under his in-game alias.
+
+*Attribution: HIGH confidence — on-screen nameplate "(19) Robert Smith" cross-referenced against
+the White Bracket's own `.description` roster line "19 - Chris Bidwell (as Robert Smith)", which
+explicitly names the alias.* Footage:
+`youtube-drmc-official-2024/009_20241119_B3-PEE6P23Q_THE_2024_DrMC_Championship_-_White_Bracket.mp4`,
+t≈200-480s, top-pair slot of the 4-way-split broadcast, vs. Missy (seed 46). Part of the
+style-ensemble program (`eval47/STYLE_ENSEMBLE_V1.md`), not the standard metric battery (still
+n=0/not run — the handheld TMG clip remains the only material for that, and remains hard-mode for
+vision per its own manifest note).
+
+**Fit confidence LOW** (n=13 volleys, below the n=20 confidence line — report, don't treat as
+settled). **Match-pooled**, same caveat as Jarsdad's entry above (events summed with Missy's, not
+separated):
+- inter-volley gap 31.5s [17.5, 46.5] — the SLOWEST of every match fit in the ensemble so far
+  (vs. struktured's 22.7s, Jarsdad's match's 16.4s)
+- volley size mean 2.31 cells [2.00, 2.69] — smallest mean in the ensemble
+- P(counter-volley within 5s | clear 4-6 cells) = 33.3% (n=57), close to struktured's 32.1%;
+  P(... | clear 7-10 cells) = 33.3% but n=3 — too thin to read anything into
+
+Directionally the slowest-tempo match fit in the ensemble so far. Same per-player caveat as
+Jarsdad's: not resolved whether this is Bidwell's tempo, Missy's, or the pairing's.
 
 ## Why he matters to the project
 
