@@ -151,3 +151,25 @@ site needs userspace visibility — `perf top -p <pid>` / repeated
 installable on this image. Since the process is in userspace, the MiSTer
 framework's own source (main loop, user_io poll) is the place to look; a
 core-side signal that never asserts would present exactly this way.
+
+## CONTROLLED EXPERIMENT (2026-08-05 12:45Z): is OUR OWN IPC inducing it?
+
+Wedge cadence collapsed today: AUTO_REBOOTs at 11:59 and 12:29 (~30 min
+apart), vs ~28 h clean overnight. What changed is OUR traffic, not the
+core: the duel tracker writes /dev/MiSTer_cmd every 180 s (save-state ring
+capture), plus screenshots (misterclaw :9900), plus a 2 h preventive
+reload — and the wedge is a USERSPACE spin in the framework, i.e. exactly
+the process that services that IPC.
+
+EXPERIMENT: from 12:45Z the tracker AND the preventive-reload loop are
+STOPPED; the core runs the duel with the wedge probe as the only observer
+(read-only /proc + dmesg, no IPC writes). Read the result off
+wedge_probe.log's AUTO_REBOOT lines:
+- No wedge for >2 h ⇒ our save-state/screenshot IPC is implicated as the
+  trigger. Consequences: (a) the Sept-12 booth is SAFE (no such traffic in
+  human play), (b) the soak rig needs a gentler capture cadence or an
+  IPC-free capture path, (c) the "28 h then hourly" overnight pattern is
+  explained by load, not accumulation.
+- Wedge anyway ⇒ our traffic is exonerated; the spin is intrinsic to
+  core+framework and stays a launch-blocking risk to fix before the booth.
+Restart both loops after the verdict either way.
