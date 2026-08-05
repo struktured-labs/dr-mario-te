@@ -104,3 +104,25 @@ This instrument observes; it does not yet act (no auto-recovery, no alert/notifi
 "design the instrument... capture what died" — implemented and deployed. A follow-up decision
 (alerting, or an auto-reboot-on-confirmed-wedge policy) is a separate call for the team once real
 wedge data comes back, not made unilaterally here.
+
+## CAPTURE #1 (2026-08-05 11:42Z, first instrumented black-screen)
+
+The probe caught the wedge live (capture1_20260805_1142.log). Findings:
+- Framework process ALIVE: fw_state=R (running), 2 threads, /dev/MiSTer_cmd
+  present+writable — the ARM process did NOT die.
+- NO memory leak: memfree ~322MB, stable across every poll.
+- NO kernel events: dmesg stream empty through the wedge.
+- THE SIGNATURE: fw_state=R at EVERY 30s poll with load pinned ≈1.0 — a
+  healthy framework sleeps (S) between frames; this one busy-spins,
+  consistent with a poll loop on the HPS↔FPGA bridge that never completes.
+  The display/save-state/screenshot paths all die together because they all
+  cross that bridge.
+- Onset ~97 min after a FRESH full reboot ⇒ long-uptime accumulation is NOT
+  required; the earlier 28h-clean stretch was likely coincidence or
+  load-pattern-dependent.
+Next instrument iteration (when needed): sample the framework's
+/proc/<pid>/wchan + userspace stack (or strace -p for a few seconds) at
+wedge time to name the exact spin site; capture FPGA bridge register state
+if accessible. Remedy direction: watchdog that detects sustained fw_state=R
++ dead video and auto-reboots (bounded), pending a real fix in
+core/framework interaction.
