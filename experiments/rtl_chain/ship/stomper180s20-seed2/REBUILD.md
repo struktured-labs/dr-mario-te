@@ -97,3 +97,14 @@ snapshot ring + core watchdog remain the named instruments).
 4,43,23), recovered by menu cycle. Rate: 6 in ~32h. Tally: mid-play 4,
 black-screen 2. The soak has done its job — the freeze-rate curve is
 measured; remedies land with the next silicon session.**
+
+**s20b freeze #7 (2026-08-05 ~04:5x): BLACK-SCREEN #3** (1KB blank shot
+wedge7_0457, STALE x5; recovered clean, post_recovery5 8KB). Tally: 7 in
+~34h — mid-play 4, black-screen 3, and ALL THREE black-screens fell in the
+last ~4 hours of continuous soak vs zero in the first ~28. The
+uptime-correlated-leak hypothesis is now the black-screen family's leading
+theory; the menu.rbf cycle (full core reload) resets whatever accumulates.
+Manifest instrument (pre-death RAM snapshot ring / watchdog) should
+capture uptime + a heap/pointer-region checksum series to catch the leak
+growing. Consider a scheduled preventive core reload every ~2h on soak
+rigs until fixed.
