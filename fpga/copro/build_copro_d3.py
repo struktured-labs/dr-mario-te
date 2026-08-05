@@ -34,6 +34,15 @@ DONE = 0x61FF
 EMIT_TUCK = os.environ.get("DRCOPRO_TUCK", "0") == "1"
 TUCK_ROM = 0xA800            # free: search ends ~$88E1, SQ tables start $B000
 TUCK_COL, TUCK_ROW = 0x6139, 0x613A
+# DRCOPRO_TUCKV3=1: task #17 stage-2 firmware integration -- generalised root-action tucks
+# (multi-candidate/both-orientation enumeration, full depth-3 scoring via slot-0 injection,
+# theta=150 gate, EH_PLY1 required). Alternative to v1's EMIT_TUCK (same TUCK_COL/TUCK_ROW
+# mailbox, same driver-side executor consumes either), not simultaneous -- asserted below.
+# Default OFF keeps this builder's output byte-identical (including with EMIT_TUCK=1 --
+# v3 being off must not perturb v1's existing wiring at all).
+EMIT_TUCK_V3 = os.environ.get("DRCOPRO_TUCKV3", "0") == "1"
+assert not (EMIT_TUCK and EMIT_TUCK_V3), "EMIT_TUCK (v1) and EMIT_TUCK_V3 are alternatives"
+TUCK_V3_ROM = 0x9000          # well clear of search-end (~$88E1) and v1's TUCK_ROM ($A800)
 SQ_ROM, PILL_ROM = 0xB000, 0xB030
 MAX_STEPS = 3_000_000_000
 
@@ -43,6 +52,9 @@ def build_image(board, cA, cB, nA, nB):
     D3.USE_ENGINE = True         # full BoardEngine: land/resolve/leaf/copies in RTL
     D3.DISC = True               # temporal discount d=0.5 (dual-end fix, +14% solo efficiency)
     D3.EH_PLY1 = True            # ply-1 excav+hang firmware add-on (eh_terms -> D_AD)
+    # #47 stranded-half root cost (env DRSTRAND, default 0 = byte-identical firmware;
+    # dose 20 = the mirror+VS-gated config, see eval47/SILICON_PLAN.md).
+    D3.DRSTRAND = int(os.environ.get("DRSTRAND", "0"))
     import nes_d3_golden as _G
     _G.DISC_SHIFT = 1            # golden must match for the py65 gate
     _G.EXCAV_HANG_PLY1 = True    # golden must match for the py65 gate
@@ -75,6 +87,48 @@ def build_image(board, cA, cB, nA, nB):
         assert TUCK_ROM + len(tuck_code) <= SQ_ROM, "tuck_scan overruns the SQ tables"
         assert 0x8000 + len(code) <= TUCK_ROM, "search overruns tuck_scan"
 
+    tuck_v3_code = b""
+    tuck_v3_ep = None
+    if EMIT_TUCK_V3:
+        import tuck_v3 as TV
+        resolve_capped_addr = 0x8000 + labels["resolve_capped"]
+        expectimax_addr = 0x8000 + labels["expectimax"]
+        eh_terms_scan_addr = 0x8000 + labels["eh_terms_scan"]
+        cp_live_cur_addr = 0x8000 + labels["cp_live_cur"]
+        tv = Asm6502(TUCK_V3_ROM)
+        TV.emit_tuck_scan_v3(tv, live=0x0500)
+        TV.emit_land_place_at(tv, board=TV.CUR)
+        TV.emit_tuck_cell_prep(tv, s_ca=S_CA, s_cb=S_CB)
+        TV.emit_tuck_imm1(tv)
+        TV.emit_tuck_slot0_inject(tv, eh_terms_scan_addr, D3.D_L1L, D3.D_L1H, board=TV.CUR)
+        TV.emit_tuck_ply2_score(
+            tv, D_C2=D3.D_C2, D_O2=D3.D_O2, D_TKC=D3.D_TKC, D_J=D3.D_J,
+            D_MKL=D3.D_MKL, D_MKH=D3.D_MKH, D_MI=D3.D_MI, D_B2L=D3.D_B2L, D_B2H=D3.D_B2H,
+            D_I1L=D3.D_I1L, D_I1H=D3.D_I1H, D_I2L=D3.D_I2L, D_I2H=D3.D_I2H,
+            D_L1L=D3.D_L1L, D_L1H=D3.D_L1H, D_V1L=D3.D_V1L, D_V1H=D3.D_V1H,
+            D_V3L=D3.D_V3L, D_V3H=D3.D_V3H, D_EL=D3.D_EL, D_EH=D3.D_EH,
+            D_ADL=D3.D_ADL, D_ADH=D3.D_ADH, S_NA=S_NA, S_NB=S_NB,
+            TK_KL=D3.TK_KL, TK_KH=D3.TK_KH, TK_O=D3.TK_O, TK_C=D3.TK_C,
+            TK_IL=D3.TK_IL, TK_IH=D3.TK_IH, WIN=D3.WIN, DISC=D3.DISC,
+            expectimax_addr=expectimax_addr,
+        )
+        TV.emit_tuck_root_extension(
+            tv, D_BVL=D3.D_BVL, D_BVH=D3.D_BVH, D_BC=D_BC, D_BO=D_BO,
+            S_BEST_C=S_BEST_C, S_BEST_O=S_BEST_O,
+            D_V1L=D3.D_V1L, D_V1H=D3.D_V1H, D_I1L=D3.D_I1L, D_I1H=D3.D_I1H,
+            resolve_capped_addr=resolve_capped_addr,
+            cp_live_cur_addr=cp_live_cur_addr,
+        )
+        tv.label("tuck_v3")
+        tv.jsr("tuck_scan_v3")
+        tv.jsr("tuck_root_extension")
+        tv.ins("RTS")
+        tuck_v3_code = tv.assemble()
+        tuck_v3_ep = TUCK_V3_ROM + tv.labels["tuck_v3"]
+        assert TUCK_V3_ROM + len(tuck_v3_code) <= 0xA800, \
+            f"tuck_v3 overruns the free ROM window before $A800 ({len(tuck_v3_code)}B)"
+        assert 0x8000 + len(code) <= TUCK_V3_ROM, "search overruns tuck_v3"
+
     stub = Asm6502(STUB)
     stub.ins("SEI"); stub.ins("CLD")
     stub.ins("LDX_imm", 0xFF); stub.ins("TXS")
@@ -82,7 +136,7 @@ def build_image(board, cA, cB, nA, nB):
     stub.label("cp2")
     stub.ins16("LDA_absX", PILL_ROM); stub.ins16("STA_absX", PILLA)
     stub.ins("DEX"); stub.br("BPL", "cp2")
-    if EMIT_TUCK:
+    if EMIT_TUCK or EMIT_TUCK_V3:
         # descriptor defaults BEFORE the search: wiring $5087/$5088 in CoproDrMario turned
         # them from a scratch alias into real copro RAM, so an uninitialised pair would make
         # a DRTUCK=1 driver steer to a random column. Gated so the SHIPPED firmware stays
@@ -92,6 +146,8 @@ def build_image(board, cA, cB, nA, nB):
     stub.jsr(search_ep)
     if EMIT_TUCK:
         stub.jsr(TUCK_ROM)
+    if EMIT_TUCK_V3:
+        stub.jsr(tuck_v3_ep)
     stub.ins("LDA_zp", D_BC); stub.ins16("STA_abs", S_BEST_C)
     stub.ins("LDA_zp", D_BO); stub.ins16("STA_abs", S_BEST_O)
     stub.ins("LDA_imm", 1); stub.ins16("STA_abs", DONE)
@@ -103,6 +159,8 @@ def build_image(board, cA, cB, nA, nB):
     img[0x8000:0x8000 + len(code)] = code
     if tuck_code:
         img[TUCK_ROM:TUCK_ROM + len(tuck_code)] = tuck_code
+    if tuck_v3_code:
+        img[TUCK_V3_ROM:TUCK_V3_ROM + len(tuck_v3_code)] = tuck_v3_code
     for i in range(17):
         img[SQ_ROM + i] = (i * i) & 0xFF
         img[SQ_ROM + 17 + i] = (i * i) >> 8

@@ -49,3 +49,12 @@ tmp/
 
 
 release/kit_out/
+
+
+
+
+
+
+
+fpga/copro/obj_strand/
+fpga/copro/strand_cases.txt
