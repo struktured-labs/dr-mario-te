@@ -227,3 +227,24 @@ low-value, already-covered end of the set first if it must drop anything at all.
   backing §4-5's numbers
 - `tests/proto_rowbfs.py` — the pre-6502 Python algorithm proof (§1), kept for provenance
 - `TUCK_BFS_PORT_REPORT.md` — this file
+
+## RESOLUTION ADDENDUM (session lead, 2026-08-05 early)
+
+Section 4's open question — which CPU executes this — is resolved by the
+project's own architecture: task #17 targets the COPRO firmware
+(test_search_d3.py emits copro-side code; the d3 search this extends runs on
+the copro's 6502 core at 54.669 MHz, per the copro-clock-tap work). At that
+clock, the median 907k-cycle board completes in ~16.6 ms ≈ one 60 Hz frame,
+p99 ~21 ms — comfortably inside a pill's fall window (13 frames/row at L11).
+NO amortization/chunking needed. The NES-side 1.79 MHz math in section 4
+stays as reference for any future native-cart (v28cs-lineage) port, where
+chunking WOULD be required.
+
+Corollary: the zero-page placeholder ($73-$86) needs checking only against
+COPRO firmware ZP usage (test_search_d3.py/primitives.py — already done);
+patch_vs_cpu.py's NES-side AI zero page is a different CPU's address space
+and is NOT a collision surface for this integration.
+
+Remaining before silicon: mailbox format + colour threading, capacity=64
+wiring with depth-descending priority, memory-map sign-off, firmware A/B at
+θ250 via the mirror rig, then run_gate.sh co-sim.
