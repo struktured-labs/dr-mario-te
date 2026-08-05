@@ -32,62 +32,91 @@ provably order-independent; see the docstring argument above).
 INPUT.  Board occupancy is read from LIVE_BOARD ($0500, primitives.py's own
 convention: 128 bytes row-major, EMPTY=$FF, occupied tile's low nibble is the
 colour) -- the same convention first_occ/emit_kernel_wc already read.  This
-routine never writes to $0500.  PILL_A/PILL_B ($84/$85) are accepted as
-documented mailbox-shaped inputs for interface parity with the eventual
-firmware wiring, but are NOT read by the BFS -- legality depends only on
-occupancy (colours never gate a placement), which is exactly what makes a
-geometry-only enumerator correct in the first place.
+routine never writes to $0500.  PILL_A/PILL_B ($84/$85) must hold the two
+pill colours before calling -- legality itself still doesn't depend on them
+(occupancy is the only thing is_legal reads), but the emit phase now uses
+them to attach a (colour0, colour1) pair to every emitted candidate.
 
-OUTPUT.  BFS_OUTN ($83) = candidate count (capped at OUT_CAP=128, far above
-the measured max of 54/board over 3000 synthetic boards -- see
-TUCK_BFS_PORT_REPORT.md for the histogram).  OUT_X/OUT_Y/OUT_O (each 128
-bytes) hold one (x, y, orient) triple per candidate, in ascending
-(y, x, orient) order.  Cells are the deterministic function of (x, y, orient)
-tuck_enum._cells_of uses: H/RH -> (y,x,y,x+1); V/RV -> (y-1,x,y,x).  Colours
-are not emitted (they don't affect the reachable SET the bit-exact gate
-checks; a downstream consumer applies tuck_enum._FLIP the same way tuck_enum
-itself does).
+OUTPUT.  BFS_OUTN ($83) = candidate count, capped at OUT_CAP=64 (measured
+30-56/board over the 200-board real-L11 corpus, p99=56 -- see
+TUCK_BFS_PORT_REPORT.md sec. 5 for the histogram and the capacity rationale).
+OUT_X/OUT_Y/OUT_O/OUT_CA/OUT_CB (each 64 bytes) hold, per candidate index
+0..BFS_OUTN-1: (x, y, orient, colour-at-cell0, colour-at-cell1). Cells are
+the deterministic function of (x, y, orient) tuck_enum._cells_of uses:
+H/RH -> (y,x,y,x+1); V/RV -> (y-1,x,y,x). Colours follow tuck_enum._FLIP
+exactly: flip=1 iff orient in {V=1, RH=2} (NOT the same partition as
+is_h(orient)={H,RH}); c0,c1 = (PILL_B,PILL_A) if flip else (PILL_A,PILL_B).
+Emission order is DESCENDING row y (15 down to 0) specifically so that if
+BFS_OUTN ever hits OUT_CAP, the candidates dropped are the SHALLOWEST
+(lowest-y) ones -- deep/tucked-under-overhang candidates are this
+enumerator's whole reason to exist (the set-difference characterization this
+port is downstream of found the novel-value candidates concentrated at rows
+8-15; see TUCK_BFS_PORT_REPORT.md sec. 5) while shallow candidates are the
+ones most likely already covered by the existing straight-drop enumerator.
+Phase-1 construction (row fixed-point + down-propagate) is UNCHANGED and
+still runs ascending y=0..15 -- that direction is load-bearing for
+correctness (row-monotonicity, see ALGORITHM above); only phase-2 emission
+order changed, which is safe because by the time phase 2 runs the VISITED
+plane is already complete and read-only.
 
-MEMORY MAP -- PLACEHOLDER, flagged for confirmation before firmware
-integration (task instructions: use a clearly-marked placeholder if free
-addresses can't be independently confirmed).  Checked against every address
-test_search_d3.py + primitives.py declare in this tree as of 2026-08-04:
-LIVE=$0500-$057F, WORK1=$0600, CUR/MARK=$0700/$0780, TK=$0900-$09FF,
-TK1=$0A00-$0A7F, WORK2=$0B00, DBG_RING=$0C00, DBG_RING2=$0D00, LEV_*=$70xx
-(copro RTL I/O window).  $0E00-$0FFF is undocumented by any of those -- this
-routine claims 448 of those 512 bytes.  Zero page: the d3 search's own map
-(test_search_d3.py) ends at D_STR/D_P1L/D_P1H = $70-$72; this routine claims
-$73-$86 (20 of a reserved $73-$8F, 29-byte block) starting immediately after.
-NEITHER claim has been cross-checked against v18/v19 AI (patch_vs_cpu.py) ZP
-usage ($00-$01, $6B-$6F, $CA-$E1) beyond eyeballing -- those routines are not
-believed to run in the same build as the d3 search, but this needs an
-explicit owner sign-off before the port is wired into a real firmware image.
+MEMORY MAP -- VALIDATED against the real firmware image (build_copro_d3.py's
+build_image(), test_search_d3.py's full emitted map, primitives.py, AND
+tuck_v3.py -- the existing EMIT_TUCK_V3-gated firmware, whose scoring/gating
+scratch turned out to be the one real collision candidate; see
+TUCK_BFS_PORT_REPORT.md's "MEMORY-MAP VALIDATION" table for the full
+region-by-region walk). Both claims below are CONFIRMED FREE, no conditions:
 
-    BFS_VIS  = $0E00  (64 B)   512-bit visited plane; state (x,y,o) -> bit
+  RAM $0E00-$0F7F (384 B): checked against LIVE=$0500-$057F, WORK1=$0600,
+  CUR/MARK=$0700/$0780, TK=$0900-$09FF, TK1=$0A00-$0A7F, WORK2=$0B00,
+  DBG_RING=$0C00, DBG_RING2=$0D00 (test_search_d3.py), tuck_v3.py's CANDLIST/
+  TS_*/TS_CNT/TS_DROP (all in the $61xx mailbox window, nowhere near $0Exx),
+  and CoproDrMario.sv's own address decode (`a_ram_lo`/`a_addr`): $0000-$0FFF
+  is a flat, unaliased 4 KB WRAM pass-through except for the documented
+  $0800-$08FF <-> $6100-$61FF mailbox alias -- $0E00-$0FFF is untouched by
+  that alias. Nothing claims it anywhere in the checked tree.
+
+  ZP $81-$96 (22 B): the d3 search's own map (test_search_d3.py) ends at
+  D_STR/D_P1L/D_P1H = $70-$72. tuck_v3.py's SCORING/GATING scratch (TP_BASE
+  through TK2_TMPH) occupies $73-$80 immediately after that -- a REAL
+  candidate collision with this routine's first draft, which also started at
+  $73. Rather than document that as "safe only if sequenced correctly" (true,
+  by the same time-disjoint-phase convention primitives.py's own ZP pool
+  already uses for $CA-$D5, since tuck_v3.py's $73-$80 scratch belongs to its
+  SCORING phase, not its enumerator -- tuck_scan_v3's own scratch lives
+  entirely in the $61xx mailbox window), this routine was moved to $81-$96,
+  immediately after tuck_v3.py's TK2_TMPH=$80, which removes the conditional
+  entirely: confirmed free against every address in test_search_d3.py,
+  primitives.py, patch_vs_cpu.py's v18/v19 AI (a different CPU's address
+  space per the resolution addendum), test_depth2.py, and tuck_v3.py.
+
+    BFS_VIS    = $0E00 (64 B)  512-bit visited plane; state (x,y,o) -> bit
                                 idx=y*32+x*4+o; byte=idx>>3, bit=idx&7. Row y
                                 owns exactly bytes [y*4 .. y*4+3] (32 bits),
                                 which is what makes the row-fixed-point phase
                                 indexable by an 8-bit offset without ever
                                 touching X>63.
-    BFS_OUT_X = $0E40 (128 B)  candidate x, index 0..BFS_OUTN-1
-    BFS_OUT_Y = $0EC0 (128 B)  candidate y
-    BFS_OUT_O = $0F40 (128 B)  candidate orient (0=H,1=V,2=RH,3=RV)
+    BFS_OUT_X  = $0E40 (64 B)  candidate x,  index 0..BFS_OUTN-1
+    BFS_OUT_Y  = $0E80 (64 B)  candidate y
+    BFS_OUT_O  = $0EC0 (64 B)  candidate orient (0=H,1=V,2=RH,3=RV)
+    BFS_OUT_CA = $0F00 (64 B)  candidate colour at cells[0]
+    BFS_OUT_CB = $0F40 (64 B)  candidate colour at cells[1]
 
-    ZP $73 BFS_Y        current row (both phases)
-       $74 BFS_S        current state-in-row, 0..31 (both phases)
-       $75 BFS_X        decoded col  (=BFS_S>>2)
-       $76 BFS_O        decoded orient (=BFS_S&3)
-       $77 BFS_CHANGED  row fixed-point: did this pass mark anything new?
-       $78 RT_TX        rotation kick scratch (post right-wall-clamp col)
-       $79 IL_X / $7A IL_Y / $7B IL_O     is_legal() inputs
-       $7C VB_ROWBASE / $7D VB_S          vis-bit inputs (rowbase=y*4)
-       $7E VB_BYTEIDX / $7F VB_MASK       vis-bit scratch/outputs
-       $80 CM_X / $81 CM_Y / $82 CM_O     check_and_mark() inputs
-       $83 BFS_OUTN     output candidate count
-       $84 PILL_A / $85 PILL_B            interface inputs, unread by the BFS
-       $86 PASS_CNT     row fixed-point pass counter (must NOT alias RT_TX --
+    ZP $81 BFS_Y        current row (both phases)
+       $82 BFS_S        current state-in-row, 0..31 (both phases)
+       $83 BFS_X        decoded col  (=BFS_S>>2)
+       $84 BFS_O        decoded orient (=BFS_S&3)
+       $85 BFS_CHANGED  row fixed-point: did this pass mark anything new?
+       $86 RT_TX        rotation kick scratch (post right-wall-clamp col)
+       $87 IL_X / $88 IL_Y / $89 IL_O     is_legal() inputs
+       $8A VB_ROWBASE / $8B VB_S          vis-bit inputs (rowbase=y*4)
+       $8C VB_BYTEIDX / $8D VB_MASK       vis-bit scratch/outputs
+       $8E CM_X / $8F CM_Y / $90 CM_O     check_and_mark() inputs
+       $91 BFS_OUTN     output candidate count
+       $92 PILL_A / $93 PILL_B            colour inputs -- SET BEFORE CALLING
+       $94 PASS_CNT     row fixed-point pass counter (must NOT alias RT_TX --
                          row_step's rotation blocks clobber RT_TX on every
                          call made from inside the pass loop's state scan)
+       $95 OC_C0 / $96 OC_C1              emit-phase colour scratch
 
 ORIENTATION RING -- identical to tuck_enum.py: H=0, V=1, RH=2, RV=3;
 is_h(o) = (o & 1) == 0.  Anchor = left cell (H/RH) or bottom cell (V/RV),
@@ -114,12 +143,14 @@ LIVE_BOARD = PRIM.LIVE_BOARD   # $0500, read-only input
 
 # ---- placeholder memory map (see module docstring) -------------------------
 BFS_VIS = 0x0E00
-BFS_OUT_X, BFS_OUT_Y, BFS_OUT_O = 0x0E40, 0x0EC0, 0x0F40
-OUT_CAP = 128
+BFS_OUT_X, BFS_OUT_Y, BFS_OUT_O = 0x0E40, 0x0E80, 0x0EC0
+BFS_OUT_CA, BFS_OUT_CB = 0x0F00, 0x0F40
+OUT_CAP = 64   # p99 over the 200-board real-L11 corpus was 56; see report sec. 5
 
 (BFS_Y, BFS_S, BFS_X, BFS_O, BFS_CHANGED, RT_TX,
  IL_X, IL_Y, IL_O, VB_ROWBASE, VB_S, VB_BYTEIDX, VB_MASK,
- CM_X, CM_Y, CM_O, BFS_OUTN, PILL_A, PILL_B, PASS_CNT) = range(0x73, 0x73 + 20)
+ CM_X, CM_Y, CM_O, BFS_OUTN, PILL_A, PILL_B, PASS_CNT,
+ OC_C0, OC_C1) = range(0x81, 0x81 + 22)
 
 ROW_PASS_CAP = 40   # hard safety bound on the row fixed-point loop; the true
                     # ceiling is 32 (can't discover more than the row's 32
@@ -436,16 +467,27 @@ def _emit_down_propagate(a):
 
 # ============================================================ emit phase ===
 def _emit_emit_phase(a):
-    """tb_emit_phase: linear scan over the full VISITED plane in ascending
-    (y, x, orient) order (y outer, s=x*4+o inner) -- the canonical order the
-    bit-exact comparison harness also sorts its python side into. Skips
-    clipped states (V/RV at y=0, matching tuck_enum's default
+    """tb_emit_phase: linear scan over the full VISITED plane in DESCENDING
+    row order (y=15 down to 0; x*4+o ascending within a row) -- deliberately
+    the opposite of construction order. Phase-1 (row_fixedpoint/down_
+    propagate) MUST run y ascending (row-monotonicity, see module docstring);
+    phase-2 emission order is free to differ once the VISITED plane is
+    read-only, and descending row order means that if BFS_OUTN ever hits
+    OUT_CAP, the candidates that get dropped are the shallowest (lowest-y,
+    most likely already covered by the existing straight-drop enumerator),
+    not the deep/tucked ones this enumerator exists to find. The bit-exact
+    comparison harness treats output as a SET, so this reordering has no
+    effect on the gate -- only on which candidates survive truncation.
+
+    Skips clipped states (V/RV at y=0, matching tuck_enum's default
     include_clipped=False) and non-resting states. Writes surviving
-    candidates to OUT_X/OUT_Y/OUT_O, capped at OUT_CAP."""
+    candidates to OUT_X/OUT_Y/OUT_O/OUT_CA/OUT_CB, capped at OUT_CAP.
+    Colours follow tuck_enum._FLIP: flip=1 iff orient in {1,2} (V, RH) --
+    NOT the same partition as is_h(orient)={0,2}."""
     a.label("tb_emit_phase")
     a.ins("LDA_imm", 0)
     a.ins("STA_zp", BFS_OUTN)
-    a.ins("LDA_imm", 0)
+    a.ins("LDA_imm", ROWS - 1)
     a.ins("STA_zp", BFS_Y)
     a.label("tb_ep_row")
     a.ins("LDA_imm", 0)
@@ -458,7 +500,9 @@ def _emit_emit_phase(a):
     a.ins("STA_zp", VB_S)
     a.jsr("tb_vis_test")
     a.ins("CMP_imm", 1)
-    a.br("BNE", "tb_ep_next")
+    a.br("BEQ", "tb_ep_visited")          # loop body is long -> invert+JMP
+    a.jmp("tb_ep_next")
+    a.label("tb_ep_visited")
     a.ins("LDA_zp", BFS_S)
     a.ins("LSR_A"); a.ins("LSR_A")
     a.ins("STA_zp", BFS_X)
@@ -511,6 +555,19 @@ def _emit_emit_phase(a):
     a.ins("LDA_zp", BFS_OUTN)
     a.ins("CMP_imm", OUT_CAP)
     a.br("BCS", "tb_ep_next")             # capacity guard
+    # ---- colours: flip = 1 iff orient in {1(V), 2(RH)} (tuck_enum._FLIP) ----
+    a.ins("LDA_zp", BFS_O)
+    a.ins("CMP_imm", 1)
+    a.br("BEQ", "tb_ep_flip1")
+    a.ins("CMP_imm", 2)
+    a.br("BEQ", "tb_ep_flip1")
+    a.ins("LDA_zp", PILL_A); a.ins("STA_zp", OC_C0)
+    a.ins("LDA_zp", PILL_B); a.ins("STA_zp", OC_C1)
+    a.jmp("tb_ep_colordone")
+    a.label("tb_ep_flip1")
+    a.ins("LDA_zp", PILL_B); a.ins("STA_zp", OC_C0)
+    a.ins("LDA_zp", PILL_A); a.ins("STA_zp", OC_C1)
+    a.label("tb_ep_colordone")
     a.ins("LDX_zp", BFS_OUTN)
     a.ins("LDA_zp", BFS_X)
     a.ins16("STA_absX", BFS_OUT_X)
@@ -518,6 +575,10 @@ def _emit_emit_phase(a):
     a.ins16("STA_absX", BFS_OUT_Y)
     a.ins("LDA_zp", BFS_O)
     a.ins16("STA_absX", BFS_OUT_O)
+    a.ins("LDA_zp", OC_C0)
+    a.ins16("STA_absX", BFS_OUT_CA)
+    a.ins("LDA_zp", OC_C1)
+    a.ins16("STA_absX", BFS_OUT_CB)
     a.ins("INC_zp", BFS_OUTN)
     a.label("tb_ep_next")
     a.ins("INC_zp", BFS_S)
@@ -526,10 +587,9 @@ def _emit_emit_phase(a):
     a.br("BEQ", "tb_ep_rowdone")          # loop body is long -> invert+JMP
     a.jmp("tb_ep_state")                  # (BNE's +/-127 range doesn't reach)
     a.label("tb_ep_rowdone")
-    a.ins("INC_zp", BFS_Y)
     a.ins("LDA_zp", BFS_Y)
-    a.ins("CMP_imm", ROWS)
-    a.br("BEQ", "tb_ep_alldone")
+    a.br("BEQ", "tb_ep_alldone")          # just finished row 0 -> done
+    a.ins("DEC_zp", BFS_Y)
     a.jmp("tb_ep_row")
     a.label("tb_ep_alldone")
     a.ins("RTS")

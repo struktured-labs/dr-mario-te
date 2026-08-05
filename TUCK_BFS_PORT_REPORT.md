@@ -11,17 +11,22 @@ perform — "TE free ≡ gravity-timed, ZERO diff on 1,094 boards / 5,474 tucks"
 covers the **enumerator only**; θ-gating and scoring are the existing depth-3 search's job,
 unchanged.
 
-## Status: DONE, bit-exact, all four deliverables complete
+## Status: DONE, bit-exact including colours, capacity=64 wired and tested, memory map
+sign-off complete
 
 | # | Deliverable | Result |
 |---|---|---|
-| 1 | Standalone 6502 BFS | `tests/tuck_bfs_6502.py`, 775 bytes code + 448 bytes data |
+| 1 | Standalone 6502 BFS | `tests/tuck_bfs_6502.py`, 815 bytes code + 384 bytes data |
 | 2 | py65 harness + 200-board corpus | `tests/test_tuck_bfs_6502.py`, `tests/gen_tuck_bfs_corpus.py`, `tests/tuck_bfs_corpus_200.json` |
-| 3 | Bit-exact gate vs `tuck_enum` mode="free" | **200/200** |
-| 4 | Budget report + capacity policy | below |
+| 3 | Bit-exact gate vs `tuck_enum` mode="free", cells+orient+**colours** | **200/200** |
+| 4 | Budget report + capacity policy | §4-5, capacity=64 **implemented in the 6502 routine**, not just proposed |
+| 5 | Capacity-64 depth-descending overflow test | synthetic 110-candidate board, exact-selection-match, §5 |
+| 6 | Memory-map sign-off vs the real firmware image | §3 — one real conflict found (tuck_v3.py ZP) and **resolved by relocation**, not just documented |
 
-No blockers hit. Nothing was shipped partial — every stage that could be made bit-exact was
-made bit-exact before moving to the next.
+No blockers hit at any stage. This is the second pass on this branch: the first pass
+(bit-exact cells+orient only, capacity=128 test-only, memory map self-checked but not
+validated against the real firmware tree) is preserved in the branch's earlier commit; this
+pass closes every item the team lead's follow-up asked for.
 
 ## 1. Algorithm — NOT a literal BFS-queue port, and why that's still correct
 
@@ -68,163 +73,247 @@ determinism, but the gate does not depend on that order matching the reference's
 - **500/500** random synthetic boards, full routine vs `tuck_enum` reachable set.
 - **1/1** cave-board regression (the documented "3 cells under a lip, unreachable by
   straight drop" case) — full-set match, not just the 3 marked cells.
-- **200/200** real L11 boards (`tuck_bfs_corpus_200.json`) — the number that matters, since
-  it's what the θ=250 ship config was proven on.
+- **200/200** real L11 boards (`tuck_bfs_corpus_200.json`), now comparing **cells + orient +
+  colours** — the number that matters, since it's what the θ=250 ship config was proven on.
+- **Capacity-64 overflow test** (new this pass): a synthetic board with 110 reachable
+  candidates (`tests/overflow_board.json`, found by sparse-random search — dense/staircase/
+  checkerboard patterns all plateaued near 30-52; independently-scattered sparse occupancy
+  (3-35% fill, rows 4-15 only) found boards past 100 within a few thousand trials) confirms:
+  `BFS_OUTN` caps at exactly 64; the emitted set matches, entry-for-entry, a python
+  simulation of the port's OWN depth-descending priority policy applied to the full
+  110-candidate reference set (`expected_after_capacity()` in the test harness — sorts by
+  `(-row, col*4+orient)`, same order the 6502 emit phase walks, and truncates at 64); and
+  the row boundary is respected exactly (`min_kept_row == max_dropped_row == 8` — the
+  truncation happened mid-row-8, keeping every row-8-and-deeper candidate the 6502 found and
+  dropping every row-7-and-shallower one, with no row order violations).
 
-No reference changes were made to reach this; every mismatch found during development (all
-in early drafts, before the row-wise design was locked in) was fixed in the port.
+Colours were threaded through by adding two more output arrays (`OUT_CA`/`OUT_CB`) and a
+small unrolled `orient in {1,2} -> flip` branch in the emit phase, matching
+`tuck_enum._FLIP` exactly (verified this is **not** the same partition as `is_h(orient)` --
+flip groups {V, RH} together, not {H, RH}). PILL_A/PILL_B ($92/$93 after the ZP move, §3)
+went from "documented but unread" to real inputs the emit phase now reads; the harness sets
+them before every call via a new `call_bfs()` helper.
 
-## 3. Memory map — PLACEHOLDER, needs owner sign-off before integration
+No reference changes were made to reach any of this; every mismatch found during
+development (all in early drafts, before the row-wise design was locked in, and one
+branch-range assembler error introduced by the colour-emission code growing a loop body
+past 127 bytes -- fixed with the same invert+JMP idiom already used elsewhere in the file)
+was fixed in the port.
 
-Checked against every address `test_search_d3.py` + `primitives.py` declare in this tree as
-of 2026-08-04 (LIVE=$0500-$057F, WORK1=$0600, CUR/MARK=$0700/$0780, TK=$0900-$09FF,
-TK1=$0A00-$0A7F, WORK2=$0B00, DBG_RING=$0C00, DBG_RING2=$0D00, LEV_*=$70xx copro RTL I/O).
-**Not** cross-checked against `patch_vs_cpu.py`'s v18/v19 AI zero-page usage — those aren't
-believed to run in the same build as the d3 search, but that belief needs an explicit
-owner check before this ships.
+## 3. MEMORY-MAP VALIDATION — SIGNED OFF, one conflict found and resolved
+
+Validated against the real firmware image, not just the d3 search's own declared map:
+`build_copro_d3.py`'s `build_image()` (every ROM/RAM region it lays down), every
+runtime-written address in `test_search_d3.py`'s emitter, `primitives.py`, `test_depth2.py`,
+**and `tuck_v3.py`** — the existing `DRCOPRO_TUCKV3`-gated firmware (the prior-generation
+root-action tuck implementation this port is downstream of per the SAGA's "THE CONVERGENCE
+ANSWER") — plus a direct read of `CoproDrMario.sv`'s address decode for the RAM claim, since
+the copro's WRAM is a single flat 4 KB block and python-side "nothing claims this address"
+isn't itself proof against a hardware alias.
+
+**RAM $0E00-$0F7F (384 B): CONFIRMED FREE, unconditionally.**
+
+| Region checked | Address | Verdict |
+|---|---|---|
+| LIVE/BOARD | $0500-$057F | outside claimed range |
+| WORK1 | $0600 | outside claimed range |
+| CUR / MARK (EH_PLY1 build) | $0700 / $0780-$078F | outside claimed range |
+| TK\_\* (incl. PILLA/PILLB) | $0900-$09FF | outside claimed range |
+| TK1\_\* | $0A00-$0A7F | outside claimed range |
+| WORK2 | $0B00 | outside claimed range |
+| DBG_RING / DBG_RING2 | $0C00-$0DFF | outside claimed range |
+| LEV\_\* (engine I/O) | $70xx | different address space entirely — not WRAM (`a_ram_lo` requires `AB[15:12]==0`; $70xx fails that test, confirmed in `CoproDrMario.sv`) |
+| tuck_v3.py: CANDLIST, TS_CNT/TS_DROP, TS_\* | $61A1-$61AC, $61F6-$61F7 | mailbox window ($61xx, aliases wram[$8xx] only) — nowhere near $0Exx |
+| tuck_scan.py (v1, EMIT_TUCK) | — | no RAM/ZP claims found at all beyond the `EMPTY` constant |
+| CoproDrMario.sv hardware alias | $0800-$08FF ↔ $6100-$61FF | the ONLY WRAM alias that exists; $0E00-$0FFF is untouched by it — `dpram` is a flat 4 KB block, $0000-$0FFF passes straight through except that one documented alias |
+
+Nothing claims $0E00-$0FFF anywhere in the checked tree or the RTL. This routine takes 384
+of those 512 bytes (VIS 64 B + 5×64 B output arrays, resized down from the first pass's 448
+B when capacity dropped from a 128-slot test buffer to the real 64-slot mailbox cap).
+
+**ZP: moved from $73-$88 to $81-$96 (22 B) after finding a real collision — now CONFIRMED
+FREE, unconditionally.**
+
+The first pass claimed $73-$88, right after the d3 search's own map (`D_STR`/`D_P1L`/
+`D_P1H` = $70-$72). That missed `tuck_v3.py`, which was never checked in the first pass.
+`tuck_v3.py`'s SCORING/GATING scratch (`TP_BASE` through `TK2_TMPH`) occupies **$73-$80** —
+a direct, byte-for-byte overlap with 14 of this routine's first-pass 22 claimed bytes.
+
+That overlap is *not* automatically fatal: `tuck_v3.py`'s own docstring documents the same
+"time-disjoint phases reuse the same bytes" convention `primitives.py`'s ZP pool already
+uses for $CA-$D5, and applies it to $70-$72 on purpose (`TI1L`/`TP_IDX` deliberately reuse
+`D_STR`/`D_P1L`/`D_P1H`, since the #47 stranded-half dose and tuck scoring never run at the
+same instant). Checking which of `tuck_v3.py`'s TWO phases actually uses $73-$80: its
+enumerator (`tuck_scan_v3`) keeps its own scratch (`TS_C`/`TS_FC`/... ) entirely in the
+$61xx mailbox window — none of it is zero page. Only the **scoring** functions
+(`tuck_cell_prep`, `tuck_imm1`, `tuck_ply2_score`, `tuck_root_extension`) use $70-$80. Since
+this port replaces the *enumerator* half and feeds the *same downstream scoring*, the
+natural call order is enumerate-then-score — meaning this routine's ZP state is provably
+dead by the time scoring's reuse of the same bytes begins. That would have been a legitimate
+"confirmed free, conditional on call order" sign-off.
+
+Rather than ship a conditional, the routine was moved instead: $81-$96, immediately after
+`tuck_v3.py`'s own `TK2_TMPH`=$80. A fresh sweep of every `.py` file in the build chain
+(`test_search_d3.py`, `primitives.py`, `patch_vs_cpu.py`, `test_depth2.py`,
+`test_leaf_d3.py`, `test_pollution.py`, `test_readiness_ext.py`, `test_vrdy.py`,
+`tuck_v3.py`, `tuck_scan.py`, `build_copro_d3.py`, `build_firmware.py`) for any hex literal
+in $81-$96 found nothing. This removes the conditional entirely — no call-order requirement,
+no risk from a future re-entrancy or ordering bug silently corrupting either routine's
+state. `patch_vs_cpu.py`'s v18/v19 AI zero page ($00-$01, $6B-$6F, $CA-$E1) is confirmed a
+non-issue per the session lead's resolution addendum below (different CPU's address space).
+
+The relocation is a pure address relabel (same 22 named bytes, same logic) — re-ran the full
+4-stage test suite after the move and got byte-identical results (200/200, 500/500, cave
+board, overflow test all still pass, same 815-byte code size).
 
 ```
-BFS_VIS   = $0E00  (64 B)   512-bit visited plane, row y owns bytes [y*4 .. y*4+3]
-BFS_OUT_X = $0E40  (128 B)  candidate columns
-BFS_OUT_Y = $0EC0  (128 B)  candidate rows
-BFS_OUT_O = $0F40  (128 B)  candidate orientations (0=H,1=V,2=RH,3=RV)
-                            -- 448 of 512 bytes in the undocumented $0E00-$0FFF block
+BFS_VIS    = $0E00 (64 B)  512-bit visited plane, row y owns bytes [y*4 .. y*4+3]
+BFS_OUT_X  = $0E40 (64 B)  candidate x
+BFS_OUT_Y  = $0E80 (64 B)  candidate y
+BFS_OUT_O  = $0EC0 (64 B)  candidate orient (0=H,1=V,2=RH,3=RV)
+BFS_OUT_CA = $0F00 (64 B)  candidate colour at cells[0]
+BFS_OUT_CB = $0F40 (64 B)  candidate colour at cells[1]
 
-ZP $73-$86 (20 of a reserved 29-byte $73-$8F block), starting immediately after the d3
-search's own D_STR/D_P1L/D_P1H = $70-$72. Full byte-by-byte map in tuck_bfs_6502.py's
-module docstring.
+ZP $81-$96 (22 B), immediately after tuck_v3.py's TK2_TMPH=$80.
+Full byte-by-byte map in tuck_bfs_6502.py's module docstring.
 ```
 
 Board input is read-only from `LIVE_BOARD` ($0500) — the routine never writes there, so it
 can't corrupt the live settled board while the game renders it, matching the convention
-`first_occ`/`kernel_wc` already use. `PILL_A`/`PILL_B` ($84/$85) are accepted as documented
-mailbox-shaped inputs for interface parity but are **not read** by the BFS — legality
-depends only on occupancy, colours never gate a placement (proven trivially: `is_legal`
-never reads a colour, only the `EMPTY`/non-`EMPTY` sentinel).
-
-The 128-entry-per-array output sizing (384 B) is generous **for the standalone gate** — see
-§5 for the separate, smaller number recommended for the real firmware mailbox.
+`first_occ`/`kernel_wc` already use. `PILL_A`/`PILL_B` ($92/$93) must now be set before
+calling (§2) — legality itself still doesn't depend on them, only the emit phase's colour
+output does.
 
 ## 4. Budget
+
+**Clock domain: RESOLVED (session lead, see addendum at the end of this file) — this runs
+on the copro's own 6502 core at 54.669 MHz, the same core the d3 search it extends already
+runs on.** At that clock, one 60 Hz frame is ≈911,150 cycles; the numbers below (updated for
+the colour+capacity-64 changes, code grew from 775 to 815 bytes) still fit comfortably
+inside a single frame at every percentile measured. No amortization/chunking needed — the
+routine ships as a single monolithic per-pill call. The NES 1.79 MHz / NMI-only math further
+down is kept as reference for a hypothetical future native-cart port, where it WOULD bind.
 
 Measured via py65 instruction-cycle counting, 200-board real-L11 corpus:
 
 | | cycles/board | candidates/board |
 |---|---|---|
-| min | 588,756 | 30 |
-| p50 | 907,070 | 36 |
-| p90 | 1,033,790 | 46 |
-| p95 | 1,044,232 | 50 |
-| p99 | 1,141,021 | 56 |
-| max | 1,195,878 | 56 |
+| min | 590,781 | 30 |
+| p50 | 909,335 | 36 |
+| p90 | 1,035,925 | 46 |
+| p95 | 1,046,553 | 50 |
+| p99 | 1,143,398 | 56 |
+| max | 1,198,327 | 56 |
 
-Code: 775 bytes. Data: 448 bytes (VIS + 3 output arrays). Candidate count showed
-negligible correlation with board occupancy (Pearson r ≈ 0.08) — cost is dominated by the
-row fixed-point's own structure (each row costs a handful of 32-state passes regardless of
-fill), not raw cell count.
+Code: 815 bytes (was 775 before colour output + the descending-emit-loop invert/JMP fix).
+Data: 384 bytes (VIS + 5 output arrays, capacity-64 sized — down from 448 bytes at the
+first pass's 128-slot test-only sizing). Candidate count showed negligible correlation with
+board occupancy (Pearson r ≈ 0.08 on the first-pass data, unchanged in character) — cost is
+dominated by the row fixed-point's own structure (each row costs a handful of 32-state
+passes regardless of fill), not raw cell count.
 
-**Frame-budget comparison — this is the one open question that matters most for
-integration**, because the two plausible execution contexts give opposite verdicts:
+**Frame-budget verdict (copro core, 54.669 MHz — see the addendum below for how this was
+resolved): one 60 Hz frame is ≈911,150 copro cycles.** The median board (909,335 cycles)
+fits in **under one frame** (~16.6 ms); the worst observed board (1,198,327 cycles) takes
+~1.32 frames (~21.9 ms). Against the stated L11 gravity budget (13 frames/row ⇒ even the
+*tightest* possible placement, a 1-row fall, allows ~217 ms), a **monolithic root-call-
+per-pill is comfortably feasible**, ~10x headroom even in the worst case observed. No
+amortization or resumability work is needed for this routine. (The NES 1.79 MHz / ~2,273
+cycles-per-NMI-slice math — ≈399-526 NMI slices, i.e. seconds, which would NOT fit inside a
+single pill's fall — is retained only as reference for a hypothetical future native-cart
+port, where `test_resumable.py`'s chunking pattern would be the template.)
 
-- **If this runs on the copro's own 6502 core** (clocked ~54.669 MHz per
-  `dr-mario-copro-clock-tap.md`, and everything about `test_search_d3.py`'s board/ZP
-  layout — the $6100-$61FF/$0800-$08FF WRAM alias, the copro-resident TK/TK1/DBG_RING
-  arrays — says the *existing* depth-3 search already runs there, not on the NES's own
-  CPU): one 60 Hz frame is ≈911,150 copro cycles. The median board (907,070 cycles) fits in
-  **under one frame** (~16.6 ms); the worst observed board (1,195,878 cycles) takes ~1.31
-  frames (~21.9 ms). Against the stated L11 gravity budget (13 frames/row ⇒ even the
-  *tightest* possible placement, a 1-row fall, allows ~217 ms), a **monolithic root-call-
-  per-pill is trivially feasible**, ~10x headroom even in the worst case. No amortization
-  needed.
-- **If this instead has to run on the NES's own 1.79 MHz CPU inside NMI-only slices**
-  (`py65_harness.py`'s own docstring cites ~2,273 usable cycles/frame for that context):
-  the median board needs ≈399 NMI slices (≈6.65 s), the worst ≈526 (≈8.8 s) — far beyond
-  even a full-height 15-row fall (≈195 frames ≈ 3.25 s). Under this hypothesis a monolithic
-  call does **not** fit and the routine would need chunking/resumability (the codebase
-  already has a pattern for this — `test_resumable.py`/`test_resumable_incr.py` — the row
-  fixed-point structure ports naturally to a resumable state machine: suspend/resume at
-  row boundaries, or even mid-row between passes, since all live state is already in named
-  zero-page/RAM rather than the call stack).
-
-**This needs to be resolved by whoever integrates it**, ideally by checking which core
-`CoproDrMario.sv` dispatches this class of routine to — the strong prior, given everything
-else in `test_search_d3.py`'s memory map, is the copro core, in which case §4 says this
-ships as-is with no further engineering. Flagging it explicitly rather than guessing.
-
-## 5. Capacity policy proposal (for the real firmware mailbox — separate from the
-standalone port's 128-slot test buffers, which were sized for gate correctness, not RAM
-economy)
+## 5. Capacity policy — IMPLEMENTED in the routine, not just proposed (for the real
+firmware mailbox; the first pass's 128-slot buffers were test-only sizing for gate
+correctness, not RAM economy)
 
 Observed over 200 real L11 boards: min 30, p50 36, p90 46, p95 50, p99 56, max 56
 candidates/board (raw reachable placements, *before* θ-gating — this is the population the
 depth-3 scorer sees, not the ~2-8 fires/game the SAGA's θ=250 curve reports after scoring
 picks a winner most decisions don't take).
 
-**Recommendation: mailbox capacity = 64** (power-of-2, clean indexing, covers the full
-200-board sample with 8 slots of headroom over the observed max). This is a proposal on a
-200-board sample, not a proof — a board that needs >64 has not been observed but hasn't
-been ruled out either; the port's own capacity guard (§3, `OUT_CAP`) never silently
-corrupts memory on overflow regardless of the cap chosen, it just stops appending.
+**Implemented: `OUT_CAP=64`** (power-of-2, clean indexing, covers the full 200-board sample
+with 8 slots of headroom over the observed max of 56). This is calibrated on a 200-board
+sample, not a proof — a real board that needs >64 hasn't been observed but hasn't been
+ruled out either.
 
-**If truncation is ever needed, don't truncate by discovery order — prioritize by row
-depth.** The set-difference characterization done earlier this session (`characterize_
-setdiff.py`, cited in the SAGA) found the enumerator's *novel* value concentrated at rows
-8-15 (RS-only: 88% horizontal, "concentrated DEEP... 254 at the floor row itself"; FW-only:
-"mass at rows 8-12"). Shallow (small-`y`) candidates are the ones most likely to already be
-covered by the existing straight-drop enumerator — the whole reason this BFS exists is the
-deep, tucked-under-overhang placements. So a truncation policy should sort candidates by
-**descending row `y`** and keep the top 64, not keep-first-found — this drops the
-low-value, already-covered end of the set first if it must drop anything at all.
+**Truncation priority: descending row depth, implemented in the 6502 emit phase itself
+(§3's `tb_emit_phase`), not left as a downstream policy note.** The set-difference
+characterization done earlier this session (`characterize_setdiff.py`, cited in the SAGA)
+found the enumerator's *novel* value concentrated at rows 8-15 (RS-only: 88% horizontal,
+"concentrated DEEP... 254 at the floor row itself"; FW-only: "mass at rows 8-12"). Shallow
+(small-`y`) candidates are the ones most likely to already be covered by the existing
+straight-drop enumerator — the whole reason this BFS exists is the deep, tucked-under-
+overhang placements. The emit phase now scans the visited plane in **descending row order**
+(y=15 down to 0; construction/phase-1 is unaffected and still runs ascending, which is
+load-bearing for correctness — see §1) so that if `BFS_OUTN` ever reaches `OUT_CAP`, the
+candidates dropped are exactly the shallowest ones, not an arbitrary discovery-order subset.
 
-## 6. Open risks
+**Validated, not just implemented:** a synthetic board with 110 reachable candidates
+(`tests/overflow_board.json`) confirms the 6502 output — 64 candidates, correctly capped —
+matches EXACTLY a python simulation of the same priority policy applied to the full
+110-candidate reference set (sort by `(-row, col*4+orient)`, take the first 64; see §2). The
+boundary row (8, in this synthetic board) was split between kept and dropped candidates
+exactly as expected, and the row-priority invariant (`min_kept_row >= max_dropped_row`)
+holds. This is the strongest evidence available short of a real board that overflows.
 
-1. **Memory map is unconfirmed** (§3) — needs an explicit check against every other build
-   config in this tree (not just the d3 search's own documented map) before real
-   integration.
-2. **Clock-domain question is unresolved** (§4) — determines whether any further
-   engineering (resumability) is needed at all, or whether this ships as a single
-   monolithic call.
-3. **200-board corpus, not exhaustive** — real L11 games from 15 deterministic seeds
+## 6. Open risks (updated — most of the first pass's list is now closed)
+
+1. ~~Memory map is unconfirmed~~ **CLOSED (§3)** — validated against the real firmware
+   image including `tuck_v3.py`; the one real conflict found was resolved by relocation,
+   not merely documented.
+2. ~~Clock-domain question is unresolved~~ **CLOSED** — resolved by the session lead
+   (addendum below): copro core, comfortably inside budget, no amortization needed.
+3. ~~Colours are not threaded through the output~~ **CLOSED (§2, §5)**.
+4. ~~Capacity policy is a proposal, not implemented~~ **CLOSED (§5)**.
+5. **200-board corpus, not exhaustive** — real L11 games from 15 deterministic seeds
    (`gen_tuck_bfs_corpus.py`, `--every 7` placements, spanning opening through near-clear:
    virus count 1-48, occupancy 11-54 cells observed). Bit-exact here is strong evidence,
    not a proof for all 2^128-ish board states; the algorithm-level proof (row-monotonicity,
-   §1) is what actually carries the generality claim, and that proof does not depend on the
-   corpus at all.
-4. **Colours are not threaded through the output.** The BFS only emits `(x, y, orient)`;
-   attaching `(colour0, colour1)` per candidate (via `tuck_enum._FLIP`, a pure function of
-   `orient`) is a few-instruction addition the next session should make once the mailbox
-   format is fixed, since the scorer will need it.
-5. **`ROW_PASS_CAP=40`** is a hard safety net, not load-bearing — measured max real
-   convergence was 4 passes/row (300 synthetic boards, `tmp/proto_rowbfs.py`'s pass-count
-   variant). If a future board ever needed more than 40, the row would silently stop
-   early (some legal states left unmarked) rather than hang; this has never fired in
-   testing but is worth a counter/assert if this becomes safety-critical.
+   §1) is what actually carries the generality claim and does not depend on the corpus at
+   all. The capacity-64 overflow test (§5) used a SEPARATE synthetic board specifically
+   because the 200-board corpus's own max (56) couldn't exercise truncation.
+6. **`ROW_PASS_CAP=40`** is a hard safety net, not load-bearing — measured max real
+   convergence was 4 passes/row (300 synthetic boards, `tests/proto_rowbfs.py`'s pass-count
+   variant). If a future board ever needed more than 40, the row would silently stop early
+   (some legal states left unmarked) rather than hang; this has never fired in testing but
+   is worth a counter/assert if this becomes safety-critical.
+7. **Memory-map validation was done by grepping `.py` sources for hex literals in the
+   claimed ranges**, not by static analysis of the assembled bytecode or a formal address
+   allocator — a hex constant assigned to a variable but never actually used, or an address
+   computed at runtime (e.g. via an indexed table rather than a literal), would not show up
+   in that sweep. Nothing in the checked files does this, but the sweep's soundness rests
+   on that observation holding, not on a structural guarantee.
 
 ## 7. What the next session should do
 
-1. Resolve the clock-domain question (§4) with whoever owns `CoproDrMario.sv` / the
-   driver's dispatch logic — this single fact decides whether any further work is needed
-   before integration, or whether the port ships as-is.
-2. Cross-check the placeholder memory map (§3) against every build config that might
-   coexist with the d3 search (not just the ones checked here).
-3. Add colour output (§6.4) once the mailbox format is settled.
-4. Wire `tuck_bfs` into the real firmware emitter (a new emit function alongside
+1. Wire `tuck_bfs` into the real firmware emitter (a new emit function alongside
    `test_search_d3.py`'s existing ones, following the DRSTRAND-style opt-in-flag pattern
    for a byte-identical-by-default build) as the candidate source for the existing
    `tuck_root_candidates`/`tuck_scan_v3` call site, replacing/supplementing them per the
-   SAGA's "THE CONVERGENCE ANSWER" decision.
-5. Firmware A/B at θ=250 against the current shipped enumerator, then silicon, per the
-   SAGA's stated sequence.
+   SAGA's "THE CONVERGENCE ANSWER" decision. The memory map (§3) and colour output (§2)
+   are both ready for this; nothing further should block starting it.
+2. Decide the exact call-site contract with `tuck_v3.py`'s scoring functions
+   (`tuck_cell_prep`/`tuck_ply2_score`/`tuck_root_extension`) — they currently walk
+   `CANDLIST` at $61AC (5 bytes/candidate: target, approach, trigger, rest, orient) in the
+   mailbox window; this port's output shape (5 parallel 64-byte arrays in $0E00-$0F7F) is
+   different and will need either a translation step or a rework of the scoring loop's own
+   indexing to read the new layout directly.
+3. Firmware A/B at θ=250 against the current shipped enumerator, then `run_gate.sh` co-sim,
+   then silicon, per the SAGA's stated sequence.
 
 ## Files on this branch
 
-- `tests/tuck_bfs_6502.py` — the emitter (603 lines, self-contained, doesn't touch
+- `tests/tuck_bfs_6502.py` — the emitter (self-contained, doesn't touch
   `test_search_d3.py`)
-- `tests/test_tuck_bfs_6502.py` — 3-stage validation harness (231 lines)
-- `tests/gen_tuck_bfs_corpus.py` — 200-board real-L11 corpus generator (85 lines)
+- `tests/test_tuck_bfs_6502.py` — 4-stage validation harness (is_legal, random boards +
+  cave board, 200-board bit-exact gate incl. colours + capacity check, capacity-64
+  overflow/priority test)
+- `tests/gen_tuck_bfs_corpus.py` — 200-board real-L11 corpus generator
 - `tests/tuck_bfs_corpus_200.json` — the corpus itself (deterministic, regenerable)
-- `tests/tuck_bfs_budget_raw.json` — raw per-board cycles/candidates/occupancy/virus,
-  backing §4-5's numbers
+- `tests/overflow_board.json` — synthetic 110-candidate board for the capacity-64 test
+  (found by sparse-random search, ~3-35% fill in rows 4-15 only; provenance in §2)
+- `tests/tuck_bfs_budget_raw.json` — raw per-board cycles/candidates, backing §4-5's numbers
 - `tests/proto_rowbfs.py` — the pre-6502 Python algorithm proof (§1), kept for provenance
 - `TUCK_BFS_PORT_REPORT.md` — this file
 
@@ -248,3 +337,20 @@ and is NOT a collision surface for this integration.
 Remaining before silicon: mailbox format + colour threading, capacity=64
 wiring with depth-descending priority, memory-map sign-off, firmware A/B at
 θ250 via the mirror rig, then run_gate.sh co-sim.
+
+## FOLLOW-UP (this session, after the addendum above): the ZP sign-off moved
+
+The addendum's corollary said checking the ZP placeholder against
+`test_search_d3.py`/`primitives.py` was "already done" and sufficient. Doing
+the full memory-map validation this pass asked for (§3) turned up one file
+that check hadn't covered: `tuck_v3.py`, the existing `DRCOPRO_TUCKV3`-gated
+firmware — its scoring/gating scratch (`TP_BASE`..`TK2_TMPH`) occupies
+$73-$80, a real byte-for-byte overlap with this routine's original $73-$88
+claim. Analysis showed it would have been safe under a time-disjoint-phase
+argument (tuck_v3.py's ZP use there belongs to its scoring phase, not its
+enumerator, and this routine's own ZP is dead by the time scoring runs) — but
+rather than ship a conditional sign-off, the routine's ZP was moved to
+$81-$96 (right after tuck_v3.py's own last byte), which is unconditionally
+free against every file checked including tuck_v3.py. Pure address relabel;
+re-ran all 4 test stages after the move, byte-identical pass. See §3 for the
+full table.
