@@ -313,3 +313,182 @@ analysis are the next session's implementation work, not this one's.
 evaluation. The current firmware implementation does not deliver that
 value. Stage 3 closes here as a validated negative with a named next step,
 not an unresolved question.**
+
+## Dissection RESULTS (2026-08-04, n=40 firmware trajectories, 4876 decisions)
+
+Harness: dissect_trajectory.py (firmware θ150 drives; mirror shadow-queried
+per decision; both picks scored under the leaf_r47 mirror ruler). Analyzer:
+dissect_analyze.py. Data: results/dissect/dissect_L11_n40.jsonl.
+
+1. **ENUMERATOR-SET DIVERGENCE, CONFIRMED AT SCALE: 62.3%** (109/175) of the
+   firmware's actually-fired tucks do NOT exist in the python proof's
+   candidate list (RS.tuck_root_candidates, exec_only, fpr=12). The
+   divergence is concentrated in HORIZONTAL tucks: 71% of out-of-set fires
+   are horizontal vs 29% of in-set. tuck_scan_v3 reaches horizontal
+   slide-unders the proof never enumerated. THE MIRROR PROOF AND THE
+   FIRMWARE WERE NEVER TESTING THE SAME ACTION SPACE.
+
+2. **Firmware fire quality is NOT the problem**: mean mirror-margin of
+   firmware fires +507.7 (median +196) vs the mirror's own fires +514.2
+   (median +245). The out-of-set fires carry NEGATIVE regret (mean −561.7):
+   under the true ruler they are BETTER than the mirror's own best action on
+   the same board.
+
+3. **The two tuck channels nearly cancel**: firmware misses 109
+   mirror-visible tucks (fw_base_mir_tuck, +55,150 total regret, mean +506)
+   while gaining −58,421 from its out-of-set fires. Net tuck channel ≈ −3.3k
+   (slightly firmware-favourable). The steady bleed is BASE-ACTION
+   divergence: 376 base_diff events × 42.9 mean = +16,143 (leaf1-residual
+   flips, consistent with the earlier 20-board localization).
+
+4. **Regime flip**: firmware policy loses mirror-value in open (+9.4/dec)
+   and mid (+14.1/dec) but WINS endgame (−11.7/dec). Fires: 61% mid, 22%
+   end. Misses skew earlier (33% open) — the missed tucks are
+   opening/mid-game, where trajectory compounding has the most room.
+
+5. **Gate calibration**: 29.7% of firmware fires sit below θ=150 under the
+   mirror ruler (firmware's own margin computation admits them).
+
+**Reading**: the REAL-vs-WASH gap is NOT bad fires. Leads, in order:
+(a) missed early-game tucks (the mirror's −12.94 plausibly lives in
+opening/mid fires the firmware declines); (b) base-action divergence
+compounding; (c) below-θ drag. Named next experiment: offline UNION-
+enumerator A/B under the mirror ruler (candidates = union of both sets) to
+measure the ceiling, then align enumerators toward whichever set the union
+proves out — the horizontal-tuck reach gap is the concrete engineering item.
+
+Status: #17 dissection phase CLOSED with mechanism named. Enumerator
+alignment is future work; #47 (abandoned material) took priority per the
+user's field session of 2026-08-03.
+
+## UNION-ENUMERATOR VERDICT (2026-08-04, n=120, mirror ruler, θ=150)
+
+union_mirror.py, same seeds/protocol as the mirror curve (RS-only arm
+REPRODUCED the original −12.94 [−20.43,−5.48] exactly — rig sanity holds):
+
+- **UNION vs off: −20.02 [−27.11,−13.19] REAL** (clear 95.8→97.5%)
+- **UNION vs RS-only: −7.83 [−13.57,−2.30] REAL** — the firmware's
+  out-of-proof candidates (2.12 of 5.11 fires/g; predominantly horizontal
+  slide-unders) carry additive value the proof never measured.
+
+**The proof's enumerator was the limiter.** The dissection's two cancelling
+channels are now explained as one defect seen from both sides: each
+enumerator holds value the other can't see. The tuck ceiling is ~−20
+pills/game, 1.5x the original prize. NAMED NEXT BUILD: converge the
+enumerators on the union — concretely, characterize the set difference
+(which RS-visible candidates tuck_scan_v3 misses, and vice versa), then
+extend tuck_scan_v3 (the validated 6502/RTL scanner) to cover the RS-only
+class, and re-prove the converged set under the mirror before any firmware
+build. Data: results/union_theta150.json.
+
+## Set-difference characterization (2026-08-04, 20 games / 2,433 decisions)
+
+characterize_setdiff.py: physically-normalized candidate sets per decision:
+
+- shared **2,208 (28%)** — the enumerators barely overlap
+- RS-only **1,527 (19%)**: 88% HORIZONTAL, concentrated DEEP (rows 10-15;
+  254 at the floor row itself) — these are the missed early/mid-game tucks
+  behind the dissection's +55k regret channel
+- FW-only **4,219 (53%)**: all orientations (H 1242, RH 1917, V 411, RV 649),
+  mass at rows 8-12 — the mid-board slide-unders whose fires beat even the
+  mirror's own best actions
+
+Scanner-extension design target: tuck_scan_v3 must additionally reach the
+DEEP HORIZONTAL class (floor-adjacent resting rows with longer lateral
+travel under overhangs) that RS's executability model admits and scan_v3's
+reach model currently rejects. RS's own gap (everything scan_v3 sees that it
+doesn't) needs no fix — the proof side simply adopts the union via
+union_cands() for scoring. Sequence: (1) extend ref_tuck_scan_v3 + assert it
+now covers RS-only class on this corpus; (2) port the extension to the 6502
+scanner + bit-exact gate vs ref (67-board discipline); (3) re-prove the
+converged set under the mirror (expect ≈ −20); (4) firmware θ recalibration
+(more candidates -> more fires; θ may need raising); (5) silicon.
+
+## Corridor-rule coverage (2026-08-04) — extension design CLOSED
+
+corridor_coverage.py, same 20-game corpus: a generalized-approach corridor
+rule (entry column-pair with open sky to trigger row r, clear corridor at r,
+lateral budget |s−c| ≤ K·(rf−r+1)) covers the RS-only class at:
+
+- horizontal: K=1 → 94.9%, **K=2 → 99.3% = the K=∞ geometric ceiling**
+  (the residual 0.7% needs multi-row pathing; not worth the complexity)
+- vertical: **100% at K=1**
+
+**Design decision: scan_v4 = scan_v3 + corridor walk with K=2**, all
+first_occ-table arithmetic (6502-amenable, no new primitives). Next:
+implement ref_tuck_scan_v4 + corpus coverage assert (>= 99% of union),
+mirror re-prove the v4-enumerated set (expect ≈ −20), then 6502 port +
+bit-exact gate, θ recalibration, silicon.
+
+## scan_v4 iterations + the VALUE-gate pivot (2026-08-04 midday)
+
+Candidate-set-isomorphism with TE-gravity proved the wrong gate: TE is a
+frame-accurate BFS (per-frame button schedule, DAS, rotation) — no cheap
+scanner reproduces its set exactly. Iterations: flat corridor K=2 = 97.25%
+coverage but 2.7x OVER-admission; rigid staircase = 84.8%/+30%; row-sweep
+reach masks (byte-wide, 6502-ideal) = 84.0%/+21%, stable miss class (~1.1k
+RS-horizontal) ⇒ TE admits supported-slide / rotation paths the sweep
+doesn't model.
+
+**PIVOT: gate on VALUE, not set equality.** What ships is whatever set the
+converged scanner emits; the requirements are (1) it scores ≈ −20 under the
+mirror, (2) low over-admission (executability — over-admitted fires are the
+proof-vs-silicon divergence class), (3) 6502-portable. v4 (v3-parity +
+reach-mask extension) meets (3); mirror value A/B n=120 running (v4_mirror.log)
+answers (1). If v4 lands ≈ −18..−20 REAL, the missed candidates were
+low-value and the design closes; if ≈ −13, the miss class carries the value
+and the sweep needs the supported-slide mode.
+
+## THE CONVERGENCE ANSWER (2026-08-04 afternoon)
+
+Three measurements settle the enumerator question:
+1. TE path dumps for the stable miss class: every missed candidate uses
+   SOFT-DROP + MID-FLIGHT ROTATION — geometry+rotation binds, timing does not.
+2. **TE free ≡ TE gravity on 1,094 real boards (5,474 tucks, ZERO diff either
+   way)** — at 12 f/row with soft drop, the frame budget NEVER binds.
+3. **100% of scan_v3's out-of-RS candidates are TE-free-legal** — no phantom
+   value in the union's −20.02; RS's deficit was its extra reach filter, not
+   motion truth.
+
+**Converged enumerator = TE-free's tuck set** (⊇ union ⇒ mirror value ≥
+−20.02): a pure geometry+rotation BFS over (x, y, orient) = 512 states,
+64-byte visited plane — cleanly portable to 6502 (and RTL). Mask-sweep
+approximations (v4 iters 1-4, best 84%/−16.56 REAL) are OBSOLETE as the
+target; they remain as the fallback if the BFS port doesn't fit ROM. Value
+gate of the TE-free set under the mirror: running (te_mirror.log). Next:
+6502 BFS port + bit-exact vs TE-free + θ recal + capacity policy.
+
+## Enumerator value table — day's end (2026-08-04, all n=120, mirror, θ=150)
+
+| enumerator | pills vs off | fires/g |
+|---|---|---|
+| RS (old proof) | −12.94 [−20.43,−5.48] | 3.17 |
+| v4 masks (84% union) | −16.56 [−24.11,−9.11] | 4.39 |
+| UNION (RS ∪ v3) | −20.02 [−27.11,−13.19] | 5.11 |
+| TE-free (full truth) | −15.56 [−24.09,−6.91] | 7.96 |
+
+All REAL; CIs overlap heavily — the BETWEEN-variant differences are not
+individually resolved at n=120. What IS established: richer-than-RS
+enumeration is worth −15..−20 (vs the shipped firmware's ~0), and fires/g
+scales with pool size ⇒ **θ=150 is calibrated for a ~3-fire pool; the
+bigger pools over-fire.** Next lever: per-enumerator θ sweep (expect
+TE-free's optimum at θ≥250 to match or beat the union's −20).
+
+DAY VERDICT: convergence question CLOSED (TE-free BFS = the portable
+motion truth; free≡gravity; v3 ⊂ TE-free; timing never binds). Remaining
+engineering, in order: θ sweep on TE-free set → 6502 BFS port (512-state,
+bit-exact vs TE-free) → capacity policy → firmware A/B → silicon.
+
+## TE-free θ curve — FINAL (2026-08-04 evening, n=120 mirror)
+
+| θ | pills vs off | fires/g |
+|---|---|---|
+| 150 | −15.56 [−24.09,−6.91] | 7.96 |
+| **250** | **−18.05 [−25.69,−10.63]** | **4.84** |
+| 400 | −13.04 [−19.67,−6.49] | 2.59 |
+
+**Ship config for the port: TE-free enumerator @ θ=250** (−18.05, statistically
+indistinguishable from the union's −20.02, on the exact motion-truth set the
+executor can perform). #17 next session: 6502 BFS port (512-state, bit-exact
+vs TE-free), capacity policy, firmware A/B at θ250, then silicon — with the
+driver stale-ARMED2 fix as the freeze-exposure companion work.
