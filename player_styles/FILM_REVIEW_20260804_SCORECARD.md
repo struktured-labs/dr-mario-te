@@ -66,3 +66,22 @@ flailing. The subjective "it gets way faster" = time pressure felt during
 frozen deliberation, not objective game speed (AI interval lengthened too).
 Training target confirmed: last-2-virus closing lines + a pre-commit habit of
 checking "does this placement seal my only clear path?"
+
+## CLOSURES (2026-08-05 early, second workflow pass)
+
+- **#4 over-setup: CONFIRMED.** 47.9% of available immediate clears declined
+  (102/213), flat across matches and phases — a stable style trait. Engine-
+  verified boards (90% reconstruction pass rate; excluded pills are mostly
+  the known unmodeled tuck mechanic), 4/5 declined events visually confirmed.
+- **#5 sequence fumbles: MINOR, refuted for m2.** Credible lateral classes
+  9.97/100 pooled; land-then-patch excluded by its own control; m2 has the
+  LOWEST lateral-fumble rate (4.26/100) — the m2 loss was rotation-class +
+  self-described recklessness, not sequence errors.
+- **Bursty pressure model v1 (fit from this set's footage): REPRODUCES THE
+  DISEASE.** Control bad-ends 52/120 (2.2× drip); the shipped ws=20 build
+  still dies-ahead in 13.3% of games under bursty volleys (76% of its
+  topouts) — a failure mode drip had entirely hidden. ws=20 helps (McNemar
+  p=0.0105) but does not cure. Caveat: v1 injects ~2× drip's volume —
+  volume-vs-timing confound flagged for v2 (volume-matched control +
+  dr_lulu refit). The player's pressure profile is now a working weapon in
+  the rig.
