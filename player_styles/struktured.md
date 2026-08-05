@@ -254,7 +254,20 @@ speed-phase quality curve, strand20 style confirmation.
 
 **Self-report 4: OVER-SETUP tendency** (elaborate multi-clear construction
 over simple takes — consistent with the optimizer/latency profile).
+
+**Self-report 5 (added 2026-08-04, post-set): GENERIC EXECUTION ERRORS** —
+"some mistakes are just plain execution errors (not a/b variety, just messed
+up the sequence of buttons I intended to press)". A distinct class from the
+A/B rotation slips: the intended plan was right, the button SEQUENCE came out
+wrong. Measurable tape signatures: lateral reversals (walk one way, snap back
+within a few frames), post-soft-drop late corrections (drop committed, then a
+lateral/rotation attempt that can no longer take effect), land-then-patch
+(placement immediately "repaired" by the next pill). Requires the lateral
+per-frame path, not just rotation events — post-pass on the tracker output.
+
 **METHOD COMMITMENT (user-requested): the film review is BLIND-FIRST** —
-conclusions drawn from footage before consulting commentary; the four
-self-reports are hypotheses to test, not priors. Divergences between
-self-perception and tape are first-class findings.
+conclusions drawn from footage before consulting commentary; the five
+self-reports are hypotheses to test, not priors. The 2026-08-04 workflow's
+analysis agents were given zero self-report content (verified: prompts contain
+only footage-derived ground truth). Divergences between self-perception and
+tape are first-class findings.
