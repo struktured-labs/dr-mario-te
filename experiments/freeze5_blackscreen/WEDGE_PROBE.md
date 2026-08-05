@@ -126,3 +126,28 @@ wedge time to name the exact spin site; capture FPGA bridge register state
 if accessible. Remedy direction: watchdog that detects sustained fw_state=R
 + dead video and auto-reboots (bounded), pending a real fix in
 core/framework interaction.
+
+## AUTO-RECOVERY FIRING #1 (2026-08-05 11:59:15Z) — the wedge is USERSPACE
+
+The watchdog fired correctly (consec=6, busy_frac=100%), captured the state
+snapshot (recovery1_20260805_1159.log), synced and rebooted — the soak
+self-healed with no human action. What the snapshot proves:
+
+- **wchan = 0 and /proc/<pid>/stack EMPTY** ⇒ the process is NOT blocked in
+  any kernel call. Combined with State=R, the framework is spinning in
+  USERSPACE, not stuck on a driver/bridge ioctl. This REFUTES the
+  "blocked on the HPS-FPGA bridge" reading from capture #1 — it's a
+  userspace busy-loop (poll/retry) that never exits.
+- **Thread 524 = R, thread 914 = S**: only the main thread spins; the
+  second thread sleeps normally. utime 39564 / stime 50358 with
+  nonvoluntary_ctxt_switches 8312 ≫ voluntary 1189 = classic
+  compute-bound spin, not I/O wait.
+- Memory normal (RSS 5.8MB, VmPeak 71MB) — no leak, consistent with
+  capture #1.
+
+**Next diagnostic (for the silicon session or a spare box):** the exact spin
+site needs userspace visibility — `perf top -p <pid>` / repeated
+`cat /proc/<pid>/stat` field-30 (kstkeip) sampling, or gdb/strace if
+installable on this image. Since the process is in userspace, the MiSTer
+framework's own source (main loop, user_io poll) is the place to look; a
+core-side signal that never asserts would present exactly this way.
