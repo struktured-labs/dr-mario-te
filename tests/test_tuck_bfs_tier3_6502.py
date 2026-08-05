@@ -56,6 +56,7 @@ def stage_direct(n_boards=200, max_candidates_per_board=None):
     code = a.assemble()
     print(f"[gate] assembled {len(code)} bytes, {len(a.labels)} labels")
     bfs_addr = a.base + a.labels["tuck_bfs"]
+    setup_addr = a.base + a.labels["t3_setup_board"]
     cascade_addr = a.base + a.labels["tr_derive_cascade"]
     cpu = Cpu()
     cpu.load(a.base, code)
@@ -76,6 +77,10 @@ def stage_direct(n_boards=200, max_candidates_per_board=None):
         cpu.set_zp(TB.PILL_A, 1)
         cpu.set_zp(TB.PILL_B, 2)
         cpu.call(bfs_addr, max_steps=6_000_000)
+        # t3_setup_board ONCE per board (tr3_derive no longer rebuilds MONO_VIS_L/
+        # R itself -- see that routine's docstring for the per-candidate-rebuild
+        # regression this fixed).
+        cpu.call(setup_addr, max_steps=6_000_000)
 
         placements = TE.enumerate(col, 1, 1, mode="free")
         tucks = [p for p in placements if p["is_tuck"]]

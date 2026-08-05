@@ -466,13 +466,33 @@ def _emit_t3_phase2_horiz(a):
 
 
 # ============================================================= tier-3 search ==
+def _emit_t3_setup_board(a):
+    """t3_setup_board: builds MONO_VIS_L and MONO_VIS_R for the CURRENT board
+    (LIVE_BOARD) ONCE. MUST be called exactly once per board, BEFORE the first
+    tr3_derive call for that board -- tr3_derive itself no longer rebuilds these
+    planes (see that routine's docstring for why: a board-level plane rebuilt on
+    EVERY per-candidate fallback call measured 3-4x more py65 steps per decision
+    than tier 1 alone, entirely wasted work re-deriving the SAME board-derived
+    planes for every candidate that reaches tier 3). Callers: tr_translate_tier3
+    (once, before its per-candidate loop) and any direct-call test harness (once
+    per board, before looping candidates -- see test_tuck_bfs_tier3_6502.py)."""
+    a.label("t3_setup_board")
+    a.ins("LDA_imm", 0); a.ins("STA_zp", T3_MODE)
+    a.jsr("t3_mono_reach")
+    a.ins("LDA_imm", 1); a.ins("STA_zp", T3_MODE)
+    a.jsr("t3_mono_reach")
+    a.ins("RTS")
+
+
 def _emit_tr3_derive(a):
     """tr3_derive: TIER-3 FALLBACK, called from tr_derive (tuck_bfs_translate_
     6502.py's wiring, see build_copro_d3.py) only when tier 1 already failed.
     Inputs TR_TARGET/TR_REST/TR_ORIENT/TR_ISVERT (same cells tr_derive itself
     uses -- tier 1 has already returned by the time this runs, so reusing them
-    is safe). Builds MONO_VIS_L and MONO_VIS_R (T3_MODE=0 then 1), computes T3_SD
-    once (first_occ(target)-1, same as tier 1's sd), then searches approach
+    is safe). REQUIRES t3_setup_board to have already run for this board (MONO_
+    VIS_L/MONO_VIS_R do NOT get rebuilt here -- see t3_setup_board's own
+    docstring for why that used to happen per-candidate and was fixed). Computes
+    T3_SD once (first_occ(target)-1, same as tier 1's sd), then searches approach
     columns nearest-to-target-first (d=0..7, d=0 tries ONLY target itself -- the
     rotation-kick-only case, see translate_ref_tier3.py's derive_tier3
     docstring), each row 0..15 gated on t3_vis_test(MONO_VIS_L) OR
@@ -484,10 +504,6 @@ def _emit_tr3_derive(a):
     a.ins("LDA_zp", TRB.TR_REST); a.ins("STA_zp", T3_REST2)
     a.ins("LDA_zp", TRB.TR_ORIENT); a.ins("STA_zp", T3_ORIENT2)
     a.ins("LDA_zp", TRB.TR_ISVERT); a.ins("STA_zp", T3_ISVERT2)
-    a.ins("LDA_imm", 0); a.ins("STA_zp", T3_MODE)
-    a.jsr("t3_mono_reach")
-    a.ins("LDA_imm", 1); a.ins("STA_zp", T3_MODE)
-    a.jsr("t3_mono_reach")
     # T3_SD = fc - 1, where fc = first_occ(target) for VERTICAL, or
     # min(first_occ(target), first_occ(target+1)) for HORIZONTAL -- matching
     # _phase2_ok's python fc computation exactly (and tr_try_horiz's own "min of
@@ -635,11 +651,15 @@ def _emit_tr_derive_cascade(a):
 
 def _emit_tr_translate_tier3(a):
     """tr_translate_tier3: byte-for-byte the SAME loop as tuck_bfs_translate_
-    6502.tr_translate, except calling tr_derive_cascade instead of tr_derive
-    directly -- duplicated rather than parameterizing tr_translate itself, same
-    "new additive entry point, don't modify what's shipped" pattern as
+    6502.tr_translate, except calling t3_setup_board ONCE up front (builds
+    MONO_VIS_L/R for THIS board a single time, not per-candidate -- see
+    t3_setup_board's own docstring for the 3-4x step-count regression this
+    fixes) and tr_derive_cascade (tier1-then-tier3) instead of tr_derive alone
+    -- duplicated rather than parameterizing tr_translate itself, same "new
+    additive entry point, don't modify what's shipped" pattern as
     DRCOPRO_TUCKBFS's own relationship to DRCOPRO_TUCKV3."""
     a.label("tr_translate_tier3")
+    a.jsr("t3_setup_board")
     a.ins("LDA_imm", 0)
     a.ins16("STA_abs", TRB.TS_CNT)
     a.ins16("STA_abs", TRB.TS_DROP)
@@ -695,6 +715,7 @@ def emit_tier3(a):
     _emit_t3_row_fixedpoint(a)
     _emit_t3_down_propagate(a)
     _emit_t3_mono_reach(a)
+    _emit_t3_setup_board(a)
     _emit_t3_phase2_vert(a)
     _emit_t3_phase2_horiz(a)
     _emit_tr3_derive(a)
