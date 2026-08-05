@@ -6,15 +6,15 @@ tier 3 recovers 100% of the reachfull2 oracle bit-for-bit (0/120 seeds under v1)
 pills value (−23.49) is real under the honest v1.1 re-check, even though the bad-ends
 delta alone is a wash. This document tracks the mission's five milestones.
 
-## Status: M1–M3 done, M4 (offline A/B) and M5 (candidate build + co-sim gate) in progress
+## Status: ALL FIVE MILESTONES DONE
 
 | # | Milestone | Result |
 |---|---|---|
 | 1a | Python reference for tier-3 translation | `tests/translate_ref_tier3.py`, 97.7% coverage of tier≤3, 0 over-accepts |
 | 2 | Bit-exact 6502 port | `tests/tuck_bfs_tier3_6502.py`, 0/1490 mismatches |
 | 3 | Full-chain trajectory games | tier-3 fires 3x more often than tier-1 on the same seed/window |
-| 4 | Offline firmware A/B (θ250, n≥60) | in progress |
-| 5 | Candidate copro image + co-sim gate | in progress |
+| 4 | Offline firmware A/B (θ250, n≥60) | firmware-tier3 rescues 72.7% of the oracle's bad-end value vs base32 (ship case); 8/9 firmware-spot-checked fires corroborated |
+| 5 | Candidate copro image + co-sim gate | candidate hash `12a0906bec7358fae6c914d5683a3dab`; RTL smoke test 12/12 clean; silicon A/B gated on the platform wedge fix |
 
 ## 1. The driver finding (why tier 3 needs no new descriptor format)
 
@@ -119,9 +119,21 @@ CANDLIST entry and landed on empty cells.
   after the mono_reach-per-candidate fix (two fixed-point closures aren't free even
   computed once per board). Not a correctness concern; a real consideration for anything
   timing-sensitive.
-- The 2.3% coverage gap (§2) is a structural descriptor-format limit, not something the
-  current design can close without a genuinely richer descriptor (out of scope for this
-  ship target).
+- **NAMED CAUSE of the residual gap** (the 2.3% per-candidate coverage miss in §2/§3, and
+  the 3/60-seed game-outcome gap vs the oracle in §8): rotation happening LATE, interleaved
+  with or after the final lateral move — the current 2-phase `(approach, trigger)`
+  descriptor assumes the pill settles into its FINAL orientation before or during phase 1,
+  which is false for candidates that rotate again near landing (sometimes with a kick that
+  also shifts the column). This is a structural descriptor-format limit, not something the
+  current design can close. **Cost of closing it**: a 3-phase (or explicitly rotation-timed)
+  descriptor would need a second trigger row for the rotation event, roughly doubling each
+  CANDLIST entry (5B → ~7-8B × 14 slots ≈ +42-56B RAM) plus a third mono-reachability-style
+  search phase in the translation routine — by analogy to tier 3's own ~1120B cost for ONE
+  new phase, a second one is plausibly several hundred bytes even with maximal code reuse.
+  Against the 2563B margin tier 3 leaves in the $9000-$A7FF window (§5), it would likely
+  still fit, but would eat meaningfully into that margin for a gap this size (5% of seeds,
+  and not even conclusively all translation-caused per §8's spot-check). Not scoped for
+  this ship — the next-generation lever, not this build's.
 
 ## 8. Milestone 4 — offline firmware A/B (done)
 
@@ -154,7 +166,35 @@ reachfull2 oracle)**:
 Firmware-tier3 rescues **8 of the oracle's 11 total bad-end rescues (72.7%)** relative to
 base32 — a clear, directional win over what's currently shipped (tier 1 only), though at
 n=60 the pills CI is wide and the vs-base32 mcnemar p=0.077 doesn't clear the conventional
-0.05 bar (worth a larger n if a tighter number is ever needed).
+0.05 bar. Team-lead's ship-decision reading: this is the comparison that matters (tier-3 vs
+TODAY'S SHIPPED tier-1 vocabulary), and it's a clear directional win; the oracle gap below
+is a ceiling-chasing question, not a ship-blocker, and n was deliberately NOT tightened
+further — the honest larger-n run belongs later, under dr_lulu's fitted pressure model,
+not the current proxy.
+
+**METHODOLOGY SPLIT, stated explicitly per team-lead's requirement** (so a reference-run
+number is never later mistaken for a firmware-run number, the exact class of ambiguity that
+already burned this program once with the oracle-ceiling numbers): **all 60 seeds** in the
+table above ran `firmware_tier_of` — the Python cascade (`translate_ref.derive_verified` +
+`translate_ref_tier3.derive_tier3_verified`), bit-exact-validated against the real 6502 in
+§3, but a Python execution, not a firmware one. A SEPARATE follow-up script,
+`firmware_tier3_spotcheck.py`, then replayed 3 of those 60 seeds byte-for-byte and queried
+the ACTUAL 6502 firmware (fresh `build_image()` + py65 stub-flow, subprocess-isolated) at
+every board where the sweep's own decider fired a tuck — seeds chosen from the sweep's own
+fire distribution as required (44: 10 fires, 0: 9 fires, 41: 8 fires — the three most
+active seeds, not cherry-picked for outcome), 9 boards total.
+
+**Spot-check result**: 8/9 boards had the REAL firmware also fire a tuck; 1/9 (seed 41,
+pill 6) did not. This check deliberately does NOT assert the firmware picks the identical
+candidate the mirror rig (`reach_root.choose_reach_tier`) chose — the mirror rig is a
+different, faster scorer built for large-n sweeps, not a re-implementation of the real
+depth-3 D3 search wired into the copro, so move-for-move agreement was never a claim either
+side made. What it does show: the tuck opportunities the sweep is counting are real,
+firmware-executable ones on real boards (8/9), with one board where the real search's own
+winner-selection did NOT fire — consistent with, and additional evidence for, the residual
+gap already reported above (whether that specific miss is a translation gap or the D3
+search's richer eval simply preferring a base move the mirror's simpler scorer ranked
+lower was not disentangled, and is flagged as unresolved rather than assumed either way).
 
 **The honest gap this milestone was built to surface**: the firmware does NOT achieve
 game-outcome parity with the oracle the way the abstract tier≤3 classification promised.
@@ -171,8 +211,48 @@ found a real, if small and imprecisely-sized, shortfall.
 
 Raw results: `dr-mario-qa-wt/experiments/eval47/results/firmware_tier3_ab_n60.json`.
 
-## 9. Milestone 5 — candidate build + co-sim gate (in progress)
+## 9. Milestone 5 — candidate build + co-sim gate (done)
 
-Plan: `dbg_build.py all 0` with `DRCOPRO_TUCKBFS=1 DRCOPRO_TUCKBFS_TIER3=1` exported, then
-`run_gate.sh` (verilator co-sim, cell-exact move comparison) — NOT touching the shipped
-`copro_rom.hex` on this branch.
+**Co-sim gate**: rebuilt `obj_mister/mister_vsim` from source (verilator, `--build`
+incremental — 7.7s, this tree already had a cached build from a prior session). Built
+`copro_rom.hex` with `DRCOPRO_TUCKBFS=1 DRCOPRO_TUCKBFS_TIER3=1` via `dbg_build.py all 0`,
+generated a 12-board synthetic corpus (`gen_corpus.py`), and ran it through the REAL RTL
+(`CoproDrMario.sv` + `LeafEval.sv` + `copro6502.v` + `copro_alu.v`, not py65's software
+approximation of it). **Result: all 12 cases completed cleanly with sane real decisions**
+(e.g. `copro=(5,0)`, `(1,2)`, `(6,2)`, `(4,2)`, ...), ~0.3-0.9s of simulated 85.9MHz time
+each — confirming the tier-3-capable firmware wiring runs correctly end-to-end under the
+actual hardware model, not just under py65's CPU-only emulation. (The `MISMATCH`/`0/12`
+lines in the raw log compare against `gen_corpus.py`'s own DUMMY `(0,0)` oracle for
+non-case-0 boards — expected and not a pass/fail signal; `run_gate.sh`'s own cell-exact
+comparison methodology is baseline-vs-delta move equality, not vs that dummy target, and
+was not the question this smoke test was asking. Per team-lead's guidance, this RTL
+smoke test — not a further tier1-vs-tier3 RTL move diff — was treated as sufficient
+evidence for this milestone, given the already-strong py65 bit-exact gate (M2, 0/1490) and
+the offline A/B (M4) already on record.)
+
+**`copro_rom.hex` handling**: git-tracked, confirmed clean before starting
+(`f4b6dfbf76c9beb80d19b3659fb99d26`, matching `HEAD`). Building the candidate necessarily
+overwrites it on disk; restored via `git checkout --` and re-verified clean+matching after
+EVERY build in this milestone. No shipping artifact was left touched.
+
+**CANDIDATE HASHES**:
+
+| build | command | md5 |
+|---|---|---|
+| shipped (unchanged) | — | `f4b6dfbf76c9beb80d19b3659fb99d26` |
+| knob fully off (py65 `build_image`) | — | `753bfb2397d10b5de078a1c9068433d2` |
+| tier-1 only (py65 `build_image`) | `DRCOPRO_TUCKBFS=1` | `c2a0ec2add239cb3c08d561a77799748` |
+| tier-1 + tier-3 (py65 `build_image`) | `DRCOPRO_TUCKBFS=1 DRCOPRO_TUCKBFS_TIER3=1` | `f5480f74874ce64fb03f44a4e361224e` |
+| **candidate** (`dbg_build.py all 0`, the real ship recipe) | `DRCOPRO_TUCKBFS=1 DRCOPRO_TUCKBFS_TIER3=1` | **`12a0906bec7358fae6c914d5683a3dab`** |
+
+**SEQUENCING CONSTRAINT — the silicon A/B must wait for the wedge verdict.** New fact from
+team-lead: the pre-strand20 core ALSO wedges (6m15s, independently confirmed), so the wedge
+is a PLATFORM-level issue, not a regression in this branch's work — this candidate is not
+implicated. But a box that dies every ~6-30 minutes under continuous play cannot measure a
+brain delta either way, so **any silicon A/B of this candidate is gated on the platform fix
+landing first, not on anything in this report.** Once cleared: deploy this candidate
+(`DRCOPRO_TUCKBFS=1 DRCOPRO_TUCKBFS_TIER3=1` via the normal `dbg_build.py all 0` recipe),
+A/B against the currently-shipped tier-1-only firmware on real hardware.
+
+This closes the tuck-bfs-6502 branch's tier-3 mission (task #17): milestones 1-5 all done,
+documented, committed, and pushed.
