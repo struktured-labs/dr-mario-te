@@ -1140,6 +1140,23 @@ def build_main(level=11, speed=1):
     a.label("ga_vd")
     a.jmp("dispatch")
     a.label("not_play")
+    if STUDY and STUDYCOUNTS:
+        # GARBLE FIX (user-reported, tape f0075.jpg): STUDYCOUNTS (above, in "dispatch") writes
+        # live digit sprites into OAM slots 8-15 every PLAY-mode hook ($0046==4), but previously
+        # did nothing on any other mode -- neither redraw nor blank. The base ROM's per-frame OAM
+        # hygiene (R8712 @ $8712) is NOT an unconditional clear: it only pads the shadow buffer
+        # from THAT SCREEN's own sprite high-water-mark ($42) onward, so a screen using few of its
+        # own sprites (e.g. the "2 PLAYER GAME" settings/level-select screen) can leave slots 8-15
+        # holding a stale frame of digit tiles, rendered as garbage. The ROM's own settings-screen
+        # print table is verified byte-identical to vanilla (tools/romgen.py diff), so this is a
+        # runtime OAM leak, not a table collision. Fix: on every non-play hook, explicitly move
+        # all 8 digit sprites off-screen (Y=$FF -- the same idiom R8712 and this driver already
+        # use). One writer now owns the whole slot-8-15 lifecycle: draw-when-valid (dispatch) or
+        # blank-always (here) -- no reliance on the game's own bookkeeping to happen to cover them.
+        a.ins("LDA_imm", 0xFF)
+        for _slot in (8, 9, 10, 11, 12, 13, 14, 15):
+            a.ins16("STA_abs", 0x0200 + _slot * 4)
+        a.ins16("LDA_abs", 0x0046)                          # restore A = mode for the CMP below
     a.ins("CMP_imm", 0x08); a.br("BNE", "menus")
     # intro mode ONLY happens at power-on/reset: re-arm the autonav (PRG-RAM persists across
     # soft core relaunches, so the NAV_MAGIC one-time init does NOT re-run -> stale NAV_T killed
