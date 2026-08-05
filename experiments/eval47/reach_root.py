@@ -530,6 +530,73 @@ def choose_reachexec(fb, col, vir, ca, cb, na, nb, ws=WS, theta=THETA_FULL,
     return best_pick
 
 
+# ============================================================================
+# ITERATION 4 PREP (task #67, team-lead follow-on): tier-parametric sweep
+# machinery, built ahead of the tuck-bfs agent's real `tier_of(col,
+# candidate) -> int` (executability tiers derived from BFS parent chains --
+# tier1 = translatable.py's current single-adjacent-column vocabulary,
+# higher tiers = progressively general execution up to full path-playback).
+# `choose_reach_tier` is reachfull2 with the tuck branch filtered to
+# `tier_fn(col, candidate) <= max_tier`, generalizing `choose_reachexec`
+# (which is exactly `choose_reach_tier(..., max_tier=1)` under the stub
+# below). Nothing above this point is touched.
+# ============================================================================
+STUB_MAX_TIER = 2   # the two-tier placeholder's upper tier ("everything")
+
+
+def _stub_tier_of(col, candidate):
+    """TWO-TIER PLACEHOLDER for the eventual tier_of(col, candidate) -> int.
+    tier 1 = translatable.py's current vocabulary (TL.executable); tier
+    STUB_MAX_TIER (2) = everything else, i.e. the full BFS-reachable tuck
+    set, unfiltered. Matches the real API's exact 2-positional-arg contract
+    (col, candidate) -> int so swapping in the real tier_of() the moment it
+    lands requires changing nothing else in this file or the sweep driver --
+    see choose_reach_tier's own docstring and run_tier_sweep.py's header
+    note for the one-line change that does the swap."""
+    import translatable as TL
+    return 1 if TL.executable(col, candidate) else STUB_MAX_TIER
+
+
+def choose_reach_tier(fb, col, vir, ca, cb, na, nb, max_tier, ws=WS,
+                      theta=THETA_FULL, topk2=TOPK2, tier_fn=None):
+    """reachfull2, with tuck-class candidates additionally filtered to
+    `tier_fn(col, candidate) <= max_tier`. `tier_fn` defaults to
+    `_stub_tier_of` (the two-tier placeholder). Base branch is unchanged
+    from reachfull2/reachexec (tiers are a tuck-execution-vocabulary
+    question only; straight drops bypass CANDLIST entirely, same reasoning
+    as choose_reachexec's own docstring).
+
+    ENDPOINT GUARANTEE (the self-test this task asked for -- see
+    `_selftest_reach_tier_endpoints`): under the stub, `max_tier=1` must
+    reproduce `choose_reachexec`'s decision EXACTLY (both compose `is_tuck
+    and reachable and TL.executable(col, p)` -- literally the same
+    predicate, just reached through `tier_fn(col,p)<=1 <=> tier_fn(col,p)==1
+    <=> TL.executable(col,p)`), and `max_tier>=STUB_MAX_TIER` must reproduce
+    `choose_reachfull2` EXACTLY (every stub tier is <= STUB_MAX_TIER by
+    construction, so the tier filter accepts every tuck candidate reachfull2
+    itself would have, i.e. no filtering at all)."""
+    if tier_fn is None:
+        tier_fn = _stub_tier_of
+    cands = _scored_base_candidates(fb, col, vir, ca, cb, na, nb, ws, topk2)
+    reach_cands = [c for c in cands if c["reachable"]]
+    n_base_legal, n_reach = len(cands), len(reach_cands)
+    pool = reach_cands if reach_cands else cands
+    fallback_unreachable = not bool(reach_cands)
+
+    best = max(pool, key=lambda c: c["val"])
+    best_base_val = best["val"]
+    best_out = {"kind": "base", "action": best["action"], "val": best_base_val}
+
+    tier_filter = lambda p: tier_fn(col, p) <= max_tier  # noqa: E731
+    best_pick = _tuck_branch_pick(fb, col, vir, ca, cb, na, nb, ws, theta, topk2,
+                                  best_base_val, best_out, extra_filter=tier_filter)
+    best_pick["n_base_legal"] = n_base_legal
+    best_pick["n_reach"] = n_reach
+    best_pick["fallback_unreachable"] = fallback_unreachable
+    best_pick["max_tier"] = max_tier
+    return best_pick
+
+
 CHOOSERS = {"base32": choose_base32, "reach32": choose_reach32, "reachfull": choose_reachfull,
             "reach32t": choose_reach32t, "reachfull2": choose_reachfull2,
             "reachfull2t": choose_reachfull2t, "reachexec": choose_reachexec}
@@ -810,6 +877,53 @@ def _selftest_reachexec_wiring(n_boards=60, seed=20260806):
             "accept_rate": accept_rate, "pass": ok}
 
 
+def _selftest_reach_tier_endpoints(n_boards=60, seed=20260806):
+    """THE task #67-prep SELF-TEST: decision-level proof that the tier-sweep
+    machinery adds NOTHING of its own. Under the two-tier stub, on the same
+    battery of high/holed random boards `_selftest_reachexec_wiring` uses:
+      choose_reach_tier(..., max_tier=1)             == choose_reachexec
+      choose_reach_tier(..., max_tier=STUB_MAX_TIER)  == choose_reachfull2
+    checked action-for-action AND value-for-value (kind, action/placement
+    cells, val) -- not just "both pick a tuck", the exact same choice."""
+    L = _lazy()
+    FB = L["FB"]
+    rnd = random.Random(seed)
+    mism_lo = mism_hi = checked = 0
+    for _ in range(n_boards):
+        grid = _rand_board(rnd, max_height=16, holes=True)
+        fb = FB(grid)
+        col, vir = L["RS"].board_flat_from_fb(fb)
+        ca, cb = rnd.randint(1, 3), rnd.randint(1, 3)
+        na, nb = rnd.randint(1, 3), rnd.randint(1, 3)
+        checked += 1
+
+        exec_out = choose_reachexec(fb, col, vir, ca, cb, na, nb, ws=WS)
+        tier1_out = choose_reach_tier(fb, col, vir, ca, cb, na, nb, 1, ws=WS)
+        if not _picks_equal(exec_out, tier1_out):
+            mism_lo += 1
+
+        full_out = choose_reachfull2(fb, col, vir, ca, cb, na, nb, ws=WS)
+        tierN_out = choose_reach_tier(fb, col, vir, ca, cb, na, nb, STUB_MAX_TIER, ws=WS)
+        if not _picks_equal(full_out, tierN_out):
+            mism_hi += 1
+
+    ok = checked == n_boards and mism_lo == 0 and mism_hi == 0
+    return {"name": "reach_tier_endpoints", "boards": checked,
+            "mismatch_tier1_vs_reachexec": mism_lo,
+            "mismatch_tierN_vs_reachfull2": mism_hi, "pass": ok}
+
+
+def _picks_equal(a, b, tol=1e-6):
+    """Two choose_*() outputs pick the SAME action: same kind, same base
+    action or same tuck placement cells, and matching value within `tol`."""
+    if a["kind"] != b["kind"] or abs(a["val"] - b["val"]) > tol:
+        return False
+    if a["kind"] == "base":
+        return a["action"] == b["action"]
+    return a["placement"]["cells"] == b["placement"]["cells"] \
+        and a["placement"]["orient"] == b["placement"]["orient"]
+
+
 def run_selftests():
     r1 = _selftest_base32_matches_shipped()
     print(f"[1] base32 vs shipped (ab47._choose_base wt=0 ws={WS}): "
@@ -841,12 +955,17 @@ def run_selftests():
           f"tuck accept rate {r6['accept_rate']:.1%} ({r6['n_tuck_accept']}/{r6['n_tuck_total']}), "
           f"executable() mismatches on reachexec's own tuck picks {r6['mismatch']} "
           f"-> {'PASS' if r6['pass'] else 'FAIL'}")
-    return r1, r2, r3, r4, r5, r6
+    r7 = _selftest_reach_tier_endpoints()
+    print(f"[7] tier-sweep endpoints (stub): {r7['boards']} boards, "
+          f"max_tier=1 vs reachexec mismatches {r7['mismatch_tier1_vs_reachexec']}, "
+          f"max_tier={STUB_MAX_TIER} vs reachfull2 mismatches {r7['mismatch_tierN_vs_reachfull2']} "
+          f"-> {'PASS' if r7['pass'] else 'FAIL'}")
+    return r1, r2, r3, r4, r5, r6, r7
 
 
 if __name__ == "__main__":
-    r1, r2, r3, r4, r5, r6 = run_selftests()
+    r1, r2, r3, r4, r5, r6, r7 = run_selftests()
     ok = (r1["pass"] and r2["pass"] and r3["pass"] and r4["pass"] and r5["pass"]
-          and r6["pass"])
+          and r6["pass"] and r7["pass"])
     print("\nSELF-TEST " + ("PASS" if ok else "FAIL"))
     sys.exit(0 if ok else 1)
