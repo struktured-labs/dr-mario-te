@@ -36,3 +36,4 @@ drmario_cart.nes
 
 # scratch manifests (leading underscore) — not shipped builds
 roms/manifests/_*.json
+release/kit_out/
