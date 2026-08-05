@@ -40,17 +40,22 @@ style-ensemble program (`eval47/STYLE_ENSEMBLE_V1.md`), not the standard metric 
 n=0/not run — the handheld TMG clip remains the only material for that, and remains hard-mode for
 vision per its own manifest note).
 
-**Fit confidence LOW** (n=13 volleys, below the n=20 confidence line — report, don't treat as
-settled). **Match-pooled**, same caveat as Jarsdad's entry above (events summed with Missy's, not
-separated):
-- inter-volley gap 31.5s [17.5, 46.5] — the SLOWEST of every match fit in the ensemble so far
-  (vs. struktured's 22.7s, Jarsdad's match's 16.4s)
-- volley size mean 2.31 cells [2.00, 2.69] — smallest mean in the ensemble
-- P(counter-volley within 5s | clear 4-6 cells) = 33.3% (n=57), close to struktured's 32.1%;
-  P(... | clear 7-10 cells) = 33.3% but n=3 — too thin to read anything into
+**UPDATE 2026-08-05 (pass 3): per-player separation applied, and the picture flipped.** The n=13
+pooled number above summed Bidwell's AND Missy's events together. Refactored to a per-player
+SENDING profile (see `eval47/STYLE_ENSEMBLE_V1.md` §5-7): **Bidwell alone: n=8 volleys —
+UNINFORMATIVE** (below even the LOW-CONF band; too thin for a settled claim). Own clears n=27.
+Reporting the number anyway per the team rule, heavily caveated:
+- P(counter-volley within 5s | clear 4-6 cells) = **52.0% (n=25)** — the HIGHEST of any per-player
+  fit in the entire ensemble so far, including struktured's own (28.2%) and Jarsdad's (50.0%)
+- inter-volley gap 29.1s (n=7 gaps) — still on the slower side, though the sample is now tiny
 
-Directionally the slowest-tempo match fit in the ensemble so far. Same per-player caveat as
-Jarsdad's: not resolved whether this is Bidwell's tempo, Missy's, or the pairing's.
+**This reverses the pooled-match read.** Pass 2's pooled fit called this "the slowest match in the
+ensemble" — but Missy's own separated profile (P(4-6)=18.8%, n=32; gap 35.8s) is markedly slower
+than Bidwell's own numbers. The pooled "slow" character looks, on this data, like it was driven
+more by Missy's response profile than by Bidwell's own attacking tempo — **a hypothesis, not a
+finding, given n=8**, but a notable reversal worth flagging rather than repeating the old pooled
+read. Needs more footage (a second window/match) before treating Bidwell's own tempo as
+established either way.
 
 ## Why he matters to the project
 

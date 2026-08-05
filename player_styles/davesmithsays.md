@@ -17,12 +17,17 @@ found this pass, both HIGH attribution confidence:
    matches the Green Bracket's `.description` roster line "44 - davesmithsays" exactly.* Footage:
    `youtube-drmc-official-2024/006_20241116_y60HICBTT8Q_THE_2024_DrMC_Championship_-_Green_Bracket.mp4`,
    t≈1330-1750s, bottom-pair slot of the 4-way-split broadcast, vs. Larvae (seed 12).
-   Clear-event detection worked fine (n=110 clears, healthy volume) but the volley detector
-   returned only **n=2** — far too thin for any P(volley|clear) or gap-timing claim. **Do not cite
-   a pressure-conditional number for davesmithsays from this window** — the only safe claim is
-   "a genuine VS-format broadcast appearance exists and is processable," not any tempo/style
-   number. A follow-up pass with a different or wider window may recover more volleys (see
-   `eval47/STYLE_ENSEMBLE_V1.md` §7).
+   Clear-event detection worked fine (own clears n=51, healthy volume). **UPDATE 2026-08-05
+   (pass 3): per-player separation makes this WORSE, not better — davesmithsays' own attributed
+   volley count is n=0.** Refactored to a per-player SENDING profile (clears where
+   side==davesmithsays, volleys landing on Larvae's board — see `eval47/STYLE_ENSEMBLE_V1.md` §5-7):
+   not one volley in the entire ~420s window landed on Larvae's board within 5s of any of
+   davesmithsays' 51 clears. (Larvae's own attributed count is also near-zero, n=2, so this reads
+   as a low-counter-fire pairing/window generally, not specific to one side.) **Do not cite ANY
+   pressure-conditional number for davesmithsays** — the only safe claim remains "a genuine
+   VS-format broadcast appearance exists and is processable," now with the added fact that this
+   specific window shows essentially no fast counter-fire in either direction. A different/wider
+   window is needed before any tempo/style claim (see `eval47/STYLE_ENSEMBLE_V1.md` §9).
 2. **Speed-bracket format (14 appearances in `players.json`, mostly 2024-2025 Gold Speed
    Monthly):** confirmed **NOT usable** with the current fitting method — this is a solo
    level-climb race format (e.g. "Round 1 Levels 6-9"), not the continuous 2P VS match the
