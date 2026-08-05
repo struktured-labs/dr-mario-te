@@ -446,5 +446,13 @@ TIMING OUT, never by frame content. Never diagnose a wedge from an
 unfamiliar game's visuals — check for a timeout, not a "does this look
 broken to me."
 
+**Tiebreaker for ambiguous content:** if a returned frame still looks
+suspicious, don't argue about pixels — take 3 screenshots ~8 seconds apart
+and compare hashes. Distinct md5s across all 3 = live rendering, settled,
+no game-specific knowledge required. (Independently re-confirmed on this
+same vanilla arm: 3 captures 22:57-22:58Z, 3 distinct md5s, progressing
+through the same cutscene into a legible dialogue frame — motion the
+"corrupted frame" reading couldn't produce.)
+
 The verdict stands as originally written above: BOTH copro cores wedge,
 vanilla does not ⇒ the fault is in our core family, not the framework.
