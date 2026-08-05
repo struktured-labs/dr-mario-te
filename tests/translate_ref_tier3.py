@@ -195,17 +195,18 @@ def derive_tier3(board, target, rest, orient, mono_L=None, mono_R=None):
             if 0 <= a < max_a and a not in order:
                 order.append(a)
 
+    # Tested as mono_L OR mono_R per (a,r) -- NOT "try the expected-direction plane
+    # first, fall back to the other" -- a column can be reached by either hold
+    # direction depending on board shape (e.g. a detour), and this symmetric form
+    # is what the 6502 port implements (one combined test per row, not a nested
+    # per-plane retry), so keeping the two bit-exact means not adding an ordering
+    # distinction here that doesn't exist over there.
     for a in order:
-        plane = mono_L if a <= SPAWN_X else mono_R
-        # a column can be reached by EITHER hold direction depending on board
-        # shape (e.g. a detour), so also try the other plane before giving up.
-        planes = (plane, mono_R if plane is mono_L else mono_L)
-        for pl in planes:
-            for r in range(ROWS):
-                if not _mono_test(pl, a, r, orient):
-                    continue
-                if _phase2_ok(board, a, target, rest, orient, r):
-                    return (a, r)
+        for r in range(ROWS):
+            if not (_mono_test(mono_L, a, r, orient) or _mono_test(mono_R, a, r, orient)):
+                continue
+            if _phase2_ok(board, a, target, rest, orient, r):
+                return (a, r)
     return None
 
 
