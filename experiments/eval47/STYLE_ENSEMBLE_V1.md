@@ -5,192 +5,154 @@ never be the only exam — ship gates need a family of styles.
 
 ## 0. TL;DR
 
-**Ensemble gate: NOT READY, but the picture is much wider now.** Five match-level fits exist
-(struktured, plus four new named-roster matches), one confirmed unusable (documented negative,
-unchanged from pass 1). All five fits remain **match-pooled** (both players' events summed per
-match, matching `bursty_model.py`'s own design and struktured's own precedent) — this pass did
-NOT add per-player separation, so what follows are five match-level pressure profiles, not five
-independent player profiles. That's real progress (5 points show real spread — inter-volley gaps
-range 16.4s to 31.5s, P(volley|clear 7-10) ranges 0% to 74%) but still not a clean archetype
-clustering; see §6.
+**Ensemble gate: NOT READY — and pass 3's per-player separation is a sobering, honest result.**
+Refactoring the pooled match-level fits into per-player SENDING profiles (game-causal direction:
+player X's clears → volleys landing on X's opponent, attributed to X) roughly halves every n, as
+expected. The consequence: **only struktured's own profile (and the AI copro's, from the same
+session) clears the n≥20 confidence line.** All four newly-attributed named players — Rob
+Burrito, Jarsdad, Chris Bidwell, davesmithsays — drop to LOW-CONFIDENCE or, for davesmithsays,
+**n=0 (completely uninformative)** once correctly isolated from their opponents. See §6-7 for the
+full table and what a genuine archetype read would need. This is not a wasted pass: it's the
+correct, necessary refactor, and it surfaces a real methodological finding — pooled match-level
+"OK confidence" numbers were partly an illusion of combining two players' events into one count.
 
-**Correction to the prior report to team-lead:** I incorrectly said Jarsdad and Chris Bidwell
-were in the same Red Bracket as Rob Burrito. They are not — checked against every 2024
-Championship bracket's `.description` file this pass (not assumed): **Jarsdad (seed 35) and
-Chris Bidwell (seed 19, playing "as Robert Smith") are both in the White Bracket**
-(video `009_..._White_Bracket.mp4`), a *different* video from Rob Burrito's Red Bracket. Also
-found **davesmithsays (seed 44) in the Green Bracket** (video `006_..._Green_Bracket.mp4`) — a
-genuine VS-Championship-format appearance, distinct from his Speed-bracket footage (§5 of pass 1).
-§7 of the pass-1 report repeated this error in its "next step" recommendation — superseded by §7
-below.
+## 1-4. Inventory / sources / calibration / attribution — unchanged from passes 1-2
 
-## 1-3. Inventory / source selection / calibration method — unchanged from pass 1
+See prior sections (not reproduced) for the `/mnt/data/drmario/expert_vods/` inventory, the
+never-publish confirmation, calibration methodology, the White/Red/Green bracket geometry
+(`vision_champ2024.py` P1/P2 top pair + P1B/P2B bottom pair), and the HIGH-confidence attribution
+table for Rob Burrito, Jarsdad, Chris Bidwell, and davesmithsays (all via on-screen nameplate +
+seed cross-referenced against each bracket's own `.description` roster).
 
-See the original sections (not reproduced here) for the `/mnt/data/drmario/expert_vods/`
-inventory, the never-publish confirmation on `personal-recordings/`, and the calibration
-methodology (band-edge scan + patch-fraction color + dark-fraction virus split, reusing
-`film_review_20260804/vision.py`'s method with source-specific geometry/thresholds).
+## 5. The refactor: per-player SENDING profiles
 
-**New this pass:** the 2024 Championship template is a **4-way split screen** (2 concurrent
-1v1 matches stacked top/bottom), confirmed by directly viewing extracted frames — pass 1's
-`vision_champ2024.py` only had geometry for the TOP pair (`P1`/`P2`). Added `P1B`/`P2B` for the
-BOTTOM pair by the same band-edge method: `P1B=(x0=689, y0=559, W=32.75, H=31.5)`,
-`P2B=(x0=969, y0=559, W=32.75, H=31.5)` — same W/H as the top pair (found by scanning for the
-bottom pair's own top border, ~y=555-559, right below the top pair's bottom border at ~y=524; a
-tight ~30px gap between the two match rows). Not yet folded back into `vision_champ2024.py` as a
-committed change — the ad-hoc dict is inline in the fit scripts below; flagged as cleanup debt,
-not hidden.
+**Game-causal direction** (per `bursty_model.py`'s own tagging convention — a volley event's
+`side` field is the RECEIVING board): when side S clears, pressure lands on `opponent_of[S]`'s
+board. So player X's SENDING/pressure profile is built from:
+- **clears** = events where `side == X` (X's own clears)
+- **volleys** = events where `side == opponent_of[X]` (garbage that arrived at X's opponent —
+  attributed to X, since this model has no other generative mechanism for a volley)
 
-## 4. Player attribution — confidence stated separately from fit confidence
+X's RECEIVING context (garbage arriving at X's own board) is a different quantity that
+characterizes X's *opponent's* sending style, not X's — not computed, per task direction.
 
-All four new identifications this pass are **HIGH attribution confidence**: each was confirmed by
-an exact on-screen nameplate + seed number match against the bracket's own `.description` roster
-file (not inferred from timing or guessed from partial text):
+Implementation: `fit_ensemble_source.py` gained `collect_events()` (runs `extract_match_events`
+once per match, shared by both a pooled and a per-player fit so per-player fits don't re-run
+vision extraction) and `fit_per_player()` (filters to one direction, reuses the same
+p_within_k/volley_sizes/gap_samples aggregation as the pooled fit). `bursty_model.py` itself
+remains untouched — confirmed again this pass that its primitives (`extract_match_events`,
+`BurstyPressureModel`) are the correct, reusable building blocks; this is re-aggregation on top,
+not a fix.
 
-| player | video | seed | on-screen nameplate | roster line (`.description`) |
-|---|---|---|---|---|
-| Jarsdad | White Bracket | 35 | "(35) Jarsdad" | "35 - Jarsdad" |
-| Chris Bidwell | White Bracket | 19 | "(19) Robert Smith" | "19 - Chris Bidwell (as Robert Smith)" — the description itself cross-references the on-screen alias, removing any doubt |
-| davesmithsays | Green Bracket | 44 | "(44) Davesmithsays" | "44 - davesmithsays" |
-| Rob Burrito (pass 1, restated) | Red Bracket | 17 | "(17) Rob Burrito" | "17 - Rob Burrito" |
+## 6. Self-test: struktured's per-player split
 
-No UNATTRIBUTED cases this pass — every match window used had a clean nameplate confirmation.
-(The opponents in each match — Missy, dmhero, Larvae, Jenny G — are not on the named roster this
-task tracks; their events are still in the pooled fit, per the pooling caveat above, but no
-dossier is being written for them.)
+**Does NOT reproduce the original pooled numbers verbatim — and structurally cannot.** The
+original `fit_struktured_20260804()` numbers (n_volleys=61, n_clears=188) are a POOL of both
+sides' events. A true per-player split necessarily divides that pool into two parts; asking it to
+"reproduce" the pooled total would mean the split failed to separate anything. The correct
+self-test is **partition consistency**: do the two per-player event counts sum back to the
+original pooled totals, with no event lost or double-counted? **Verified exactly:**
 
-## 5. Fits (all match-pooled; see §4 for attribution confidence, separate from fit confidence below)
+| | clears (own) | volleys (attributed, landing on opponent) |
+|---|---|---|
+| struktured (P1) | 89 | 28 |
+| AI copro (P2) | 99 | 33 |
+| **sum** | **188** ✓ (matches original pooled n_clears) | **61** ✓ (matches original pooled n_volleys) |
 
-| match | video, window | n_volleys | fit confidence | n_clears | volley_size_mean | inter_volley_gap_mean_s | P(vol\|clear 4-6) | P(vol\|clear 7-10) |
+Both per-player fits clear the confidence line (n=28, n=33 — both ≥20). The split also reveals a
+real, previously-invisible contrast that the pooled number hid: struktured's own sending profile
+(gap 27.4s, P(4-6)=28.2%, P(7-10)=62.5%, n=16) is measurably slower/less-reflexive than the AI
+copro's sending profile from the same session (gap 18.8s, P(4-6)=35.3%, P(7-10)=90.9%, n=11) —
+the AI's own clears provoked a counter-volley far more reliably than struktured's did, in this
+specific session. (Not a general claim about "the AI vs humans" — one session, and "the AI copro's
+sending profile" here is really "how struktured's board reacted to the AI's clears," so it's still
+partly about struktured's receiving behavior in disguise — flagged, not overclaimed.)
+
+Full JSON: `results/style_ensemble_v1/struktured_20260804_{P1,P2}_sending_fit.json`.
+
+## 7. Per-player table (all four new matches split)
+
+| player | match | n_volleys (attributed) | fit confidence | n_clears (own) | volley_size_mean | gap_mean_s | P(vol\|clear 4-6) | P(vol\|clear 7-10) |
 |---|---|---|---|---|---|---|---|---|
-| struktured 20260804 (pass 1) | film_review, 4 matches pooled | 61 | **OK** (≥20) | 188 | 2.54 [2.33,2.79] | 22.70 [17.19,28.55] | 32.1% (n=156) | 74.1% (n=27) |
-| Red Bracket: Jenny G / **Rob Burrito** (pass 1) | Red_Bracket.mp4, t=350-650 | 18 | LOW-CONF (<20) | 86 | 2.44 [2.06,2.89] | 26.44 [15.81,38.38] | 21.9% (n=73) | 25.0% (n=12) |
-| White Bracket: **Jarsdad** / dmhero | White_Bracket.mp4, t=200-480, bottom pair | **26** | **OK** (≥20) | 92 | 2.77 [2.15,3.73] | 16.42 [12.25,21.04] | 35.4% (n=82) | 60.0% (n=10) |
-| White Bracket: **Chris Bidwell** ("Robert Smith") / Missy | White_Bracket.mp4, t=200-480, top pair | 13 | LOW-CONF (<20) | 62 | 2.31 [2.00,2.69] | 31.55 [17.45,46.55] | 33.3% (n=57) | 33.3% (n=3, too small to read) |
-| Green Bracket: Larvae / **davesmithsays** | Green_Bracket.mp4, t=1330-1750, bottom pair | **2** | **UNINFORMATIVE** (n=2) | 110 | 5.5 [4,7] (n=2, not meaningful) | 214s (n=1, not meaningful) | 1.0% (n=97) | 0% (n=9) |
+| **struktured** | 20260804 (pooled 4 sub-matches) | 28 | OK | 89 | 2.68 | 27.4 | 28.2% (n=71) | 62.5% (n=16) |
+| AI copro | 20260804 (same session) | 33 | OK | 99 | 2.42 | 18.8 | 35.3% (n=85) | 90.9% (n=11) |
+| **Rob Burrito** | Red Bracket vs Jenny G | 12 | LOW-CONF | 49 | 2.67 | 21.5 | 25.6% (n=39) | 30.0% (n=10) |
+| Jenny G | Red Bracket vs Rob Burrito | 6 | **UNINFORMATIVE** (<10) | 37 | 2.00 | 37.4 | 17.6% (n=34) | 0.0% (n=2) |
+| **Jarsdad** | White Bracket (bottom) vs dmhero | 15 | LOW-CONF | 41 | 2.40 | 18.4 | 50.0% (n=38) | 100.0% (n=3, too thin) |
+| dmhero | White Bracket (bottom) vs Jarsdad | 11 | LOW-CONF | 51 | 3.27 | 13.6 | 22.7% (n=44) | 42.9% (n=7) |
+| **Chris Bidwell** | White Bracket (top) vs Missy | 8 | **UNINFORMATIVE** (<10) | 27 | 2.25 | 29.1 | 52.0% (n=25) | 100.0% (n=1, too thin) |
+| Missy | White Bracket (top) vs Bidwell | 5 | **UNINFORMATIVE** (<10) | 35 | 2.40 | 35.8 | 18.8% (n=32) | 0.0% (n=2) |
+| Larvae | Green Bracket vs davesmithsays | 2 | **UNINFORMATIVE** | 59 | 5.50 (n=2) | 214 (n=1) | 2.0% (n=50) | 0.0% (n=6) |
+| **davesmithsays** | Green Bracket vs Larvae | **0** | **UNINFORMATIVE (zero)** | 51 | — | — | 0.0% (n=47) | 0.0% (n=3) |
 
-Each fit's raw JSON is at `results/style_ensemble_v1/{red_bracket_2024_jennyg_robburrito,
-white_bracket_2024_jarsdad_dmhero, white_bracket_2024_bidwell_missy,
-green_bracket_2024_larvae_davesmithsays}_fit.json`. Same cleanup as pass 1: events >20 cells
-(scene-artifact-sized) excluded before fitting; every fit dropped a small, healthy fraction (0-6
-events), nothing like the DaveSmithSays-Speed-bracket near-total corruption from §5 of pass 1.
+Bold = the named-roster player this task is tracking. Confidence labels: OK = n≥20 (team rule),
+LOW-CONF = 10≤n<20, UNINFORMATIVE = n<10 (this pass's own extension of the rule, since several new
+per-player n's fall well below even the LOW-CONF band and calling them "low confidence" alongside
+n=28 numbers would understate how thin they are).
 
-**davesmithsays' VS-format fit is the honest outlier here — n_clears is healthy (110) but
-n_volleys=2 is not usable for anything beyond "the extractor ran and found real clear activity."**
-The settled-cover volley detector needs a specific geometric signature (two columns exactly
-`NCOLS//2=4` apart both gaining a new same-row cell in the same second) — this match window
-apparently just didn't produce many of those in 420s, which could be genuine (this pairing traded
-fewer coordinated multi-column volleys) or could be an artifact of window placement (see §7).
-Either way: **do not put this number in davesmithsays' dossier as a pressure-profile claim** —
-report the n and stop, per the honesty rules.
+**davesmithsays' n=0 is worth stating plainly: in this specific 420s window, not one volley in the
+entire match landed on Larvae's board within 5s of any of davesmithsays' clears (51 own clears,
+0 attributed volleys).** That could mean this pairing/window genuinely had no fast counter-fire in
+either direction (Larvae's own n=2 is also near-zero), or that this window undersamples — see §9.
+Either way, zero is zero: no pressure-conditional claim is dossier-safe from this data.
 
-## 6. Archetype read (revisited at n=5 match-pooled fits)
+## 8. Archetype read — still not possible, and now for the clearest reason yet
 
-**Still not a real archetype clustering — now for a more specific reason than "only 2 points."**
-All five rows above are **match-level pooled fits** (sender+receiver combined), not independent
-player observations. A real archetype grid needs either (a) genuine per-player attribution
-(splitting which side of each match generated which volleys/clears — not done, see §3 of pass 1's
-caveat, still unaddressed) or (b) enough *independent* matches per named player to characterize
-them individually. Right now every named player has exactly ONE match window, pooled with a
-different, uncontrolled opponent each time — Jarsdad's "fast, high-follow-through" numbers could
-be Jarsdad's style, dmhero's style, or an interaction between them, and this data cannot
-distinguish those cases.
+**Only two profiles clear OK confidence: struktured and the AI copro from his own session.** Every
+newly-attributed named player (Rob Burrito, Jarsdad, Chris Bidwell, davesmithsays) is
+LOW-CONFIDENCE or worse once correctly isolated from their opponent. This is not a failure of this
+pass's method — it's the honest cost of doing the separation correctly. The pooled match-level "OK
+confidence" numbers from pass 2 (e.g. Jarsdad-vs-dmhero pooled at n=26) were, in real terms, two
+different people's events summed to clear a threshold neither could clear alone (Jarsdad alone:
+n=15; dmhero alone: n=11). **A real archetype grid needs either much longer per-player observation
+windows, or accepting LOW-CONF numbers as directional-only forever** for this data source.
 
-**What CAN be said honestly:** the four new match-level profiles show real, measurable spread
-against struktured's:
-- **Jarsdad/dmhero's match is the most reflexive** of the set: shortest inter-volley gap (16.4s
-  vs struktured's 22.7s and Bidwell's 31.5s) and the second-highest big-clear follow-through
-  (60.0% at 7-10 cells, behind only struktured's 74.1%) — and it's the only new fit with enough
-  volleys (26) to trust that number at face value.
-- **Bidwell/Missy's match is the slowest**: longest inter-volley gap (31.5s) of any fit including
-  struktured's, though LOW-CONFIDENCE (n=13) — a real spread, not yet a confident claim.
-- **Rob Burrito's match sits in between** on gap timing but noticeably lower on both
-  follow-through bins than struktured's (§0 of pass 1).
+**One directional pattern IS worth flagging, clearly labeled as a hypothesis, not a finding:** in
+both matches where a named priority player's opponent's individual profile was also computed, the
+named player's own numbers look MORE reflexive than the pooled match suggested, and consistently
+higher than their opponent's:
+- Bidwell alone: P(vol|clear 4-6)=52.0% (n=25, thin) vs. Missy alone: 18.8% (n=32) — the pooled
+  match read as "the slowest in the ensemble" (pass 2), but that may have been driven more by
+  Missy's response profile than Bidwell's own attacking tempo.
+- Rob Burrito alone: P(vol|clear 4-6)=25.6% (n=39), gap 21.5s vs. Jenny G alone: 17.6% (n=34),
+  gap 37.4s — Rob Burrito's own numbers sit closer to struktured's own range (28.2%, 27.4s) than
+  the pooled match's lower numbers suggested.
 
-This is a genuine, reportable spread in match-level pressure dynamics — useful evidence the style
-space is wide, which is what tonight's rule cares about — but forcing it into "Jarsdad = rusher,
-Bidwell = staller" would be exactly the fabricated-ensemble the honesty rules warn against, since
-none of these numbers are isolated to one player yet.
+If this pattern holds up with more data, it would mean pass 2's pooled-match "spread" was
+partly an opponent-selection artifact rather than a spread across the named players themselves —
+exactly the kind of thing per-player separation exists to catch. **Flagged as a hypothesis worth
+testing with more footage, not asserted.**
 
-## 7. Ensemble-gate recipe — updated next step (supersedes pass 1 §7, which had the wrong bracket)
+## 9. Next step
 
-Gate structure proposal unchanged from pass 1 (evaluate a ship candidate against every fitted
-model individually, not averaged; LOW-CONFIDENCE fits reported alongside, not gating alone).
+Same three options as pass 2's §7, re-ranked given this pass's result:
+1. **More footage per named player is now the clear priority** (not more separation work — that's
+   done and correct). Every named player has exactly one ~5-minute match window; the same
+   Red/White/Green Bracket videos likely have 2-3 more segments each for these players across
+   "Rounds 1, 2, 3" (unexplored — only one nameplate-diff localization was run per bracket this
+   pass). Pulling those would extend EXISTING players' n without new video downloads or new
+   calibration.
+2. davesmithsays' n=0 specifically warrants checking a second window before concluding anything —
+   one 420s slice is a small sample of a multi-round bracket appearance.
+3. Ensemble-gate structure proposal (evaluate a ship candidate against every fit individually, not
+   averaged) is unchanged and still not implementable at this n.
 
-**Concrete next step, corrected:**
-1. **Per-player separation is now the higher-leverage move than more sources.** Five match-pooled
-   fits with uncontrolled opposite-side opponents can't resolve whose style is whose. Splitting
-   `extract_match_events`' output by SENDER side before fitting (i.e. fit "the sender's clears
-   trigger the receiver's volleys" directionally, per side, instead of pooling both directions)
-   would let Jarsdad's 26-volley match actually say something about Jarsdad specifically, not
-   about "this match." Scoped as new work, not attempted this pass (time-boxed).
-2. If pulling more sources instead: Rob Burrito, Jarsdad, and Bidwell's brackets (Red, White) each
-   cover "Rounds 1, 2, 3" with 6 players — each named player likely has 2-3 match segments in
-   their existing downloaded video, not just the one window fit this pass. Re-scanning the
-   already-downloaded Red/White Bracket videos for additional segments (same nameplate-diff
-   localization technique used this pass) would extend existing players' data without touching
-   new video files.
-3. davesmithsays' n=2 result (§5) suggests his particular VS match may need a longer window or a
-   different segment within Green Bracket (only one ~420s window was tried) before concluding
-   anything about volley behavior specifically — his clear-rate data (n=110) is fine, the volley
-   detector just didn't fire much in this slice.
+## Per-player dossier notes (applied this pass)
 
-## Per-player dossier paragraphs (for merge into `player_styles/`)
-
-Footage-observed tier, each citing video + timestamp + attribution confidence + fit confidence
-per the honesty rules. Drafted here for team-lead/dossier-owner to merge; not yet applied to the
-`.md` files directly by this pass (see final message).
-
-**jarsdad** (attribution: HIGH — nameplate "(35) Jarsdad" matches White Bracket roster exactly):
-First gameplay-derived data point, upgrading the dossier from n=0. Footage:
-`youtube-drmc-official-2024/009_..._White_Bracket.mp4`, t≈200-480s, bottom-pair slot vs. dmhero
-(6-player White Bracket, Rounds 1-3). Fit confidence OK (n=26 volleys, above the n=20 line). Note
-this is a MATCH-POOLED fit (Jarsdad + dmhero's events summed, not separated) — treat the following
-as "this match's" profile, not confirmed Jarsdad-specific: inter-volley gap 16.4s (the fastest of
-the whole style-ensemble sample so far, versus struktured's 22.7s), volley size mean 2.77 cells,
-and the second-highest big-clear follow-through in the sample (60.0% of 7-10-cell clears drew a
-counter-volley within 5s, n=10). Directionally reads as a high-tempo, high-follow-through match;
-whether that's Jarsdad, dmhero, or their interaction is not resolved by this data.
-
-**bidwell** (attribution: HIGH — nameplate "(19) Robert Smith" cross-referenced against "19 -
-Chris Bidwell (as Robert Smith)" in the White Bracket roster description; **supersedes the
-dossier's current note that the only footage is the never-publish TMG handheld clip** — broadcast
-footage of Bidwell exists and was usable). Footage: same White Bracket video, t≈200-480s,
-top-pair slot vs. Missy. Fit confidence LOW (n=13 volleys, below n=20 — report, don't treat as
-settled). Match-pooled, same caveat as above: longest inter-volley gap in the entire sample so far
-(31.5s, vs struktured's 22.7s and Jarsdad's match's 16.4s), volley size mean 2.31 (smallest in the
-sample), P(volley|clear 4-6)=33.3% similar to struktured's 32.1%, P(volley|clear 7-10)=33.3% but
-n=3 — too thin to read. Directionally the slowest-tempo match fit so far; same per-player caveat
-as Jarsdad's entry.
-
-**roburrito** (attribution: HIGH, restated from pass 1 — nameplate "(17) Rob Burrito" matches Red
-Bracket roster). Footage: `009...` — correction, `003_..._Red_Bracket.mp4`, t≈350-650s, top-pair
-slot vs. Jenny G. Fit confidence LOW (n=18, just under the n=20 line). Match-pooled. Volley size
-mean 2.44 (close to struktured's 2.54 — similar typical volley scale) but both follow-through
-bins run markedly lower than struktured's (21.9% vs 32.1% at 4-6 cells; 25.0% vs 74.1% at 7-10
-cells, n=12) — this specific match returned pressure less reflexively than struktured's session
-did. First gameplay-derived data point for this dossier, upgrading it from n=0/photo-only.
-
-**davesmithsays** (attribution: HIGH — nameplate "(44) Davesmithsays" matches Green Bracket
-roster; a SEPARATE finding from the already-reported Speed-bracket format-incompatibility
-negative). Footage: `006_..._Green_Bracket.mp4`, t≈1330-1750s, bottom-pair slot vs. Larvae. This
-IS the correct game mode (continuous VS, not the solo Speed-bracket race) and the clear-detection
-side worked fine (n=110 clears, healthy). **But volley detection returned only n=2 — too thin to
-report ANY pressure-conditional number for this dossier entry.** What's dossier-safe to say: a
-genuine VS-format broadcast appearance exists and is processable (upgrade from photo-only), the
-clear-size activity was substantial, but no P(volley|clear) or gap-timing claim should be made
-from n=2. Flagged for a follow-up pass with a wider/different window (§7).
+Dossier files (`jarsdad.md`, `bidwell.md`, `roburrito.md`, `davesmithsays.md`) updated with the
+per-player (not match-pooled) numbers from §7, confidence labels per the OK/LOW-CONF/UNINFORMATIVE
+bands above, and the same video+timestamp+attribution-confidence citation style as pass 2.
+davesmithsays' entry states the n=0 result plainly rather than omitting it.
 
 ## Provenance
 
-- Vision: `vision_speed2025.py`, `vision_champ2024.py` (P1/P2, top pair; P1B/P2B for the bottom
-  pair used this pass are inline in the fit invocations, not yet folded into the module — see §3).
-- Fitting: `fit_ensemble_source.py` (unchanged from pass 1).
-- New fits: `results/style_ensemble_v1/white_bracket_2024_jarsdad_dmhero_fit.json`,
-  `results/style_ensemble_v1/white_bracket_2024_bidwell_missy_fit.json`,
-  `results/style_ensemble_v1/green_bracket_2024_larvae_davesmithsays_fit.json`.
-- Bracket rosters cross-checked against every 2024 Championship `.description` file on disk
-  (`003`-`010_*.description`), not assumed from a single reference frame this time — this is what
-  caught pass 1's Red-Bracket misattribution.
-- Player dossiers read before writing (per task instruction):
-  `dr-mario-playerstyles-wt/player_styles/{jarsdad,bidwell,roburrito,davesmithsays}.md`.
+- Fitting: `fit_ensemble_source.py` — `collect_events()`, `_build_model()`, `fit_per_player()`
+  added this pass; `fit_filtered()` regression-checked unchanged (byte-identical n/volley_size_mean
+  against the pass-2 committed JSON for the Red Bracket fit).
+- Self-test: struktured's raw per-match event lists pulled from
+  `bursty_model.fit_struktured_20260804()`'s live `.meta['raw_events']` (not re-extracted from
+  frames) — confirms `from_footage()` still exposes the raw tagged events needed for this kind of
+  re-aggregation, unchanged.
+- New fits: `results/style_ensemble_v1/{struktured_20260804_P1,struktured_20260804_P2,
+  red_bracket_JennyG,red_bracket_RobBurrito,white_top_Bidwell,white_top_Missy,
+  white_bottom_Jarsdad,white_bottom_dmhero,green_bottom_Larvae,green_bottom_davesmithsays}_sending_fit.json`.
