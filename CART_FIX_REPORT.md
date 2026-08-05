@@ -50,9 +50,12 @@ flag in this fix family (`DRCOLGATE`/`DRRECOMMIT`/`DRSLAM`) touches at all. Full
 
 **Blockers:** none for the fingerprint or the SLAM_ARM/RECOMMIT findings — those are settled by
 byte-exact rebuild + passing py65 tests. The lateral-distance residual (REVIEW §6.2, commit
-6-shaped cases) is **not fixed and not fixable by a commit-timing flag** — same conclusion the
-REVIEW already reached; see §5. Confirming the *physical* SD card cart matches this local
-artifact was explicitly out of scope (no `/media` access) — see §6.
+6-shaped cases) **is not fixable by widening the commit-TIMING gate alone** — same conclusion the
+REVIEW already reached, since no `CROSS_LOWY`/`K_CROSS` retune changes how far the piece can
+physically travel. **UPDATE (this session, follow-on task): implemented as `DRDISTGATE`, a
+distance-aware *steering* gate rather than a timing gate — see §7.** Default OFF, tested
+two-sided, not yet A/B'd on silicon (§7.5). Confirming the *physical* SD card cart matches this
+local artifact was explicitly out of scope (no `/media` access) — see §6.
 
 ## 1. Fingerprint — artifact + byte evidence
 
@@ -262,13 +265,10 @@ uses `DRNOFREEZE=1`). That test is still valuable (it's the freeze-class family 
 but it was not, before this task, exercising the actual shipping flag combination. Tests A and B
 here close that gap by building under the literal `pocket-human-v4-coldinit.json` flag set.
 
-## 5. What's left, if wanted (not done here — flagging per task instructions, not implementing)
+## 5. What's left, if wanted
 
-1. **Distance-aware commit gate** (REVIEW §6.2's own suggestion): widen `CROSS_LOWY` or lower
-   `K_CROSS` as a function of `|current_col - TGT_C2|`. This is a real code change to
-   `patch_cartridge_copro.py`'s fix logic — I did not make it, per the task's explicit
-   instruction not to modify existing fix logic without flagging it first. Test E2 above is the
-   reproducible harness to validate it against, if the human wants it built.
+1. ~~Distance-aware commit gate~~ — **DONE, see §7.** REVIEW §6.2's own suggestion, implemented
+   as `DRDISTGATE` (default OFF, candidate not yet A/B'd on silicon).
 2. **Build-provenance stamp** (`PAIR_LATCH_AUDIT.md` §4): embed emitter commit + `DR*` flags in
    the `.nes` itself or a co-located log, so a future "which build is on the SD card" question
    doesn't require this kind of forensic reconstruction. `tools/romgen.py`'s manifest system
@@ -277,19 +277,171 @@ here close that gap by building under the literal `pocket-human-v4-coldinit.json
 3. **Physical SD confirmation** (§1.5): out of scope for this task (no `/media` access), but
    would close the one remaining evidentiary gap.
 
-## 6. Deploy steps for the human (nothing new to deploy, but recording per instructions)
+## 6. Deploy steps for the human
 
-Since §2 established the candidate is byte-identical to what's already shipping, **there is
-nothing new to copy to the SD card** for this task. If a future session *does* implement §5.1 and
-wants to ship it:
+Since §2 established the flag-only candidate is byte-identical to what's already shipping,
+**there is nothing new from that step to copy to the SD card.** §7's `DRDISTGATE=1` candidate
+(`tmp_carts/drmario_stomper_vs_you_v5_distgate.nes`, md5 `4681cbf5d27821c6f13893c6e7155153`) IS a
+real behavior change and has NOT been A/B'd on silicon — do not ship it to the play SD card as a
+replacement for the current cart without a MiSTer/Pocket-side validation pass first (this task
+was py65-only, per its constraints). If/when that validation happens:
 - Build via `tools/romgen.py build --out <name>.nes --tag <tag>` with the v4 profile flags from
-  §1.1 plus whatever new flag the distance-aware change adds.
+  §1.1 plus `DRDISTGATE=1`.
 - Per `pocket-sd-keep-versions.md`: never overwrite in place; use a version-distinct filename
-  (e.g. `drmario_stomper_vs_you_v6_<change>.nes`); evict oldest only on space pressure, and ask
-  first.
+  (e.g. `drmario_stomper_vs_you_v5_distgate.nes`, already following that convention); evict
+  oldest only on space pressure, and ask first.
 - SD mount path per `pocket-sd-card.md`: `/dev/sdb1`, vfat, `udisksctl`; cart lives under
   `Assets/nes/common/` per `sync_to_pocket.sh`'s own directory convention (that script itself
   only vendors RTL/hex, not the cart — the cart copy is, and remains, a manual step).
+
+## 7. DRDISTGATE — the distance-aware commit gate (REVIEW §6.2, authorized code change)
+
+Team-lead follow-on explicitly authorized this as a REVIEW-driven change to fix logic (not a flag
+toggle), per the house rule to flag such changes rather than make them silently.
+
+### 7.1 Mechanism
+
+Neither `COLGATE`/`RECOMMIT`/`SLAM` reasons about *distance* — how many columns the search's
+target is from the capsule's current column — only about *when* to commit. `tests/
+test_task49_slamarm_race.py`'s Test E showed a commit-6-shaped case (3-column distance, ~40-hook
+window) simply cannot complete the DAS traverse in time (needs ~96 hooks, matching REVIEW §6.2's
+own arithmetic).
+
+`DRDISTGATE=1` (default OFF) bounds the **steering target itself** by DAS-reachability given the
+remaining fall budget, in `mv_p2` (`patch_cartridge_copro.py`, right before the alignment check
+that used to read `TGT_C2`/`EFF_C2` directly):
+
+```
+_EC = EFF_C2 if TUCK else TGT_C2
+if DISTGATE:
+    budget = DIST_TABLE[min(BOARD_Y, 15)]              # BOARD_Y = $0386, row-space
+    if _EC < PX2:  EFF_DIST2 = max(_EC, max(0, PX2 - budget))     # leftward
+    else:          EFF_DIST2 = min(_EC, min(7, PX2 + budget))     # rightward/equal
+    _EC = EFF_DIST2
+# everything below (alignment check, WEAVE steering, dn_p2's confidence gate) is UNCHANGED code,
+# now just reading a distance-bounded target instead of the raw one.
+```
+
+`DIST_TABLE[Y] = 0 if Y==0 else max(1, min(7, floor(Y * DIST_GRAVROW / DIST_DASEDGE)))` — a
+16-entry lookup table (`DIST_TABLE_LEN=16`, covering the playfield height), computed at Python
+codegen time and emitted as raw bytes jumped over at the top of `main` (so `DIST_TABLE_ADDR` is a
+concrete address by the time `mv_p2`, emitted later in program order, needs it for `LDA_absX`).
+Grounded constants, not invented: `DIST_DASEDGE=32` hooks/column-edge (the `mv_p2` comment's own
+"32-hook cycles = 6.4 frames per edge"), `DIST_GRAVROW=26` hooks/row (L11 13f/row × 2 hooks/frame,
+the audited hook-rate note earlier in the same file) — identical to what Test E already used, so
+the fix and the test share one source of truth. Both are env-overridable
+(`DRDIST_DASEDGE`/`DRDIST_GRAVROW`) for future re-derivation if gravity/search latency changes
+again (same pattern as `FAST_HI`'s own re-audit note).
+
+New RAM: `DG_BUDGET=$6193`, `EFF_DIST2=$6194` — the next free PRG-RAM bytes past `BUSYSKP=$6192`
+(confirmed via full-file grep before allocating; does not collide with the DRPROBE/DRTRACE ring
+header at `$6186-$618C` or DRSTALLWD's own registers at `$618D-$6192`, all reserved/documented
+ranges checked directly, not assumed).
+
+### 7.2 A real bug found and fixed before it reached the report as a "working" mechanism
+
+The first version of `DIST_TABLE` used a straight `floor(Y * DIST_GRAVROW / DIST_DASEDGE)` with
+no minimum. Since `DIST_DASEDGE (32) > DIST_GRAVROW (26)`, one row of remaining fall-time (26
+hooks) is **not enough** to complete one DAS edge (32 hooks) — so the naive floor formula reports
+budget=0 while `Y` is still > 0, straddling a point PARTWAY through an edge that an earlier hook
+(when `Y` was larger) had already promised 1 column of budget for. Because the clamp is
+recomputed fresh every hook from the *current* `Y`, this makes the bound **retreat** to wherever
+`PX2` already sits — which can be *before the capsule has moved at all*. `STABLE_CT2` (tracking
+the raw search-target's stability, accumulating independently since the target first appeared)
+can already be past `K_CROSS` by that point, so `dn_p2` fires a confident-looking SLAM at the
+column the capsule never actually chose to commit to: **a false-confidence commit AT SPAWN** —
+worse than pre-`DISTGATE` behavior (`dn_hold`, no forced button) for exactly the scenario this
+gate exists to help.
+
+Caught by `tests/test_task49_distgate.py`'s Test 3a, first version: `down_fired=True at hook=26
+locked_col=4` — the gate had slammed at the spawn column it was supposed to be moving *away*
+from, having never actually traveled anywhere. Fixed by flooring the budget at 1 whenever any row
+of clearance remains (`Y > 0`): the clamped target can now only shrink toward "less movement than
+originally hoped," never retreat all the way back to "no movement was ever needed." Re-run after
+the fix: `down_fired=True at hook=52 locked_col=5` — committed at the DAS-reachable column, after
+actually traveling there. This is exactly the house rule in practice — simulating the defect
+surfaced a real design flaw in new code before it shipped, not after.
+
+### 7.3 Tests — `tests/test_task49_distgate.py`, all new, does not modify existing fix logic
+
+```
+$ tests/test_task49_distgate.py
+==== 7/7 checks passed ====
+$ echo $?
+0
+```
+
+- **Test 1 (unit):** `EFF_DIST2` vs. a plain-Python reference of the same clamp formula, swept
+  across all `(PX2, target, BOARD_Y)` combinations in `range(8) × range(8) × {0,3,6,...,25}`
+  (640 combinations, including `BOARD_Y` values past the table's own range, to check the
+  clamp-to-last-entry path) — **640/640 exact matches.** This isolates the 6502 arithmetic itself
+  from the rest of the driver's control flow, per the task's request to unit-test the arithmetic
+  before trusting it in the full flow.
+- **Test 2 (byte-exact when off):** `DRDISTGATE` unset vs. explicit `=0` — byte-identical
+  (1808-byte `build_main` output, zero diff). Full end-to-end `tools/romgen.py rebuild` of the
+  shipping manifest still reproduces `24dcd9dca5db8b7a21c93b2bb30f124b` after all the `DISTGATE`
+  code additions — the fingerprint from §1 is unaffected by this change.
+- **Test 3a (two-sided, commit-6-shaped, 3-column distance, `SLAM_ARM=1`):** WITHOUT the gate,
+  chasing the unreachable 3-column target for the whole 80-hook window, `dn_p2` is **never**
+  entered (misalignment persists throughout) — no commit ever fires (`down_fired=False`). WITH
+  the gate, clamped to the 1-column-reachable target, the capsule reaches alignment and commits
+  there once stability saturates (`down_fired=True`, `locked_col=5`). Note this replaced an
+  earlier, structurally-wrong version of this test that compared *final resting column* under
+  `SLAM_ARM=0` — analysis mid-implementation showed DAS travel rate is target-distance-independent
+  in this driver (`mv_p2` presses the same LEFT/RIGHT every hook regardless of how far the target
+  is, until aligned), so clamping the steering target alone does not change the final column in a
+  pure-natural-gravity scenario; the real, demonstrable effect is whether `dn_p2` is ever reached
+  and can commit at all. Documented so the earlier reasoning isn't silently discarded.
+- **Test 3b (generous window, no-regression control):** same 3-column distance, but enough hooks
+  (`3×32 + 20`) to complete the full traverse even without the gate — both WITH and WITHOUT reach
+  column 7. The gate must not become *more conservative* when the raw target is already reachable;
+  confirmed.
+- **Test 3c (Test E1 parity):** the 1-column-distance case from `test_task49_slamarm_race.py`'s
+  Test E1, re-run with the gate on — unchanged (`locked_col=5` both ways).
+
+### 7.4 Candidate build
+
+```
+$ DRBUSYESC=1 DRCOLDINIT=1 DRHUMAN=1 DRMINTHINK=12 DRNAVDWELL=0 DRNOFREEZE=1 DRPENDBOUND=1 \
+  DRPOCKET=1 DRRECOMMIT_NOFREEZE=1 DRSLAM_KOPEN=32 DRSTALLWD=1 DRSTUDYCOUNTS=1 DRWRETRY=1 \
+  DRDISTGATE=1 \
+  tools/romgen.py build --out tmp_carts/drmario_stomper_vs_you_v5_distgate.nes \
+    --tag _v5_distgate_final
+  md5      4681cbf5d27821c6f13893c6e7155153
+```
+
+Diff vs. the shipping cart: 1813 bytes differ across `$8010`–`$878A` — larger than the ~130 bytes
+of genuinely new code (16-byte table + ~35-instruction clamp routine) because inserting code
+shifts every downstream absolute-address operand in the same bank (the same shape seen in §1.3's
+623-byte `RECOMMIT` diff for a comparably-sized change). All internal `build_main` assertions
+(ROM-space overflow guards, hook/blob-head checks) passed with no errors, and the determinism
+check (`romgen.py` builds twice, requires identical bytes) passed silently both times.
+
+### 7.5 Confidence assessment — NOT silicon-ready without an A/B pass first
+
+High confidence in the **arithmetic** (640/640 unit matches) and in the **mechanism as tested**
+(two-sided defect test passes, no-regression controls pass, byte-exact-when-off holds
+end-to-end). Explicitly **not** claiming silicon-readiness, for reasons a py65 harness cannot
+resolve on its own:
+- `DIST_DASEDGE=32`/`DIST_GRAVROW=26` are the same constants Test E already used, but neither has
+  been re-validated against current silicon-clocked search latency the way `FAST_HI` was
+  (`patch_cartridge_copro.py`'s own "AUDITED 2026-08-01" note) — if either drifts, the table
+  drifts with it, silently (same failure shape the file already documents for `FAST_HI`).
+- This task's test harness models DAS movement and gravity in **Python**, alongside the real
+  driver's assembled code — it does not run the actual NES game engine's `fallingPill_checkXMove`
+  or gravity table, so "the piece actually arrives at the clamped column in N hooks" is a modeled
+  approximation, not a captured fact. `fpga/copro/run_gate.sh`'s Verilator co-sim (mentioned in
+  `PAIR_LATCH_AUDIT.md` §5 item 5) is the right next check for the *timing inputs*, not this task.
+- Section 7.2's bug is evidence the mechanism CAN fail in non-obvious ways under specific
+  parameter combinations; finding and fixing one such case increases confidence but does not
+  prove there are no others (e.g., interaction with `TUCK`, which this task did not test since
+  the v4 shipping profile doesn't use it — `TUCK` and `DISTGATE` both write through `_EC`
+  sequentially in the current code, `TUCK` first, so `DISTGATE` clamps whatever `TUCK` already
+  chose; untested combination, flagged not verified).
+- No MiSTer/Pocket A/B has been run (explicitly out of scope for this task — headless only).
+
+Recommend: silicon A/B (or at minimum Verilator co-sim of the timing constants) before this ships
+to the play SD card, same bar as every other candidate in this file's lineage.
 
 ## Files
 
@@ -297,8 +449,15 @@ wants to ship it:
   (md5 `24dcd9dca5db8b7a21c93b2bb30f124b`), proving reproducibility.
 - `tmp_carts/off_reference_v4profile.nes` — same v4 profile, `DRCOLGATE=0 DRRECOMMIT=0`
   (md5 `7dd2092ccd31c4c8fa53a01e22691502`), the byte-diff control.
-- `tmp_carts/drmario_stomper_vs_you_v5_latchfix.nes` — the requested candidate
+- `tmp_carts/drmario_stomper_vs_you_v5_latchfix.nes` — the requested flag-only candidate
   (md5 `24dcd9dca5db8b7a21c93b2bb30f124b`, identical to shipping).
-- `tests/test_task49_slamarm_race.py` — new py65 defect tests A/B/D/E described above.
+- `tmp_carts/drmario_stomper_vs_you_v5_distgate.nes` — the `DRDISTGATE=1` candidate
+  (md5 `4681cbf5d27821c6f13893c6e7155153`), a real, untested-on-silicon behavior change; see §7.
+- `tests/test_task49_slamarm_race.py` — new py65 defect tests A/B/D/E described in §3.
+- `tests/test_task49_distgate.py` — new py65 tests (unit + byte-exact + two-sided defect) for
+  `DRDISTGATE`, described in §7.3.
+- `patch_cartridge_copro.py` — REVIEW-driven code change (§7): `DRDISTGATE` flag + `DG_BUDGET`/
+  `EFF_DIST2` registers + the `mv_p2` clamp block + `DIST_TABLE`. Default OFF, byte-exact when
+  off (verified). No existing fix logic (`COLGATE`/`RECOMMIT`/`SLAM`/`ROTFIX`) was modified.
 - `.gitignore` — added `tmp_carts/` (the built `.nes` files were already covered by the existing
   `*.nes` blanket rule; this makes the scratch directory itself explicit).

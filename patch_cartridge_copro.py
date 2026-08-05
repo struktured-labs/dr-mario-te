@@ -205,6 +205,11 @@ REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
 # resets the count. Unbrick without this flag: cycle menu.rbf then load_core (BRAM re-init).
 BUSYESC = _os.environ.get("DRBUSYESC", "0") == "1"
 BUSYSKP = 0x6192                                   # consecutive-bail counter (after DRSTALLWD's $6191)
+# DRDISTGATE (REVIEW #6.2 / task #49 follow-on -- see CART_FIX_REPORT.md; REVIEW-driven change,
+# authorized explicitly, not a flag toggle): $6193 is the next free PRG-RAM byte (past BUSYSKP).
+# DG_BUDGET = scratch (max DAS-reachable columns this hook); EFF_DIST2 = the distance-clamped
+# steering target, substituted for TGT_C2/EFF_C2 in mv_p2 once the gate fires.
+DG_BUDGET, EFF_DIST2 = 0x6193, 0x6194
 # DRWRETRY (default OFF -- touches build_main, so off keeps the goldens == published c300acb canonical;
 # the shipping cart opts in): fix the "re-queue once per pill" watchdog latch. Two bugs: (A) handle()'s
 # _start epilogue clears `wretry` every search START (so a re-queued timeout re-GOs indefinitely); (B) the
@@ -409,6 +414,52 @@ P1_OWNED = P1WIGGLE or P1NATIVE   # act_p1 is replaced; the copro P1 path is not
 RECOMMIT = (MATURE
             and (not NO_FREEZE or _os.environ.get("DRRECOMMIT_NOFREEZE", "0") == "1")
             and (_os.environ.get("DRRECOMMIT", "1") != "0"))
+# DRDISTGATE=1 (default OFF -- candidate, not yet A/B'd on silicon; see task #49's
+# CART_FIX_REPORT.md and REVIEW #6.2 in dr-mario-qa-wt/experiments/eval47/PAIR_LATCH_AUDIT.md):
+# neither COLGATE/RECOMMIT/SLAM reasons about *distance* -- how many columns the search's target
+# is from the capsule's current column -- only about *when* to commit. tests/
+# test_task49_slamarm_race.py's Test E showed a commit-6-shaped case (3-column distance, ~40-hook
+# window) simply cannot complete the DAS traverse in time (needs ~96 hooks, matching REVIEW
+# #6.2's own arithmetic) and, since SLAM_ARM=0 rules out an accelerated slam (Test A), the
+# capsule just parks wherever WEAVE got it to when gravity locks it -- often still the spawn
+# column, since 20-40 hooks after a late-converging search isn't enough for even ONE DAS edge in
+# the worst case. DISTGATE bounds the STEERING target itself by DAS-reachability given the
+# remaining fall budget (BOARD_Y=$0386, row-space), so lateral progress always happens toward the
+# best REACHABLE column instead of chasing an argmax that will never arrive in time -- the floor
+# is "closer to the true best than spawn," not "spawn," once budget > 0.
+#
+# ★ MIN-1 FLOOR, and why it's load-bearing (found by tests/test_task49_distgate.py's Test 3a,
+# first attempt -- a genuine defect in an early version of this table, not a hypothetical one):
+# a naive floor(Y * DIST_GRAVROW / DIST_DASEDGE) DROPS TO 0 while Y is still > 0, because
+# DIST_DASEDGE (32) > DIST_GRAVROW (26) -- one row of remaining fall-time (26 hooks) is NOT
+# enough to complete one DAS edge (32 hooks), so a straight floor() division reports "0 columns
+# reachable" partway THROUGH an edge that was already promised 1 column of budget on an earlier
+# hook (when Y was larger). Recomputing the clamp fresh every hook then makes the bound RETREAT
+# to wherever PX2 currently sits -- which can be BEFORE the capsule has moved at all -- producing
+# an artifact "alignment" with the ORIGINAL spawn column. Since STABLE_CT2 (search-answer
+# stability, tracked independently since the search's target first appeared, unrelated to this
+# retreat) can already be past K_CROSS by then, dn_p2 fires a confident-looking SLAM at the
+# column the capsule never actually chose to commit to -- a false-confidence commit AT SPAWN,
+# which is worse than the pre-DISTGATE behavior (dn_hold, no forced button) for the exact
+# scenario this gate exists to help. Flooring the budget at 1 (whenever ANY row of clearance
+# remains, Y>0) guarantees the clamped target is always at least 1 column from PX2 in the raw
+# target's direction until Y truly hits 0 (no fall-time left at all, at which point locking
+# wherever the capsule already is IS the correct, unavoidable outcome) -- so the bound can never
+# retreat all the way back to "no movement was ever needed," only shrink toward "less movement
+# than originally hoped," which is a real, non-pathological degradation.
+#
+# Table-driven (2-pass-safe, no runtime multiply/divide): DIST_TABLE[Y] = 0 if Y==0 else
+# max(1, min(7, floor(Y * DIST_GRAVROW / DIST_DASEDGE))), same grounded constants as the test (32
+# hooks/DAS-edge, from the mv_p2 comment below; 26 hooks/row, from the audited hook-rate note
+# above -- L11 13f/row x 2 hooks/frame).
+# DRDISTGATE=0 rebuilds byte-exact (nothing emitted; verified in tests/test_task49_distgate.py).
+DISTGATE = _os.environ.get("DRDISTGATE", "0") == "1"
+DIST_DASEDGE = int(_os.environ.get("DRDIST_DASEDGE", "32"))
+DIST_GRAVROW = int(_os.environ.get("DRDIST_GRAVROW", "26"))
+DIST_TABLE_LEN = 16   # BOARD_Y ($0386) row-space; 16 covers the full playfield height with margin
+DIST_TABLE = bytes(
+    0 if y == 0 else max(1, min(7, (y * DIST_GRAVROW) // DIST_DASEDGE))
+    for y in range(DIST_TABLE_LEN))
 # DRNAVFIX=1 (default): STABILITY-GATED AUTONAV. The canonical an_title fires START the instant $04!=0;
 # a cold-boot garbage-nonzero $04 (title fade-in, before menu-init) then STARTs into a 1P game. DRNAVFIX
 # withholds START until VS-CPU-armed ($04!=0 AND $0727==2) has held for NAV_M consecutive hooks -- the
@@ -771,6 +822,17 @@ def build_main(level=11, speed=1):
 
     # ================= per-frame entry =================
     a.label("main")
+    DIST_TABLE_ADDR = None
+    if DISTGATE:
+        # Emit DIST_TABLE as raw data immediately, jumped over -- never executed as code. Captured
+        # here (not after the routine) so DIST_TABLE_ADDR is a concrete int by the time mv_p2 (far
+        # below) needs it: a.label() records the byte offset the instant it's called, so this does
+        # not depend on the assembler's two-pass fixup resolution the way a JMP/branch target does.
+        a.jmp("dist_table_end")
+        a.label("dist_table")
+        DIST_TABLE_ADDR = UNIT1_CPU + a.labels["dist_table"]
+        a.raw(*DIST_TABLE)
+        a.label("dist_table_end")
     # PRG-RAM power-on init (SDRAM boots as garbage): magic byte at NAV_MAGIC
     a.ins16("LDA_abs", NAV_MAGIC); a.ins("CMP_imm", 0xA5); a.br("BEQ", "inited")
     a.ins("LDA_imm", 0xA5); a.ins16("STA_abs", NAV_MAGIC)
@@ -1609,6 +1671,47 @@ def build_main(level=11, speed=1):
         a.label("mv_p2_have")
         a.ins16("STA_abs", EFF_C2)
     _EC = EFF_C2 if TUCK else TGT_C2
+    if DISTGATE:
+        # DRDISTGATE (see the flag comment above; REVIEW #6.2): clamp _EC to the columns that are
+        # DAS-reachable from PX2 ($0385) given the remaining fall budget (BOARD_Y=$0386), instead
+        # of steering toward a target that will never arrive in time. Substituting EFF_DIST2 for
+        # _EC here means EVERYTHING below (alignment check, WEAVE steering, dn_p2's confidence
+        # gate) is unchanged code, now just reading a distance-bounded target.
+        #   budget = DIST_TABLE[min(BOARD_Y, DIST_TABLE_LEN-1)]
+        a.ins16("LDA_abs", 0x0386)
+        a.ins("CMP_imm", DIST_TABLE_LEN)
+        a.br("BCC", "dg_yok")
+        a.ins("LDA_imm", DIST_TABLE_LEN - 1)
+        a.label("dg_yok")
+        a.ins("TAX")
+        a.ins16("LDA_absX", DIST_TABLE_ADDR)
+        a.ins16("STA_abs", DG_BUDGET)
+        #   direction: _EC (target) vs PX2 -- unsigned CMP is safe, both are 0..7
+        a.ins16("LDA_abs", _EC); a.ins16("CMP_abs", 0x0385); a.br("BCS", "dg_right")
+        # --- LEFTWARD: target < PX2. EFF = max(target, floor) where floor = max(0, PX2-budget) ---
+        a.ins16("LDA_abs", 0x0385); a.ins("SEC"); a.ins16("SBC_abs", DG_BUDGET)
+        a.br("BCS", "dg_l_ok")                      # no borrow -> PX2-budget stayed >= 0
+        a.ins("LDA_imm", 0)                          # borrowed -> floor at column 0
+        a.label("dg_l_ok")
+        a.ins16("STA_abs", EFF_DIST2)                # tentatively: floor
+        a.ins16("LDA_abs", _EC); a.ins16("CMP_abs", EFF_DIST2); a.br("BCS", "dg_l_reach")
+        a.jmp("dg_done")                              # target < floor -> EFF_DIST2 already = floor
+        a.label("dg_l_reach")
+        a.ins16("STA_abs", EFF_DIST2)                # target reachable (A still = target from CMP)
+        a.jmp("dg_done")
+        a.label("dg_right")
+        # --- RIGHTWARD/equal: target >= PX2. EFF = min(target, ceil) where ceil = min(7, PX2+budget) ---
+        a.ins16("LDA_abs", 0x0385); a.ins("CLC"); a.ins16("ADC_abs", DG_BUDGET)
+        a.ins("CMP_imm", 8); a.br("BCC", "dg_r_ok")
+        a.ins("LDA_imm", 7)                           # ceil at the last column
+        a.label("dg_r_ok")
+        a.ins16("STA_abs", EFF_DIST2)                 # tentatively: ceil
+        a.ins16("LDA_abs", EFF_DIST2); a.ins16("CMP_abs", _EC); a.br("BCS", "dg_r_reach")
+        a.jmp("dg_done")                               # ceil < target -> EFF_DIST2 already = ceil
+        a.label("dg_r_reach")
+        a.ins16("LDA_abs", _EC); a.ins16("STA_abs", EFF_DIST2)   # target reachable
+        a.label("dg_done")
+        _EC = EFF_DIST2
     a.ins16("LDA_abs", 0x0385); a.ins16("CMP_abs", _EC); a.br("BEQ", "dn_p2")
     if not USE_WEAVE:
         a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)  # baseline: freeze at spawn row (slide-only)
