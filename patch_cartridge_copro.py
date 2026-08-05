@@ -17,6 +17,7 @@ The heavy depth-2 search runs on the SECOND 6502 inside the FPGA (~0.2-0.3s/pill
 NOT Mesen-compatible (mapper 100) — MiSTer custom core only.
 """
 import hashlib
+import json
 import sys
 sys.path.insert(0, "tests")
 from patch_vs_cpu import Asm6502
@@ -147,6 +148,30 @@ WIG_DIR = 0x617C
 P1AI_Y, P1AI_C, P1AI_O = 0x617D, 0x617E, 0x617F
 P1AI_CPU, P1SWAP_CPU = 0x9000, 0x9200   # P1-mirrored d1 AI + its swap_eval, in unit1 (bank 2)
 import os as _os
+
+# ---- default-proof manifest replay (provenance, generalized): every DR* env lookup below this
+# point is recorded with its RESOLVED value (whatever it actually evaluated to -- the caller's
+# override, or the code's own hardcoded default), not just what the caller explicitly passed.
+# tools/romgen.py's `build` reads this back (the "##DRFLAGSNAPSHOT##" line at the end of main())
+# and stores it in the manifest as `flag_snapshot`, so `rebuild` can set EXACTLY that env on a
+# future replay -- immune to any later change to any knob's default, forever, because the
+# manifest no longer depends on "what the code currently defaults to" at all. Monkeypatching
+# os.environ.get (not e.g. wrapping every call site) is deliberate: it's the one choke point
+# every DR* lookup in this file already goes through, verified to need no call-site changes
+# (confirmed: `os` and `_os` are the same module object, so a bare `os.environ.get(...)` inside
+# main() -- see DRLEVEL/DRSPEED -- is caught by this too).
+DR_ENV_SNAPSHOT = {}
+_real_environ_get = _os.environ.get
+
+
+def _tracked_environ_get(key, default=None):
+    resolved = _real_environ_get(key, default)
+    if isinstance(key, str) and key.startswith("DR"):
+        DR_ENV_SNAPSHOT[key] = resolved
+    return resolved
+
+
+_os.environ.get = _tracked_environ_get
 # DRNAVESC: stuck-screen escape watchdog (task #38). Three silicon freezes 2026-08-01/02
 # (evidence: qa-wt experiments/freeze_20260801/) shared one shape: the game parked on a
 # screen awaiting a START the nav never sends -- mode 3 falls through autonav's dispatch
@@ -2204,6 +2229,15 @@ def main():
             cart[off] = _bid_tile(_hexch)
         open(OUT, "wb").write(cart)
         print(f"DRBUILDID stamp: {BUILDID_TAG} {digest} (settings screen row 25, cols 6-14)")
+
+    # One line, printed last, greppable and JSON-parseable: every DR* knob this build actually
+    # consulted and what it resolved to (see the DR_ENV_SNAPSHOT comment near `import os as _os`
+    # for why this is the provenance fix, not just a debug aid). None-valued entries would mean
+    # some call site passed no default (verified: none currently do) -- dropped defensively
+    # rather than emitted, since a manifest field can't hold something a future replay can't set
+    # as an env var string anyway.
+    _snapshot = {k: v for k, v in sorted(DR_ENV_SNAPSHOT.items()) if v is not None}
+    print("##DRFLAGSNAPSHOT## " + json.dumps(_snapshot))
 
 
 if __name__ == "__main__":
