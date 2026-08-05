@@ -173,3 +173,29 @@ wedge_probe.log's AUTO_REBOOT lines:
 - Wedge anyway ⇒ our traffic is exonerated; the spin is intrinsic to
   core+framework and stays a launch-blocking risk to fix before the booth.
 Restart both loops after the verdict either way.
+
+## EXPERIMENT VERDICT (2026-08-05 13:05Z): OUR IPC IS EXONERATED
+
+With the tracker and preventive loop STOPPED (probe read-only, zero IPC
+writes), the wedge recurred TWICE more — WEDGE_CONFIRMED at 12:59:24Z and
+13:02:26Z, AUTO_REBOOT at 13:02:26Z. The userspace spin is INTRINSIC to
+this core+framework combination under continuous CvC play; our save-state/
+screenshot traffic is not the trigger.
+
+⚠ CONSEQUENCE FOR SEPT 12: this is a LAUNCH-BLOCKING risk, not a lab
+artifact. Human play at the booth exercises the same core in the same
+framework — a ~30-minute mean-time-to-wedge would be visible to a crowd.
+It also now recurs within ~3 minutes of a fresh boot in the worst case
+(12:59 wedge on a box booted 12:56), so "reboot before the demo" is NOT a
+mitigation. Escalated to the top of the silicon-session agenda alongside
+the brain work.
+
+Next diagnostic steps (in order):
+1. EIP sampling at wedge time (assigned) to name the spin site.
+2. ISOLATE THE VARIABLE: run the SHIPPED pre-strand20 core (stomper180,
+   71d2de37) under identical CvC load — does it wedge too? If not, the
+   regression entered with s20b (CMD-8 GO traffic is the prime suspect —
+   the same doubling flagged in the freeze accounting).
+3. If the shipped core also wedges: framework/core-interaction bug, needs
+   the MiSTer framework source; consider pinning a known-good framework
+   build for the booth.
