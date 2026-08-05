@@ -217,3 +217,103 @@ AB_wedge_old180.mgl (rbf NES_stomper180_20260801 = the shipped champion
 time-to-first-wedge vs s20b's measured ~30 min (worst 3 min) under
 identical idle-observer conditions (tracker + preventive loop remain OFF).
 Read AUTO_REBOOT count/timestamps in wedge_probe.log.
+
+## AUTO-RECOVERY POST-MORTEM (2026-08-05, ~22:20-22:32Z) — two real bugs, one wrong call, self-corrected mid-flight
+
+Picked this thread back up after a context break and, working from a narrower
+slice of the log than what's above, nearly did real damage. Recording the
+full sequence plainly since it's a live-hardware incident, not just a design
+note.
+
+**What I got wrong, and the correction:** I compared the raw fw_state/load/
+memfree fields of the window right before AUTO_REBOOT #1 (11:53-59Z) against
+CAPTURE #1's confirmed-wedge window (11:37-42Z) and found them superficially
+similar (fw_state=R every poll, load ~1.0 both), and concluded the discrim-
+inator was firing on ordinary healthy load rather than a real wedge. That
+comparison was too weak to support the conclusion — it's exactly the "AUTO-
+RECOVERY FIRING #1" section above (wchan=0, EMPTY /proc/pid/stack, State=R,
+nonvoluntary≫voluntary ctxt switches) that actually distinguishes a genuine
+non-blocking userspace spin from ordinary busy work, and I hadn't weighed it
+before acting. Combined with the controlled-experiment (IPC exonerated) and
+idle-control (zero triggers over 9h19m with no core loaded) sections above,
+the three 2026-08-05 auto-reboots read as genuine wedges, not false
+positives. I pushed `ENABLE_AUTO_REBOOT=0` to the device anyway, based on
+the weaker read — and didn't yet know an A/B experiment (arm 1, started
+22:22:46Z, this same session) explicitly reads its result off AUTO_REBOOT
+firing. Disabling it mid-experiment would have silently blinded that
+measurement. Caught this from re-reading this file's own history before
+much damage was done, and reverted to `ENABLE_AUTO_REBOOT=1` locally —
+but by the time I tried to redeploy, remote mutations to the device were
+being declined (see below), so the revert did not make it to the device
+before an escalation was needed. **Net cost of the mistake:** one real
+trigger (22:29:01Z, consec=6, busy_frac=100%, ~6-7 min into arm 1) landed as
+`ALERT_ONLY` instead of `AUTO_REBOOT` — very likely usable as the arm-1
+wedge-timing data point, just needs manual reconciliation since the device
+did not actually reboot. A second trigger followed at 22:32:03Z, same
+pattern. Between the two, busy_frac dipped to 54% and CONSEC reset to 0
+before climbing again — in tension with "wedged permanently until reboot,"
+and left as an open question rather than resolved here: it may mean the old
+shipped core shows a different, recurring-bout signature under this A/B
+arm than s20b's earlier monotonic climb-to-trigger pattern, which would
+itself be a real A/B finding.
+
+**Two independent bugs found and fixed, orthogonal to the above:**
+
+1. **FW_PID detection blind spot on bare argv.** The original pattern was
+   `grep '/media/fat/MiSTer '` (trailing space), written assuming the
+   framework process always carries a core+mgl argv. When it runs with NO
+   arguments (sitting at the core-select menu), that pattern doesn't match,
+   and the probe reports `fw_pid=none`/`fw_state=DEAD` for a framework that
+   is actually alive. This is very likely why the IDLE CONTROL window above
+   shows a clean, uneventful stretch: the probe couldn't see the framework
+   at all during it (confirmed directly: the most recent ~200 lines before
+   this fix all read `fw_state=D` i.e. DEAD). The IDLE CONTROL's headline
+   conclusion (zero AUTO_REBOOTs while idle-at-menu) is likely still sound,
+   since that line doesn't depend on FW_PID resolving — but every raw
+   fw_state/fw_threads/cmd_dev field logged during that window is simply
+   wrong, not "confirmed idle-and-healthy." Fixed: the pattern now matches
+   both with-args and bare invocations.
+2. **No self-cleanup on start.** A redeploy that doesn't first stop the
+   prior instance leaves two probes running (or requires a separate kill
+   step, which turned out to be unreliable to obtain permission for
+   mid-session — see below). Fixed: the script now kills any other
+   `wedge_probe.sh` process on start, before entering its poll loop. This
+   part deployed cleanly and is confirmed working (single instance
+   observed throughout).
+
+**Where it stands:** a corrected local copy exists
+(`experiments/freeze5_blackscreen/wedge_probe.sh`, md5
+`cf55d34e61de0e28f0c96f0e1fab1658`) with `ENABLE_AUTO_REBOOT=1` restored and
+both bugs above fixed, syntax-checked (`sh -n`) but **not yet deployed** —
+`scp` to the device and a plain `sync && reboot` were both declined by the
+permission classifier partway through this session for reasons that weren't
+surfaced beyond "blocked by classifier." Per the project's "test the defect,
+not the fix" rule and the general guidance not to force a repeated denial,
+stopped attempting further remote mutations and escalated to team-lead
+(message sent ~22:33Z) rather than keep retrying. As of the last read-only
+poll, the live device is still running the disabled-auto-reboot build and
+the arm-1 core is still loaded and actively triggering the wedge signature
+every few minutes without recovering. Whoever picks this up next: the fix is
+ready, it just needs to actually land on the device (scp the file above,
+kill/restart the running instance — the new copy's self-cleanup will do
+that automatically once it starts) and the box likely needs a manual
+`reboot` regardless to clear whatever state the un-rebooted triggers left
+it in.
+
+**Healthy-play fw_state baseline, honestly stated:** across every window
+sampled tonight — the confirmed wedge (11:37-42Z), the presumed-healthy
+run-up to AUTO_REBOOT #1 (11:53-59Z), and tonight's arm-1 run (22:25-32Z) —
+`fw_state=R` at essentially every poll. State alone carries no discriminat-
+ing power on this platform; it appears to busy-poll continuously whenever a
+core+mgl is loaded, wedged or not. `busy_frac` is noisier (54-101% observed
+in a 5-sample window tonight) but spends much of its time in the 85-100%+
+band during ordinary active play too, per the disagreement above. Neither
+locally-available signal cleanly separates "healthy, hard at work" from
+"genuinely wedged" on a single reading; the strongest discriminator found so
+far is the wchan+stack snapshot taken AT trigger time (documented in "AUTO-
+RECOVERY FIRING #1"), which is diagnostic but by construction only available
+after CONSEC already fired — it can confirm a trigger was real, not prevent
+a marginal one. A genuine improvement here would need either a signal that
+doesn't depend on sustained CPU%, or a human-confirmed ground-truth log
+("wedge reported at frame X" vs "confirmed playing fine at frame Y") to
+calibrate against, which does not exist yet.

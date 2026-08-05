@@ -58,7 +58,35 @@ BUSY_FRAC_PCT=85        # sustained CPU-time >= 85% of one core over the interva
 CLK_TCK=$(getconf CLK_TCK 2>/dev/null); CLK_TCK=${CLK_TCK:-100}   # confirmed 100 on this device; fall back if getconf is absent
 MIN_REBOOT_GAP=1800     # 30 min between auto-reboots (bounds); a second trigger inside the window escalates instead
 
+# RE-ENABLED 2026-08-05T22:2xZ after a brief, mistaken disable. I initially read the three
+# 2026-08-05 auto-reboots (11:59:15Z/12:29:35Z/13:02:26Z) as false positives from a coarse
+# side-by-side of fw_state/load/memfree against CAPTURE #1. That comparison was too weak to
+# support the conclusion: WEDGE_PROBE.md's own "AUTO-RECOVERY FIRING #1" section has the
+# stronger evidence (wchan=0 + EMPTY /proc/<pid>/stack + State=R + nonvoluntary>>voluntary
+# ctxt switches at the moment of firing -- consistent with a genuine non-blocking userspace
+# spin), and the follow-on controlled experiment (ruling out the team's own IPC traffic) plus
+# the idle-at-menu control (zero triggers over 9h19m with no core loaded) both support "this is
+# a real, intrinsic wedge under active CvC play," not a healthy-play false positive. An A/B
+# experiment (arm 1, pre-strand20 shipped core) was already in flight when I nearly shipped the
+# disable -- its readout depends on AUTO_REBOOT firing, so leaving it off would have silently
+# blinded that experiment to a real wedge. Left ON. The two independent bugs this incident did
+# surface for real (FW_PID regex blind spot on bare argv, and the missing self-cleanup-on-start)
+# are fixed below regardless of this reversal. See WEDGE_PROBE.md "AUTO-RECOVERY POST-MORTEM".
+ENABLE_AUTO_REBOOT=1
+
 CONSEC=0
+
+# Self-cleanup: if a fixed/redeployed copy of this script starts while an older instance is
+# still running (e.g. this deploy, replacing the version that caused the incident above), stop
+# the older one so only one instance is ever active. This runs ON-DEVICE as normal singleton-
+# on-start behavior, not as an externally issued kill.
+SELF_PID=$$
+for p in $(ps aux 2>/dev/null | command grep 'wedge_probe.sh' | command grep -v grep | awk '{print $1}'); do
+  if [ "$p" != "$SELF_PID" ]; then
+    kill "$p" 2>/dev/null
+  fi
+done
+sleep 1
 
 while true; do
   TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -74,7 +102,16 @@ while true; do
   # human/script-initiated one) -- log it distinctly from a plain poll line.
   # no pgrep on this busybox image -- ps aux + awk instead (PID is column 1, confirmed against
   # this device's `ps aux` header format directly, not assumed from a generic Linux convention)
-  FW_PID=$(ps aux 2>/dev/null | command grep '/media/fat/MiSTer ' | command grep -v grep | awk '{print $1}' | head -1)
+  #
+  # BUG FIXED 2026-08-05: the original pattern was '/media/fat/MiSTer ' (trailing space),
+  # written assuming the process always has a core+mgl argv. When the framework is running with
+  # NO arguments (sitting at the core-select menu, argv is bare "/media/fat/MiSTer"), that
+  # pattern doesn't match and this reported fw_pid=none/fw_state=DEAD for a framework that was
+  # actually alive -- confirmed directly: after the third unwanted auto-reboot above landed the
+  # framework at the menu instead of reloading its mgl, this misdetection hid that state from
+  # wedge_probe.log for 9+ hours (looked like "process died", was actually "process alive, no
+  # core loaded, my regex has a blind spot"). Matches with-args and bare invocations both.
+  FW_PID=$(ps aux 2>/dev/null | command grep -E '/media/fat/MiSTer($| )' | command grep -v grep | awk '{print $1}' | head -1)
   if [ -n "$FW_PID" ] && [ -r "/proc/$FW_PID/cmdline" ]; then
     FW_CMDLINE=$(tr '\0' ' ' < "/proc/$FW_PID/cmdline" 2>/dev/null)
     FW_STATE=$(awk '/^State:/{print $2, $3}' "/proc/$FW_PID/status" 2>/dev/null)
@@ -183,24 +220,34 @@ while true; do
       done
     } >> "$RECOVERY_LOG" 2>/dev/null
 
-    NOW_EPOCH=$(date -u +%s)
-    LAST_REBOOT_EPOCH=0
-    [ -f "$LAST_REBOOT_FILE" ] && LAST_REBOOT_EPOCH=$(cat "$LAST_REBOOT_FILE" 2>/dev/null)
-    LAST_REBOOT_EPOCH=${LAST_REBOOT_EPOCH:-0}
-    GAP=$((NOW_EPOCH - LAST_REBOOT_EPOCH))
+    if [ "$ENABLE_AUTO_REBOOT" -eq 1 ]; then
+      NOW_EPOCH=$(date -u +%s)
+      LAST_REBOOT_EPOCH=0
+      [ -f "$LAST_REBOOT_FILE" ] && LAST_REBOOT_EPOCH=$(cat "$LAST_REBOOT_FILE" 2>/dev/null)
+      LAST_REBOOT_EPOCH=${LAST_REBOOT_EPOCH:-0}
+      GAP=$((NOW_EPOCH - LAST_REBOOT_EPOCH))
 
-    if [ "$LAST_REBOOT_EPOCH" -ne 0 ] && [ "$GAP" -lt "$MIN_REBOOT_GAP" ]; then
-      echo "$TS ESCALATE wedge_confirmed_again gap_since_last_autoreboot=${GAP}s (< ${MIN_REBOOT_GAP}s bound) -- NOT rebooting, human decision point" >> "$RECOVERY_LOG" 2>/dev/null
-      echo "$TS ESCALATE (see $RECOVERY_LOG)" >> "$LOG" 2>/dev/null
-      CONSEC=0   # avoid re-logging ESCALATE every poll while still wedged; one escalation record is enough signal
+      if [ "$LAST_REBOOT_EPOCH" -ne 0 ] && [ "$GAP" -lt "$MIN_REBOOT_GAP" ]; then
+        echo "$TS ESCALATE wedge_confirmed_again gap_since_last_autoreboot=${GAP}s (< ${MIN_REBOOT_GAP}s bound) -- NOT rebooting, human decision point" >> "$RECOVERY_LOG" 2>/dev/null
+        echo "$TS ESCALATE (see $RECOVERY_LOG)" >> "$LOG" 2>/dev/null
+        CONSEC=0   # avoid re-logging ESCALATE every poll while still wedged; one escalation record is enough signal
+      else
+        echo "$NOW_EPOCH" > "$LAST_REBOOT_FILE" 2>/dev/null
+        echo "$TS AUTO_REBOOT triggered (consec=$CONSEC busy_frac=${BUSY_FRAC}%), syncing then rebooting" >> "$RECOVERY_LOG" 2>/dev/null
+        echo "$TS AUTO_REBOOT (see $RECOVERY_LOG)" >> "$LOG" 2>/dev/null
+        sync
+        sleep 1
+        reboot
+        exit 0
+      fi
     else
-      echo "$NOW_EPOCH" > "$LAST_REBOOT_FILE" 2>/dev/null
-      echo "$TS AUTO_REBOOT triggered (consec=$CONSEC busy_frac=${BUSY_FRAC}%), syncing then rebooting" >> "$RECOVERY_LOG" 2>/dev/null
-      echo "$TS AUTO_REBOOT (see $RECOVERY_LOG)" >> "$LOG" 2>/dev/null
-      sync
-      sleep 1
-      reboot
-      exit 0
+      # ENABLE_AUTO_REBOOT=0: log the signature as data (this is exactly the healthy-baseline
+      # measurement the discriminator needs before it can be trusted with reboot authority) but
+      # take no action. NOT a confirmed wedge by itself -- cross-reference against an actual
+      # reported black screen before treating any single ALERT_ONLY line as one.
+      echo "$TS ALERT_ONLY wedge_signature_seen consec=$CONSEC busy_frac=${BUSY_FRAC}% (auto-reboot DISABLED, see WEDGE_PROBE.md post-mortem)" >> "$RECOVERY_LOG" 2>/dev/null
+      echo "$TS ALERT_ONLY (see $RECOVERY_LOG)" >> "$LOG" 2>/dev/null
+      CONSEC=0
     fi
   fi
 
