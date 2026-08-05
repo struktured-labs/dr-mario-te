@@ -640,8 +640,15 @@ def _emit_tuck_bfs_main(a):
     a.ins("RTS")
 
 
-def build(base=0x8000):
-    a = Asm6502(base)
+def emit_tuck_bfs(a):
+    """Public entry point for integration builds (build_copro_d3.py under
+    DRCOPRO_TUCKBFS): appends the full tuck_bfs routine -- entry point
+    "tuck_bfs" plus every helper subroutine -- onto an EXISTING Asm6502
+    instance, the same pattern tuck_v3.py's own emit_* functions use so
+    multiple modules can share one ROM image and JSR between each other's
+    labels. `build()` below is a thin standalone-testing wrapper around
+    this for when a fresh, self-contained image is all that's needed
+    (unit tests, the standalone budget/bit-exact gate)."""
     _emit_tuck_bfs_main(a)
     _emit_row_fixedpoint(a)
     _emit_down_propagate(a)
@@ -653,6 +660,11 @@ def build(base=0x8000):
     _emit_vbit(a)
     _emit_is_legal(a)
     _emit_emit_phase(a)
+
+
+def build(base=0x8000):
+    a = Asm6502(base)
+    emit_tuck_bfs(a)
     return a
 
 

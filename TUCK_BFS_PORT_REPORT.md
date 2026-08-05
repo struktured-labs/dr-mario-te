@@ -315,6 +315,16 @@ holds. This is the strongest evidence available short of a real board that overf
   (found by sparse-random search, ~3-35% fill in rows 4-15 only; provenance in §2)
 - `tests/tuck_bfs_budget_raw.json` — raw per-board cycles/candidates, backing §4-5's numbers
 - `tests/proto_rowbfs.py` — the pre-6502 Python algorithm proof (§1), kept for provenance
+- `tests/translate_ref.py` — Python reference for the CANDLIST translation (§8.1-8.2),
+  validated against `tuck_scan_v3_ref.py` before any 6502 was written
+- `tests/tuck_bfs_translate_6502.py` — the translation emitter (§8.3)
+- `tests/test_tuck_bfs_translate_6502.py` — full-chain py65 validation harness (§8.4)
+- `tests/validate_tuckbfs_wiring.py` / `tests/validate_tuckbfs_wiring_corpus.py` —
+  end-to-end firmware wiring validation (§8.5); the corpus variant has a known
+  in-process-loop anomaly documented in its own docstring, use per-board subprocess
+  isolation (as both scripts' own single-board path does) for anything that matters
+- `fpga/copro/build_copro_d3.py` — modified (not new): added the `DRCOPRO_TUCKBFS` knob
+  (§8.5), byte-identical when unset
 - `TUCK_BFS_PORT_REPORT.md` — this file
 
 ## RESOLUTION ADDENDUM (session lead, 2026-08-05 early)
@@ -354,3 +364,181 @@ $81-$96 (right after tuck_v3.py's own last byte), which is unconditionally
 free against every file checked including tuck_v3.py. Pure address relabel;
 re-ran all 4 test stages after the move, byte-identical pass. See §3 for the
 full table.
+
+## 8. CANDLIST TRANSLATION + FIRMWARE WIRING (third increment, this session)
+
+The team lead's next ask: implement the translation from tuck_bfs's output arrays into
+tuck_v3.py's `CANDLIST` format, wire it behind a new `DRCOPRO_TUCKBFS` knob following the
+`DRSTRAND` opt-in pattern, and validate the full chain against `tuck_scan_v3`. All three are
+done. New files: `tests/translate_ref.py` (Python reference, validated first), `tests/
+tuck_bfs_translate_6502.py` (the 6502 port), `tests/test_tuck_bfs_translate_6502.py` (py65
+validation), `tests/validate_tuckbfs_wiring.py` + `tests/validate_tuckbfs_wiring_corpus.py`
+(end-to-end firmware validation).
+
+### 8.1 The translation contract — narrower than it might look, and why
+
+`CANDLIST` ($61AC, 14 slots × 5 B: target/approach/trigger/rest/orient) is NOT a simple
+reshaping of tuck_bfs's `(x, y, orient)` triples. Tracing every read of `approach`/`trigger`
+through tuck_v3.py's scoring functions settled the question of whether they're real:
+`tuck_cell_prep` reads `target`/`rest`/`orient` only (to place cells via `land_place_at`) —
+but `tuck_root_extension` reads `approach`/`trigger` for the WINNING candidate specifically,
+publishing them to `TUCK_COL`/`TUCK_ROW` ($6139/$613A) — the driver's physical steering
+target for the real falling pill. So `approach`/`trigger` are a real execution contract
+(single-adjacent-column, single-row entry point, in tuck_scan_v3's own restricted motion
+vocabulary), not passthrough metadata this port can invent values for.
+
+tuck_bfs's `(target, rest, orient)` already IS tuck_scan_v3's geometric candidate identity
+(`_cells_of(x,y,o)` and `candidate_cells(target,rest,orient)` are the same function). What's
+missing is deriving a valid `(approach, trigger)` for each one — and NOT every tuck_bfs
+candidate has one, precisely because tuck_bfs's reachability model is a proper superset of
+tuck_scan_v3's restricted one (that superset is the entire reason this port exists).
+Measured on the 200-board real-L11 corpus (uncapped, to see the true population before the
+14-slot cap): **median 36 raw BFS candidates/board, but only median 2 (mean 3.34, max 12)
+survive translation** — the other ~89% require genuinely multi-step paths (multiple lateral
+moves and/or rotations) that a single adjacent-column slide-in can't express. The 14-slot
+capacity never bound in this sample (max translated was 12). This is consistent with —
+not a contradiction of — the team lead's framing that surfacing the REST of tuck_bfs's value
+needs a wider execution contract, tracked separately (task #60) and deliberately not
+pre-empted here.
+
+### 8.2 Derivation rule + a real bug found in the existing firmware's own model
+
+For each tuck_bfs candidate, the translation tries `side = target-1` then `side = target+1`
+(tuck_scan_v3's own documented tie-break order), scanning trigger rows ascending and
+simulating the fall — literally re-running tuck_scan_v3's own geometric rule restricted to
+one `(target, rest)` query. Validated bit-exact in Python first (`translate_ref.py` vs
+`tuck_scan_v3_ref.py`'s own uncapped output): **0/732 mismatches over 400 random boards.**
+
+That validation surfaced a genuine, pre-existing over-approximation in tuck_scan_v3's own
+model (not introduced by this port): its rule bounds valid trigger rows by
+`first_occ(approach)` alone — it checks the approach column is *empty* that deep, but never
+that a pill could actually *get there* at a shallow row. Found a concrete board where this
+matters: tuck_scan_v3 claims `target=7, approach=6, trigger=5` is valid, but column 6 is
+only enterable by first sliding through column 5, and column 5's wall doesn't open until row
+8 — with no Up move in the whole model, a pill reaching column 6 at all is already past row
+5. Traced this by hand (`column 5 all 16 rows: [3,1,2,1,2,3,2,2,0,1,2,2,2,3,0,2]` — occupied
+every row through 7, first empty at row 8) before accepting it as a real finding, not a
+translation bug: confirmed the target/rest key itself is correctly ABSENT from tuck_bfs's
+own reachable set on that board (tuck_bfs's row-monotonic BFS proves it unreachable, full
+stop), so this class of error cannot leak into the translation through the target side.
+
+**Defensive refinement added anyway, not just relied on the argument above:** every found
+`(approach, trigger)` is additionally checked against tuck_bfs's own VISITED bitplane
+(`BFS_VIS` is still populated after `tuck_bfs` returns; the check reuses `tb_vis_test`
+verbatim — zero new computation) before being accepted. A candidate whose descriptor doesn't
+verify is dropped, not silently accepted. This is a second line of defense against the SAME
+failure class showing up on the approach side of a target that IS legitimately reachable via
+some other path.
+
+### 8.3 6502 port — one real bug, found and fixed before shipping
+
+Assembled clean on the first pass (1427 bytes combined with tuck_bfs, 92 labels) but failed
+its first correctness test: a 5-board smoke run found entries missing specifically from
+HORIZONTAL geometry (`orient` 0/2) whenever the second `first_occ` lookup ran. Root cause:
+the horizontal min-computation (`fc = min(first_occ(target), first_occ(target+1))`) stashed
+the first result in `TR_TMP` intending to compare it after the second `tr_first_occ` call —
+but `tr_first_occ` uses `TR_TMP` as its OWN internal offset-walking scratch, so the second
+nested call clobbered the first result before the comparison ran (measured: computed
+`FC=11` instead of the correct `6` on a real corpus board). Fixed by giving the "remember
+across a nested call" role its own register (`TR_TMP2`), which is a broader lesson worth
+stating plainly: **a helper subroutine's own internal scratch is not safe as a caller-side
+temporary across a second call to that same helper** — same trap class as the ZP allocation
+discipline elsewhere in this file, just at the subroutine-composition level instead of the
+whole-program level. Re-ran the 5-board smoke test after the fix: 5/5 clean, then scaled up.
+
+Also hit and fixed one more branch-range assembler error (the visited-check block growing
+the emit-phase loop body past 127 bytes) — same invert-and-JMP idiom already established in
+`tuck_bfs_6502.py`, not a new pattern.
+
+New ZP: `$97-$A8` (18 B), immediately after `tuck_bfs_6502.py`'s own `$81-$96` claim.
+Confirmed free by the same sweep methodology as §3 (every `.py` file in the build chain,
+including `tuck_v3.py`) — no hits beyond the `TXS` opcode literal (`0x9A`) in
+`build_copro_d3.py`/`build_firmware.py`, which is an instruction encoding, not an address.
+
+### 8.4 Validation: 50-board full chain, bit-exact + scan_v3 cross-checked
+
+Full chain (`tuck_bfs` → `tr_translate` → `CANDLIST`) run under py65 on **50 real L11 corpus
+boards**:
+
+- **50/50 boards match `translate_ref.py`'s prediction exactly** (same CANDLIST contents,
+  entry for entry).
+- **0 scan_v3 cross-check surprises** across 198 total CANDLIST entries: every single one
+  matches what `tuck_scan_v3_ref.py`'s own uncapped rule would compute for that exact
+  geometric candidate, confirming the port never emits a candidate scan_v3's own model
+  wouldn't also endorse (the §8.2 over-approximation case is excluded by construction, as
+  argued, and this 50-board sweep found zero counterexamples to that argument).
+- Aggregate: 198 CANDLIST entries / 1,648 drops across 50 boards (mean 3.96/32.96),
+  consistent with §8.1's 200-board figures.
+
+### 8.5 Firmware wiring: `DRCOPRO_TUCKBFS`, byte-identity confirmed
+
+Added to `build_copro_d3.py` following the `DRSTRAND`/`EMIT_TUCK_V3` opt-in-flag pattern
+exactly: `EMIT_TUCK_BFS = os.environ.get("DRCOPRO_TUCKBFS", "0") == "1"`, asserted mutually
+exclusive with both `EMIT_TUCK` and `EMIT_TUCK_V3` (alternative enumerators feeding the SAME
+unmodified tuck_v3.py scoring functions — `tuck_cell_prep`/`tuck_ply2_score`/
+`tuck_root_extension`/`land_place_at` are called completely unchanged, just emitted onto a
+new image built from `tuck_bfs` + `tr_translate` instead of `tuck_scan_v3`). Shares
+`TUCK_V3_ROM`'s address as `TUCK_BFS_ROM` (never co-resident, so no collision) rather than
+claiming a 4th ROM region. **Zero changes to `test_search_d3.py`** — every address the new
+block needs (`resolve_capped`, `expectimax`, `eh_terms_scan`, `cp_live_cur`) was already
+exposed for `EMIT_TUCK_V3`'s identical use of them.
+
+**Byte-identity, verified not asserted:** built `build_image()` with the flag unset before
+and after the full edit (using a git-stash round-trip to get a true pre-edit baseline) —
+`md5(image) = 753bfb2397d10b5de078a1c9068433d2` in both cases. Re-confirmed once more after
+the translation code and the ZP-collision fix landed. Every new code path is additive
+(new `if EMIT_TUCK_BFS:` blocks, new stub conditionals appended after the existing ones) —
+nothing existing was reordered or modified.
+
+**A pre-existing, unrelated bug was found and NOT fixed (out of scope, and not mine):**
+calling `build_image()` fresh in a plain Python process throws `KeyError: 'eh_terms_scan'`
+— reproduced identically on `EMIT_TUCK_V3=1` against the git-stashed ORIGINAL
+`build_copro_d3.py`, before any of this session's edits, so this is not a regression this
+port introduced. Root cause (traced, not fixed): importing `test_vrdy` AND
+`test_readiness_ext` together, before `test_search_d3`, leaves `test_search_d3.build()`'s
+output missing that label — `dbg_build.py`'s own header comment obliquely acknowledges the
+fragility class this belongs to (it force-preloads `test_search_d3` via `importlib` before
+anything else can import it). All validation in this section used that same
+force-preload pattern, matching the project's own established workaround rather than
+inventing a new one.
+
+**End-to-end validation** (`validate_tuckbfs_wiring.py`, `validate_tuckbfs_wiring_corpus.py`,
+using the force-preload pattern, real L11 corpus boards, full stub reset→DONE flow through
+py65's RTL-engine emulation):
+
+- `S_BEST_C`/`S_BEST_O` (the base search's own decision) matches `decide_d3`'s reference
+  EXACTLY on every board tried — the base search is provably unaffected by any of this.
+- `BFS_OUTN`, and `TS_CNT + TS_DROP`, correctly account for every candidate across every
+  board sampled this way (e.g. board id 20: `4 + 34 = 38`; id 60: `4 + 30 = 34`; id 80:
+  `2 + 42 = 44` — checked on 6+ boards, always exact).
+- Board id=0's specific result (`TS_CNT=0, TS_DROP=30` — every one of 30 raw candidates
+  lacked a verified descriptor) was cross-checked against `translate_ref.py`'s independent
+  prediction for that exact board and matched exactly.
+- No tuck fired (`TUCK_COL != 0xFF`) in a 20-board sample — expected, not a red flag: the
+  SAGA's own θ=250 measurement puts the base rate at ~4.84 fires per WHOLE GAME (tens of
+  decisions), so the chance of a single sampled decision-point firing is low, and these 20
+  boards are independent snapshots, not one continuous trajectory.
+- A convenience script (`validate_tuckbfs_wiring_corpus.py`) that loops over multiple boards
+  IN ONE PROCESS shows every board finishing suspiciously fast with everything reading 0 —
+  not reproduced when each board is isolated in its own subprocess (which is how every
+  number above was actually obtained). Not root-caused; flagged prominently in that file's
+  own docstring and here rather than left as a silent trap for whoever runs it next.
+
+### 8.6 What's still open after this increment
+
+1. The pre-existing `eh_terms_scan` KeyError (§8.5) should get root-caused by whoever owns
+   the `test_vrdy`/`test_readiness_ext`/`test_search_d3` import interaction — it currently
+   blocks calling `build_image()` directly outside the `dbg_build.py`-style force-preload
+   workaround, for EMIT_TUCK_V3 as much as for EMIT_TUCK_BFS.
+2. The `validate_tuckbfs_wiring_corpus.py` in-process multi-board anomaly (§8.5) is
+   unexplained. Suspect `attach_engine_emu`'s `ObservableMemory`/closure state isn't
+   properly scoped per `Cpu` instance across repeated in-process calls, but this wasn't
+   confirmed.
+3. No tuck has been observed to actually WIN the θ gate in this session's testing (small,
+   independent-snapshot sample). A real firmware A/B (per the SAGA's stated sequence, θ=250
+   via the mirror rig) is the next real test of whether this enumerator's value shows up in
+   play, not a substitute for it.
+4. Colours are still not part of `CANDLIST` (§2's colour work applies to `tuck_bfs`'s own
+   output arrays only) — confirmed genuinely unnecessary for this path specifically, since
+   `tuck_cell_prep` re-derives colour from `S_CA`/`S_CB` directly, independent of anything
+   `tuck_bfs` emits.

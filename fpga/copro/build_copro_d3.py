@@ -43,6 +43,19 @@ TUCK_COL, TUCK_ROW = 0x6139, 0x613A
 EMIT_TUCK_V3 = os.environ.get("DRCOPRO_TUCKV3", "0") == "1"
 assert not (EMIT_TUCK and EMIT_TUCK_V3), "EMIT_TUCK (v1) and EMIT_TUCK_V3 are alternatives"
 TUCK_V3_ROM = 0x9000          # well clear of search-end (~$88E1) and v1's TUCK_ROM ($A800)
+# DRCOPRO_TUCKBFS=1: task #17 stage 4 -- the TE-free BFS enumerator (tests/tuck_bfs_6502.py,
+# bit-exact 200/200 vs tuck_enum.py's motion-truth reachable set) + its CANDLIST translation
+# (tests/tuck_bfs_translate_6502.py) feeding tuck_v3.py's UNCHANGED scoring/gating functions
+# (tuck_cell_prep/tuck_ply2_score/tuck_root_extension) in place of tuck_v3's own tuck_scan_v3
+# enumerator. Alternative to EMIT_TUCK_V3 (same CANDLIST/TS_CNT/TS_DROP/TUCK_COL/TUCK_ROW
+# mailbox, same driver-side executor), not simultaneous -- asserted below. Shares
+# TUCK_V3_ROM's address (never co-resident, so no collision) rather than claiming a 4th ROM
+# region. Default OFF keeps this builder's output byte-identical.
+EMIT_TUCK_BFS = os.environ.get("DRCOPRO_TUCKBFS", "0") == "1"
+assert not (EMIT_TUCK and EMIT_TUCK_BFS), "EMIT_TUCK (v1) and EMIT_TUCK_BFS are alternatives"
+assert not (EMIT_TUCK_V3 and EMIT_TUCK_BFS), \
+    "EMIT_TUCK_V3 and EMIT_TUCK_BFS are alternative enumerators for the same tuck_v3 scoring"
+TUCK_BFS_ROM = TUCK_V3_ROM
 SQ_ROM, PILL_ROM = 0xB000, 0xB030
 MAX_STEPS = 3_000_000_000
 
@@ -129,6 +142,62 @@ def build_image(board, cA, cB, nA, nB):
             f"tuck_v3 overruns the free ROM window before $A800 ({len(tuck_v3_code)}B)"
         assert 0x8000 + len(code) <= TUCK_V3_ROM, "search overruns tuck_v3"
 
+    tuck_bfs_code = b""
+    tuck_bfs_ep = None
+    if EMIT_TUCK_BFS:
+        import tuck_bfs_6502 as TB
+        import tuck_bfs_translate_6502 as TRB
+        import tuck_v3 as TV
+        resolve_capped_addr = 0x8000 + labels["resolve_capped"]
+        expectimax_addr = 0x8000 + labels["expectimax"]
+        eh_terms_scan_addr = 0x8000 + labels["eh_terms_scan"]
+        cp_live_cur_addr = 0x8000 + labels["cp_live_cur"]
+        tvb = Asm6502(TUCK_BFS_ROM)
+        TB.emit_tuck_bfs(tvb)                    # enumerator: "tuck_bfs" label
+        TRB.emit_translate(tvb)                  # translation: "tr_translate" label,
+                                                   # writes tuck_v3.py's own CANDLIST/TS_CNT/
+                                                   # TS_DROP -- same bytes tuck_scan_v3 would
+        TV.emit_land_place_at(tvb, board=TV.CUR)
+        TV.emit_tuck_cell_prep(tvb, s_ca=S_CA, s_cb=S_CB)
+        TV.emit_tuck_imm1(tvb)
+        TV.emit_tuck_slot0_inject(tvb, eh_terms_scan_addr, D3.D_L1L, D3.D_L1H, board=TV.CUR)
+        TV.emit_tuck_ply2_score(
+            tvb, D_C2=D3.D_C2, D_O2=D3.D_O2, D_TKC=D3.D_TKC, D_J=D3.D_J,
+            D_MKL=D3.D_MKL, D_MKH=D3.D_MKH, D_MI=D3.D_MI, D_B2L=D3.D_B2L, D_B2H=D3.D_B2H,
+            D_I1L=D3.D_I1L, D_I1H=D3.D_I1H, D_I2L=D3.D_I2L, D_I2H=D3.D_I2H,
+            D_L1L=D3.D_L1L, D_L1H=D3.D_L1H, D_V1L=D3.D_V1L, D_V1H=D3.D_V1H,
+            D_V3L=D3.D_V3L, D_V3H=D3.D_V3H, D_EL=D3.D_EL, D_EH=D3.D_EH,
+            D_ADL=D3.D_ADL, D_ADH=D3.D_ADH, S_NA=S_NA, S_NB=S_NB,
+            TK_KL=D3.TK_KL, TK_KH=D3.TK_KH, TK_O=D3.TK_O, TK_C=D3.TK_C,
+            TK_IL=D3.TK_IL, TK_IH=D3.TK_IH, WIN=D3.WIN, DISC=D3.DISC,
+            expectimax_addr=expectimax_addr,
+        )
+        TV.emit_tuck_root_extension(
+            tvb, D_BVL=D3.D_BVL, D_BVH=D3.D_BVH, D_BC=D_BC, D_BO=D_BO,
+            S_BEST_C=S_BEST_C, S_BEST_O=S_BEST_O,
+            D_V1L=D3.D_V1L, D_V1H=D3.D_V1H, D_I1L=D3.D_I1L, D_I1H=D3.D_I1H,
+            resolve_capped_addr=resolve_capped_addr,
+            cp_live_cur_addr=cp_live_cur_addr,
+        )
+        tvb.label("tuck_bfs_v3")
+        # tuck_bfs's own contract (module docstring): PILL_A/PILL_B must hold the two pill
+        # colours before calling. Unused downstream in THIS integration (tuck_cell_prep
+        # re-derives colour from S_CA/S_CB directly, not from tuck_bfs's OUT_CA/OUT_CB --
+        # CANDLIST carries no colour field at all), but set correctly anyway so tuck_bfs
+        # never reads uninitialised zero page and its documented contract holds regardless
+        # of which downstream consumer is wired to it.
+        tvb.ins16("LDA_abs", S_CA); tvb.ins("STA_zp", TB.PILL_A)
+        tvb.ins16("LDA_abs", S_CB); tvb.ins("STA_zp", TB.PILL_B)
+        tvb.jsr("tuck_bfs")
+        tvb.jsr("tr_translate")
+        tvb.jsr("tuck_root_extension")
+        tvb.ins("RTS")
+        tuck_bfs_code = tvb.assemble()
+        tuck_bfs_ep = TUCK_BFS_ROM + tvb.labels["tuck_bfs_v3"]
+        assert TUCK_BFS_ROM + len(tuck_bfs_code) <= 0xA800, \
+            f"tuck_bfs overruns the free ROM window before $A800 ({len(tuck_bfs_code)}B)"
+        assert 0x8000 + len(code) <= TUCK_BFS_ROM, "search overruns tuck_bfs"
+
     stub = Asm6502(STUB)
     stub.ins("SEI"); stub.ins("CLD")
     stub.ins("LDX_imm", 0xFF); stub.ins("TXS")
@@ -136,7 +205,7 @@ def build_image(board, cA, cB, nA, nB):
     stub.label("cp2")
     stub.ins16("LDA_absX", PILL_ROM); stub.ins16("STA_absX", PILLA)
     stub.ins("DEX"); stub.br("BPL", "cp2")
-    if EMIT_TUCK or EMIT_TUCK_V3:
+    if EMIT_TUCK or EMIT_TUCK_V3 or EMIT_TUCK_BFS:
         # descriptor defaults BEFORE the search: wiring $5087/$5088 in CoproDrMario turned
         # them from a scratch alias into real copro RAM, so an uninitialised pair would make
         # a DRTUCK=1 driver steer to a random column. Gated so the SHIPPED firmware stays
@@ -148,6 +217,8 @@ def build_image(board, cA, cB, nA, nB):
         stub.jsr(TUCK_ROM)
     if EMIT_TUCK_V3:
         stub.jsr(tuck_v3_ep)
+    if EMIT_TUCK_BFS:
+        stub.jsr(tuck_bfs_ep)
     stub.ins("LDA_zp", D_BC); stub.ins16("STA_abs", S_BEST_C)
     stub.ins("LDA_zp", D_BO); stub.ins16("STA_abs", S_BEST_O)
     stub.ins("LDA_imm", 1); stub.ins16("STA_abs", DONE)
@@ -161,6 +232,8 @@ def build_image(board, cA, cB, nA, nB):
         img[TUCK_ROM:TUCK_ROM + len(tuck_code)] = tuck_code
     if tuck_v3_code:
         img[TUCK_V3_ROM:TUCK_V3_ROM + len(tuck_v3_code)] = tuck_v3_code
+    if tuck_bfs_code:
+        img[TUCK_BFS_ROM:TUCK_BFS_ROM + len(tuck_bfs_code)] = tuck_bfs_code
     for i in range(17):
         img[SQ_ROM + i] = (i * i) & 0xFF
         img[SQ_ROM + 17 + i] = (i * i) >> 8
