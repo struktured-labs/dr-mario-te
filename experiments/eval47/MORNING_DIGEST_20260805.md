@@ -101,3 +101,54 @@ workstreams merged); film-review scorecard + quantitative dossier rebuild
 3. reactive-mode: SPD validity gate into refit_dr_lulu.py (BEFORE her
    session tonight).
 4. Assemble + schedule the silicon session per the manifest above.
+
+---
+
+# DAY UPDATE (2026-08-05 evening) — two lanes, one open number each
+
+## STABILITY: the wedge is OURS, not the platform's (and not the brain's)
+
+Elimination chain, each step verified by screenshot-timeout ground truth:
+1. **Our own IPC exonerated** — wedge recurs with tracker + preventive loop
+   fully stopped.
+2. **Idle exonerated** — 9h19m at MENU, zero wedges. It needs active play.
+3. **s20b / CMD-8 exonerated** — the PRE-STRAND20 shipped champion
+   (71d2de37) wedged in **6m15s** under identical conditions. Not a
+   regression from the #47 work.
+4. **MiSTer framework exonerated** — stock NES core + a commercial ROM ran
+   clean at 6.5 min, 15 min, and a 3-frame motion test at 17 min. No
+   pinned-firmware workaround needed.
+⇒ Remaining split, running now: copro core + a NON-CvC human cart. Survives
+⇒ the CvC driver's busy pattern (driver fix; booth inherently safe, humans
+don't run autonav). Wedges ⇒ copro/mapper-100 RTL (real work before Sept).
+
+★ METHOD RULES adopted (each after a real misdiagnosis): a returned
+screenshot proves the display path ALIVE — a wedge is proven by TIMEOUT,
+never by frame content; when content is ambiguous, MOTION (3 captures
+seconds apart, distinct hashes) is the tiebreaker. Also: the probe's
+busy_frac/consec heuristic FIRES ON HEALTHY PLAY — it is an alert, never a
+verdict.
+
+## BRAIN: tier-3 candidate built, one gate outstanding
+
+Tier-3 execution vocabulary (any approach column, ≤1 direction change)
+ported to 6502 and wired: bit-exact 0/1490 corpus + 0/15 through the real
+CANDLIST path; ROM 3581B of 6144B (58%) — tier-2 fallback unnecessary;
+3x fire rate vs tier-1 on a matched seed incl. a tier-3-only case; a full
+BFS-driven game fired 5 verified tucks and won by full clear.
+**Offline A/B vs today's shipped tier-1 vocabulary: bad-ends 19→11, clear
+rate 68.3%→81.7%, McNemar p=0.077, pills a wash — DIRECTIONAL, NOT
+CONCLUSIVE at n=60.** Residual vs the theoretical oracle: 3/60 seeds, all
+losses, cause named (2.3% late-rotation descriptor miss; a 3-phase
+descriptor would cost several hundred bytes — next generation, not this
+ship). Candidate image `12a0906b…`, shipped hex restored and verified clean.
+OUTSTANDING GATE: the tier1-vs-tier3 RTL move diff (smoke test alone was
+recorded as sufficient; sent back — "it runs" is not "it acts", a lesson
+this program has now paid for twice).
+
+## HONEST STATUS OF THE CHAMPION CLAIM
+
+Not yet a champion. The candidate is built and mostly gated; its offline
+evidence is promising but under-powered; and the silicon A/B that would
+settle it cannot run until the wedge is fixed — a box that dies every
+6-30 minutes under continuous play cannot measure a brain delta.
