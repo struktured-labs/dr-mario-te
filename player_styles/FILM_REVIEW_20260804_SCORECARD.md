@@ -54,3 +54,15 @@ under fire) is the missing skill, and because the approach phase buries its
 own last targets. Training implication: drill closing sequences (last-2-virus
 excavation lines), not nerve control. His instinct that the AI is
 structurally strongest exactly then (fixed-latency, panic-immune) is correct.
+
+## Player refinement post-scorecard (2026-08-04, user commentary)
+
+"If you make just one endgame blunder it really messes with your psyche (like
+closing out the one good option to clear the last viruses)." — This reconciles
+the #3 verdict cleanly: the tape's m4 shows exactly that irreversible-blunder
+class (own last targets sealed by t=1360), and the post-blunder signature is
+TILT-AS-OVERCAUTION (latency up, corrections down, straight-drops gone), not
+flailing. The subjective "it gets way faster" = time pressure felt during
+frozen deliberation, not objective game speed (AI interval lengthened too).
+Training target confirmed: last-2-virus closing lines + a pre-commit habit of
+checking "does this placement seal my only clear path?"
