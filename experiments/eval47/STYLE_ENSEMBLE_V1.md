@@ -23,6 +23,17 @@ cadence, not human. Refit as "bursty v1.1" from the separated stream and re-ran 
 check: qualitative conclusions survive, but the dies-ahead baseline drops materially (13.3%→7.5%)
 under honest human cadence — full details in `BURSTY_V1_RESULTS.md` §5.
 
+**Detector-recall verdict (§8b): the near-zero-volley matches (davesmithsays, Rob Burrito's 2nd
+window) are a RECALL MISS, root cause found — not "these players don't apply pressure."** DrMC's
+ROM is confirmed byte-identical to ours (romhack survey), ruling out "different garbage visuals."
+Direct frame evidence + a cross-source comparison shows DrMC tournament footage runs fast enough
+that multiple pill placements land within a single 1fps sample (struktured's calibration source
+tops out at 6 new cells/sec; DrMC brackets sustain 8-15+), breaking the volley detector's core
+timing assumption. Reconciled against the M2b corpus's independent attack measurement (17.1%
+attack-given-clear, built from seed-recovery + ROM-rule replay, not frame-differencing — immune to
+this problem by construction). No fix attempted this pass (both real fixes are bigger than a
+patch); top-up sweep paused pending that decision, not abandoned. Full evidence in §8b.
+
 ## 1-4. Inventory / sources / calibration / attribution — unchanged from passes 1-2
 
 See prior sections (not reproduced) for the `/mnt/data/drmario/expert_vods/` inventory, the
@@ -186,20 +197,101 @@ is playing. **Flagged as a possible systematic gap in the extraction method, not
 attribute** — worth investigating before trusting "n=0/n=2" readings as meaningful absences of
 pressure exchange rather than instrument blind spots.
 
-## 9. Next step
+## 8b. Detector-recall investigation: verdict, frame evidence, M2b reconciliation
 
-Same three options as pass 2's §7, re-ranked given this pass's result (and the top-up attempt
-above, which shows the top-up strategy itself is NOT reliably productive — the detector may need
-attention before more footage helps):
-1. **More footage per named player is now the clear priority** (not more separation work — that's
-   done and correct). Every named player has exactly one ~5-minute match window; the same
-   Red/White/Green Bracket videos likely have 2-3 more segments each for these players across
-   "Rounds 1, 2, 3" (unexplored — only one nameplate-diff localization was run per bracket this
-   pass). Pulling those would extend EXISTING players' n without new video downloads or new
-   calibration.
-2. davesmithsays' n=0 specifically warrants checking a second window before concluding anything —
-   one 420s slice is a small sample of a multi-round bracket appearance.
-3. Ensemble-gate structure proposal (evaluate a ship candidate against every fit individually, not
+Chased the near-zero-volley pattern with the eyeball diagnostic + a second data source, per task
+direction. **Verdict: RECALL MISS, root cause identified — 1fps sampling under-resolves DrMC's
+faster tournament game speed, not a different-ROM or different-garbage-visuals problem.**
+
+**Hypothesis "different ROM hack, different garbage visuals" — REFUTED before pulling a single
+frame.** The project's own romhack survey (already on file) establishes DrMC's broadcast build is
+the `playdm.net` DrMC v1.0 patch on the **exact same base ROM as ours** (md5-identical to
+`brianhuffman/drmario`'s Rev 0) — the patch only adds a seed display, a fine SPD readout, and OBS
+overlay panels; it does not touch core gameplay code. So the underlying garbage/attack mechanics
+(and the ROM attack rule's spatial signature: size-2 attacks at columns exactly 4 apart, same row)
+are identical to our cart's. This was checkable from memory before any footage work, and it heads
+off a wrong diagnosis.
+
+**Eyeball diagnostic (as instructed): pulled frames around Rob Burrito's 10 biggest clears in the
+vs-Packie window (t=1940-2900) and looked at Packie's board.** At Rob Burrito's largest clear
+(t=2340, 18 cells), Packie's board visibly grows in the following ~10s (occupied count 55→68→88),
+but frame-by-frame cell-diffing shows why settled-cover doesn't catch it as a clean volley: **new
+cells are arriving 6-15 at a time in single 1fps samples** (`(11,3,'R'),(11,4,'R'),(12,3,'R'),
+(12,4,'R'),(5,4,'Y'),(5,5,'Y')...` etc., full per-second dumps in the investigation log) — far more
+than a single human pill placement can produce (max 2 cells/placement). **That is not garbage
+noise, it's MULTIPLE PILLS locking within one sampled second** — the detector's core assumption
+(struktured's calibration: at most ~1 placement, ≤6 new cells, per 1fps sample) is violated.
+
+**Confirmed this is systematic, not a one-off, with a direct comparison against the calibration
+anchor.** New-cells-per-second distribution, same method, two sources:
+- struktured (P1, t=120-200, the source the detector was built/validated against): **max 6**,
+  distribution {0:2, 1:9, 2:24, 3:21, 4:11, 5:11, 6:2} — clean, bounded, matches "~1 placement/sec."
+- Red Bracket (Rob Burrito's board, DrMC tournament, SPD 33-34 on-screen): sustained values of
+  6-15 new cells/sec, repeatedly, not occasional.
+- White Bracket (Bidwell's board, a DIFFERENT DrMC match, cross-check): mostly 0-4 (matches
+  struktured's shape) but with occasional spikes to 9, 12, 23, 35 — the 23/35 are almost certainly
+  level/scene-transition artifacts (already excluded by the existing >20-cell cap), the 9/12 are
+  the same multi-pill-per-second pattern seen in the Red Bracket, just less frequent in this match.
+
+**Reconciliation with M2b's method (`decline_ab_visionm2b.py` + the corpus's `clear_labels.py`/
+`player_leaderboard.py` machinery, read this pass):** M2b's 17.1% attack-given-clear number is
+built completely differently from settled-cover — it does NOT do frame-differencing or watch for
+anything arriving on the opponent's board at all. It uses **RNG-seed recovery to reconstruct the
+sender's exact board state**, then applies the ROM's deterministic combo-counter rule *analytically*
+(`rom_garbage.resolve_with_combo`, the same rule cited in the project's ROM attack rule memo) to
+decide whether a given clear sends an attack. Because it only needs the SENDER's own reconstructed
+state, not observed arrival timing on the receiver's board, **it is structurally immune to the
+sampling-rate problem that breaks settled-cover on fast tournament play.** This is the real
+reconciliation: the two methods aren't disagreeing about whether attacks happen (M2b confirms they
+do, at real rates) — they key on completely different signals, and only one of them needs a video
+frame rate fast enough to resolve individual placements.
+
+**No fix attempted this pass — the two available options are both bigger than a "widen the
+trigger" patch, and a wrong quick fix would be worse than none:**
+1. Re-extract at a higher frame rate (e.g. 5-10fps) for high-SPD sources so individual placements
+   resolve cleanly again. Straightforward in principle, expensive in practice (5-10x the frames to
+   extract/classify per source) and untested this pass.
+2. Adopt M2b's seed-recovery + replay architecture for DrMC sources instead of frame-differencing
+   — the more robust fix (sidesteps the sampling problem entirely, and gets M2b's validated
+   attack-rate machinery for free) but a materially bigger build, not a detector tweak.
+Widening the column-offset/row tolerance in `extract_volleys` was deliberately NOT tried: the
+diagnosis is a TIMING resolution problem (which placement produced which cell), not a SPATIAL
+tolerance problem, so a wider spatial trigger would mostly just convert misses into different
+misses (or false positives from coincidental multi-pill column alignment), not fix the underlying
+issue.
+
+**Calibration anchor status: UNCHANGED, correctly.** No detector code was modified this pass, so
+struktured's 90.9%/ROM-rule agreement (§6b) stands exactly as reported — nothing to re-prove yet.
+Any future fix attempt MUST re-run that check as its regression gate before being trusted.
+
+**No re-extracted volley counts for existing windows** — there is no corrected detector to
+re-extract with yet; re-running the SAME detector on the SAME windows would reproduce identical
+numbers (already regression-checked in §5/pass 3 for `fit_filtered`).
+
+**Consequence for the top-up sweep: PAUSED, not abandoned.** Pulling more DrMC tournament segments
+with the current detector will very likely hit the same wall (the problem is the game speed /
+sampling mismatch, present in every DrMC bracket, not a property of any one match or player) — more
+footage of the same kind is not expected to raise confidence. Recommend deciding between the two
+fix options above before resuming, rather than spending more video-hunting time against a known
+limitation.
+
+## 9. Next step (SUPERSEDED by §8b's detector-recall finding — re-ranked again)
+
+§8b changed the ranking from the previous pass: "pull more footage" is no longer the top move,
+because the wall is a detector limitation present across every DrMC bracket sampled, not a
+footage-volume problem.
+
+1. **Decide between §8b's two fix options (higher-fps re-extraction, or M2b-style seed-recovery +
+   replay) before pulling more DrMC segments.** More footage of the same kind will very likely hit
+   the same sampling-rate wall. This is now the actual top priority, ahead of both more separation
+   work (done) and more raw footage (paused).
+2. If/when a fix lands, the FIRST re-run must be the calibration-anchor regression check
+   (struktured's 90.9%/ROM-rule agreement, §6b) before trusting any DrMC number from the new
+   detector — not skippable, per task direction.
+3. davesmithsays' n=0 and Rob Burrito's still-LOW-CONF n=12 are BOTH plausibly detector-recall
+   artifacts now, not necessarily thin footage — re-test them first once a fix exists, before
+   assuming more raw video is needed for either.
+4. Ensemble-gate structure proposal (evaluate a ship candidate against every fit individually, not
    averaged) is unchanged and still not implementable at this n.
 
 ## Per-player dossier notes (applied this pass)
