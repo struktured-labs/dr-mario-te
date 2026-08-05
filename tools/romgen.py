@@ -88,6 +88,15 @@ def do_build(out, base, flags, quiet=False):
 
 def cmd_build(a):
     flags = dr_flags()
+    # DRBUILDID_TAG source of truth: derive it from the SAME --tag this command already records
+    # in the manifest, so there is exactly one place a build's identity comes from, not two that
+    # could drift (the on-cart stamp and the manifest tag naming different things). An explicit
+    # DRBUILDID_TAG in the environment wins (caller's deliberate override), matching the
+    # env-wins-if-set pattern the rest of this file already uses for DR* flags.
+    if "DRBUILDID_TAG" not in flags:
+        tag_src = a.tag or os.path.basename(a.out).replace(".nes", "")
+        derived = "".join(c for c in tag_src.upper() if c.isalnum())[:4] or "BILD"
+        flags["DRBUILDID_TAG"] = derived
     base = a.base or DEFAULT_BASE
     out = os.path.abspath(a.out)
     do_build(out, base, flags)

@@ -1,0 +1,40 @@
+{
+  "base_rom": {
+    "md5": "7d307c3051ebc0f8a10e259e3c270acb",
+    "path": "drmario_v28cs.nes"
+  },
+  "determinism": "verified: two builds byte-identical",
+  "emitter": {
+    "file": "patch_cartridge_copro.py",
+    "md5": "2239355a0d7a9da09bbf2d7d5b1a0673"
+  },
+  "flags": {
+    "DRBUILDID": "1",
+    "DRBUILDID_TAG": "V6BH",
+    "DRBUSYESC": "1",
+    "DRCOLDINIT": "1",
+    "DRHOLDBOARD": "1",
+    "DRHUMAN": "1",
+    "DRMINTHINK": "12",
+    "DRNAVDWELL": "0",
+    "DRNOFREEZE": "1",
+    "DRPENDBOUND": "1",
+    "DRPOCKET": "1",
+    "DRRECOMMIT_NOFREEZE": "1",
+    "DRSLAM_KOPEN": "32",
+    "DRSTALLWD": "1",
+    "DRSTUDYCOUNTS": "1",
+    "DRWRETRY": "1"
+  },
+  "git": {
+    "branch": "feature/final-board-hold",
+    "commit": "122b8dad0bef75be44a3d87fcf535d5088c9ffca",
+    "dirty": true
+  },
+  "output": {
+    "md5": "7ec0b6a792580ba20aa55fe2d410a388",
+    "name": "drmario_stomper_vs_you_v6b_buildid.nes",
+    "size": 98320
+  },
+  "tag": "boardhold-v6b"
+}

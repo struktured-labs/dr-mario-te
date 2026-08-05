@@ -16,6 +16,7 @@ all modes) is repointed to the $FF54 trampoline, which bank-switches to unit-1 a
 The heavy depth-2 search runs on the SECOND 6502 inside the FPGA (~0.2-0.3s/pill vs 78s).
 NOT Mesen-compatible (mapper 100) — MiSTer custom core only.
 """
+import hashlib
 import sys
 sys.path.insert(0, "tests")
 from patch_vs_cpu import Asm6502
@@ -624,6 +625,55 @@ HOLD_ACTIVE = 0x6195                       # PRG-RAM: !=0 while the final board 
 HOLD_LASTCLK = 0x6196                      # last-seen $43 clock byte (edge-detect real frames)
 HOLD_CNT = 0x6197                          # 16-bit ($6197 lo, $6198 hi): frames held so far
 HOLD_BUF1, HOLD_BUF2 = 0x6300, 0x6400      # 256B mirrors of $0400 (P1) / $0500 (P2) playfields
+
+# DRBUILDID=1 (task: "which brain am I fighting", default ON for human-profile carts): stamp a
+# short build tag onto the settings screen ("2 PLAYER GAME" row 25, columns 6-14) -- the exact
+# row the STUDYCOUNTS OAM-leak garbled (task #48 job 1). Deliberate choice: not sprites (would
+# need re-deriving a whole alphabet in whatever CHR bank happens to be live at each candidate
+# screen, and would sit in OAM real estate already owned by STUDYCOUNTS/STUDY2P) and not the
+# DRNAVDWELL title dwell (transient, and a HUMAN_P1 cart's own settings screen is shown before
+# EVERY match -- always-checkable in the sense the spec asks for, the title dwell is not).
+# Mechanism verified against the base ROM disassembly + a live Mesen probe, not assumed:
+#   - row 25 is confirmed BLANK ($FF, cols 4-27) on the vanilla settings screen (own nametable
+#     dump, tools/romgen.py-built cart's print table is untouched there -- see task #48's garble
+#     report) -- safe to write without colliding with any existing content.
+#   - the settings-screen background font is NOT the STUDY sprite font (S/T/U/D/Y = $0D/$A0/$0C/
+#     $A1/$A2, a DIFFERENT CHR bank than the settings screen's bank 5) -- it is instead A=$0A,
+#     B=$0B, ..., Z=$23 (letter tile = $0A + offset-from-A) and digit tile = digit VALUE
+#     directly (0-9). Derived by decoding 9 independently-placed, already-rendered strings off
+#     a real nametable dump (VIRUS LEVEL / MUSIC TYPE / FEVER / CHILL / OFF / SPEED / "2 PLAYER
+#     GAME") and cross-checking: EVERY letter's derived tile equals $0A+offset with zero
+#     mismatches across 18 distinct letters -- not a guess.
+#   - entering PLAY mode (a full-screen redraw via a DIFFERENT print table, LC5F9) completely
+#     overwrites row 25 with the bottle-border graphic before any gameplay is visible (own Mesen
+#     probe, byte-for-byte) -- confirmed BEFORE relying on it, not assumed by analogy to the
+#     garble fix. The write is ALSO hard-gated on $0046==1 (settings only) so it structurally
+#     cannot fire during play -- belt and suspenders, same class of bug as the one just fixed,
+#     not repeated.
+# SOURCE OF TRUTH (never hand-maintained): the tag is <=4 safe-alphabet chars from DRBUILDID_TAG
+# (tools/romgen.py's `build --tag` sets this automatically from the SAME tag it records in the
+# manifest -- one input, not two that could drift) + a live-computed 4-hex-nibble prefix of this
+# EXACT build's own image hash. Chicken-and-egg (the hash covers a file that contains the hash):
+# resolved by writing $FF PLACEHOLDER tiles at the 4 hash-nibble sites during assembly, hashing
+# the COMPLETE built file with those placeholders still in place (this "hash of image with stamp
+# masked to a fixed sentinel" IS the standard trick -- placeholder-before-hash is equivalent to
+# masking, just computed in the natural build order instead of a separate mask-then-hash pass),
+# then patching only those 4 already-known byte offsets in the already-written file afterward.
+# The patched bytes are pure display data (no code depends on their value), so the patch cannot
+# perturb anything the hash is meant to fingerprint -- the same reasoning that already lets the
+# mapper-byte patch at the end of main() happen post-hoc.
+BUILDID = _os.environ.get("DRBUILDID", "1" if HUMAN_P1 else "0") != "0"
+_BID_SAFE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+_BID_TAG_RAW = "".join(c for c in _os.environ.get("DRBUILDID_TAG", "").upper() if c in _BID_SAFE_CHARS)
+BUILDID_TAG = (_BID_TAG_RAW + "XXXX")[:4]           # pad/truncate to exactly 4 safe-alphabet chars
+BID_PPU_ADDR = 0x2000 + 25 * 32 + 6                 # nametable 0, row 25, col 6 ($2326)
+
+
+def _bid_tile(ch):
+    """Settings-screen background font tile for one safe-alphabet character (see the DRBUILDID
+    flag comment for the derivation). ch must be in _BID_SAFE_CHARS."""
+    assert ch in _BID_SAFE_CHARS, f"DRBUILDID: {ch!r} is not in the verified safe alphabet"
+    return (ord(ch) - ord("0")) if ch.isdigit() else (0x0A + ord(ch) - ord("A"))
 
 # DRSTUDY=1 -> "study pause": freeze game logic on pause but keep the last gameplay frame
 # rendered instead of the vanilla blank+"PAUSE". Default ON for human carts (DRHUMAN=1) so a
@@ -1237,6 +1287,26 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", 0); a.ins16("STA_abs", HOLD_CNT); a.ins16("STA_abs", HOLD_CNT + 1)
         a.ins("LDA_zp", 0x43); a.ins16("STA_abs", HOLD_LASTCLK)
         a.label("hb_np_skip")
+    if BUILDID:
+        # Stamp the settings screen only (see the DRBUILDID flag comment for the full mechanism
+        # + the row-25/font/overwrite evidence). Self-contained mode check -- does not depend on
+        # A holding $0046 from anything earlier in this hook.
+        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 1); a.br("BNE", "bid_skip")
+        a.ins("LDA_imm", (BID_PPU_ADDR >> 8) & 0xFF); a.ins16("STA_abs", 0x2006)
+        a.ins("LDA_imm", BID_PPU_ADDR & 0xFF); a.ins16("STA_abs", 0x2006)
+        a.label("bid_tag0")          # anchor for tests: first tag-char LDA_imm opcode
+        for _ch in BUILDID_TAG:
+            a.ins("LDA_imm", _bid_tile(_ch)); a.ins16("STA_abs", 0x2007)
+        a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", 0x2007)          # space
+        for _i in range(4):
+            # PLACEHOLDER $FF -- patched post-build in main() once the content hash is known
+            # (see the DRBUILDID flag comment). The label marks the LDA_imm's OPCODE byte; the
+            # operand (the byte actually patched) is one byte further, resolved from this same
+            # `labels` dict by main() after build_main() returns -- no second source of truth
+            # for the offset.
+            a.label(f"bid_hash{_i}")
+            a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", 0x2007)
+        a.label("bid_skip")
     if STUDY and STUDYCOUNTS:
         # GARBLE FIX (user-reported, tape f0075.jpg): STUDYCOUNTS (above, in "dispatch") writes
         # live digit sprites into OAM slots 8-15 every PLAY-mode hook ($0046==4), but previously
@@ -2114,6 +2184,26 @@ def main():
     out[7] = (out[7] & 0x0F) | 0x60
     open(OUT, "wb").write(out)
     print(f"wrote {OUT} (mapper 100, AUTO-NAV VS-CPU L11, FPGA coprocessor)")
+
+    if BUILDID:
+        # DRBUILDID stamp patch -- see the flag comment for the full mechanism. `unit1`'s bytes
+        # land in the final expanded image at file offset 0x8010 + (offset within unit1): the
+        # header is 16B, then unit 0 is bank0+bank1 (2*0x4000) untouched ahead of it, then `bank`
+        # (== unit1, padded to 0x4000) is next -- verified empirically against a real build (the
+        # first byte of the "dispatch" label matched at exactly this computed offset) before
+        # this patch step was trusted with real writes.
+        UNIT1_FILE_BASE = 0x10 + 2 * 0x4000
+        cart = bytearray(open(OUT, "rb").read())
+        digest = hashlib.md5(bytes(cart)).hexdigest()[:4].upper()   # placeholders still $FF here
+        for _i, _hexch in enumerate(digest):
+            off = UNIT1_FILE_BASE + labels[f"bid_hash{_i}"] + 1     # +1: past the LDA_imm opcode
+            assert cart[off] == 0xFF, (
+                f"DRBUILDID: patch site {off:#x} (bid_hash{_i}) held {cart[off]:#x}, expected the "
+                "$FF placeholder -- offset math is wrong, refusing to write a stamp that could be "
+                "landing on live code")
+            cart[off] = _bid_tile(_hexch)
+        open(OUT, "wb").write(cart)
+        print(f"DRBUILDID stamp: {BUILDID_TAG} {digest} (settings screen row 25, cols 6-14)")
 
 
 if __name__ == "__main__":
