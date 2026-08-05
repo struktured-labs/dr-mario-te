@@ -108,3 +108,14 @@ Manifest instrument (pre-death RAM snapshot ring / watchdog) should
 capture uptime + a heap/pointer-region checksum series to catch the leak
 growing. Consider a scheduled preventive core reload every ~2h on soak
 rigs until fixed.
+
+**Freeze #8 + full-reboot recovery (2026-08-05 ~06:0x-06:45):** black-screen
+recurred only ~65min after #7's menu-cycle recovery — menu cycles do NOT
+clear whatever accumulates; escalated to FULL MiSTer REBOOT. Reboot moved
+the DHCP IP .226→.225, stranding tracker + preventive loop (hardcoded IP);
+both REPOINTED TO MiSTer.local (mDNS, verified) and relaunched — IP moves
+can no longer strand the rig. Preventive reload loop continues at 2h.
+Post-reboot: duel running, tracker OK row at 06:41 (43-22). The fresh-boot
+soak is now the leak-theory experiment: long black-screen-free stretch =
+reboot-clearable accumulation confirmed; quick recurrence = look at
+heat/power instead.
