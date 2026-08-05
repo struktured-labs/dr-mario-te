@@ -205,3 +205,19 @@ Working conclusion: #47 fixed the STYLE disease; the SURVIVAL disease
 separate mechanism — candidate remedy: height/spawn-lane pricing re-tested
 UNDER GARBAGE PRESSURE rather than clean solo boards (the wt term interfered
 offline in solo; VS-vs-human is its real habitat).
+
+## Rotation-slip hypothesis: CONFIRMED (2026-08-04, recorded session)
+
+Mid-session self-report during the first RECORDED set (OBS/DeckLink,
+~/Videos/drmario_sessions/20260804_1955_pocket_dock.mkv): **"1/3 of my
+blunders are hitting a vs b."** This confirms the long-open A/B rotation-slip
+hypothesis from the 2026-08-02 film study (previously unverifiable from
+stills). Now verifiable from footage: wrong-direction rotate + correction is
+visually unmistakable at 60fps — film review to produce the actual slip
+count. Remedy path (narrow, per test-defect-not-fix): Pocket per-core button
+remap (swap A/B first; both-buttons-one-rotate kills the class but costs
+reverse-rotation). Implication for the record: control errors, not judgment,
+account for a third of blunders — AI wins vs this player partly beat the
+controller. Session context: strand20 up 2-0 in the recorded set (match 1 =
+first-ever AI win over this player; match 2 user "messing around" per
+self-report, footage to adjudicate).
