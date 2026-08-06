@@ -1,0 +1,315 @@
+# Style Ensemble v1: fitting the bursty pressure model beyond one player
+
+**Date:** 2026-08-05 · **Rule (user, tonight):** one player's fitted pressure model must
+never be the only exam — ship gates need a family of styles.
+
+## 0. TL;DR
+
+**Ensemble gate: NOT READY — and pass 3's per-player separation is a sobering, honest result.**
+Refactoring the pooled match-level fits into per-player SENDING profiles (game-causal direction:
+player X's clears → volleys landing on X's opponent, attributed to X) roughly halves every n, as
+expected. The consequence: **only struktured's own profile (and the AI copro's, from the same
+session) clears the n≥20 confidence line.** All four newly-attributed named players — Rob
+Burrito, Jarsdad, Chris Bidwell, davesmithsays — drop to LOW-CONFIDENCE or, for davesmithsays,
+**n=0 (completely uninformative)** once correctly isolated from their opponents. See §6-7 for the
+full table and what a genuine archetype read would need. This is not a wasted pass: it's the
+correct, necessary refactor, and it surfaces a real methodological finding — pooled match-level
+"OK confidence" numbers were partly an illusion of combining two players' events into one count.
+
+**Highest-priority consequence of this pass: the same contamination was in the RIG's shipped
+bursty model all along.** §6a/§6b — the pooled struktured fit that seeded every prior bursty rig
+experiment (`BURSTY_V1_RESULTS.md`, reactive-mode arms, reach-root gates) was ~half AI-copro
+cadence, not human. Refit as "bursty v1.1" from the separated stream and re-ran the validity
+check: qualitative conclusions survive, but the dies-ahead baseline drops materially (13.3%→7.5%)
+under honest human cadence — full details in `BURSTY_V1_RESULTS.md` §5.
+
+**Detector-recall verdict (§8b): the near-zero-volley matches (davesmithsays, Rob Burrito's 2nd
+window) are a RECALL MISS, root cause found — not "these players don't apply pressure."** DrMC's
+ROM is confirmed byte-identical to ours (romhack survey), ruling out "different garbage visuals."
+Direct frame evidence + a cross-source comparison shows DrMC tournament footage runs fast enough
+that multiple pill placements land within a single 1fps sample (struktured's calibration source
+tops out at 6 new cells/sec; DrMC brackets sustain 8-15+), breaking the volley detector's core
+timing assumption. Reconciled against the M2b corpus's independent attack measurement (17.1%
+attack-given-clear, built from seed-recovery + ROM-rule replay, not frame-differencing — immune to
+this problem by construction). No fix attempted this pass (both real fixes are bigger than a
+patch); top-up sweep paused pending that decision, not abandoned. Full evidence in §8b.
+
+## 1-4. Inventory / sources / calibration / attribution — unchanged from passes 1-2
+
+See prior sections (not reproduced) for the `/mnt/data/drmario/expert_vods/` inventory, the
+never-publish confirmation, calibration methodology, the White/Red/Green bracket geometry
+(`vision_champ2024.py` P1/P2 top pair + P1B/P2B bottom pair), and the HIGH-confidence attribution
+table for Rob Burrito, Jarsdad, Chris Bidwell, and davesmithsays (all via on-screen nameplate +
+seed cross-referenced against each bracket's own `.description` roster).
+
+## 5. The refactor: per-player SENDING profiles
+
+**Game-causal direction** (per `bursty_model.py`'s own tagging convention — a volley event's
+`side` field is the RECEIVING board): when side S clears, pressure lands on `opponent_of[S]`'s
+board. So player X's SENDING/pressure profile is built from:
+- **clears** = events where `side == X` (X's own clears)
+- **volleys** = events where `side == opponent_of[X]` (garbage that arrived at X's opponent —
+  attributed to X, since this model has no other generative mechanism for a volley)
+
+X's RECEIVING context (garbage arriving at X's own board) is a different quantity that
+characterizes X's *opponent's* sending style, not X's — not computed, per task direction.
+
+Implementation: `fit_ensemble_source.py` gained `collect_events()` (runs `extract_match_events`
+once per match, shared by both a pooled and a per-player fit so per-player fits don't re-run
+vision extraction) and `fit_per_player()` (filters to one direction, reuses the same
+p_within_k/volley_sizes/gap_samples aggregation as the pooled fit). `bursty_model.py` itself
+remains untouched — confirmed again this pass that its primitives (`extract_match_events`,
+`BurstyPressureModel`) are the correct, reusable building blocks; this is re-aggregation on top,
+not a fix.
+
+## 6. Self-test: struktured's per-player split
+
+**Does NOT reproduce the original pooled numbers verbatim — and structurally cannot.** The
+original `fit_struktured_20260804()` numbers (n_volleys=61, n_clears=188) are a POOL of both
+sides' events. A true per-player split necessarily divides that pool into two parts; asking it to
+"reproduce" the pooled total would mean the split failed to separate anything. The correct
+self-test is **partition consistency**: do the two per-player event counts sum back to the
+original pooled totals, with no event lost or double-counted? **Verified exactly:**
+
+| | clears (own) | volleys (attributed, landing on opponent) |
+|---|---|---|
+| struktured (P1) | 89 | 28 |
+| AI copro (P2) | 99 | 33 |
+| **sum** | **188** ✓ (matches original pooled n_clears) | **61** ✓ (matches original pooled n_volleys) |
+
+Both per-player fits clear the confidence line (n=28, n=33 — both ≥20). The split also reveals a
+real, previously-invisible contrast that the pooled number hid: struktured's own sending profile
+(gap 27.4s, P(4-6)=28.2%, P(7-10)=62.5%, n=16) is measurably slower/less-reflexive than the AI
+copro's sending profile from the same session (gap 18.8s, P(4-6)=35.3%, P(7-10)=90.9%, n=11) —
+the AI's own clears provoked a counter-volley far more reliably than struktured's did, in this
+specific session. (Not a general claim about "the AI vs humans" — one session, and "the AI copro's
+sending profile" here is really "how struktured's board reacted to the AI's clears," so it's still
+partly about struktured's receiving behavior in disguise — flagged, not overclaimed.)
+
+Full JSON: `results/style_ensemble_v1/struktured_20260804_{P1,P2}_sending_fit.json`.
+
+## 6a. Downstream consequence: bursty v1 (the rig's shipped model) was pool-contaminated
+
+**This self-test result is not just a dossier correction — it's a defect in every rig experiment
+run before today.** `bursty_model.fit_struktured_20260804()`'s pooled fit (n=61 volleys) is
+exactly what `pressure_rig.py --model bursty` used for BURSTY_V1_RESULTS.md, the reactive-mode
+arms, and the reach-root gates. §6 shows 33 of those 61 volleys were the AI copro's OWN sending
+events, not struktured's — and the AI's attack cadence is governed by a near-deterministic ROM
+rule (see §6b), not human variability. So the rig has been simulating pressure that's roughly
+half AI-cadence: faster and more reliably-following-through than an honest human profile.
+
+**Fit "bursty v1.1" from struktured's separated P1 sending stream (n=28, the one player where
+this clears OK confidence) and re-ran the validity check.** Full parameter deltas and the n=120
+paired rerun (does bursty still beat volume-matched drip; does ws=20 still help-not-cure; does the
+dies-ahead baseline survive) are in `BURSTY_V1_RESULTS.md` §5 — not duplicated here. Headline: the
+qualitative conclusions survive, but **the dies-ahead baseline drops materially (13.3%→7.5%,
+nearly halved)** under honest human cadence — the number to cite going forward for "how often does
+the shipped build die ahead under bursty pressure" is 7.5%, not 13.3%. Paired comparisons already
+run under v1 stay internally valid (same contaminated model both sides of every arm); v1 is
+superseded only for absolute-rate claims.
+
+## 6b. Calibration check, logged as its own line
+
+**The AI copro's separated sending profile (90.9% follow-through at 7-10 cells, the fastest gap in
+the entire style-ensemble table, n=33 clearing the confidence line on its own) is an implicit
+end-to-end validation of the extraction pipeline.** The ROM's attack rule is independently known
+from disassembly to be a near-deterministic trigger (`comboCounter` sums across cascade steps and
+fires on essentially every qualifying clear), not a stylistic choice. Two completely independent
+measurement methods — ROM-level static analysis and footage-based computer-vision extraction —
+agree on the qualitative signature (the AI attacks reliably and fast). That agreement is evidence
+the vision/extraction pipeline reads true, not an artifact of convenient fitting code. It does NOT
+make "the AI's fitted cadence" independently useful for anything beyond this check.
+
+## 7. Per-player table (all four new matches split)
+
+| player | match | n_volleys (attributed) | fit confidence | n_clears (own) | volley_size_mean | gap_mean_s | P(vol\|clear 4-6) | P(vol\|clear 7-10) |
+|---|---|---|---|---|---|---|---|---|
+| **struktured** | 20260804 (pooled 4 sub-matches) | 28 | OK | 89 | 2.68 | 27.4 | 28.2% (n=71) | 62.5% (n=16) |
+| AI copro | 20260804 (same session) | 33 | OK | 99 | 2.42 | 18.8 | 35.3% (n=85) | 90.9% (n=11) |
+| **Rob Burrito** | Red Bracket vs Jenny G | 12 | LOW-CONF | 49 | 2.67 | 21.5 | 25.6% (n=39) | 30.0% (n=10) |
+| Jenny G | Red Bracket vs Rob Burrito | 6 | **UNINFORMATIVE** (<10) | 37 | 2.00 | 37.4 | 17.6% (n=34) | 0.0% (n=2) |
+| **Jarsdad** | White Bracket (bottom) vs dmhero | 15 | LOW-CONF | 41 | 2.40 | 18.4 | 50.0% (n=38) | 100.0% (n=3, too thin) |
+| dmhero | White Bracket (bottom) vs Jarsdad | 11 | LOW-CONF | 51 | 3.27 | 13.6 | 22.7% (n=44) | 42.9% (n=7) |
+| **Chris Bidwell** | White Bracket (top) vs Missy | 8 | **UNINFORMATIVE** (<10) | 27 | 2.25 | 29.1 | 52.0% (n=25) | 100.0% (n=1, too thin) |
+| Missy | White Bracket (top) vs Bidwell | 5 | **UNINFORMATIVE** (<10) | 35 | 2.40 | 35.8 | 18.8% (n=32) | 0.0% (n=2) |
+| Larvae | Green Bracket vs davesmithsays | 2 | **UNINFORMATIVE** | 59 | 5.50 (n=2) | 214 (n=1) | 2.0% (n=50) | 0.0% (n=6) |
+| **davesmithsays** | Green Bracket vs Larvae | **0** | **UNINFORMATIVE (zero)** | 51 | — | — | 0.0% (n=47) | 0.0% (n=3) |
+
+Bold = the named-roster player this task is tracking. Confidence labels: OK = n≥20 (team rule),
+LOW-CONF = 10≤n<20, UNINFORMATIVE = n<10 (this pass's own extension of the rule, since several new
+per-player n's fall well below even the LOW-CONF band and calling them "low confidence" alongside
+n=28 numbers would understate how thin they are).
+
+**davesmithsays' n=0 is worth stating plainly: in this specific 420s window, not one volley in the
+entire match landed on Larvae's board within 5s of any of davesmithsays' clears (51 own clears,
+0 attributed volleys).** That could mean this pairing/window genuinely had no fast counter-fire in
+either direction (Larvae's own n=2 is also near-zero), or that this window undersamples — see §9.
+Either way, zero is zero: no pressure-conditional claim is dossier-safe from this data.
+
+## 8. Archetype read — still not possible, and now for the clearest reason yet
+
+**Only two profiles clear OK confidence: struktured and the AI copro from his own session.** Every
+newly-attributed named player (Rob Burrito, Jarsdad, Chris Bidwell, davesmithsays) is
+LOW-CONFIDENCE or worse once correctly isolated from their opponent. This is not a failure of this
+pass's method — it's the honest cost of doing the separation correctly. The pooled match-level "OK
+confidence" numbers from pass 2 (e.g. Jarsdad-vs-dmhero pooled at n=26) were, in real terms, two
+different people's events summed to clear a threshold neither could clear alone (Jarsdad alone:
+n=15; dmhero alone: n=11). **A real archetype grid needs either much longer per-player observation
+windows, or accepting LOW-CONF numbers as directional-only forever** for this data source.
+
+**One directional pattern IS worth flagging, clearly labeled as a hypothesis, not a finding:** in
+both matches where a named priority player's opponent's individual profile was also computed, the
+named player's own numbers look MORE reflexive than the pooled match suggested, and consistently
+higher than their opponent's:
+- Bidwell alone: P(vol|clear 4-6)=52.0% (n=25, thin) vs. Missy alone: 18.8% (n=32) — the pooled
+  match read as "the slowest in the ensemble" (pass 2), but that may have been driven more by
+  Missy's response profile than Bidwell's own attacking tempo.
+- Rob Burrito alone: P(vol|clear 4-6)=25.6% (n=39), gap 21.5s vs. Jenny G alone: 17.6% (n=34),
+  gap 37.4s — Rob Burrito's own numbers sit closer to struktured's own range (28.2%, 27.4s) than
+  the pooled match's lower numbers suggested.
+
+If this pattern holds up with more data, it would mean pass 2's pooled-match "spread" was
+partly an opponent-selection artifact rather than a spread across the named players themselves —
+exactly the kind of thing per-player separation exists to catch. **Flagged as a hypothesis worth
+testing with more footage, not asserted.**
+
+## 8a. Top-up attempt (Rob Burrito, second match window) — a genuine negative, logged honestly
+
+Tried the §9 top-up strategy on Rob Burrito first (lowest-effort target: he was already n=12,
+closest to the confidence line). Found a SECOND match window for him in the same Red Bracket
+video via nameplate localization: t≈1940-2900s, "(17) Rob Burrito" vs "(1) Packie" — this time
+Rob Burrito is on the OPPOSITE side (P1, not P2, so the per-player filter direction had to flip
+for this window; confirmed via on-screen nameplate at both t=2100 and t=2870, same pairing/crown
+tally progressing, genuinely one continuous match, not two different pairings merged by mistake).
+
+**Result: n_clears jumped 49→227 (real, substantial new data) but n_volleys stayed at 12 — window2
+contributed ZERO attributed volleys in ~960s of play.** Combined fit:
+`results/style_ensemble_v1/red_bracket_RobBurrito_topup2_sending_fit.json`. The top-up did NOT
+move Rob Burrito past LOW-CONFIDENCE.
+
+**Not a bug — likely a real limitation of the settled-cover volley detector for some matches.**
+This is the SECOND independent match (after davesmithsays/Larvae, §7) where clear activity is
+healthy but volleys are near-zero. The detector's signature is narrow by design (two columns
+exactly 4 apart must BOTH gain a new same-row cell in the same second — see `bursty_model.py`'s
+own docstring on why that specific geometry was chosen), and it may simply be low-recall for
+matches where players aren't exchanging synchronized multi-column volleys often, regardless of who
+is playing. **Flagged as a possible systematic gap in the extraction method, not a player
+attribute** — worth investigating before trusting "n=0/n=2" readings as meaningful absences of
+pressure exchange rather than instrument blind spots.
+
+## 8b. Detector-recall investigation: verdict, frame evidence, M2b reconciliation
+
+Chased the near-zero-volley pattern with the eyeball diagnostic + a second data source, per task
+direction. **Verdict: RECALL MISS, root cause identified — 1fps sampling under-resolves DrMC's
+faster tournament game speed, not a different-ROM or different-garbage-visuals problem.**
+
+**Hypothesis "different ROM hack, different garbage visuals" — REFUTED before pulling a single
+frame.** The project's own romhack survey (already on file) establishes DrMC's broadcast build is
+the `playdm.net` DrMC v1.0 patch on the **exact same base ROM as ours** (md5-identical to
+`brianhuffman/drmario`'s Rev 0) — the patch only adds a seed display, a fine SPD readout, and OBS
+overlay panels; it does not touch core gameplay code. So the underlying garbage/attack mechanics
+(and the ROM attack rule's spatial signature: size-2 attacks at columns exactly 4 apart, same row)
+are identical to our cart's. This was checkable from memory before any footage work, and it heads
+off a wrong diagnosis.
+
+**Eyeball diagnostic (as instructed): pulled frames around Rob Burrito's 10 biggest clears in the
+vs-Packie window (t=1940-2900) and looked at Packie's board.** At Rob Burrito's largest clear
+(t=2340, 18 cells), Packie's board visibly grows in the following ~10s (occupied count 55→68→88),
+but frame-by-frame cell-diffing shows why settled-cover doesn't catch it as a clean volley: **new
+cells are arriving 6-15 at a time in single 1fps samples** (`(11,3,'R'),(11,4,'R'),(12,3,'R'),
+(12,4,'R'),(5,4,'Y'),(5,5,'Y')...` etc., full per-second dumps in the investigation log) — far more
+than a single human pill placement can produce (max 2 cells/placement). **That is not garbage
+noise, it's MULTIPLE PILLS locking within one sampled second** — the detector's core assumption
+(struktured's calibration: at most ~1 placement, ≤6 new cells, per 1fps sample) is violated.
+
+**Confirmed this is systematic, not a one-off, with a direct comparison against the calibration
+anchor.** New-cells-per-second distribution, same method, two sources:
+- struktured (P1, t=120-200, the source the detector was built/validated against): **max 6**,
+  distribution {0:2, 1:9, 2:24, 3:21, 4:11, 5:11, 6:2} — clean, bounded, matches "~1 placement/sec."
+- Red Bracket (Rob Burrito's board, DrMC tournament, SPD 33-34 on-screen): sustained values of
+  6-15 new cells/sec, repeatedly, not occasional.
+- White Bracket (Bidwell's board, a DIFFERENT DrMC match, cross-check): mostly 0-4 (matches
+  struktured's shape) but with occasional spikes to 9, 12, 23, 35 — the 23/35 are almost certainly
+  level/scene-transition artifacts (already excluded by the existing >20-cell cap), the 9/12 are
+  the same multi-pill-per-second pattern seen in the Red Bracket, just less frequent in this match.
+
+**Reconciliation with M2b's method (`decline_ab_visionm2b.py` + the corpus's `clear_labels.py`/
+`player_leaderboard.py` machinery, read this pass):** M2b's 17.1% attack-given-clear number is
+built completely differently from settled-cover — it does NOT do frame-differencing or watch for
+anything arriving on the opponent's board at all. It uses **RNG-seed recovery to reconstruct the
+sender's exact board state**, then applies the ROM's deterministic combo-counter rule *analytically*
+(`rom_garbage.resolve_with_combo`, the same rule cited in the project's ROM attack rule memo) to
+decide whether a given clear sends an attack. Because it only needs the SENDER's own reconstructed
+state, not observed arrival timing on the receiver's board, **it is structurally immune to the
+sampling-rate problem that breaks settled-cover on fast tournament play.** This is the real
+reconciliation: the two methods aren't disagreeing about whether attacks happen (M2b confirms they
+do, at real rates) — they key on completely different signals, and only one of them needs a video
+frame rate fast enough to resolve individual placements.
+
+**No fix attempted this pass — the two available options are both bigger than a "widen the
+trigger" patch, and a wrong quick fix would be worse than none:**
+1. Re-extract at a higher frame rate (e.g. 5-10fps) for high-SPD sources so individual placements
+   resolve cleanly again. Straightforward in principle, expensive in practice (5-10x the frames to
+   extract/classify per source) and untested this pass.
+2. Adopt M2b's seed-recovery + replay architecture for DrMC sources instead of frame-differencing
+   — the more robust fix (sidesteps the sampling problem entirely, and gets M2b's validated
+   attack-rate machinery for free) but a materially bigger build, not a detector tweak.
+Widening the column-offset/row tolerance in `extract_volleys` was deliberately NOT tried: the
+diagnosis is a TIMING resolution problem (which placement produced which cell), not a SPATIAL
+tolerance problem, so a wider spatial trigger would mostly just convert misses into different
+misses (or false positives from coincidental multi-pill column alignment), not fix the underlying
+issue.
+
+**Calibration anchor status: UNCHANGED, correctly.** No detector code was modified this pass, so
+struktured's 90.9%/ROM-rule agreement (§6b) stands exactly as reported — nothing to re-prove yet.
+Any future fix attempt MUST re-run that check as its regression gate before being trusted.
+
+**No re-extracted volley counts for existing windows** — there is no corrected detector to
+re-extract with yet; re-running the SAME detector on the SAME windows would reproduce identical
+numbers (already regression-checked in §5/pass 3 for `fit_filtered`).
+
+**Consequence for the top-up sweep: PAUSED, not abandoned.** Pulling more DrMC tournament segments
+with the current detector will very likely hit the same wall (the problem is the game speed /
+sampling mismatch, present in every DrMC bracket, not a property of any one match or player) — more
+footage of the same kind is not expected to raise confidence. Recommend deciding between the two
+fix options above before resuming, rather than spending more video-hunting time against a known
+limitation.
+
+## 9. Next step (SUPERSEDED by §8b's detector-recall finding — re-ranked again)
+
+§8b changed the ranking from the previous pass: "pull more footage" is no longer the top move,
+because the wall is a detector limitation present across every DrMC bracket sampled, not a
+footage-volume problem.
+
+1. **Decide between §8b's two fix options (higher-fps re-extraction, or M2b-style seed-recovery +
+   replay) before pulling more DrMC segments.** More footage of the same kind will very likely hit
+   the same sampling-rate wall. This is now the actual top priority, ahead of both more separation
+   work (done) and more raw footage (paused).
+2. If/when a fix lands, the FIRST re-run must be the calibration-anchor regression check
+   (struktured's 90.9%/ROM-rule agreement, §6b) before trusting any DrMC number from the new
+   detector — not skippable, per task direction.
+3. davesmithsays' n=0 and Rob Burrito's still-LOW-CONF n=12 are BOTH plausibly detector-recall
+   artifacts now, not necessarily thin footage — re-test them first once a fix exists, before
+   assuming more raw video is needed for either.
+4. Ensemble-gate structure proposal (evaluate a ship candidate against every fit individually, not
+   averaged) is unchanged and still not implementable at this n.
+
+## Per-player dossier notes (applied this pass)
+
+Dossier files (`jarsdad.md`, `bidwell.md`, `roburrito.md`, `davesmithsays.md`) updated with the
+per-player (not match-pooled) numbers from §7, confidence labels per the OK/LOW-CONF/UNINFORMATIVE
+bands above, and the same video+timestamp+attribution-confidence citation style as pass 2.
+davesmithsays' entry states the n=0 result plainly rather than omitting it.
+
+## Provenance
+
+- Fitting: `fit_ensemble_source.py` — `collect_events()`, `_build_model()`, `fit_per_player()`
+  added this pass; `fit_filtered()` regression-checked unchanged (byte-identical n/volley_size_mean
+  against the pass-2 committed JSON for the Red Bracket fit).
+- Self-test: struktured's raw per-match event lists pulled from
+  `bursty_model.fit_struktured_20260804()`'s live `.meta['raw_events']` (not re-extracted from
+  frames) — confirms `from_footage()` still exposes the raw tagged events needed for this kind of
+  re-aggregation, unchanged.
+- New fits: `results/style_ensemble_v1/{struktured_20260804_P1,struktured_20260804_P2,
+  red_bracket_JennyG,red_bracket_RobBurrito,white_top_Bidwell,white_top_Missy,
+  white_bottom_Jarsdad,white_bottom_dmhero,green_bottom_Larvae,green_bottom_davesmithsays}_sending_fit.json`.

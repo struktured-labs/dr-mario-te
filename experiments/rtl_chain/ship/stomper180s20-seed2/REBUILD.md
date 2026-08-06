@@ -62,3 +62,60 @@ s20b freeze #2 @ ~19:00 (~5.3h after #1). s20b rate ~5.5/day vs chain180
 ~1.5/day at near-matched slack (+0.156 vs +0.181) — timing largely EXONERATED;
 GO-traffic/ARMED2 exposure theory now primary. Named fix: driver stale-ARMED2
 re-entrancy repair (dr-mario-p0-defects-verified), next silicon session.
+
+**s20b freeze #3 (2026-08-04 ~23:38, logged 23:45):** mid-PLAY wedge, display
+alive, in-play counts frozen at (4, 41-25) across 3 tracker captures
+(233830/234134/234437 .ss = evidence). Same copro-wait/ARMED2-family
+signature as #1/#2. Detection: frozen-counts alarm (3rd live catch).
+Recovery: menu.rbf cycle + mgl relaunch, clean (post_recovery_2346.png,
+fresh game 46-46). Freeze rate now 3 in ~29h. Remedy unchanged: stale-ARMED2
+driver fix + the #49 COLGATE port (audit found the pair-latch fix never
+shipped in this lineage's driver either — same root repair session).
+
+**s20b freeze #4 (2026-08-05 ~00:40, logged 00:52): FIRST BLACK-SCREEN-CLASS
+on s20b** — display fully blank (wedge2_0051.png, 1KB), save-state captures
+STALE x5 (the freeze-#5/task-#42 signature: states return nothing), distinct
+from freezes #1-3 (mid-play, display alive). Recovery: menu.rbf cycle +
+relaunch, clean (post_recovery2_0052.png, brightness 55.6). Rate: 4 freezes
+in ~30h, now TWO distinct families on this core. Stability workstream note:
+the stale-ARMED2/commit-path remedies target the mid-play family; the
+black-screen family remains uncharacterized (no state capture possible by
+definition) — needs a different instrument (e.g. periodic RAM-snapshot
+BEFORE death, or core-side watchdog register).
+
+**s20b freeze #5 (2026-08-05 ~01:40, logged 01:58): black-screen class
+AGAIN** — 1KB blank screenshot (wedge3_0157.png), STALE x5, identical
+signature to freeze #4 one hour earlier. Recovery clean (post_recovery3,
+8KB). Rate: 5 in ~31h, black-screen family now 2/5 and accelerating
+(2 in the last 2 hours vs 0 in the first 27). Pattern watch: both
+black-screen events occurred during overnight unattended soak; if #6
+follows within ~1-2h, suspect a time/uptime-correlated resource leak
+rather than a per-game race — instrument accordingly (pre-death RAM
+snapshot ring + core watchdog remain the named instruments).
+
+**s20b freeze #6 (2026-08-05 ~02:2x): mid-play family (frozen counts
+4,43,23), recovered by menu cycle. Rate: 6 in ~32h. Tally: mid-play 4,
+black-screen 2. The soak has done its job — the freeze-rate curve is
+measured; remedies land with the next silicon session.**
+
+**s20b freeze #7 (2026-08-05 ~04:5x): BLACK-SCREEN #3** (1KB blank shot
+wedge7_0457, STALE x5; recovered clean, post_recovery5 8KB). Tally: 7 in
+~34h — mid-play 4, black-screen 3, and ALL THREE black-screens fell in the
+last ~4 hours of continuous soak vs zero in the first ~28. The
+uptime-correlated-leak hypothesis is now the black-screen family's leading
+theory; the menu.rbf cycle (full core reload) resets whatever accumulates.
+Manifest instrument (pre-death RAM snapshot ring / watchdog) should
+capture uptime + a heap/pointer-region checksum series to catch the leak
+growing. Consider a scheduled preventive core reload every ~2h on soak
+rigs until fixed.
+
+**Freeze #8 + full-reboot recovery (2026-08-05 ~06:0x-06:45):** black-screen
+recurred only ~65min after #7's menu-cycle recovery — menu cycles do NOT
+clear whatever accumulates; escalated to FULL MiSTer REBOOT. Reboot moved
+the DHCP IP .226→.225, stranding tracker + preventive loop (hardcoded IP);
+both REPOINTED TO MiSTer.local (mDNS, verified) and relaunched — IP moves
+can no longer strand the rig. Preventive reload loop continues at 2h.
+Post-reboot: duel running, tracker OK row at 06:41 (43-22). The fresh-boot
+soak is now the leak-theory experiment: long black-screen-free stretch =
+reboot-clearable accumulation confirmed; quick recurrence = look at
+heat/power instead.
