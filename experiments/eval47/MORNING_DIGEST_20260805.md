@@ -152,3 +152,51 @@ Not yet a champion. The candidate is built and mostly gated; its offline
 evidence is promising but under-powered; and the silicon A/B that would
 settle it cannot run until the wedge is fixed — a box that dies every
 6-30 minutes under continuous play cannot measure a brain delta.
+
+---
+
+# ⚠⚠ RETRACTION (2026-08-06): THE s20b-vs-s20t3 HARDWARE A/B WAS INVALID
+
+The A/B reported as "a wash, candidate possibly worse" (12.5 vs 18.2 viruses
+cleared per 20-min slice) DOES NOT MEASURE THE TIER-3 VOCABULARY. Two
+independent confounds, both found by the co-sim agent reading the artifacts
+rather than the docs:
+
+1. **THE DEPLOYED CART HAS NO TUCK EXECUTOR.** The probe cart's own manifest
+   (roms/manifests/latch-converged-native-probe.json) does not set DRTUCK;
+   the emitter at that commit defaults it OFF and gates the whole executor
+   behind it — verified by matching the manifest's recorded emitter md5.
+   So the driver never reads the tuck descriptor at $5087/$5088.
+   ⇒ WORSE THAN INERT for tier-3 specifically: tuck_v3 overwrites
+   D_BC/D_BO with the winning tuck's target column, so the cart steers to
+   the tuck's column and then PLAIN-DROPS — landing at the straight-drop
+   rest instead of the deeper cell the search scored. That is precisely the
+   hazard tuck_scan.py's own docstring warns about ("publishing a tuck the
+   executor cannot perform is strictly worse than no tuck"). The s20b arm's
+   tuck-v1 never touches D_BC/D_BO, so it is a clean no-op.
+   ⇒ The candidate arm was running a DEGRADATION MECHANISM. A wash was
+   about the best result it could have produced.
+2. **THE FLASHED CANDIDATE FIRMWARE WAS MISSING FLAGS.** Hash 12a0906b
+   reproduces from DRCOPRO_TUCKBFS=1 + DRCOPRO_TUCKBFS_TIER3=1 ONLY — it
+   does NOT carry DRSTRAND=20 or DRCOPRO_ARM=1. So the candidate also lost
+   the #47 stranded-half fix and arm-select relative to s20b. The
+   matched-flag build is 5d010f62.
+
+**STATUS OF THE TIER-3 QUESTION: UNANSWERED, not negative.** Nothing about
+the tier-3 vocabulary's value was measured. The correct comparison needs
+(a) the matched-flag firmware 5d010f62, and (b) either a cart rebuilt with
+DRTUCK=1 or an explicit two-mode co-sim measurement: `drop` mode
+(silicon-faithful — what today's cart does) versus `tuck` mode
+(counterfactual — what a DRTUCK=1 cart would buy). The second prices whether
+tier-3 justifies a cart rebuild at all.
+
+**Also corrected:** NES_MiSTer-winner/copro_rom.hex was left holding
+04b66009 (a tier-1-only fallback probe build) — a stale vendor that would
+have silently embedded the wrong firmware in the next fit. Restored to the
+committed shipped hash e970e9ab.
+
+LESSON (third manifest-class defect in 48h, after the canonical fix-less
+driver copy and the DRBUILDID default drift): **a build's FLAGS are part of
+its identity. Verify an artifact's flag provenance from its manifest and its
+emitter hash before running any experiment on it — the docs describing a
+build are not the build.**
