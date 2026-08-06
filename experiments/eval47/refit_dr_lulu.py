@@ -132,17 +132,37 @@ def _run(cmd, **kw):
     subprocess.run(cmd, check=True, **kw)
 
 
-def extract_1fps_frames(mkv_path, out_dir, force=False):
-    """`-vf fps=1`, native resolution, JFIF quality matching the archived
-    frames (q:v 2 -- ffprobe on the archived JPEGs shows Lavc's default
-    quantization for -q:v 2, mjpeg encoder)."""
+def extract_frames(mkv_path, out_dir, fps=1, t0=None, t1=None, force=False):
+    """`-vf fps=N`, native resolution, JFIF quality matching the archived
+    frames (q:v 2). If t0/t1 are given, trims to that window first (frame 1
+    = wall time t0; -ss/-to added only then). At fps=1 with no window this
+    is the ORIGINAL extract_1fps_frames recipe byte-for-byte (no -ss/-to
+    added when t0/t1 are None) -- extract_1fps_frames below is now a thin
+    wrapper, regression-checked to build the identical ffmpeg command.
+
+    fps>1 frame indices are TICKS (1/fps-second spacing from t0), NOT
+    wall-clock seconds -- see the validity-gate section for the tick/second
+    conversion callers must do when fitting a fps>1 extraction."""
     os.makedirs(out_dir, exist_ok=True)
     existing = [f for f in os.listdir(out_dir) if f.endswith(".jpg")]
     if existing and not force:
         print(f"  [skip] {out_dir} already has {len(existing)} frames (--force to redo)")
         return
-    _run(["ffmpeg", "-y", "-i", mkv_path, "-vf", "fps=1", "-q:v", "2",
-          "-start_number", "1", os.path.join(out_dir, "f%04d.jpg")])
+    cmd = ["ffmpeg", "-y"]
+    if t0 is not None:
+        cmd += ["-ss", str(t0)]
+    if t1 is not None:
+        cmd += ["-to", str(t1)]
+    cmd += ["-i", mkv_path, "-vf", f"fps={fps}", "-q:v", "2",
+            "-start_number", "1", os.path.join(out_dir, "f%04d.jpg")]
+    _run(cmd)
+
+
+def extract_1fps_frames(mkv_path, out_dir, force=False):
+    """`-vf fps=1`, native resolution, whole video -- thin wrapper over
+    extract_frames(fps=1, t0=None, t1=None), which builds the byte-identical
+    ffmpeg command the original hand-written version did."""
+    extract_frames(mkv_path, out_dir, fps=1, force=force)
 
 
 def extract_60fps_crop(mkv_path, t0, t1, origin, out_dir, force=False):
@@ -202,6 +222,163 @@ def verify_grid_overlay(frames_dir, vision_mod, grids, out_path, t=None):
         f.write(text + "\n")
     print(text)
     return t
+
+
+# --------------------------------------------------------------------------
+# 1b. SPD validity gate -- is 1fps sampling fast enough for THIS capture?
+#
+# Found by the style-ensemble program's detector-recall investigation
+# (STYLE_ENSEMBLE_V1.md Sec8b): DrMC tournament footage runs fast enough
+# that multiple pill placements land inside a single 1fps sample, breaking
+# the settled-cover volley/clear detectors' implicit "no more than one
+# placement lands per sampled second" assumption. struktured's calibration
+# capture (this script's dry-run control, below) never exceeds
+# NEW_CELLS_CEILING new occupied cells in a single second; DrMC's broken
+# tournament windows sustain 6-15+. dr_lulu is the household champion and
+# plausibly plays fast enough to trip the same failure mode -- this gate
+# exists so a bad fit gets FLAGGED and automatically re-measured at higher
+# fps instead of silently shipping a garbage-timing model.
+# --------------------------------------------------------------------------
+NEW_CELLS_CEILING = 6              # struktured's measured ceiling (20260804 clean capture-card
+                                    # session, never exceeded). One pill placement adds at most 2
+                                    # cells, so well above that in one second means multiple
+                                    # placements landed in one sample -- resolution failure, not a
+                                    # fast play style.
+SAMPLING_MIN_VIOLATIONS = 3        # a lone spike (cascade clear + immediate refill, a render flash)
+                                    # can cross the ceiling once by coincidence; require several
+                                    # before calling the WINDOW sampling-suspect, not one noisy frame.
+SAMPLING_VIOLATION_FRACTION = 0.05 # ... and require that to be >5% of the window's samples, i.e.
+                                    # "sustained" (team-lead's word) rather than an isolated event.
+REFIT_FPS = 3                      # first bump when the gate trips (team-lead: "start at 2-3fps --
+                                    # clean capture-card footage makes this cheap, unlike broadcast").
+
+
+def new_cells_per_second(frames_dir, grid, t0, t1, vision_mod):
+    """Per-second count of newly-occupied cells for ONE side across [t0,t1]
+    -- the exact diagnostic that found the DrMC sampling defect (Sec8b).
+    Only consecutive-SECOND pairs count (a ledger gap is skipped, not
+    treated as zero -- matches build_ledger's own non-contiguity
+    convention). Returns a plain list of per-pair counts."""
+    ledger = BM.build_ledger(frames_dir, grid, t0, t1, vision_mod)
+    ts = sorted(ledger)
+    counts = []
+    for i in range(1, len(ts)):
+        tp, tc = ts[i - 1], ts[i]
+        if tc - tp != 1:
+            continue  # gap -- not a valid consecutive-second sample
+        prev = ledger[tp]["colors"]
+        cur = ledger[tc]["colors"]
+        n_new = sum(1 for r in range(len(cur)) for c in range(len(cur[r]))
+                    if prev[r][c] == "." and cur[r][c] != ".")
+        counts.append(n_new)
+    return counts
+
+
+def sampling_gate_verdict(counts, ceiling=NEW_CELLS_CEILING,
+                           min_violations=SAMPLING_MIN_VIOLATIONS,
+                           frac_thresh=SAMPLING_VIOLATION_FRACTION):
+    """(a)/(b) of the team-lead spec: sustained = enough raw violations AND
+    enough of a share of the samples, not one spike. Returns the verdict
+    plus the numbers behind it -- always populated, pass or fail, so a
+    clean run is auditable too."""
+    violations = [n for n in counts if n > ceiling]
+    frac = (len(violations) / len(counts)) if counts else 0.0
+    sustained = len(violations) >= min_violations and frac > frac_thresh
+    return {
+        "n_samples": len(counts), "n_violations": len(violations),
+        "violation_frac": frac, "max_new_cells": (max(counts) if counts else 0),
+        "ceiling": ceiling, "min_violations": min_violations, "frac_thresh": frac_thresh,
+        "sampling_suspect": sustained,
+    }
+
+
+def sampling_gate_report(frames_dir, grids, windows, human_side, vision_mod):
+    """Runs the gate per match window for the HUMAN side only -- the side
+    whose true cadence the fit needs to be calibrated to (the per-player
+    program's own sender/receiver convention: a pressure profile is fit
+    from ONE side's placements; the opponent/AI side isn't gated here).
+    Returns {mid: verdict_dict}."""
+    grid = grids[human_side]
+    return {mid: sampling_gate_verdict(new_cells_per_second(frames_dir, grid, t0, t1, vision_mod))
+            for mid, (t0, t1) in windows.items()}
+
+
+def print_sampling_gate_report(report, human_side):
+    print(f"\n--- SPD validity gate (human_side={human_side}, ceiling={NEW_CELLS_CEILING} new "
+          f"cells/s, sustained = >={SAMPLING_MIN_VIOLATIONS} violations AND "
+          f">{SAMPLING_VIOLATION_FRACTION:.0%} of samples) ---")
+    any_suspect = False
+    for mid, v in report.items():
+        flag = "SAMPLING-SUSPECT" if v["sampling_suspect"] else "ok"
+        any_suspect = any_suspect or v["sampling_suspect"]
+        print(f"  {mid}: {v['n_violations']}/{v['n_samples']} samples over ceiling "
+              f"({v['violation_frac']:.1%}), max={v['max_new_cells']} -- [{flag}]")
+    return any_suspect
+
+
+def refit_window_at_higher_fps(mkv_path, mid, t0, t1, vision_dir, human_side, session_dir,
+                                events_csv=None, fps=REFIT_FPS, force=False):
+    """Re-extract ONE flagged window at `fps` and re-fit it alone -- the
+    internal-consistency comparison team-lead asked for. Frame indices at
+    fps>1 are TICKS (1/fps-second spacing from t0), NOT wall-clock seconds:
+    bursty_model.py's build_ledger/extract_match_events assume integer-
+    second contiguity (range(t0, t1+1), t1-t0==1 checks) and are NOT
+    modified here (kept generic/untouched all session -- see the module's
+    genericity audit above). Instead this fits on a synthetic tick axis
+    (k_seconds scaled by fps) and converts the resulting gap_samples back to
+    real seconds afterward, so the two fits are directly comparable."""
+    import fit_ensemble_source as FE
+
+    out_dir = os.path.join(session_dir, f"{mid}_refit{fps}fps", "frames")
+    print(f"  re-extracting {mid} ({t0}-{t1}s) at {fps}fps -> {out_dir}")
+    extract_frames(mkv_path, out_dir, fps=fps, t0=t0, t1=t1, force=force)
+
+    vision_mod = load_vision(vision_dir)
+    grids = {"P1": vision_mod.P1, "P2": vision_mod.P2}
+    n_ticks = int(round((t1 - t0) * fps))
+    other = "P2" if human_side == "P1" else "P1"
+    ecsv = {human_side: events_csv, other: None} if events_csv else None
+    model = FE.fit_filtered(
+        out_dir, grids, {mid: (1, n_ticks)}, max_size=20,
+        events_csvs={mid: ecsv} if ecsv else None,
+        vision_mod=vision_mod, k_seconds=5.0 * fps,
+    )
+    # convert tick-based timing fields back to real seconds for comparability
+    model.gap_samples = [g / fps for g in model.gap_samples]
+    model.k_seconds = 5.0
+    model.meta["refit_fps"] = fps
+    model.meta["refit_window"] = mid
+    model.meta["refit_note"] = (
+        f"re-extracted+re-fit at {fps}fps after the SPD validity gate flagged {mid} as "
+        f"sampling-suspect at 1fps; gap_samples divided by {fps} to convert ticks back to real "
+        f"seconds; n_matches/volley_sizes/p_within_k are computed directly on the {fps}fps ledger "
+        f"(not rescaled).")
+    return model
+
+
+def refit_and_compare_window(mkv_path, mid, t0, t1, frames_dir_1fps, vision_dir, human_side,
+                              session_dir, events_csv=None, fps=REFIT_FPS, force=False):
+    """The full (b) step: re-extract+re-fit at higher fps, ALSO fit the same
+    single window at the original 1fps for an apples-to-apples baseline
+    (not the whole-session pooled model -- that would mix in unflagged
+    windows), and return (fit_1fps, fit_highfps, comparison_table_str)."""
+    import fit_ensemble_source as FE
+
+    vision_mod = load_vision(vision_dir)
+    grids = {"P1": vision_mod.P1, "P2": vision_mod.P2}
+    other = "P2" if human_side == "P1" else "P1"
+    ecsv = {human_side: events_csv, other: None} if events_csv else None
+    fit_1fps = FE.fit_filtered(
+        frames_dir_1fps, grids, {mid: (t0, t1)}, max_size=20,
+        events_csvs={mid: ecsv} if ecsv else None, vision_mod=vision_mod, k_seconds=5.0,
+    )
+    fit_highfps = refit_window_at_higher_fps(
+        mkv_path, mid, t0, t1, vision_dir, human_side, session_dir,
+        events_csv=events_csv, fps=fps, force=force,
+    )
+    table = side_by_side_table(fit_1fps.fit_summary(), fit_highfps.fit_summary(),
+                                f"{mid} @1fps (sampling-suspect)", f"{mid} @{fps}fps (refit)")
+    return fit_1fps, fit_highfps, table
 
 
 # --------------------------------------------------------------------------
