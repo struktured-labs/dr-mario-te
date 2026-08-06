@@ -104,12 +104,25 @@ simulates the defect rather than asserting the guard exists:
   rest of the human tempo gap is routing, not gate latency: ~52.5 f/pill is irreducible
   for this executor (settle + DAS steer + slam descent).
 
-**In progress:** generalised root-action tucks (v3). Offline proof on the real stream:
-tuck placements as first-class depth-3 root actions with a priced fire gate (a tuck must
-beat the best normal move by a margin) give **−10.0 pills at L11** (CI excludes 0) and a
-*significant clear-rate improvement at L20* (96.2%→99.2%, p=0.039) at 2.8 fires/game.
-Firmware/RTL port is the open work; two known executor defects (coordinate space,
-per-frame descriptor wipe) ship with it.
+**Latest (2026-08-05): the tuck enumerator is ported, wired and RTL-verified — awaiting its
+silicon A/B.** The v3 offline proof (−10.0 pills at L11, L20 clear rate 96.2%→99.2%,
+p=0.039) converged on a **TE-free BFS enumerator** (512 states, one 64-byte visited plane),
+now running as real 6502 firmware on the coprocessor: bit-exact against its Python
+reference (0/1490 corpus candidates), ~1 frame per board at the copro's clock, 58% of its
+ROM window. Its execution vocabulary was the surprise cost — the shipped descriptor could
+only express 45% of reachable tuck placements, and a tier sweep priced the recovery: a
+**tier-3 motion vocabulary** (any approach column, ≤1 lateral direction change) reaches
+100% of them for ~1.1 KB. Against today's shipped vocabulary it cuts bad-ends 19→11 and
+lifts clear rate 68.3%→81.7% (n=60, p=0.077 — directional, not yet conclusive), and it
+changes real decisions on real RTL (4/12 boards, reproduced across two independent build
+paths). The candidate image is built; a timing-closure seed sweep and the on-hardware A/B
+are the open work.
+
+**Also 2026-08-05 — a fidelity caveat worth stating plainly:** py65 (the CPU simulator most
+offline experiments run through) agrees with the real RTL on only ~13% of *base-search*
+move choices on real L11 boards. Tuck-logic gates that compare py65 against a Python
+reference are unaffected and remain sound, but no py65-only result should be read as
+predicting the silicon's actual move. Silicon A/Bs decide.
 
 ## How it works
 
@@ -173,10 +186,19 @@ they are mirrored into a local `NES_MiSTer` checkout for Quartus synthesis.
 
 ## Known open items
 
-- **Root-action tucks (v3) firmware port** — the offline win is proven (see Milestone 3);
-  the copro root enumeration, the priced fire gate, and the two executor defect fixes are
-  the open engineering. The leaf-gated shortcut was empirically refuted (+7.11 pills
-  *worse*) — cross-column reach scored at full depth is the only design that survives.
+- **Root-action tucks (v3) — ported; silicon A/B is what's left.** The firmware, the
+  CANDLIST wiring, the tier-3 vocabulary and the RTL evidence are all in (see "Latest"
+  above); what remains is a timing-closure seed sweep on the candidate core and the
+  on-hardware comparison against the shipped brain. The leaf-gated shortcut was
+  empirically refuted (+7.11 pills *worse*) — cross-column reach scored at full depth is
+  the only design that survives.
+- **Soak-rig display wedge (test harness only, not a play defect)** — continuous CPU-vs-CPU
+  autonav play wedges the MiSTer's display path within 6–30 minutes. Elimination chain:
+  our own capture traffic, an idle box, the strand20 brain, the MiSTer framework, and the
+  copro RTL are each exonerated by measurement; the same copro core running a plain
+  human-play cart survived 47+ minutes. The trigger is the CvC driver's own autonav loop —
+  software that only the test harness runs. An on-device watchdog captures the state and
+  auto-recovers; a pacing fix in the nav loop is the likely cure.
 - **Cascade-resolve in the search: tested, rejected** — a full chained resolve halved solo
   clear-rate chasing combos into topouts; the capped resolve is the better player. (The
   *eval-side* chain credit is a different mechanism — that one ships in Combo Stomper.)
