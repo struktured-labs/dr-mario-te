@@ -51,8 +51,30 @@ def dr_flags(env=None):
     return {k: v for k, v in sorted(env.items()) if k.startswith("DR")}
 
 
+SNAPSHOT_MARKER = "##DRFLAGSNAPSHOT## "
+
+# LEGACY REPLAY LEDGER (provenance, generalized -- see cmd_rebuild): manifests recorded before
+# `flag_snapshot` existed can't know about a knob introduced after they were recorded. For a
+# knob whose OWN default is already safe/off when absent, this entry is inert but still listed
+# -- one reviewable unit ("everything this task added"), not a judgment call per knob about
+# which ones "happen to" need it. DRBUILDID is the one that actually matters here: it defaults
+# ON for DRHUMAN=1 carts, so an old human-profile manifest that predates it would otherwise
+# silently gain a stamp it never asked for on replay (the exact regression this ledger exists
+# to close -- verified via pocket-human-v4-coldinit.json, see tests/test_romgen_replay.py).
+NEW_KNOBS = {
+    "DRHOLDBOARD": "0",
+    "DRHOLDBOARD_F": "600",
+    "DRBUILDID": "0",
+    "DRBUILDID_TAG": "",
+}
+
+
 def do_build(out, base, flags, quiet=False):
-    """Run the emitter with `flags`, return the path to the produced ROM."""
+    """Run the emitter with `flags`, return (path to the produced ROM, flag_snapshot).
+    flag_snapshot is every DR* env var the emitter actually consulted, resolved -- the
+    default-proof replay record (see the DR_ENV_SNAPSHOT comment in patch_cartridge_copro.py) --
+    or None if the emitter's stdout didn't carry the marker line (an emitter older than this
+    mechanism; callers treat None as "no snapshot available", not a hard failure)."""
     if not os.path.exists(base):
         sys.exit(f"base ROM missing: {base}")
     env = dict(os.environ)
@@ -75,9 +97,16 @@ def do_build(out, base, flags, quiet=False):
             sys.exit(f"emitter produced nothing.\n{r.stdout}\n{r.stderr}")
         if out and os.path.abspath(out) != os.path.abspath(produced):
             shutil.move(produced, out); produced = out
+        snapshot = None
+        lines = []
+        for line in r.stdout.splitlines():
+            if line.startswith(SNAPSHOT_MARKER):
+                snapshot = json.loads(line[len(SNAPSHOT_MARKER):])
+            elif line.strip():
+                lines.append(line)
         if not quiet:
-            print(r.stdout.strip().splitlines()[-1] if r.stdout.strip() else "built")
-        return produced
+            print(lines[-1] if lines else "built")
+        return produced, snapshot
     finally:
         if tmpbase:
             if os.path.exists(tmpbase):
@@ -88,17 +117,32 @@ def do_build(out, base, flags, quiet=False):
 
 def cmd_build(a):
     flags = dr_flags()
+    # DRBUILDID_TAG source of truth: derive it from the SAME --tag this command already records
+    # in the manifest, so there is exactly one place a build's identity comes from, not two that
+    # could drift (the on-cart stamp and the manifest tag naming different things). An explicit
+    # DRBUILDID_TAG in the environment wins (caller's deliberate override), matching the
+    # env-wins-if-set pattern the rest of this file already uses for DR* flags.
+    if "DRBUILDID_TAG" not in flags:
+        tag_src = a.tag or os.path.basename(a.out).replace(".nes", "")
+        derived = "".join(c for c in tag_src.upper() if c.isalnum())[:4] or "BILD"
+        flags["DRBUILDID_TAG"] = derived
     base = a.base or DEFAULT_BASE
     out = os.path.abspath(a.out)
-    do_build(out, base, flags)
+    _, snapshot = do_build(out, base, flags)
 
-    # DETERMINISM CHECK: build a second time and require identical bytes.
-    second = do_build(os.path.join(tempfile.gettempdir(), "romgen_check.nes"),
+    # DETERMINISM CHECK: build a second time and require identical bytes AND an identical
+    # resolved flag snapshot (a snapshot that varied run-to-run with identical inputs would be
+    # worse than no snapshot at all -- a manifest that looks default-proof but isn't).
+    second, snapshot2 = do_build(os.path.join(tempfile.gettempdir(), "romgen_check.nes"),
                       base, flags, quiet=True)
     if md5(out) != md5(second):
         os.remove(second)
         sys.exit("NON-DETERMINISTIC BUILD -- two runs with identical inputs differ. "
                  "Do not ship this; find the nondeterminism first.")
+    if snapshot is not None and snapshot != snapshot2:
+        os.remove(second)
+        sys.exit("NON-DETERMINISTIC FLAG SNAPSHOT -- two runs with identical inputs resolved "
+                 "different DR* values. Do not ship this; find the nondeterminism first.")
     os.remove(second)
 
     man = {
@@ -117,7 +161,14 @@ def cmd_build(a):
                 "dirty": bool(git("status", "--porcelain", "--",
                                   ":(exclude)roms/manifests"))},
         "flags": flags,
-        "determinism": "verified: two builds byte-identical",
+        # DEFAULT-PROOF REPLAY (provenance, generalized): every DR* knob's RESOLVED value, not
+        # just what was explicitly passed above. `rebuild` sets exactly this env on replay, so
+        # this manifest's output is immune to any later change to any knob's default, forever --
+        # see the DR_ENV_SNAPSHOT comment in patch_cartridge_copro.py and NEW_KNOBS above for the
+        # regression this closes. None only if the emitter predates this mechanism.
+        "flag_snapshot": snapshot,
+        "determinism": "verified: two builds byte-identical" + (
+            " + identical flag snapshot" if snapshot is not None else ""),
     }
     os.makedirs(MANIFEST_DIR, exist_ok=True)
     mp = os.path.join(MANIFEST_DIR, man["tag"] + ".json")
@@ -127,6 +178,33 @@ def cmd_build(a):
     if man["git"]["dirty"]:
         print("  ⚠ WORKING TREE DIRTY -- this ROM is not reproducible from a commit. "
               "Commit before shipping it.")
+
+
+def resolve_replay_flags(man, new_knobs=NEW_KNOBS):
+    """DEFAULT-PROOF REPLAY: a manifest with a flag_snapshot records every DR* knob's resolved
+    value, so replay sets exactly that -- immune to any later default change, full stop. A
+    manifest WITHOUT one predates the mechanism; it can only know about knobs that existed
+    when it was recorded, so any knob introduced since (`new_knobs`) is forced to its
+    pre-existence value rather than left to whatever the CURRENT code defaults it to (the
+    regression this closes -- a knob silently activating on an old manifest's replay because
+    its default depends on ANOTHER flag the old manifest happens to set, e.g. DRBUILDID
+    defaulting on for DRHUMAN=1). Forcing every DR* key blindly does NOT suffice here and was
+    rejected: DRSTUDY also defaults on for DRHUMAN=1 and predates every live manifest, so a
+    blanket force-absent-to-off would incorrectly disable it too.
+
+    Returns (replay_flags, note) -- note is a human-readable status line, or None if nothing
+    noteworthy happened (a fresh snapshot-format manifest with no forcing needed)."""
+    snap = man.get("flag_snapshot")
+    if snap:
+        return dict(snap), "replaying from the full flag snapshot (default-proof)"
+    replay_flags = dict(man["flags"])
+    forced = {k: v for k, v in new_knobs.items() if k not in replay_flags}
+    if not forced:
+        return replay_flags, None
+    replay_flags.update(forced)
+    return replay_flags, (
+        "legacy manifest (no flag_snapshot) -- forcing knobs unknown to it to their "
+        "pre-existence value: " + ", ".join(sorted(forced)))
 
 
 def cmd_rebuild(a):
@@ -140,9 +218,12 @@ def cmd_rebuild(a):
         print(f"  ⚠ emitter differs from the manifest (want {man['emitter']['md5'][:8]}, "
               f"have {cur[:8]}). Rebuilding anyway; a byte mismatch below tells you the "
               f"emitter change is what moved it.  Recorded commit: {man['git']['commit']}")
+    replay_flags, note = resolve_replay_flags(man)
+    if note:
+        print("  " + ("⚠ " if note.startswith("legacy") else "") + note)
     out = a.out or os.path.join(DRV, "tmp", man["output"]["name"])
     os.makedirs(os.path.dirname(out), exist_ok=True)
-    do_build(out, base, man["flags"])
+    do_build(out, base, replay_flags)
     got = md5(out)
     if got == man["output"]["md5"]:
         print(f"  ✅ REPRODUCED byte-exact: {got}")
@@ -188,12 +269,20 @@ def cmd_list(a):
             print(f"  {m['tag']:<24} {m['output']['md5']}  @{(m['git']['commit'] or '?')[:8]}  {fl}")
 
 
-p = argparse.ArgumentParser(description=__doc__,
-                            formatter_class=argparse.RawDescriptionHelpFormatter)
-s = p.add_subparsers(dest="cmd", required=True)
-b = s.add_parser("build");   b.add_argument("--out", required=True); b.add_argument("--base")
-b.add_argument("--tag");     b.set_defaults(fn=cmd_build)
-r = s.add_parser("rebuild"); r.add_argument("manifest"); r.add_argument("--out")
-r.set_defaults(fn=cmd_rebuild)
-l = s.add_parser("list");    l.set_defaults(fn=cmd_list)
-a = p.parse_args(); a.fn(a)
+def _main():
+    p = argparse.ArgumentParser(description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    s = p.add_subparsers(dest="cmd", required=True)
+    b = s.add_parser("build");   b.add_argument("--out", required=True); b.add_argument("--base")
+    b.add_argument("--tag");     b.set_defaults(fn=cmd_build)
+    r = s.add_parser("rebuild"); r.add_argument("manifest"); r.add_argument("--out")
+    r.set_defaults(fn=cmd_rebuild)
+    l = s.add_parser("list");    l.set_defaults(fn=cmd_list)
+    a = p.parse_args(); a.fn(a)
+
+
+if __name__ == "__main__":
+    # Previously bare module-level code (no __main__ guard): `import romgen` -- e.g. from a
+    # test that wants resolve_replay_flags() directly -- ran argparse against the IMPORTER's
+    # own sys.argv and exited. Found by tests/test_romgen_replay.py failing at import time.
+    _main()

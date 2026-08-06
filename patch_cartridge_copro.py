@@ -16,6 +16,8 @@ all modes) is repointed to the $FF54 trampoline, which bank-switches to unit-1 a
 The heavy depth-2 search runs on the SECOND 6502 inside the FPGA (~0.2-0.3s/pill vs 78s).
 NOT Mesen-compatible (mapper 100) — MiSTer custom core only.
 """
+import hashlib
+import json
 import sys
 sys.path.insert(0, "tests")
 from patch_vs_cpu import Asm6502
@@ -146,6 +148,30 @@ WIG_DIR = 0x617C
 P1AI_Y, P1AI_C, P1AI_O = 0x617D, 0x617E, 0x617F
 P1AI_CPU, P1SWAP_CPU = 0x9000, 0x9200   # P1-mirrored d1 AI + its swap_eval, in unit1 (bank 2)
 import os as _os
+
+# ---- default-proof manifest replay (provenance, generalized): every DR* env lookup below this
+# point is recorded with its RESOLVED value (whatever it actually evaluated to -- the caller's
+# override, or the code's own hardcoded default), not just what the caller explicitly passed.
+# tools/romgen.py's `build` reads this back (the "##DRFLAGSNAPSHOT##" line at the end of main())
+# and stores it in the manifest as `flag_snapshot`, so `rebuild` can set EXACTLY that env on a
+# future replay -- immune to any later change to any knob's default, forever, because the
+# manifest no longer depends on "what the code currently defaults to" at all. Monkeypatching
+# os.environ.get (not e.g. wrapping every call site) is deliberate: it's the one choke point
+# every DR* lookup in this file already goes through, verified to need no call-site changes
+# (confirmed: `os` and `_os` are the same module object, so a bare `os.environ.get(...)` inside
+# main() -- see DRLEVEL/DRSPEED -- is caught by this too).
+DR_ENV_SNAPSHOT = {}
+_real_environ_get = _os.environ.get
+
+
+def _tracked_environ_get(key, default=None):
+    resolved = _real_environ_get(key, default)
+    if isinstance(key, str) and key.startswith("DR"):
+        DR_ENV_SNAPSHOT[key] = resolved
+    return resolved
+
+
+_os.environ.get = _tracked_environ_get
 # DRNAVESC: stuck-screen escape watchdog (task #38). Three silicon freezes 2026-08-01/02
 # (evidence: qa-wt experiments/freeze_20260801/) shared one shape: the game parked on a
 # screen awaiting a START the nav never sends -- mode 3 falls through autonav's dispatch
@@ -205,6 +231,11 @@ REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
 # resets the count. Unbrick without this flag: cycle menu.rbf then load_core (BRAM re-init).
 BUSYESC = _os.environ.get("DRBUSYESC", "0") == "1"
 BUSYSKP = 0x6192                                   # consecutive-bail counter (after DRSTALLWD's $6191)
+# DRDISTGATE (REVIEW #6.2 / task #49 follow-on -- see CART_FIX_REPORT.md; REVIEW-driven change,
+# authorized explicitly, not a flag toggle): $6193 is the next free PRG-RAM byte (past BUSYSKP).
+# DG_BUDGET = scratch (max DAS-reachable columns this hook); EFF_DIST2 = the distance-clamped
+# steering target, substituted for TGT_C2/EFF_C2 in mv_p2 once the gate fires.
+DG_BUDGET, EFF_DIST2 = 0x6193, 0x6194
 # DRWRETRY (default OFF -- touches build_main, so off keeps the goldens == published c300acb canonical;
 # the shipping cart opts in): fix the "re-queue once per pill" watchdog latch. Two bugs: (A) handle()'s
 # _start epilogue clears `wretry` every search START (so a re-queued timeout re-GOs indefinitely); (B) the
@@ -409,6 +440,90 @@ P1_OWNED = P1WIGGLE or P1NATIVE   # act_p1 is replaced; the copro P1 path is not
 RECOMMIT = (MATURE
             and (not NO_FREEZE or _os.environ.get("DRRECOMMIT_NOFREEZE", "0") == "1")
             and (_os.environ.get("DRRECOMMIT", "1") != "0"))
+# DRDISTGATE=1 (default OFF -- candidate, not yet A/B'd on silicon; see task #49's
+# CART_FIX_REPORT.md and REVIEW #6.2 in dr-mario-qa-wt/experiments/eval47/PAIR_LATCH_AUDIT.md):
+# neither COLGATE/RECOMMIT/SLAM reasons about *distance* -- how many columns the search's target
+# is from the capsule's current column -- only about *when* to commit. tests/
+# test_task49_slamarm_race.py's Test E showed a commit-6-shaped case (3-column distance, ~40-hook
+# window) simply cannot complete the DAS traverse in time (needs ~96 hooks, matching REVIEW
+# #6.2's own arithmetic) and, since SLAM_ARM=0 rules out an accelerated slam (Test A), the
+# capsule just parks wherever WEAVE got it to when gravity locks it -- often still the spawn
+# column, since 20-40 hooks after a late-converging search isn't enough for even ONE DAS edge in
+# the worst case. DISTGATE bounds the STEERING target itself by DAS-reachability given the
+# remaining fall budget (BOARD_Y=$0386, row-space), so lateral progress always happens toward the
+# best REACHABLE column instead of chasing an argmax that will never arrive in time -- the floor
+# is "closer to the true best than spawn," not "spawn," once budget > 0.
+#
+# ★ MIN-1 FLOOR, and why it's load-bearing (found by tests/test_task49_distgate.py's Test 3a,
+# first attempt -- a genuine defect in an early version of this table, not a hypothetical one):
+# a naive floor(Y * DIST_GRAVROW / DIST_DASEDGE) DROPS TO 0 while Y is still > 0, because
+# DIST_DASEDGE (32) > DIST_GRAVROW (26) -- one row of remaining fall-time (26 hooks) is NOT
+# enough to complete one DAS edge (32 hooks), so a straight floor() division reports "0 columns
+# reachable" partway THROUGH an edge that was already promised 1 column of budget on an earlier
+# hook (when Y was larger). Recomputing the clamp fresh every hook then makes the bound RETREAT
+# to wherever PX2 currently sits -- which can be BEFORE the capsule has moved at all -- producing
+# an artifact "alignment" with the ORIGINAL spawn column. Since STABLE_CT2 (search-answer
+# stability, tracked independently since the search's target first appeared, unrelated to this
+# retreat) can already be past K_CROSS by then, dn_p2 fires a confident-looking SLAM at the
+# column the capsule never actually chose to commit to -- a false-confidence commit AT SPAWN,
+# which is worse than the pre-DISTGATE behavior (dn_hold, no forced button) for the exact
+# scenario this gate exists to help. Flooring the budget at 1 (whenever ANY row of clearance
+# remains, Y>0) guarantees the clamped target is always at least 1 column from PX2 in the raw
+# target's direction until Y truly hits 0 (no fall-time left at all, at which point locking
+# wherever the capsule already is IS the correct, unavoidable outcome) -- so the bound can never
+# retreat all the way back to "no movement was ever needed," only shrink toward "less movement
+# than originally hoped," which is a real, non-pathological degradation.
+#
+# Table-driven (2-pass-safe, no runtime multiply/divide): DIST_TABLE[Y] = 0 if Y==0 else
+# max(1, min(7, floor(Y * DIST_GRAVROW / DIST_DASEDGE))).
+#
+# ★ CONSTANTS MEASURED FROM SILICON FOOTAGE (2026-08-05, task #49 follow-on; see
+# CART_FIX_REPORT.md's DAS/gravity-validation section for the full methodology). The FIRST
+# version of these defaults (32 hooks/edge, 26 hooks/row) was NOT measured -- it inherited the
+# mv_p2 comment below's "32-hook cycles = 6.4 frames per edge" figure, which itself was derived
+# under the OLD "NAV_T=5*/frame" assumption (32 = 6.4 * 5) that the file's own 2026-08-01 audit
+# (the "WHERE THE HOOK ACTUALLY RUNS" note, above) already corrected to 2 hooks/frame for OTHER
+# constants (FAST_HI) but never revisited for this one. Converting the SAME frame-based design
+# target (6.4 frames/edge) through the CORRECT 2 hooks/frame gives ~13 hooks, not 32 -- and a
+# direct silicon measurement (below) landed even tighter.
+#
+# Tracked ~1920 frames of the m3 death-window footage (p2_60fps_death/, 60fps, the AI's own
+# capsule) plus a fresh 90s/5400-frame extraction from an earlier match segment (t=120-210s,
+# source ~/Videos/drmario_sessions/20260804_1955_pocket_dock.mp4, P2 crop 392x824 @ 1120,224) via
+# a new P2-specific tracker (dr_mario_rl/tmp/film_review_20260804/tracker_p2_death.py, built on
+# the existing tracker.py's already-validated per-frame capsule search -- confirmed independently
+# correct here too: its spawn timestamps and spawn-to-lock frame counts reproduce VERDICT.md's
+# six audited commits to 3 decimal places / exact frame counts without having been told them).
+#   DAS repeat cadence: n=4 CLEAN steady-state lateral repeats (no rotation event, no row-advance
+#   coincident with the gap) -- ALL exactly 6 frames, zero spread. A SEPARATE cluster of n=5
+#   "first repeat after engaging DAS" gaps read 16 frames (one exception read 6) -- plausibly a
+#   one-time engage cost distinct from the steady-state repeat rate, but the sample is too small
+#   to fully characterize past "clean repeats are tight at 6 frames"; DIST_DASEDGE uses the clean
+#   steady-state number, which is what governs total distance covered over a multi-column
+#   traverse. 6 frames * 2 hooks/frame = 12 hooks/edge.
+#   Gravity (natural fall, non-soft-drop, measured in the death-window footage specifically --
+#   the context DISTGATE actually targets, near-topout/critically-stacked): n=10, dominant cluster
+#   at 15 frames/row (8/10) with 2 at 16 -- mean ~15.2, call it 15. An EARLIER match segment (the
+#   90s sample above) measured faster and more scattered (9-13f/row) -- unexplained (possibly
+#   level/context-dependent; flagged, not resolved). Using the near-topout reading since that's
+#   DISTGATE's target scenario. 15 frames/row * 2 hooks/frame = 30 hooks/row.
+#
+# NET EFFECT: DAS is much faster than the stale defaults assumed (12 vs 32 hooks/edge) and
+# gravity is somewhat slower (30 vs 26 hooks/row) -- both push the SAME direction (more budget
+# available per row of remaining fall-time). This also means REVIEW #6.2's "commit-6-shaped, needs
+# ~96 hooks for 3 columns" arithmetic (and this file's own earlier tests/test_task49_slamarm_race.py
+# Test E, built on the same stale 32/26 pair) used the wrong hook budget: 3 columns cost 36 hooks
+# under the corrected numbers, not 96 -- worth a follow-up re-audit of that earlier "physically
+# infeasible" conclusion, not done here (task #49's ORIGINAL increment is already committed/pushed;
+# flagging rather than silently rewriting it).
+# DRDISTGATE=0 rebuilds byte-exact (nothing emitted; verified in tests/test_task49_distgate.py).
+DISTGATE = _os.environ.get("DRDISTGATE", "0") == "1"
+DIST_DASEDGE = int(_os.environ.get("DRDIST_DASEDGE", "12"))
+DIST_GRAVROW = int(_os.environ.get("DRDIST_GRAVROW", "30"))
+DIST_TABLE_LEN = 16   # BOARD_Y ($0386) row-space; 16 covers the full playfield height with margin
+DIST_TABLE = bytes(
+    0 if y == 0 else max(1, min(7, (y * DIST_GRAVROW) // DIST_DASEDGE))
+    for y in range(DIST_TABLE_LEN))
 # DRNAVFIX=1 (default): STABILITY-GATED AUTONAV. The canonical an_title fires START the instant $04!=0;
 # a cold-boot garbage-nonzero $04 (title fade-in, before menu-init) then STARTs into a 1P game. DRNAVFIX
 # withholds START until VS-CPU-armed ($04!=0 AND $0727==2) has held for NAV_M consecutive hooks -- the
@@ -509,6 +624,81 @@ STUCK_LIM = 60        # 1s -- continuous holds again; if truly stuck kick fast t
 W_BOARD, W_CA, W_GO, W_DONE, W_COL, W_OR = 0x5000, 0x5080, 0x5084, 0x5084, 0x5085, 0x5086
 # NES pad bits on $F5 (pressed-this-frame): A=$80 B=$40 Sel=$20 Start=$10 U=$08 D=$04 L=$02 R=$01
 B_SEL, B_START, B_LEFT, B_RIGHT = 0x20, 0x10, 0x02, 0x01
+
+# DRHOLDBOARD=1 (task #48, default OFF -> byte-identical when off): keep BOTH bottles fully
+# visible after a match ends -- inter-match STAGE CLEAR (RB24F_CHECK_WIN/RB337_STAGE_CLEAR)
+# and set-final GAME OVER (L958A_TOP_7) -- until START, instead of the banner/dialog text.
+# STUDY's technique (defer the pause blank by patching $978E's own body) does NOT transfer:
+# unlike pause, RB337_STAGE_CLEAR (and TOP_7's RB894_FILL_PAGES) destroy the PLAYFIELD RAM
+# MODEL ITSELF ($0400/$0500, fill-with-$FF + message bytes), not just the PPU nametable, and
+# they do it IMMEDIATELY/synchronously the moment virus==0 or a topout is dispatched -- there
+# is no START-gated checkpoint before the overwrite in either routine (read directly from the
+# disassembly: RB24F_CHECK_WIN calls RB337_STAGE_CLEAR before ever touching $F5/$F7, and
+# L958A_TOP_7 fills+prints before its own wait-loop). So the mechanism here is SNAPSHOT+REDRAW:
+# continuously mirror both boards into PRG-RAM while a match is live (cheap relative to the
+# alternative of trying to intercept a synchronous write mid-instruction), then, once a
+# match-end is detected, overwrite $0400/$0500 back from the mirror and re-trigger the game's
+# OWN row-redraw drain (L0300/L0380_UPDATE_ROW=$0F, the same mechanism RB337_STAGE_CLEAR/
+# R96D4_GAME_OVER themselves use) every hook until the human's own START (checked the same way
+# the vanilla wait-loops do: ($F5|$F7)&$10) releases it. COST: the continuous mirror is a
+# 2x256B copy every "dispatch" hook (~5.9k cyc measured-equivalent instruction count, 2x/frame
+# during ALL of active play) -- see FINAL_BOARD_HOLD_REPORT.md for the honest accounting; the
+# existing BUSY-guard (DRBUSYESC) already covers the rare case this pushes a hook past budget.
+HOLDBOARD = _os.environ.get("DRHOLDBOARD", "0") == "1"
+HOLDBOARD_F = int(_os.environ.get("DRHOLDBOARD_F", "600"))   # CvC safety cap: ~10s at 60fps
+HOLD_ACTIVE = 0x6195                       # PRG-RAM: !=0 while the final board is held
+HOLD_LASTCLK = 0x6196                      # last-seen $43 clock byte (edge-detect real frames)
+HOLD_CNT = 0x6197                          # 16-bit ($6197 lo, $6198 hi): frames held so far
+HOLD_BUF1, HOLD_BUF2 = 0x6300, 0x6400      # 256B mirrors of $0400 (P1) / $0500 (P2) playfields
+
+# DRBUILDID=1 (task: "which brain am I fighting", default ON for human-profile carts): stamp a
+# short build tag onto the settings screen ("2 PLAYER GAME" row 25, columns 6-14) -- the exact
+# row the STUDYCOUNTS OAM-leak garbled (task #48 job 1). Deliberate choice: not sprites (would
+# need re-deriving a whole alphabet in whatever CHR bank happens to be live at each candidate
+# screen, and would sit in OAM real estate already owned by STUDYCOUNTS/STUDY2P) and not the
+# DRNAVDWELL title dwell (transient, and a HUMAN_P1 cart's own settings screen is shown before
+# EVERY match -- always-checkable in the sense the spec asks for, the title dwell is not).
+# Mechanism verified against the base ROM disassembly + a live Mesen probe, not assumed:
+#   - row 25 is confirmed BLANK ($FF, cols 4-27) on the vanilla settings screen (own nametable
+#     dump, tools/romgen.py-built cart's print table is untouched there -- see task #48's garble
+#     report) -- safe to write without colliding with any existing content.
+#   - the settings-screen background font is NOT the STUDY sprite font (S/T/U/D/Y = $0D/$A0/$0C/
+#     $A1/$A2, a DIFFERENT CHR bank than the settings screen's bank 5) -- it is instead A=$0A,
+#     B=$0B, ..., Z=$23 (letter tile = $0A + offset-from-A) and digit tile = digit VALUE
+#     directly (0-9). Derived by decoding 9 independently-placed, already-rendered strings off
+#     a real nametable dump (VIRUS LEVEL / MUSIC TYPE / FEVER / CHILL / OFF / SPEED / "2 PLAYER
+#     GAME") and cross-checking: EVERY letter's derived tile equals $0A+offset with zero
+#     mismatches across 18 distinct letters -- not a guess.
+#   - entering PLAY mode (a full-screen redraw via a DIFFERENT print table, LC5F9) completely
+#     overwrites row 25 with the bottle-border graphic before any gameplay is visible (own Mesen
+#     probe, byte-for-byte) -- confirmed BEFORE relying on it, not assumed by analogy to the
+#     garble fix. The write is ALSO hard-gated on $0046==1 (settings only) so it structurally
+#     cannot fire during play -- belt and suspenders, same class of bug as the one just fixed,
+#     not repeated.
+# SOURCE OF TRUTH (never hand-maintained): the tag is <=4 safe-alphabet chars from DRBUILDID_TAG
+# (tools/romgen.py's `build --tag` sets this automatically from the SAME tag it records in the
+# manifest -- one input, not two that could drift) + a live-computed 4-hex-nibble prefix of this
+# EXACT build's own image hash. Chicken-and-egg (the hash covers a file that contains the hash):
+# resolved by writing $FF PLACEHOLDER tiles at the 4 hash-nibble sites during assembly, hashing
+# the COMPLETE built file with those placeholders still in place (this "hash of image with stamp
+# masked to a fixed sentinel" IS the standard trick -- placeholder-before-hash is equivalent to
+# masking, just computed in the natural build order instead of a separate mask-then-hash pass),
+# then patching only those 4 already-known byte offsets in the already-written file afterward.
+# The patched bytes are pure display data (no code depends on their value), so the patch cannot
+# perturb anything the hash is meant to fingerprint -- the same reasoning that already lets the
+# mapper-byte patch at the end of main() happen post-hoc.
+BUILDID = _os.environ.get("DRBUILDID", "1" if HUMAN_P1 else "0") != "0"
+_BID_SAFE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+_BID_TAG_RAW = "".join(c for c in _os.environ.get("DRBUILDID_TAG", "").upper() if c in _BID_SAFE_CHARS)
+BUILDID_TAG = (_BID_TAG_RAW + "XXXX")[:4]           # pad/truncate to exactly 4 safe-alphabet chars
+BID_PPU_ADDR = 0x2000 + 25 * 32 + 6                 # nametable 0, row 25, col 6 ($2326)
+
+
+def _bid_tile(ch):
+    """Settings-screen background font tile for one safe-alphabet character (see the DRBUILDID
+    flag comment for the derivation). ch must be in _BID_SAFE_CHARS."""
+    assert ch in _BID_SAFE_CHARS, f"DRBUILDID: {ch!r} is not in the verified safe alphabet"
+    return (ord(ch) - ord("0")) if ch.isdigit() else (0x0A + ord(ch) - ord("A"))
 
 # DRSTUDY=1 -> "study pause": freeze game logic on pause but keep the last gameplay frame
 # rendered instead of the vanilla blank+"PAUSE". Default ON for human carts (DRHUMAN=1) so a
@@ -771,6 +961,17 @@ def build_main(level=11, speed=1):
 
     # ================= per-frame entry =================
     a.label("main")
+    DIST_TABLE_ADDR = None
+    if DISTGATE:
+        # Emit DIST_TABLE as raw data immediately, jumped over -- never executed as code. Captured
+        # here (not after the routine) so DIST_TABLE_ADDR is a concrete int by the time mv_p2 (far
+        # below) needs it: a.label() records the byte offset the instant it's called, so this does
+        # not depend on the assembler's two-pass fixup resolution the way a JMP/branch target does.
+        a.jmp("dist_table_end")
+        a.label("dist_table")
+        DIST_TABLE_ADDR = UNIT1_CPU + a.labels["dist_table"]
+        a.raw(*DIST_TABLE)
+        a.label("dist_table_end")
     # PRG-RAM power-on init (SDRAM boots as garbage): magic byte at NAV_MAGIC
     a.ins16("LDA_abs", NAV_MAGIC); a.ins("CMP_imm", 0xA5); a.br("BEQ", "inited")
     a.ins("LDA_imm", 0xA5); a.ins16("STA_abs", NAV_MAGIC)
@@ -849,6 +1050,48 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", PR_CNT + 1); a.ins16("STA_abs", RINGP + 0xC2)
         a.label("pr_done")
     a.ins16("INC_abs", NAV_T)                               # tick every hook call (autonav only ticked in menus)
+    if HOLDBOARD:
+        # RESTORE + RELEASE: runs FIRST, every hook, ahead of the mode split entirely -- HOLD_ACTIVE
+        # can be true while $0046 reads 4 (STAGE CLEAR's own blocking wait) OR 5/6/7 (the topout ->
+        # TOP_5 -> TOP_7 GAME OVER sequence), and this must win the race against BOTH of those
+        # screens' own destructive writes on every single hook, not just the one that armed it.
+        a.ins16("LDA_abs", HOLD_ACTIVE); a.br("BEQ", "hb_skip")
+        a.ins("LDX_imm", 0)
+        a.label("hb_restore_lp")
+        a.ins16("LDA_absX", HOLD_BUF1); a.ins16("STA_absX", 0x0400)
+        a.ins16("LDA_absX", HOLD_BUF2); a.ins16("STA_absX", 0x0500)
+        a.ins("INX"); a.br("BNE", "hb_restore_lp")
+        # re-trigger the game's OWN row-redraw drain (same mechanism RB337_STAGE_CLEAR and
+        # R96D4_GAME_OVER themselves use) so the restored RAM actually reaches the PPU.
+        a.ins("LDA_imm", 0x0F); a.ins16("STA_abs", 0x0300); a.ins16("STA_abs", 0x0380)
+        # release on the human's own START -- read exactly like the vanilla wait-loops do
+        # (($F5|$F7)&$10), so the SAME press that satisfies the game's own blocking loop
+        # satisfies ours; no double-press, no injected button on a HUMAN_P1 cart.
+        a.ins("LDA_zp", 0xF5); a.ins("ORA_zp", 0xF7); a.ins("AND_imm", 0x10); a.br("BEQ", "hb_no_start")
+        a.label("hb_release")
+        # RTS immediately -- own the whole hook, like fc_clear's fc_ret. MATCH_ACTIVE is being
+        # cleared THIS instant; if the rest of main() below ran afterward in the SAME hook, it
+        # would read MATCH_ACTIVE==0 and go_ai would treat this as "first frame of a NEW match"
+        # (re-arming SLAM_ARM/cold-state/VSEEN etc. mid-release) -- caught by test_holdboard.py's
+        # scenario A2, which failed exactly this way with a plain fall-through/jmp.
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", HOLD_ACTIVE); a.ins16("STA_abs", MATCH_ACTIVE)
+        a.ins("RTS")
+        a.label("hb_no_start")
+        if not HUMAN_P1:
+            # CvC safety cap: a nav cart auto-presses START almost immediately (autonav's own
+            # mode==7 / fc_clear's not-HUMAN_P1 injection), so this rarely fires in practice --
+            # but it is the hold's ONLY release path if that injection is ever skipped/late for
+            # any reason, so the soak rig cannot wedge on a hold that never sees a press.
+            a.ins("LDA_zp", 0x43); a.ins16("CMP_abs", HOLD_LASTCLK); a.br("BEQ", "hb_no_tick")
+            a.ins16("STA_abs", HOLD_LASTCLK)
+            a.ins16("INC_abs", HOLD_CNT); a.br("BNE", "hb_cnt_ok"); a.ins16("INC_abs", HOLD_CNT + 1)
+            a.label("hb_cnt_ok")
+            a.ins16("LDA_abs", HOLD_CNT + 1); a.ins("CMP_imm", (HOLDBOARD_F >> 8) & 0xFF)
+            a.br("BCC", "hb_no_tick"); a.br("BNE", "hb_release")
+            a.ins16("LDA_abs", HOLD_CNT); a.ins("CMP_imm", HOLDBOARD_F & 0xFF); a.br("BCC", "hb_no_tick")
+            a.jmp("hb_release")
+            a.label("hb_no_tick")
+        a.label("hb_skip")
     if NAVESC and not HUMAN_P1:
         # ---- DRNAVESC stuck-screen escape (task #38; see flag block for the full rationale).
         # Runs EVERY hook, ahead of the mode split, so mode-3 holes and mode-4 round-waits are
@@ -980,6 +1223,18 @@ def build_main(level=11, speed=1):
     a.ins16("LDA_abs", VCOUNT_P2); a.br("BNE", "fc_no")
     a.ins16("LDA_abs", VSEEN2); a.br("BEQ", "fc_no")
     a.label("fc_clear")                                     # full clear -> own the frame (skip normal dispatch)
+    if HOLDBOARD:
+        # ARM (inter-match path): fires on EVERY hook that reaches fc_clear, i.e. every hook of
+        # the STAGE CLEAR wait (mode stays 4 the whole time -- RB24F_CHECK_WIN is its own
+        # blocking routine, confirmed from the disassembly), not just the press-window hooks
+        # below. Idempotent: only the FIRST such hook actually arms. Does NOT touch MATCH_ACTIVE
+        # (fc_clear's own gate depends on it staying set for the whole wait -- clearing it here
+        # would make the NEXT hook fall through to go_ai's match-START init mid-STAGE-CLEAR).
+        a.ins16("LDA_abs", HOLD_ACTIVE); a.br("BNE", "hb_fc_armed")
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", HOLD_ACTIVE)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", HOLD_CNT); a.ins16("STA_abs", HOLD_CNT + 1)
+        a.ins("LDA_zp", 0x43); a.ins16("STA_abs", HOLD_LASTCLK)
+        a.label("hb_fc_armed")
     a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 4); a.br("BCS", "fc_ret")
     if not HUMAN_P1:
         # $F5 is P1's controller latch. On a HUMAN_P1 cart P1 is a PERSON, so injecting
@@ -1040,6 +1295,60 @@ def build_main(level=11, speed=1):
     a.label("ga_vd")
     a.jmp("dispatch")
     a.label("not_play")
+    if HOLDBOARD:
+        # ARM (set-final / topout path): a topout leaves VCOUNT nonzero for the losing player, so
+        # fc_clear's virus==0 check never fires -- L46_TOP_STATE instead transitions 4->5->7
+        # (TOP_5 does book-keeping then jumps to TOP_7, which is its own blocking GAME OVER wait,
+        # confirmed from the disassembly). We land here on that FIRST non-4 hook with MATCH_ACTIVE
+        # still set from the just-ended match. Unlike the fc_clear arm, this DOES need MATCH_ACTIVE
+        # cleared afterward (own action, not left to DRCOLDINIT) -- otherwise, once the hold
+        # releases and HOLD_ACTIVE goes back to 0, the NEXT idle menu hook would see MATCH_ACTIVE
+        # still nonzero and re-arm a hold with nothing to hold (a stale snapshot, forever, at the
+        # title screen). Idempotent: HOLD_ACTIVE!=0 (already armed via fc_clear or a prior pass
+        # through here) skips straight past.
+        a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BEQ", "hb_np_skip")
+        a.ins16("LDA_abs", HOLD_ACTIVE); a.br("BNE", "hb_np_skip")
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", HOLD_ACTIVE)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", HOLD_CNT); a.ins16("STA_abs", HOLD_CNT + 1)
+        a.ins("LDA_zp", 0x43); a.ins16("STA_abs", HOLD_LASTCLK)
+        a.label("hb_np_skip")
+    if BUILDID:
+        # Stamp the settings screen only (see the DRBUILDID flag comment for the full mechanism
+        # + the row-25/font/overwrite evidence). Self-contained mode check -- does not depend on
+        # A holding $0046 from anything earlier in this hook.
+        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 1); a.br("BNE", "bid_skip")
+        a.ins("LDA_imm", (BID_PPU_ADDR >> 8) & 0xFF); a.ins16("STA_abs", 0x2006)
+        a.ins("LDA_imm", BID_PPU_ADDR & 0xFF); a.ins16("STA_abs", 0x2006)
+        a.label("bid_tag0")          # anchor for tests: first tag-char LDA_imm opcode
+        for _ch in BUILDID_TAG:
+            a.ins("LDA_imm", _bid_tile(_ch)); a.ins16("STA_abs", 0x2007)
+        a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", 0x2007)          # space
+        for _i in range(4):
+            # PLACEHOLDER $FF -- patched post-build in main() once the content hash is known
+            # (see the DRBUILDID flag comment). The label marks the LDA_imm's OPCODE byte; the
+            # operand (the byte actually patched) is one byte further, resolved from this same
+            # `labels` dict by main() after build_main() returns -- no second source of truth
+            # for the offset.
+            a.label(f"bid_hash{_i}")
+            a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", 0x2007)
+        a.label("bid_skip")
+    if STUDY and STUDYCOUNTS:
+        # GARBLE FIX (user-reported, tape f0075.jpg): STUDYCOUNTS (above, in "dispatch") writes
+        # live digit sprites into OAM slots 8-15 every PLAY-mode hook ($0046==4), but previously
+        # did nothing on any other mode -- neither redraw nor blank. The base ROM's per-frame OAM
+        # hygiene (R8712 @ $8712) is NOT an unconditional clear: it only pads the shadow buffer
+        # from THAT SCREEN's own sprite high-water-mark ($42) onward, so a screen using few of its
+        # own sprites (e.g. the "2 PLAYER GAME" settings/level-select screen) can leave slots 8-15
+        # holding a stale frame of digit tiles, rendered as garbage. The ROM's own settings-screen
+        # print table is verified byte-identical to vanilla (tools/romgen.py diff), so this is a
+        # runtime OAM leak, not a table collision. Fix: on every non-play hook, explicitly move
+        # all 8 digit sprites off-screen (Y=$FF -- the same idiom R8712 and this driver already
+        # use). One writer now owns the whole slot-8-15 lifecycle: draw-when-valid (dispatch) or
+        # blank-always (here) -- no reliance on the game's own bookkeeping to happen to cover them.
+        a.ins("LDA_imm", 0xFF)
+        for _slot in (8, 9, 10, 11, 12, 13, 14, 15):
+            a.ins16("STA_abs", 0x0200 + _slot * 4)
+        a.ins16("LDA_abs", 0x0046)                          # restore A = mode for the CMP below
     a.ins("CMP_imm", 0x08); a.br("BNE", "menus")
     # intro mode ONLY happens at power-on/reset: re-arm the autonav (PRG-RAM persists across
     # soft core relaunches, so the NAV_MAGIC one-time init does NOT re-run -> stale NAV_T killed
@@ -1198,6 +1507,17 @@ def build_main(level=11, speed=1):
 
     # ================= play-mode CPU-vs-CPU driver (time-shared FPGA) =================
     a.label("dispatch")
+    if HOLDBOARD:
+        # Continuously mirror both boards while a match is live and pre-clear (dispatch is only
+        # reached before either player's virus count has hit 0 -- see fc_clear above), so the
+        # hold-arm code below always has a same-frame-fresh "last good" snapshot to fall back to
+        # (RB337_STAGE_CLEAR/TOP_7 destroy $0400/$0500 synchronously, before this hook can react
+        # to the SAME frame's transition -- see the DRHOLDBOARD flag comment).
+        a.ins("LDX_imm", 0)
+        a.label("hb_snap_lp")
+        a.ins16("LDA_absX", 0x0400); a.ins16("STA_absX", HOLD_BUF1)
+        a.ins16("LDA_absX", 0x0500); a.ins16("STA_absX", HOLD_BUF2)
+        a.ins("INX"); a.br("BNE", "hb_snap_lp")
     if STUDY and STUDYCOUNTS:
         # STUDY counter redraw (see DRSTUDYCOUNTS). Stack-free: ones stays in A, tens in X.
         # ★ THE TWO COUNTERS USE DIFFERENT ENCODINGS -- do not share a digit splitter.
@@ -1609,6 +1929,47 @@ def build_main(level=11, speed=1):
         a.label("mv_p2_have")
         a.ins16("STA_abs", EFF_C2)
     _EC = EFF_C2 if TUCK else TGT_C2
+    if DISTGATE:
+        # DRDISTGATE (see the flag comment above; REVIEW #6.2): clamp _EC to the columns that are
+        # DAS-reachable from PX2 ($0385) given the remaining fall budget (BOARD_Y=$0386), instead
+        # of steering toward a target that will never arrive in time. Substituting EFF_DIST2 for
+        # _EC here means EVERYTHING below (alignment check, WEAVE steering, dn_p2's confidence
+        # gate) is unchanged code, now just reading a distance-bounded target.
+        #   budget = DIST_TABLE[min(BOARD_Y, DIST_TABLE_LEN-1)]
+        a.ins16("LDA_abs", 0x0386)
+        a.ins("CMP_imm", DIST_TABLE_LEN)
+        a.br("BCC", "dg_yok")
+        a.ins("LDA_imm", DIST_TABLE_LEN - 1)
+        a.label("dg_yok")
+        a.ins("TAX")
+        a.ins16("LDA_absX", DIST_TABLE_ADDR)
+        a.ins16("STA_abs", DG_BUDGET)
+        #   direction: _EC (target) vs PX2 -- unsigned CMP is safe, both are 0..7
+        a.ins16("LDA_abs", _EC); a.ins16("CMP_abs", 0x0385); a.br("BCS", "dg_right")
+        # --- LEFTWARD: target < PX2. EFF = max(target, floor) where floor = max(0, PX2-budget) ---
+        a.ins16("LDA_abs", 0x0385); a.ins("SEC"); a.ins16("SBC_abs", DG_BUDGET)
+        a.br("BCS", "dg_l_ok")                      # no borrow -> PX2-budget stayed >= 0
+        a.ins("LDA_imm", 0)                          # borrowed -> floor at column 0
+        a.label("dg_l_ok")
+        a.ins16("STA_abs", EFF_DIST2)                # tentatively: floor
+        a.ins16("LDA_abs", _EC); a.ins16("CMP_abs", EFF_DIST2); a.br("BCS", "dg_l_reach")
+        a.jmp("dg_done")                              # target < floor -> EFF_DIST2 already = floor
+        a.label("dg_l_reach")
+        a.ins16("STA_abs", EFF_DIST2)                # target reachable (A still = target from CMP)
+        a.jmp("dg_done")
+        a.label("dg_right")
+        # --- RIGHTWARD/equal: target >= PX2. EFF = min(target, ceil) where ceil = min(7, PX2+budget) ---
+        a.ins16("LDA_abs", 0x0385); a.ins("CLC"); a.ins16("ADC_abs", DG_BUDGET)
+        a.ins("CMP_imm", 8); a.br("BCC", "dg_r_ok")
+        a.ins("LDA_imm", 7)                           # ceil at the last column
+        a.label("dg_r_ok")
+        a.ins16("STA_abs", EFF_DIST2)                 # tentatively: ceil
+        a.ins16("LDA_abs", EFF_DIST2); a.ins16("CMP_abs", _EC); a.br("BCS", "dg_r_reach")
+        a.jmp("dg_done")                               # ceil < target -> EFF_DIST2 already = ceil
+        a.label("dg_r_reach")
+        a.ins16("LDA_abs", _EC); a.ins16("STA_abs", EFF_DIST2)   # target reachable
+        a.label("dg_done")
+        _EC = EFF_DIST2
     a.ins16("LDA_abs", 0x0385); a.ins16("CMP_abs", _EC); a.br("BEQ", "dn_p2")
     if not USE_WEAVE:
         a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)  # baseline: freeze at spawn row (slide-only)
@@ -1848,6 +2209,35 @@ def main():
     out[7] = (out[7] & 0x0F) | 0x60
     open(OUT, "wb").write(out)
     print(f"wrote {OUT} (mapper 100, AUTO-NAV VS-CPU L11, FPGA coprocessor)")
+
+    if BUILDID:
+        # DRBUILDID stamp patch -- see the flag comment for the full mechanism. `unit1`'s bytes
+        # land in the final expanded image at file offset 0x8010 + (offset within unit1): the
+        # header is 16B, then unit 0 is bank0+bank1 (2*0x4000) untouched ahead of it, then `bank`
+        # (== unit1, padded to 0x4000) is next -- verified empirically against a real build (the
+        # first byte of the "dispatch" label matched at exactly this computed offset) before
+        # this patch step was trusted with real writes.
+        UNIT1_FILE_BASE = 0x10 + 2 * 0x4000
+        cart = bytearray(open(OUT, "rb").read())
+        digest = hashlib.md5(bytes(cart)).hexdigest()[:4].upper()   # placeholders still $FF here
+        for _i, _hexch in enumerate(digest):
+            off = UNIT1_FILE_BASE + labels[f"bid_hash{_i}"] + 1     # +1: past the LDA_imm opcode
+            assert cart[off] == 0xFF, (
+                f"DRBUILDID: patch site {off:#x} (bid_hash{_i}) held {cart[off]:#x}, expected the "
+                "$FF placeholder -- offset math is wrong, refusing to write a stamp that could be "
+                "landing on live code")
+            cart[off] = _bid_tile(_hexch)
+        open(OUT, "wb").write(cart)
+        print(f"DRBUILDID stamp: {BUILDID_TAG} {digest} (settings screen row 25, cols 6-14)")
+
+    # One line, printed last, greppable and JSON-parseable: every DR* knob this build actually
+    # consulted and what it resolved to (see the DR_ENV_SNAPSHOT comment near `import os as _os`
+    # for why this is the provenance fix, not just a debug aid). None-valued entries would mean
+    # some call site passed no default (verified: none currently do) -- dropped defensively
+    # rather than emitted, since a manifest field can't hold something a future replay can't set
+    # as an env var string anyway.
+    _snapshot = {k: v for k, v in sorted(DR_ENV_SNAPSHOT.items()) if v is not None}
+    print("##DRFLAGSNAPSHOT## " + json.dumps(_snapshot))
 
 
 if __name__ == "__main__":
