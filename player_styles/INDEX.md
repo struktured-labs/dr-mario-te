@@ -17,6 +17,8 @@ deleted, since it has some analysis (per-frame stack-shape notes) not repeated h
 | struktured | `struktured.md` | 16 STUDY-pause stills (2 games, 2026-08-02) + 2 self-reported set summaries (Set A 3-2, Set B 3-1) | Yes for the 16 stills | Medium: solid EXIF/virus-counter reconstruction for the photographed games; DRMC handle confirmed ("struktured") |
 | roburrito | `roburrito.md` | 1 identity photo, DRMC Philadelphia 2026 | No — no screen in frame | Very low: identity only |
 | davesmithsays | `davesmithsays.md` | 1 identity photo, DRMC Philadelphia 2026 | No — CRT present but out of focus | Very low: identity only |
+| bidwell | `bidwell.md` | 337 s TMG 2026 VOD vs struktured (NEVER-PUBLISH, handheld off-screen) — unprocessed | Not yet (needs perspective rectification) | Low: identity + event role confirmed via manifest; expert-tier, event organizer |
+| jarsdad | `jarsdad.md` | none on disk | n/a | Stub only (user-requested roster completeness) |
 
 ## Open questions blocking further work
 - **struktured's rotation-slip claim (self-reported A/B confusion)** — still untested.

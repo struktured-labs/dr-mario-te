@@ -69,8 +69,8 @@ numbers afterward. Divergences are first-class findings.
 | 1 | A/B rotation slips ("~1/3 of my blunders"), deliberate two-button retrain | **CONFIRMED in proportion** (50% of correction events), small absolutely (~3.6/100 pills). Measure per-session as the retrain curve; do NOT remap (his explicit call). |
 | 2 | Decision latency ("not acting fast enough") | **PARTIAL** — true only in a rare tail that clusters on multi-cluster boards; bulk tempo is fine. |
 | 3 | Endgame speed panic | **OUTCOME CONFIRMED, MECHANISM REFUTED** — see case study above. Tilt-as-overcaution, closing technique is the gap. |
-| 4 | Over-setup tendency | **NOT ADJUDICATED** — needs clear-event semantics (declined singles, structure holds). Circumstantially consistent. Queued. |
-| 5 | Generic sequence fumbles | **BOUNDED, not isolated** — all-class corrections only 7.25/100; lateral-direction post-pass queued (tracker now retains what it needs). |
+| 4 | Over-setup tendency | **CONFIRMED** (closed 2026-08-05): declines **47.9% of available immediate clears** (102/213, engine-verified reconstruction, 4/5 spot-checks visually confirmed) — and the rate is FLAT across matches (44.8–53.3%) and phases (44.2–51.0%): a stable style trait, not a lapse. Time-to-cash median 1 pill but tail to 28. His self-model was right. |
+| 5 | Generic sequence fumbles | **MINOR — and REFUTED as the m2 mechanism** (closed 2026-08-05): credible lateral classes (reversal + post-softdrop) net 9.97/100 pills; the biggest raw class (land-then-patch, 20.5/100) failed its own control (touch rate flat ~31–32% with or without a preceding clear) and is noise. m2 — the match he attributed to fumbling around — has the LOWEST credible rate of all four (4.26/100); m2's errors were rotation-class, not sequence-class. |
 
 ## Record vs the AI
 
