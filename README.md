@@ -197,8 +197,10 @@ they are mirrored into a local `NES_MiSTer` checkout for Quartus synthesis.
   our own capture traffic, an idle box, the strand20 brain, the MiSTer framework, and the
   copro RTL are each exonerated by measurement; the same copro core running a plain
   human-play cart survived 47+ minutes. The trigger is the CvC driver's own autonav loop —
-  software that only the test harness runs. An on-device watchdog captures the state and
-  auto-recovers; a pacing fix in the nav loop is the likely cure.
+  software that only the test harness runs. An on-device watchdog captures the process
+  state at wedge time (it proved the framework is spinning in *userspace*, not blocked in
+  the kernel); its auto-reboot arm exists but is currently disabled, so recovery is
+  operator-driven. A pacing fix in the nav loop is the likely cure.
 - **Cascade-resolve in the search: tested, rejected** — a full chained resolve halved solo
   clear-rate chasing combos into topouts; the capped resolve is the better player. (The
   *eval-side* chain credit is a different mechanism — that one ships in Combo Stomper.)
