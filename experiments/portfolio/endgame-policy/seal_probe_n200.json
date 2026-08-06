@@ -1,0 +1,4766 @@
+{
+  "args": {
+    "seeds": 200,
+    "seed0": 1000,
+    "level": 11,
+    "workers": 4,
+    "wt": 0,
+    "ws": 20,
+    "out": "seal_probe_n200.json"
+  },
+  "seal_vc_threshold": 6,
+  "n_games": 200,
+  "n_errored": 0,
+  "n_reached_endgame": 200,
+  "total_seal_events": 126,
+  "total_reopen_events": 84,
+  "games_with_seal_event": 95,
+  "seal_events_per_endgame_game_mean": 0.63,
+  "seal_events_ci95": [
+    0.525,
+    0.74
+  ],
+  "rows": [
+    {
+      "seed": 1001,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 93,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 61,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1002,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 73,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 57,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1000,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 97,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 86,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1003,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 109,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 87,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1004,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 82,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 55,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1005,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 65,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 54,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1006,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 98,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 68,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          82,
+          2,
+          107,
+          99
+        ]
+      ],
+      "reopen_events": [
+        [
+          93,
+          2,
+          107
+        ]
+      ]
+    },
+    {
+      "seed": 1007,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 99,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 73,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1008,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 80,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 55,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1009,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 104,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 74,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          74,
+          6,
+          118,
+          110
+        ]
+      ],
+      "reopen_events": [
+        [
+          89,
+          3,
+          118
+        ]
+      ]
+    },
+    {
+      "seed": 1010,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 98,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 72,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1012,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 70,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 41,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          41,
+          6,
+          65,
+          57
+        ]
+      ],
+      "reopen_events": [
+        [
+          63,
+          2,
+          65
+        ]
+      ]
+    },
+    {
+      "seed": 1011,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 90,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 66,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          66,
+          6,
+          120,
+          112
+        ]
+      ],
+      "reopen_events": [
+        [
+          69,
+          4,
+          120
+        ]
+      ]
+    },
+    {
+      "seed": 1014,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 69,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 56,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          61,
+          2,
+          103,
+          95
+        ]
+      ],
+      "reopen_events": [
+        [
+          67,
+          1,
+          103
+        ]
+      ]
+    },
+    {
+      "seed": 1013,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 112,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 61,
+      "n_seal_events": 2,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          61,
+          6,
+          66,
+          58
+        ],
+        [
+          61,
+          6,
+          115,
+          107
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1015,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 76,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 57,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          57,
+          5,
+          112,
+          104
+        ]
+      ],
+      "reopen_events": [
+        [
+          66,
+          4,
+          112
+        ]
+      ]
+    },
+    {
+      "seed": 1016,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 87,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 64,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1018,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 65,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 56,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1019,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 72,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 56,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1017,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 100,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 82,
+      "n_seal_events": 2,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          82,
+          6,
+          124,
+          116
+        ],
+        [
+          83,
+          4,
+          126,
+          118
+        ]
+      ],
+      "reopen_events": [
+        [
+          83,
+          4,
+          124
+        ],
+        [
+          87,
+          4,
+          126
+        ]
+      ]
+    },
+    {
+      "seed": 1020,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 116,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 90,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          90,
+          5,
+          73,
+          65
+        ]
+      ],
+      "reopen_events": [
+        [
+          91,
+          5,
+          73
+        ]
+      ]
+    },
+    {
+      "seed": 1022,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 103,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 83,
+      "n_seal_events": 2,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          83,
+          6,
+          120,
+          112
+        ],
+        [
+          83,
+          6,
+          122,
+          114
+        ]
+      ],
+      "reopen_events": [
+        [
+          92,
+          3,
+          120
+        ],
+        [
+          94,
+          3,
+          122
+        ]
+      ]
+    },
+    {
+      "seed": 1023,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 81,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 66,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1021,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 102,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 77,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          77,
+          6,
+          121,
+          113
+        ]
+      ],
+      "reopen_events": [
+        [
+          85,
+          5,
+          121
+        ]
+      ]
+    },
+    {
+      "seed": 1024,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 99,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 70,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1026,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 74,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 59,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          59,
+          6,
+          103,
+          95
+        ]
+      ],
+      "reopen_events": [
+        [
+          66,
+          3,
+          103
+        ]
+      ]
+    },
+    {
+      "seed": 1025,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 99,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 73,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          73,
+          6,
+          121,
+          113
+        ]
+      ],
+      "reopen_events": [
+        [
+          80,
+          5,
+          121
+        ]
+      ]
+    },
+    {
+      "seed": 1027,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 79,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 56,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          56,
+          6,
+          82,
+          74
+        ]
+      ],
+      "reopen_events": [
+        [
+          70,
+          3,
+          82
+        ]
+      ]
+    },
+    {
+      "seed": 1030,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 78,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 66,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1029,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 106,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 91,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1028,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 144,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 78,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1031,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 96,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 85,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1032,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 82,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 66,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1035,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 73,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 59,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          59,
+          6,
+          120,
+          112
+        ]
+      ],
+      "reopen_events": [
+        [
+          64,
+          5,
+          120
+        ]
+      ]
+    },
+    {
+      "seed": 1034,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 95,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 53,
+      "n_seal_events": 2,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          53,
+          6,
+          81,
+          73
+        ],
+        [
+          53,
+          6,
+          82,
+          74
+        ]
+      ],
+      "reopen_events": [
+        [
+          64,
+          4,
+          82
+        ],
+        [
+          85,
+          1,
+          81
+        ]
+      ]
+    },
+    {
+      "seed": 1033,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 92,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 76,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          76,
+          6,
+          88,
+          80
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1036,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 91,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 57,
+      "n_seal_events": 3,
+      "n_reopen_events": 3,
+      "n_viruses_ever_sealed": 3,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          57,
+          6,
+          111,
+          103
+        ],
+        [
+          57,
+          6,
+          125,
+          117
+        ],
+        [
+          63,
+          3,
+          126,
+          118
+        ]
+      ],
+      "reopen_events": [
+        [
+          60,
+          5,
+          125
+        ],
+        [
+          74,
+          3,
+          126
+        ],
+        [
+          80,
+          2,
+          111
+        ]
+      ]
+    },
+    {
+      "seed": 1039,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 84,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 65,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1038,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 74,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 67,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          67,
+          6,
+          114,
+          106
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1037,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 98,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 66,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1040,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 105,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 63,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1041,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 84,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 60,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1043,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 84,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 73,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          73,
+          6,
+          122,
+          114
+        ]
+      ],
+      "reopen_events": [
+        [
+          74,
+          5,
+          122
+        ]
+      ]
+    },
+    {
+      "seed": 1042,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 104,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 72,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          72,
+          5,
+          48,
+          40
+        ]
+      ],
+      "reopen_events": [
+        [
+          89,
+          4,
+          48
+        ]
+      ]
+    },
+    {
+      "seed": 1044,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 52,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 47,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1045,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 77,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 61,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          67,
+          2,
+          124,
+          116
+        ]
+      ],
+      "reopen_events": [
+        [
+          69,
+          2,
+          124
+        ]
+      ]
+    },
+    {
+      "seed": 1047,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 67,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 55,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1046,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 79,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 57,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1048,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 95,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 66,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          66,
+          6,
+          59,
+          51
+        ]
+      ],
+      "reopen_events": [
+        [
+          70,
+          5,
+          59
+        ]
+      ]
+    },
+    {
+      "seed": 1051,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 81,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 63,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1049,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 93,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 67,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1050,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 82,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 59,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1053,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 70,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 52,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1055,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 70,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 56,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1052,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 116,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 67,
+      "n_seal_events": 2,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          67,
+          6,
+          66,
+          58
+        ],
+        [
+          67,
+          6,
+          112,
+          104
+        ]
+      ],
+      "reopen_events": [
+        [
+          86,
+          5,
+          112
+        ],
+        [
+          112,
+          2,
+          66
+        ]
+      ]
+    },
+    {
+      "seed": 1054,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 72,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 55,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1056,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 77,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 62,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1058,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 118,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 64,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1060,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 81,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 69,
+      "n_seal_events": 2,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          69,
+          5,
+          91,
+          83
+        ],
+        [
+          72,
+          3,
+          115,
+          107
+        ]
+      ],
+      "reopen_events": [
+        [
+          77,
+          2,
+          115
+        ]
+      ]
+    },
+    {
+      "seed": 1057,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 98,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 84,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1059,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 127,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 105,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1063,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 73,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 61,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          61,
+          5,
+          105,
+          97
+        ]
+      ],
+      "reopen_events": [
+        [
+          66,
+          3,
+          105
+        ]
+      ]
+    },
+    {
+      "seed": 1061,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 116,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 94,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          94,
+          5,
+          96,
+          88
+        ]
+      ],
+      "reopen_events": [
+        [
+          111,
+          2,
+          96
+        ]
+      ]
+    },
+    {
+      "seed": 1064,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 99,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 85,
+      "n_seal_events": 2,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          85,
+          6,
+          91,
+          83
+        ],
+        [
+          92,
+          1,
+          123,
+          115
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1062,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 169,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 50,
+      "n_seal_events": 2,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          50,
+          6,
+          48,
+          40
+        ],
+        [
+          105,
+          2,
+          96,
+          88
+        ]
+      ],
+      "reopen_events": [
+        [
+          68,
+          5,
+          48
+        ],
+        [
+          149,
+          1,
+          96
+        ]
+      ]
+    },
+    {
+      "seed": 1065,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 75,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 66,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1067,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 87,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 73,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1068,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 85,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 66,
+      "n_seal_events": 3,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 3,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          66,
+          6,
+          107,
+          99
+        ],
+        [
+          66,
+          6,
+          116,
+          108
+        ],
+        [
+          67,
+          3,
+          115,
+          107
+        ]
+      ],
+      "reopen_events": [
+        [
+          73,
+          3,
+          115
+        ],
+        [
+          77,
+          3,
+          116
+        ]
+      ]
+    },
+    {
+      "seed": 1066,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 131,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 83,
+      "n_seal_events": 2,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          83,
+          6,
+          98,
+          90
+        ],
+        [
+          83,
+          6,
+          85,
+          77
+        ]
+      ],
+      "reopen_events": [
+        [
+          89,
+          5,
+          98
+        ]
+      ]
+    },
+    {
+      "seed": 1069,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 80,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 65,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          65,
+          5,
+          121,
+          113
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1071,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 80,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 63,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1070,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 84,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 56,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1072,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 91,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 75,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          75,
+          6,
+          85,
+          77
+        ]
+      ],
+      "reopen_events": [
+        [
+          77,
+          6,
+          85
+        ]
+      ]
+    },
+    {
+      "seed": 1073,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 80,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 59,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1075,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 70,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 61,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1074,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 90,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 64,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1077,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 78,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 57,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          57,
+          6,
+          76,
+          68
+        ]
+      ],
+      "reopen_events": [
+        [
+          60,
+          5,
+          76
+        ]
+      ]
+    },
+    {
+      "seed": 1076,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 85,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 57,
+      "n_seal_events": 2,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          57,
+          6,
+          80,
+          72
+        ],
+        [
+          66,
+          3,
+          113,
+          105
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1079,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 80,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 52,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1078,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 75,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 65,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1082,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 88,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 72,
+      "n_seal_events": 2,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          72,
+          6,
+          68,
+          60
+        ],
+        [
+          72,
+          6,
+          119,
+          111
+        ]
+      ],
+      "reopen_events": [
+        [
+          76,
+          6,
+          68
+        ]
+      ]
+    },
+    {
+      "seed": 1080,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 111,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 83,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1081,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 137,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 83,
+      "n_seal_events": 2,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          83,
+          6,
+          96,
+          88
+        ],
+        [
+          83,
+          6,
+          127,
+          119
+        ]
+      ],
+      "reopen_events": [
+        [
+          87,
+          5,
+          96
+        ],
+        [
+          99,
+          3,
+          127
+        ]
+      ]
+    },
+    {
+      "seed": 1083,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 87,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 57,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          57,
+          6,
+          119,
+          111
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1084,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 70,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 51,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1087,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 73,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 60,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1085,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 102,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 81,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          83,
+          6,
+          121,
+          113
+        ]
+      ],
+      "reopen_events": [
+        [
+          84,
+          5,
+          121
+        ]
+      ]
+    },
+    {
+      "seed": 1086,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 95,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 76,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1088,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 105,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 91,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1089,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 64,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 56,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1090,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 106,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 80,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          80,
+          5,
+          103,
+          95
+        ]
+      ],
+      "reopen_events": [
+        [
+          96,
+          5,
+          103
+        ]
+      ]
+    },
+    {
+      "seed": 1091,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 96,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 75,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          75,
+          6,
+          70,
+          62
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1092,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 129,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 95,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          95,
+          6,
+          48,
+          40
+        ]
+      ],
+      "reopen_events": [
+        [
+          109,
+          4,
+          48
+        ]
+      ]
+    },
+    {
+      "seed": 1093,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 86,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 78,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          78,
+          6,
+          86,
+          78
+        ]
+      ],
+      "reopen_events": [
+        [
+          81,
+          5,
+          86
+        ]
+      ]
+    },
+    {
+      "seed": 1094,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 116,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 76,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1095,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 117,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 92,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1097,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 83,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 62,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          62,
+          6,
+          114,
+          106
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1096,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 99,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 71,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          71,
+          6,
+          126,
+          118
+        ]
+      ],
+      "reopen_events": [
+        [
+          72,
+          6,
+          126
+        ]
+      ]
+    },
+    {
+      "seed": 1098,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 94,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 84,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          84,
+          6,
+          88,
+          80
+        ]
+      ],
+      "reopen_events": [
+        [
+          90,
+          4,
+          88
+        ]
+      ]
+    },
+    {
+      "seed": 1099,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 108,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 64,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1100,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 94,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 67,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          67,
+          6,
+          110,
+          102
+        ]
+      ],
+      "reopen_events": [
+        [
+          69,
+          6,
+          110
+        ]
+      ]
+    },
+    {
+      "seed": 1102,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 86,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 58,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1101,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 116,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 83,
+      "n_seal_events": 3,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 3,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          83,
+          6,
+          93,
+          85
+        ],
+        [
+          83,
+          6,
+          126,
+          118
+        ],
+        [
+          83,
+          6,
+          95,
+          87
+        ]
+      ],
+      "reopen_events": [
+        [
+          92,
+          6,
+          93
+        ]
+      ]
+    },
+    {
+      "seed": 1104,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 107,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 74,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          98,
+          2,
+          63,
+          55
+        ]
+      ],
+      "reopen_events": [
+        [
+          104,
+          2,
+          63
+        ]
+      ]
+    },
+    {
+      "seed": 1105,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 107,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 86,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1107,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 66,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 55,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1106,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 89,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 80,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          80,
+          5,
+          82,
+          74
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1103,
+      "won": 0,
+      "topout": 0,
+      "stall": 1,
+      "pills": 300,
+      "final_virus_count": 1,
+      "reached_endgame": 1,
+      "endgame_first_pill": 90,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1110,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 85,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 64,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1108,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 115,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 93,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1109,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 90,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 65,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1111,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 109,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 77,
+      "n_seal_events": 2,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          77,
+          5,
+          97,
+          89
+        ],
+        [
+          77,
+          5,
+          127,
+          119
+        ]
+      ],
+      "reopen_events": [
+        [
+          80,
+          5,
+          127
+        ],
+        [
+          87,
+          5,
+          97
+        ]
+      ]
+    },
+    {
+      "seed": 1112,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 77,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 51,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1113,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 69,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 56,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1114,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 85,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 68,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1115,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 78,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 59,
+      "n_seal_events": 2,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          75,
+          2,
+          119,
+          111
+        ],
+        [
+          76,
+          1,
+          127,
+          119
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1116,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 125,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 104,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1119,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 91,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 73,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1118,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 85,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 65,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1117,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 108,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 81,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1120,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 99,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 74,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1121,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 116,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 80,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          80,
+          6,
+          96,
+          88
+        ]
+      ],
+      "reopen_events": [
+        [
+          83,
+          6,
+          96
+        ]
+      ]
+    },
+    {
+      "seed": 1123,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 106,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 77,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          77,
+          6,
+          124,
+          116
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1122,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 109,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 99,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1124,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 102,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 77,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1125,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 99,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 83,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          83,
+          6,
+          85,
+          77
+        ]
+      ],
+      "reopen_events": [
+        [
+          84,
+          5,
+          85
+        ]
+      ]
+    },
+    {
+      "seed": 1127,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 66,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 56,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1126,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 82,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 66,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          66,
+          6,
+          120,
+          112
+        ]
+      ],
+      "reopen_events": [
+        [
+          69,
+          6,
+          120
+        ]
+      ]
+    },
+    {
+      "seed": 1128,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 103,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 91,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          91,
+          5,
+          121,
+          113
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1129,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 100,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 77,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          77,
+          6,
+          125,
+          117
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1131,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 114,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 84,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          84,
+          6,
+          74,
+          66
+        ]
+      ],
+      "reopen_events": [
+        [
+          100,
+          4,
+          74
+        ]
+      ]
+    },
+    {
+      "seed": 1132,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 95,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 81,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1130,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 129,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 103,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1133,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 84,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 73,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1134,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 87,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 60,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          66,
+          5,
+          110,
+          102
+        ]
+      ],
+      "reopen_events": [
+        [
+          67,
+          5,
+          110
+        ]
+      ]
+    },
+    {
+      "seed": 1135,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 120,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 72,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          72,
+          6,
+          56,
+          48
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1137,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 67,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 44,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1136,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 102,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 79,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1139,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 85,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 67,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1138,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 93,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 61,
+      "n_seal_events": 2,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 2,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          61,
+          6,
+          122,
+          114
+        ],
+        [
+          87,
+          1,
+          122,
+          114
+        ]
+      ],
+      "reopen_events": [
+        [
+          78,
+          2,
+          122
+        ],
+        [
+          89,
+          1,
+          122
+        ]
+      ]
+    },
+    {
+      "seed": 1140,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 110,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 95,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          106,
+          3,
+          99,
+          91
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1141,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 88,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 64,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          84,
+          1,
+          111,
+          103
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1142,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 100,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 87,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1143,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 165,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 88,
+      "n_seal_events": 2,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          99,
+          3,
+          87,
+          79
+        ],
+        [
+          112,
+          2,
+          103,
+          95
+        ]
+      ],
+      "reopen_events": [
+        [
+          141,
+          2,
+          103
+        ]
+      ]
+    },
+    {
+      "seed": 1144,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 110,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 70,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1145,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 94,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 70,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1146,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 84,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 72,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          72,
+          6,
+          122,
+          114
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1147,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 85,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 64,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1148,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 62,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 47,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1149,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 76,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 64,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          64,
+          6,
+          109,
+          101
+        ]
+      ],
+      "reopen_events": [
+        [
+          71,
+          5,
+          109
+        ]
+      ]
+    },
+    {
+      "seed": 1151,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 65,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 50,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1150,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 124,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 80,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1153,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 78,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 60,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1152,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 84,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 56,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          82,
+          1,
+          95,
+          87
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1155,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 80,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 64,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1154,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 99,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 74,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1157,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 114,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 77,
+      "n_seal_events": 2,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          77,
+          6,
+          67,
+          59
+        ],
+        [
+          77,
+          6,
+          78,
+          70
+        ]
+      ],
+      "reopen_events": [
+        [
+          94,
+          2,
+          67
+        ],
+        [
+          110,
+          1,
+          78
+        ]
+      ]
+    },
+    {
+      "seed": 1158,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 79,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 65,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          65,
+          6,
+          94,
+          86
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1159,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 64,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 56,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          56,
+          6,
+          120,
+          112
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1156,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 116,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 92,
+      "n_seal_events": 2,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          92,
+          6,
+          81,
+          73
+        ],
+        [
+          104,
+          2,
+          121,
+          113
+        ]
+      ],
+      "reopen_events": [
+        [
+          97,
+          4,
+          81
+        ],
+        [
+          110,
+          2,
+          121
+        ]
+      ]
+    },
+    {
+      "seed": 1160,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 103,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 74,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          74,
+          5,
+          73,
+          65
+        ]
+      ],
+      "reopen_events": [
+        [
+          97,
+          2,
+          73
+        ]
+      ]
+    },
+    {
+      "seed": 1161,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 97,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 84,
+      "n_seal_events": 2,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          84,
+          5,
+          115,
+          107
+        ],
+        [
+          84,
+          5,
+          90,
+          82
+        ]
+      ],
+      "reopen_events": [
+        [
+          88,
+          5,
+          90
+        ]
+      ]
+    },
+    {
+      "seed": 1162,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 78,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 65,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          65,
+          5,
+          93,
+          85
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1164,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 80,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 58,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1163,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 109,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 85,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1165,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 84,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 68,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          68,
+          5,
+          120,
+          112
+        ]
+      ],
+      "reopen_events": [
+        [
+          76,
+          1,
+          120
+        ]
+      ]
+    },
+    {
+      "seed": 1166,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 77,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 57,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          57,
+          6,
+          56,
+          48
+        ]
+      ],
+      "reopen_events": [
+        [
+          62,
+          6,
+          56
+        ]
+      ]
+    },
+    {
+      "seed": 1167,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 110,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 84,
+      "n_seal_events": 2,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          84,
+          6,
+          109,
+          101
+        ],
+        [
+          88,
+          2,
+          127,
+          119
+        ]
+      ],
+      "reopen_events": [
+        [
+          90,
+          2,
+          127
+        ]
+      ]
+    },
+    {
+      "seed": 1168,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 87,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 59,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1169,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 71,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 53,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          53,
+          6,
+          93,
+          85
+        ]
+      ],
+      "reopen_events": [
+        [
+          56,
+          6,
+          93
+        ]
+      ]
+    },
+    {
+      "seed": 1171,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 81,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 58,
+      "n_seal_events": 2,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          58,
+          5,
+          125,
+          117
+        ],
+        [
+          60,
+          5,
+          121,
+          113
+        ]
+      ],
+      "reopen_events": [
+        [
+          68,
+          4,
+          125
+        ]
+      ]
+    },
+    {
+      "seed": 1170,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 86,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 68,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1172,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 85,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 72,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          72,
+          6,
+          122,
+          114
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1174,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 56,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 47,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1173,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 160,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 61,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          61,
+          6,
+          56,
+          48
+        ]
+      ],
+      "reopen_events": [
+        [
+          151,
+          3,
+          56
+        ]
+      ]
+    },
+    {
+      "seed": 1175,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 95,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 75,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          75,
+          6,
+          103,
+          95
+        ]
+      ],
+      "reopen_events": [
+        [
+          80,
+          5,
+          103
+        ]
+      ]
+    },
+    {
+      "seed": 1176,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 97,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 71,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1177,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 93,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 58,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1178,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 69,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 56,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1179,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 107,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 73,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          82,
+          4,
+          126,
+          118
+        ]
+      ],
+      "reopen_events": [
+        [
+          97,
+          1,
+          126
+        ]
+      ]
+    },
+    {
+      "seed": 1180,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 72,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 59,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1181,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 67,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 50,
+      "n_seal_events": 2,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          50,
+          5,
+          85,
+          77
+        ],
+        [
+          50,
+          5,
+          127,
+          119
+        ]
+      ],
+      "reopen_events": [
+        [
+          57,
+          4,
+          85
+        ]
+      ]
+    },
+    {
+      "seed": 1182,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 77,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 64,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          70,
+          3,
+          127,
+          119
+        ]
+      ],
+      "reopen_events": [
+        [
+          73,
+          2,
+          127
+        ]
+      ]
+    },
+    {
+      "seed": 1183,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 87,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 60,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          60,
+          6,
+          67,
+          59
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1185,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 85,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 68,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1184,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 109,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 70,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1186,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 75,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 60,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          60,
+          5,
+          117,
+          109
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1187,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 88,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 70,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          70,
+          6,
+          115,
+          107
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 1188,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 89,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 68,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1190,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 94,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 66,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          66,
+          6,
+          125,
+          117
+        ]
+      ],
+      "reopen_events": [
+        [
+          71,
+          5,
+          125
+        ]
+      ]
+    },
+    {
+      "seed": 1189,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 142,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 79,
+      "n_seal_events": 2,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 2,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          94,
+          5,
+          80,
+          72
+        ],
+        [
+          115,
+          2,
+          80,
+          72
+        ]
+      ],
+      "reopen_events": [
+        [
+          108,
+          3,
+          80
+        ],
+        [
+          121,
+          2,
+          80
+        ]
+      ]
+    },
+    {
+      "seed": 1191,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 81,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 70,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          71,
+          4,
+          123,
+          115
+        ]
+      ],
+      "reopen_events": [
+        [
+          77,
+          2,
+          123
+        ]
+      ]
+    },
+    {
+      "seed": 1193,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 86,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 62,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1192,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 132,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 72,
+      "n_seal_events": 3,
+      "n_reopen_events": 2,
+      "n_viruses_ever_sealed": 3,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          72,
+          6,
+          98,
+          90
+        ],
+        [
+          72,
+          6,
+          123,
+          115
+        ],
+        [
+          78,
+          4,
+          114,
+          106
+        ]
+      ],
+      "reopen_events": [
+        [
+          76,
+          5,
+          98
+        ],
+        [
+          85,
+          3,
+          123
+        ]
+      ]
+    },
+    {
+      "seed": 1194,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 87,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 72,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1195,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 97,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 81,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          81,
+          6,
+          126,
+          118
+        ]
+      ],
+      "reopen_events": [
+        [
+          92,
+          2,
+          126
+        ]
+      ]
+    },
+    {
+      "seed": 1197,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 78,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 53,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1196,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 104,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 87,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1199,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 93,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 74,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1198,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 124,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 99,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          99,
+          6,
+          118,
+          110
+        ]
+      ],
+      "reopen_events": [
+        [
+          102,
+          4,
+          118
+        ]
+      ]
+    }
+  ],
+  "errors": []
+}

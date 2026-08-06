@@ -1,0 +1,214 @@
+{
+  "args": {
+    "seeds": 8,
+    "seed0": 0,
+    "level": 11,
+    "workers": 4,
+    "wt": 0,
+    "ws": 20,
+    "out": "smoke.json"
+  },
+  "seal_vc_threshold": 6,
+  "n_games": 8,
+  "n_errored": 0,
+  "n_reached_endgame": 7,
+  "total_seal_events": 5,
+  "total_reopen_events": 3,
+  "games_with_seal_event": 4,
+  "seal_events_per_endgame_game_mean": 0.7142857142857143,
+  "seal_events_ci95": [
+    0.2857142857142857,
+    1.2857142857142858
+  ],
+  "rows": [
+    {
+      "seed": 3,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 75,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 70,
+      "n_seal_events": 1,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          70,
+          6,
+          121,
+          113
+        ]
+      ],
+      "reopen_events": []
+    },
+    {
+      "seed": 0,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 124,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 83,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 2,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 148,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 105,
+      "n_seal_events": 2,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 2,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 1,
+      "seal_events": [
+        [
+          105,
+          6,
+          61,
+          53
+        ],
+        [
+          142,
+          1,
+          77,
+          69
+        ]
+      ],
+      "reopen_events": [
+        [
+          132,
+          3,
+          61
+        ]
+      ]
+    },
+    {
+      "seed": 5,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 73,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 60,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 4,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 151,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 130,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          139,
+          3,
+          113,
+          105
+        ]
+      ],
+      "reopen_events": [
+        [
+          145,
+          3,
+          113
+        ]
+      ]
+    },
+    {
+      "seed": 6,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 89,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 68,
+      "n_seal_events": 1,
+      "n_reopen_events": 1,
+      "n_viruses_ever_sealed": 1,
+      "max_reseals_single_virus": 1,
+      "still_sealed_at_end": 0,
+      "seal_events": [
+        [
+          73,
+          5,
+          126,
+          118
+        ]
+      ],
+      "reopen_events": [
+        [
+          74,
+          5,
+          126
+        ]
+      ]
+    },
+    {
+      "seed": 7,
+      "won": 1,
+      "topout": 0,
+      "stall": 0,
+      "pills": 104,
+      "final_virus_count": 0,
+      "reached_endgame": 1,
+      "endgame_first_pill": 85,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    },
+    {
+      "seed": 1,
+      "won": 0,
+      "topout": 0,
+      "stall": 1,
+      "pills": 300,
+      "final_virus_count": 48,
+      "reached_endgame": 0,
+      "endgame_first_pill": null,
+      "n_seal_events": 0,
+      "n_reopen_events": 0,
+      "n_viruses_ever_sealed": 0,
+      "max_reseals_single_virus": 0,
+      "still_sealed_at_end": 0,
+      "seal_events": [],
+      "reopen_events": []
+    }
+  ],
+  "errors": []
+}
