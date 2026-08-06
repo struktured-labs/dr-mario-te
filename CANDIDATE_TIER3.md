@@ -474,6 +474,109 @@ number for N=40-60/arm — this is a planning estimate, not a measurement, and s
 revised after the calibration mini-run's first real numbers land.
 
 **Status**: staged, not run — the box is team-lead's to schedule, per the task brief.
-This section is ready to execute once (a) a candidate rbf CLOSES TIMING (SEED 7 does not
-— see above; SEED 9 in progress) and is hash-verified, and (b)
+This section is ready to execute once (a) a candidate rbf CLOSES TIMING (see §12 —
+SEED 13 is the first genuinely closing build found) and is hash-verified, and (b)
 `combo_stomper_s20t3_probe.mgl` is created.
+
+## 12. Seed sweep + fallback analysis (2026-08-05)
+
+**Full sweep table** (same RTL/qsf, tier-1+tier-3 candidate firmware `12a0906b…`, worst
+setup path reported by Quartus's own Timing Analyzer Summary — the "path" column names
+which clock domain was the tightest for that seed):
+
+| seed | slack (ns) | TNS (ns) | path | verdict |
+|---|---|---|---|---|
+| 7 | −0.074 | −0.138 | `pll_hdmi` counter[0] divclk | MISS |
+| 9 | −0.020 | −0.114 | `pll_hdmi` counter[0] divclk | MISS |
+| 11 | −0.060 | −0.217 | `emu\|pll\|pll_inst` counter[0] divclk | MISS |
+| **13** | **+0.051** | **0.000** | `pll_hdmi` counter[0] divclk | **CLOSED** (thin) |
+| 15 | −0.504 | −20.288 | `pll_hdmi` counter[0] divclk | MISS (large — many paths, not one marginal path) |
+| 17 | −0.132 | −1.257 | `pll_hdmi` counter[0] divclk | MISS |
+
+**Seed 13 is a genuine, Quartus-verified pass — precision matters here.** TNS (total
+negative slack, summed across every failing path) is exactly `0.000`, meaning there are
+**zero** paths with negative slack at seed 13, not just "the worst one happens to be
+positive." By Quartus's own closure criterion this build passes cleanly; it is thinner
+than s20b's own +0.156ns margin, not broken. Artifact:
+`NES_stomper180s20t3_20260805_seed13.rbf` (kept as-is per the sweep script, not yet
+renamed to the final candidate name pending your go-ahead) — hash to be confirmed and
+recorded once you sign off on using it.
+
+**Important nuance for the "is the HDMI path even relevant" question below**: the worst
+path is *not* consistently the HDMI PLL divider. Seed 11's tightest path was on
+`emu|pll|pll_inst`'s own counter chain — a different PLL block entirely (this design has
+separate PLL instances for `emu` and `pll_hdmi`). This means a fix that only targets the
+HDMI path would not have rescued seed 11, and by extension isn't guaranteed to be *the*
+story for every future seed either. Also worth flagging: I have not independently verified
+whether `emu|pll|pll_inst`'s counter[0] output feeds anything in the copro's own dedicated
+clock domain — project history (`dr-mario-copro-clock-tap` memory) states the copro clock
+is tapped into its own async group specifically to avoid this kind of entanglement, which
+would mean it's a third, separate source from either PLL discussed here — but I have not
+re-confirmed that against this exact qsf/SDC in this session, so I'm not asserting it as
+fact.
+
+### Option 1: tier-2 fallback — does not exist as firmware; the real fallback is much weaker than assumed
+
+Checked before answering: **there is no `DRCOPRO_TUCKBFS_TIER2` knob, no tier-2 6502
+module, and no tier-2 build has ever been assembled.** Tier-2 exists only as an offline
+Python analytical function (`translatable._derive_tier2()` in
+`dr-mario-qa-wt/experiments/eval47/translatable.py:257-304`), used solely inside the
+knee-sweep's `tier_of()` classifier. Unlike tier-1 (`tests/translate_ref.py` /
+`tests/tuck_bfs_translate_6502.py`) and tier-3 (`tests/translate_ref_tier3.py` /
+`tests/tuck_bfs_tier3_6502.py`), tier-2 was never ported to 6502 or wired into
+`build_copro_d3.py`. Building a real tier-2 firmware variant would mean porting
+`_derive_tier2()` to 6502 and validating it with the same rigor as the tier-3 port (bit-
+exact gate, translation gate, full-chain gate) — a comparable-scope task to the tier-3
+mission itself, not a quick swap. **I did not attempt this** — it's real, multi-hour new
+engineering, not something to improvise under this task's scope.
+
+**The actual smallest real buildable fallback is tier-1-only** (`DRCOPRO_TUCKBFS=1`,
+`DRCOPRO_TUCKBFS_TIER3` unset) — already bit-exact validated (M2's own gates), already
+ROM-budgeted (2461B/6144B = 40.1%, vs tier-1+tier-3's 3581B/6144B = 58.3%), and I built it
+just now with the exact ship recipe (`DRSTRAND=20 DRCOPRO_TUCKBFS=1 DRCOPRO_ARM=1
+DRFIX=1 DRCHAIN=180` via `dbg_build.py all 0`, hash `04b6600919c5c1902ddb85b3bd4287c9`).
+
+**But its value is far weaker than "tier-2" implies — this is the sobering finding.** Per
+the knee-sweep (`dr-mario-qa-wt/experiments/eval47/REACH_ROOT_VERDICT.md:477-483`,
+n=120 bursty, oracle rescue = 14 bad-ends out of 32 base): tier-1 alone recovers **14.3%**
+of the oracle's rescue (2 of 14), vs the un-built tier-2's 85.7% (12 of 14), vs tier-3's
+100% (14 of 14). Tier-1-only is not a graceful one-step-down fallback from tier-3 — it's a
+cliff. Fitting it now at SEED 13 (the best seed found) to see whether the smaller payload
+buys meaningfully more timing margin — result pending, log at
+`~/projects/NES_MiSTer-winner/fit_tier1only_seed13.log`.
+
+### Option 2: HDMI-path constraint relaxation — not recommending this
+
+The HDMI PLL divider clock feeds the video/display output pipeline, a different physical
+PLL from `emu`'s own clock tree (which carries the copro/game-logic timing, confirmed
+clean at +0.076ns in the seed-7 run). For a purely headless, unwatched CvC A/B run, a
+thin/failing margin there would risk video glitches, not corrupted game state or
+decisions — the metrics the A/B decides on (clear rate, pills-to-clear) come from the
+copro/game-logic domain, not the display pipeline. **But** two things stop me from calling
+this "safe to relax": (1) per the seed sweep above, the HDMI path is not reliably *the*
+violator — seed 11 failed on a different PLL entirely, so a targeted relaxation wouldn't
+generalize; (2) this core is meant for more than a one-off headless A/B — the September
+booth runs on a real TV for hours, where an HDMI-domain violation is exactly the kind of
+thing that shows up as an intermittent, hard-to-repro glitch under thermal drift, and I do
+not have (and did not attempt to gain, within this task's scope) real command of this
+project's SDC files to know whether a false-path or exception on this specific divider is
+a legitimate, pre-existing MiSTer-framework pattern or a real constraint being loosened for
+convenience. Given seed 13 already closes cleanly by Quartus's own criterion without
+touching any constraint, **I'm not recommending the constraint-relaxation route** — it's
+solving a problem we already have a real, unmodified-constraint solution for.
+
+### Recommendation
+
+**Ship SEED 13.** It is a genuine, unmodified-constraint, TNS=0.000 timing closure — not a
+workaround, not a smaller/weaker payload, not a relaxed check. Its margin (+0.051ns) is
+thinner than s20b's (+0.156ns), which is worth tracking as an open risk for the
+multi-hour warm-room booth session, but it is a real pass under Quartus's own worst-case
+silicon/temperature timing model (the STA numbers throughout this report are already
+computed at worst-case corners, not typical operating conditions, which tempers — doesn't
+eliminate — the thin-margin concern). If more margin is wanted before trusting it for a
+multi-hour unattended booth run, the next step is a short, bounded continuation of the
+seed sweep (a handful more odd seeds) looking specifically for something closer to
+s20b's own margin, not a switch to the tier-1-only fallback (14.3% of the value, a real
+regression in what the candidate is *for*) or a constraint relaxation (unverified,
+possibly non-general, and exactly the kind of move that should require deliberate
+sign-off, not a quiet fix to make a number go green).
