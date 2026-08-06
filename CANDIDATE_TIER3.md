@@ -316,3 +316,164 @@ A/B against the currently-shipped tier-1-only firmware on real hardware.
 
 This closes the tuck-bfs-6502 branch's tier-3 mission (task #17): milestones 1-5 all done,
 documented, committed, and pushed.
+
+## 10. Real-L11 fidelity follow-up (2026-08-05)
+
+Team-lead's follow-up question after §9's synthetic-corpus finding: is the py65-vs-RTL
+base-search gap corpus-specific (near-tied evals on `gen_corpus.py`'s random synthetic
+boards) or general? Answered on 30 fresh real-L11 boards (proper NES-tile encoding via
+`fast_rtl_x.board_flat()`, real na/nb next-pill values, generated the same way as this
+branch's own `tuck_bfs_corpus_200.json` — `hostdata.txt` md5 `33d391b7dcb425a3e65e0339630877a6`),
+using the tier-1-only, non-delta baseline hex (`c8e934e528a423974f7300a7ac4b0790`, the same
+build used for §9's control) on both sides.
+
+**Result: 4 of 30 full (col, orient) matches — 13.3%, WORSE than §9's 4/8 (50%) on the
+synthetic corpus.** Column-only agreement is 7/30 (23.3%); orientation-only is 8/30
+(26.7%) — both close to what independent/near-random tie-breaking would produce, no
+skew toward either axis. The 4 full matches (cases 0, 12, 15, 17) show no shift or
+board-position pattern (checked ±1 index shift against a corpus-alignment bug; no
+improvement, ruling that out as an artifact).
+
+**Conclusion: the gap is general, not corpus-specific — and more pronounced on real
+gameplay boards than on `gen_corpus.py`'s synthetic set.** This raises the stakes on
+§9's "separate, larger investigation" note: py65 cannot currently be trusted as an oracle
+for the *base* search's decision on arbitrary boards, real or synthetic. It does **not**
+touch this candidate's own bit-exact guarantees — M2's tier-3 translation gate (0/1490)
+and the CANDLIST wiring never depend on which move the base search picks, only on
+correctly translating whatever CANDLIST the search already built. But it means every
+py65-only offline claim in this program (including §8's n=60 A/B, which runs entirely in
+py65) is validating the *tuck logic*, not validating that py65's move choice matches what
+silicon will actually do move-for-move. The silicon A/B in §11 is therefore not optional
+confirmation — it is the only real measurement of this candidate that exists.
+
+## 11. Silicon build + staged A/B protocol (2026-08-05)
+
+**Build.** Candidate hex (`12a0906bec7358fae6c914d5683a3dab`, the M5 ship recipe —
+`DRSTRAND=20 DRCOPRO_TUCKBFS=1 DRCOPRO_TUCKBFS_TIER3=1 DRCOPRO_ARM=1 DRFIX=1 DRCHAIN=180`
+via `dbg_build.py all 0`) vendored into `~/projects/NES_MiSTer-winner`
+(`claude/winner-single-copro@7f6ba69`, the exact tree that built s20b), `SEED 7` preserved
+from the working tree (matches s20b's actually-deployed reseed, not `HEAD`'s stale
+`SEED 5`). RTL confirmed byte-identical to what's already vendored (`LeafEval.sv`,
+`CoproDrMario.sv`). Full rebuild (`rm -rf db incremental_db` first, per the
+`update_mif`-is-a-no-op-for-`$readmemh` trap) launched via
+`nohup nice -n 10 ./run_fit.sh > fit_s20t3.log 2>&1 < /dev/null & disown` from that
+directory; log at `~/projects/NES_MiSTer-winner/fit_s20t3.log`. Compile flow itself
+completed clean at SEED 7 (Assembler stage, 0 errors/169 warnings — the normal warning
+count for this project, exit=0) in 18 minutes, much faster than the 1-2h estimate. Output
+copied to `NES_stomper180s20t3_20260805_seed7_TIMINGFAIL.rbf`, md5
+`1da3d05756f32e98c0e3cbcec034111a` — confirmed distinct from both known baselines
+(`6fa85844…` s20 seed2, `72d5a92f…` s20b seed7), so the artifact genuinely embeds the new
+firmware (the `update_mif`-is-a-no-op trap does not apply here).
+
+**Timing closure: FAILS at SEED 7, a real finding, not a formality.** Worst-case slack is
+**-0.074ns** (TNS -0.138ns) on `pll_hdmi|...|counter[0].output_counter|divclk` — the HDMI
+PLL divider chain, a display-output clock domain, *not* the copro/emu clock domain (which
+shows a clean +0.076ns on this same build). Checked against history before treating this
+as either "probably fine" or "definitely broken": this exact path is s20b's own worst-case
+path too, and s20b's SEED 7 build closed it at **+0.156ns**
+(`fit_strand20_seed7.log:` `332119` line). Same RTL, same seed, only the ROM payload
+differs — s20b's own seed sweep (`fit_strand20_seed3.log` -0.327, `_seed5.log` -0.049,
+`_seed7.log` +0.156, unlabeled default +0.102) shows this design sits right at the timing
+edge on this path and genuinely needs a seed search to close; SEED 7 was picked *for
+s20b's firmware*, and this candidate's different ROM content was evidently enough to shift
+placement/routing and flip that same path from pass to a marginal fail. **Do not flash
+`..._seed7_TIMINGFAIL.rbf` to hardware for the A/B** — a failing HDMI clock domain risks
+visible display glitches that would undermine a fair/watchable comparison (game-logic
+clock domain is unaffected, but this is not a fit to hand off as-is).
+
+Given the fit's actual 18-minute runtime (not 1-2h), a re-seed retry is cheap. Launched
+`SEED 9` (`rm -rf db incremental_db` + relaunch, same recipe) at the time of writing —
+log at `~/projects/NES_MiSTer-winner/fit_s20t3_seed9.log`. **This report will be updated
+with the outcome; if SEED 9 also fails to close, the next step is to keep sweeping (11, 13,
+…) following the exact pattern that found SEED 7 for s20b, not to ship a timing-failing
+rbf.**
+
+**Arms.**
+- **A (control)**: the currently-shipped tier-1-only firmware, hash
+  `e970e9ab0208cdbce1d39ed33e2f51ee`, currently live on MiSTer (s20b: rbf `72d5a92f…`,
+  seed 7). Confirm the exact rbf filename on the box before the session — there are two
+  seed variants (`s20` seed 2 `6fa85844…` and `s20b` seed 7 `72d5a92f…`) sharing this
+  firmware; use whichever is actually deployed at session time.
+- **B (candidate)**: firmware `12a0906bec7358fae6c914d5683a3dab` (this candidate),
+  final rbf name/seed TBD pending timing closure — see the timing-closure note above.
+  Do not substitute the SEED-7 build (`..._seed7_TIMINGFAIL.rbf`); use only a build that
+  closes with positive slack on all paths.
+
+**Cart / mgl.** Same probe cart both arms, `latch_converged_native_probe.nes`
+(unchanged) — this is the pattern the s20/s20b rig already uses
+(`combo_stomper_s20_probe.mgl`, `combo_stomper_s20b_probe.mgl`, per
+`experiments/rtl_chain/ship/stomper180s20-seed2/REBUILD.md`). Create
+`combo_stomper_s20t3_probe.mgl` by copying the s20b probe mgl and repointing its rbf
+reference to the new candidate rbf — cart and controller/link config unchanged, only the
+core swaps.
+
+**Paired-seed handling.** The cart's RNG is deterministic per boot-frame-count on this
+seed (`dr-mario-seed-is-deterministic-on-cart` — rebooting alone adds zero entropy); a
+genuine paired design would need to pin the same boot-frame count across both arms'
+launches, which the probe/tracker infrastructure does not currently control for. **Do
+not assume pairing** unless that control is added — treat this as two independent
+samples (arm A's N games, arm B's N games) and use an unpaired test (e.g., two-proportion
+z-test or Fisher's exact on clear-rate; Mann-Whitney on pills-to-clear), not McNemar. If
+frame-count pinning gets added before the session, switch to paired McNemar to match
+§8's offline methodology and get more power per game.
+
+**Decision metrics** (mirroring §8's offline A/B so the silicon result is directly
+comparable to the py65 one): clear rate (win by full clear vs bad-end), and
+pills-to-clear conditional on a clear. §8's offline numbers to beat/confirm: bad-ends
+19→11 (n=60), clear rate 68.3%→81.7%, McNemar p=0.077 (directional, not conclusive at
+that n). A silicon result landing in the same direction with a comparable or larger
+effect size is the confirmatory signal; anything flat or reversed is a real finding
+that overrides the offline read, per §10's fidelity caveat.
+
+**Wedge watchdog requirement.** Team-lead's stability update narrows but does not
+remove this: the wedge is root-caused to the CvC autonav driver loop specifically
+(framework, copro RTL, and the strand20 brain are all exonerated — a non-CvC human cart
+survived 47+ min clean). **This A/B is CvC by construction (both arms are the copro
+playing itself/the control)**, so it sits squarely in the still-affected mode and must
+run under the wedge watchdog (tracker + auto-relaunch-on-timeout, screenshot-timeout
+proof of wedge per the adopted method rules in `MORNING_DIGEST_20260805.md` — a timeout
+proves a wedge, frame content alone never does; motion-diff at 3+ second spacing is the
+ambiguous-frame tiebreaker).
+
+Measured wedge cadence from the 34h continuous-CvC soak in REBUILD.md (s20b, same
+platform, most directly comparable data available): **7 wedges in ~34h** (mid-play
+family 3-in-~29h ≈ 1 per 9.7h historically, before the black-screen family's late
+acceleration; black-screen family clustered in the soak's final ~4h, uptime-correlated,
+now mitigated by a standing **preventive core reload every ~2h**). This supersedes the
+original task brief's "6-30 min" figure, which reflects an isolated fast-reproduction
+test (the CMD-8 6m15s check), not the standing soak rate under the current preventive-
+reload mitigation. Recovery is fast when it's the mid-play family (menu.rbf cycle +
+relaunch, order of a few minutes per REBUILD.md's own recovery notes); the one
+black-screen recurrence that survived a menu cycle needed a full MiSTer reboot,
+observed taking on the order of 45 minutes end-to-end including diagnosis (06:0x→06:45).
+Budget for occasional full-reboot recovery, not just quick cycles.
+
+**Per-game duration — NOT YET MEASURED, flag before committing to a session length.**
+No direct wall-clock-per-game number exists in this program's silicon records; the only
+anchor is that the CMD-8 isolation test completed multiple games before wedging at
+6m15s, implying single-digit minutes per game, but that is not a measurement. **Recommend
+the session open with a 10-game calibration mini-run per arm** (cheap, inside the ~2h
+preventive-reload window either way) to nail down real per-game time on THIS cart/core
+combination before committing to a target N or session length — reporting a fabricated
+minutes/game number here would break this program's own "every number at its true
+strength" standard.
+
+**Clean-game target.** To match §8's offline power (n=60, McNemar p=0.077 — already
+underpowered even paired), and given the unpaired test above needs more total games than
+a paired one for equivalent power, recommend targeting **N≥40 clean games per arm (80
+total)** as a first checkpoint, with a stretch target of N=60/arm if the wedge cadence and
+calibrated per-game time allow it inside a single supervised session. A "clean game" =
+completed to a decisive result (clear or bad-end) with no wedge/watchdog-triggered
+relaunch during that game; a wedge mid-game discards that game, not the session's whole
+history to that point.
+
+**Rough duration** (pending the calibration mini-run above to firm up the per-game
+number): with the preventive 2h reload cadence and typical multi-minute games, a
+session budget of **4-6 hours of wall-clock supervised time** is a reasonable planning
+number for N=40-60/arm — this is a planning estimate, not a measurement, and should be
+revised after the calibration mini-run's first real numbers land.
+
+**Status**: staged, not run — the box is team-lead's to schedule, per the task brief.
+This section is ready to execute once (a) a candidate rbf CLOSES TIMING (SEED 7 does not
+— see above; SEED 9 in progress) and is hash-verified, and (b)
+`combo_stomper_s20t3_probe.mgl` is created.
