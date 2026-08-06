@@ -52,11 +52,16 @@ a large fake "oracle gain". So each action's rollouts are SPLIT:
 
 Selection and evaluation use disjoint rollouts, so `gain` is unbiased for the value
 of a NOISY oracle -- which understates a perfect oracle. The same-split quantity
-max_a V-hat_B(a) - V-hat_B(a_hand) overstates it. Reporting BOTH brackets the truth
-instead of picking whichever number flatters the program. A control arm
-(`--shuffle-control`) re-runs the selection on shuffled action labels: whatever
-"gain" that produces is pure selection noise and is the floor any real effect must
-clear.
+max_a V-hat(a) - V-hat(a_hand) overstates it. Reporting BOTH brackets the truth
+instead of picking whichever number flatters the program.
+
+A PERMUTATION CONTROL runs the identical selection machinery under the null "every
+labelled action is equally good", imposed by permuting action labels WITHIN each
+pill stream. Within-stream is the correct permutation: pooling across streams would
+manufacture variance that common random numbers deliberately cancel and would report
+a large fake noise floor. Under this null the split-sample number should land at ~0
+and the same-sample one should not -- that gap is the winner's curse, measured on
+this data rather than argued from theory.
 
 COMMON RANDOM NUMBERS: rollout m uses the SAME pill stream for every action at a
 position, so between-action differences are paired and most of the variance cancels.
@@ -381,6 +386,7 @@ def cmd_analyze(args):
     within_hand, within_leaf = [], []
     agree, agree_split = [], []
     regret_split, regret_same, regret_shuf = [], [], []
+    regret_shuf_same = []
     spread, se_per_action, nact, nlegal = [], [], [], []
     out_topk, dyn_diff, illegal_n = [], [], 0
     leaf_sr = []
@@ -432,16 +438,26 @@ def cmd_analyze(args):
         agree_split.append(1.0 if a_star_A == a_hand else 0.0)
         regret_same.append(vAll[a_best_all] - vAll[a_hand])
 
-        # SHUFFLE CONTROL: keep the selection machinery, destroy the link between
-        # rollouts and the actions that produced them. Any "gain" here is selection
-        # noise, and is the floor the split-sample number must clear.
-        flat = [x for a in acts for x in vals[a]]
-        rng.shuffle(flat)
-        sh = {a: flat[i * M:(i + 1) * M] for i, a in enumerate(acts)}
-        shA = {a: st.mean(sh[a][:half]) for a in acts}
-        shB = {a: st.mean(sh[a][half:]) for a in acts}
-        s_star = max(acts, key=lambda a: shA[a])
-        regret_shuf.append(shB[s_star] - shB[a_hand])
+        # PERMUTATION CONTROL. Enforces the null "every labelled action is equally
+        # good" while keeping everything else real, by permuting the action labels
+        # WITHIN each pill stream. Within-stream matters: pooling values across
+        # streams instead would manufacture variance that common random numbers
+        # deliberately cancel, and would report a large fake noise floor. Under
+        # this null the split-sample estimator should land at ~0 (it is unbiased)
+        # while the same-sample one stays positive -- that gap IS the winner's
+        # curse, measured on this data rather than argued from theory.
+        perm = {a: [] for a in acts}
+        for m in range(M):
+            colm = [vals[a][m] for a in acts]
+            rng.shuffle(colm)
+            for a, v in zip(acts, colm):
+                perm[a].append(v)
+        shA = {a: st.mean(perm[a][:half]) for a in acts}
+        shB = {a: st.mean(perm[a][half:]) for a in acts}
+        shAll = {a: st.mean(perm[a]) for a in acts}
+        regret_shuf.append(shB[max(acts, key=lambda a: shA[a])] - shB[a_hand])
+        regret_shuf_same.append(
+            shAll[max(acts, key=lambda a: shAll[a])] - shAll[a_hand])
 
         spread.append(st.pstdev([vAll[a] for a in acts]))
         sds = [st.pstdev(vals[a]) for a in acts if len(set(vals[a])) > 1]
@@ -506,7 +522,8 @@ def cmd_analyze(args):
     print("      non-contender wins this often, top-K was hiding real options.")
     print()
     r_lo = line("  REGRET split-sample (LOWER)", regret_split, "pills")
-    r_ct = line("  REGRET shuffle CONTROL", regret_shuf, "pills")
+    r_ct = line("  REGRET perm CONTROL (split)", regret_shuf, "pills")
+    line("  REGRET perm CONTROL (same-split)", regret_shuf_same, "pills")
     r_hi = line("  REGRET same-sample (UPPER)", regret_same, "pills")
     net = None
     if regret_split and regret_shuf:
@@ -552,6 +569,7 @@ def cmd_analyze(args):
                out_of_topk=st.mean(out_topk) if out_topk else None,
                regret_split=st.mean(regret_split) if regret_split else None,
                regret_shuffle=st.mean(regret_shuf) if regret_shuf else None,
+               regret_shuffle_same=st.mean(regret_shuf_same) if regret_shuf_same else None,
                regret_same=st.mean(regret_same) if regret_same else None,
                regret_net=st.mean(net) if net else None,
                regret_net_ci=boot_ci(net) if net else None,
