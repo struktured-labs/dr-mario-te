@@ -179,6 +179,38 @@ def divergence_report(path):
     c = sum(1 for x in do if x < 0)
     print(f"  McNemar on outcome change: tuck-only={b} control-only={c} "
           f"p={mcnemar_exact(b, c):.4g}  (moved {b + c}/{len(f)})")
+    washout_curve(f)
+
+
+def washout_curve(forked, buckets=((0, 2), (3, 5), (6, 10), (11, 20), (21, 60))):
+    """Does the tuck's advantage decay?
+
+    Each fork's `gap_T` / `gap_C` trace records, per pill since divergence,
+    that branch's virus count and max column height MINUS the reference's. A
+    maneuver whose benefit washes out shows a gap that shrinks toward zero; one
+    that compounds shows a gap that grows. Reported for the tuck AND the
+    matched control, because a gap that persists equally in both is a property
+    of the game's chaos, not of tucks."""
+    print(f"  washout: mean signed gap vs the reference, by pills since divergence")
+    print(f"    {'pills':>8}  {'virus gap T':>12} {'virus gap C':>12}  "
+          f"{'height gap T':>13} {'height gap C':>13}  {'n obs':>7}")
+    for lo, hi in buckets:
+        vt, vc, ht, hc = [], [], [], []
+        for r in forked:
+            for (i, dv, dh) in r.get("gap_T", []):
+                if lo <= i <= hi:
+                    vt.append(dv); ht.append(dh)
+            for (i, dv, dh) in r.get("gap_C", []):
+                if lo <= i <= hi:
+                    vc.append(dv); hc.append(dh)
+        if not vt and not vc:
+            continue
+        print(f"    {lo:>3}-{hi:<4}  "
+              f"{st.mean(vt) if vt else float('nan'):>12.2f} "
+              f"{st.mean(vc) if vc else float('nan'):>12.2f}  "
+              f"{st.mean(ht) if ht else float('nan'):>13.2f} "
+              f"{st.mean(hc) if hc else float('nan'):>13.2f}  "
+              f"{len(vt) + len(vc):>7}")
 
 
 def main():

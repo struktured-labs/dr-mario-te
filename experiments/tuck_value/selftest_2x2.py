@@ -156,6 +156,77 @@ def selftest_t3_drop_never_deeper(decisions, theta):
     return not bad
 
 
+def selftest_place_cells_equals_step(n_games=12, steps=40, seed0=1000):
+    """THE ARM-D INTEGRITY TEST. Tuck mode locks pills with `_place_cells`;
+    drop mode locks them with `env.step`. If those two paths are not
+    equivalent -- a missed cascade pass, a skipped pill advance, a different
+    resolve -- then arm D is playing a different game from arms A and B and
+    its advantage is an artifact of the harness, not of tucks.
+
+    So: for placements reachable BOTH ways, drive the SAME resting cells down
+    both paths from the same forked board and require identical boards,
+    pills_placed, and capsule stream. Tests the defect directly rather than
+    asserting the two are 'obviously' the same."""
+    import divergence as D
+    import fast_sim_x as FS
+    RR._lazy()
+    L = RR._lazy()
+    FB, RS = L["FB"], L["RS"]
+
+    bad, checked, examples = 0, 0, []
+    for g in range(n_games):
+        env, src = D._new_game(11, seed0 + g)
+        for _ in range(steps):
+            if env.board.virus_count() == 0:
+                break
+            fb = FB.from_board(env.board)
+            col, vir = RS.board_flat_from_fb(fb)
+            ca, cb = int(env.cur.a), int(env.cur.b)
+            pick, base_action = R2.choose_with_base(
+                fb, col, vir, ca, cb, int(env.nxt.a), int(env.nxt.b), "t3",
+                R2.FIRMWARE_THETA)
+            act = (base_action if pick["kind"] != "tuck"
+                   else EM.tier3_drop_action(pick["placement"]))
+            ok, r0, c0, r1, c1 = FS._resting(col, act // 8, act % 8)
+            if not ok:
+                act = base_action
+                ok, r0, c0, r1, c1 = FS._resting(col, act // 8, act % 8)
+            if not ok:
+                break
+
+            e_step, _s1 = D.fork_env(env, src)
+            e_place, _s2 = D.fork_env(env, src)
+            _, _, term, trunc, _ = e_step.step(int(act))
+            col0, col1 = R2._colors_for(act // 8, ca, cb)
+            R2._place_cells(e_place, r0, c0, r1, c1, col0, col1)
+            checked += 1
+            same = (D.board_key(e_step.board) == D.board_key(e_place.board)
+                    and e_step.pills_placed == e_place.pills_placed)
+            if not (term or trunc):
+                # On a TERMINAL placement the two paths legitimately differ on
+                # whether the capsule stream advances -- env.step stops, and
+                # _place_cells draws unconditionally. play() breaks out of the
+                # game on exactly those conditions, so the difference is
+                # unobservable. Comparing the stream only on non-terminal
+                # placements tests the case that can actually affect a game.
+                same = same and (
+                    (e_step.cur.a, e_step.cur.b) == (e_place.cur.a, e_place.cur.b)
+                    and (e_step.nxt.a, e_step.nxt.b) == (e_place.nxt.a, e_place.nxt.b))
+            if not same:
+                bad += 1
+                if len(examples) < 3:
+                    examples.append((g, act, e_step.pills_placed, e_place.pills_placed,
+                                     D.board_key(e_step.board) == D.board_key(e_place.board)))
+            env, src = e_step, _s1
+            if term or trunc:
+                break
+
+    print(f"  _place_cells vs env.step: {checked} placements, {bad} mismatches")
+    for x in examples:
+        print(f"    game={x[0]} action={x[1]} pills {x[2]}/{x[3]} boards_equal={x[4]}")
+    return bad == 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", type=int, default=24)
@@ -171,6 +242,8 @@ def main():
     if not a.skip_arm_a:
         results["arm_A_is_base32_clean"] = selftest_arm_a_is_base32(
             a.seeds, a.workers, "clean", None)
+
+    results["place_cells_equals_step"] = selftest_place_cells_equals_step()
 
     decisions = _real_l11_decisions()
     print(f"  ({len(decisions)} real L11 decisions sourced)")
