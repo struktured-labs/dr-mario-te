@@ -3,26 +3,29 @@
 Corroboration by a different method for the co-sim farm's RTL 2×2. Same four arms, different
 simulator, different failure modes, n=400 paired seeds per arm instead of tens.
 
-**Status:** complete except one re-run. 5,700 fast-sim games across the 2×2, the v1-hazard
-bracket, the A′ control arms, the θ sweep and the divergence rigs. The bursty divergence
-re-run is still finishing; everything else below is final.
+**Status:** complete. 6,000 fast-sim games across the 2×2, the v1-hazard bracket, the A′
+control arms, the θ sweep and the divergence rigs.
 
 ---
 
 ## The answer, in one paragraph
 
-**In this rig the tuck executor is clearly worth having, and the more it fires the better; on
-the co-sim's real RTL the same configuration loses every game. That contradiction is unresolved
-and it blocks the rebuild.** Here, the full program beats the shipped champion by **−6.50
-points of bad-end rate [−11.25, −1.75], p=0.0088** and clears 26 pills faster, and nearly
-tripling the firing rate improves it further (−8.75 points, p=0.0003). The co-sim, running the
-real firmware at a 6× higher firing rate, has arm D at **0 of 17 games cleared**. I proposed
-that the fire-rate gap was the explanation — tucks good in small doses, fatal in large ones —
-and then my own θ sweep refuted it. **So: do not commit hands to a cart rebuild yet.** The
-discriminating experiment is one extra firmware arm on the co-sim and is described in
-[the disagreement](#the-disagreement-that-matters-and-what-it-costs), the most important
-section here. What *is* settled, by both rigs independently, is that tier-3 firmware must never
-ship to a cart without the executor.
+**In this rig the tuck executor is clearly worth having, and the more it fires the better. On
+the co-sim's real RTL the same configuration lost every game — but that turned out to be a
+firmware defect, found and fixed today, which voids every tier-3 tuck number ever taken on
+silicon.** Here, the full program beats the shipped champion by **−6.50 points of bad-end rate
+[−11.25, −1.75], p=0.0088** and clears 26 pills faster, and nearly tripling the firing rate
+improves it further (−8.75 points, p=0.0003). The RTL's contradicting result came from a tuck
+leaf that scored **every** candidate a win because its board upload destroyed itself
+([details](#the-disagreement-that-mattered--resolved-an-rtl-firmware-defect)); that also
+explains the 6× fire-rate gap this rig measured, which was the symptom that pointed at it.
+
+**So: still do not commit hands to a rebuild — but for a different reason than an hour ago.**
+Not because the two rigs disagree, but because there is now *no valid RTL measurement of tucks
+at all* until the 2×2 is re-run on the fixed arm. This rig's result stands unopposed, and
+unopposed is not corroborated. What *is* settled, by both rigs and unaffected by the defect, is
+that tier-3 firmware must never ship to a cart without the executor, and that the executor must
+never be enabled on v1 firmware.
 
 ---
 
@@ -308,7 +311,44 @@ three:
 
 ---
 
-## The disagreement that matters, and what it costs
+## The disagreement that mattered — RESOLVED: an RTL firmware defect
+
+**Resolution, landed 2026-08-07 while this was being written (task #85, arm `554a16a5`, knob
+`DRCOPRO_TUCKV3_FIXSLOT=1`, commit `67eb37c`).** The co-sim's arm D was not measuring tucks. The
+firmware's tuck path uploaded the candidate board to `bcell` with `LEV_WSLOT=0` — which
+`LeafEval.sv:47` documents as CUR, *not* a slot — and then issued `LEV_CMD=2` to copy CUR from
+dpram region 0, **destroying the board it had just written**. The leaf then scanned
+uninitialised memory, `anyvir` stayed 0, and `win <= !anyvir` scored **every candidate a win**.
+The base search was immune because it uploads to slot 1 and copies from slot 1.
+
+The fix is deleting one command. With it: candidate maxima fall from 30000/30040/30400 to
+1233–5768, "still ≥ WIN" goes 16/16 → 0/16, and publication goes 16/30 → **4/30**.
+
+**Consequences for this document.** Every tier-3 tuck number ever taken on the RTL is void,
+including arm D's 0-of-17 collapse. The disagreement below is therefore resolved *in favour of
+neither rig* — it was an instrument fault, and the 2×2 must be re-run on the fixed arm before
+anything is concluded about tucks on silicon. This rig's numbers are unaffected: its tuck
+scoring is `root_search._root_value` in the fast-sim eval, which never touches `LeafEval.sv`.
+
+**The fire-rate gap this section documents was the symptom, and it now has a mechanism.** A leaf
+that scores every candidate a win passes every θ gate, which is exactly why the RTL published on
+36–38% of decisions where this rig published on 5.7–11.5%. With the defect fixed the RTL
+publishes on 13% — in line with this rig. And θ=150 was never the wrong threshold: post-fix,
+publication matches the gate's own arithmetic on 16/16 boards. The gate worked as soon as it was
+handed real values.
+
+Two things below are worth keeping rather than deleting. First, the **v1-agrees / tier-3-disagrees
+control** is what showed the fault was confined to the θ-gated path rather than to boards,
+enumeration or counting — that shape is reusable. Second, my own **dose explanation was wrong
+and I retracted it before the root cause landed**; the θ sweep that refuted it is recorded below
+because a refuted hypothesis with the data that killed it is worth more than a quietly deleted
+one.
+
+A **separate, still-open** firmware defect is recorded in the same place: base candidates receive
+the EH bonus and tucks do not (+237 mean over 10,800 candidates), making the effective gate ~387
+against a nominal 150 — a bias *against* tucks, to be fixed after the slot defect.
+
+### The original disagreement, as measured
 
 The co-sim farm's RTL 2×2 began producing games while this was being written, and on arm D it
 **flatly contradicts** this rig. That disagreement turned out to be the most valuable output of
@@ -482,14 +522,17 @@ whatever effect makes its reference finish first.**
 Re-measured with the loop fixed (0 unfinished branches of 298, against 253 before), clean
 stream, n=300:
 
-| branch | never reconverges with the reference | when it does |
+| branch | never reconverges, clean | never reconverges, bursty |
 |---|---|---|
-| **T** tuck executed | **292/298 (98.0%)** | median 2 pills (n=6) |
-| **C** second-best base drop | 275/298 (92.3%) | median 1 pill (n=23) |
+| **T** tuck executed | **292/298 (98.0%)** | **293/299 (98.0%)** |
+| **C** second-best base drop | 275/298 (92.3%) | 277/299 (92.6%) |
 
-Both figures are **identical to the pre-fix run**, which is the expected result — reconvergence
-was scored while both games were live, so it was the one statistic the truncation could not
-reach. Exact board equality is essentially never restored after *any* perturbation.
+When reconvergence does happen it takes a median of 1–2 pills — the rare case where the
+perturbed placement was cleared away immediately. Every figure is **identical to the pre-fix
+run and identical across the two pressure regimes**, which is the expected result on both
+counts: reconvergence was scored only while both games were live, so it was the one statistic
+truncation could not reach, and it is a property of the game rather than of the pressure model.
+Exact board equality is essentially never restored after *any* perturbation.
 
 **This inverts the premise of the question.** The worry was that a maneuver might improve the
 board for three pills and then wash out, making per-placement statistics overstate its worth.

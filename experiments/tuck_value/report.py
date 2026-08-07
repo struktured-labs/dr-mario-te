@@ -170,6 +170,28 @@ def executor_audit(rows):
               f"{deep:>8} ({deep / max(1, pub):>5.1%})")
 
 
+def single_report(d, f):
+    """divergence_single.py's schema: branches R / T1 / C, all continuing in
+    drop mode, so each delta is exactly one placement."""
+    w = lambda x: 1 if x == "clear" else 0                    # noqa: E731
+    n = len(f)
+    wr = [w(r["result_R"]) for r in f]
+    wt = [w(r["result_T1"]) for r in f]
+    wc = [w(r["result_C"]) for r in f]
+    print(f"  single-maneuver isolation (all branches continue in drop mode)")
+    print(f"  clear rate   R {sum(wr) / n:6.1%}   T1 (one tuck) {sum(wt) / n:6.1%}   "
+          f"C (one 2nd-best drop) {sum(wc) / n:6.1%}")
+    for lab, arr in (("T1 - R  one tuck        ", [a - b for a, b in zip(wt, wr)]),
+                     ("C  - R  one 2nd-best drop", [a - b for a, b in zip(wc, wr)]),
+                     ("T1 - C  tuck vs control ", [a - b for a, b in zip(wt, wc)])):
+        lo, hi = boot_ci(arr)
+        b = sum(1 for x in arr if x > 0)
+        c = sum(1 for x in arr if x < 0)
+        print(f"  {lab}: {st.mean(arr):+.3f} [{lo:+.3f},{hi:+.3f}]  "
+              f"better={b} worse={c} p={mcnemar_exact(b, c):.4g}  "
+              f"{'REAL' if (lo > 0 or hi < 0) else 'WASH'}")
+
+
 def divergence_report(path):
     with open(path) as fh:
         d = json.load(fh)
@@ -179,6 +201,11 @@ def divergence_report(path):
     print(f"\n### Divergence horizon ({os.path.basename(path)})")
     print(f"forked {len(f)}/{n} seeds ({len(f) / max(1, n):.1%})")
     if not f:
+        return
+    if "horizon_T" not in f[0]:
+        # divergence_single.py's schema: no reconvergence tracking, branch T1
+        # instead of T, and its own summary already computed at write time.
+        single_report(d, f)
         return
     for br, label in (("T", "TUCK executed"), ("C", "control: 2nd-best base drop")):
         hs = [r[f"horizon_{br}"] for r in f]
