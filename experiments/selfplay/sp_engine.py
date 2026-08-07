@@ -7,12 +7,25 @@ Stage 1 of the program asks a single falsifiable question: *how much better coul
 ANY leaf evaluator make the shipped depth-3 search?* Answering it needs two things
 the existing A/B rigs do not provide:
 
-  1. A champion decider fast enough to be used as a ROLLOUT policy. `ab47._choose_base`
-     (the champion: fast_rtl_x.variant("winner") + g_stranded ws=20 applied root-only)
-     drives its 32-action loop from PYTHON, paying a numba call boundary per action.
-     Measured ~190 ms/move => ~20 s/game, which makes Monte-Carlo labelling of
-     thousands of positions impossible. `champ_root` below fuses that identical loop
-     into ONE njit kernel.
+  1. A champion decider usable as a ROLLOUT policy. `ab47._choose_base` (the champion:
+     fast_rtl_x.variant("winner") + g_stranded ws=20 applied root-only) drives its
+     32-action loop from PYTHON; `champ_root` below fuses that identical loop into ONE
+     njit kernel.
+
+     ⚠ CORRECTION (hetzner-node measurement, 2026-08-06). An earlier version of this
+     docstring attributed the ~190 ms/move to "paying a numba call boundary per action".
+     THAT WAS WRONG, and it was my inference rather than a measurement. Interleaved A/B
+     over 8 whole games: 141.1 s reference vs 129.1 s fused = 1.09x, so the 32 call
+     boundaries are only ~8% of the cost. The other ~92% is inside
+     `_ply2plus_value_ship_eh` -- the depth-2+ subtree per candidate -- which was
+     ALREADY njit. Fusing the outer loop cannot give a large multiple because the outer
+     loop was never where the time went.
+
+     Kept so nobody re-plans against the wrong premise: a rollout costs ~8 s and
+     Monte-Carlo labelling stays expensive. A real speedup must come from the INNER
+     search (smaller topk2, cheaper leaf, shallower rollouts), and each of those changes
+     the policy -- so it stops being the champion and needs its own gate plus an argument
+     for why the label still means anything.
 
   2. The ability to RESUME a game from an arbitrary stored position with a fresh
      pill stream (a rollout), which the seed-coupled ab47 `play()` cannot do.
@@ -43,11 +56,19 @@ import os
 import sys
 
 ROOT = "/home/struktured/projects/dr_mario_rl"
-QA = "/home/struktured/projects/dr-mario-qa-wt/experiments"
-MAIN = "/home/struktured/projects/dr-mario-main-wt/experiments"
+
+# DECIDE-PATH WORKTREE, PINNED DELIBERATELY TO ONE TREE.
+# root_search / terms47 / fast_rtl_x exist in BOTH dr-mario-main-wt and
+# dr-mario-qa-wt. Resolving them by whichever happens to land on sys.path first is
+# the exact configuration that already produced a silent divergence on the Hetzner
+# node: a file edited 12 minutes after an rsync made two nodes run different code,
+# and the only visible symptom was one hash field on one rare seed -- result, pills,
+# viruses_left and move count all matched. So the tree is named once, here, and
+# `provenance()` below stamps the actual bytes into every run's output.
+DECIDE_TREE = "/home/struktured/projects/dr-mario-main-wt/experiments"
 for _p in (ROOT + "/tmp/combo_term", ROOT + "/tmp/endgame", ROOT + "/tmp/tuck",
            ROOT + "/tmp/pillrng", ROOT + "/.claude/worktrees/faithful-sim/src",
-           MAIN, MAIN + "/tuck_v3", MAIN + "/eval47"):
+           DECIDE_TREE, DECIDE_TREE + "/tuck_v3", DECIDE_TREE + "/eval47"):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
@@ -60,6 +81,9 @@ import root_search as RS
 from root_search import _ply2plus_value_ship_eh
 from terms47 import g_stranded, g_tower
 from fb import FB
+import fb as fb_mod
+import fast_sim_x as fast_sim_mod
+import terms47 as terms_mod
 
 # ------------------------------------------------------------------ champion spec
 # Champion baseline == fast_rtl_x.variant("winner") + g_stranded ws=20 applied
@@ -118,6 +142,30 @@ def champ_root(pcol, pvir, ca, cb, na, nb, topk2, w_excav, w_hang, w, fl, ws,
                 best_act = a
                 have = True
     return best_act
+
+
+def provenance():
+    """sha256 of every source on the decide path, plus a rolled hash and the RESOLVED
+    file of each imported module.
+
+    Stamp this into any run's output. A remote node -- or a second worktree on this
+    box -- running a snapshot of an actively-edited tree drifts by default, and the
+    failure mode is not a crash: it is two runs that agree on every summary statistic
+    and disagree on one field of one rare case. Recording the bytes is what makes that
+    detectable after the fact instead of unfalsifiable.
+    """
+    import hashlib
+    out = {}
+    for mod in (FX, RS, fb_mod, fast_sim_mod, terms_mod):
+        f = getattr(mod, "__file__", None)
+        if not f or not os.path.exists(f):
+            continue
+        h = hashlib.sha256(open(f, "rb").read()).hexdigest()
+        out[mod.__name__] = {"file": f, "sha256": h}
+    rolled = hashlib.sha256(
+        "".join(f"{k}:{v['sha256']}" for k, v in sorted(out.items())).encode()
+    ).hexdigest()
+    return {"decide_tree": DECIDE_TREE, "modules": out, "rolled": rolled}
 
 
 class Champion:

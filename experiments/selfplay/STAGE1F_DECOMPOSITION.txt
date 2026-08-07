@@ -1,0 +1,49 @@
+=== STAGE 1f/1g  DECOMPOSITION  2026-08-06T23:20:13-04:00 ===
+gates: stream-base replay PASS (8 rollouts, 5 distinct pill counts, exact)
+       d4 degeneracy (topk3=0,ply4=0 == d3) PASS 140/140
+       decide tree /home/struktured/projects/dr-mario-main-wt/experiments
+       rolled hash 33e7475faba8f9ab
+
+positions: 140
+d4 degeneracy gate failures (want 0): 0
+
+==============================================================================
+REGRET vs the rollout oracle, BY SEARCH DEPTH (same leaf eval throughout)
+==============================================================================
+  regret(d1)                               +3.947  [+2.578,+5.468]  n=140 pills
+  regret(d3)                               +3.096  [+1.699,+4.604]  n=140 pills
+  regret(d3_champ)                         +3.867  [+2.374,+5.508]  n=140 pills
+  regret(d4)                               +2.757  [+1.417,+4.227]  n=140 pills
+
+  P(d1 == oracle move)                     +0.193  [+0.129,+0.257]  n=140 
+  P(d3 == oracle move)                     +0.207  [+0.143,+0.279]  n=140 
+  P(d3_champ == oracle move)               +0.200  [+0.136,+0.264]  n=140 
+  P(d4 == oracle move)                     +0.264  [+0.193,+0.336]  n=140 
+
+==============================================================================
+THE DECOMPOSITION
+==============================================================================
+  HORIZON: V(d4) - V(d3), paired           +0.479  [+0.047,+1.158]  n=140 pills
+  EVAL   : V(oracle) - V(d4), paired       +2.696  [+1.289,+4.242]  n=140 pills
+
+  one extra ply of the SAME eval buys : +0.48 pills
+  still unreached by that deeper search: +2.70 pills
+
+  READ: depth accounts for 15% of the reachable gap and the
+  evaluator for 85%. Both levers are live; weight the
+  program accordingly.
+
+MODEL ERROR: regret when the champion's OWN chosen move is mis-predicted
+==========================================================================
+  champ move MIS-PREDICTED  regret  +4.85 [+1.84,+8.78]  n= 41   mean viruses 17.7
+  champ move predicted OK   regret  +3.46 [+1.80,+5.31]  n= 99   mean viruses 21.8
+
+  difference: +1.39 pills
+  ^ confound to watch: cascades need material, so mis-predicted moves sit
+    on busier boards. Compare the virus counts above before reading this
+    as causal.
+
+  cap-1 vs full-cascade disagreement RATE by phase:
+    early  3.8% of actions  n=29
+    mid    11.9% of actions  n=57
+    late   12.6% of actions  n=54
