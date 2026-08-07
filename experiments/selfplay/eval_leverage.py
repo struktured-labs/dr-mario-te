@@ -12,8 +12,13 @@ the chosen root move changes. The decisive arm is FLAT: every leaf weight zeroed
 so the leaf returns a constant for any non-winning board. A flat leaf does not
 disable the search -- immediate rewards (viruses cleared, cells cleared, the
 2-virus bonus), the win bonus, the excav/hang ply-1 add-on and the g_stranded cost
-all still operate. What it removes is precisely the eval's opinion about board
-SHAPE.
+all still operate.
+
+Be precise about what that leaves: excav, hang and g_stranded are themselves shape
+terms, so FLAT is NOT a shape-blind player. What FLAT removes is exactly the LEAF
+EVALUATOR's contribution -- which is the right scope, because the leaf evaluator is
+precisely the component an NNUE would replace. The ceiling below is therefore a
+ceiling on leaf-eval work specifically, not on board-shape reasoning in general.
 
 So the agreement rate between the champion and FLAT is a direct measurement of how
 much of the champion's behaviour the leaf eval is responsible for:
@@ -132,9 +137,10 @@ def main():
 
     fl = out["agreement"]["flat"]["exact"]
     print()
-    print(f"CEILING: the leaf eval's opinion about board shape is irrelevant to the")
-    print(f"move on {fl:.1%} of decisions, so at most {1-fl:.1%} of decisions are")
-    print(f"reachable by ANY leaf evaluator -- learned, oracular or hand-tuned.")
+    print(f"CEILING: the LEAF EVALUATOR is irrelevant to the move on {fl:.1%} of")
+    print(f"decisions, so at most {1-fl:.1%} are reachable by ANY leaf evaluator --")
+    print(f"learned, oracular or hand-tuned. (excav/hang/g_stranded stay on in FLAT,")
+    print(f"so this scopes leaf-eval work, not board-shape reasoning in general.)")
     print("This bounds REACH, not value: the reachable moves may be the ones that")
     print("matter. Read with Stage 1's regret, not instead of it.")
 
