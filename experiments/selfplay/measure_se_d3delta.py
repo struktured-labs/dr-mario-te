@@ -92,14 +92,31 @@ def main():
     print(f"  per-label SE (CRN)        {se:.2f}    (champion Stage 1: 3.31)")
     print(f"  true action spread tau    {tau:.2f}    (champion Stage 1: 6.37)")
     print(f"  per-label SNR             {tau/se:.2f}    (champion Stage 1: 1.93)")
-    RATIO = 2.16
-    adv = math.sqrt(RATIO) * (3.31 / se)
-    print(f"\n  signal per unit compute vs champion = sqrt({RATIO}) x (3.31/{se:.2f}) = {adv:.2f}x")
-    print(f"  => {'USE d3-delta' if adv > 1.0 else 'USE THE CHAMPION'}")
+    # COST BLOCK -- takes the SELECTED arm's SE and s/rollout as its inputs, so it
+    # structurally cannot price an arm the policy rule rejected. The first version
+    # recommended the champion and then costed d3-delta, using the rejected arm's SE
+    # (6.30 not 3.31), its rate (1.299 not 2.812) and the wrong worker count (4 not
+    # 8) -- 14.6 h printed against a true 4.4 h, a factor of 3.3 in the direction
+    # that makes the run look unaffordable.
+    S1_SE, S1_R = 3.31, 11200
+    COST = {"champion": 2.812, "d3delta": 1.299}     # s/rollout, interleaved, 1 proc
+    RATIO = COST["champion"] / COST["d3delta"]
+    adv = math.sqrt(RATIO) * (S1_SE / se)
+    sel = "d3delta" if adv > 1.0 else "champion"
+    sel_se = se if sel == "d3delta" else S1_SE
+    print(f"\n  signal per unit compute vs champion = sqrt({RATIO:.2f}) x "
+          f"({S1_SE}/{se:.2f}) = {adv:.2f}x")
+    print(f"  => SELECTED ARM: {sel.upper()}")
+    print(f"\n  cost of the SELECTED arm ({sel}, SE {sel_se:.2f}, "
+          f"{COST[sel]:.3f} s/rollout):")
     for target in (2.0, 3.0):
-        R = 11200 * (target * se / 3.31) ** 2
-        print(f"  {target:.0f}x Stage-1 signal: {R:,.0f} rollouts "
-              f"= {R*1.299/4/3600:.1f} h at 4 workers")
+        R = S1_R * (target * sel_se / S1_SE) ** 2
+        for w in (4, 8):
+            print(f"    {target:.0f}x Stage-1 signal: {R:>9,.0f} rollouts "
+                  f"= {R*COST[sel]/w/3600:5.1f} h at {w} workers")
+    print(f"\n  (for reference only, the REJECTED arm at 2x: "
+          f"{S1_R*(2*(se if sel=='champion' else S1_SE)/S1_SE)**2:,.0f} rollouts)")
+
 
 if __name__ == "__main__":
     main()

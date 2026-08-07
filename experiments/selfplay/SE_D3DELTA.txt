@@ -9,3 +9,15 @@ d3-delta labelling slice: 60 positions, 4800 rollouts, 1157s
   2x Stage-1 signal: 162,058 rollouts = 14.6 h at 4 workers
   3x Stage-1 signal: 364,630 rollouts = 32.9 h at 4 workers
 SE MEASURE DONE 2026-08-07T05:13:14-04:00
+
+--- CORRECTION appended 2026-08-07 (team-lead caught it) ---
+The cost lines above price the REJECTED arm. They used d3-delta's SE (6.30 not the
+champion's 3.31), d3-delta's rate (1.299 not 2.812) and 4 workers not the allocated 8,
+while the same file recommends the CHAMPION. Corrected, for the SELECTED arm:
+
+    champion, 2x Stage-1 signal:  44,800 rollouts = 8.7 h @4w, 4.4 h @8w
+    champion, 3x Stage-1 signal: 100,800 rollouts = 19.7 h @4w, 9.8 h @8w
+
+14.6 h printed against a true 4.4 h -- a factor of 3.3 in the direction that makes the
+run look unaffordable. The emitter in measure_se_d3delta.py now takes the SELECTED
+arm's SE and s/rollout as inputs so it cannot price a rejected arm at all.
