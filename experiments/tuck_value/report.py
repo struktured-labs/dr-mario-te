@@ -125,6 +125,32 @@ def delta(rows, ctrl, on, label, fired_only=False):
             "n_both_cleared": len(both)}
 
 
+def failure_decomposition(rows, pairs):
+    """Split every bad-end comparison into STALLS and TOPOUTS.
+
+    The two failure modes have different causes and a combined bad-end rate
+    hides which one moved. A stall is the 300-pill cap with viruses still
+    buried -- material the AI could not reach. A topout is the board reaching
+    the spawn row. An arm that merely finishes SOONER absorbs less garbage and
+    should relieve topouts; an arm that reaches under overhangs should relieve
+    stalls. Which one moves therefore distinguishes a tempo artifact from the
+    thing a tuck is actually for, and that distinction is not visible in the
+    headline rate."""
+    print("\n### Failure-mode decomposition (stalls vs topouts)")
+    for ctrl, on, label in pairs:
+        if ctrl not in rows or on not in rows:
+            continue
+        A, B = rows[ctrl], rows[on]
+        ss = sorted(set(A) & set(B))
+        for field in ("stall", "topout"):
+            b = sum(1 for s in ss if A[s][field] and not B[s][field])
+            c = sum(1 for s in ss if B[s][field] and not A[s][field])
+            p = mcnemar_exact(b, c)
+            print(f"  {label:<22} {field:<7} {sum(A[s][field] for s in ss):>3} -> "
+                  f"{sum(B[s][field] for s in ss):>3}   rescued={b:>3} harmed={c:>3}  "
+                  f"p={p:.4g}  {'REAL' if p < 0.05 else 'wash'}  (n={len(ss)})")
+
+
 def executor_audit(rows):
     """The statistic directly comparable to the co-sim farm's
     descriptor_audit.py table -- measured here ON POLICY over whole games
@@ -233,6 +259,12 @@ def main():
                  f"on_blocked={cfg['on_blocked']}")
         arm_table(rows, title)
         executor_audit(rows)
+        failure_decomposition(rows, [
+            ("v1_drop", "t3_tuck", "D - A full program"),
+            ("v1_drop", "v1_tuck", "C - A v1 executor"),
+            ("v1_drop", "t3_drop", "B - A tier-3 today"),
+            ("t3_drop", "t3_tuck", "D - B executor"),
+        ])
         delta(rows, "t3_drop", "t3_tuck", "D - B   EXECUTOR VALUE, tier-3 firmware held fixed")
         delta(rows, "v1_drop", "v1_tuck", "C - A   executor value, v1 firmware held fixed")
         delta(rows, "v1_drop", "t3_drop", "B - A   ship tier-3 onto today's executor-less cart")

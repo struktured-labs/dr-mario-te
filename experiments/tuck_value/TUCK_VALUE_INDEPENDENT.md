@@ -19,6 +19,11 @@ and clears the level 26.0 pills faster, CI [−32.7, −19.3].**
 That is the D − A comparison: the full program versus what is on the cart today. It is the
 number a rebuild decision turns on, so it leads.
 
+**The survival half of that is entirely stalls, not topouts** (28 → 12, p=0.014; topouts
+49 → 44, p=0.65 — a wash), which is the signature of digging buried viruses out rather than of
+finishing before the garbage arrives. See the decomposition below; it is the strongest single
+piece of evidence here that the executor does what a tuck is *for*.
+
 The question as literally posed — *what is executing tucks worth with tier-3 firmware* — is
 D − B, the executor's own value with the firmware held fixed, and it is enormous: bad-end rate
 80.8% → 14.0%, a paired difference of **−66.8 points, CI [−71.8, −61.8]**, McNemar
@@ -116,16 +121,37 @@ it, because v1 chooses its target column independently of `best_col`.
 
 ---
 
-## How much of the survival win is just winning the race?
+## The survival win is digging, not racing
 
-Honestly: a lot of it, and that should be said plainly. The bursty model injects garbage in
-response to the AI's own clears, so an arm that finishes sooner absorbs less total garbage —
-arm D takes 39.96 garbage cells per game against arm A's 52.84. D's survival edge and D's
-speed edge are therefore **not independent evidence**; they are one effect seen twice. Winning
-by out-racing is a legitimate way to win a VS match (it is the same mechanism the lnk1 arm
-won by), but "the executor makes the AI more robust under fire" is *not* what these numbers
-show. What they show is "the executor makes the AI faster, and faster is safer under a
-pressure model that scales with game length."
+The obvious worry about D − A is that it is an artifact of tempo: the bursty model injects
+garbage in response to the AI's own clears, so an arm that finishes sooner absorbs less total
+garbage (D takes 39.96 garbage cells per game against A's 52.84), and "survives more" could
+just be "was exposed less". Decomposing the bad ends settles it, and the answer is the
+opposite of the worry:
+
+| failure mode | A → D | McNemar | |
+|---|---|---|---|
+| **stalls** (300-pill cap: viruses still buried, out of pills) | **28 → 12** | rescued=27 harmed=11 | **p=0.014** |
+| **topouts** (board reached the spawn row) | 49 → 44 | rescued=42 harmed=37 | p=0.653 — wash |
+
+**The entire survival benefit is in stalls. Topouts do not move at all.** That is the wrong
+signature for a tempo artifact — absorbing less garbage would relieve *topouts*, the failure
+mode garbage causes. It is exactly the right signature for a tuck executor: a stall is a board
+the AI cannot finish because viruses are buried under material it cannot reach, and reaching
+under overhangs is the one thing a tuck does that a straight drop cannot.
+
+The mechanism is visible in the failure statistics too. Arm B's topouts leave a median of **25
+viruses** on the board — mid-game collapse from systematically shallow placements — where
+A's, C's and D's leave 2–3, the near-the-doorstep signature the project already knows.
+
+So the speed result and the survival result are *not* the same effect seen twice, and the
+earlier draft of this document was wrong to suggest they might be. They are two distinct
+effects: the executor clears faster (26 pills under pressure, 15.6 clean) *and* it separately
+rescues boards that would otherwise be unfinishable.
+
+For completeness, the v1 executor decomposes the same way and harms on both axes without
+either reaching significance alone (stalls 28 → 40, p=0.14; topouts 49 → 65, p=0.10), while
+the combined bad-end test does (p=0.013).
 
 ---
 
