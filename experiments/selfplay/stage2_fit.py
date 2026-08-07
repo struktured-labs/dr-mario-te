@@ -408,6 +408,7 @@ def main():
     line("  HAND weights", hand)
     line("  linear / terms11", lin11)
     results = {"hand": h, "terms11": f}
+    arm_spec = {"terms11": ("terms11", "ridge")}
     for key, kind, tag in (("terms12", "ridge", "linear / terms12 (+virus count)"),
                            ("handplus", "ridge", "linear / hand+ (~40 features)"),
                            ("handplus", "mlp", "MLP    / hand+"),
@@ -416,24 +417,67 @@ def main():
         xs = run_arm(blocks, T, key, folds, kind, args)
         m = line(f"  {tag}", xs)
         results[f"{kind}:{key}"] = m
+        arm_spec[f"{kind}:{key}"] = (key, kind)
 
-    best_k = min((v, k) for k, v in results.items() if k != "hand" and v is not None)
+    best_v, best_name = min((v, k) for k, v in results.items()
+                            if k != "hand" and v is not None)
+    best_key, best_kind = arm_spec[best_name]
+    nfeat = blocks[0]["F"][best_key].shape[1]
     print()
     print("=" * 78)
     print("VERDICT")
     print("=" * 78)
-    print(f"  best learned arm: {best_k[1]} at {best_k[0]:+.3f} vs hand {h:+.3f}")
-    print(f"  gain over hand-tuned coefficients: {h - best_k[0]:+.3f} pills")
-    if h - best_k[0] > 0.25:
+    print(f"  best learned arm: {best_name} ({nfeat} features) at {best_v:+.3f} "
+          f"vs hand {h:+.3f}")
+    print(f"  gain over hand-tuned coefficients: {h - best_v:+.3f} pills")
+    print()
+
+    if h - best_v > 0.25:
         print("  => supervised learning on rollout labels BEATS hand tuning at matched")
         print("     depth. Stage 3 is licensed, but the SIZE of this gain is an UPPER")
         print("     BOUND on the depth-3 benefit and must NOT be quoted as a prediction")
         print("     of it -- see caveat 2 below. Re-prove at depth 3 before claiming it.")
+        print()
+        print("  (No convergence gate is applied to a POSITIVE: a fit that beats hand")
+        print("   tuning while still label-starved is a STRONGER result, not a weaker")
+        print("   one, so the check would only ever argue against its own conclusion.)")
     else:
+        # GATE C -- convergence of the arm the VERDICT ACTUALLY RESTS ON.
+        # Gate B certified terms11 (11 features, ~273 positions per feature). The
+        # winning arm can be board one-hot at 896 features -- roughly 3 positions per
+        # feature, 82x thinner. terms11 having plateaued says nothing about whether
+        # THAT arm has. Without this, the "negative transfers, do not start Stage 3"
+        # branch could fire on a fit that simply ran out of labels, which is the
+        # Stage-1 error displaced one arm to the left.
+        print("=" * 78)
+        print(f"  GATE C -- has the WINNING arm ({best_name}, {nfeat} features)")
+        print(f"            converged? Gate B only certified terms11 (11 features).")
+        print("=" * 78)
+        c2 = []
+        for frac in (0.25, 0.5, 0.75, 1.0):
+            xs = run_arm(blocks, T, best_key, folds, best_kind, args, frac=frac)
+            c2.append(line(f"    {best_name} on {frac:.0%} of training positions", xs))
+        tail2 = c2[-2] - c2[-1] if len(c2) >= 2 and None not in c2[-2:] else float("nan")
+        print(f"\n    improvement over the last doubling: {tail2:+.3f} pills")
+        if not (abs(tail2) <= args.plateau_tol):
+            print()
+            print("  *** GATE C FAILED -- THE NEGATIVE IS NOT CLAIMED. ***")
+            print()
+            print(f"  The winning arm is still improving by {tail2:+.3f} pills per data")
+            print(f"  doubling at {nfeat} features and {T['P']} positions "
+                  f"(~{T['P']/nfeat:.1f} per feature).")
+            print("  Its loss to hand tuning is therefore a statement about the LABEL")
+            print("  BUDGET, not about hypothesis classes, and it does NOT transfer to")
+            print("  depth 3. Stage 3 is neither licensed nor refused on this evidence.")
+            print(f"  Next lever: more labelled positions (currently {T['P']}).")
+            return 4
+        print()
+        print(f"  GATE C PASSED (last doubling {tail2:+.3f}).")
         print("  => supervised learning does NOT beat hand tuning at matched depth,")
-        print("     with a fitting procedure that passed BOTH gates. That is a real")
-        print("     negative, and by caveat 2 it TRANSFERS: the leaf has more leverage")
-        print("     at depth 2 than at depth 3, so failing here implies failing there.")
+        print("     with a fitting procedure that passed ALL THREE gates -- including")
+        print("     convergence of the winning arm itself. That is a real negative, and")
+        print("     by caveat 2 it TRANSFERS: the leaf has more leverage at depth 2 than")
+        print("     at depth 3, so failing here implies failing there.")
         print("     Stage 3 should not be started on this.")
     print()
     print("  PRE-REGISTERED SCOPE (written before these numbers existed):")
