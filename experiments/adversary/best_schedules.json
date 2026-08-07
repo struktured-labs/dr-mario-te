@@ -1,0 +1,91 @@
+{
+  "_provenance": "Hunt B adversarial garbage scheduler. Champion = fast_rtl_x.variant(\"winner\") + eval47/terms47.g_stranded at ws=20, root-only (ab47.py::_choose_base(wt=0,ws=20), bit-exact via reach_root.choose_base32). Pill stream = real NES stream (NesPillSource), L11. Budget = 53 halves/game, derived from BURSTY_V1_RESULTS.md Sec.5's honest v1.1 fit (champion arm measured avg garbage/game = 52.925 halves, n=120). All schedules below are clear-triggered only (a volley may only follow the champion's own clear; see adversary_search.py::bin_of) and hard-capped at the same 53-halve budget as the honest model -- no schedule below is handed more material than a human sender would produce on average. Holdout seeds 5000000-5000119 (n=120), disjoint from GA training seeds 4000000-4000015. Source: adversary/validate_only.py + adversary/validate_result.json (raw run output).",
+  "budget_halves": 53,
+  "holdout_n": 120,
+  "holdout_seed_range": [5000000, 5000119],
+  "honest_baseline_v1_1_random": {
+    "description": "struktured-only (pool-decontaminated) bursty v1.1 fit, random column targeting -- the honest control every candidate below is compared against.",
+    "n": 120,
+    "dies_ahead_rate": 0.025,
+    "dies_ahead_ci95": [0.0, 0.053],
+    "topout_rate": 0.0333,
+    "clear_rate": 0.925,
+    "avg_garbage_halves": 42.35
+  },
+  "candidates": [
+    {
+      "name": "ga_near_spawn_a",
+      "rank": 1,
+      "summary": "Best dies-ahead candidate found. GA-discovered fire/size shape + near_spawn column targeting (columns ranked by distance to spawn cols 3-4). Converged independently in 3 separate GA search runs this session.",
+      "genome": {
+        "fire_prob_by_clear_size_bin": {"4-6": 0.365, "7-10": 0.416, "11+": 0.025},
+        "volley_size_weights": {"2": 0.184, "3": 0.233, "4": 0.199, "5": 0.152, "6": 0.232},
+        "target_mode": "near_spawn"
+      },
+      "holdout_n": 120,
+      "dies_ahead_rate": 0.325,
+      "dies_ahead_ci95": [0.241, 0.409],
+      "topout_rate": 0.658,
+      "clear_rate": 0.342,
+      "avg_garbage_halves": 35.08,
+      "exploit_size_dies_ahead_points": 30.0,
+      "exploit_size_dies_ahead_multiple": 13.0
+    },
+    {
+      "name": "ga_near_spawn_b",
+      "rank": 2,
+      "summary": "Second independent GA convergence, same near_spawn targeting, slightly different fire shape (higher 4-6 bin fire prob, zero 11+ fire). Best topout candidate among the near_spawn family.",
+      "genome": {
+        "fire_prob_by_clear_size_bin": {"4-6": 0.513, "7-10": 0.455, "11+": 0.0},
+        "volley_size_weights": {"2": 0.258, "3": 0.229, "4": 0.159, "5": 0.190, "6": 0.164},
+        "target_mode": "near_spawn"
+      },
+      "holdout_n": 120,
+      "dies_ahead_rate": 0.2833,
+      "dies_ahead_ci95": [0.203, 0.364],
+      "topout_rate": 0.8083,
+      "clear_rate": 0.1917,
+      "avg_garbage_halves": 32.21,
+      "exploit_size_dies_ahead_points": 25.8,
+      "exploit_size_dies_ahead_multiple": 11.3
+    },
+    {
+      "name": "honest_shape_spawn_target",
+      "rank": 3,
+      "summary": "ISOLATES THE TARGETING EFFECT: keeps the honest v1.1 model's OWN fire probabilities and volley-size mix (human-observed shape, not GA-tuned) and changes ONLY the column choice to spawn-first (cols 3,4 then rest). Achieves the exploit at the LOWEST average garbage of any candidate -- 27.2 halves, well under both the 53-halve budget and the honest baseline's own natural average of 42.35. Demonstrates the exploit is dominated by WHERE, not WHEN or HOW MUCH.",
+      "genome": {
+        "fire_prob_by_clear_size_bin": {"4-6": 0.282, "7-10": 0.625, "11+": 0.5},
+        "volley_size_weights": {"2": 0.643, "3": 0.143, "4": 0.143, "5": 0.036, "6": 0.036},
+        "target_mode": "spawn"
+      },
+      "holdout_n": 120,
+      "dies_ahead_rate": 0.2417,
+      "dies_ahead_ci95": [0.165, 0.318],
+      "topout_rate": 0.4667,
+      "clear_rate": 0.525,
+      "avg_garbage_halves": 27.21,
+      "exploit_size_dies_ahead_points": 21.7,
+      "exploit_size_dies_ahead_multiple": 9.7
+    },
+    {
+      "name": "always_spawn_max",
+      "rank": 4,
+      "summary": "Naive maximal heuristic: always fire (p=1.0 every bin), always max observed volley size, always spawn-column targeting. NEGATIVE CONTROL for the task's stated priority order: devastating on raw topout (95.8%, the single highest of any candidate) but WORSE than the honest baseline on dies-ahead specifically (0.8% vs 2.5%) -- it kills the champion too early/overwhelmingly (buries it outright) rather than at the doorstep-of-clearing signature the task asks to maximize FIRST. Included to show naive brute force is not the best lever for THIS specific failure mode.",
+      "genome": {
+        "fire_prob_by_clear_size_bin": {"4-6": 1.0, "7-10": 1.0, "11+": 1.0},
+        "volley_size_weights": {"2": 0.0, "3": 0.0, "4": 0.0, "5": 0.0, "6": 1.0},
+        "target_mode": "spawn"
+      },
+      "holdout_n": 120,
+      "dies_ahead_rate": 0.0083,
+      "dies_ahead_ci95": [0.0, 0.025],
+      "topout_rate": 0.9583,
+      "clear_rate": 0.0417,
+      "avg_garbage_halves": 33.93,
+      "exploit_size_dies_ahead_points": -1.7,
+      "exploit_size_dies_ahead_multiple": 0.33,
+      "exploit_size_topout_points": 92.5,
+      "exploit_size_topout_multiple": 29.0
+    }
+  ]
+}

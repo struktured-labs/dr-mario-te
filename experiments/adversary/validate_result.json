@@ -1,0 +1,143 @@
+{
+  "budget_halves": 53,
+  "holdout_seeds": [
+    5000000,
+    5000119
+  ],
+  "n": 120,
+  "candidates": {
+    "ga_near_spawn_a": {
+      "fire": {
+        "4-6": 0.36536897181816486,
+        "7-10": 0.4156494986616913,
+        "11-999": 0.025055204344575976
+      },
+      "size_weights": {
+        "2": 0.18410152926912224,
+        "3": 0.23279968847815752,
+        "4": 0.19903870175332875,
+        "5": 0.15207118141147202,
+        "6": 0.2319888990879195
+      },
+      "target_mode": "near_spawn"
+    },
+    "ga_near_spawn_b": {
+      "fire": {
+        "4-6": 0.5132947857140642,
+        "7-10": 0.45501320210952045,
+        "11-999": 0.0
+      },
+      "size_weights": {
+        "2": 0.2578867864545552,
+        "3": 0.228994252624265,
+        "4": 0.15891397910757388,
+        "5": 0.19001973263515182,
+        "6": 0.1641852491784541
+      },
+      "target_mode": "near_spawn"
+    },
+    "always_spawn_max": {
+      "fire": {
+        "4-6": 1.0,
+        "7-10": 1.0,
+        "11-999": 1.0
+      },
+      "size_weights": {
+        "2": 0.0,
+        "3": 0.0,
+        "4": 0.0,
+        "5": 0.0,
+        "6": 1.0
+      },
+      "target_mode": "spawn"
+    },
+    "honest_shape_spawn_target": {
+      "fire": {
+        "4-6": 0.28169014084507044,
+        "7-10": 0.625,
+        "11-999": 0.5
+      },
+      "size_weights": {
+        "2": 0.6428571428571429,
+        "3": 0.14285714285714285,
+        "4": 0.14285714285714285,
+        "5": 0.03571428571428571,
+        "6": 0.03571428571428571
+      },
+      "target_mode": "spawn"
+    }
+  },
+  "results": {
+    "honest_v1_1_random": {
+      "n": 120,
+      "clear": 111,
+      "topout": 4,
+      "stall": 5,
+      "dies_ahead": 3,
+      "clear_rate": 0.925,
+      "topout_rate": 0.03333333333333333,
+      "stall_rate": 0.041666666666666664,
+      "dies_ahead_rate": 0.025,
+      "avg_garbage": 42.35,
+      "max_garbage": 53,
+      "min_garbage": 12
+    },
+    "ga_near_spawn_a": {
+      "n": 120,
+      "clear": 41,
+      "topout": 79,
+      "stall": 0,
+      "dies_ahead": 39,
+      "clear_rate": 0.3416666666666667,
+      "topout_rate": 0.6583333333333333,
+      "stall_rate": 0.0,
+      "dies_ahead_rate": 0.325,
+      "avg_garbage": 35.083333333333336,
+      "max_garbage": 53,
+      "min_garbage": 10
+    },
+    "ga_near_spawn_b": {
+      "n": 120,
+      "clear": 23,
+      "topout": 97,
+      "stall": 0,
+      "dies_ahead": 34,
+      "clear_rate": 0.19166666666666668,
+      "topout_rate": 0.8083333333333333,
+      "stall_rate": 0.0,
+      "dies_ahead_rate": 0.2833333333333333,
+      "avg_garbage": 32.208333333333336,
+      "max_garbage": 53,
+      "min_garbage": 8
+    },
+    "always_spawn_max": {
+      "n": 120,
+      "clear": 5,
+      "topout": 115,
+      "stall": 0,
+      "dies_ahead": 1,
+      "clear_rate": 0.041666666666666664,
+      "topout_rate": 0.9583333333333334,
+      "stall_rate": 0.0,
+      "dies_ahead_rate": 0.008333333333333333,
+      "avg_garbage": 33.925,
+      "max_garbage": 53,
+      "min_garbage": 12
+    },
+    "honest_shape_spawn_target": {
+      "n": 120,
+      "clear": 63,
+      "topout": 56,
+      "stall": 1,
+      "dies_ahead": 29,
+      "clear_rate": 0.525,
+      "topout_rate": 0.4666666666666667,
+      "stall_rate": 0.008333333333333333,
+      "dies_ahead_rate": 0.24166666666666667,
+      "avg_garbage": 27.208333333333332,
+      "max_garbage": 53,
+      "min_garbage": 8
+    }
+  },
+  "total_seconds": 1113.082174891024
+}
