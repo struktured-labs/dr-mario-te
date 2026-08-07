@@ -32,10 +32,13 @@ import fcntl
 import argparse
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
+HERE = os.path.dirname(os.path.abspath(__file__))
 QA = "/home/struktured/projects/dr-mario-qa-wt/experiments"
 sys.path.insert(0, QA + "/adversary")
+sys.path.insert(0, HERE)
 
 import adversary_harness as AH  # noqa: E402
+import code_manifest  # noqa: E402
 
 
 def _play(seed):
@@ -103,6 +106,16 @@ def main():
     _lock = acquire_lock(a.out)          # noqa: F841 -- must stay referenced
     census_path = os.path.join(a.out, "census.jsonl")
     prog_path = os.path.join(a.out, "progress.json")
+
+    # Stamp the code that produced this data, at START. A 30h census outlives
+    # several edits to the tree it started from; without this the rows cannot be
+    # tied to the code that made them. AH is already imported, so from_imports()
+    # records the files actually resolved, not the ones assumed.
+    AH._lazy()
+    rolled = code_manifest.stamp(os.path.join(a.out, "manifest.json"),
+                                 extra={"lo": a.lo, "hi": a.hi,
+                                        "workers": a.workers, "chunk": a.chunk})
+    print(f"[census] code manifest {rolled[:16]} -> {a.out}/manifest.json", flush=True)
 
     done = load_done(census_path)
     todo = [s for s in range(a.lo, a.hi) if s not in done]

@@ -1,0 +1,56 @@
+{
+  "n_matches": 4,
+  "n_volleys": 28,
+  "n_clears": 89,
+  "volleys_by_match_side": {},
+  "clears_by_match_side": {},
+  "volley_size_hist": {
+    "2": 18,
+    "3": 4,
+    "4": 4,
+    "5": 1,
+    "6": 1
+  },
+  "volley_size_mean": 2.6785714285714284,
+  "volley_size_ci95": [
+    2.3214285714285716,
+    3.107142857142857
+  ],
+  "inter_volley_gap_mean_s": 27.416666666666668,
+  "inter_volley_gap_ci95_s": [
+    18.041666666666668,
+    37.333333333333336
+  ],
+  "inter_volley_gap_n": 24,
+  "p_volley_within_k_by_clear_size": {
+    "4-6": {
+      "p": 0.28169014084507044,
+      "n": 71,
+      "hits": 20,
+      "ci95": [
+        0.18309859154929578,
+        0.39436619718309857
+      ]
+    },
+    "7-10": {
+      "p": 0.625,
+      "n": 16,
+      "hits": 10,
+      "ci95": [
+        0.375,
+        0.875
+      ]
+    },
+    "11-999": {
+      "p": 0.5,
+      "n": 2,
+      "hits": 1,
+      "ci95": [
+        0,
+        1
+      ]
+    }
+  },
+  "k_seconds": 5.0,
+  "lock_crosscheck_annotated_of_total": "0/0"
+}
