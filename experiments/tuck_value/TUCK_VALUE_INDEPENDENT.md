@@ -64,16 +64,19 @@ run — the effect is not uniform:
 | 120–399 | 280 | 20.4% → 11.4% | −0.089 [−0.146, −0.032] | 45 vs 20, p=0.0026 |
 | 0–399 (headline) | 400 | 19.2% → 14.0% | −0.053 [−0.100, −0.008] | 57 vs 36, p=0.038 |
 
-A permutation test on the block labels — shuffling which seeds are called "0–119" 20,000 times,
-holding every game fixed — puts a split this extreme at **p=0.023**, so it is not what a random
-partition of the same sizes produces. The boundary was **not chosen by me and not chosen to
-maximise anything**: it is the co-sim's seed block, specified externally before I looked, which
-is what makes the test worth anything.
+A permutation test on the block labels puts a split this extreme at **p=0.023**, on a boundary
+specified externally before I looked. That looked like real regime structure, and I rewrote this
+document around it.
 
-**So treat −5.25 points at p=0.038 as suggestive, not established.** It is an average over an
-effect that is genuinely non-uniform, and on the 120 seeds where a second method can check it,
-this rig shows nothing. That is a weaker claim than the one this document made an hour ago, and
-it is the correct one.
+**It is not. `block_forensics.py` ran five checks on the 400 games already played, and the
+split is a coincidence — the headline recovers.** The verdict and its evidence are in
+[the block split](#the-block-split-was-a-coincidence-and-here-is-how-that-was-established);
+the short form is that the effect drifts smoothly across seed ranges rather than stepping at
+119, and the one genuine structural boundary in the seed space shows nothing at all.
+
+**So −5.25 points at p=0.038 over n=400 is the estimate.** It is a single modest p-value and
+should be treated as such, but it is not undermined by the block split, and **the project does
+not need to stratify its seed ranges.**
 
 **The survival half of that is entirely stalls, not topouts** (28 → 12, p=0.014; topouts
 49 → 44, p=0.65 — a wash), which is the signature of digging buried viruses out rather than of
@@ -273,6 +276,70 @@ exactly the ply-1 slice of the arm that cannot be built. Diffing it against the 
 separates "different tuck chosen" from "same tuck, different outcome". Output:
 `results/decisions_for_cosim.json` — this rig picks a tuck on 2/20 and 5/30 of those boards,
 with a tuck candidate available on 7/20 and 19/30.
+
+---
+
+## The block split was a coincidence, and here is how that was established
+
+I weakened my own headline on a p=0.023 seed-block split and rewrote this document around it.
+That was premature. Five checks on the games already played — no new CPU — say it is noise.
+Reported here at length rather than quietly reversed, because "I gave up a real result to a
+coincidence" is exactly as much a finding as the split would have been.
+
+**1. The blocks barely differ on their inputs.** Every feature a seed fixes before a pill is
+placed:
+
+| feature | 0–119 | 120–399 | perm p |
+|---|---|---|---|
+| viruses, virus rows, column spread, colour balance | identical to 3 d.p. | | 0.22–1.00 |
+| `pill_doubles_frac` | 0.346 | 0.332 | 0.051 |
+| `pill_distinct` | 8.92 | 8.99 | 0.107 |
+| **`pill_switch_rate`** | **0.833** | **0.867** | **0.0000** |
+
+One of ten features differs (chance expectation at ten tests: 0.5). Low seeds do produce
+slightly more repeated consecutive capsules — a real LFSR property, since `s0 = (seed>>8)&0xFF`
+is 0 for every seed below 256. **But that feature does not predict the effect** (r = −0.059,
+p = 0.23, check 5), and block membership can only matter through something the block
+determines.
+
+**2. The shape is a gradient, not a cliff — and the wobble inside the "effect" block is bigger
+than the gap that defined it.**
+
+| block | n | mean effect |
+|---|---|---|
+| 0–119 | 120 | **+0.033** |
+| 120–212 | 93 | −0.172 |
+| 213–306 | 94 | −0.075 |
+| 307–399 | 93 | −0.022 |
+
+Spread across the three thirds of the supposedly-uniform block: **0.151**. Gap from 0–119 to
+its nearest third: **0.055**. The effect wanders, decaying back toward 0–119's value by the
+last third. "0–119 is a different regime" is not a description this data supports; "the
+per-seed effect is noisy at n≈100" is.
+
+**3. A scan finds bigger splits elsewhere.** The largest split anywhere is |0.166| at k=94,
+against |0.123| at the pre-specified k=119, and under the null the maximum over all split
+points exceeds the k=119 value **39% of the time**. The p=0.023 remains honest *for a
+pre-specified boundary* — but the data is full of apparent block structure, which is what a
+binary outcome at this n looks like.
+
+**4. The one real boundary in the seed space shows nothing.** `NesPillSource` maps
+`s0 = (seed>>8)&0xFF`, so seeds below 256 and seeds 256+ occupy genuinely different LFSR state
+regions. That is the only discontinuity here that exists independently of anything I chose:
+effect −0.055 below 256 versus −0.049 at or above, **p=0.92**. If seed blocks were regimes,
+this is the boundary where it should show, and it is flat.
+
+**5. Nothing predicts the per-seed effect.** One of ten features reaches p<0.05
+(`virus_colour_imbalance`, r = −0.104, p = 0.042) against a chance expectation of 0.5 — and at
+ten tests, at least one hit at p<0.05 happens about 40% of the time by luck. No mechanism.
+
+**Verdict: fluke, and the practical consequence is that nobody needs to stratify.** Contiguous
+seed ranges are interchangeable in this substrate as far as this data can tell, which is the
+answer that costs the project the least. Two caveats I would keep: extending seed coverage is
+still good practice for reasons that have nothing to do with this (the co-sim's 135–234
+extension remains worth running as a genuine out-of-sample check, on a different rig and
+different firmware, and I would rather it ran than not); and this is one substrate at one
+level, so it is evidence about L11 bursty seeds, not a general licence.
 
 ---
 
