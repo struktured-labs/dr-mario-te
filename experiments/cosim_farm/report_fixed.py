@@ -140,10 +140,28 @@ def preregistered_verdict(d):
                    f"becomes a hardware priority -- re-prove on the near-death control "
                    f"first.")
     pills_txt = "" if not pb else f", conditional pills {pb['mean_delta']:+.1f}"
-    return (3, f"OUTCOME 3 -- WASH at this n. PARK IT. Survival NOT SIGNIFICANT ({b} cand-only vs {c} champion-only); "
-               f"the failure-ranked combined test still spans zero{pills_txt}. "
-               f"NOT a wasted night -- it retires a question this project has spent weeks "
-               f"on, on validated firmware with a validated control.")
+
+    # --- 3b: consistently ONE-DIRECTIONAL but underpowered. Added by the team lead after
+    # seeing interim numbers, which normally disqualifies an amendment. Admissible here on
+    # a test worth keeping for any mid-flight rule change: DOES IT ALTER WHAT WE DO, OR
+    # ONLY WHAT WE SAY? 3 and 3b take the SAME action (do not build), so it changes only
+    # the characterisation -- and it makes the report more conservative in BOTH directions
+    # at once, refusing "tuck is harmful" as firmly as "tuck has no survival cost".
+    # Had it moved the decision, the flawed wording would have had to stand.
+    if c != b:
+        toward = "the CHAMPION" if c > b else "the CANDIDATE"
+        return (3.5, f"OUTCOME 3b -- DO NOT BUILD, AND DO NOT CLAIM HARM. Survival "
+                     f"discordance is NOT SIGNIFICANT but {max(b, c)}-to-{min(b, c)} "
+                     f"one-directional toward {toward} (p={cl['mcnemar_p']}). The "
+                     f"survival question is OPEN, NOT ANSWERED, and settling it needs n "
+                     f"well past this{pills_txt}. Same action as outcome 3; only the "
+                     f"characterisation differs.")
+
+    return (3, f"OUTCOME 3 -- WASH at this n. PARK IT. Survival discordance is EVEN "
+               f"({b} vs {c}); the failure-ranked combined test still spans "
+               f"zero{pills_txt}. NOT a wasted night -- it retires a question this "
+               f"project has spent weeks on, on validated firmware with a validated "
+               f"control.")
 
 
 def block_verdict(d_null, d_oos):
