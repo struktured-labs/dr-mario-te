@@ -237,6 +237,68 @@ the combined bad-end test does (p=0.013).
 
 ---
 
+## Which question these arms answer
+
+**These arms use this rig's own enumerator and scorer. They price an idealised tuck
+vocabulary, not the descriptors `5d010f62` publishes.** That distinction is not pedantry: the
+tuck descriptor is an *RTL output*, so "honour the descriptor this firmware published" and
+"pick the best tuck available" are different experiments with different answers, and the gap
+between them prices how much of the ideal vocabulary today's firmware actually finds.
+
+A full descriptor-**consuming** arm is not buildable here, and the reason is structural rather
+than a matter of effort: the descriptor is computed from the live board, so it exists only for
+positions the RTL itself visited. From the first ply where the two rigs diverge, no published
+descriptor exists for the board this rig is looking at. Consuming a descriptor stream requires
+the RTL in the loop — which is the co-sim, by definition.
+
+The tractable substitute is shipped: `export_decisions.py` runs this decider over the co-sim's
+own `hostdata_l11_20` and `hostdata_l11_hz30` corpora and emits `(col, o4)` per board, which is
+exactly the ply-1 slice of the arm that cannot be built. Diffing it against the RTL's choices
+separates "different tuck chosen" from "same tuck, different outcome". Output:
+`results/decisions_for_cosim.json` — this rig picks a tuck on 2/20 and 5/30 of those boards,
+with a tuck candidate available on 7/20 and 19/30.
+
+---
+
+## The two gates that self-consistency cannot provide
+
+Added after the co-sim found a pill-colour bug that was invisible to **every** structural gate
+it had — its agreement gate fed two binaries the same wrong input, and its corpus generator
+shared an encoder with its game loop, so a systematic input error cancelled out of both sides.
+The ten gates in the next section all prove *internal* consistency. These two ask whether this
+rig agrees with the world outside it. Both pass; `gates.py` re-runs them.
+
+**Colour convention, checked empirically at every boundary** (not by reading the code):
+
+| boundary | observed values |
+|---|---|
+| `NesPillSource` capsule colours | 1, 2, 3 |
+| board colour plane (0 = EMPTY) | 0, 1, 2, 3 |
+| `tuck_enum` placement colours | 1, 2, 3 |
+| colours written by the tuck path | 1, 2, 3 |
+
+**This rig was never exposed to the co-sim's failure mode, for a structural reason worth
+stating.** Its arms never talk to a copro mailbox — pill colours go faithful sim → `tuck_enum`
+→ fast-sim eval and back, entirely in the sim's native 1..3 space — so there is no 0-based
+boundary for them to cross. The only place the project's 0-based encoding is read at all is
+`calibrate_theta.py` / `export_decisions.py`, reading the co-sim's hostdata; that decode is
+checked by producing **48/48 viruses on every L11 board**, which is the level's true starting
+count and would not survive an off-by-one.
+
+And the failure would be **loud here, not silent**. The co-sim's bug hid because 1..3 written
+into a 2-bit 0..2 field still looks like a valid colour. The reverse cannot hide: 0 is EMPTY in
+the faithful sim's plane, so a 0-based board loses every cell of its first colour. Measured on
+a real board: **16 of 48 occupied cells vanish (33%)**. Demonstrated rather than asserted, in
+`gates._selftest_zero_based_board_is_loud`.
+
+**Outcome plausibility, anchored to a known real rate.** The shipped champion has 0 failures in
+1,474 clean L11 games, so this rig's clean champion arm must clear essentially everything or
+nothing computed from it means anything. Measured: **99.8% (399/400), floor 97% — PASS.** The
+gate is deliberately set on the arm that is supposed to be *normal*; putting a floor on arms
+B/C/D would be putting a floor on the finding rather than on the rig.
+
+---
+
 ## Validation
 
 Every gate below targets a specific way this rig could be silently wrong.

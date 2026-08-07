@@ -1,0 +1,834 @@
+{
+ "produced_by": "experiments/tuck_value/export_decisions.py",
+ "decider": "fast_rtl_x variant('winner') + terms47.g_stranded ws=20, tier-3 tuck branch via reach_root._tuck_branch_pick with firmware_tier3_ab.firmware_tier_of",
+ "theta": 150,
+ "colour_convention": "pill colours and board plane are 1..3 with 0=EMPTY (faithful-sim native); hostdata's 0-based values are converted on read, verified by virus-count 48/48 at L11",
+ "o4_convention": "o4 as the RTL reports it; variant = fast_rtl_x._VAR_OF_O4[o4]",
+ "caveat": "this rig's OWN enumerator/scorer, i.e. the idealised vocabulary, not what 5d010f62 publishes",
+ "corpora": {
+  "hostdata_l11_20.txt": [
+   {
+    "board": 0,
+    "pills_1based": [
+     1,
+     3,
+     3,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 3,
+    "base_o4": 0,
+    "col": 3,
+    "o4": 0
+   },
+   {
+    "board": 1,
+    "pills_1based": [
+     2,
+     2,
+     1,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 7,
+    "base_o4": 0,
+    "col": 7,
+    "o4": 0
+   },
+   {
+    "board": 2,
+    "pills_1based": [
+     2,
+     1,
+     2,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 2,
+    "base_col": 2,
+    "base_o4": 1,
+    "col": 2,
+    "o4": 1
+   },
+   {
+    "board": 3,
+    "pills_1based": [
+     3,
+     3,
+     2,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 6,
+    "base_col": 5,
+    "base_o4": 0,
+    "col": 5,
+    "o4": 0
+   },
+   {
+    "board": 4,
+    "pills_1based": [
+     3,
+     1,
+     1,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 1,
+    "base_o4": 1,
+    "col": 1,
+    "o4": 1
+   },
+   {
+    "board": 5,
+    "pills_1based": [
+     3,
+     2,
+     3,
+     2
+    ],
+    "kind": "base",
+    "n_tuck_cands": 4,
+    "base_col": 6,
+    "base_o4": 3,
+    "col": 6,
+    "o4": 3
+   },
+   {
+    "board": 6,
+    "pills_1based": [
+     1,
+     3,
+     1,
+     2
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 4,
+    "base_o4": 3,
+    "col": 4,
+    "o4": 3
+   },
+   {
+    "board": 7,
+    "pills_1based": [
+     2,
+     1,
+     1,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 4,
+    "base_o4": 2,
+    "col": 4,
+    "o4": 2
+   },
+   {
+    "board": 8,
+    "pills_1based": [
+     1,
+     3,
+     1,
+     2
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 1,
+    "base_o4": 0,
+    "col": 1,
+    "o4": 0
+   },
+   {
+    "board": 9,
+    "pills_1based": [
+     3,
+     1,
+     2,
+     2
+    ],
+    "kind": "base",
+    "n_tuck_cands": 6,
+    "base_col": 3,
+    "base_o4": 3,
+    "col": 3,
+    "o4": 3
+   },
+   {
+    "board": 10,
+    "pills_1based": [
+     2,
+     1,
+     1,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 4,
+    "base_o4": 1,
+    "col": 4,
+    "o4": 1
+   },
+   {
+    "board": 11,
+    "pills_1based": [
+     2,
+     1,
+     1,
+     1
+    ],
+    "kind": "tuck",
+    "n_tuck_cands": 6,
+    "base_col": 5,
+    "base_o4": 3,
+    "col": 2,
+    "o4": 2,
+    "rest_row": 8,
+    "cells": [
+     8,
+     2,
+     8,
+     3
+    ],
+    "margin_over_base": 235.0,
+    "steered_col": 2,
+    "steered_o4": 2
+   },
+   {
+    "board": 12,
+    "pills_1based": [
+     2,
+     1,
+     2,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 0,
+    "base_o4": 0,
+    "col": 0,
+    "o4": 0
+   },
+   {
+    "board": 13,
+    "pills_1based": [
+     1,
+     2,
+     1,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 1,
+    "base_o4": 1,
+    "col": 1,
+    "o4": 1
+   },
+   {
+    "board": 14,
+    "pills_1based": [
+     3,
+     2,
+     2,
+     1
+    ],
+    "kind": "tuck",
+    "n_tuck_cands": 2,
+    "base_col": 2,
+    "base_o4": 1,
+    "col": 4,
+    "o4": 3,
+    "rest_row": 3,
+    "cells": [
+     3,
+     4,
+     3,
+     5
+    ],
+    "margin_over_base": 332.0,
+    "steered_col": 4,
+    "steered_o4": 3
+   },
+   {
+    "board": 15,
+    "pills_1based": [
+     3,
+     1,
+     2,
+     2
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 4,
+    "base_o4": 0,
+    "col": 4,
+    "o4": 0
+   },
+   {
+    "board": 16,
+    "pills_1based": [
+     3,
+     2,
+     3,
+     2
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 5,
+    "base_o4": 1,
+    "col": 5,
+    "o4": 1
+   },
+   {
+    "board": 17,
+    "pills_1based": [
+     3,
+     3,
+     3,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 4,
+    "base_o4": 0,
+    "col": 4,
+    "o4": 0
+   },
+   {
+    "board": 18,
+    "pills_1based": [
+     2,
+     1,
+     1,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 2,
+    "base_col": 4,
+    "base_o4": 2,
+    "col": 4,
+    "o4": 2
+   },
+   {
+    "board": 19,
+    "pills_1based": [
+     3,
+     2,
+     3,
+     2
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 4,
+    "base_o4": 0,
+    "col": 4,
+    "o4": 0
+   }
+  ],
+  "hostdata_l11_hz30.txt": [
+   {
+    "board": 0,
+    "pills_1based": [
+     1,
+     3,
+     2,
+     2
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 5,
+    "base_o4": 2,
+    "col": 5,
+    "o4": 2
+   },
+   {
+    "board": 1,
+    "pills_1based": [
+     1,
+     2,
+     2,
+     2
+    ],
+    "kind": "base",
+    "n_tuck_cands": 10,
+    "base_col": 0,
+    "base_o4": 1,
+    "col": 0,
+    "o4": 1
+   },
+   {
+    "board": 2,
+    "pills_1based": [
+     3,
+     3,
+     1,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 6,
+    "base_col": 2,
+    "base_o4": 0,
+    "col": 2,
+    "o4": 0
+   },
+   {
+    "board": 3,
+    "pills_1based": [
+     2,
+     1,
+     1,
+     3
+    ],
+    "kind": "tuck",
+    "n_tuck_cands": 4,
+    "base_col": 4,
+    "base_o4": 0,
+    "col": 3,
+    "o4": 0,
+    "rest_row": 5,
+    "cells": [
+     4,
+     3,
+     5,
+     3
+    ],
+    "margin_over_base": 808.0,
+    "steered_col": 3,
+    "steered_o4": 0
+   },
+   {
+    "board": 4,
+    "pills_1based": [
+     1,
+     3,
+     2,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 6,
+    "base_col": 3,
+    "base_o4": 2,
+    "col": 3,
+    "o4": 2
+   },
+   {
+    "board": 5,
+    "pills_1based": [
+     1,
+     2,
+     3,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 3,
+    "base_o4": 2,
+    "col": 3,
+    "o4": 2
+   },
+   {
+    "board": 6,
+    "pills_1based": [
+     1,
+     1,
+     2,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 5,
+    "base_o4": 0,
+    "col": 5,
+    "o4": 0
+   },
+   {
+    "board": 7,
+    "pills_1based": [
+     2,
+     3,
+     3,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 6,
+    "base_o4": 2,
+    "col": 6,
+    "o4": 2
+   },
+   {
+    "board": 8,
+    "pills_1based": [
+     3,
+     3,
+     2,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 1,
+    "base_o4": 0,
+    "col": 1,
+    "o4": 0
+   },
+   {
+    "board": 9,
+    "pills_1based": [
+     3,
+     3,
+     1,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 5,
+    "base_o4": 0,
+    "col": 5,
+    "o4": 0
+   },
+   {
+    "board": 10,
+    "pills_1based": [
+     2,
+     3,
+     1,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 6,
+    "base_col": 3,
+    "base_o4": 1,
+    "col": 3,
+    "o4": 1
+   },
+   {
+    "board": 11,
+    "pills_1based": [
+     1,
+     2,
+     3,
+     3
+    ],
+    "kind": "tuck",
+    "n_tuck_cands": 28,
+    "base_col": 0,
+    "base_o4": 1,
+    "col": 2,
+    "o4": 2,
+    "rest_row": 7,
+    "cells": [
+     7,
+     2,
+     7,
+     3
+    ],
+    "margin_over_base": 410.0,
+    "steered_col": 2,
+    "steered_o4": 2
+   },
+   {
+    "board": 12,
+    "pills_1based": [
+     2,
+     1,
+     2,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 3,
+    "base_o4": 3,
+    "col": 3,
+    "o4": 3
+   },
+   {
+    "board": 13,
+    "pills_1based": [
+     1,
+     1,
+     3,
+     3
+    ],
+    "kind": "tuck",
+    "n_tuck_cands": 2,
+    "base_col": 4,
+    "base_o4": 0,
+    "col": 6,
+    "o4": 2,
+    "rest_row": 7,
+    "cells": [
+     7,
+     6,
+     7,
+     7
+    ],
+    "margin_over_base": 188.0,
+    "steered_col": 6,
+    "steered_o4": 2
+   },
+   {
+    "board": 14,
+    "pills_1based": [
+     3,
+     3,
+     1,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 2,
+    "base_col": 5,
+    "base_o4": 0,
+    "col": 5,
+    "o4": 0
+   },
+   {
+    "board": 15,
+    "pills_1based": [
+     3,
+     3,
+     3,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 2,
+    "base_col": 6,
+    "base_o4": 2,
+    "col": 6,
+    "o4": 2
+   },
+   {
+    "board": 16,
+    "pills_1based": [
+     2,
+     2,
+     1,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 2,
+    "base_col": 3,
+    "base_o4": 0,
+    "col": 3,
+    "o4": 0
+   },
+   {
+    "board": 17,
+    "pills_1based": [
+     2,
+     1,
+     2,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 5,
+    "base_o4": 0,
+    "col": 5,
+    "o4": 0
+   },
+   {
+    "board": 18,
+    "pills_1based": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 2,
+    "base_o4": 0,
+    "col": 2,
+    "o4": 0
+   },
+   {
+    "board": 19,
+    "pills_1based": [
+     3,
+     3,
+     1,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 4,
+    "base_col": 5,
+    "base_o4": 0,
+    "col": 5,
+    "o4": 0
+   },
+   {
+    "board": 20,
+    "pills_1based": [
+     3,
+     3,
+     1,
+     3
+    ],
+    "kind": "tuck",
+    "n_tuck_cands": 4,
+    "base_col": 4,
+    "base_o4": 0,
+    "col": 5,
+    "o4": 1,
+    "rest_row": 4,
+    "cells": [
+     3,
+     5,
+     4,
+     5
+    ],
+    "margin_over_base": 455.0,
+    "steered_col": 5,
+    "steered_o4": 1
+   },
+   {
+    "board": 21,
+    "pills_1based": [
+     3,
+     3,
+     1,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 4,
+    "base_col": 7,
+    "base_o4": 0,
+    "col": 7,
+    "o4": 0
+   },
+   {
+    "board": 22,
+    "pills_1based": [
+     2,
+     1,
+     3,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 4,
+    "base_col": 5,
+    "base_o4": 1,
+    "col": 5,
+    "o4": 1
+   },
+   {
+    "board": 23,
+    "pills_1based": [
+     3,
+     3,
+     3,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 8,
+    "base_col": 6,
+    "base_o4": 0,
+    "col": 6,
+    "o4": 0
+   },
+   {
+    "board": 24,
+    "pills_1based": [
+     1,
+     1,
+     1,
+     1
+    ],
+    "kind": "base",
+    "n_tuck_cands": 2,
+    "base_col": 2,
+    "base_o4": 0,
+    "col": 2,
+    "o4": 0
+   },
+   {
+    "board": 25,
+    "pills_1based": [
+     3,
+     3,
+     2,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 2,
+    "base_col": 0,
+    "base_o4": 0,
+    "col": 0,
+    "o4": 0
+   },
+   {
+    "board": 26,
+    "pills_1based": [
+     3,
+     2,
+     2,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 4,
+    "base_o4": 0,
+    "col": 4,
+    "o4": 0
+   },
+   {
+    "board": 27,
+    "pills_1based": [
+     2,
+     3,
+     3,
+     2
+    ],
+    "kind": "base",
+    "n_tuck_cands": 0,
+    "base_col": 1,
+    "base_o4": 3,
+    "col": 1,
+    "o4": 3
+   },
+   {
+    "board": 28,
+    "pills_1based": [
+     1,
+     1,
+     3,
+     3
+    ],
+    "kind": "base",
+    "n_tuck_cands": 22,
+    "base_col": 5,
+    "base_o4": 0,
+    "col": 5,
+    "o4": 0
+   },
+   {
+    "board": 29,
+    "pills_1based": [
+     1,
+     3,
+     3,
+     3
+    ],
+    "kind": "tuck",
+    "n_tuck_cands": 4,
+    "base_col": 1,
+    "base_o4": 2,
+    "col": 3,
+    "o4": 2,
+    "rest_row": 4,
+    "cells": [
+     4,
+     3,
+     4,
+     4
+    ],
+    "margin_over_base": 277.0,
+    "steered_col": 3,
+    "steered_o4": 2
+   }
+  ]
+ }
+}
