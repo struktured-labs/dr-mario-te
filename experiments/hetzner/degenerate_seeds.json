@@ -1,0 +1,17 @@
+{
+  "min_colours": 3,
+  "n_audited": 65536,
+  "degenerate_seeds": [
+    1
+  ],
+  "detail": [
+    {
+      "seed": 1,
+      "n_ids": 1,
+      "n_colours": 1,
+      "colours": [
+        1
+      ]
+    }
+  ]
+}

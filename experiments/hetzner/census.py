@@ -41,16 +41,79 @@ import adversary_harness as AH  # noqa: E402
 import code_manifest  # noqa: E402
 
 
+def pill_stream_colours(seed):
+    """How many distinct COLOURS this seed's 128-capsule buffer can deliver.
+
+    Fewer than 3 means the seed cannot clear all three virus colours, so no
+    policy could win it. Exactly ONE seed in 65,536 is affected -- seed 1, which
+    NesPillSource maps to LFSR state (0,1); that steps straight into the
+    ABSORBING state (0,0), after which the low nibble is 0 forever and every
+    capsule is id 0 = (1,1). Verified exhaustively by audit_pill_streams.py.
+    """
+    from nes_pills import gen_sequence, PILL_COLORS
+    s0, s1 = (seed >> 8) & 0xFF, seed & 0xFF
+    if (s0, s1) == (0, 0):
+        s0, s1 = 0x89, 0x88          # NesPillSource's own substitution
+    ids, _, _ = gen_sequence(s0, s1)
+    cols = set()
+    for i in set(ids):
+        a, b = PILL_COLORS[i]
+        cols.add(a)
+        cols.add(b)
+    return len(cols)
+
+
+def classify_degenerate(trace, n_colours):
+    """Is this row a NON-GAME rather than a loss? Returns a reason, or None.
+
+    Two independent checks, on purpose:
+      * INPUT side -- the capsule stream cannot deliver all three colours, so no
+        policy could have won. Exact, and knowable a priori.
+      * OUTPUT side -- the trace collapses onto one or two moves. Defence in
+        depth: it catches a no-progress cycle whose CAUSE we have not
+        anticipated, which is precisely what the input check would miss.
+
+    A degenerate row is RELABELLED, not discarded: it stays on disk with its
+    evidence so the call is auditable, it simply must never be pooled into a
+    failure count. A non-game counted as a loss both inflates the failure rate
+    and destroys real structure (the genuine clean failures all end at the LAST
+    virus; a bogus row with 48 left would bury that signature).
+    """
+    if n_colours < 3:
+        return f"pill stream delivers only {n_colours} colour(s)"
+    if len(trace) < 20:
+        return None
+    counts = {}
+    for _i, a in trace:
+        counts[a] = counts.get(a, 0) + 1
+    if len(counts) <= 2:
+        return f"only {len(counts)} distinct move(s) over {len(trace)} plies"
+    top = max(counts.values())
+    if top / len(trace) >= 0.8:
+        return f"one move is {100 * top / len(trace):.0f}% of {len(trace)} plies"
+    return None
+
+
 def _play(seed):
     """Worker: full game, prune fixtures on success. Returns a JSON-ready row."""
     r = AH.play_seed(seed)
+    trace = [[int(i), int(a)] for i, a in r["trace"]]
+    n_colours = pill_stream_colours(seed)
     row = {"seed": r["seed"], "result": r["result"], "pills": r["pills"],
            "viruses_left": r["viruses_left"], "dies_ahead": r["dies_ahead"],
-           "n_moves": len(r["trace"])}
-    if r["result"] != "clear":
+           "n_moves": len(trace), "n_pill_colours": n_colours}
+
+    reason = classify_degenerate(trace, n_colours)
+    if reason is not None:
+        row["result"] = "degenerate"
+        row["degenerate_reason"] = reason
+        row["original_result"] = r["result"]
+        row["dies_ahead"] = False
+
+    if row["result"] != "clear":
         # the valuable artifact: fatal board + exact replay trace
         row["board"] = r["first_topout_board"]
-        row["trace"] = [[int(i), int(a)] for i, a in r["trace"]]
+        row["trace"] = trace
     return row
 
 
@@ -126,7 +189,9 @@ def main():
 
     t_start = time.monotonic()
     n_done_run = 0
-    counts = {"clear": 0, "topout": 0, "stall": 0, "dies_ahead": 0}
+    # "degenerate" is tracked SEPARATELY from the failure classes on purpose --
+    # it is a non-game, not a loss, and must never be pooled into a failure rate.
+    counts = {"clear": 0, "topout": 0, "stall": 0, "degenerate": 0, "dies_ahead": 0}
     # re-count what's already on disk so the running tally is whole-block
     if done:
         with open(census_path) as f:
@@ -171,7 +236,8 @@ def main():
                   f"chunk {len(rows)} in {dt:.1f}s  "
                   f"rate {rate:.2f} g/s  ETA {eta_h:.1f}h  "
                   f"clear={counts['clear']} topout={counts['topout']} "
-                  f"stall={counts['stall']} dies_ahead={counts['dies_ahead']}",
+                  f"stall={counts['stall']} dies_ahead={counts['dies_ahead']} "
+                  f"degen={counts['degenerate']}",
                   flush=True)
 
             with open(prog_path, "w") as f:
