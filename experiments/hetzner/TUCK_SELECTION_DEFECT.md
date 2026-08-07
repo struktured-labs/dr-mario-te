@@ -282,3 +282,51 @@ defect cannot certify the component the defect lives in.
 FIRST, the EH one-liner SECOND.** EH alone makes tucks fire *less* while still
 admitting bad ones — applied out of order it would read as a regression and be
 misread as "tucks don't help".
+
+---
+
+# THE WIN IS SPURIOUS — measured, 192x above the base rate
+
+The last open question was whether the firmware's WIN-sentinel valuations are
+*genuine* (those boards really do have a tuck that clears the last virus) or
+spurious. Measured by applying every firmware-set tuck candidate to its board
+and counting viruses remaining — the same `virus_count == 0` condition the
+search uses to emit the sentinel:
+
+```
+boards with >=1 tuck candidate                          1,439
+  boards where ANY candidate genuinely reaches vc==0        4  =  0.278%
+tuck candidates scored                                 12,810
+  candidates genuinely winning                              5  =  0.039%
+viruses remaining after a tuck: mean 14.2, median 12, min 0
+```
+
+The firmware WIN-scored **16 of 30 boards = 53.3%** — **192x the measured base
+rate.** Under the measured rate, P(≥16 of 30 boards genuinely winnable) =
+**1.8e-33**.
+
+⇒ **THE WIN SCORING IS SPURIOUS. Possibility (1) is excluded.** The tuck path
+returns WIN for positions that are not won — typically with **12 viruses still
+on the board**.
+
+## Scope, stated exactly
+
+This measures the **base rate** of genuinely-winning tucks on 1,439 comparable
+mid-game L11 boards, not the co-sim's specific 16. It does not need to: at a
+0.278% base rate, 16-of-30 is excluded by 33 orders of magnitude. A direct
+replay of those exact 16 would make it airtight and costs the co-sim lane
+minutes, but no plausible board selection closes a 192x gap.
+
+## The chain, complete
+
+```
+tuck path returns WIN (spurious) for un-won positions
+  -> candidate valued ~30000 against a base of 1184-5963
+  -> clears theta=150 by ~25000  => gate inert below ~24000
+  -> no-ops selected freely (all candidates tie at the sentinel)
+  -> root-placement overwrite faithfully enacts them
+  -> arm D collapses to 0% clear
+```
+Everything else measured tonight is downstream bookkeeping of that one fault:
+the set is better, the ranking is clean under correct scoring, execution is
+clean, the arithmetic does not overflow, and the overwrite is doing its job.
