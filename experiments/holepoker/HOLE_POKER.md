@@ -31,7 +31,11 @@ replayed through the Verilator co-sim.** Named validation targets are in §8.
    across a 4.6x swing in death rate, so it is not a single-setting artifact.
 5. **So: depth AND eval, roughly half each.** Depth-4 is worth ~40% of pressure
    deaths — a real, sizeable, testable prize. It is *not* the whole disease.
-6. **QD archive: 42/405 cells, 86 deaths, 0 rejected by the admission gate.**
+6. **The depth result REPLICATES at human cadence.** Frozen-schedule bursty
+   (fidelity gate 10/10): **E=1 = 41%** vs drip's 40%, dies-ahead 69% vs 75%.
+   Gated-d4 is more selective under bursty (66.8% gate rate → **15.6x** vs
+   20.2x) but still does not rescue d4's economics.
+7. **QD archive: 42/405 cells, 86 deaths, 0 rejected by the admission gate.**
    `cascade_backfire` is a hard NULL (the champion never dies by clearing into
    its own death); `colour_starvation` occupies only E=1 (always shallow-
    escapable); `garbage_flood` spans every escape bin. Empty regions are the
@@ -472,6 +476,70 @@ The reason is dose, not a defect in #78: drip injects every 5-8 plies, so
   Under bursty cadence the gate rate should fall towards #78's 47.8%, which
   would move the whole curve left. That makes the frozen-schedule bursty
   variant a prerequisite for a real go/no-go, not a nice-to-have.
+
+## 6d. Frozen-schedule BURSTY — the depth result replicates at human cadence
+
+The drip result had a scope limit: the four-lane diagnosis is anchored on the
+human-fitted **bursty** model, but bursty's volleys key on the champion's **own
+clear size**, so deviating a move changes the future pressure and the escape
+counterfactual stops isolating the move. `bursty_frozen.py` removes exactly that
+one dependency and nothing else.
+
+### The freeze is surgical
+In `inject_bursty_garbage`, everything except the FIRE DECISION is already keyed
+on `(seed, ply)` — size, columns and colours all are. So: play once with the
+live model and **record which plies fired** (observed pressure, not re-modelled),
+then replay with that decision read from the frozen set.
+
+Two details that had to be right, and a gate that proves they are:
+* The live path spends one `rng.random()` on the fire test before drawing
+  colours. Frozen mode **consumes and discards it**, or the stream shifts and
+  the colours silently change.
+* Frozen mode applies garbage at the recorded plies **unconditionally** — it must
+  not re-test the "did the champion clear?" precondition, because that is itself
+  endogenous and re-testing it would reintroduce the confound.
+
+**FIDELITY GATE: a frozen replay reproduces the live game exactly, 10/10** —
+same result, same ply, same boards, same actions.
+
+### A calibration error this caught
+My first version fired the model **every ply** rather than only after a clearing
+placement. `fire_probability(0) = 0.348`, so it delivered a volley on a third of
+all plies and produced **84% deaths** against the model's documented 16.7%.
+`pressure_rig`'s call site guards with `if clear_size > 0` and its comment says
+exactly why. Corrected: **27.0%**. The sanity check that caught it was comparing
+the death rate to a number the project already knew.
+
+### Result (n=200, L11, corrected)
+
+| | bursty-frozen | drip (§6) |
+|---|---|---|
+| deaths | 54 / 200 (27.0%) | 53 / 480 |
+| dies-ahead | 37/54 (69%) | 40/53 (75%) |
+| **E=1** | **22/54 = 41%** [29–54%] | **21/53 = 40%** [28–53%] |
+| E≤3 | 33/54 = 61% | 28/53 = 53% |
+| E=1 placement / delivery | 18 / 4 | 18 / 3 |
+
+> **The E=1 share replicates across two different pressure models: 41% vs 40%.**
+> So the depth-4 prize is not an artifact of drip's cadence, and the
+> placement-vs-arrival split reproduces too (18/22 of E=1 are placement deaths,
+> against 18/21 under drip).
+
+### The gate is more selective at human cadence, as predicted
+
+| | gate-open rate (k=6) | amortised d4 |
+|---|---|---|
+| drip | 87.5% | 20.17x |
+| **bursty-frozen** | **66.8%** | **15.63x** |
+
+Better, and in the predicted direction — bursty volleys are sparser and clumpier
+— but still short of #78's 47.8%, so my volley rate is likely higher than the
+corpus theirs was fitted on. **Gated-d4 at k=6 under human cadence is a 15.6x
+decider covering 12 of 22 E=1 deaths.** Tightening to k=2 covers 9 of 22.
+
+**It still does not rescue d4's economics.** The honest summary across both
+models: gating buys roughly a 1.3–1.5x discount on a 22.9x decider, and the
+coverage it keeps is about half the E=1 population.
 
 ## 7. G2 — admissibility of the bound
 
