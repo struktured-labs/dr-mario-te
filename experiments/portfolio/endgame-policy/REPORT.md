@@ -1,5 +1,26 @@
 # endgame-policy: does the champion self-seal its own last targets, like struktured does?
 
+> ## ⛔ SUPERSEDED 2026-08-07 — the "ALIVE" verdict below did NOT survive follow-up.
+> **The measurement in this file is correct and reproduced. Its interpretation was wrong.**
+> Self-sealing is real, replicates out-of-sample (0.790 seals/game on the disjoint seed
+> block 0-199 vs the 0.630 here), and is **NOT A DEFECT**. Do not build a seal penalty.
+>
+> - **It costs nothing.** All 126 seals in this corpus RESOLVED: 84 re-opened and **42 ended
+>   with the virus cleared WHILE STILL COVERED** — a seal blocks only the VERTICAL route,
+>   and the virus's own row still matches. The single non-win here (seed 1103) had **zero**
+>   seals. The "§Verdict" claim that `g_stranded` misses a live defect confuses a *pattern*
+>   with a *blocker*.
+> - **Pricing it makes the champion worse, monotonically in how often the term fires**
+>   (n=200 paired, bursty v1.1): 2.43% fire → +4 bad-ends; 7.99% → +16, **McNemar p=0.0113**;
+>   ungated 22.3% → **152/200 bad-ends vs the champion's 39/200**. Neither veto rescued a
+>   single clean-stream seed.
+> - **The "Next step" prescribed at the bottom of this file (`g_virus_seal`) was built and
+>   is refuted.** Its colour-reachability generalisation is strictly worse still.
+>
+> Evidence: `experiments/selfseal/` (commits `3da54df`, `a24e27c`, `e97f60d`, `1bbffe3`).
+> Method note carried forward: **fire rate = (gate hit rate) × (predicate hit rate | gated)**;
+> report both, and treat an arm changing <~2-3% of decisions as *not testable*, never as a null.
+
 **Date:** 2026-08-06 · **Thread:** endgame-policy (portfolio) · **Simulator:** python
 `FaithfulDrMarioEnv` via `eval47/ab47.py`'s exact `_choose_base` (wt=0, ws=20 —
 `fast_rtl_x.variant("winner")` leaf + `terms47.g_stranded` root-only, the shipped
@@ -70,7 +91,7 @@ re-opened (pills 83 and 87) before the game cleared — the same
 seal-then-reopen-then-clear cycle the human case study described, compressed
 into a couple of pills instead of tens of seconds.
 
-## Verdict: ALIVE
+## Verdict: ALIVE  ⛔ **OVERTURNED — see the banner at the top of this file**
 
 The champion is not immune to this error. It self-seals at a small but
 non-trivial, CI-excludes-zero rate (0.63/game) and does so in **nearly half
@@ -122,7 +143,12 @@ mechanism that this pressure-free probe only shows the floor of.
   qualitative (same defect class exists) not a paired statistical test against
   a human population.
 
-## Next step (not executed this pass — orthogonal thread's call)
+## Next step (not executed this pass — orthogonal thread's call)  ⛔ **EXECUTED AND REFUTED**
+
+> The `g_virus_seal` term proposed below was built exactly as specified (root-only, gated on
+> low virus count), A/B'd paired-seed against wt=0/ws=20 on the clean stream AND under
+> bursty-v1.1 pressure, across a dose sweep and an ungated maximum-fire arm. **It loses on
+> both streams at every dose.** See the banner at the top; do not re-propose it.
 
 If this line is picked up: add a root-only `g_virus_seal` term parallel to
 `g_stranded` (same eval-term slot per `SILICON_PLAN.md`'s architecture:
