@@ -223,6 +223,10 @@ def main():
         if base.startswith("divergence"):
             divergence_report(path)
             continue
+        with open(path) as fh:
+            probe = json.load(fh)
+        if "config" not in probe or "rows" not in probe:
+            continue          # not a 2x2 run (e.g. tuck_profile), nothing to table
         cfg, rows = load(path)
         title = (f"{base}  L{cfg['level']} n={cfg['seeds']} "
                  f"pressure={cfg['pressure']} theta={cfg['theta']:g} "
