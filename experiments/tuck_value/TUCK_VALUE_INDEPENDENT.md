@@ -3,9 +3,9 @@
 Corroboration by a different method for the co-sim farm's RTL 2×2. Same four arms, different
 simulator, different failure modes, n=400 paired seeds per arm instead of tens.
 
-**Status:** the two primary runs (bursty pressure, clean stream) are complete. The v1-hazard
-bracket, the divergence-horizon measurement and the θ sensitivity sweep are still running and
-are marked below; this document will be updated in place as they land.
+**Status:** the two primary runs (bursty, clean), the v1-hazard bracket and the A′ control arms
+are complete — 2,800 games. The divergence-horizon measurement and the θ sensitivity sweep are
+still running; this document is updated in place as they land.
 
 ---
 
@@ -23,6 +23,15 @@ number a rebuild decision turns on, so it leads.
 49 → 44, p=0.65 — a wash), which is the signature of digging buried viruses out rather than of
 finishing before the garbage arrives. See the decomposition below; it is the strongest single
 piece of evidence here that the executor does what a tuck is *for*.
+
+**De-confounded, the number gets slightly better, not worse.** Arms B and D take their base
+candidates from a reachability-filtered pool that arm A does not have, so a control arm A′ was
+run — the tier-3 decision path with θ set so no tuck can pass the gate (verified: 0 fires, 0
+tuck wins in 400 games). The filter on its own is a wash (A′ − A: 19.2% → 20.5%, McNemar 8 vs
+13, p=0.38; pills +0.54 [−0.62, +1.69]), and it was very slightly *hurting*, so isolating the
+tuck program **strengthens** the result: **D − A′ = 20.5% → 14.0%, −6.50 points
+[−11.25, −1.75], McNemar rescued=59 harmed=33, p=0.0088**, with the same stalls-only signature
+(stalls 26 → 12, p=0.034; topouts 56 → 44, p=0.22).
 
 The question as literally posed — *what is executing tucks worth with tier-3 firmware* — is
 D − B, the executor's own value with the firmware held fixed, and it is enormous: bad-end rate
@@ -243,17 +252,16 @@ under one simulator most of that error cancels, which is the whole argument for 
 tier — but it is not a licence to quote arm B's 19.2% as a silicon prediction. The co-sim farm
 is the instrument that can.
 
-**One structural confound, found while writing this up, measured, and being controlled for.**
+**One structural confound, found while writing this up, and now controlled — CLOSED.**
 Arms B and D take their base candidates from `reach_root.choose_reach_tier`'s
 *reachability-filtered* pool, while arm A is pure `base32` — and the shipped firmware's own
-search is not reachability-filtered. So D − A nominally confounds "the tuck program" with "the
-reach32 fix". Measured directly: on 2,873 real L11 decisions the filter changes the chosen
-action **0 times (0.00%)**, so on the board distribution the champion actually visits the
-confound is empty. That is not a proof for arm B, which dies on tall congested boards where a
-column walled to row 0 is far more likely, and where `REACH_ROOT_VERDICT`'s M3CASE analysis
-found the filter *does* bite. A control arm — the tier-3 decision path with θ set so high no
-tuck can pass the gate, i.e. reach-filtered base32 with no tucks — is running to settle
-D − A' (the tuck program alone) and A' − A (the filter alone).
+search is not reachability-filtered. So D − A nominally confounded "the tuck program" with
+"the reach32 fix". Two independent checks closed it: on 2,873 real L11 decisions the filter
+changes the chosen action **0 times (0.00%)**, and the A′ control arm (400 games, 0 tuck
+fires) prices the filter at a **wash** — bad ends 19.2% → 20.5%, McNemar 8 vs 13, p=0.38.
+Isolating the tuck program raises its effect from −5.25 to −6.50 points and its significance
+from p=0.038 to p=0.0088. The confound existed; it was working slightly *against* the reported
+result, not for it.
 
 Three further modelling choices are mine, not measurements, and the co-sim can adjudicate all
 three:
@@ -308,13 +316,12 @@ rig's drop-degradation model is wrong, and that would be the most important resu
   boards reconverge, how often the eventual outcome changes, and whether either exceeds the
   control. A 12-seed smoke run had tucks never reconverging (11/11) against the control's 73%,
   with outcomes changing 36% vs 18% — too small to call, hence n=300.
-- **Control arms A′** — the tier-3 decision path with θ so high no tuck can pass, isolating
-  D − A′ (the tuck program alone) from A′ − A (the reachability filter alone).
 - **θ sensitivity** — 0 / 150 / 250 on the headline pair.
 
-Completed since the first revision: the v1 hazard bracket (both ends negative, above) and the
+Completed since the first revision: the v1 hazard bracket (both ends negative), the
 failure-mode decomposition (which corrected this document's interpretation of *why* D − A
-works).
+works), and the A′ control arms (which closed the reachability-filter confound and slightly
+strengthened the headline).
 
 ## Reproducing
 

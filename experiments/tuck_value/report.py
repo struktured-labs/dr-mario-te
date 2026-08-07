@@ -239,6 +239,45 @@ def washout_curve(forked, buckets=((0, 2), (3, 5), (6, 10), (11, 20), (21, 60)))
               f"{len(vt) + len(vc):>7}")
 
 
+def control_analysis(results_dir, main_name, ctrl_name, label):
+    """De-confound D - A with the A' control arm.
+
+    Arms B and D take base candidates from the reachability-filtered pool
+    while arm A is pure base32, so D - A mixes the tuck program with the
+    reach32 fix. A' is the tier-3 decision path with theta so high no tuck can
+    pass the gate -- reach-filtered base32 with no tucks. A' - A prices the
+    filter alone; D - A' is the tuck program alone."""
+    mp = os.path.join(results_dir, main_name)
+    cp = os.path.join(results_dir, ctrl_name)
+    if not (os.path.exists(mp) and os.path.exists(cp)):
+        return
+    main_d = json.load(open(mp))
+    ctrl_d = json.load(open(cp))
+    rows = {k: {x["seed"]: x for x in v} for k, v in main_d["rows"].items()}
+    rows["ctrl"] = {x["seed"]: x for x in ctrl_d["rows"]["t3_drop"]}
+
+    fires = sum(x["fired_tuck"] for x in rows["ctrl"].values())
+    wins = sum(x["n_published"] for x in rows["ctrl"].values())
+    print(f"\n### De-confounding control, {label}")
+    print(f"control arm sanity: {fires} executor fires, {wins} tuck wins "
+          f"(both must be 0 for A' to be 'no tucks')")
+    if fires or wins:
+        print("  CONTROL ARM IS NOT TUCK-FREE -- the theta gate did not hold. "
+              "Do not read the numbers below.")
+        return
+
+    global ARM_ORDER
+    saved = ARM_ORDER
+    ARM_NAME["ctrl"] = "A' reach-base, no tucks"
+    ARM_ORDER = ("v1_drop", "ctrl", "t3_tuck")
+    arm_table(rows, f"A vs A' vs D ({label})")
+    delta(rows, "v1_drop", "ctrl", "A' - A   the reachability filter ALONE")
+    delta(rows, "ctrl", "t3_tuck", "D - A'   the tuck program ALONE (de-confounded)")
+    failure_decomposition(rows, [("v1_drop", "ctrl", "A' - A filter"),
+                                 ("ctrl", "t3_tuck", "D - A' tucks")])
+    ARM_ORDER = saved
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--results", default=os.path.join(HERE, "results"))
@@ -274,6 +313,11 @@ def main():
               "D - B   executor value, tier-3, FIRED-ONLY subgroup", fired_only=True)
         delta(rows, "v1_drop", "v1_tuck",
               "C - A   executor value, v1, FIRED-ONLY subgroup", fired_only=True)
+
+    control_analysis(a.results, "bursty_theta150.json", "ctrl_bursty_notuck.json",
+                     "bursty v1.1")
+    control_analysis(a.results, "clean_theta150.json", "ctrl_clean_notuck.json",
+                     "clean stream")
     print()
 
 
