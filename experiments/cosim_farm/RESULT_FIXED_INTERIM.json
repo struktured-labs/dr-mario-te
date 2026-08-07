@@ -1,0 +1,268 @@
+{
+ "prediction": {
+  "source": "fast-sim lane, registered before the fixed-firmware re-run existed",
+  "clear_rate_gain_points": 5.0,
+  "fire_rate_range": [
+   0.05,
+   0.15
+  ],
+  "block_split_is_real_iff": "delta(135-234) meaningfully better than delta(0-119)"
+ },
+ "block_boundary": 120,
+ "degenerate_seeds_excluded": [
+  1
+ ],
+ "comparisons": {
+  "D_fixed_vs_A": {
+   "POOLED": {
+    "candidate": "s20t3fix_tuck",
+    "control": "s20b_drop",
+    "n_paired": 8,
+    "cand_only": 0,
+    "ctrl_only": 46,
+    "fw": {
+     "s20t3fix_tuck": [
+      "554a16a5"
+     ],
+     "s20b_drop": [
+      "e970e9ab"
+     ]
+    },
+    "clear": {
+     "cand": "6/8 = 75.0%",
+     "ctrl": "8/8 = 100.0%",
+     "cand_ci": [
+      0.4093,
+      0.9285
+     ],
+     "ctrl_ci": [
+      0.6756,
+      1.0
+     ],
+     "delta_points": -25.0,
+     "discordant_cand_only": 0,
+     "discordant_ctrl_only": 2,
+     "mcnemar_p": 0.5
+    },
+    "viruses_cleared": {
+     "cand": 46.0,
+     "ctrl": 48.0,
+     "paired_delta": -2.0
+    },
+    "fire_rate": {
+     "published_per_placement": 0.1512,
+     "executed_per_placement": 0.1512,
+     "n_incoherent": 0
+    },
+    "power": {
+     "control_rate": 1.0,
+     "min_detectable_delta_points_approx": null
+    },
+    "verdict": "observed clear-rate delta -25.0 points, McNemar p=0.5; not significant; fire rate 15.1% (OUTSIDE the pre-registered 5%-15%); => the pre-registered prediction was conditioned on a fire rate this arm does not have; it is not a fair test of it"
+   },
+   "block 0-119    (wave 1)": {
+    "candidate": "s20t3fix_tuck",
+    "control": "s20b_drop",
+    "n_paired": 8,
+    "cand_only": 0,
+    "ctrl_only": 46,
+    "fw": {
+     "s20t3fix_tuck": [
+      "554a16a5"
+     ],
+     "s20b_drop": [
+      "e970e9ab"
+     ]
+    },
+    "clear": {
+     "cand": "6/8 = 75.0%",
+     "ctrl": "8/8 = 100.0%",
+     "cand_ci": [
+      0.4093,
+      0.9285
+     ],
+     "ctrl_ci": [
+      0.6756,
+      1.0
+     ],
+     "delta_points": -25.0,
+     "discordant_cand_only": 0,
+     "discordant_ctrl_only": 2,
+     "mcnemar_p": 0.5
+    },
+    "viruses_cleared": {
+     "cand": 46.0,
+     "ctrl": 48.0,
+     "paired_delta": -2.0
+    },
+    "fire_rate": {
+     "published_per_placement": 0.1512,
+     "executed_per_placement": 0.1512,
+     "n_incoherent": 0
+    },
+    "power": {
+     "control_rate": 1.0,
+     "min_detectable_delta_points_approx": null
+    }
+   },
+   "block 120-134  (wave 1 tail)": {
+    "candidate": "s20t3fix_tuck",
+    "control": "s20b_drop",
+    "n_paired": 0,
+    "cand_only": 0,
+    "ctrl_only": 46,
+    "note": "no paired seeds yet"
+   },
+   "block 135-234  (wave 2, out-of-sample for the retracted split)": {
+    "candidate": "s20t3fix_tuck",
+    "control": "s20b_drop",
+    "n_paired": 0,
+    "cand_only": 0,
+    "ctrl_only": 46,
+    "note": "no paired seeds yet"
+   },
+   "block 120+     (union, sub-256)": {
+    "candidate": "s20t3fix_tuck",
+    "control": "s20b_drop",
+    "n_paired": 0,
+    "cand_only": 0,
+    "ctrl_only": 46,
+    "note": "no paired seeds yet"
+   },
+   "seeds 256+     (wave 3, s0!=0 -- the ONE real LFSR boundary)": {
+    "candidate": "s20t3fix_tuck",
+    "control": "s20b_drop",
+    "n_paired": 0,
+    "cand_only": 0,
+    "ctrl_only": 46,
+    "note": "no paired seeds yet"
+   }
+  },
+  "B_fixed_vs_A": {
+   "POOLED": {
+    "candidate": "s20t3fix_drop",
+    "control": "s20b_drop",
+    "n_paired": 8,
+    "cand_only": 0,
+    "ctrl_only": 46,
+    "fw": {
+     "s20t3fix_drop": [
+      "554a16a5"
+     ],
+     "s20b_drop": [
+      "e970e9ab"
+     ]
+    },
+    "clear": {
+     "cand": "0/8 = 0.0%",
+     "ctrl": "8/8 = 100.0%",
+     "cand_ci": [
+      0.0,
+      0.3244
+     ],
+     "ctrl_ci": [
+      0.6756,
+      1.0
+     ],
+     "delta_points": -100.0,
+     "discordant_cand_only": 0,
+     "discordant_ctrl_only": 8,
+     "mcnemar_p": 0.00781
+    },
+    "viruses_cleared": {
+     "cand": 24.25,
+     "ctrl": 48.0,
+     "paired_delta": -23.75
+    },
+    "fire_rate": {
+     "published_per_placement": 0.2431,
+     "executed_per_placement": 0.0,
+     "n_incoherent": 0
+    },
+    "power": {
+     "control_rate": 1.0,
+     "min_detectable_delta_points_approx": null
+    },
+    "verdict": "observed clear-rate delta -100.0 points, McNemar p=0.00781; SIGNIFICANT; fire rate 24.3% (OUTSIDE the pre-registered 5%-15%); => the pre-registered prediction was conditioned on a fire rate this arm does not have; it is not a fair test of it"
+   },
+   "block 0-119    (wave 1)": {
+    "candidate": "s20t3fix_drop",
+    "control": "s20b_drop",
+    "n_paired": 8,
+    "cand_only": 0,
+    "ctrl_only": 46,
+    "fw": {
+     "s20t3fix_drop": [
+      "554a16a5"
+     ],
+     "s20b_drop": [
+      "e970e9ab"
+     ]
+    },
+    "clear": {
+     "cand": "0/8 = 0.0%",
+     "ctrl": "8/8 = 100.0%",
+     "cand_ci": [
+      0.0,
+      0.3244
+     ],
+     "ctrl_ci": [
+      0.6756,
+      1.0
+     ],
+     "delta_points": -100.0,
+     "discordant_cand_only": 0,
+     "discordant_ctrl_only": 8,
+     "mcnemar_p": 0.00781
+    },
+    "viruses_cleared": {
+     "cand": 24.25,
+     "ctrl": 48.0,
+     "paired_delta": -23.75
+    },
+    "fire_rate": {
+     "published_per_placement": 0.2431,
+     "executed_per_placement": 0.0,
+     "n_incoherent": 0
+    },
+    "power": {
+     "control_rate": 1.0,
+     "min_detectable_delta_points_approx": null
+    }
+   },
+   "block 120-134  (wave 1 tail)": {
+    "candidate": "s20t3fix_drop",
+    "control": "s20b_drop",
+    "n_paired": 0,
+    "cand_only": 0,
+    "ctrl_only": 46,
+    "note": "no paired seeds yet"
+   },
+   "block 135-234  (wave 2, out-of-sample for the retracted split)": {
+    "candidate": "s20t3fix_drop",
+    "control": "s20b_drop",
+    "n_paired": 0,
+    "cand_only": 0,
+    "ctrl_only": 46,
+    "note": "no paired seeds yet"
+   },
+   "block 120+     (union, sub-256)": {
+    "candidate": "s20t3fix_drop",
+    "control": "s20b_drop",
+    "n_paired": 0,
+    "cand_only": 0,
+    "ctrl_only": 46,
+    "note": "no paired seeds yet"
+   },
+   "seeds 256+     (wave 3, s0!=0 -- the ONE real LFSR boundary)": {
+    "candidate": "s20t3fix_drop",
+    "control": "s20b_drop",
+    "n_paired": 0,
+    "cand_only": 0,
+    "ctrl_only": 46,
+    "note": "no paired seeds yet"
+   }
+  }
+ },
+ "block_split_adjudication": "not yet testable -- need paired seeds in BOTH 0-119 and 135-234"
+}

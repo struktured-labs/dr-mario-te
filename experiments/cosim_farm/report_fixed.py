@@ -244,12 +244,13 @@ def main():
     # lane measured the effect as FLAT across this boundary (p=0.92), so it is an
     # external-validity limit rather than a hidden effect -- but nothing here generalises
     # past seed 255 until the s0-crossing wave lands.
-    # FOUR strata, not two. The lead wants 0-119 vs 120+; the fast-sim lane asked for
-    # 135-234 reported SEPARATELY and is right to. 120-134 rode in on arm A's existing
-    # seed set before their split was known; 135-234 was chosen AFTER it was known and is
-    # the only genuinely OUT-OF-SAMPLE block. Merging the two would let a real block
-    # effect hide inside an average -- the precise failure being guarded against. Report
-    # the pieces and the union, and both requests are satisfied at once.
+    # HEADLINE IS POOLED (team lead's call, once the split was retracted): fewer numbers,
+    # more power, and less chance of someone reading a sub-block wobble as a finding. The
+    # blocks are still COMPUTED and kept, for two reasons that are not in tension with
+    # that: the fast-sim lane asked that 135-234 stay visible ("a pooled number can't be
+    # un-pooled later"), and the split adjudicator below NEEDS 0-119 vs 135-234 to exist.
+    # So: pooled first and prominent, blocks as a compact secondary table, everything in
+    # the JSON.
     strata = [
         ("block 0-119    (wave 1)", lambda s: s < BLOCK_BOUNDARY),
         ("block 120-134  (wave 1 tail)",
@@ -260,8 +261,8 @@ def main():
          lambda s: BLOCK_BOUNDARY <= s < S0_BOUNDARY),
         ("seeds 256+     (wave 3, s0!=0 -- the ONE real LFSR boundary)",
          lambda s: s >= S0_BOUNDARY),
-        ("POOLED (avg; every sub-256 seed shares s0=0)", None),
     ]
+    POOLED = ("POOLED  <- the headline", None)
 
     res = {"prediction": PREDICTION, "block_boundary": BLOCK_BOUNDARY,
            "degenerate_seeds_excluded": sorted(DEGENERATE_SEEDS), "comparisons": {}}
@@ -271,30 +272,41 @@ def main():
                               ("B_fixed_vs_A", FIXED_DROP, BASE)):
         res["comparisons"][label] = {}
         print(f"\n################ {label}  ({cand} vs {ctrl}) ################")
-        for sname, sfilt in strata:
-            d = compare(by, cand, ctrl, sfilt)
-            d["verdict"] = verdict(d)
-            res["comparisons"][label][sname.strip()] = d
-            print(f"\n  --- {sname} ---")
-            if d.get("n_paired", 0) == 0:
-                print("      no paired seeds yet")
-                continue
-            cl = d["clear"]
-            print(f"      n paired {d['n_paired']}   fw {d['fw']}")
-            print(f"      clear   cand {cl['cand']} "
+
+        # --- headline: pooled ---
+        d = compare(by, cand, ctrl, POOLED[1])
+        d["verdict"] = verdict(d)
+        res["comparisons"][label][POOLED[0].split()[0]] = d
+        if d.get("n_paired", 0) == 0:
+            print("  no paired seeds yet")
+        else:
+            cl, v, f = d["clear"], d["viruses_cleared"], d["fire_rate"]
+            print(f"  {POOLED[0]}   n paired {d['n_paired']}   fw {d['fw']}")
+            print(f"    clear   cand {cl['cand']} "
                   f"CI[{cl['cand_ci'][0]:.1%},{cl['cand_ci'][1]:.1%}]"
                   f"   ctrl {cl['ctrl']} CI[{cl['ctrl_ci'][0]:.1%},{cl['ctrl_ci'][1]:.1%}]")
-            print(f"              delta {cl['delta_points']:+.1f} pts   discordant "
+            print(f"            delta {cl['delta_points']:+.1f} pts   discordant "
                   f"{cl['discordant_cand_only']}/{cl['discordant_ctrl_only']}   "
                   f"McNemar p={cl['mcnemar_p']}")
-            v = d["viruses_cleared"]
-            print(f"      viruses cleared  cand {v['cand']}  ctrl {v['ctrl']}  "
+            print(f"    viruses cleared  cand {v['cand']}  ctrl {v['ctrl']}  "
                   f"delta {v['paired_delta']:+.2f}")
-            f = d["fire_rate"]
-            print(f"      fire rate  published {f['published_per_placement']}  "
+            print(f"    fire rate  published {f['published_per_placement']}  "
                   f"executed {f['executed_per_placement']}  "
                   f"incoherent {f['n_incoherent']}")
-            print(f"      VERDICT: {d['verdict']}")
+            print(f"    VERDICT: {d['verdict']}")
+
+        # --- secondary: blocks kept visible, one line each ---
+        print(f"    by block (kept visible on request; the split itself is RETRACTED "
+              f"-- blocks are expected to look alike):")
+        for sname, sfilt in strata:
+            b = compare(by, cand, ctrl, sfilt)
+            res["comparisons"][label][sname.strip()] = b
+            if b.get("n_paired", 0) == 0:
+                print(f"      {sname:62s} n=0")
+                continue
+            print(f"      {sname:62s} n={b['n_paired']:3d}  "
+                  f"cand {b['clear']['cand']:15s} ctrl {b['clear']['ctrl']:15s} "
+                  f"delta {b['clear']['delta_points']:+6.1f}  p={b['clear']['mcnemar_p']}")
 
     # Out-of-sample adjudication of the fast-sim lane's own seed-block split.
     cmp_d = res["comparisons"]["D_fixed_vs_A"]
