@@ -354,16 +354,19 @@ published that explanation, and then tested it, and it is wrong.**
 The θ sweep varies this rig's own dose. Arm D against the shipped champion, bursty v1.1, n=400
 paired:
 
-| θ | fires / decision | fires / game | bad ends | **D − A** bad-end rate | McNemar |
-|---|---|---|---|---|---|
-| 150 | 5.7% | 7.24 | 56/400 (14.0%) | −5.25 pts [−10.0, −0.8] | 57 vs 36, p=0.038 |
-| **0** | **16.2%** | **20.52** | **42/400 (10.5%)** | **−8.75 pts [−13.5, −4.3]** | **63 vs 28, p=0.0003** |
+| θ | fires / decision | fires / game | clear | bad ends | **D − A** bad-end rate | McNemar |
+|---|---|---|---|---|---|---|
+| 250 | 3.0% | 3.98 | 86.2% | 55/400 (13.8%) | −5.50 pts [−10.5, −0.5] | 64 vs 42, p=0.041 |
+| 150 | 5.7% | 7.24 | 86.0% | 56/400 (14.0%) | −5.25 pts [−10.0, −0.8] | 57 vs 36, p=0.038 |
+| **0** | **16.2%** | **20.52** | **89.5%** | **42/400 (10.5%)** | **−8.75 pts [−13.5, −4.3]** | **63 vs 28, p=0.0003** |
 
-**Nearly tripling the dose makes the program better, not worse**, on every axis at once — bad
-ends, stalls (28 → 14, p=0.038), topouts (49 → 28, p=0.013) and dies-ahead (11.0% → 6.5%,
-−4.5 points [−8.25, −0.75], which is the *only* arm anywhere in this study where dies-ahead
-moves at all). Over the range this rig can reach, more tucks is monotonically better. Nothing
-about that trend predicts a collapse at 38%.
+Two things follow. First, **the executor's value is θ-robust**: positive and significant at
+every dose across a 5.4× range, so the headline does not depend on a lucky constant — that is
+the sensitivity check passing. Second, and fatally for the dose hypothesis, **more tucks is
+better, not worse.** At 16.2% the program improves on every axis at once — bad ends, stalls
+(28 → 14, p=0.038), topouts (49 → 28, p=0.013), and dies-ahead (11.0% → 6.5%, −4.5 points
+[−8.25, −0.75], the *only* arm anywhere in this study where dies-ahead moves at all). The curve
+is flat-then-rising with no turning point in sight. Nothing in it predicts a collapse at 38%.
 
 So the dose hypothesis does not survive contact with the data, and the disagreement with the
 co-sim on arm D **remains open**. What is left:
