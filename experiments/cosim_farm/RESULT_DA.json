@@ -1,0 +1,109 @@
+{
+ "control": "s20b_drop",
+ "candidate": "s20t3_tuck",
+ "n_paired": 12,
+ "n_only_a": 0,
+ "n_only_b": 5,
+ "errors": {},
+ "fw_a": [
+  "e970e9ab0208cdbce1d39ed33e2f51ee"
+ ],
+ "fw_b": [
+  "5d010f62257c8d805a0b813494939661"
+ ],
+ "exec_a": [
+  "drop"
+ ],
+ "exec_b": [
+  "tuck"
+ ],
+ "rate_blocks": [
+  {
+   "metric": "clear",
+   "n": 12,
+   "a_count": 11,
+   "a_rate": 0.9166666666666666,
+   "b_count": 0,
+   "b_rate": 0.0,
+   "delta_rate": -0.9166666666666666,
+   "discordant_a_only": 11,
+   "discordant_b_only": 0,
+   "mcnemar_p": 0.0009765625
+  },
+  {
+   "metric": "topout",
+   "n": 12,
+   "a_count": 1,
+   "a_rate": 0.08333333333333333,
+   "b_count": 12,
+   "b_rate": 1.0,
+   "delta_rate": 0.9166666666666666,
+   "discordant_a_only": 0,
+   "discordant_b_only": 11,
+   "mcnemar_p": 0.0009765625
+  },
+  {
+   "metric": "stall",
+   "n": 12,
+   "a_count": 0,
+   "a_rate": 0.0,
+   "b_count": 0,
+   "b_rate": 0.0,
+   "delta_rate": 0.0,
+   "discordant_a_only": 0,
+   "discordant_b_only": 0,
+   "mcnemar_p": 1.0
+  },
+  {
+   "metric": "dies_ahead",
+   "n": 12,
+   "a_count": 0,
+   "a_rate": 0.0,
+   "b_count": 1,
+   "b_rate": 0.08333333333333333,
+   "delta_rate": 0.08333333333333333,
+   "discordant_a_only": 0,
+   "discordant_b_only": 1,
+   "mcnemar_p": 1.0
+  }
+ ],
+ "paired_blocks": [
+  {
+   "metric": "viruses_cleared",
+   "n": 12,
+   "a_mean": 44,
+   "b_mean": 19.75,
+   "paired_delta_mean": -24.25,
+   "paired_delta_sd": 12.104579023383396,
+   "ci95_lo": -30.416666666666668,
+   "ci95_hi": -16.666666666666668,
+   "n_moved": 12,
+   "frac_moved": 1.0
+  },
+  {
+   "metric": "pills(all seeds)",
+   "n": 12,
+   "a_mean": 148.58333333333334,
+   "b_mean": 120.83333333333333,
+   "paired_delta_mean": -27.75,
+   "paired_delta_sd": 71.05177103117605,
+   "ci95_lo": -66.91666666666667,
+   "ci95_hi": 13.166666666666666,
+   "n_moved": 12,
+   "frac_moved": 1.0
+  },
+  {
+   "metric": "n_tuck_published",
+   "n": 12,
+   "a_mean": 89.91666666666667,
+   "b_mean": 44.333333333333336,
+   "paired_delta_mean": -45.583333333333336,
+   "paired_delta_sd": 43.3963484126897,
+   "ci95_lo": -69.5,
+   "ci95_hi": -20.5,
+   "n_moved": 11,
+   "frac_moved": 0.9166666666666666
+  }
+ ],
+ "seeds_moved": 12
+}
