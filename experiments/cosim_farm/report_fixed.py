@@ -174,7 +174,52 @@ def compare(by, cand, ctrl, seed_filter=None):
         "paired_delta": round(vc - vk, 2),
         "paired_delta_ci95": [round(boots[249], 2), round(boots[9749], 2)],
         "n_seeds_moved": sum(1 for d in diffs if d != 0),
+        "WARNING": ("CEILING-CENSORED. viruses_cleared pins at 48 whenever BOTH arms "
+                    "clear, and the champion clears ~96% of clean L11, so this metric "
+                    "has almost no dynamic range here. d=0 means 'both finished the "
+                    "job', NOT 'same game' -- measured, the arms differ in PILLS on "
+                    "15/15 mutually-cleared seeds, median 43 pills apart. Do not read "
+                    "'seeds moved' off this endpoint; use pills_if_both_cleared."),
     }
+
+    # ---- ENDPOINT 2: pills, CONDITIONAL on both arms clearing. Uncensored, but BIASED
+    # by construction: conditioning on mutual success drops exactly the seeds where the
+    # candidate failed. Never report it without endpoint 1 and 3 beside it.
+    both = [(c, k) for c, k in zip(C, K)
+            if c["result"] == "clear" and k["result"] == "clear"]
+    if both:
+        pd_ = [c["pills"] - k["pills"] for c, k in both]
+        rng2 = random.Random(999)
+        bb = sorted(sum(rng2.choice(pd_) for _ in range(len(pd_))) / len(pd_)
+                    for _ in range(10000))
+        faster = sum(1 for d in pd_ if d < 0)
+        slower = sum(1 for d in pd_ if d > 0)
+        out["pills_if_both_cleared"] = {
+            "n": len(both), "mean_delta": round(sum(pd_) / len(pd_), 1),
+            "ci95": [round(bb[249], 1), round(bb[9749], 1)],
+            "faster": faster, "slower": slower, "ties": len(pd_) - faster - slower,
+            "sign_test_p": round(mcnemar_exact(faster, slower), 4),
+        }
+
+    # ---- ENDPOINT 3: combined. Rank a FAILURE as worse than any success by charging it
+    # a penalty pill count, then re-run over ALL paired seeds. Swept across penalties
+    # because the answer must not depend on how harshly a loss is priced -- if the sign
+    # flips with the penalty, that itself is the finding.
+    out["combined_failure_ranked"] = {}
+    for pen in (250, 500, 750, 1000):
+        def _p(r):
+            return r["pills"] if r["result"] == "clear" else pen
+        dd = [_p(c) - _p(k) for c, k in zip(C, K)]
+        rng3 = random.Random(4242)
+        bb3 = sorted(sum(rng3.choice(dd) for _ in range(n)) / n for _ in range(10000))
+        f = sum(1 for d in dd if d < 0)
+        sl = sum(1 for d in dd if d > 0)
+        out["combined_failure_ranked"][f"penalty_{pen}"] = {
+            "mean_delta": round(sum(dd) / n, 1),
+            "ci95": [round(bb3[249], 1), round(bb3[9749], 1)],
+            "spans_zero": bb3[249] <= 0 <= bb3[9749],
+            "sign_test_p": round(mcnemar_exact(f, sl), 4),
+        }
 
     # Tucks per game split by OUTCOME. A flat average hides "neutral overall but
     # CONCENTRATED IN THE LOSSES", which would be a different and more interesting
@@ -332,10 +377,31 @@ def main():
             print(f"            delta {cl['delta_points']:+.1f} pts   discordant "
                   f"{cl['discordant_cand_only']}/{cl['discordant_ctrl_only']}   "
                   f"McNemar p={cl['mcnemar_p']}")
-            print(f"    viruses cleared  cand {v['cand']}  ctrl {v['ctrl']}  "
-                  f"delta {v['paired_delta']:+.2f} "
-                  f"CI[{v['paired_delta_ci95'][0]:+.2f},{v['paired_delta_ci95'][1]:+.2f}]"
-                  f"  seeds moved {v['n_seeds_moved']}/{d['n_paired']}")
+            print(f"    [1] SURVIVAL   clear {cl['cand']} vs {cl['ctrl']}   "
+                  f"discordant {cl['discordant_cand_only']} cand-only / "
+                  f"{cl['discordant_ctrl_only']} ctrl-only   McNemar p={cl['mcnemar_p']}")
+            pb = d.get("pills_if_both_cleared")
+            if pb:
+                print(f"    [2] SPEED | both cleared  n={pb['n']}  "
+                      f"delta {pb['mean_delta']:+.1f} pills "
+                      f"CI[{pb['ci95'][0]:+.1f},{pb['ci95'][1]:+.1f}]  "
+                      f"{pb['faster']} faster / {pb['slower']} slower  "
+                      f"sign p={pb['sign_test_p']}")
+                print(f"        ^ BIASED: conditioning on mutual success drops exactly "
+                      f"the seeds where the candidate FAILED. Never quote alone.")
+            cf = d.get("combined_failure_ranked") or {}
+            if cf:
+                bits = []
+                for k2, r2 in cf.items():
+                    bits.append(f"{k2.split('_')[1]}:{r2['mean_delta']:+.0f}"
+                                f"{'~0' if r2['spans_zero'] else '!'}"
+                                f"(p={r2['sign_test_p']})")
+                print(f"    [3] COMBINED (failure ranked worst, penalty swept)  "
+                      + "  ".join(bits))
+                print(f"        ^ '~0' = CI spans zero. If the sign moves with the "
+                      f"penalty, that IS the finding.")
+            print(f"    (viruses cleared {v['cand']} vs {v['ctrl']}, delta "
+                  f"{v['paired_delta']:+.2f} -- CEILING-CENSORED, see WARNING in JSON)")
             t = d["tucks_by_outcome"]
             for _o in ("cleared", "failed"):
                 _t = t[_o]
