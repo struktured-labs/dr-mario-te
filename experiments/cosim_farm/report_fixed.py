@@ -56,11 +56,27 @@ def mcnemar_exact(b, c):
     return min(1.0, 2 * tail)
 
 
-def load(path):
+# Seed 1 is an UNWINNABLE game, not a hard one. Its LFSR state (s0,s1)=(0,1) steps
+# straight into (0,0), an absorbing state, so all 128 buffer entries are capsule id 0 =
+# colour (1,1): every pill is the same colour and no colour-2 or colour-3 virus can ever
+# be cleared. Exactly one such seed exists in the whole 65,536 space, and it is in this
+# lane's list. CONFIRMED INDEPENDENTLY from this rig's own rows, not taken on report:
+# arm A -- the clean champion that clears 95% elsewhere -- cleared 0 of 48 viruses on
+# seed 1 across 153 pills. It ties in every arm so McNemar is unaffected, but it dilutes
+# every clear RATE, so it is excluded from the denominators and reported separately.
+# (Seed 0 is fine: NesPillSource remaps (0,0) to the ROM warm-boot seed.)
+DEGENERATE_SEEDS = {1}
+
+
+def load(path, drop_degenerate=True):
     by = defaultdict(dict)
+    dropped = defaultdict(int)
     for line in open(path):
         r = json.loads(line)
         if r.get("result") == "ERROR":
+            continue
+        if drop_degenerate and r["seed"] in DEGENERATE_SEEDS:
+            dropped[r["arm"]] += 1
             continue
         by[r["arm"]][r["seed"]] = r
     return by
