@@ -1,0 +1,82 @@
+[
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 1,
+  "K": 24,
+  "secs": 22.7
+ },
+ {
+  "E": 5,
+  "ply": 36,
+  "alt": 31,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 12,
+  "K": 41,
+  "secs": 106.2
+ },
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 22,
+  "K": 4,
+  "secs": 90.3
+ },
+ {
+  "E": 5,
+  "ply": 24,
+  "alt": 1,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 23,
+  "K": 29,
+  "secs": 98.6
+ },
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 6,
+  "K": 27,
+  "secs": 280.5
+ },
+ {
+  "E": 6,
+  "ply": 8,
+  "alt": 2,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 29,
+  "K": 14,
+  "secs": 115.2
+ },
+ {
+  "E": 8,
+  "ply": 23,
+  "alt": 1,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 20,
+  "K": 31,
+  "secs": 247.8
+ },
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 9,
+  "K": 14,
+  "secs": 478.4
+ }
+]

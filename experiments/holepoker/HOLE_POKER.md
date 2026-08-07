@@ -11,20 +11,24 @@ replayed through the Verilator co-sim.** Named validation targets are in §8.
 
 1. **The champion has no solo pill-stream holes.** 1200 games at L15-L20: **zero
    topouts.** On 21 real positions with the stack already at row 2-3, exhaustive
-   IDA* **proves** no killing pill sequence of length ≤5 exists. A beam to depth
-   18 found none on 40 positions.
+   IDA* **proves** no killing pill sequence of length ≤5 exists.
 2. **The real m3 silicon death was neither myopia nor an already-lost position.**
-   The eval had a survivable move at all six commits, and exhaustive search shows
-   every one of them was survivable. It was **execution** — confirming
-   `VERDICT.md`'s H1 by forward search rather than by ranking argument.
-3. **⚠ The VS results were RETRACTED mid-run** — a `copy.deepcopy` defect in the
-   shared VS substrate made every branch of the search draw from one shared
-   capsule cursor, so 14 of 16 "kills" would not replay. Root-caused, proven
-   with a regression test, fixed, and re-running. **Cross-cutting: any tier that
-   deepcopies `VsMatch` is affected** (§4).
-4. The one VS number that survives is the **control**: the champion playing the
-   adversary seat kills the champion in **10/50 seeds (20%)** — no deepcopy, so
-   no corruption.
+   The eval had a survivable move at all six commits and exhaustive search shows
+   every one was survivable — **execution**, confirming `VERDICT.md`'s H1 by
+   forward search rather than by ranking argument.
+3. **Deep search does NOT beat a reactive opponent.** VS beam **26.7%** kills vs
+   **23.3%** for the champion in the adversary seat; McNemar exact **p = 1.00**,
+   n=30. A dead wash. The lead flagged this as the surprising-and-reportable
+   outcome; it happened.
+4. **Depth is NOT the lever — the eval is.** Of 8 reproducible VS kills, 4 are
+   avoidable by one different champion move, and their escape depths are
+   **E = 5, 5, 6, 8** — the champion would need **depth 8 to 11**. There is
+   **no E ≤ 4 case at all**, so depth-4 buys nothing here. The other 4 have no
+   escape in the last 8 plies.
+5. **A `copy.deepcopy` defect in the shared VS substrate voided the first VS
+   run** and produced a comfortable, entirely false "depth-4 fixes a third of
+   the deaths" result. Caught by the replay gate, root-caused, fixed, re-run.
+   **Cross-cutting: any tier that deepcopies `VsMatch` is affected** (§4).
 
 ---
 
@@ -73,8 +77,9 @@ reach and **IDA\*** for proof.
 |---|---|---|
 | **G0 oracle fidelity** | does the wrapper reproduce the shipped decide path? | **PASS** — 8 full games, 1064 decisions, trajectories **identical** to `eval47/ab47.py`'s own loop (wt=0, ws=20) |
 | **G1 pill alphabet** | is `(a,b)` the same capsule as `(b,a)`? | **PASS** — 108 board-level comparisons, 0 differences ⇒ the 6-pill alphabet is sound |
-| **G2 admissibility** | does `h` ever exceed true plies-to-death? | see §7 |
+| **G2 admissibility** | does `h` ever exceed true plies-to-death? | **PASS** — 10 killing lines, 32 states, **0 violations** (§7) |
 | **G3a positive control** | can the search find kills at all? | **PASS** — K=1 in 6 calls, K=3 in 84 calls on boards built near death |
+| **G4 replay gate** | does every reported hole reproduce from its saved state? | **PASS after a FAIL** — 2/16 pre-fix (defect found), **8/8 post-fix** (§4) |
 
 **G3b was retracted as vacuous.** It asked "can a healthy board be killed below
 the bound?" — but `SoloPoker.search` starts its iterative deepening *at* the
@@ -127,7 +132,7 @@ champion survived 18 plies of adversarial stream, it did not merely clear out.
 ### What this does NOT say
 No kill within 5 (exact) / 18 (beam) is not "no kill ever". Kill depths beyond 18
 are unmeasured. And a beam negative is only as good as the beam — see §4, where a
-badly-built adversary understated the champion's vulnerability by 5x.
+badly-built adversary understated the champion's VS vulnerability 5x.
 
 ---
 
@@ -171,8 +176,10 @@ a line from a fresh state catches this.
 | the escape-depth histogram built on those lines | **the m3 counterfactual** — explicit boards, fixed stream |
 | `vs_escape`'s replays (this also explains why `adv_substituted` was True on *every* escape found — the replay was diverging from the original line, exactly as the defect predicts) | **the champion-seat control** — plays one match forward, never deepcopies |
 
-**The control therefore stands: 10/50 (20%) — the champion, playing the adversary
-seat with its own eval, tops the champion out in a fifth of L11 matches.**
+**The control therefore stands: 10/50 (20%) on the pre-fix seed set** — the
+champion, playing the adversary seat with its own eval, tops the champion out in
+about a fifth of L11 matches. The post-fix run reproduces this at 7/30 (23.3%),
+which is the number to quote.
 
 ### The fix
 Keep the capsule sequence as a **list** on the match plus a **per-player integer
@@ -183,10 +190,27 @@ The upstream defect in `vs_env_exact`/`nes_pills` is **left in place and
 documented**, not silently patched, because other tiers depend on that module and
 need to make their own call.
 
-### Status
-Re-running with the fix (`results/vs_poker_fixed.json`). Any VS number in an
-earlier commit of this file is void. **Do not compare tier-3's evolved policy
-against the retracted 32%** — use the control (20%) and the corrected run.
+### CORRECTED RESULT (post-fix, n = 30 seeds, L11)
+
+| adversary | kills / 30 | median plies to kill |
+|---|---|---|
+| champion in the adversary seat (control) | 7 / 30 (**23.3%**) | 36 |
+| deep-search beam | 8 / 30 (**26.7%**) | 27 |
+
+Paired: 5 beam-only, 4 control-only, 3 both. **McNemar exact two-sided
+p = 1.00.** A dead wash.
+
+**Reproducibility gate: 8/8 kills replay exactly** from their stored
+`(seed, path)` — champion dies at the identical ply every time (was 2/16 before
+the fix). The fix is validated by the same gate that caught the bug.
+
+> **Deep search does not beat a reactive opponent at killing this champion.**
+> Compare tier-3's evolved policy against **23.3%**, and note that an
+> unbounded-lookahead searcher only reaches 26.7%. The adversary still loses
+> 22/30 lines to "no surviving lines" (its own board dies first), so 26.7% is a
+> floor on the champion's VS vulnerability, not a ceiling.
+
+**Do not use any VS number from an earlier commit of this file.**
 
 ## 5. COUNTERFACTUAL — the real m3 silicon death was NOT myopia
 
@@ -226,47 +250,54 @@ came from garbage and the commit path, not from board danger.
 
 ---
 
-## 6. Hole taxonomy — escape depth on the VS kills
+## 6. Hole taxonomy — escape depth (CORRECTED)
 
-For each of the 16 VS kills: does **one** different champion move at some late
+For each reproducible VS kill: does **one** different champion move at some late
 ply survive past the fatal ply? `E = K - j` for the latest such ply.
 
-| E | count | share of kills | what would fix it |
+| E | count | search depth that would dodge it | feasible? |
 |---|---|---|---|
-| **1** | 5 | 31% | a **depth-4** search |
-| 3 | 1 | 6% | a depth-6 search |
-| 4 | 1 | 6% | a depth-7 search |
-| **none in last 8 plies** | **9** | **56%** | nothing at the end — already lost |
+| 5 | 2 | depth 8 | no |
+| 6 | 1 | depth 9 | no |
+| 8 | 1 | depth 11 | no |
+| **none in last 8 plies** | **4** | — already lost | — |
 
-**Verified against a live adversary.** The first pass was contaminated: replaying
-a *fixed* adversary line after the champion deviates is unfair, because the
-champion's different move changes the garbage it sends back and can make the
-stored adversary action illegal. `adv_substituted` was **True on every escape
-found** — the champion had "escaped" an adversary that had stopped attacking.
-Re-running a fresh adversary beam (width 8, 14 plies) from each escape point
-returned the **same** verdicts, so these are real survivals, not delays.
+**There is no E ≤ 4 case.** Every avoidable death needed the champion to see
+five or more plies past its horizon.
 
-### The structure of the split — the most useful finding here
+### The correction that matters
+The pre-fix run reported **E=1 for 5 of 7 kills** — a clean "depth-4 recovers a
+third of the deaths" story. That was **entirely an artifact of the deepcopy
+defect**: the replays were diverging from the original line (which is exactly
+why `adv_substituted` was True on every escape found), so the "escape" was
+frequently just the corrupted stream handing the champion a different capsule.
+On sound data the same instrument returns **E = 5, 5, 6, 8**.
+
+Had the defect gone unnoticed, this report would have recommended buying depth 4
+on the strength of a number that does not exist. That is the concrete cost of
+skipping a replay gate.
+
+### Kill depth vs avoidability
 | | kill depth K |
 |---|---|
-| avoidable (E exists) | 4, 5, 8, 17, 23, 29, 32 — **median 17** |
-| unavoidable | 24, 28, 40, 40, 42, 42, 52, 54, 57 — **median 42** |
+| avoidable | 14, 29, 31, 41 |
+| unavoidable | 4, 14, 24, 27 |
 
-**Avoidable deaths are fast; unavoidable deaths are slow.** A short kill means the
-adversary found a sharp tactical shot the champion could have parried one ply
-earlier. A long kill means sustained garbage attrition: by the endgame there is no
-move left that helps, because the board was lost twenty-plus placements earlier.
+Unlike the corrupted run, there is now **no clean fast/slow split** — a 4-ply
+kill is unavoidable and a 41-ply kill is avoidable. With n=8 no structure should
+be claimed.
 
 ### The champion's mistake, in plain language
-In the E=1 cases the pattern is the same: **with garbage arriving, the champion
-keeps placing to maximise its own clearing progress and lets the reachable
-headroom collapse to a single column. Its depth-3 horizon ends exactly one
-placement before the column closes, so the move that strands it looks free.**
-One extra ply of lookahead makes the closure visible and a different column is
-preferred. It is not a subtle evaluation error — it is a horizon that stops one
-pill too early under pressure.
+The E values say the champion is not losing to a tactic it *nearly* saw. Under
+sustained garbage it commits to a clearing plan whose cost only becomes visible
+five-plus placements later, once the accumulated junk has closed the columns
+that plan depended on. Its depth-3 horizon does not end one pill short of the
+refutation — it ends **nowhere near it**. That is the signature of a missing
+evaluation term (junk debt / reachable headroom under pressure), not of a search
+that needs one more ply.
 
----
+n=8 is small. Treat the *direction* (no shallow escapes) as the finding and the
+exact histogram as provisional.
 
 ## 7. G2 — admissibility of the bound
 
@@ -280,6 +311,10 @@ neither tests `h`. So deaths were manufactured: randomised near-death boards,
 kills found by IDA*, and `h` checked at every state of every killing line against
 the placements that actually remained (`g2_admissibility.py`, results in
 `results/g2_admissibility.json`).
+
+**Result: PASS.** 30 manufactured near-death boards produced **10 killing lines**
+(depths 2, 3, 4), **32 states checked, 0 violations** — `h` never once exceeded
+the placements that actually remained.
 
 Analytically the bound is a **proof**, not a hypothesis: a topout needs row 0 of
 a spawn column filled (a no-legal-move needs every column to row ≤1, hence the
@@ -313,10 +348,12 @@ priority order:
    real. Re-run the champion's preferred placement at commits c2, c4 and c6
    through the co-sim and confirm it still differs from the tape's column. If it
    does, the execution-defect verdict is silicon-grade, not simulator-grade.
-2. **The five E=1 VS kills** (seeds 6, 9, 12, 31, 36 in `results/vs_escape_all.json`).
-   These are the entire case for buying depth 4. Replay each fatal position and
-   confirm the RTL leaf ranks the escaping alternative the same way. If the RTL
-   already prefers the escape, the depth prize evaporates.
+2. **The four avoidable VS kills** — seeds **12, 20, 23, 29** (`results/vs_escape_fixed.json`,
+   E = 5, 8, 5, 6), all replay-verified 8/8. These carry the whole depth verdict:
+   if the RTL leaf already prefers the escaping alternative at those positions,
+   the deaths are an RTL-vs-sim artefact; if it does not, "no feasible depth
+   fixes these" is silicon-grade. Their `path` fields replay deterministically
+   via `vs_reproduce.py`.
 3. **The exact-safe positions** (`results/exact_solo.json`, 21 boards at
    `spawn_top` 2-3). Spot-check that the RTL's committed placement matches the
    sim's on a handful; the "proved safe to depth 5" claim inherits whatever the
@@ -326,24 +363,33 @@ priority order:
 
 ## 9. Honest read: depth or eval?
 
-**Both, in a specific ratio, and depth is the smaller half.**
+**The eval. Depth is not the lever, and the evidence for that got stronger when
+the data got cleaner.**
 
-* Depth-4 would recover roughly **a third** of the VS deaths (5 of 16 at E=1,
-  plus 2 more at E=3/4 needing depth 6-7 which is not affordable). That is real,
-  bounded, and the cheapest available win *if* it survives RTL validation (§8.2).
-* **56% of VS deaths have no escape at the endgame at all.** Those are attrition
-  deaths with a median kill depth of 42 plies. No feasible search depth touches
-  them; the champion has to not arrive there, which is an eval/strategy property.
-* In **solo** play depth is worth nothing, because there is nothing to fix: zero
-  topouts in 1200 games and exhaustive proof of safety on the worst real
-  positions.
+* **Solo: nothing to fix.** Zero topouts in 1200 games, and exhaustive proof that
+  the worst real positions cannot be killed inside 5 pills by an omniscient
+  pill-stream adversary. Depth buys nothing where the champion does not die.
+* **VS: depth-4 buys nothing either.** Of the reproducible VS kills, the
+  avoidable ones need **depth 8-11**. Depth 4 already costs 22.9x
+  (`dr-mario-depth4-memo`); depth 8 is not on the table at any price. **No
+  measured death is recoverable by a feasible search depth.**
+* **Deep search is not even a better *attacker*.** An adversary with unbounded
+  lookahead kills at 26.7% against 23.3% for the champion's own eval in the same
+  seat (p = 1.00). If unbounded search cannot separate itself on offence, the
+  claim that a few more plies transforms defence is not supported.
 
-So the depth argument should be made narrowly — *depth 4, for sharp tactical
-shots under garbage pressure* — and not as a general capability upgrade. The
-larger prize is in whatever keeps the champion out of 40-ply attrition losses,
-and that is not a search-depth question.
+That points the remaining headroom at the **evaluation function** — specifically
+at whatever term would price accumulating junk debt and collapsing headroom under
+garbage pressure, five-plus placements before it becomes tactically visible.
+That is the same direction `dr-mario-stomper-loss-autopsy` reached from the loss
+side (~45% of losses are the garbage channel's price) and it is where task #47's
+stranded-half work already lives.
 
----
+**Caveats, stated plainly.** n=8 VS kills. My adversary still kills itself in
+22/30 lines, so it is not a strong opponent and 26.7% is a floor. Everything is
+simulator-side, and the sim disagrees with RTL on ~87% of base-search moves. The
+single most valuable follow-up is §8.2 — replay the four avoidable kills through
+the co-sim before anyone acts on the depth verdict either way.
 
 ## 10. Files
 
@@ -356,6 +402,8 @@ and that is not a search-depth question.
 | `taxonomy.py` | beam sweep over real positions (with replay check) |
 | `vs_poker.py` | VS deep search + champion-seat control |
 | `vs_escape.py` | escape depth for the VS kills, with live-adversary verification |
+| `vs_reproduce.py` | G4 replay gate + fluke check on the VS kills |
+| `test_deepcopy_pillshare.py` | regression test for the deepcopy/pill-cursor defect |
 | `m3_counterfactual.py` | the real silicon death analysis |
 | `m3_margin.py` | prices the m3 blunders in pills of margin (null — see §5) |
 | `death_corpus.py` | 1200-game solo death hunt |
