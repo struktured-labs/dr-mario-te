@@ -31,6 +31,11 @@ replayed through the Verilator co-sim.** Named validation targets are in §8.
    across a 4.6x swing in death rate, so it is not a single-setting artifact.
 5. **So: depth AND eval, roughly half each.** Depth-4 is worth ~40% of pressure
    deaths — a real, sizeable, testable prize. It is *not* the whole disease.
+6. **QD archive: 42/405 cells, 86 deaths, 0 rejected by the admission gate.**
+   `cascade_backfire` is a hard NULL (the champion never dies by clearing into
+   its own death); `colour_starvation` occupies only E=1 (always shallow-
+   escapable); `garbage_flood` spans every escape bin. Empty regions are the
+   informative part.
 
 ---
 
@@ -336,6 +341,77 @@ comparison isolates the move. Exogeneity is a requirement here, not a preference
 definition*; feeding that to the mechanism classifier made `forced_overstack`
 fire on every kill until I measured it on the last ply with a real count.
 
+## 6b. MAP-Elites archive — coverage, and the null cells
+
+A best-first search follows its most promising line, finds one death family, and
+presents it as "the weakness". So the archive bins deaths by CHARACTER and keeps
+the best exemplar PER CELL, not the global best.
+
+* **Genotype** (what varies): the pressure schedule — seed, level, halves per
+  drip `k`, `period`, `after`.
+* **Phenotype**: escape-depth bin x board region x mechanism x virus bin
+  (405 cells).
+* **Quality within a cell**: fewest garbage halves delivered before the death,
+  tie-broken by the earlier death — a death that needed less help is the sharper
+  demonstration of its mechanism.
+* **Admission is gated twice**, and both gates are preconditions, not reports:
+  the death must reproduce from its own `(seed, schedule)`, and any claimed
+  escape must survive an independent replay. An elite that cannot reproduce is
+  an anecdote.
+
+### Result: 42/405 cells (10.4%), 500 trials, 86 deaths, **0 rejected by the gate**
+
+```
+MECHANISM x ESCAPE-DEPTH   (X = filled, . = NULL)
+  mechanism             1     2     3     4     5     6     7    8+  none
+  spawn_congestion      X     .     .     .     .     .     X     .     .
+  garbage_flood         X     X     X     X     X     X     X     X     X
+  colour_starvation     X     .     .     .     .     .     .     .     .
+  forced_overstack      X     X     .     .     X     X     .     .     .
+  cascade_backfire      .     .     .     .     .     .     .     .     .
+```
+
+| axis | filled cells per value |
+|---|---|
+| escape | 1=13  2=4  3=6  4=4  5=3  6=2  7=3  8+=1  none=6 |
+| region | spawn=11  mid=10  edge=21 |
+| mechanism | garbage_flood=29  spawn_congestion=6  forced_overstack=4  colour_starvation=3  **cascade_backfire=0** |
+| virus | **ahead=24**  even=15  behind=3 |
+
+### What the empty regions say
+* **`cascade_backfire` is a hard NULL** — zero cells in 86 deaths over 500
+  trials. The champion does not die by clearing into its own death: no cascade
+  it triggers drops material back into the spawn lane fatally. A whole
+  hypothesised failure mode does not exist for this champion.
+* **`colour_starvation` occupies only E=1.** When unmatched material kills, it
+  is *always* shallow-escapable — one different placement suffices. It never
+  produces a deep trap.
+* **`garbage_flood` fills every escape bin**, E=1 through none. It is the only
+  mechanism that spans the whole difficulty range, which is why it dominates the
+  death counts.
+* **`spawn_congestion` is bimodal** (E=1 and E=7, nothing between) — either
+  immediately dodgeable or long-committed.
+* `virus`: ahead 24 vs behind 3 — the archive is overwhelmingly dies-ahead,
+  independent of how the pressure was scheduled.
+
+### The sharpest exemplars (least garbage spent)
+| garbage | K | E | config | viruses left | character |
+|---|---|---|---|---|---|
+| 14 | 45 | 2 | L20 k2/p5/a15 s10 | 48/84 | garbage_flood / spawn / even |
+| 15 | 40 | 3 | L17 k3/p5/a20 s106 | 42/72 | garbage_flood / spawn / even |
+| 16 | 38 | 3 | L20 k2/p4/a10 s49 | 67/84 | garbage_flood / spawn / behind |
+| 22 | 57 | 1 | L17 k2/p3/a20 s222 | 52/72 | colour_starvation / edge / even |
+
+Full archive with reproducers: `/mnt/data/drmario_adversary/archive/deaths_archive.json`
+(every cell carries `seed`, schedule, final `col`/`vir`, and the escape move).
+
+### Read this honestly
+10.4% coverage is low, and that is partly the grid: the axes are a product
+space and many combinations are physically implausible. **The marginals and the
+nulls are the informative view, not the fill percentage.** Cell counts are also
+not death counts — the statistical result is §6, over the 53-death matched
+sweep; this archive is the taxonomy.
+
 ## 7. G2 — admissibility of the bound
 
 `h` is the single load-bearing assumption behind every negative here: IDA* starts
@@ -465,7 +541,10 @@ argument and cost one RTL decision each.
 | `m3_margin.py` | prices the m3 blunders in pills of margin (null — see §5) |
 | `pressure_escape.py` | **the real result** — escape depth on drip-pressure deaths |
 | `memo_db.py` | persistent LMDB champion-move store on /mnt/data |
-| `classify.py` / `mapelites.py` | behaviour descriptor + QD archive scaffolding |
+| `classify.py` | behaviour descriptor (escape x region x mechanism x virus) |
+| `mapelites_pressure.py` | **the QD archive** — replay-gated admission, coverage + nulls |
+| `gravity_gate.py` | reusable delivery gate + `tripwire()` for "which code ran?" |
+| `audit_gravity.py` | exercises all 5 delivery paths in the tree |
 | `test_garbage_gravity.py` | regression test for the floating-garbage defect |
 | `test_memo_integrity.py` | G5 — the store never changes an answer |
 | `death_corpus.py` | 1200-game solo death hunt |
