@@ -1,0 +1,74 @@
+{
+  "a_selfplay": {
+    "n_seeds": 15,
+    "opp_kind": "champ",
+    "vec": null,
+    "champ_death_rate": 0.0,
+    "death_ci": [
+      0.0,
+      0.0
+    ],
+    "dies_ahead_rate": 0.0,
+    "dies_ahead_ci": [
+      0.0,
+      0.0
+    ],
+    "champ_pills_to_clear": 104.73333333333333,
+    "n_champ_wins": 15,
+    "champ_win_rate": 0.5,
+    "stall_rate": 0.0,
+    "outraced_rate": 0.5,
+    "atk_sent_champ": 12.166666666666666,
+    "atk_sent_opp": 12.166666666666666
+  },
+  "b_native_d1": {
+    "n_seeds": 15,
+    "opp_kind": "native",
+    "vec": null,
+    "champ_death_rate": 0.0,
+    "death_ci": [
+      0.0,
+      0.0
+    ],
+    "dies_ahead_rate": 0.0,
+    "dies_ahead_ci": [
+      0.0,
+      0.0
+    ],
+    "champ_pills_to_clear": 81.0,
+    "n_champ_wins": 1,
+    "champ_win_rate": 1.0,
+    "stall_rate": 0.0,
+    "outraced_rate": 0.0,
+    "atk_sent_champ": 6.2,
+    "atk_sent_opp": 0.8333333333333334
+  },
+  "c_evolved_adv": {
+    "n_seeds": 15,
+    "opp_kind": "adv",
+    "vec": [
+      234,
+      20,
+      -31,
+      233,
+      37
+    ],
+    "champ_death_rate": 0.0,
+    "death_ci": [
+      0.0,
+      0.0
+    ],
+    "dies_ahead_rate": 0.0,
+    "dies_ahead_ci": [
+      0.0,
+      0.0
+    ],
+    "champ_pills_to_clear": 146.04545454545453,
+    "n_champ_wins": 11,
+    "champ_win_rate": 0.9666666666666667,
+    "stall_rate": 0.0,
+    "outraced_rate": 0.03333333333333333,
+    "atk_sent_champ": 15.033333333333333,
+    "atk_sent_opp": 23.8
+  }
+}

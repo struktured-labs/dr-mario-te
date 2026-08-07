@@ -1,0 +1,32 @@
+{
+  "generation": 7,
+  "best_vec": [
+    234,
+    20,
+    -31,
+    233,
+    37
+  ],
+  "best_vec_named": {
+    "w_chain": 234,
+    "ws": 20,
+    "w_press": -31,
+    "w_hold": 233,
+    "w_bigsq": 37
+  },
+  "best_fitness": 69.42941176470589,
+  "best_death_rate": 0.05,
+  "best_death_ci": [
+    0.0,
+    0.125
+  ],
+  "best_dies_ahead_rate": 0.05,
+  "best_pills_to_clear": 144.2941176470588,
+  "sigma": 1.7617710937500002,
+  "elapsed_s": 2191.9805760383606,
+  "train_seeds": [
+    5000,
+    5019,
+    20
+  ]
+}
