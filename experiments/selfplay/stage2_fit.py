@@ -233,11 +233,16 @@ def design(blocks, key, js, winfilter=True):
     return np.vstack(X), np.concatenate(y)
 
 
-def run_arm(blocks, T, key, folds, kind, args, shuffled=False):
+def run_arm(blocks, T, key, folds, kind, args, shuffled=False, frac=1.0):
     out = []
     for fi in range(args.folds):
         te = folds[fi]
         tr = [j for j in range(T["P"]) if j not in set(te)]
+        if frac < 1.0:
+            # subsample TRAINING positions only; the held-out fold is untouched so
+            # every point on the curve is scored on exactly the same positions
+            rr = random.Random(args.seed + 4000 + fi)
+            tr = sorted(rr.sample(tr, max(10, int(frac * len(tr)))))
         if shuffled:
             pr = random.Random(args.seed + 900 + fi)
             saved = {}
@@ -292,11 +297,15 @@ def main():
     ap.add_argument("--seed", type=int, default=17)
     ap.add_argument("--hidden", type=int, default=64)
     ap.add_argument("--epochs", type=int, default=600)
+    ap.add_argument("--plateau-tol", type=float, default=0.15,
+                    help="pills: max held-out gain over the last data doubling")
+    ap.add_argument("--min-positions", type=int, default=200,
+                    help="refuse to run below this; smoke tests only")
     args = ap.parse_args()
     args.lams = [0.1, 1.0, 10.0, 100.0, 1000.0, 1e4]
 
     blocks = load(args)
-    if len(blocks) < 200:
+    if len(blocks) < args.min_positions:
         print("too few usable positions; aborting")
         return 1
     T = prep(blocks, args)
@@ -317,6 +326,29 @@ def main():
     ctl = run_arm(blocks, T, "terms11", folds, "ridge", args, shuffled=True)
     line("  shuffled-target control", ctl)
 
+    # GATE B -- LABEL SUFFICIENCY, and it does not depend on the hand weights at all.
+    # Gate A compares the fit to a known-good reference, but at depth 2 those hand
+    # weights are OFF-DESIGN (they were tuned for depth 3), so the bar is lower here
+    # than it was in Stage 1 and passing it proves correspondingly less. The
+    # reference-free question is whether the fit has stopped improving with data: if
+    # held-out regret is still falling at the full training set, the fit is still
+    # label-limited and a negative from the richer arms would again be a statement
+    # about my label budget rather than about hypothesis classes.
+    print()
+    print("=" * 78)
+    print("GATE B -- has the fit CONVERGED, or is it still label-limited?")
+    print("=" * 78)
+    curve = []
+    for frac in (0.25, 0.5, 0.75, 1.0):
+        xs = run_arm(blocks, T, "terms11", folds, "ridge", args, frac=frac)
+        m = line(f"  linear/terms11 on {frac:.0%} of training positions", xs)
+        curve.append((frac, m))
+    tail_gain = curve[-2][1] - curve[-1][1] if len(curve) >= 2 else float("nan")
+    print(f"\n  improvement over the last doubling: {tail_gain:+.3f} pills")
+    converged = abs(tail_gain) <= args.plateau_tol
+    print(f"  {'CONVERGED' if converged else 'STILL LABEL-LIMITED'} "
+          f"(plateau tolerance {args.plateau_tol})")
+
     print()
     if f is None or h is None or f > h + GATE_TOL:
         print("  *** GATE FAILED -- NO CONCLUSIONS DRAWN, NO MODELS SCORED. ***")
@@ -333,8 +365,17 @@ def main():
         print(f"  Next lever: more labelled positions (currently {T['P']}).")
         return 2
 
-    print(f"  GATE PASSED: fitted linear {f:+.3f} vs hand {h:+.3f} "
-          f"(within {GATE_TOL} pills).")
+    if not converged:
+        print("  *** GATE B FAILED -- NO CONCLUSIONS DRAWN. ***")
+        print()
+        print(f"  Held-out regret is still improving by {tail_gain:+.3f} pills over the")
+        print("  last doubling of training data, so the fit has NOT converged. A")
+        print("  negative from the richer arms would again be a statement about the")
+        print("  label budget, which is the Stage-1 error. Richer arms NOT run.")
+        print(f"  Next lever: more labelled positions (currently {T['P']}).")
+        return 3
+    print(f"  GATES PASSED: fitted linear {f:+.3f} vs hand {h:+.3f} "
+          f"(within {GATE_TOL}), and converged (last doubling {tail_gain:+.3f}).")
     print("  The fitting procedure can reproduce hand tuning from data alone, so")
     print("  differences between the arms below are attributable to the hypothesis")
     print("  class rather than to the fit running out of signal.")
