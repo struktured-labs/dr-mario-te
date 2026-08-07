@@ -200,3 +200,21 @@ driver copy and the DRBUILDID default drift): **a build's FLAGS are part of
 its identity. Verify an artifact's flag provenance from its manifest and its
 emitter hash before running any experiment on it — the docs describing a
 build are not the build.**
+
+## ⚠ PARTIAL RETRACTION OF THE RETRACTION (2026-08-06, same day)
+
+The co-sim agent self-retracted three of its own numbers after its
+outcome-plausibility gate caught a **1-based vs 0-based pill-colour** bug at
+the copro mailbox boundary (the faithful sim uses 1..3; $5080-$5083 expects
+0..2 — silent, because 1..3 looks like a valid 2-bit field).
+WITHDRAWN pending re-measurement: the 40-42% s20b-vs-s20t3 placement
+divergence, the v1-42%/tier-3-100% descriptor-coherence table, and a
+fast-sim-vs-RTL transfer figure. Treat their DIRECTION as unknown.
+**UNAFFECTED and still standing** (no simulation involved): DRTUCK has never
+been enabled on any of 67 cart manifests, the deployed cart has no tuck
+executor, tuck_v3 overwrites best_col/best_orient — so the A/B retraction
+above and the decision to stop that run remain correct.
+LESSON, now project doctrine: structural agreement gates CANNOT catch a
+shared-encoder bug (both sides used the same encoder); only an
+outcome-plausibility gate anchored to a known real rate can. Every harness
+needs one.

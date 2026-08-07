@@ -1,0 +1,35 @@
+{
+  "digest": "219e2e1518c4bc23c037ea0ae843f891027d9a0af67d17f1bcc154e12586410f",
+  "n_seeds": 2,
+  "seeds": [
+    33269,
+    33754
+  ],
+  "per_seed": [
+    {
+      "seed": 33269,
+      "result": "topout",
+      "pills": 231,
+      "viruses_left": 1,
+      "n_moves": 231,
+      "hash": "6b43df01bf4efa2031b5114eac48f51b218761e18f3654eb720ed73f877ac14c"
+    },
+    {
+      "seed": 33754,
+      "result": "stall",
+      "pills": 300,
+      "viruses_left": 1,
+      "n_moves": 300,
+      "hash": "2a70ab635a63f84b774ee7221d65d172948a29b6d082ac53c4db4c3b2b70dfce"
+    }
+  ],
+  "env": {
+    "node": "blackmage",
+    "machine": "x86_64",
+    "python": "3.12.11",
+    "numpy": "2.4.6",
+    "numba": "0.66.0",
+    "llvmlite": "0.48.0",
+    "cpu": "12th Gen Intel(R) Core(TM) i9-12900K"
+  }
+}

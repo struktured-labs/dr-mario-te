@@ -1,0 +1,6 @@
+# Run outputs are large and regenerable; the code + notes are the deliverable.
+results/
+logs/
+*.bak
+trace_*.json
+payload_*.json
