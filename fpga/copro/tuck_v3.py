@@ -78,6 +78,27 @@ TK2_TMPL, TK2_TMPH = 0x7F, 0x80               # gate-compare scratch
 # prior build in this file's history).
 THETA = int(os.environ.get("DRCOPRO_TUCKV3_THETA", "150"))
 
+# DEBUG-ONLY readout of the quality gate's own two operands. The gate compares
+# D_V1 (a candidate's ply-2 score) against TK2_BBV + THETA, and both live in copro
+# zero page where nothing outside the copro can see them -- so "the gate never
+# rejects anything" (measured invariant across THETA 150..20000 and -30000, two
+# corpora) has several possible mechanisms that are indistinguishable from outside.
+# These builds make the operands readable by REPURPOSING the four readback mailbox
+# bytes, which costs no RTL change (CoproDrMario's xlate table decodes exactly nine
+# cart bytes; everything above $5088 aliases to one scratch byte).
+#
+#   1 -> $5085/$5086 = TK2_BBV (base best, gate reference)
+#        $5087/$5088 = D_BV at exit (best over base and every COMMITTED tuck)
+#   2 -> $5085/$5086 = TK2_BBV
+#        $5087/$5088 = max D_V1 over ALL candidates, taken BEFORE the gate, so it
+#                      is visible whether or not the gate would have admitted it
+#
+# Mode 2 reuses TK2_APP/TK2_TRIG as the running max and suppresses the commit
+# path's writes to them; that destroys the tuck descriptor, which is why these are
+# measurement builds only and must never be flashed. Default 0 keeps the shipped
+# build byte-identical (asserted by build_dbgpub.sh against 5d010f62).
+DBGPUB = int(os.environ.get("DRCOPRO_TUCKV3_DBGPUB", "0"))
+
 # orient (H/V/RH/RV) -> o4 (test_depth2.py's convention: 0-1 vertical, 2-3 horizontal).
 # Derivation + self-check: fpga/copro/tuck_validation/tuck_orient_map.py (qa-harness).
 O4_TABLE = [2, 1, 3, 0]      # index by H=0,V=1,RH=2,RV=3
@@ -600,6 +621,9 @@ def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
     a.ins("LDA_zp", D_BVL); a.ins("STA_zp", TK2_BBVL)
     a.ins("LDA_zp", D_BVH); a.ins("STA_zp", TK2_BBVH)
     a.ins("LDA_imm", 0); a.ins("STA_zp", TK2_BKIND)
+    if DBGPUB == 2:
+        a.ins("LDA_imm", 0x00); a.ins("STA_zp", TK2_APP)     # running max D_V1 = -32768
+        a.ins("LDA_imm", 0x80); a.ins("STA_zp", TK2_TRIG)
     a.ins("LDA_imm", 0); a.ins("STA_zp", TP_IDX)
 
     a.label("tre_loop")
@@ -626,6 +650,16 @@ def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
     a.jsr("tuck_slot0_inject")
     a.jsr("tuck_ply2_score")
 
+    if DBGPUB == 2:
+        # running max BEFORE the gate: signed 16-bit (max - D_V1), BPL => max wins
+        a.ins("LDA_zp", TK2_APP); a.ins("SEC"); a.ins("SBC_zp", D_V1L)
+        a.ins("LDA_zp", TK2_TRIG); a.ins("SBC_zp", D_V1H)
+        a.br("BVC", "tre_dbgs"); a.ins("EOR_imm", 0x80); a.label("tre_dbgs")
+        a.br("BPL", "tre_dbgn")
+        a.ins("LDA_zp", D_V1L); a.ins("STA_zp", TK2_APP)
+        a.ins("LDA_zp", D_V1H); a.ins("STA_zp", TK2_TRIG)
+        a.label("tre_dbgn")
+
     a.ins("CLC"); a.ins("LDA_zp", TK2_BBVL); a.ins("ADC_imm", THETA & 0xFF); a.ins("STA_zp", TK2_TMPL)
     a.ins("LDA_zp", TK2_BBVH); a.ins("ADC_imm", (THETA >> 8) & 0xFF); a.ins("STA_zp", TK2_TMPH)
     a.ins("LDA_zp", D_V1L); a.ins("SEC"); a.ins("SBC_zp", TK2_TMPL)
@@ -645,8 +679,9 @@ def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
     a.ins("LDX_zp", TP_ORIENT); _lda_absx_label(a, "tuck_o4_table"); a.ins("STA_zp", D_BO)
     a.ins("LDA_zp", D_BC); a.ins16("STA_abs", S_BEST_C)
     a.ins("LDA_zp", D_BO); a.ins16("STA_abs", S_BEST_O)
-    a.ins("LDA_zp", TP_APPROACH); a.ins("STA_zp", TK2_APP)
-    a.ins("LDA_zp", TP_TRIGGER); a.ins("STA_zp", TK2_TRIG)
+    if DBGPUB != 2:                    # mode 2 owns TK2_APP/TK2_TRIG as the running max
+        a.ins("LDA_zp", TP_APPROACH); a.ins("STA_zp", TK2_APP)
+        a.ins("LDA_zp", TP_TRIGGER); a.ins("STA_zp", TK2_TRIG)
     a.ins("LDA_imm", 1); a.ins("STA_zp", TK2_BKIND)
 
     a.label("tre_next")
@@ -660,4 +695,13 @@ def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
     a.ins("LDA_zp", TK2_APP); a.ins16("STA_abs", TUCK_COL)
     a.ins("LDA_zp", TK2_TRIG); a.ins16("STA_abs", TUCK_ROW)
     a.label("tre_ret")
+    if DBGPUB:
+        # D_BC/D_BO, NOT S_BEST_C/S_BEST_O: build_copro_d3's stub copies the zero-page
+        # pair into the mailbox unconditionally after this routine returns, so a write
+        # to S_BEST_* here would be overwritten a few instructions later.
+        a.ins("LDA_zp", TK2_BBVL); a.ins("STA_zp", D_BC)
+        a.ins("LDA_zp", TK2_BBVH); a.ins("STA_zp", D_BO)
+        lo, hi = (TK2_APP, TK2_TRIG) if DBGPUB == 2 else (D_BVL, D_BVH)
+        a.ins("LDA_zp", lo); a.ins16("STA_abs", TUCK_COL)
+        a.ins("LDA_zp", hi); a.ins16("STA_abs", TUCK_ROW)
     a.ins("RTS")
