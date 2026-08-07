@@ -17,9 +17,9 @@
    "POOLED": {
     "candidate": "s20t3fix_tuck",
     "control": "s20b_drop",
-    "n_paired": 8,
+    "n_paired": 15,
     "cand_only": 0,
-    "ctrl_only": 46,
+    "ctrl_only": 39,
     "fw": {
      "s20t3fix_tuck": [
       "554a16a5"
@@ -29,43 +29,62 @@
      ]
     },
     "clear": {
-     "cand": "6/8 = 75.0%",
-     "ctrl": "8/8 = 100.0%",
+     "cand": "13/15 = 86.7%",
+     "ctrl": "15/15 = 100.0%",
      "cand_ci": [
-      0.4093,
-      0.9285
+      0.6212,
+      0.9626
      ],
      "ctrl_ci": [
-      0.6756,
+      0.7961,
       1.0
      ],
-     "delta_points": -25.0,
+     "delta_points": -13.3,
      "discordant_cand_only": 0,
      "discordant_ctrl_only": 2,
      "mcnemar_p": 0.5
     },
     "viruses_cleared": {
-     "cand": 46.0,
+     "cand": 46.93,
      "ctrl": 48.0,
-     "paired_delta": -2.0
+     "paired_delta": -1.07,
+     "paired_delta_ci95": [
+      -3.07,
+      0.0
+     ],
+     "n_seeds_moved": 2
+    },
+    "tucks_by_outcome": {
+     "cleared": {
+      "n": 13,
+      "executed_per_game": 20.85,
+      "pills_per_game": 105.92,
+      "executed_per_placement": 0.1968
+     },
+     "failed": {
+      "n": 2,
+      "executed_per_game": 4.0,
+      "pills_per_game": 73.5,
+      "executed_per_placement": 0.0544
+     }
     },
     "fire_rate": {
-     "published_per_placement": 0.1512,
-     "executed_per_placement": 0.1512,
+     "published_per_placement": 0.1831,
+     "executed_per_placement": 0.1831,
      "n_incoherent": 0
     },
     "power": {
      "control_rate": 1.0,
      "min_detectable_delta_points_approx": null
     },
-    "verdict": "observed clear-rate delta -25.0 points, McNemar p=0.5; not significant; fire rate 15.1% (OUTSIDE the pre-registered 5%-15%); => the pre-registered prediction was conditioned on a fire rate this arm does not have; it is not a fair test of it"
+    "verdict": "observed clear-rate delta -13.3 points, McNemar p=0.5; not significant; fire rate 18.3% (OUTSIDE the pre-registered 5%-15%); => the pre-registered prediction was conditioned on a fire rate this arm does not have; it is not a fair test of it"
    },
    "block 0-119    (wave 1)": {
     "candidate": "s20t3fix_tuck",
     "control": "s20b_drop",
-    "n_paired": 8,
+    "n_paired": 15,
     "cand_only": 0,
-    "ctrl_only": 46,
+    "ctrl_only": 39,
     "fw": {
      "s20t3fix_tuck": [
       "554a16a5"
@@ -75,29 +94,48 @@
      ]
     },
     "clear": {
-     "cand": "6/8 = 75.0%",
-     "ctrl": "8/8 = 100.0%",
+     "cand": "13/15 = 86.7%",
+     "ctrl": "15/15 = 100.0%",
      "cand_ci": [
-      0.4093,
-      0.9285
+      0.6212,
+      0.9626
      ],
      "ctrl_ci": [
-      0.6756,
+      0.7961,
       1.0
      ],
-     "delta_points": -25.0,
+     "delta_points": -13.3,
      "discordant_cand_only": 0,
      "discordant_ctrl_only": 2,
      "mcnemar_p": 0.5
     },
     "viruses_cleared": {
-     "cand": 46.0,
+     "cand": 46.93,
      "ctrl": 48.0,
-     "paired_delta": -2.0
+     "paired_delta": -1.07,
+     "paired_delta_ci95": [
+      -3.07,
+      0.0
+     ],
+     "n_seeds_moved": 2
+    },
+    "tucks_by_outcome": {
+     "cleared": {
+      "n": 13,
+      "executed_per_game": 20.85,
+      "pills_per_game": 105.92,
+      "executed_per_placement": 0.1968
+     },
+     "failed": {
+      "n": 2,
+      "executed_per_game": 4.0,
+      "pills_per_game": 73.5,
+      "executed_per_placement": 0.0544
+     }
     },
     "fire_rate": {
-     "published_per_placement": 0.1512,
-     "executed_per_placement": 0.1512,
+     "published_per_placement": 0.1831,
+     "executed_per_placement": 0.1831,
      "n_incoherent": 0
     },
     "power": {
@@ -110,7 +148,7 @@
     "control": "s20b_drop",
     "n_paired": 0,
     "cand_only": 0,
-    "ctrl_only": 46,
+    "ctrl_only": 39,
     "note": "no paired seeds yet"
    },
    "block 135-234  (wave 2, out-of-sample for the retracted split)": {
@@ -118,7 +156,7 @@
     "control": "s20b_drop",
     "n_paired": 0,
     "cand_only": 0,
-    "ctrl_only": 46,
+    "ctrl_only": 39,
     "note": "no paired seeds yet"
    },
    "block 120+     (union, sub-256)": {
@@ -126,15 +164,15 @@
     "control": "s20b_drop",
     "n_paired": 0,
     "cand_only": 0,
-    "ctrl_only": 46,
+    "ctrl_only": 39,
     "note": "no paired seeds yet"
    },
-   "seeds 256+     (wave 3, s0!=0 -- the ONE real LFSR boundary)": {
+   "seeds 400+     (wave 3, outside BOTH studied ranges)": {
     "candidate": "s20t3fix_tuck",
     "control": "s20b_drop",
     "n_paired": 0,
     "cand_only": 0,
-    "ctrl_only": 46,
+    "ctrl_only": 39,
     "note": "no paired seeds yet"
    }
   },
@@ -142,9 +180,9 @@
    "POOLED": {
     "candidate": "s20t3fix_drop",
     "control": "s20b_drop",
-    "n_paired": 8,
+    "n_paired": 14,
     "cand_only": 0,
-    "ctrl_only": 46,
+    "ctrl_only": 40,
     "fw": {
      "s20t3fix_drop": [
       "554a16a5"
@@ -154,28 +192,47 @@
      ]
     },
     "clear": {
-     "cand": "0/8 = 0.0%",
-     "ctrl": "8/8 = 100.0%",
+     "cand": "0/14 = 0.0%",
+     "ctrl": "14/14 = 100.0%",
      "cand_ci": [
       0.0,
-      0.3244
+      0.2153
      ],
      "ctrl_ci": [
-      0.6756,
+      0.7847,
       1.0
      ],
      "delta_points": -100.0,
      "discordant_cand_only": 0,
-     "discordant_ctrl_only": 8,
-     "mcnemar_p": 0.00781
+     "discordant_ctrl_only": 14,
+     "mcnemar_p": 0.00012
     },
     "viruses_cleared": {
-     "cand": 24.25,
+     "cand": 27.86,
      "ctrl": 48.0,
-     "paired_delta": -23.75
+     "paired_delta": -20.14,
+     "paired_delta_ci95": [
+      -25.57,
+      -14.86
+     ],
+     "n_seeds_moved": 14
+    },
+    "tucks_by_outcome": {
+     "cleared": {
+      "n": 0,
+      "executed_per_game": null,
+      "pills_per_game": null,
+      "executed_per_placement": null
+     },
+     "failed": {
+      "n": 14,
+      "executed_per_game": 0.0,
+      "pills_per_game": 88.29,
+      "executed_per_placement": 0.0
+     }
     },
     "fire_rate": {
-     "published_per_placement": 0.2431,
+     "published_per_placement": 0.2379,
      "executed_per_placement": 0.0,
      "n_incoherent": 0
     },
@@ -183,14 +240,14 @@
      "control_rate": 1.0,
      "min_detectable_delta_points_approx": null
     },
-    "verdict": "observed clear-rate delta -100.0 points, McNemar p=0.00781; SIGNIFICANT; fire rate 24.3% (OUTSIDE the pre-registered 5%-15%); => the pre-registered prediction was conditioned on a fire rate this arm does not have; it is not a fair test of it"
+    "verdict": "observed clear-rate delta -100.0 points, McNemar p=0.00012; SIGNIFICANT; fire rate 23.8% (OUTSIDE the pre-registered 5%-15%); => the pre-registered prediction was conditioned on a fire rate this arm does not have; it is not a fair test of it"
    },
    "block 0-119    (wave 1)": {
     "candidate": "s20t3fix_drop",
     "control": "s20b_drop",
-    "n_paired": 8,
+    "n_paired": 14,
     "cand_only": 0,
-    "ctrl_only": 46,
+    "ctrl_only": 40,
     "fw": {
      "s20t3fix_drop": [
       "554a16a5"
@@ -200,28 +257,47 @@
      ]
     },
     "clear": {
-     "cand": "0/8 = 0.0%",
-     "ctrl": "8/8 = 100.0%",
+     "cand": "0/14 = 0.0%",
+     "ctrl": "14/14 = 100.0%",
      "cand_ci": [
       0.0,
-      0.3244
+      0.2153
      ],
      "ctrl_ci": [
-      0.6756,
+      0.7847,
       1.0
      ],
      "delta_points": -100.0,
      "discordant_cand_only": 0,
-     "discordant_ctrl_only": 8,
-     "mcnemar_p": 0.00781
+     "discordant_ctrl_only": 14,
+     "mcnemar_p": 0.00012
     },
     "viruses_cleared": {
-     "cand": 24.25,
+     "cand": 27.86,
      "ctrl": 48.0,
-     "paired_delta": -23.75
+     "paired_delta": -20.14,
+     "paired_delta_ci95": [
+      -25.57,
+      -14.86
+     ],
+     "n_seeds_moved": 14
+    },
+    "tucks_by_outcome": {
+     "cleared": {
+      "n": 0,
+      "executed_per_game": null,
+      "pills_per_game": null,
+      "executed_per_placement": null
+     },
+     "failed": {
+      "n": 14,
+      "executed_per_game": 0.0,
+      "pills_per_game": 88.29,
+      "executed_per_placement": 0.0
+     }
     },
     "fire_rate": {
-     "published_per_placement": 0.2431,
+     "published_per_placement": 0.2379,
      "executed_per_placement": 0.0,
      "n_incoherent": 0
     },
@@ -235,7 +311,7 @@
     "control": "s20b_drop",
     "n_paired": 0,
     "cand_only": 0,
-    "ctrl_only": 46,
+    "ctrl_only": 40,
     "note": "no paired seeds yet"
    },
    "block 135-234  (wave 2, out-of-sample for the retracted split)": {
@@ -243,7 +319,7 @@
     "control": "s20b_drop",
     "n_paired": 0,
     "cand_only": 0,
-    "ctrl_only": 46,
+    "ctrl_only": 40,
     "note": "no paired seeds yet"
    },
    "block 120+     (union, sub-256)": {
@@ -251,15 +327,15 @@
     "control": "s20b_drop",
     "n_paired": 0,
     "cand_only": 0,
-    "ctrl_only": 46,
+    "ctrl_only": 40,
     "note": "no paired seeds yet"
    },
-   "seeds 256+     (wave 3, s0!=0 -- the ONE real LFSR boundary)": {
+   "seeds 400+     (wave 3, outside BOTH studied ranges)": {
     "candidate": "s20t3fix_drop",
     "control": "s20b_drop",
     "n_paired": 0,
     "cand_only": 0,
-    "ctrl_only": 46,
+    "ctrl_only": 40,
     "note": "no paired seeds yet"
    }
   }

@@ -35,6 +35,7 @@ import argparse
 import json
 import math
 import os
+import random
 from collections import defaultdict
 
 JSONL = "/mnt/data/drmario_cosim/results/tuck2x2_bursty.jsonl"
@@ -162,8 +163,45 @@ def compare(by, cand, ctrl, seed_filter=None):
 
     vc = sum(r["viruses_cleared"] for r in C) / n
     vk = sum(r["viruses_cleared"] for r in K) / n
-    out["viruses_cleared"] = {"cand": round(vc, 2), "ctrl": round(vk, 2),
-                              "paired_delta": round(vc - vk, 2)}
+    # Paired bootstrap over WITHIN-SEED differences. Pairing is the whole point of this
+    # design, so the CI must resample seeds, not arms. Fixed RNG so it cannot drift
+    # between runs of the same data.
+    diffs = [c["viruses_cleared"] - k["viruses_cleared"] for c, k in zip(C, K)]
+    rng = random.Random(12345)
+    boots = sorted(sum(rng.choice(diffs) for _ in range(n)) / n for _ in range(10000))
+    out["viruses_cleared"] = {
+        "cand": round(vc, 2), "ctrl": round(vk, 2),
+        "paired_delta": round(vc - vk, 2),
+        "paired_delta_ci95": [round(boots[249], 2), round(boots[9749], 2)],
+        "n_seeds_moved": sum(1 for d in diffs if d != 0),
+    }
+
+    # Tucks per game split by OUTCOME. A flat average hides "neutral overall but
+    # CONCENTRATED IN THE LOSSES", which would be a different and more interesting
+    # finding than a null. Broken out rather than left to be asked for.
+    won = [r for r in C if r["result"] == "clear"]
+    lost = [r for r in C if r["result"] != "clear"]
+
+    def _per_game(rows, key):
+        return None if not rows else round(sum(r[key] for r in rows) / len(rows), 2)
+
+    def _per_placement(rows):
+        # ⚠ PER-GAME COUNTS CONFOUND WITH GAME LENGTH. A failed game tops out early and
+        # therefore places far fewer pills, so it MECHANICALLY shows fewer tucks per game
+        # whatever the policy does. Normalising by placements is the only way to read
+        # "does it tuck MORE when losing" -- the same paired-denominator rule the
+        # virus-tempo principle already forced on this project once.
+        pl = sum(r["pills"] for r in rows)
+        return None if not pl else round(sum(r["n_tuck"] for r in rows) / pl, 4)
+
+    out["tucks_by_outcome"] = {
+        "cleared": {"n": len(won), "executed_per_game": _per_game(won, "n_tuck"),
+                    "pills_per_game": _per_game(won, "pills"),
+                    "executed_per_placement": _per_placement(won)},
+        "failed": {"n": len(lost), "executed_per_game": _per_game(lost, "n_tuck"),
+                   "pills_per_game": _per_game(lost, "pills"),
+                   "executed_per_placement": _per_placement(lost)},
+    }
 
     pills = sum(r["pills"] for r in C)
     pub = sum(r["n_tuck_published"] for r in C)
@@ -295,7 +333,15 @@ def main():
                   f"{cl['discordant_cand_only']}/{cl['discordant_ctrl_only']}   "
                   f"McNemar p={cl['mcnemar_p']}")
             print(f"    viruses cleared  cand {v['cand']}  ctrl {v['ctrl']}  "
-                  f"delta {v['paired_delta']:+.2f}")
+                  f"delta {v['paired_delta']:+.2f} "
+                  f"CI[{v['paired_delta_ci95'][0]:+.2f},{v['paired_delta_ci95'][1]:+.2f}]"
+                  f"  seeds moved {v['n_seeds_moved']}/{d['n_paired']}")
+            t = d["tucks_by_outcome"]
+            for _o in ("cleared", "failed"):
+                _t = t[_o]
+                print(f"    tucks | {_o:7s} n={_t['n']:3d}  "
+                      f"{_t['executed_per_game']}/game over {_t['pills_per_game']} pills"
+                      f"  => {_t['executed_per_placement']}/placement")
             print(f"    fire rate  published {f['published_per_placement']}  "
                   f"executed {f['executed_per_placement']}  "
                   f"incoherent {f['n_incoherent']}")
