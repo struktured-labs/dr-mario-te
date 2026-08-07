@@ -14,6 +14,30 @@ is boot-frame-count dependent), no wedges, no SD handling, and byte-reproducible
 
 ---
 
+## Where this sits in the ladder
+
+Fast sim for breadth, **co-sim to confirm the survivors**, hardware once. This farm is the
+middle tier — not the research substrate. For *ranking* design A against design B, both
+arms run under the same simulator and most fidelity error cancels; the fast sim does that
+thousands of times faster.
+
+So how much better is the co-sim, actually? Measured on 50 real-L11 boards against RTL
+ground truth (`transfer_check.py`, costs no new RTL — it replays decisions the co-sim
+already recorded):
+
+| decider | agrees with real RTL on the full (col, orient) move |
+|---|---|
+| `fast_rtl_x.decide_ship_d3` | **38.0%** (col-only 46%, orient-only 62%) |
+| py65 (`CANDIDATE_TIER3.md` §10) | 13.3% |
+
+The fast sim is ~2.9x the proxy py65 is. **Read this as "how good a proxy", not "the fast
+sim is wrong":** move agreement is a *lower bound* on ranking fidelity, because two
+deciders can disagree per-move and still rank designs identically — that cancellation is
+the whole argument for having a fast tier. What it does say is that neither is a
+move-level oracle, which is why survivors get confirmed here.
+
+---
+
 ## The load-bearing finding: the deployed cart has no tuck executor
 
 Checked before any measurement, because it decides what a tier-3 A/B can even mean.
@@ -38,6 +62,35 @@ Hence two execution modes:
 |---|---|
 | `drop` (default) | what the deployed cart does. Descriptor ignored. **Use for anything claiming to describe silicon.** |
 | `tuck` | honours the descriptor. Prices what a `DRTUCK=1` cart would buy. |
+
+### `DRTUCK=1` has never shipped, on any cart
+
+All 67 cart manifests in the repo were scanned. `DRTUCK` appears in exactly two
+(`boardhold-v6b`, `mister-human-studycounts-armed2fix`) and is `"0"` in both; every other
+manifest omits it, which is also off. **The tuck executor has never run on silicon.** Every
+tuck enumerator this project has built — v1, v3, BFS, tier-3 — has been publishing to a
+mailbox no shipped cart has ever read.
+
+### …and the shipped descriptors are mostly unperformable anyway
+
+`descriptor_audit.py` replays each published descriptor against the board it was published
+for (zero RTL cost) and asks whether the maneuver is possible at all: can the pill even
+enter `best_col` at the published trigger row? On 50 real-L11 boards:
+
+| firmware | published | coherent | blocked at trigger | lands deeper than a drop |
+|---|---|---|---|---|
+| tuck-v1 `e970e9ab` (shipped) | 26 | **11 (42%)** | **15** | **1 (4%)** |
+| tier-3 `5d010f62` | 25 | **25 (100%)** | 0 | **15 (60%)**, mean **+3.3 rows** |
+
+v1 is incoherent *by construction*, and `tuck_scan.py`'s own docstring predicts it: v1
+enumerates over ALL target columns and keeps the globally deepest rest, while the driver
+takes its destination from `best_col` — the two need not name the same column. The one
+edge case that could fake this (`translate_ref` allows a vertical anchored at row 0, top
+half clipped) rescues **zero** of the 15.
+
+**Consequence: if a `DRTUCK=1` cart is ever built it must ship with tier-3 firmware.**
+Enabling the executor with today's v1 would fire 15-of-26 unperformable maneuvers — exactly
+the failure v1's own author warned about.
 
 ---
 
@@ -122,6 +175,34 @@ Memory is not the constraint: **~7 MB RSS per co-sim**, so 20 workers is well un
 Cores are the constraint. `run_farm.py --per-worker-rss-mb` sets a hard `RLIMIT_AS` per
 worker so a runaway dies with `MemoryError` instead of taking the machine down.
 
+## The 2×2: what the whole tuck program is worth
+
+`run_2x2.sh` runs firmware × cart-executor, all four arms on the **same seeds**, so every
+delta is within-seed paired:
+
+| | `drop` (today's cart) | `tuck` (a `DRTUCK=1` cart) |
+|---|---|---|
+| **s20b** `e970e9ab` | **A** the shipped champion | **C** executor on, v1 firmware |
+| **s20t3** `5d010f62` | **B** ship tier-3 today | **D** the full program |
+
+- **B − A** — value of shipping tier-3 onto today's cart. Expected ≤ 0: the cart has no
+  executor, so a winning tier-3 tuck overwrites `best_col`/`best_orient` and is then
+  plain-dropped, landing shallower than scored.
+- **C − A** — the executor alone, with the firmware we already ship. Expected ≤ 0 for a
+  different reason: 58% of v1's descriptors are unperformable.
+- **D − A** — the full program (cart rebuild + tier-3). The number that decides whether
+  months of tuck work ship.
+- **D − B** — the executor's own value, firmware held fixed. Never measured before.
+
+Pressure defaults to **bursty**, not clean: a 1,474-game census found the champion has ~0
+failures on a clean L11 stream, so a clean arm can only measure speed (pills-to-clear),
+never survival.
+
+**Incoherent descriptors in `tuck` mode degrade to a plain drop** at `best_col` and are
+counted separately (`n_incoherent`). This is deliberately conservative — on silicon the
+pill keeps falling wherever the DAS hold left it and can land in a different column
+entirely, so arm C's real harm is likely worse than measured here.
+
 ## Scope note
 
 These are **solo L11 games**, matching the offline methodology of `firmware_tier3_ab.py`
@@ -129,3 +210,8 @@ These are **solo L11 games**, matching the offline methodology of `firmware_tier
 vs P2 copro, with garbage exchange — and scored whichever side cleared first. The two
 measure different things; do not read one as a replication of the other's absolute
 numbers, only of the arm ordering.
+
+**Caveat to keep prominent:** the finding that the flag confound between `12a0906b` and
+`5d010f62` is empirically inert (0/20 boards) is a **mid-game** result. #47's stranded-half
+term is an endgame effect (vc ≤ 8) that mid-game boards cannot exercise. Do not read
+"0/20" as "the flags don't matter".
