@@ -27,14 +27,30 @@ already recorded):
 
 | decider | agrees with real RTL on the full (col, orient) move |
 |---|---|
-| `fast_rtl_x.decide_ship_d3` | **38.0%** (col-only 46%, orient-only 62%) |
+| `StrandedChainD3Decider(ws=20, w_chain=180)` — **the champion** | **100.0%** (50/50) |
+| `fast_rtl_x.decide_ship_d3` — the base search | 68.0% |
 | py65 (`CANDIDATE_TIER3.md` §10) | 13.3% |
 
-The fast sim is ~2.9x the proxy py65 is. **Read this as "how good a proxy", not "the fast
-sim is wrong":** move agreement is a *lower bound* on ranking fidelity, because two
-deciders can disagree per-move and still rank designs identically — that cancellation is
-the whole argument for having a fast tier. What it does say is that neither is a
-move-level oracle, which is why survivors get confirmed here.
+**The champion's fast-sim mirror reproduces silicon's move exactly** — both corpora, and
+the orientation *mix* matches too (RV 27, V 10, RH 6, H 7 on each side). Control, because
+100% has to be earned: perturbing the decider moves it (ws=0 → 96%, chain=0 → 98%, both
+off → 94%), so agreement **peaks at the shipped firmware's own parameters** and the
+comparison is not degenerate.
+
+The 68% row is the **base search** — a different algorithm from what ships (no chain
+reward, no #47 stranded term), so it was never a fidelity number; it measures how much
+those two terms move the choice. py65's 13.3% is base-search too, so 68-vs-13.3% is a fair
+base-to-base comparison.
+
+Limits: n=50 (exact binomial lower bound ~92.9%); mid-game boards only, so endgame and
+heavy-garbage regimes are unmeasured — and the 94-98% perturbation gradient shows the
+differentiating terms fire rarely on this corpus. It also validates a *deliberate*
+mirroring effort, so read it as "the mirror works", not as coincidence.
+
+**Consequence for the ladder:** for designs expressible in the champion decider, the fast
+sim is not a proxy on this corpus — it is the same answer. Co-sim confirmation then earns
+its cost on (a) channels the mirror does not model, such as the tuck descriptor, and
+(b) regimes outside this corpus.
 
 ---
 
