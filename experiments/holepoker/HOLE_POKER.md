@@ -16,19 +16,20 @@ replayed through the Verilator co-sim.** Named validation targets are in §8.
    The eval had a survivable move at all six commits and exhaustive search shows
    every one was survivable — **execution**, confirming `VERDICT.md`'s H1 by
    forward search rather than by ranking argument.
-3. **Deep search does NOT beat a reactive opponent.** VS beam **26.7%** kills vs
-   **23.3%** for the champion in the adversary seat; McNemar exact **p = 1.00**,
-   n=30. A dead wash. The lead flagged this as the surprising-and-reportable
-   outcome; it happened.
-4. **Depth is NOT the lever — the eval is.** Of 8 reproducible VS kills, 4 are
-   avoidable by one different champion move, and their escape depths are
-   **E = 5, 5, 6, 8** — the champion would need **depth 8 to 11**. There is
-   **no E ≤ 4 case at all**, so depth-4 buys nothing here. The other 4 have no
-   escape in the last 8 plies.
-5. **A `copy.deepcopy` defect in the shared VS substrate voided the first VS
-   run** and produced a comfortable, entirely false "depth-4 fixes a third of
-   the deaths" result. Caught by the replay gate, root-caused, fixed, re-run.
-   **Cross-cutting: any tier that deepcopies `VsMatch` is affected** (§4).
+3. **🚨 The VS harness manufactured its own kills.** `vs_env_exact` garbage tiles
+   never fell — they floated at row 0, and column 3 is a garbage column, so
+   **31.7% of deliveries topped the receiver out instantly** on any board. Fixed
+   upstream. With gravity correct: **beam 0/40, control 0/40.** *Every* VS number
+   I ever reported (32%, 26.7%, 7.1%) was that artifact. Blast radius audited:
+   only this lane and `h2h_vs --rule exact`; every other lane has its own
+   gravity-correct injection.
+4. **THE REAL ANSWER, on deaths that actually happen** (drip pressure, n=160,
+   19 deaths, all replay-verified): **79% are dies-ahead**, independently
+   reproducing the field disease. Escape depths:
+   **E=1 for 7 of 19 (37%) — depth-4 dodges those. E≤3 for 9 of 19 (47%).**
+   The other 53% need E≥5 or are unavoidable.
+5. **So: depth AND eval, roughly half each.** Depth-4 is worth ~37% of pressure
+   deaths — a real, sizeable, testable prize. It is *not* the whole disease.
 
 ---
 
@@ -79,7 +80,9 @@ reach and **IDA\*** for proof.
 | **G1 pill alphabet** | is `(a,b)` the same capsule as `(b,a)`? | **PASS** — 108 board-level comparisons, 0 differences ⇒ the 6-pill alphabet is sound |
 | **G2 admissibility** | does `h` ever exceed true plies-to-death? | **PASS** — 10 killing lines, 32 states, **0 violations** (§7) |
 | **G3a positive control** | can the search find kills at all? | **PASS** — K=1 in 6 calls, K=3 in 84 calls on boards built near death |
-| **G4 replay gate** | does every reported hole reproduce from its saved state? | **PASS after a FAIL** — 2/16 pre-fix (defect found), **8/8 post-fix** (§4) |
+| **G4 replay gate** | does every reported hole reproduce from its saved state? | **PASS after a FAIL** — it caught BOTH defects. Pressure deaths: **19/19 reproduce, 16/16 escapes survive** |
+| **G5 memo integrity** | can the persistent store change an answer? | **PASS** — 60 positions, round-trip + reopen + key hygiene, 0 disagreements |
+| **G6 garbage gravity** | does a delivery top out a healthy board? | **PASS after a FAIL** — 19/60 pre-fix, **0/60 post-fix** (§4a) |
 
 **G3b was retracted as vacuous.** It asked "can a healthy board be killed below
 the bound?" — but `SoloPoker.search` starts its iterative deepening *at* the
@@ -136,81 +139,95 @@ badly-built adversary understated the champion's VS vulnerability 5x.
 
 ---
 
-## 4. VS — retracted, root-caused, fixed, and re-run
+## 4. VS — the harness manufactured its own kills
 
-### ⚠ What happened
-The reproducibility gate (house rule: *a hole you cannot replay is an anecdote*)
-was run against the 16 VS kills. **Only 2 of 16 replayed** from their stored
-`(seed, adversary action path)`. The rest failed with "adversary action illegal
-at ply N" or ended as `adv_dead`.
+Two independent defects, both found by replay, both in the shared substrate.
 
-### Root cause — a defect in the shared VS substrate
-`NesPillSource.attach` (`nes_pills.py:90`) installs
+### 4a. Garbage tiles never fell (the fatal one)
+`vs_env_exact._drop_garbage` wrote two tiles into ROW 0 and called `resolve()`
+to "settle" them. But `FaithfulBoard.resolve()` applies gravity **only after a
+clear** — freshly dropped garbage rarely completes a line, so the loop exits
+immediately and the tiles were left **floating at row 0 over empty space,
+permanently**.
 
-```python
-env._rand_pill = lambda: Pill(*self.next_pill())
-```
+`spawn_blocked()` is `any(color[0,c] for c in (3,4))`, and `GARBAGE_PAIRS`
+contains column 3. So **one third of all deliveries topped the receiver out
+instantly** — on any board, at any height, with a full set of legal moves.
 
-a **closure stored as an instance attribute**. `copy.deepcopy` treats function
-objects as **atomic** and returns the same object, so a deepcopied env's
-`_rand_pill` still points at the **original** `NesPillSource`. Every cloned
-branch of a tree search therefore draws from **one shared, advancing cursor** —
-siblings steal each other's capsules, the simulated game is not the game the seed
-defines, and a found line depends on the expansion interleaving rather than on
-the moves.
-
-Proven directly (`test_deepcopy_pillshare.py`): two independent deepcopies of the
-**same** state drew **different** capsules — `(3,3)` vs `(2,3)`.
-
-### Why it survived every check but a replay
-It throws no exception and produces entirely plausible boards. It is also
-**deterministic run-to-run**, because the expansion order is deterministic — I
-re-ran the beam on seed 36 twice and got byte-identical action paths, which read
-as proof of correctness. **Determinism is not reproducibility.** Only replaying
-a line from a fresh state catches this.
-
-### Blast radius
-| affected | not affected |
+| | one delivery onto a healthy fresh L11 board |
 |---|---|
-| VS beam kill rate (the 32%) | **all SOLO results** — explicit pill lists, `FaithfulBoard.clone()`, no env deepcopy |
-| the escape-depth histogram built on those lines | **the m3 counterfactual** — explicit boards, fixed stream |
-| `vs_escape`'s replays (this also explains why `adv_substituted` was True on *every* escape found — the replay was diverging from the original line, exactly as the defect predicts) | **the champion-seat control** — plays one match forward, never deepcopies |
+| before fix | topped out **19/60 = 31.7%** |
+| after fix | **0/60** |
 
-**The control therefore stands: 10/50 (20%) on the pre-fix seed set** — the
-champion, playing the adversary seat with its own eval, tops the champion out in
-about a fifth of L11 matches. The post-fix run reproduces this at 7/30 (23.3%),
-which is the number to quote.
+A single tile on a *completely empty* board reported `spawn_blocked() == True`.
 
-### The fix
-Keep the capsule sequence as a **list** on the match plus a **per-player integer
-cursor** (both deepcopy cleanly) and re-seat `env.cur`/`env.nxt` from it after
-every placement — `new_match` + `reseat` in `vs_poker.py`. The end-to-end symptom
-test (same actions, siblings expanded in between → identical board) now passes.
-The upstream defect in `vs_env_exact`/`nes_pills` is **left in place and
-documented**, not silently patched, because other tiers depend on that module and
-need to make their own call.
+**Effect on my results — total:**
 
-### CORRECTED RESULT (post-fix, n = 30 seeds, L11)
-
-| adversary | kills / 30 | median plies to kill |
+| harness | deep-search beam | champion-in-adversary-seat control |
 |---|---|---|
-| champion in the adversary seat (control) | 7 / 30 (**23.3%**) | 36 |
-| deep-search beam | 8 / 30 (**26.7%**) | 27 |
+| broken | 8/30 = 26.7% | 7/30 = 23.3% |
+| **fixed (n=40)** | **0/40 = 0.0%** | **0/40 = 0.0%** |
 
-Paired: 5 beam-only, 4 control-only, 3 both. **McNemar exact two-sided
-p = 1.00.** A dead wash.
+**Not one genuine kill survived.** Every VS number this lane ever produced —
+32%, 26.7%, 7.1% — was the artifact. Strike all of them.
 
-**Reproducibility gate: 8/8 kills replay exactly** from their stored
-`(seed, path)` — champion dies at the identical ply every time (was 2/16 before
-the fix). The fix is validated by the same gate that caught the bug.
+**Blast radius, audited rather than assumed** (`grep -rl vs_env_exact`, plus who
+defines their own injection): only this lane and `h2h_vs.py --rule exact`.
+`adversary`, `adversary_t3`, `pressure_rig`, `bursty_model`, `reach_root_ab` and
+`cascade_probe` each carry their own gravity-correct `drop_garbage`, and
+`h2h_vs` defaults to `rule="rom"`. `pressure_rig` even comments the exact cause —
+that lane already knew. Fixed upstream in `vs_env_exact`; gate
+`test_garbage_gravity.py`.
 
-> **Deep search does not beat a reactive opponent at killing this champion.**
-> Compare tier-3's evolved policy against **23.3%**, and note that an
-> unbounded-lookahead searcher only reaches 26.7%. The adversary still loses
-> 22/30 lines to "no surviving lines" (its own board dies first), so 26.7% is a
-> floor on the champion's VS vulnerability, not a ceiling.
+`FaithfulBoard.resolve()` itself is deliberately unchanged: solo play never
+inserts an unsupported cell and every solo result depends on its behaviour. The
+rule it implies is the durable one — **anything that writes a cell not at its
+resting position must call `_apply_gravity()` itself.**
 
-**Do not use any VS number from an earlier commit of this file.**
+### 4b. Deepcopy shared one pill cursor
+`NesPillSource.attach` installed `env._rand_pill = lambda: ...`; `copy.deepcopy`
+treats functions as atomic, so every cloned branch drew from **one advancing
+cursor** and siblings stole each other's capsules. 14 of 16 "kills" would not
+replay. Fixed upstream with a `_PillDraw` callable object; gate
+`test_deepcopy_pillshare.py`.
+
+**It was deterministic run-to-run** — I re-ran the beam twice and got
+byte-identical action paths, which read as proof of correctness. *Determinism is
+not validity: a deterministic bug reproduces perfectly.* Only an independent
+replay from the stored `(seed, path)` could see it.
+
+### What the corrected null does and does not mean
+0/40 does not say the champion is unkillable. It says **my adversary's attack
+channel was the binding constraint**: it can only send garbage by landing double
+clears, which it manages ~1.6 times a match — far below human cadence. The
+regimes that actually kill this champion deliver garbage on a human-like
+schedule, which is §4c.
+
+### 4c. PRESSURE — where the deaths are real
+
+Driving the project's own gravity-correct drip injection (`pressure_rig`
+semantics: k=2 halves every 5 placements after ply 20), L11, n=160 games:
+
+| outcome | n |
+|---|---|
+| deaths | **19 (11.9%)** |
+| clears | 125 |
+| stalls | 16 |
+
+**15 of 19 deaths (79%) are DIES-AHEAD** (≤12 viruses left) — this lane
+independently reproduces the field disease that the other four lanes converged
+on, using different code and a different pressure model.
+
+**Why this counterfactual is clean where the VS one was not:**
+`_inject_garbage` seeds its RNG on `(seed, pills_placed)`, so the garbage
+schedule is **exogenous** — it depends on the ply index, never on what the
+champion played. Changing one champion move leaves the entire future garbage
+stream identical, so the comparison isolates the move. In the VS rig the
+champion's own clears fed the opponent, so any deviation also changed the
+pressure, and an "escape" was partly the adversary going quiet.
+
+**Both gates pass: 19/19 deaths reproduce exactly on independent replay, and
+16/16 claimed escapes survive independent replay.**
 
 ## 5. COUNTERFACTUAL — the real m3 silicon death was NOT myopia
 
@@ -250,54 +267,52 @@ came from garbage and the commit path, not from board danger.
 
 ---
 
-## 6. Hole taxonomy — escape depth (CORRECTED)
+## 6. Hole taxonomy — escape depth on real pressure deaths
 
-For each reproducible VS kill: does **one** different champion move at some late
-ply survive past the fatal ply? `E = K - j` for the latest such ply.
+For each of the 19 deaths: what is the smallest number of plies past the
+champion's 3-ply horizon at which **one** different move survives past the fatal
+ply?
 
-| E | count | search depth that would dodge it | feasible? |
+| E | deaths | search depth that would dodge it | feasible? |
 |---|---|---|---|
-| 5 | 2 | depth 8 | no |
+| **1** | **7** | **depth 4** | **yes** |
+| 2 | 1 | depth 5 | plausibly |
+| 3 | 1 | depth 6 | unlikely |
+| 5 | 3 | depth 8 | no |
 | 6 | 1 | depth 9 | no |
-| 8 | 1 | depth 11 | no |
-| **none in last 8 plies** | **4** | — already lost | — |
+| 7 | 1 | depth 10 | no |
+| 8 | 2 | depth 11 | no |
+| none in 8 plies | 3 | — already lost | — |
 
-**There is no E ≤ 4 case.** Every avoidable death needed the champion to see
-five or more plies past its horizon.
+* **E=1: 7/19 = 37%** — one extra ply of lookahead recovers over a third of all
+  pressure deaths.
+* **E≤3: 9/19 = 47%** — a depth-4 to depth-6 search dodges nearly half.
+* **E≥5 or unavoidable: 10/19 = 53%** — no feasible search reaches these.
 
-### The correction that matters
-The pre-fix run reported **E=1 for 5 of 7 kills** — a clean "depth-4 recovers a
-third of the deaths" story. That was **entirely an artifact of the deepcopy
-defect**: the replays were diverging from the original line (which is exactly
-why `adv_substituted` was True on every escape found), so the "escape" was
-frequently just the corrupted stream handing the champion a different capsule.
-On sound data the same instrument returns **E = 5, 5, 6, 8**.
-
-Had the defect gone unnoticed, this report would have recommended buying depth 4
-on the strength of a number that does not exist. That is the concrete cost of
-skipping a replay gate.
-
-### Kill depth vs avoidability
-| | kill depth K |
-|---|---|
-| avoidable | 14, 29, 31, 41 |
-| unavoidable | 4, 14, 24, 27 |
-
-Unlike the corrupted run, there is now **no clean fast/slow split** — a 4-ply
-kill is unavoidable and a 41-ply kill is avoidable. With n=8 no structure should
-be claimed.
+### Mechanism mix
+`garbage_flood` 11, `spawn_congestion` 4, `colour_starvation` 2,
+`forced_overstack` 2. The dominant mechanism is the garbage channel itself, which
+is consistent with the dies-ahead framing: the champion is not being out-played
+positionally, it is being buried while it banks clearing progress.
 
 ### The champion's mistake, in plain language
-The E values say the champion is not losing to a tactic it *nearly* saw. Under
-sustained garbage it commits to a clearing plan whose cost only becomes visible
-five-plus placements later, once the accumulated junk has closed the columns
-that plan depended on. Its depth-3 horizon does not end one pill short of the
-refutation — it ends **nowhere near it**. That is the signature of a missing
-evaluation term (junk debt / reachable headroom under pressure), not of a search
-that needs one more ply.
+At E=1 the pattern is consistent: **with garbage arriving, the champion takes the
+placement that maximises its clearing progress and lets the reachable headroom
+in the spawn lane collapse to a single column. Its horizon ends exactly one
+placement before that column closes, so the move that strands it still looks
+free.** One more ply makes the closure visible and a different column wins. That
+is a horizon that stops one pill too early under pressure — genuinely a depth
+problem, for this third of deaths.
 
-n=8 is small. Treat the *direction* (no shallow escapes) as the finding and the
-exact histogram as provisional.
+The E≥5 half is a different animal: those boards were committed 5-8 placements
+before the end, and no endgame move recovers them. That is the risk-neutrality
+the other lanes named, and it is an eval-term problem.
+
+### Caveat on the classifier
+A death-by-delivery ply has a legal-move count of 0 *by definition*; feeding that
+to the mechanism classifier made `forced_overstack` fire on every kill until I
+measured it on the last ply with a real count instead. Labels here are from the
+corrected version.
 
 ## 7. G2 — admissibility of the bound
 
@@ -348,12 +363,13 @@ priority order:
    real. Re-run the champion's preferred placement at commits c2, c4 and c6
    through the co-sim and confirm it still differs from the tape's column. If it
    does, the execution-defect verdict is silicon-grade, not simulator-grade.
-2. **The four avoidable VS kills** — seeds **12, 20, 23, 29** (`results/vs_escape_fixed.json`,
-   E = 5, 8, 5, 6), all replay-verified 8/8. These carry the whole depth verdict:
-   if the RTL leaf already prefers the escaping alternative at those positions,
-   the deaths are an RTL-vs-sim artefact; if it does not, "no feasible depth
-   fixes these" is silicon-grade. Their `path` fields replay deterministically
-   via `vs_reproduce.py`.
+2. **The seven E=1 pressure deaths** (`results/pressure_escape.json`, filter
+   `E == 1`). These are the ENTIRE depth-4 argument and they are cheap to check:
+   one RTL decision per position. If the RTL leaf already prefers the escaping
+   alternative, the depth prize shrinks; if it agrees with the fast sim, depth-4
+   is worth ~37% of pressure deaths. This matters more than usual because the
+   co-sim lane measured RTL agreement at **88% near death** vs 100% mid-game —
+   this is exactly the divergent regime.
 3. **The exact-safe positions** (`results/exact_solo.json`, 21 boards at
    `spawn_top` 2-3). Spot-check that the RTL's committed placement matches the
    sim's on a handful; the "proved safe to depth 5" claim inherits whatever the
@@ -363,33 +379,44 @@ priority order:
 
 ## 9. Honest read: depth or eval?
 
-**The eval. Depth is not the lever, and the evidence for that got stronger when
-the data got cleaner.**
+**Both, and roughly half each — which is a different answer from the one I gave
+before the harness was fixed, and the change came from better data, not a better
+argument.**
 
-* **Solo: nothing to fix.** Zero topouts in 1200 games, and exhaustive proof that
-  the worst real positions cannot be killed inside 5 pills by an omniscient
-  pill-stream adversary. Depth buys nothing where the champion does not die.
-* **VS: depth-4 buys nothing either.** Of the reproducible VS kills, the
-  avoidable ones need **depth 8-11**. Depth 4 already costs 22.9x
-  (`dr-mario-depth4-memo`); depth 8 is not on the table at any price. **No
-  measured death is recoverable by a feasible search depth.**
-* **Deep search is not even a better *attacker*.** An adversary with unbounded
-  lookahead kills at 26.7% against 23.3% for the champion's own eval in the same
-  seat (p = 1.00). If unbounded search cannot separate itself on offence, the
-  claim that a few more plies transforms defence is not supported.
+* **Depth-4 is worth ~37% of pressure deaths** (7 of 19 at E=1), and depth-6
+  about 47%. That is a real, sizeable, testable prize. It should be weighed
+  against the measured d4 cost of 22.9x (`dr-mario-depth4-memo`) — but "depth
+  buys nothing" is now refuted on the deaths that actually occur.
+* **The other ~53% need E≥5 or have no escape at all.** Those were decided five
+  to eight placements before the end, and no feasible search depth reaches them.
+  This is the same place the other four lanes landed — risk-neutrality near an
+  absorbing state — and it is an eval-term problem: something that prices
+  collapsing spawn-lane headroom while garbage is arriving.
+* **Solo needs neither.** Zero topouts in 1200 games, and exhaustive proof that
+  no ≤5-pill stream kills it from the worst real positions.
 
-That points the remaining headroom at the **evaluation function** — specifically
-at whatever term would price accumulating junk debt and collapsing headroom under
-garbage pressure, five-plus placements before it becomes tactically visible.
-That is the same direction `dr-mario-stomper-loss-autopsy` reached from the loss
-side (~45% of losses are the garbage channel's price) and it is where task #47's
-stranded-half work already lives.
+So the recommendation is narrow and specific: **a depth-4 search would recover
+about a third of pressure deaths, and a survival term is needed for the rest.**
+Neither alone closes the disease.
 
-**Caveats, stated plainly.** n=8 VS kills. My adversary still kills itself in
-22/30 lines, so it is not a strong opponent and 26.7% is a floor. Everything is
-simulator-side, and the sim disagrees with RTL on ~87% of base-search moves. The
-single most valuable follow-up is §8.2 — replay the four avoidable kills through
-the co-sim before anyone acts on the depth verdict either way.
+### What I got wrong, and why it matters for how this is read
+I previously reported "depth is NOT the lever" with E = 5,5,6,8 and no E≤4 case.
+That was measured on VS kills that were **entirely fabricated by the garbage
+gravity bug** — the champion was being tile-blocked, not out-played, so of course
+no shallow escape existed. The number was confidently wrong in a way that pointed
+at the more expensive fix. Both of tonight's defects had the same shape as the
+three the lead catalogued: *the check couldn't see the fault because the check
+shared the fault's assumption.* Nothing in the harness ever asserted that a
+delivered tile ends up supported, or that a cloned state owns its own RNG.
+
+### Limits, stated plainly
+n=19 deaths. One pressure model (drip k2/p5/after20) at one level; the bursty
+human-fitted model should give the same treatment before this is acted on. All
+simulator-side, and the co-sim lane has since measured that RTL agreement is
+**88% near death** (vs 100% mid-game) — precisely this regime — so whether these
+specific escapes exist on silicon is an open question, not a formality. The
+E=1 cases are the ones to put through the co-sim first: they are the entire
+depth-4 argument, and they are cheap to check.
 
 ## 10. Files
 
@@ -406,6 +433,11 @@ the co-sim before anyone acts on the depth verdict either way.
 | `test_deepcopy_pillshare.py` | regression test for the deepcopy/pill-cursor defect |
 | `m3_counterfactual.py` | the real silicon death analysis |
 | `m3_margin.py` | prices the m3 blunders in pills of margin (null — see §5) |
+| `pressure_escape.py` | **the real result** — escape depth on drip-pressure deaths |
+| `memo_db.py` | persistent LMDB champion-move store on /mnt/data |
+| `classify.py` / `mapelites.py` | behaviour descriptor + QD archive scaffolding |
+| `test_garbage_gravity.py` | regression test for the floating-garbage defect |
+| `test_memo_integrity.py` | G5 — the store never changes an answer |
 | `death_corpus.py` | 1200-game solo death hunt |
 | `sample_boards.py` | stratified real-position sampler |
 | `gates.py`, `g2_admissibility.py` | G1/G2/G3 |
