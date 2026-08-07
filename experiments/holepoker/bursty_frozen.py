@@ -58,6 +58,7 @@ import champion as CH        # noqa: E402
 import poker as PK           # noqa: E402
 import classify as CL        # noqa: E402
 
+GARBAGE_MIN_PILLS = 25   # pressure_rig.py:42 / gen_pressure_deaths.py:40, verbatim
 MODEL_PKL = os.path.join(QA, "hetzner", "bursty_v1_1.pkl")
 _MODEL = None
 
@@ -153,9 +154,22 @@ def play(seed, level, fired_plies=None, override=None, record=False,
         # vs the model's documented 16.7%. That is how this was caught.
         g = 0
         if fired_plies is None:
-            # LIVE: volley only after a placement that cleared, exactly as
-            # pressure_rig gates it.
-            if last_clear > 0:
+            # LIVE: volley only after a placement that cleared, AND only once
+            # past the warm-up -- exactly as pressure_rig / gen_pressure_deaths
+            # gate it (`if env.pills_placed >= GARBAGE_MIN_PILLS`, then
+            # `if clear_size > 0`). Omitting the warm-up injects from the very
+            # first clear and inflates everything downstream: 27.0% deaths
+            # without it vs the reference corpus's 16.7%.
+            #
+            # PLY ALIGNMENT, checked not assumed: their `env.pills_placed` is
+            # post-increment, so it equals the index of the pill about to be
+            # placed -- the same `i` used here. The (seed, ply) RNG keys
+            # therefore line up between the two rigs.
+            #
+            # CLEAR-SIZE CONVENTION, verified not assumed: theirs is
+            # `occ_before + 2 - occ_after`, mine is `resolve()`'s total_cleared;
+            # 75/75 agreement on a real trajectory.
+            if i >= GARBAGE_MIN_PILLS and last_clear > 0:
                 g, did = inject_live(b, seed, i, last_clear)
                 if did:
                     fired.add(i)

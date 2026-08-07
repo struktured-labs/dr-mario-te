@@ -31,10 +31,12 @@ replayed through the Verilator co-sim.** Named validation targets are in §8.
    across a 4.6x swing in death rate, so it is not a single-setting artifact.
 5. **So: depth AND eval, roughly half each.** Depth-4 is worth ~40% of pressure
    deaths — a real, sizeable, testable prize. It is *not* the whole disease.
-6. **The depth result REPLICATES at human cadence.** Frozen-schedule bursty
-   (fidelity gate 10/10): **E=1 = 41%** vs drip's 40%, dies-ahead 69% vs 75%.
-   Gated-d4 is more selective under bursty (66.8% gate rate → **15.6x** vs
-   20.2x) but still does not rescue d4's economics.
+6. **The depth result REPLICATES at human cadence.** Frozen-schedule bursty,
+   calibrated to the reference corpus (fidelity gate 10/10): **E=1 = 34%**
+   [21–51%] vs drip's 40%. **Pooled over 88 deaths, 4 configurations and 2
+   pressure models: E=1 = 38% [28–48%].** Gated-d4 is genuinely more selective
+   under bursty (**55.1%** gate rate → **13.1x** vs drip's 20.2x) but still does
+   not rescue d4's economics.
 7. **QD archive: 42/405 cells, 86 deaths, 0 rejected by the admission gate.**
    `cascade_backfire` is a hard NULL (the champion never dies by clearing into
    its own death); `colour_starvation` occupies only E=1 (always shallow-
@@ -510,36 +512,50 @@ all plies and produced **84% deaths** against the model's documented 16.7%.
 exactly why. Corrected: **27.0%**. The sanity check that caught it was comparing
 the death rate to a number the project already knew.
 
-### Result (n=200, L11, corrected)
+### Calibration, matched to the reference corpus
+The lead supplied the exact invocation behind #78's 47.8%
+(`gen_pressure_deaths.py:119-124`). Two things had to match, and only one of
+them did:
 
-| | bursty-frozen | drip (§6) |
-|---|---|---|
-| deaths | 54 / 200 (27.0%) | 53 / 480 |
-| dies-ahead | 37/54 (69%) | 40/53 (75%) |
-| **E=1** | **22/54 = 41%** [29–54%] | **21/53 = 40%** [28–53%] |
-| E≤3 | 33/54 = 61% | 28/53 = 53% |
-| E=1 placement / delivery | 18 / 4 | 18 / 3 |
+* **clear-size convention** — theirs `occ_before + 2 - occ_after`, mine
+  `resolve()`'s `total_cleared`. **VERIFIED equivalent, 75/75** on a real
+  trajectory, rather than assumed.
+* **`GARBAGE_MIN_PILLS = 25` warm-up** — **I did not have it at all.** I injected
+  from the first clear onward; the reference delivers nothing before pill 25.
 
-> **The E=1 share replicates across two different pressure models: 41% vs 40%.**
-> So the depth-4 prize is not an artifact of drip's cadence, and the
-> placement-vs-arrival split reproduces too (18/22 of E=1 are placement deaths,
-> against 18/21 under drip).
+Ply indices align: their `env.pills_placed` is post-increment, so it equals the
+index of the pill about to be placed — the same `i` I key on, so the `(seed, ply)`
+RNG streams line up between rigs.
 
-### The gate is more selective at human cadence, as predicted
+### Result, calibrated (n=300, L11)
 
-| | gate-open rate (k=6) | amortised d4 |
-|---|---|---|
-| drip | 87.5% | 20.17x |
-| **bursty-frozen** | **66.8%** | **15.63x** |
+| | calibrated bursty | uncalibrated | drip (§6) |
+|---|---|---|---|
+| deaths | **35/300 = 11.7%** | 27.0% | — |
+| dies-ahead | 29/35 = 83% | 69% | 75% |
+| **E=1** | **12/35 = 34%** [21–51%] | 41% | 40% [28–53%] |
+| E≤3 | 18/35 = 51% [36–67%] | 61% | 53% |
+| **#78 gate-open (k=6)** | **55.1%** | 66.8% | 87.5% |
+| amortised d4 | **13.06x** | 15.63x | 20.17x |
 
-Better, and in the predicted direction — bursty volleys are sparser and clumpier
-— but still short of #78's 47.8%, so my volley rate is likely higher than the
-corpus theirs was fitted on. **Gated-d4 at k=6 under human cadence is a 15.6x
-decider covering 12 of 22 E=1 deaths.** Tightening to k=2 covers 9 of 22.
+The warm-up was the whole discrepancy: death rate 27.0% → **11.7%** (reference
+16.7%), and gate rate 66.8% → **55.1%** against their published 47.8%.
 
-**It still does not rescue d4's economics.** The honest summary across both
-models: gating buys roughly a 1.3–1.5x discount on a 22.9x decider, and the
-coverage it keeps is about half the E=1 population.
+### Pooled across both pressure models
+**E=1 = 33/88 = 38%, 95% CI [28%, 48%]** — 88 deaths over four configurations
+and two independently fitted pressure models (drip k2/p5/a20, k2/p8/a25, L17,
+and calibrated bursty). The individual estimates are 37%, 33%, 43%, 34%: all
+four inside the pooled CI.
+
+### Honest residual
+My gate rate is **55.1% against their 47.8%**, and that gap does NOT close by
+restricting to death games — death-only is the same 55.1%, and if anything a
+death-selected corpus should read *higher*, not lower. So a real residual
+difference remains between the two rigs (candidates: their corpus is
+adversary-driven rather than model-driven, or a different level/seed mix). I
+have not chased it. Treat 55.1% as an upper bound on the gate rate and 13.06x as
+the corresponding upper bound on the amortised multiplier; at their 47.8% it
+would be **11.5x**.
 
 ## 7. G2 — admissibility of the bound
 
