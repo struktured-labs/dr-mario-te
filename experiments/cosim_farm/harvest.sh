@@ -60,6 +60,21 @@ EOF
 done
 
 echo
+echo "################ NEAR-DEATH FIDELITY (task #77) ################"
+for pair in "decide_death125.json death_meta.json evolved(StrandedChainD3,ws=20)" \
+            "decide_death_transfer125.json death_transfer_meta.json transfer(ChainRewardD3,no-strand)"; do
+  set -- $pair
+  if [ -f "$D/results/$1" ] && [ -f "$D/gate/$2" ]; then
+    echo; echo "--- arm: $3 ---"
+    $PY "$HERE/death_fidelity.py" "$D/results/$1" "$D/gate/$2" 2>&1 \
+      | grep -E "^full|^column|^orientation only|^  seed|^  last|^  6-|^  16-|disagreement"
+  fi
+done
+echo "  (arms are reported SEPARATELY on purpose: the 100% mid-game fidelity was measured"
+echo "   on StrandedChainD3Decider; the transfer arm's ChainRewardD3Decider is a different"
+echo "   decider whose fidelity is separately unmeasured. Pooling would launder it in.)"
+
+echo
 echo "################ THROUGHPUT ################"
 for l in "$D"/logs/ab_*_*.log "$D"/logs/2x2_*.log; do
   [ -f "$l" ] || continue
