@@ -63,10 +63,10 @@ with no Verilator installed. Worth knowing; it doesn't change the node's role.)
 
 ## What it delivered in its first few hours
 
-1. **The definitive clean-stream census** — now the FULL 16-bit space (all
-   65,536 seeds), after the local clean census was retired in favour of this
-   node. Resumable, checkpointed, auto-restarting, provenance-stamped, keeping
-   the fatal board and full replay trace for every failure.
+1. **The definitive clean-stream census** — the whole reachable space, after
+   the local clean census was retired in favour of this node. Resumable,
+   checkpointed, auto-restarting, provenance-stamped, keeping the fatal board
+   and full replay trace for every failure.
 2. **A finding that corrects a project constant.** Pooling this node's census
    rows with the local agent's gives **~1,474 clean games with ZERO failures**
    → clean-stream failure rate **< 0.20%** (rule of three, 95%). The harness
@@ -79,7 +79,17 @@ with no Verilator installed. Worth knowing; it doesn't change the node's role.)
    reach **exactly 1 virus remaining** and then top out or stall at 300 pills.
    The champion's residual failure mode is the *last virus*, not the opening or
    midgame.
-4. **It caught a real bug — code skew.** The gate flagged one seed whose hash
+4. **It corrected a project-wide constant.** Triaging one odd census row led to
+   the discovery that **the seed space is 32,767 distinct streams, not 65,536**:
+   `step_lfsr` shifts the seed's low bit out before it can reach the feedback, so
+   seeds 2k and 2k+1 are the same game. Verified exhaustively over all 65,536
+   seeds, and on the ROM-true engine (599 twin pairs — 0 differences in virus
+   layout *or* pill stream). Every "% of the seed space" claim in the project was
+   2x optimistic and every enumeration over 0..65535 did double work — this
+   census included, now half its former size. The correct number was already
+   written down in four places and never reconciled with the constant in the
+   harness.
+5. **It caught a real bug — code skew.** The gate flagged one seed whose hash
    differed across nodes while `result`, `pills`, `viruses_left` and `n_moves`
    all matched. Cause: the local agent improved `adversary_harness.py` 12
    minutes after the tree was synced, so the two nodes ran different code. The
@@ -87,7 +97,7 @@ with no Verilator installed. Worth knowing; it doesn't change the node's role.)
    itself — but a summary-statistics gate would have reported perfect
    agreement. The gate now hashes the source files too.
 
-That fourth item is a **separate argument for keeping the box, independent of
+That fifth item is a **separate argument for keeping the box, independent of
 games/hour**, and it deserves to be weighed on its own. The node is an
 INDEPENDENT SECOND IMPLEMENTATION PATH. Different CPU vendor, different Python
 build, a physically separate copy of the tree — and running the same work twice
