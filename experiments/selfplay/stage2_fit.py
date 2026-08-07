@@ -161,6 +161,7 @@ def fit_mlp(X, y, hidden=64, epochs=600, lr=0.02, lam=1e-4, seed=0):
 S1_N = 140
 S1_SE_NAIVE = 4.202      # stage1.py  "MC noise: se per action"
 S1_SE_CRN = 3.309        # stage1_denoise.py  "MC noise sd (CRN-corrected)"
+S1_EXCESS_TOL = 0.25     # GATE_TOL, kept for the arithmetic above
 S1_TAU = 6.373           # stage1_denoise.py  "TRUE action-value sd (tau)"
 
 
@@ -448,18 +449,29 @@ def main():
         print()
         print("  WHICH LEVER -- read this off the effective-signal ratio above, not off")
         print("  the gate outcome, because the gate alone cannot distinguish them:")
+        # Text is driven by the MEASURED numbers and never names a policy or regime.
+        # The first version hardcoded the depth-2 story into the <2.0x branch, so a
+        # CHAMPION run at 1.54x printed "eaten by noisier depth-2 labels" -- a
+        # confident, specific, wrong diagnosis of a run that had no depth-2 in it.
+        print(f"    measured SE {se_c:.2f} vs Stage 1's {S1_SE_CRN:.2f}; positions "
+              f"{S1_N} -> {T['P']} gave {math.sqrt(T['P']/S1_N):.2f}x from count,")
+        print(f"    net {rc:.2f}x after the SE change.")
         if rc >= 3.5:
-            print(f"    ratio {rc:.2f}x: this run carried MUCH more effective signal than")
-            print("    Stage 1 and STILL could not reach the hand weights. That points at")
-            print("    the linear class being genuinely exhausted -- i.e. the hand weights")
-            print("    are near-optimal in it -- rather than at the label budget.")
+            print(f"    This run carried MUCH more effective signal than Stage 1 and STILL")
+            print("    could not reach the hand weights. That points at the linear class")
+            print("    being genuinely exhausted -- the hand weights near-optimal in it --")
+            print("    rather than at the label budget.")
         elif rc >= 2.0:
-            print(f"    ratio {rc:.2f}x: a real but modest signal gain. AMBIGUOUS. Neither")
-            print("    'class exhausted' nor 'label-limited' is supported over the other.")
+            print("    A real but modest signal gain. AMBIGUOUS: neither 'class exhausted'")
+            print("    nor 'label-limited' is supported over the other.")
         else:
-            print(f"    ratio {rc:.2f}x: the 21x position gain was largely EATEN by noisier")
-            print("    depth-2 labels. This is label QUALITY, not quantity: the next lever")
-            print("    is MORE ROLLOUTS PER POSITION. More positions would not have helped.")
+            print("    BELOW the 1.94x this gate arithmetically requires, so the failure")
+            print("    is NOT evidence about the hypothesis class. Compare OBSERVED excess")
+            print("    against the scaling law's prediction AT THE SIGNAL ACHIEVED --")
+            print(f"    predicted {0.94/max(rc,1e-9)**2:.3f}, observed "
+                  f"{f-h:.3f}, ratio {(f-h)/max(0.94/max(rc,1e-9)**2,1e-9):.2f}x --")
+            print("    and if that sits inside the model band the law is CORROBORATED and")
+            print("    the lever is simply more signal, by whichever axis is cheaper.")
         return 2
 
     if not converged:
