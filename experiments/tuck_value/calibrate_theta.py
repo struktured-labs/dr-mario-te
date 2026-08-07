@@ -117,14 +117,22 @@ def main():
           f"RTL {rtl_pub.get('s20b')}/{len(cases)}   "
           f"{'MATCH' if v1_pub == rtl_pub.get('s20b') else 'DIFFER'}")
 
-    # ---- tier-3: two DIFFERENT events, reported separately ---------------
-    # The RTL's `tuck_published` counts TUCK_COL != 0xFF, i.e. a descriptor
-    # was emitted -- confirmed by the v1 line above matching exactly, since
-    # v1 publishes unconditionally. Whether the tuck ALSO won the theta gate
-    # and overwrote D_BC/D_BO is a separate, stricter event that the artifact
-    # does not distinguish. Comparing the RTL's publish rate against this
-    # rig's WIN rate would be comparing two different things, so both are
-    # printed and only the first is comparable.
+    # ---- tier-3: publish IS the gate win, so WINS is the comparable column
+    # Settled from the firmware source, not assumed. In tuck_v3.py,
+    # TUCK_COL/TUCK_ROW are written at `tre_pub` only when TK2_BKIND is set;
+    # TK2_BKIND is set only inside `tre_commit`; and `tre_commit` is reached
+    # only after the theta compare falls through to `tre_gok` (lines 629-661).
+    # D_BC/D_BO are overwritten in that same branch. So for tier-3 a published
+    # descriptor IS a tuck that won the gate -- unlike v1, which has no gate at
+    # all and publishes unconditionally.
+    #
+    # An earlier revision of this file had this backwards: it reasoned from the
+    # v1 line matching exactly that the RTL's `tuck_published` must be the
+    # broader "a candidate existed" event for BOTH firmwares, and therefore
+    # labelled AVAILABLE as the comparable column. That is right for v1 and
+    # wrong for tier-3, and it mattered -- it hid a 3-6x fire-rate gap between
+    # this rig and the RTL that turned out to be the single most important
+    # finding of the study.
     thetas = [float(x) for x in a.thetas.split(",")]
     print(f"\n{'theta':>7}  {'tuck AVAILABLE':>16}  {'tuck WINS gate':>16}")
     avail = None
@@ -143,10 +151,13 @@ def main():
               f"{wins:>10}/{len(cases):<4} {wins / len(cases):>4.0%}")
 
     t3 = rtl_pub.get("s20t3")
-    print(f"\ntier-3 publish rate   this rig {avail}/{len(cases)} "
-          f"({avail / len(cases):.0%})   RTL {t3}/{len(cases)} ({t3 / len(cases):.0%})")
-    print("The AVAILABLE column is the one comparable to the RTL publish rate; "
-          "the WINS column is the stricter event this rig's arms actually act on.")
+    print(f"\ntier-3: RTL wins its own gate on {t3}/{len(cases)} "
+          f"({t3 / len(cases):.0%}) of these boards.")
+    print("The WINS column is the comparable one (publish == gate win for tier-3). "
+          "No theta in this rig reaches the RTL's rate: even theta=0 -- take any tuck "
+          "that beats the best base at all -- tops out well below it, because the two "
+          "eval chains do not share a scale. Tune the gate in FIRMWARE units against "
+          "fire rate, on the co-sim; do not copy the constant across.")
     return 0
 
 

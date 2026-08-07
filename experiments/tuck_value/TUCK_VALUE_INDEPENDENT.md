@@ -9,15 +9,30 @@ still running; this document is updated in place as they land.
 
 ---
 
-## The number
+## The answer, in one paragraph
+
+**Executing tucks is worth a lot at a small dose and is fatal at the dose the tier-3 firmware
+actually delivers.** At this rig's firing rate — a tuck on 5.7% of decisions — the full program
+beats the shipped champion by **−6.50 points of bad-end rate [−11.25, −1.75], p=0.0088**, and
+clears 26 pills faster. The real firmware fires on **38%** of decisions, six times more often,
+and at that dose the co-sim farm's RTL has it losing **17 of 17 games**. So the honest answer
+to "is a cart rebuild worth it" is: **not against `s20t3` as it is built today.** The θ gate
+has to be retuned upward first, and that retune has to be confirmed on the co-sim before
+anything touches hardware. Neither rig could have reached that conclusion alone — see
+[the disagreement](#the-disagreement-that-matters-and-what-it-costs), which is the most
+important section here.
+
+---
+
+## The number, at this rig's dose
 
 **Rebuilding the cart with the executor enabled AND tier-3 firmware takes the shipped
 champion's bad-end rate under bursty human pressure from 19.2% to 14.0% — a paired difference
 of −5.25 points, 95% CI [−10.0, −0.75], McNemar rescued=57 harmed=36, p=0.0375, n=400 —
 and clears the level 26.0 pills faster, CI [−32.7, −19.3].**
 
-That is the D − A comparison: the full program versus what is on the cart today. It is the
-number a rebuild decision turns on, so it leads.
+That is the D − A comparison: the full program versus what is on the cart today. Read it as
+*what a correctly-dosed executor would be worth*, not as a prediction for the current firmware.
 
 **The survival half of that is entirely stalls, not topouts** (28 → 12, p=0.014; topouts
 49 → 44, p=0.65 — a wash), which is the signature of digging buried viruses out rather than of
@@ -283,11 +298,77 @@ three:
 
 ---
 
+## The disagreement that matters, and what it costs
+
+The co-sim farm's RTL 2×2 began producing games while this was being written, and on arm D it
+**flatly contradicts** this rig. That disagreement turned out to be the most valuable output of
+running two methods, so it gets the space it deserves rather than a footnote.
+
+| arm | co-sim (real RTL) | this rig (fast sim) |
+|---|---|---|
+| **A** s20b × drop | 11/12 clear | 323/400 clear (80.8%) |
+| **B** s20t3 × drop | **0/48 clear**, dies at median 45 pills with 38 of 48 viruses left | 77/400 clear (19.2%), dies at median 25 viruses left |
+| **D** s20t3 × tuck | **0/17 clear** | 344/400 clear (86.0%) |
+
+Arm B agrees emphatically — both rigs say tier-3 without the executor is a broken build, and
+the RTL says it more strongly than this rig did. Arm D is the opposite of agreement.
+
+### It is the θ gate, and the v1 arm proves it
+
+One number explains both rows, and the v1 arm is the control that pins it down. Measured as
+**descriptors published per decision**:
+
+| firmware | gated? | co-sim (RTL) | this rig | ratio |
+|---|---|---|---|---|
+| v1 (`s20b`) | **no** — `tuck_scan.py` publishes the deepest rest unconditionally | 60.5% | 66.8% | 1.1× |
+| tier-3 (`s20t3`) | **yes** — θ=150 margin gate | **36–38%** | **5.7–11.5%** | **3–6×** |
+
+The **ungated** rate agrees between the two rigs to within 10%. That is the control: it shows
+the two rigs see the same boards, enumerate the same candidates and count the same events. The
+**gated** rate differs by 3–6×. The discrepancy is therefore isolated to one thing — how tight
+θ=150 is in each rig's eval units — and it is not board distribution, not the enumerator, and
+not a counting bug.
+
+This is precisely the hazard `tuck_v3.py:70-72` documents in its own build knob: *"theta=150 is
+a LOOSER gate in shipped-eval units than in the offline coef-opt units"* (4.38 fires/game in
+firmware against 2.80 offline). The firmware's warning was right, and larger than it knew.
+
+Firmware archaeology confirms the events are the same event, so the rates really are
+comparable: in `tuck_v3.py`, `TUCK_COL`/`TUCK_ROW` are written at `tre_pub` only when
+`TK2_BKIND` was set, and `TK2_BKIND` is set only inside `tre_commit`, which is reached only
+after the θ compare falls through to `tre_gok` (lines 629-661). A published tier-3 descriptor
+**is** a tuck that won the gate, and `D_BC`/`D_BO` are overwritten in the same branch. So the
+co-sim's 38% is the rate at which the real firmware wins its own gate, and this rig's 5.7% is
+the rate at which it wins mine.
+
+### What that implies, and it is actionable
+
+- **This rig's arm D is under-dosed by ~6×.** Its positive result describes an executor firing
+  on 5.7% of decisions. It is not a prediction for `s20t3` as built.
+- **The co-sim's arm D is the firmware-true dose, and at that dose the program fails** — 0/17,
+  which against an 86% clear rate would be a probability of about 10⁻¹⁴. This is a real
+  disagreement, not sampling noise.
+- **Both arm-B results move the same way for the same reason.** The RTL corrupts steering on
+  36% of decisions and dies at 45 pills; this rig corrupts 11.5% and dies at 121. One parameter
+  explains both discrepancies in both arms, in the right direction and roughly the right
+  magnitude. That coherence is why the diagnosis is credible.
+- **Therefore: tucks appear to help at low dose and to be fatal at high dose.** The deliverable
+  is not "ship it" or "kill it" but **retune θ upward and re-measure on the co-sim**. This rig
+  cannot find the right θ itself: even at θ=0 only 20% of its decisions have a tuck that beats
+  the best base at all, so its scale cannot reach the firmware's 38%. The gate has to be tuned
+  in firmware units, on the co-sim, against fire rate — not by copying a constant across two
+  eval chains that do not share a scale.
+
+That last point is the thing neither rig produces alone, and it is worth more than either arm-D
+number.
+
+---
+
 ## Reconciliation with the co-sim farm
 
-Their RTL 2×2 had not accumulated meaningful n when this was written (their throughput is
-~8.5 s per decision against ~110 decisions per game), so the 2×2-to-2×2 comparison is still
-open. Where the two rigs *can* already be compared, they agree:
+The arm-by-arm comparison is above. On every *descriptor-level* statistic — the things that do
+not depend on the θ gate — the two rigs agree closely, which is what makes the θ diagnosis
+credible rather than a convenient excuse:
 
 | statistic | co-sim (real RTL) | this rig (fast sim) |
 |---|---|---|
@@ -296,15 +377,20 @@ open. Where the two rigs *can* already be compared, they agree:
 | tier-3 descriptor coherence | 100% (25/25, 9/9, 16/16) | 100% (2,896/2,896) |
 | tier-3 divergent picks horizontal | 8/9, 14/16 | 401/492 (81%) |
 | tier-3 depth gained | mean 3.4–3.5 rows | median 5 rows (winning tucks only) |
+| **v1 descriptors published per decision (ungated)** | **60.5%** | **66.8%** |
+| **tier-3 descriptors published per decision (θ-gated)** | **36–38%** | **5.7–11.5%** |
 
 The depth-gain difference is a denominator difference, not a disagreement: they average over
 all *published* descriptors, this rig counts only the ones the search actually *picks*, and the
 search picks the deeper ones.
 
-**A cheap falsification test has been handed to that agent:** if arm B really drives bad ends
-from 19% to 81%, their RTL will see it at n=20 per arm — a 4× effect needs no large sample.
-Confirming it settles the single most actionable finding here; failing to see it means this
-rig's drop-degradation model is wrong, and that would be the most important result of the day.
+The last two rows are the whole story. Everything that does not pass through the θ gate agrees;
+the one thing that does, disagrees by 3–6×.
+
+**The falsification test handed to that agent came back positive.** The prediction was that if
+arm B really drives bad ends from 19% to 81%, their RTL would see it at n=20 — a 4× effect
+needs no large sample. Their arm B is 0/48 clear. The most actionable finding here is confirmed
+on real RTL, and by the harsher instrument.
 
 ---
 
