@@ -114,6 +114,13 @@ speedup that isn't there. Cheap to check, expensive to assume.
   ~1.9 h here, and n=4,000 would be most of a day.
 - **The local box has 24 threads.** On raw capability the Hetzner box is a
   rounding error next to it.
+- **It does not absorb concurrent tenants.** Measured: with a census (4
+  workers), a dose sweep (2) and a co-sim process sharing 2 physical cores, the
+  sweep crawled at **0.04 games/sec**. Deprioritising the census with `nice 10`
+  took the sweep to **0.143 g/s (3.5x)** without stalling the census — but the
+  lesson is that the total is fixed and small. **Schedule jobs onto this box
+  serially; do not treat it as a shared pool.** Three agents wanted it
+  simultaneously on night one, which is a demand signal but also a warning.
 
 ## The rebuttal, which is the actual point
 
