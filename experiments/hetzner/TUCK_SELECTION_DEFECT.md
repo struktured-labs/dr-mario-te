@@ -178,7 +178,23 @@ from something this model does not contain. The model contains: the true
 candidate set, the true eval, the documented EH omission, and the θ=150 gate.
 What it does NOT contain is the firmware's 16-bit comparison arithmetic.
 
-## ⇒ THE OVERFLOW HAZARD IS PRIME SUSPECT
+## ⇒ THE FIRMWARE GATE IS NOT COMPUTING CORRECT ARITHMETIC
+
+⚠ **Precision matters here, and my first phrasing was loose.** This model uses
+Python floats, so it **cannot exhibit overflow by construction**. What it
+establishes is narrower and still decisive:
+
+- **Established**: a gate with CORRECT arithmetic rejects no-op tucks — 4.9%
+  measured, so step 3 of the chain now has evidence, not just an argument.
+  Therefore the firmware's 52% proves its gate **is not computing what a correct
+  gate computes**.
+- **NOT established**: that OVERFLOW specifically is the difference. That is the
+  leading hypothesis, not a finding.
+
+**The decisive test is a debug firmware read of `D_BV`/`D_V1` at the
+comparison** — it reads the actual operands and settles it without modelling.
+
+## ⇒ OVERFLOW IS THE LEADING HYPOTHESIS
 
 This is the branch the team lead named: "if instead they're bonuses … something
 else is admitting the no-ops — in which case the overflow hazard moves back to
