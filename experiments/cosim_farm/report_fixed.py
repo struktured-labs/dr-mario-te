@@ -46,7 +46,7 @@ FIXED_TUCK, FIXED_DROP = "s20t3fix_tuck", "s20t3fix_drop"
 # must be honoured here rather than re-chosen to taste.
 BLOCK_BOUNDARY = 120
 WAVE2_START = 135          # first seed of wave 2
-S0_BOUNDARY = 256          # s0=(seed>>8)&0xFF changes here -- the ONE real LFSR boundary
+WAVE3_START = 400          # outside the fast-sim lane's entire studied range (0-399)
 
 PREDICTION = {
     "source": "fast-sim lane, registered before the fixed-firmware re-run existed",
@@ -237,13 +237,19 @@ def main():
     # own merits. What changes is the EXPECTATION -- blocks looking alike is now the
     # predicted result and a second confirmation of the fluke, not a null.
     #
-    # ⚠⚠ THE COVERAGE FACT THAT DOES SURVIVE, and it is mechanism-backed rather than
-    # fitted: NesPillSource takes s0 = (seed>>8)&0xFF, so EVERY seed below 256 has s0=0.
-    # Waves 1 and 2 are seeds 0-234, so the ENTIRE experiment sits inside one LFSR state
-    # region, which has a measurably different pill_switch_rate (0.833 vs 0.867). That
-    # lane measured the effect as FLAT across this boundary (p=0.92), so it is an
-    # external-validity limit rather than a hidden effect -- but nothing here generalises
-    # past seed 255 until the s0-crossing wave lands.
+    # ⚠⚠ THE s0 STORY WAS ALSO WRONG, and that lane caught its own error. I had queued a
+    # wave to cross seed 256 believing s0=(seed>>8)&0xFF made it a regime boundary. It
+    # does not: the pill_switch_rate anomaly lives INSIDE s0=0 --
+    #     0-119 (s0=0, lo s1) 0.8326  vs 120-255 (s0=0, hi s1) 0.8690   p=0.0000
+    #     120-255 (s0=0)      0.8690  vs 256-399 (s0=1)        0.8648   p=0.44
+    # so it is a LOW-SEED property, not an LFSR-high-byte one, and seed 256 is inert on
+    # the input side (p=0.44) and their outcome side (p=0.92).
+    #
+    # ⇒ THE EXISTING WAVES ALREADY STRADDLE THE REAL ANOMALY, for free: wave 1 (0-134)
+    # sits largely inside the low-seed region, wave 2 (135-234) sits outside it, and they
+    # are already reported separately. That contrast IS the external-validity check.
+    # Wave 3 was repointed to seeds 400-459, outside that lane's whole studied range,
+    # which is the coverage gap that genuinely remains.
     # HEADLINE IS POOLED (team lead's call, once the split was retracted): fewer numbers,
     # more power, and less chance of someone reading a sub-block wobble as a finding. The
     # blocks are still COMPUTED and kept, for two reasons that are not in tension with
@@ -256,11 +262,11 @@ def main():
         ("block 120-134  (wave 1 tail)",
          lambda s: BLOCK_BOUNDARY <= s < WAVE2_START),
         ("block 135-234  (wave 2, out-of-sample for the retracted split)",
-         lambda s: WAVE2_START <= s < S0_BOUNDARY),
+         lambda s: WAVE2_START <= s < WAVE3_START),
         ("block 120+     (union, sub-256)",
-         lambda s: BLOCK_BOUNDARY <= s < S0_BOUNDARY),
-        ("seeds 256+     (wave 3, s0!=0 -- the ONE real LFSR boundary)",
-         lambda s: s >= S0_BOUNDARY),
+         lambda s: BLOCK_BOUNDARY <= s < WAVE3_START),
+        ("seeds 400+     (wave 3, outside BOTH studied ranges)",
+         lambda s: s >= WAVE3_START),
     ]
     POOLED = ("POOLED  <- the headline", None)
 
