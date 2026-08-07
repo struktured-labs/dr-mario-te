@@ -61,6 +61,30 @@ def fall_from(board, col, is_h, start_row):
     return r
 
 
+def traverse_ok(board, approach, target, row, is_h):
+    """Can the pill actually TRAVEL from the approach column to the target at this row?
+
+    The stricter of two coherence definitions, adopted from the independent fast-sim lane.
+    `coherent` (below) asks only whether the pill can ENTER `target` at the trigger row --
+    i.e. where it lands IF the maneuver happens. This asks whether the maneuver can happen
+    at all: the driver's DAS hold walks the pill one column at a time, so EVERY
+    intermediate anchor position must be legal at that row, not just the endpoint.
+
+    For "would a DRTUCK=1 cart execute this", this is the right test and `coherent` is too
+    permissive. Both are reported; on the 20 shared boards they give 4/7 and 6/7.
+    """
+    if approach == 0xFF:
+        return False
+    step = 1 if target >= approach else -1
+    x = approach
+    while True:
+        if not legal(board, row, x, is_h):
+            return False
+        if x == target:
+            return True
+        x += step
+
+
 def straight_drop(board, col, is_h):
     """Deepest anchor row reachable by a plain drop (entering from the top)."""
     return fall_from(board, col, is_h, 1 if not is_h else 0)
@@ -86,6 +110,7 @@ def audit(res_path, host_path):
     out = {}
     for arm, rows in r["rows"].items():
         pub = coh = deeper = same = blocked = 0
+        trav = 0
         depth_gain = []
         for i, d in enumerate(rows):
             if d["tcol"] == 0xFF:
@@ -93,6 +118,8 @@ def audit(res_path, host_path):
             pub += 1
             ring = RING_OF_O4[d["o4"]]
             is_h = RING_IS_H[ring]
+            if traverse_ok(boards[i], d["tcol"], d["col"], d["trow"], is_h):
+                trav += 1
             rest = fall_from(boards[i], d["col"], is_h, d["trow"])
             if rest is None:
                 blocked += 1
@@ -109,6 +136,8 @@ def audit(res_path, host_path):
         out[arm] = {
             "published": pub, "coherent": coh, "blocked_at_trigger": blocked,
             "deeper_than_drop": deeper, "same_as_drop": same,
+            "traversable": trav,
+            "traversable_frac": trav / pub if pub else None,
             "coherent_frac": coh / pub if pub else None,
             "deeper_frac": deeper / pub if pub else None,
             "mean_rows_gained": (sum(depth_gain) / len(depth_gain)) if depth_gain else 0.0,
@@ -148,15 +177,16 @@ def main():
         a = audit(args[k], args[k + 1])
         all_res.append(a)
         print(f"\n=== {os.path.basename(a['source'])}  ({a['n_boards']} real-L11 boards) ===")
-        print(f"{'arm':<12} {'published':>9} {'coherent':>9} {'blocked':>8} "
-              f"{'deeper':>7} {'same':>5} {'rows gained':>12}")
+        print(f"{'arm':<12} {'published':>9} {'coherent':>9} {'travers':>8} "
+              f"{'blocked':>8} {'deeper':>7} {'same':>5} {'rows gained':>12}")
         for arm, d in a["descriptor"].items():
             print(f"{arm:<12} {d['published']:>9} "
-                  f"{d['coherent']:>9} {d['blocked_at_trigger']:>8} "
+                  f"{d['coherent']:>9} {d['traversable']:>8} "
+                  f"{d['blocked_at_trigger']:>8} "
                   f"{d['deeper_than_drop']:>7} {d['same_as_drop']:>5} "
                   f"{d['mean_rows_gained']:>12.2f}")
             s = agg.setdefault(arm, Counter())
-            for kk in ("published", "coherent", "blocked_at_trigger",
+            for kk in ("published", "coherent", "traversable", "blocked_at_trigger",
                        "deeper_than_drop", "same_as_drop"):
                 s[kk] += d[kk]
         print("  orientation profile (all boards):")
@@ -174,6 +204,7 @@ def main():
     for arm, s in agg.items():
         p = s["published"]
         print(f"{arm:<12} {p:>9} {s['coherent']:>9} ({s['coherent']/p:5.0%}) "
+              f"trav {s['traversable']:>3} ({s['traversable']/p:4.0%}) "
               f"{s['blocked_at_trigger']:>6} {s['deeper_than_drop']:>7} "
               f"({s['deeper_than_drop']/p:4.0%}) {s['same_as_drop']:>5}")
     out = {"per_corpus": all_res, "combined": {k: dict(v) for k, v in agg.items()}}
