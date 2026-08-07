@@ -1,8 +1,26 @@
 #!/bin/bash
+# Wait for the labelling job, then run every Stage-1 analysis in one place.
+#
+# The wait deliberately does NOT use `pgrep -f 'stage1.py label'`: that string also
+# appears in the command line of any shell that ever quoted it, so a pattern wait
+# can block forever on something that is not the job. It also does not use a bare
+# `kill -0 PID`: the labeller's parent shell is still alive, so after exit the PID
+# lingers as a ZOMBIE and kill -0 keeps succeeding. Exit on either the process
+# being gone/zombie, or the output reaching the expected record count.
 set -u
 PY=/home/struktured/projects/dr_mario_rl/tmp/venv/bin/python
+LPID=1124145
+WANT=140
 cd /home/struktured/projects/dr-mario-selfplay-wt/experiments/selfplay
-while pgrep -f 'venv/bin/python -u stage1.py label' >/dev/null 2>&1; do sleep 30; done
+while :; do
+  n=$(wc -l < out/labels_main.jsonl 2>/dev/null || echo 0)
+  [ "$n" -ge "$WANT" ] && break
+  if [ ! -d /proc/$LPID ]; then break; fi
+  s=$(awk '{print $3}' /proc/$LPID/stat 2>/dev/null || echo Z)
+  [ "$s" = "Z" ] && break
+  sleep 30
+done
+sleep 5
 {
   echo "=============== STAGE 1 RESULTS  $(date -Is) ==============="
   echo "labelled positions: $(wc -l < out/labels_main.jsonl)"
