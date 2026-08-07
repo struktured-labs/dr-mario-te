@@ -426,59 +426,60 @@ on real RTL, and by the harsher instrument.
 ## Divergence horizon: does a fired tuck matter, or wash out?
 
 The measurement neither the co-sim nor the offline mirror rig has. At the first pill where drop
-and tuck modes would execute differently, the game forks three ways from one identical board:
-**R** (reference, continue in drop mode), **T** (execute the tuck, continue in tuck mode) and
-**C** (a *matched control* — take the second-best base drop instead, then continue in drop
-mode). C is the point: without it, "the boards were still different 40 pills later" is
-uninterpretable, because any perturbation might persist that long.
+and tuck modes would execute differently, the game forks from one identical board into a
+reference branch, a branch that executes the tuck, and a **matched control** that takes the
+second-best base drop instead. The control is the point: without it, "the boards were still
+different 40 pills later" is uninterpretable, because any perturbation might persist that long.
 
-Run on both streams: clean (n=300, 298 forked, first divergence at median pill 8) and bursty
-(n=300, 299 forked). **The two regimes agree to within a point on every number**, which is
-itself worth noting — the effect is not a property of the pressure model.
+### The clean answer: one tuck is worth about +7.7 points of clear rate
 
-### Nothing ever washes out — for anything
+From `divergence_single.py`, where **all three branches continue in drop mode** after the fork,
+so the continuation policy cancels and each delta is exactly one placement. Clean stream,
+n=300, 298 forked:
 
-| branch | never reconverges, clean | never reconverges, bursty |
+| branch | clear rate | vs reference |
 |---|---|---|
-| **T** tuck executed | **292/298 (98.0%)** | **293/299 (98.0%)** |
-| **C** second-best base drop | 275/298 (92.3%) | 277/299 (92.6%) |
+| **R** no perturbation | 37.2% | — |
+| **T1** one tuck executed | **45.0%** | **+7.7 pts [+0.3, +15.1]**, 74 vs 51, p=0.049 |
+| **C** one second-best base drop | 39.3% | +2.0 pts [−5.0, +9.1], 59 vs 53, p=0.64 — wash |
 
-When reconvergence does happen it takes a median of 1–2 pills, i.e. it is the rare case where
-the perturbed placement was immediately cleared away.
+A single executed tuck is worth about eight points of clear rate — real but marginal
+(p=0.049) — where a matched perturbation of comparable size is worth nothing. The direct
+tuck-vs-control contrast, **+5.7 pts [−1.7, +13.4], p=0.16**, does *not* reach significance at
+this n, and that should be stated rather than glossed: the evidence that a tuck beats an
+arbitrary perturbation is suggestive, not established.
 
-Exact board equality is essentially never restored, for the tuck *or* for the control. The
-worry that motivated this measurement — "a maneuver that improves the board for three pills and
-then washes out is worth less than its per-placement stats suggest" — **does not apply to this
-game.** Placements are permanent. The corollary matters more: because *nothing* washes out,
-persistence is not evidence of value either, and any "the effect lasted N pills" claim measures
-the game's chaos rather than the maneuver.
+### A defect in the first version of this measurement, and what it cost
 
-### The outcome-change rate was the wrong question; direction is everything
+**The first divergence run reported T − R = +23.5 points and C − R = −20.5 points. Both were
+artifacts and both are withdrawn.** `divergence.py`'s branch loop stopped as soon as the
+*reference* branch finished, leaving the other branches mid-game with no result — which the
+scorer then counted as "did not clear". Measured on that run: 117 of 298 tuck branches and 136
+of 298 control branches were truncated, and every tuck branch that *did* get a result had
+cleared (181 clear, 0 topout, 0 stall) — because the only way to get a result at all was to
+finish before the reference. That is enough selection bias to manufacture the entire effect,
+and it did.
 
-| branch | outcome changed vs R | clear rate from the fork |
-|---|---|---|
-| **T** tuck | 90/298 (30.2%) | **60.7%** |
-| **C** control | 87/298 (29.2%) | **16.8%** |
-| **R** reference | — | 37.2% |
+It was caught by disagreement between two rigs that should have agreed: `divergence_single.py`
+runs the identical fork protocol with the identical R and C branches, and measured C − R at
++2.0 where the truncated run said −20.5. Same seeds, same branches, same continuation — so one
+of them had to be wrong. The loop is fixed (every branch now runs to its own end, and
+reconvergence is only scored while both games are live), the superseded outputs are kept under
+`results/superseded/` rather than deleted, and the re-run is in progress. The lesson is the
+generic one: **a paired rig that silently scores an unfinished game as a loss will invent
+whatever effect makes its reference finish first.**
 
-Tucks and the control change the outcome at **indistinguishable rates** (+0.010
-[−0.067, +0.084], a wash) — so "executing a tuck changed the outcome 30% of the time" would
-have been a meaningless statistic on its own. What separates them is *sign*:
+### Whether anything washes out — pending re-measurement
 
-| | clean stream | bursty v1.1 |
-|---|---|---|
-| **T − R** (tuck) | **+23.5 [+17.8, +29.2]**, 80 vs 10, p=1.1e−14 | **+23.1 [+17.4, +29.1]**, 82 vs 13, p=2.1e−13 |
-| **C − R** (control) | **−20.5 [−26.2, −14.8]**, 13 vs 74, p=1.6e−11 | **−10.4 [−15.4, −5.4]**, 15 vs 46, p=8.8e−05 |
-
-A comparable perturbation is as disruptive as a tuck and hurts, where the tuck helps — and the
-tuck's +23 points is reproduced to within half a point across two independent pressure regimes.
-That is the strongest available evidence that the executor does something specific rather than
-merely stirring the board.
-
-**Stated limitation:** branch T continues in *tuck* mode while R and C continue in *drop* mode,
-so T − R is not a single-maneuver effect — it is D − B measured from the fork point. Only
-C − R is a clean one-placement number. `divergence_single.py` adds the missing branch (tuck at
-the fork, then drop mode, identical continuation to R and C) and is running.
+The first run put "never reconverges" at 98.0% for tucks and 92.3% for the control, i.e.
+exact board equality is essentially never restored after *any* perturbation. That statistic is
+less exposed to the truncation defect than the outcome numbers were (both branches were
+measured over the same window) but it is not immune — a shortened window can only *increase* an
+apparent never-reconverges rate — so it is being re-measured too and is not quoted as a result
+here. The qualitative claim it supports, if it survives, is worth stating in advance because it
+cuts against the premise of the question: if nothing ever washes out, then persistence is not
+evidence of value either, and "the effect lasted N pills" measures the game's chaos rather than
+the maneuver.
 
 ---
 
@@ -491,12 +492,16 @@ the fork, then drop mode, identical continuation to R and C) and is running.
   fatal at high dose" story is supported from a second direction; if they help *more*, the
   story is wrong and the disagreement with the co-sim needs a different explanation. Either
   answer is decisive, which is why it is running ahead of the item below.
-- **Single-maneuver isolation** (`divergence_single.py`) — the T1 branch, n=300.
+- **Divergence-horizon re-run** with the truncation defect fixed, clean and bursty, n=300 each.
+  Only the reconvergence statistic is still outstanding; the directional question it was meant
+  to answer has already been answered correctly by `divergence_single.py`.
 
 Completed since the first revision: the v1 hazard bracket (both ends negative), the
 failure-mode decomposition (which corrected this document's interpretation of *why* D − A
-works), and the A′ control arms (which closed the reachability-filter confound and slightly
-strengthened the headline).
+works), the A′ control arms (which closed the reachability-filter confound and slightly
+strengthened the headline), the full θ dose-response curve (which refuted my own explanation of
+the co-sim disagreement), and the single-maneuver isolation (which caught a truncation defect
+in the first divergence rig and withdrew two of its numbers).
 
 ## Reproducing
 
@@ -505,4 +510,5 @@ strengthened the headline).
     python calibrate_theta.py              # publish-rate calibration
     bash   run_all.sh                      # the 2x2 runs (N=400 W=6 by default)
     python divergence.py --seeds 300 --workers 6 --pressure clean
+    python divergence_single.py --seeds 300 --workers 6 --pressure clean
     python report.py                       # every table above, from results/*.json

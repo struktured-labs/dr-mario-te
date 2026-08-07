@@ -260,12 +260,25 @@ def play(seed):
               "C": (env_C, res_C, "drop")}
     step_i = 0
     while step_i < MAX_PILLS:
-        if states["R"][1] is not None:
-            break
-        env_r_, _, _ = states["R"]
+        # DEFECT FIXED 2026-08-07: this loop used to `break` the moment the
+        # REFERENCE branch finished, leaving T and C mid-game with result None
+        # -- which `_won(None)` then scored as "did not clear". Measured on the
+        # first run: 117/298 T branches and 136/298 C branches were truncated
+        # that way, and every T branch that DID get a result had cleared (181
+        # clear, 0 topout), because the only way to get a result was to finish
+        # before R. That is a selection bias severe enough to invent the entire
+        # T - R effect, and it did: the truncated run reported T - R = +23.5
+        # and C - R = -20.5, where the untruncated single-maneuver rig
+        # (divergence_single.py, which always ran every branch to completion)
+        # measures +7.7 and +2.0 on the same fork protocol.
+        # Now every branch runs to its own end.
+        env_r_, res_r_, _ = states["R"]
         for k in ("T", "C"):
             e, r, m = states[k]
-            if r is not None or trace[k]["recon"] is not None:
+            # Reconvergence is only meaningful while BOTH games are live: a
+            # finished game's board is frozen, so comparing against it would
+            # score a coincidence rather than a reconvergence.
+            if r is not None or res_r_ is not None or trace[k]["recon"] is not None:
                 continue
             if board_key(e.board) == board_key(env_r_.board):
                 trace[k]["recon"] = step_i
