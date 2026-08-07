@@ -1,0 +1,45 @@
+{
+  "id": "hb_ga_near_spawn_b_seed5000001",
+  "family": "garbage_column_targeting",
+  "mechanism": "Second independent GA convergence on near_spawn targeting; higher fire probability on the 4-6 clear-size bin, zero fire on the rare 11+ bin. Same mechanism as ga_near_spawn_a. STRUCTURAL-FILTER VERDICT: FLUKE (2/5 perturbation categories survived -- [b] history-shift=True, timing_jitter=True; [a] neighbouring-seeds=False, column_jitter=False, size_jitter=False -- below the >=3/5 majority bar). Like ga_near_spawn_a, the exact GA-tuned fire/size shape does not generalize past its own training/original-holdout seed block.",
+  "found_by": "Hunt B adversarial garbage scheduler (adversary_search.py GA + hand-built controls), holdout-validated n=120 (ADVERSARIAL_PRESSURE.md), seed picked here via an exact-precision re-scan of the first 20 holdout seeds (find_fixture_seeds_exact.py) to guarantee bit-exact reproduction of validate_result.json's own genome floats (best_schedules.json's genome field is rounded to 3dp and was found to flip 1/120 outcomes on a spot check).",
+  "status": "FLUKE -- transfer-filtered, 2/5 perturbation categories survived (confirmed)",
+  "silicon_status": "OFFLINE PY65 SIM ONLY -- not replayed on the Verilator co-sim. See ADVERSARY_FINDINGS.md sec2 (silicon caveat) before treating this as a real-hardware failure.",
+  "seed": 5000001,
+  "schedule": {
+    "fire": {
+      "4-6": 0.5132947857140642,
+      "7-10": 0.45501320210952045,
+      "11-999": 0.0
+    },
+    "size_weights": {
+      "2": 0.2578867864545552,
+      "3": 0.228994252624265,
+      "4": 0.15891397910757388,
+      "5": 0.19001973263515182,
+      "6": 0.1641852491784541
+    },
+    "target_mode": "near_spawn"
+  },
+  "budget_halves": 53,
+  "max_pills": 300,
+  "expected": {
+    "result": "topout",
+    "dies_ahead": true
+  },
+  "holdout_summary_n120": {
+    "n": 120,
+    "clear": 23,
+    "topout": 97,
+    "stall": 0,
+    "dies_ahead": 34,
+    "clear_rate": 0.19166666666666668,
+    "topout_rate": 0.8083333333333333,
+    "stall_rate": 0.0,
+    "dies_ahead_rate": 0.2833333333333333,
+    "avg_garbage": 32.208333333333336,
+    "max_garbage": 53,
+    "min_garbage": 8
+  },
+  "provenance": "adversary/validate_result.json (validate_only.py, n=120 holdout 5,000,000-5,000,119) for the genome + aggregate stats; this specific seed's per-seed outcome confirmed by find_fixture_seeds_exact.py (adversary_search.play_seed_adversarial re-run at full float precision)."
+}

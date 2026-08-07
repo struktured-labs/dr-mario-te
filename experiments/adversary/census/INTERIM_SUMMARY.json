@@ -1,0 +1,14 @@
+{
+  "n": 674,
+  "counts": {
+    "clear": 674,
+    "topout": 0,
+    "stall": 0
+  },
+  "n_dies_ahead": 0,
+  "n_failure_seeds": 0,
+  "n_slow_seeds": 70,
+  "elapsed_s": 732.0605891540181,
+  "rate": 0.8196042908051783,
+  "budget_seconds": 10200.0
+}

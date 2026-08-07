@@ -1,0 +1,14 @@
+{
+  "n_done": 2100,
+  "elapsed_s": 3889.309258033987,
+  "games_per_sec": 0.5399416350505211,
+  "counts": {
+    "clear": 2099,
+    "topout": 0,
+    "stall": 1
+  },
+  "n_dies_ahead": 0,
+  "seed_order_consumed": 2112,
+  "seed_space": 65536,
+  "budget_seconds": 10200.0
+}

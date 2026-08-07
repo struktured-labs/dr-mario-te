@@ -198,6 +198,15 @@ def play_seed(seed, pressure=None, max_pills=300):
             res = "stall"
             break
 
+    if res == "stall" and first_topout_board is None:
+        # ⚠ additive, backward-compatible: first_topout_board was previously
+        # only populated for result=="topout". STALL now also gets a terminal
+        # snapshot (at truncation, 300 pills, viruses_left>0) via the SAME
+        # field/name -- fixture material for the seed census's tail, not a
+        # semantic rename of "topout". Nothing that only checked
+        # result=="topout" before reading this field is affected.
+        first_topout_board = _snapshot(env.board)
+
     viruses_left = int(env.board.virus_count())
     return {"seed": seed, "result": res, "pills": env.pills_placed,
             "viruses_left": viruses_left,
