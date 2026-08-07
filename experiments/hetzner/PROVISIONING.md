@@ -137,13 +137,37 @@ Two independent lessons, both learned the hard way:
 
 | file | purpose |
 |------|---------|
-| `exactness_gate.py` | bit-exactness gate; run on both nodes, compare `digest` |
-| `census.py` | seed census; resumable, flock-guarded, fsync per chunk |
+| `exactness_gate.py` | bit-exactness gate; run on both nodes, compare `digest` AND `code` |
+| `code_manifest.py` | standalone skew detector (importable + CLI); `from_imports()` catches wrong-worktree resolution |
+| `census.py` | seed census; resumable, flock-guarded, fsync per chunk, stamps a manifest |
 | `run_census.sh` | keepalive wrapper (census.py is resumable, so retry == recovery) |
 | `dedupe_census.py` | repairs a double-written JSONL; refuses to collapse disagreeing rows |
+| `verify_fixture.py` | proves stored fatal boards reload and replay — backs the "fixture" claim |
 | `bench_workers.py` | measures the worker-count knee instead of assuming it |
-| `ws_sweep.py` | phase-3: g_stranded dose priced on failure rate |
+| `kernel_gate.py` | whole-game gate for any proposed faster champion (traces, not positions) |
+| `fit_bursty_v11.py` | fits bursty v1.1 where the footage lives; pickles it for compute nodes |
+| `ws_dose_bursty.py` | failure-rate-vs-`ws` curve under bursty v1.1, driving `pressure_rig.run_arm` |
+| `analyze_ws.py`, `ws_sweep.py` | drip-era dose sweep, superseded by the bursty rig; kept as a contrast arm |
 | `HETZNER_NODE.md` | the keep-or-cancel verdict |
+
+### systemd units
+
+| unit | job |
+|------|-----|
+| `drm-census` | full-space census (`run_census.sh`) |
+| `drm-wsbursty` | ws dose curve under bursty v1.1 |
+
+`systemctl is-active|stop <unit>`, `journalctl -u <unit>`. Job logs in `logs/`,
+results in `results/` (both gitignored).
+
+### Bursty pressure model — do NOT try to fit it here
+
+The fit reads 1fps JPEG frames plus a `vision.py` calibrated against them, none
+of which is synced (nor should be). Run `fit_bursty_v11.py` **locally**; it
+writes `bursty_v1_1.pkl`, which `ws_dose_bursty.py` prefers over re-fitting.
+It refuses to ship a model whose summary looks like the contaminated v1 pool
+(61 volleys / 188 clears) instead of v1.1 (28 / 89). Verified identical on both
+nodes: 28 volleys, 89 clears, gap 27.42 s, 28.2% / 62.5% — the published values.
 
 ## 7. Measured throughput
 
@@ -153,4 +177,6 @@ Two independent lessons, both learned the hard way:
 | 2 | 0.507 | ~linear — 2 real cores |
 | 4 | 0.583 | +15% only — SMT, not more cores |
 
-Use `--workers 4`. Full 32,768-seed block ≈ 15.6 h uncontended.
+Use `--workers 4`; ~0.583 g/s ⇒ a full 65,536-seed census ≈ 31 h uncontended.
+**Budget workers explicitly when sharing** — this is 2 physical cores, so three
+tenants at "4 workers" each is 3x oversubscription and slows everyone.
