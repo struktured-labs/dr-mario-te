@@ -136,7 +136,7 @@ badly-built adversary understated the champion's VS vulnerability 5x.
 
 ---
 
-## 4. VS — RETRACTED, root-caused, and re-running
+## 4. VS — retracted, root-caused, fixed, and re-run
 
 ### ⚠ What happened
 The reproducibility gate (house rule: *a hole you cannot replay is an anecdote*)
