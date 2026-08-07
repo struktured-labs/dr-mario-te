@@ -23,12 +23,13 @@ replayed through the Verilator co-sim.** Named validation targets are in §8.
    I ever reported (32%, 26.7%, 7.1%) was that artifact. Blast radius audited:
    only this lane and `h2h_vs --rule exact`; every other lane has its own
    gravity-correct injection.
-4. **THE REAL ANSWER, on deaths that actually happen** (drip pressure, n=160,
-   19 deaths, all replay-verified): **79% are dies-ahead**, independently
-   reproducing the field disease. Escape depths:
-   **E=1 for 7 of 19 (37%) — depth-4 dodges those. E≤3 for 9 of 19 (47%).**
-   The other 53% need E≥5 or are unavoidable.
-5. **So: depth AND eval, roughly half each.** Depth-4 is worth ~37% of pressure
+4. **THE REAL ANSWER, on deaths that actually happen** — 480 games across two
+   doses and two levels, **53 deaths**, all replay-verified. **75% are
+   dies-ahead**, independently reproducing the field disease. Escape depths:
+   **E=1 for 21/53 = 40% [28-53%] — depth-4 dodges those. E≤3 for 53%.**
+   The other 42% need E≥5 or are unavoidable. The E=1 share is stable at 33-43%
+   across a 4.6x swing in death rate, so it is not a single-setting artifact.
+5. **So: depth AND eval, roughly half each.** Depth-4 is worth ~40% of pressure
    deaths — a real, sizeable, testable prize. It is *not* the whole disease.
 
 ---
@@ -269,50 +270,71 @@ came from garbage and the commit path, not from board danger.
 
 ## 6. Hole taxonomy — escape depth on real pressure deaths
 
-For each of the 19 deaths: what is the smallest number of plies past the
-champion's 3-ply horizon at which **one** different move survives past the fatal
-ply?
+For each death: what is the smallest number of plies past the champion's 3-ply
+horizon at which **one** different move survives past the fatal ply?
 
-| E | deaths | search depth that would dodge it | feasible? |
+### Pooled — 480 games, 3 configurations, 53 deaths
+
+| E | deaths | search depth that dodges it | feasible? |
 |---|---|---|---|
-| **1** | **7** | **depth 4** | **yes** |
-| 2 | 1 | depth 5 | plausibly |
-| 3 | 1 | depth 6 | unlikely |
-| 5 | 3 | depth 8 | no |
-| 6 | 1 | depth 9 | no |
+| **1** | **21** | **depth 4** | **yes** |
+| 2 | 2 | depth 5 | plausibly |
+| 3 | 5 | depth 6 | unlikely |
+| 4 | 3 | depth 7 | no |
+| 5 | 5 | depth 8 | no |
+| 6 | 2 | depth 9 | no |
 | 7 | 1 | depth 10 | no |
 | 8 | 2 | depth 11 | no |
-| none in 8 plies | 3 | — already lost | — |
+| none in 8 plies | 12 | — already lost | — |
 
-* **E=1: 7/19 = 37%** — one extra ply of lookahead recovers over a third of all
-  pressure deaths.
-* **E≤3: 9/19 = 47%** — a depth-4 to depth-6 search dodges nearly half.
-* **E≥5 or unavoidable: 10/19 = 53%** — no feasible search reaches these.
+* **E=1: 21/53 = 40%**, 95% CI **[28%, 53%]** — one extra ply recovers two fifths
+  of all pressure deaths.
+* **E≤3: 28/53 = 53%**, 95% CI **[40%, 66%]**.
+* **E≥5 or no escape: 22/53 = 42%** — no feasible search reaches these.
 
-### Mechanism mix
-`garbage_flood` 11, `spawn_congestion` 4, `colour_starvation` 2,
-`forced_overstack` 2. The dominant mechanism is the garbage channel itself, which
-is consistent with the dies-ahead framing: the champion is not being out-played
-positionally, it is being buried while it banks clearing progress.
+### It holds across dose and level
+
+| config | games | deaths | dies-ahead | E=1 | E≤3 |
+|---|---|---|---|---|---|
+| L11 k2/p5/after20 | 160 | 19 (11.9%) | 15 | 7 (37%) | 9 |
+| L11 k2/p8/after25 | 160 | 6 (3.8%) | 5 | 2 (33%) | 3 |
+| L17 k2/p5/after20 | 160 | 28 (17.5%) | 20 | 12 (43%) | 16 |
+| **pooled** | **480** | **53** | **40 (75%)** | **21 (40%)** | **28 (53%)** |
+
+The E=1 share is stable at 33-43% across a 4.6x swing in death rate, two doses
+and two levels — so it is not an artifact of one pressure setting.
+
+**75% of deaths are dies-ahead**, independently reproducing the field disease
+with different code and a different pressure model from the other four lanes.
+
+### Mechanism mix (pooled)
+`garbage_flood` dominates (32), then `spawn_congestion` (10),
+`colour_starvation` (8), `forced_overstack` (3). Consistent with the dies-ahead
+framing: the champion is not out-played positionally, it is buried while banking
+clearing progress.
 
 ### The champion's mistake, in plain language
 At E=1 the pattern is consistent: **with garbage arriving, the champion takes the
-placement that maximises its clearing progress and lets the reachable headroom
-in the spawn lane collapse to a single column. Its horizon ends exactly one
-placement before that column closes, so the move that strands it still looks
-free.** One more ply makes the closure visible and a different column wins. That
-is a horizon that stops one pill too early under pressure — genuinely a depth
-problem, for this third of deaths.
+placement that maximises clearing progress and lets the reachable headroom in the
+spawn lane collapse to a single column. Its horizon ends exactly one placement
+before that column closes, so the move that strands it still looks free.** One
+more ply makes the closure visible and a different column wins. For this two
+fifths of deaths it is genuinely a horizon problem.
 
-The E≥5 half is a different animal: those boards were committed 5-8 placements
-before the end, and no endgame move recovers them. That is the risk-neutrality
-the other lanes named, and it is an eval-term problem.
+The E≥5 group is a different animal: those boards were committed five to eight
+placements before the end and no endgame move recovers them. That is the
+risk-neutrality the other lanes named — an eval-term problem.
 
-### Caveat on the classifier
-A death-by-delivery ply has a legal-move count of 0 *by definition*; feeding that
-to the mechanism classifier made `forced_overstack` fire on every kill until I
-measured it on the last ply with a real count instead. Labels here are from the
-corrected version.
+### Two methodological notes
+**Why drip and not bursty.** The bursty model's volleys are keyed on the
+champion's own clear size, so changing a champion move changes the future
+pressure — the same contamination that made the VS escapes meaningless. Drip is
+keyed on `(seed, ply)` only, so the garbage stream is exogenous and the
+comparison isolates the move. Exogeneity is a requirement here, not a preference.
+
+**Classifier caveat.** A death-by-delivery ply has a legal-move count of 0 *by
+definition*; feeding that to the mechanism classifier made `forced_overstack`
+fire on every kill until I measured it on the last ply with a real count.
 
 ## 7. G2 — admissibility of the bound
 
@@ -383,11 +405,11 @@ priority order:
 before the harness was fixed, and the change came from better data, not a better
 argument.**
 
-* **Depth-4 is worth ~37% of pressure deaths** (7 of 19 at E=1), and depth-6
-  about 47%. That is a real, sizeable, testable prize. It should be weighed
+* **Depth-4 is worth ~40% of pressure deaths** (21 of 53 at E=1, 95% CI 28-53%), and depth-6
+  about 53%. That is a real, sizeable, testable prize. It should be weighed
   against the measured d4 cost of 22.9x (`dr-mario-depth4-memo`) — but "depth
   buys nothing" is now refuted on the deaths that actually occur.
-* **The other ~53% need E≥5 or have no escape at all.** Those were decided five
+* **The other ~42% need E≥5 or have no escape at all.** Those were decided five
   to eight placements before the end, and no feasible search depth reaches them.
   This is the same place the other four lanes landed — risk-neutrality near an
   absorbing state — and it is an eval-term problem: something that prices
@@ -396,7 +418,7 @@ argument.**
   no ≤5-pill stream kills it from the worst real positions.
 
 So the recommendation is narrow and specific: **a depth-4 search would recover
-about a third of pressure deaths, and a survival term is needed for the rest.**
+about two fifths of pressure deaths, and a survival term is needed for the rest.**
 Neither alone closes the disease.
 
 ### What I got wrong, and why it matters for how this is read
@@ -410,13 +432,21 @@ shared the fault's assumption.* Nothing in the harness ever asserted that a
 delivered tile ends up supported, or that a cloned state owns its own RNG.
 
 ### Limits, stated plainly
-n=19 deaths. One pressure model (drip k2/p5/after20) at one level; the bursty
-human-fitted model should give the same treatment before this is acted on. All
-simulator-side, and the co-sim lane has since measured that RTL agreement is
-**88% near death** (vs 100% mid-game) — precisely this regime — so whether these
-specific escapes exist on silicon is an open question, not a formality. The
-E=1 cases are the ones to put through the co-sim first: they are the entire
-depth-4 argument, and they are cheap to check.
+n=53 deaths across two doses and two levels — enough that the E=1 share is
+stable (33-43%), not enough to split it by mechanism.
+
+**The bursty human-fitted model cannot go through this instrument as it stands,**
+and that is a real limit rather than an omission: its volleys key on the
+champion's own clear size, so deviating the champion changes the future pressure
+and the counterfactual stops isolating the move. Answering "does the E=1 share
+survive human cadence" needs a bursty variant whose schedule is frozen per seed.
+Worth building; not built.
+
+All simulator-side, and the co-sim lane has since measured RTL agreement at
+**88% near death** vs 100% mid-game — precisely this regime — so whether these
+escapes exist on silicon is an open question, not a formality. The 21 E=1 deaths
+are the ones to put through the co-sim first: they are the entire depth-4
+argument and cost one RTL decision each.
 
 ## 10. Files
 
