@@ -104,7 +104,18 @@ def main():
            "by_plies_to_death": by_plies_left, "disagreements": bad,
            "orient_fast": dict(of), "orient_rtl": dict(orl),
            "midgame_reference": {"n": 50, "full": 50, "full_frac": 1.0}}
-    dst = "/mnt/data/drmario_cosim/results/death_fidelity.json"
+    # Derive the destination from the INPUT rather than hardcoding one name. The fixed
+    # path silently overwrote the evolved arm's published 110/125 with the pre-#47
+    # transfer arm's 109/125 -- two different firmwares, one filename, no warning. The
+    # committed copy is what saved it. Refuse to clobber, so a re-run of the same input
+    # is idempotent but a DIFFERENT input can never land on another arm's result.
+    stem = os.path.splitext(os.path.basename(sys.argv[1]))[0]
+    suffix = stem[len("decide_death"):].lstrip("_") if stem.startswith("decide_death") else stem
+    dst = os.path.join("/mnt/data/drmario_cosim/results",
+                       "death_fidelity.json" if not suffix else f"death_fidelity_{suffix}.json")
+    if os.path.exists(dst) and json.load(open(dst)) != out:
+        raise SystemExit(f"REFUSING to overwrite {dst} with different numbers -- "
+                         f"it holds another arm's result. Move it aside deliberately.")
     json.dump(out, open(dst, "w"), indent=1)
     print(f"wrote {dst}")
     return 0
