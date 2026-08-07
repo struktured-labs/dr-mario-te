@@ -136,3 +136,70 @@ twice tonight. Every long job now writes, next to its results:
 
 One `cat` then distinguishes running / stalled / done-unreported without a
 round-trip. `tuck_published_vs_best.py` writes `STATUS.tuck_published_vs_best`.
+
+---
+
+# THE EH SIGN: it is a BONUS. The gate gets HARDER, not easier.
+
+The proposed chain — "EH are penalties ⇒ base deflated ⇒ gate easier ⇒ no-op
+tucks slip through" — **breaks at the sign step.**
+
+`_g_excav_ship` docstring: "**credit** min(run,3)**2 of the same-color non-virus
+run at the TOP of a pile that covers a buried virus." `_g_hang_ship`: "an
+occupied non-virus cell with EMPTY directly below whose gap-drop lands on a
+matching color -> **+1**." Both are non-negative counts, applied as
+`val += w_excav*g_excav + w_hang*g_hang` with `W_EXCAV=24`, `W_HANG=40` — both
+positive. **These are bonuses.**
+
+**Measured over 10,800 real base candidates:**
+
+    EH term:  mean +237.4   median +216   min 0   max 728
+              fraction > 0: 100.0%    fraction < 0: 0.0%
+
+⇒ base candidates carry a bonus averaging **+237**; tuck candidates carry **0**.
+⇒ `best_base_val` is **INFLATED**, so the gate `tuck_val >= best_base_val + θ`
+   is effectively `tuck_val >= true_base + ~237 + 150` — an **effective θ of
+   ~387 against a nominal 150**, i.e. ~2.6x too strict.
+⇒ **The EH omission cannot be what admits no-op tucks. It suppresses firing.**
+
+## The no-op discriminator agrees
+
+Prediction under a correct gate: no-op tucks should be **0%**, since a no-op
+tuck's value IS a base placement's value, hence ≤ best_base < best_base + θ.
+(That part of the chain is sound and worth keeping — it means the observed 52%
+is proof the gate is not functioning *as arithmetic*, not merely mis-tuned.)
+
+Measured on published tucks under the modelled gate, 18 seeds:
+
+    PUBLISHED TUCKS: 41    NO-OPS: 2  =  4.9%
+
+Near-zero, as predicted — **not the co-sim's 52%.** So the co-sim's no-ops come
+from something this model does not contain. The model contains: the true
+candidate set, the true eval, the documented EH omission, and the θ=150 gate.
+What it does NOT contain is the firmware's 16-bit comparison arithmetic.
+
+## ⇒ THE OVERFLOW HAZARD IS PRIME SUSPECT
+
+This is the branch the team lead named: "if instead they're bonuses … something
+else is admitting the no-ops — in which case the overflow hazard moves back to
+prime suspect." The sign is a bonus, so that is where this lands.
+
+It also explains the θ-inertness that a merely-mis-tuned gate cannot: sweeping
+θ from 150 to 20000 changing **0/20 placements** is what a comparison whose
+arithmetic saturates or wraps looks like, not what a strict-but-working
+threshold looks like (which would monotonically starve tucks).
+
+## Revised causal picture
+
+| component | status | effect |
+|---|---|---|
+| candidate SET | **better** than the proof enumerator (p=2e-4) | not the problem |
+| SELECTION rank | **clean**, 64/64 zero loss | not the problem |
+| EH omission | **real**, effective θ ≈ 387 vs 150 | suppresses HOW OFTEN tucks fire |
+| θ gate arithmetic | **suspect** — 16-bit overflow | admits candidates that cannot pass; the likely arm-D cause |
+| execution | **clean** (co-sim, n_incoherent=0/881) | not the problem |
+| root-placement overwrite | **delivery mechanism** | faithfully enacts a bad descriptor |
+
+Fix order: the overflow first (it admits the no-ops), the EH one-liner second
+(it restores the intended firing rate). Fixing EH alone would make tucks fire
+*less* while still admitting bad ones.
