@@ -545,6 +545,27 @@ The fixed run also cross-validates the two rigs. Both now put the reference bran
 and the control at **39.3%** — identical to three significant figures, on the same seeds
 through independently written game loops.
 
+### It does not decay — it compounds
+
+Board equality is a blunt instrument, so the gap is also tracked continuously. Mean signed
+difference from the reference, by pills elapsed since the divergence (clean stream, negative =
+better than the reference):
+
+| pills since divergence | viruses, tuck | viruses, control | max height, tuck | max height, control | observations |
+|---|---|---|---|---|---|
+| 0–2 | −1.41 | −0.43 | −0.69 | −0.47 | 1,740 |
+| 3–5 | −2.50 | −0.65 | −1.00 | −0.47 | 1,678 |
+| 6–10 | −3.74 | −0.73 | −1.24 | −0.39 | 2,697 |
+| 11–20 | −5.80 | −0.54 | −1.73 | −0.16 | 5,046 |
+| 21–60 | **−9.74** | −1.21 | **−3.44** | −0.23 | 14,973 |
+
+The control's advantage stays flat near half a virus for the whole game — one perturbation, one
+bounded consequence. The tuck branch's advantage grows monotonically to nearly ten viruses and
+three and a half rows. **Read with the caveat that the tuck branch keeps firing tucks** (it
+continues in tuck mode, where the control does not), so this is the compounding of a policy
+rather than the decay of a single maneuver — which is precisely why the single-maneuver number
+above, +7.7 points from one tuck, is the one to quote for one tuck.
+
 ---
 
 ## Still running
