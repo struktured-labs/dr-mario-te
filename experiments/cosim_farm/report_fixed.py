@@ -7,9 +7,21 @@ orientation -> D_BO. Drop mode ignores the DESCRIPTOR, not the PLACEMENT, so a s
 win moved arm B's published column too: measured 0/58 clear for B against 51/53 for A.
 Any comparison with old B or old D as the control is void.
 
-  D_fixed - A   does a correctly-scored tuck arm beat the clean base?   <- the question
-  B_fixed - A   does the fixed firmware, NOT tucking, match the base?   <- falsifier for
-                                                                          the fix itself
+  D_fixed - A   does a correctly-scored tuck arm beat the clean base?   <- THE question
+
+  B_fixed - A   ⚠ NOT a falsifier for the fix, despite how it was framed. Drop mode does
+                not mean "the firmware declines to tuck" -- tre_commit still overwrites
+                D_BC/D_BO with the tuck's TARGET column, and the driver then DROPS there
+                without performing the maneuver. The pill comes to rest at the column's
+                drop height instead of sliding under the overhang the tuck was aimed at,
+                so the placement is incoherent BY CONSTRUCTION, exactly as v1's was and
+                exactly why the "fail-safe" firmware variant was refused. A correct fix
+                does NOT predict B_fixed ~ A; it predicts B_fixed stays bad.
+                What B_fixed - A actually measures is worth having anyway: the cost of
+                publishing a tuck placement that never gets executed -- which is the
+                SHIPPED CART's situation, since the cart has no tuck executor at all.
+                Read it as "what tier-3 would do on today's silicon", not as a check of
+                the fix.
 
 PRE-REGISTERED, written before any fixed-arm row existed (see PREDICTION below): the
 fast-sim lane registered ~5-point clear-rate GAIN at a 5-15% fire rate. Recording it
@@ -33,12 +45,38 @@ FIXED_TUCK, FIXED_DROP = "s20t3fix_tuck", "s20t3fix_drop"
 # which is the only reason their split test carries any weight -- and the same reason it
 # must be honoured here rather than re-chosen to taste.
 BLOCK_BOUNDARY = 120
+WAVE2_START = 135          # first seed of the out-of-sample wave chosen AFTER their split
 
 PREDICTION = {
     "source": "fast-sim lane, registered before the fixed-firmware re-run existed",
     "clear_rate_gain_points": 5.0,
     "fire_rate_range": [0.05, 0.15],
+    # Their SECOND prediction, put on the record before this wave ran, on whether their
+    # own seed-block split is real: "if my split is real, your D_fixed - A should be
+    # closer to null on 0-119 and favourable on 135-234; if my split was the coin flip,
+    # both blocks look alike." They asked to be falsifiable, so it is adjudicated here
+    # rather than left to prose.
+    "block_split_is_real_iff": "delta(135-234) meaningfully better than delta(0-119)",
 }
+
+
+def block_verdict(d_null, d_oos):
+    """Adjudicate the fast-sim lane's own split, out of sample."""
+    if d_null.get("n_paired", 0) == 0 or d_oos.get("n_paired", 0) == 0:
+        return "not yet testable -- need paired seeds in BOTH 0-119 and 135-234"
+    a = d_null["clear"]["delta_points"]
+    b = d_oos["clear"]["delta_points"]
+    gap = b - a
+    mde = max(x for x in (d_null["power"]["min_detectable_delta_points_approx"],
+                          d_oos["power"]["min_detectable_delta_points_approx"], 0)
+              if x is not None)
+    if gap > mde:
+        return (f"SUPPORTS their split: out-of-sample block is {gap:+.1f} points better "
+                f"than the null block ({b:+.1f} vs {a:+.1f}), exceeding the ~{mde:.1f} "
+                f"points this design can resolve")
+    return (f"does NOT support their split: blocks look alike ({b:+.1f} vs {a:+.1f}, "
+            f"gap {gap:+.1f}) against ~{mde:.1f} points of resolution -- consistent with "
+            f"their p=0.023 being the one test in twenty, which they said they would own")
 
 
 def wilson(k, n, z=1.96):
@@ -190,9 +228,20 @@ def main():
     # differs and not board difficulty). A pooled number is an average over a possibly
     # non-uniform effect -- which is precisely the error that lane just corrected in
     # itself. The pooled row is printed LAST and labelled, never on its own.
-    strata = [("block 0-119 ", lambda s: s < BLOCK_BOUNDARY),
-              ("block 120+  ", lambda s: s >= BLOCK_BOUNDARY),
-              ("POOLED (avg over a possibly non-uniform effect)", None)]
+    # FOUR strata, not two. The lead wants 0-119 vs 120+; the fast-sim lane asked for
+    # 135-234 reported SEPARATELY and is right to. 120-134 rode in on arm A's existing
+    # seed set before their split was known; 135-234 was chosen AFTER it was known and is
+    # the only genuinely OUT-OF-SAMPLE block. Merging the two would let a real block
+    # effect hide inside an average -- the precise failure being guarded against. Report
+    # the pieces and the union, and both requests are satisfied at once.
+    strata = [
+        ("block 0-119   (wave 1, their null block)", lambda s: s < BLOCK_BOUNDARY),
+        ("block 120-134 (wave 1, in-sample tail)",
+         lambda s: BLOCK_BOUNDARY <= s < WAVE2_START),
+        ("block 135-234 (wave 2, OUT-OF-SAMPLE)", lambda s: s >= WAVE2_START),
+        ("block 120+    (union, the lead's split)", lambda s: s >= BLOCK_BOUNDARY),
+        ("POOLED (avg over a possibly non-uniform effect)", None),
+    ]
 
     res = {"prediction": PREDICTION, "block_boundary": BLOCK_BOUNDARY,
            "degenerate_seeds_excluded": sorted(DEGENERATE_SEEDS), "comparisons": {}}
@@ -226,6 +275,14 @@ def main():
                   f"executed {f['executed_per_placement']}  "
                   f"incoherent {f['n_incoherent']}")
             print(f"      VERDICT: {d['verdict']}")
+
+    # Out-of-sample adjudication of the fast-sim lane's own seed-block split.
+    cmp_d = res["comparisons"]["D_fixed_vs_A"]
+    bv = block_verdict(cmp_d.get("block 0-119   (wave 1, their null block)", {}),
+                       cmp_d.get("block 135-234 (wave 2, OUT-OF-SAMPLE)", {}))
+    res["block_split_adjudication"] = bv
+    print(f"\n################ fast-sim lane's seed-block split, OUT OF SAMPLE ###########")
+    print(f"  {bv}")
 
     if a.out:
         json.dump(res, open(a.out, "w"), indent=1)
