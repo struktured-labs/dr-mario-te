@@ -1,0 +1,134 @@
+{
+ "n": 16,
+ "genuine_wins": 0,
+ "rows": [
+  {
+   "i": 0,
+   "viruses_in": 48,
+   "best_left": 45,
+   "actions_tried": 66,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 1,
+   "viruses_in": 48,
+   "best_left": 45,
+   "actions_tried": 56,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 4,
+   "viruses_in": 48,
+   "best_left": 48,
+   "actions_tried": 58,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 6,
+   "viruses_in": 48,
+   "best_left": 46,
+   "actions_tried": 58,
+   "genuine_win": false,
+   "fw_max_all": 30040
+  },
+  {
+   "i": 7,
+   "viruses_in": 48,
+   "best_left": 48,
+   "actions_tried": 60,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 10,
+   "viruses_in": 44,
+   "best_left": 44,
+   "actions_tried": 68,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 11,
+   "viruses_in": 48,
+   "best_left": 46,
+   "actions_tried": 72,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 13,
+   "viruses_in": 48,
+   "best_left": 45,
+   "actions_tried": 52,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 15,
+   "viruses_in": 47,
+   "best_left": 44,
+   "actions_tried": 68,
+   "genuine_win": false,
+   "fw_max_all": 30040
+  },
+  {
+   "i": 16,
+   "viruses_in": 48,
+   "best_left": 46,
+   "actions_tried": 54,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 22,
+   "viruses_in": 48,
+   "best_left": 45,
+   "actions_tried": 64,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 24,
+   "viruses_in": 48,
+   "best_left": 46,
+   "actions_tried": 62,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 25,
+   "viruses_in": 46,
+   "best_left": 44,
+   "actions_tried": 70,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 26,
+   "viruses_in": 48,
+   "best_left": 48,
+   "actions_tried": 60,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 28,
+   "viruses_in": 46,
+   "best_left": 44,
+   "actions_tried": 68,
+   "genuine_win": false,
+   "fw_max_all": 30000
+  },
+  {
+   "i": 29,
+   "viruses_in": 48,
+   "best_left": 46,
+   "actions_tried": 66,
+   "genuine_win": false,
+   "fw_max_all": 30400
+  }
+ ]
+}
