@@ -577,10 +577,23 @@ arm B is the degradation mechanism running at a defect-inflated fire rate (53% o
 against the post-fix 13%), which is why it reads even more catastrophic than mine.
 
 So the correct statement is: **both rigs agree the mechanism destroys the champion; only this
-rig has a magnitude for it.** That magnitude is more credible than it was, though, for a reason
-that arrived afterwards — post-fix the RTL fires on 13% of decisions and this rig fires on
-11.5%, so the two are now dosed almost identically, which is exactly the condition under which
-my 80.8% should transfer.
+rig has a magnitude for it.**
+
+**That magnitude is now testable, and here is the prediction, recorded before the run that
+checks it.** Post-fix the RTL publishes on **13%** of decisions and this rig fires on **11.5%**
+— within two points, where before the fix it was 53% against 11.5% and no transfer could be
+expected. Matched dose is the condition under which a magnitude should carry across two
+simulators, so:
+
+> **Prediction.** A post-fix RTL arm B, on seeds this rig also covers, should land near
+> **80% bad ends** (this rig: 80.8%) — emphatically not near its pre-fix 100%, and emphatically
+> not near arm A's ~17%. If it comes back at ~100%, the dose match is not sufficient and
+> something else in arm B differs between the rigs. If it comes back near arm A, my arm B is
+> wrong and the entire drop-degradation model with it.
+
+Stating it this way is the point: "the rigs now agree on dose" is a hope, and "80% ± the width
+of a 12-seed interval, or the model is wrong" is a test. The same applies to arm D, whose
+prediction is recorded in [what is left](#what-is-left).
 
 ---
 
