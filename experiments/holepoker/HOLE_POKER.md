@@ -412,6 +412,67 @@ nulls are the informative view, not the fill percentage.** Cell counts are also
 not death counts — the statistical result is §6, over the 53-death matched
 sweep; this archive is the taxonomy.
 
+## 6c. Pricing the gated-d4 proposal
+
+The proposal: fire depth-4 only when #78's gate is open (`since_garbage <= k`),
+paying d4's measured 22.9x only where the spawn lane is loaded.
+
+### First — does the premise survive?
+I described E=1 as "the horizon ends one placement before the column closes".
+That assumes the fatal event is a **placement**. But the champion's search has
+**no garbage model at all** — `champion_move(col, vir, ca, cb, na, nb)` sees two
+capsules and a board, nothing about incoming tiles. So a death caused by garbage
+ARRIVING is not a ply the search failed to reach; it is an **event no search
+depth can see**, and d4/d8/d40 all miss it identically.
+
+The recorded `died_on_delivery` flag settles it:
+
+| group | delivery deaths | placement deaths |
+|---|---|---|
+| all 53 deaths | 32 | 21 |
+| **E=1 (21)** | **3** | **18** |
+| E≤3 (28) | 10 | 18 |
+
+**The premise survives, and comfortably: 18 of 21 E=1 deaths are placement
+deaths.** That is not an accident — a delivery death has no single-move escape
+at the last ply by construction, so delivery deaths sort themselves into the
+E≥5/none bins. Depth is the right *kind* of fix for the E=1 population.
+
+### Then — coverage and cost
+Gate open at the escape ply: **18/21** for E=1, 25/28 for E≤3. Combining both
+conditions, gated-d4 covers **16/21 E=1 deaths = 16/53 (30%) of all deaths** at
+the authorised k=6.
+
+**But the cost saving does not materialise at drip cadence.** k-sweep over
+10,352 decisions:
+
+| k | gate rate | amortised multiplier | E=1 covered |
+|---|---|---|---|
+| 0 | 17.2% | **4.77x** | 3/21 |
+| 1 | 34.1% | 8.47x | 6/21 |
+| **2** | **51.0%** | **12.16x** | **11/21** |
+| 3 | 67.8% | 15.84x | 12/21 |
+| 4 | 84.6% | 19.52x | 15/21 |
+| 6 (authorised) | 87.5% | **20.17x** | 16/21 |
+| 8+ | 89.4% | 20.57x | 18/21 |
+
+**At the authorised k=6 the gate is open 87.5% of the time, so gating turns
+22.9x into 20.2x — a 1.1x saving.** It barely gates anything.
+
+The reason is dose, not a defect in #78: drip injects every 5-8 plies, so
+`since_garbage <= 6` is nearly always true. #78's 47.8% was measured on the
+**bursty** corpus, where volleys are sparser and clumpier.
+
+### Verdict
+* **The knee is k=2**: 51% gate rate, **12.16x**, covering 11/21 E=1 deaths
+  (21% of all deaths). Roughly half the coverage of k=6 for 60% of the cost.
+* Even at the knee this is a **12x** decider, not a cheap one. Gating improves
+  d4's economics at drip cadence; it does not rescue them.
+* **The economics are dose-dependent and the interesting regime is untested.**
+  Under bursty cadence the gate rate should fall towards #78's 47.8%, which
+  would move the whole curve left. That makes the frozen-schedule bursty
+  variant a prerequisite for a real go/no-go, not a nice-to-have.
+
 ## 7. G2 — admissibility of the bound
 
 `h` is the single load-bearing assumption behind every negative here: IDA* starts

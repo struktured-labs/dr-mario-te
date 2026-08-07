@@ -1,5 +1,40 @@
 #!/usr/bin/env python3
-"""Self-play tuning of the eval constants against WIN RATE UNDER GARBAGE.
+"""⚠⚠ DEPRECATED 2026-08-01 — SUPERSEDED BY `vs_harness` (tmp/vs_aware/vs_harness.py).
+DO NOT USE FOR NEW WORK. Kept for provenance, not for running.
+
+WHY, so nobody greps for "a VS harness" in six months and picks this one:
+
+  * WRONG ATTACK RULE. Its match loop comes from `vs_env.py`, whose trigger
+    counts only lines cleared in the SAME step. The ROM's comboCounter SUMS
+    ACROSS CASCADE STEPS and is never reset inside a cascade, so a cascade of
+    two single lines DOES attack -- ~85% of all real attacks. Mesen-confirmed.
+    This rig fires ~6.7x too rarely. See memory `dr-mario-rom-attack-rule`.
+  * ITS GARBAGE FLOATED UNTIL 2026-08-06. `vs_env._drop_garbage` wrote tiles
+    into row 0 and called `resolve()` to settle them, but `resolve()` runs
+    gravity ONLY after a clear. Tiles hung at row 0, and since `spawn_blocked()`
+    tests row 0 of columns 3/4, one third of deliveries topped the receiver out
+    instantly -- measured 19/60 on healthy boards. FIXED NOW (an
+    `_apply_gravity()` call), so this file is no longer a live hazard, but any
+    result produced through it BEFORE that date is contaminated.
+  * `h2h_vs.py:11` already calls this "the old selfplay.py", and
+    `PORTFOLIO_VERDICT.md:186` records that the surviving
+    `dr-mario-selfplay-vs-negative` corpus (40 candidates, zero wins) rests
+    entirely on `vs_harness.play_match` -- that negative went through the CLEAN
+    path and still stands.
+
+REPLACEMENT: `vs_harness.play_match` (ROM-true attack rule; gravity-correct
+`drop_garbage` with `while board._apply_gravity(): pass`, stamped in
+REQUIRED_MECHANICS). For eval-constant head-to-head use `h2h_vs.py`, which
+defaults to `--rule rom`.
+
+Before trusting ANY VS delivery path, run
+`holepoker/gravity_gate.py::assert_delivery_settles` against YOUR OWN function
+rather than against a module name -- the same defect existed in three modules
+under two names, and one lane's fix never reached the others.
+
+--- original docstring follows ---
+
+Self-play tuning of the eval constants against WIN RATE UNDER GARBAGE.
 
 WHY: every optimisation this project has run scored SOLO pills-to-clear. The user's loss
 photo shows the AI topping out while AHEAD on viruses (24 vs 32) -- it won the metric it was
