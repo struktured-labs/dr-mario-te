@@ -60,12 +60,33 @@ def audit_seed(seed):
             "colours": sorted(colours)}
 
 
+def stream_key(seed):
+    """The 128-capsule buffer itself, hashable -- for finding seeds that are
+    the SAME GAME under a different number."""
+    s0, s1 = (seed >> 8) & 0xFF, seed & 0xFF
+    if (s0, s1) == (0, 0):
+        s0, s1 = 0x89, 0x88
+    ids, _, _ = gen_sequence(s0, s1)
+    return tuple(ids)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="degenerate_seeds.json")
     ap.add_argument("--lo", type=int, default=0)
     ap.add_argument("--hi", type=int, default=65536)
     a = ap.parse_args()
+
+    # ALIAS CHECK. NesPillSource remaps the unusable state (0,0) onto the ROM's
+    # warm-boot seed (0x89,0x88) -- so seed 0 plays the SAME GAME as seed
+    # 0x8988 = 35208. A census billed as "exhaustive over 65,536" that quietly
+    # contains a duplicated pair is exactly what a careful reader finds later,
+    # so count DISTINCT STREAMS instead of assuming distinct seeds are distinct
+    # games. Done exhaustively rather than by checking the one pair we expect.
+    streams = {}
+    for seed in range(a.lo, a.hi):
+        streams.setdefault(stream_key(seed), []).append(seed)
+    dupes = sorted((v for v in streams.values() if len(v) > 1), key=lambda v: v[0])
 
     bad, id_hist, col_hist = [], Counter(), Counter()
     for seed in range(a.lo, a.hi):
@@ -91,10 +112,28 @@ def main():
     if len(bad) > 20:
         print(f"  ... and {len(bad) - 20} more")
 
+    print(f"\nALIASED seeds (identical 128-capsule buffer): {len(dupes)} group(s)")
+    for grp in dupes[:10]:
+        print(f"  seeds {grp} play the SAME game")
+    if len(dupes) > 10:
+        print(f"  ... and {len(dupes) - 10} more groups")
+
+    bad_set = {r["seed"] for r in bad}
+    # Canonical seed per alias group = the lowest; the rest are redundant work.
+    redundant = {s for grp in dupes for s in grp[1:]}
+    distinct_playable = len({k for k, v in streams.items()
+                             if v[0] not in bad_set})
+    print(f"\nDISTINCT PLAYABLE STREAMS: {distinct_playable}")
+    print(f"  = {n} seeds - {len(bad)} degenerate - {len(redundant)} aliased duplicate(s)")
+
     with open(a.out, "w") as f:
         json.dump({"min_colours": MIN_COLOURS,
                    "n_audited": n,
-                   "degenerate_seeds": [r["seed"] for r in bad],
+                   "degenerate_seeds": sorted(bad_set),
+                   "alias_groups": dupes,
+                   "redundant_seeds": sorted(redundant),
+                   "skip_seeds": sorted(bad_set | redundant),
+                   "distinct_playable_streams": distinct_playable,
                    "detail": bad}, f, indent=2)
     print(f"\nwrote {a.out}")
 

@@ -180,12 +180,38 @@ def main():
                                         "workers": a.workers, "chunk": a.chunk})
     print(f"[census] code manifest {rolled[:16]} -> {a.out}/manifest.json", flush=True)
 
+    # HALF THE SEED SPACE IS REDUNDANT. step_lfsr shifts s1 RIGHT, so the
+    # seed's LOW BIT is shifted out before it can influence any output -- seeds
+    # 2k and 2k+1 generate IDENTICAL 128-capsule buffers. Plus NesPillSource
+    # remaps (0,0) onto the ROM warm-boot seed, so 0 aliases 35208/35209.
+    # There are 32,767 DISTINCT playable streams, not 65,536 -- exactly the
+    # "all 32767 seeds" figure nes_pills.py's own docstring cites from the
+    # dmwit/dr-mario-ngrams prior art. Censusing 0..65535 does 2x the necessary
+    # work AND would ship duplicated pairs inside a result billed as
+    # exhaustive. audit_pill_streams.py computes this skip list exhaustively.
+    skip = set()
+    skip_path = os.path.join(HERE, "degenerate_seeds.json")
+    if os.path.exists(skip_path):
+        with open(skip_path) as f:
+            doc = json.load(f)
+        skip = set(doc.get("skip_seeds", []))
+        print(f"[census] skip list: {len(doc.get('degenerate_seeds', []))} degenerate "
+              f"+ {len(doc.get('redundant_seeds', []))} aliased duplicates = {len(skip)}; "
+              f"target {doc.get('distinct_playable_streams')} distinct streams",
+              flush=True)
+    else:
+        print(f"[census] ⚠ {skip_path} missing -- will census every seed, "
+              f"including ~32768 redundant aliases. Run audit_pill_streams.py.",
+              flush=True)
+
     done = load_done(census_path)
-    todo = [s for s in range(a.lo, a.hi) if s not in done]
-    total = a.hi - a.lo
-    print(f"[census] block {a.lo}..{a.hi - 1} ({total} seeds), "
-          f"{len(done)} already done, {len(todo)} to go, {a.workers} workers",
-          flush=True)
+    todo = [s for s in range(a.lo, a.hi) if s not in done and s not in skip]
+    total = len([s for s in range(a.lo, a.hi) if s not in skip])
+    done_canonical = len([s for s in done if s not in skip])
+    print(f"[census] block {a.lo}..{a.hi - 1} ({total} canonical seeds), "
+          f"{done_canonical} canonical already done "
+          f"({len(done) - done_canonical} redundant rows also on disk), "
+          f"{len(todo)} to go, {a.workers} workers", flush=True)
 
     t_start = time.monotonic()
     n_done_run = 0
@@ -231,7 +257,10 @@ def main():
             rate = n_done_run / elapsed if elapsed > 0 else 0.0
             remaining = len(todo) - n_done_run
             eta_h = remaining / rate / 3600 if rate > 0 else float("inf")
-            n_block = len(done) + n_done_run
+            # count only CANONICAL rows against the target -- earlier runs
+            # censused redundant aliases too, and including them would push the
+            # progress display past 100%.
+            n_block = done_canonical + n_done_run
             print(f"[census] {n_block}/{total} ({n_block / total:.1%})  "
                   f"chunk {len(rows)} in {dt:.1f}s  "
                   f"rate {rate:.2f} g/s  ETA {eta_h:.1f}h  "
