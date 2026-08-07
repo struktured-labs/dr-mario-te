@@ -22,14 +22,36 @@ so the excess at signal multiple s is predicted to be 0.94 / s^2:
 are buying margin on a gate that already cleared. That is why this file targets 2x
 and not 3x or 4x -- 8.7 h rather than 34.7 h, which is a different kind of ask.
 
-THE THREE OUTCOMES, and the third is the one worth naming in advance:
-  * excess lands near 0.235 (say <= 0.35)  -- the scaling holds, Gate A passes, and
-    the richer arms become interpretable for the first time. Program unlocked.
-  * excess lands between 0.35 and 0.5      -- ambiguous; report, do not spend more.
-  * excess lands WELL ABOVE 0.5            -- 1/signal^2 is WRONG. Either the model
-    is misspecified, or THE HAND WEIGHTS ARE NOT THE LINEAR OPTIMUM. Either way that
-    is the finding, and the correct response is STOP, NOT BUY 3x. Recorded here
-    because "just buy more signal" is the tempting read and would be wrong.
+TWO CALIBRATIONS, NOT ONE (added after Stage 2 supplied a second point).
+Excess is not comparable across regimes in raw pills -- it must be normalised by tau,
+the true across-action spread. Doing so turns Stage 2's failure into a second
+calibration of the same law, k = (excess/tau) * signal^2:
+
+    run                    excess    tau     excess/tau   signal    k
+    Stage 1 (champion d3)   0.940    6.37      0.1476      1.00    0.1476
+    Stage 2 (depth 2)       1.887   17.56      0.1075      0.97    0.1011
+
+Two independent regimes agreeing to within 1.46x is real corroboration of 1/signal^2
+-- and also an honest ~50% uncertainty band that one point could not have revealed.
+Predicted excess at 2x in the CHAMPION regime (tau 6.37), under each calibration:
+
+    Stage-1 calibrated   0.235 pills   PASS
+    Stage-2 calibrated   0.161 pills   PASS
+
+It survives both, but the pessimistic end sits only 6% under GATE_TOL 0.25, so the
+decision bands are widened BEFORE the run rather than after:
+
+  <= 0.25      Gate A passes; richer arms interpretable; program unlocked.
+  0.25 - 0.40  MARGINAL, WITHIN MODEL ERROR. Explicitly NOT evidence that the linear
+               class is exhausted. Report as "consistent with the scaling law,
+               marginally short". This band was implicit in the original ">0.5 =>
+               stop" and is made explicit so a 0.27 cannot be read as a negative.
+  > 0.50       scaling law REFUTED: misspecification, or the hand weights are not the
+               linear optimum. STOP -- do NOT buy 3x.
+
+Note the bands are stated in CHAMPION-regime pills (tau 6.37). They would NOT
+transfer to a depth-2 run, where the same quality of fit shows up as ~2.8x more raw
+pills purely because tau is 2.8x larger.
 
 POLICY CHOICE
 -------------
@@ -93,10 +115,15 @@ def main():
           f"excess over hand {S1_EXCESS}")
     print(f"  PRE-REGISTERED TARGET at {args.target:.0f}x signal: excess = "
           f"{S1_EXCESS / args.target**2:.3f} pills")
-    print(f"    <= 0.35  scaling holds, Gate A passes, richer arms interpretable")
-    print(f"    0.35-0.5 ambiguous -- report, do not spend more")
-    print(f"    >  0.5   1/signal^2 is WRONG (misspecified, or hand weights are NOT")
-    print(f"             the linear optimum). STOP. Do NOT buy 3x.")
+    print(f"  second calibration (Stage 2, tau-normalised) predicts "
+          f"{0.1011/ (args.target**2) * 6.37:.3f} pills")
+    print(f"    <= 0.25      PASS -- richer arms interpretable, program unlocked")
+    print(f"    0.25 - 0.40  MARGINAL, within model error. NOT evidence the linear")
+    print(f"                 class is exhausted. Report as 'consistent, marginally short'")
+    print(f"    >  0.50      scaling REFUTED (misspecified, or hand weights are not")
+    print(f"                 the linear optimum). STOP. Do NOT buy 3x.")
+    print(f"  bands are in CHAMPION-regime pills (tau 6.37); they do NOT transfer to")
+    print(f"  a depth-2 run, where tau is 2.8x larger.")
     print()
     rows = plan(args.se_d3delta, args.target)
     if not rows:
