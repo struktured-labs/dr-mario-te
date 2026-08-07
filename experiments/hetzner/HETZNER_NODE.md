@@ -27,9 +27,10 @@ sizing a job off "4 cores" will be ~40% optimistic. Use `--workers 4` anyway
 (0.583 > 0.507), but plan with 0.583 g/s.
 
 **Sustained rate: 0.583 games/sec** = 2,099/hour = ~50,000/day = **~1.5M
-champion games per month**. Concretely: a full 65,536-seed census of the entire
-16-bit seed space takes ~31 hours. The 32,768-seed half it is grinding now
-takes ~15.6 h.
+champion games per month**. Concretely: an exhaustive census of the entire
+reachable seed space — **32,767 distinct streams, not 65,536; see item 4
+below** — takes **~15.6 hours** uncontended. Enumerating 0..65535 naively would
+take ~31 h and half of it would be duplicate games.
 
 ## Does it compute the right answers?
 
@@ -154,11 +155,11 @@ Two defensible options:
 1. **Keep it, and keep it loaded.** Only justified if there is a standing queue
    of overnight jobs. There currently is (the full-space census, dose sweeps,
    and large-n replications of the project's chronic n=60 results). At ~1.5M
-   games/month it would deliver roughly **23 full 65,536-seed censuses per
+   games/month it would deliver roughly **46 exhaustive 32,767-seed censuses per
    month**, or a 4-arm paired experiment at n=10,000 every ~2.4 days. Three
    agents wanted it simultaneously tonight. If that demand is real and
    recurring, this is fine value.
-2. **Better: destroy it and rebuild per job.** Hetzner bills hourly. A ~31 h
+2. **Better: destroy it and rebuild per job.** Hetzner bills hourly. A ~15.6 h
    full-space census costs a couple of dollars of compute rather than a month
    of rent, and because the node needs **no RTL toolchain** — just python,
    numpy, numba and one rsync — `PROVISIONING.md` rebuilds it from a bare image
@@ -192,7 +193,7 @@ Hetzner API token and did not need it; the SSH key was sufficient.
 - Keep single-writer discipline on any appended results file (`census.py` takes
   an exclusive `flock`).
 - Have every long job **stamp its own provenance at start**:
-  `code_manifest.stamp(out_dir + "/manifest.json")`. A 31 h census outlives
+  `code_manifest.stamp(out_dir + "/manifest.json")`. A 15.6 h census outlives
   several edits to the tree it started from; without the stamp its rows cannot
   be tied to the code that produced them. This applies to LOCAL jobs too — two
   agents importing a module at different times have the same exposure.
