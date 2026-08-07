@@ -195,7 +195,48 @@ def main():
 
     print()
     print("=" * 78)
-    print("3. READING")
+    print("3. THE ACTION SET WAS ONLY A SAMPLE (a second reason this understates)")
+    print("=" * 78)
+    # Only ~10 of a position's ~30 legal actions were affordable to label: the hand
+    # eval's top 8 plus 2 drawn at random. An oracle over the FULL legal set is
+    # necessarily at least as good as one over a 10-action subset, so the measured
+    # gain understates it. Size that with an order statistic: for K exchangeable
+    # actions the expected maximum sits about a_K standard deviations above the
+    # mean, so widening 10 -> N_legal is worth roughly tau * (a_N - a_10).
+    #
+    # The exchangeability this leans on is not assumed, it is CHECKED: the two
+    # random non-contenders win as often as chance would give them (see
+    # "P(best is OUTSIDE hand top-K)" in stage1.py -- ~2/10 means the hand eval's
+    # top-8 ranking carries little information about which action is truly best).
+    # If that number were near zero, the contenders WOULD be special, this
+    # correction would not apply, and it says so below.
+    import random as _r
+    _g = _r.Random(12345)
+
+    def a_of(K, trials=40000):
+        return st.mean(max(_g.gauss(0, 1) for _ in range(K)) for _ in range(trials))
+
+    nlab = st.mean(len(r["acts"]) for r in recs if len(r["acts"]) >= 3)
+    nleg = st.mean(r.get("n_legal", len(r["acts"])) for r in recs if len(r["acts"]) >= 3)
+    tau = st.mean(taus) if taus else 0.0
+    a_lab, a_leg = a_of(int(round(nlab))), a_of(int(round(nleg)))
+    bump = tau * (a_leg - a_lab)
+    print(f"  actions labelled / legal          : {nlab:.1f} / {nleg:.1f}")
+    print(f"  a_K (expected max, sd units)      : {a_lab:.3f} -> {a_leg:.3f}")
+    print(f"  widening the action set is worth  : {bump:+.2f} pills")
+    out["action_set_bump"] = bump
+    if out.get("extrapolated") is not None:
+        out["oracle_full"] = out["extrapolated"] + bump
+        print(f"  ORACLE over the full legal set    : "
+              f"{out['extrapolated']:+.2f} {bump:+.2f} = "
+              f"{out['oracle_full']:+.2f} pills")
+    print("    ^ a normal-approximation ESTIMATE, not a measurement. Reported")
+    print("      because ignoring it would understate the headroom, which is just")
+    print("      as dishonest as the winner's curse overstating it.")
+
+    print()
+    print("=" * 78)
+    print("4. READING")
     print("=" * 78)
     if t is not None and out.get("extrapolated") is not None:
         print(f"  A perfect leaf is worth about {out['extrapolated']:+.1f} pills at a")
