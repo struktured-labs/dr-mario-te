@@ -1,0 +1,59 @@
+=== STAGE 2 RESULTS 2026-08-07T04:52:02-04:00  n=2934 ===
+labelled positions: 2934
+usable positions: 2919
+
+==============================================================================
+LABEL QUALITY -- the axis the gates do NOT sweep
+==============================================================================
+  per-label SE, naive           18.52   (Stage 1: 4.20)
+  per-label SE, CRN-corrected   15.62   (Stage 1: 3.31)
+  true across-action spread     17.56   (Stage 1: 6.37)
+  per-label SNR (tau / SE_crn)   1.12   (Stage 1: 1.93)
+
+  EFFECTIVE SIGNAL vs Stage 1 = sqrt(n2/n1) x (SE1/SE2)
+    positions 140 -> 2919  =  4.57x from count alone
+    net, naive basis   1.04x        net, CRN basis   0.97x
+  ^ this is the exchange rate the depth-2 move was betting on. If it is
+    ~4x or better, a GATE A failure means the linear class is genuinely
+    exhausted. If it is ~2x or worse, the position gain was eaten by
+    noisier labels and the next lever is MORE ROLLOUTS PER POSITION, not
+    more positions -- a different spend, and the gates cannot tell them
+    apart on their own.
+
+==============================================================================
+CALIBRATION GATE -- runs FIRST, and nothing downstream is computed if it fails
+==============================================================================
+  HAND weights, depth 2 (the bar)              +13.811 [+12.613,+15.009] n=2919 pills
+  fitted LINEAR over the same 11 terms         +15.698 [+14.481,+16.928] n=2919 pills
+  shuffled-target control                      +19.958 [+18.611,+21.267] n=2919 pills
+
+==============================================================================
+GATE B -- has the fit CONVERGED, or is it still label-limited?
+==============================================================================
+  linear/terms11 on 25% of training positions  +15.420 [+14.197,+16.638] n=2919 pills
+  linear/terms11 on 50% of training positions  +15.739 [+14.513,+16.983] n=2919 pills
+  linear/terms11 on 75% of training positions  +15.791 [+14.603,+17.024] n=2919 pills
+  linear/terms11 on 100% of training positions +15.698 [+14.481,+16.928] n=2919 pills
+
+  improvement over the last doubling: +0.093 pills
+  CONVERGED (plateau tolerance 0.15)
+
+  *** GATE FAILED -- NO CONCLUSIONS DRAWN, NO MODELS SCORED. ***
+
+  A fitted linear model over the eleven terms scores +15.698 against the
+  hand weights' +13.811 at the same depth on held-out positions. The
+  shipped eval IS a linear model over these features, so the fit has not
+  exhausted the class -- it is still label-limited. Per the rule this
+  harness enforces, a procedure that cannot reproduce a known-good
+  solution licenses no conclusion from failing to find a better one.
+
+  The richer arms are NOT run. Their numbers would be uninterpretable and
+  reporting them would repeat the Stage-1 error exactly.
+
+  WHICH LEVER -- read this off the effective-signal ratio above, not off
+  the gate outcome, because the gate alone cannot distinguish them:
+    ratio 0.97x: the 21x position gain was largely EATEN by noisier
+    depth-2 labels. This is label QUALITY, not quantity: the next lever
+    is MORE ROLLOUTS PER POSITION. More positions would not have helped.
+EXIT 2
+STAGE2 DONE 2026-08-07T04:53:10-04:00

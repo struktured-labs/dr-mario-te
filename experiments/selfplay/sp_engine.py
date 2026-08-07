@@ -156,7 +156,11 @@ def provenance():
     """
     import hashlib
     out = {}
-    for mod in (FX, RS, fb_mod, fast_sim_mod, terms_mod):
+    # sp_engine itself is included: it CONTAINS champ_root, so a manifest that
+    # hashed only the imported modules would miss a change to the champion decider
+    # -- the single most important thing on the decide path.
+    import sp_engine as _self
+    for mod in (FX, RS, fb_mod, fast_sim_mod, terms_mod, _self):
         f = getattr(mod, "__file__", None)
         if not f or not os.path.exists(f):
             continue
