@@ -119,6 +119,20 @@ DBG_OCC, DBG_VIR = 0x7C, 0x81
 # behaviour change and must be measured before it is proposed, not after.
 FIXSLOT = os.environ.get("DRCOPRO_TUCKV3_FIXSLOT", "0") == "1"
 
+# TUCK-ISOLATING CONTROL. Forces the candidate list empty at the top of
+# tuck_root_extension, so the loop falls straight through to tre_done: TK2_BKIND stays 0,
+# the descriptor publishes 0xFF, and D_BC/D_BO are left exactly as the base search wrote
+# them. It answers a question the 2x2 cannot. `fix_drop` is incoherent by construction,
+# so every tier-3-vs-base comparison so far measures TIER-3-PLUS-EXECUTOR AS A PACKAGE,
+# not tucks. If this image agrees with the base champion decision-for-decision, it
+# isolates the tuck contribution; if it does NOT, the tier-3 image diverges from base for
+# reasons that have nothing to do with tucks, and every tier-3-vs-base number in the
+# project inherits that.
+# ⚠ VALIDATE WITH decide_compare BEFORE SPENDING GAMES. That check cannot lose: either we
+# gain a validated control, or we find the divergence -- and the second outcome is the
+# more important one and costs one RTL decision per board instead of 55 games.
+NOSCAN = os.environ.get("DRCOPRO_TUCKV3_NOSCAN", "0") == "1"
+
 # orient (H/V/RH/RV) -> o4 (test_depth2.py's convention: 0-1 vertical, 2-3 horizontal).
 # Derivation + self-check: fpga/copro/tuck_validation/tuck_orient_map.py (qa-harness).
 O4_TABLE = [2, 1, 3, 0]      # index by H=0,V=1,RH=2,RV=3
@@ -648,6 +662,13 @@ def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
     a.raw(*O4_TABLE)
 
     a.label("tuck_root_extension")
+    if NOSCAN:
+        # Empty the candidate list the translate step just built. tre_loop's first
+        # compare (TP_IDX=0 vs TS_CNT=0) then fails BCC and jumps straight to tre_done,
+        # so nothing is scored, nothing commits, and D_BC/D_BO keep the base search's
+        # placement. Overriding TS_CNT here rather than skipping the enumerator keeps
+        # the change inside this file -- build_copro_d3.py is shared and stays untouched.
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", TS_CNT)
     a.ins("LDA_zp", D_BVL); a.ins("STA_zp", TK2_BBVL)
     a.ins("LDA_zp", D_BVH); a.ins("STA_zp", TK2_BBVH)
     a.ins("LDA_imm", 0); a.ins("STA_zp", TK2_BKIND)
