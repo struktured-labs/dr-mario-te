@@ -68,10 +68,19 @@ def _init(fw_dir, level, max_pills, exec_mode, mem_cap_bytes, pressure):
     _W["exec_mode"] = exec_mode
     _W["pressure"] = pressure
     if pressure == "bursty":
-        # Fitted once per worker from the project's own footage-derived volley model.
-        # Draws are keyed on (seed, pills_placed), so pairing across arms survives.
-        import bursty_model
-        m = bursty_model.fit_struktured_20260804()
+        # bursty **v1.1**, NOT v1. `fit_struktured_20260804()` is the POOL-CONTAMINATED
+        # fit: BURSTY_V1_RESULTS.md §5 shows 33 of its 61 volleys were the AI copro's own
+        # sending events rather than struktured's, and the AI's attack is a
+        # near-deterministic ROM rule -- so pooling drags the model toward faster, more
+        # reliable attack than an honest human-only fit supports (inter-volley gap 22.7s
+        # vs 27.4s; P(volley | clear 7-10 cells) 74.1% vs 62.5%). v1 must not be used for
+        # absolute rates.
+        #
+        # build_v1_1() re-fits per-player from v1's own live `raw_events`, so it must run
+        # BEFORE the meta-strip below -- the strip deletes the very field it needs.
+        # Draws stay keyed on (seed, pills_placed), so pairing across arms survives.
+        import run_bursty_v1_1_validity as V11
+        m = V11.build_v1_1()
         m.meta = {k: v for k, v in m.meta.items() if k != "raw_events"}
         _W["model"] = m
     else:
@@ -126,8 +135,25 @@ def main():
     done = load_done(a.out, a.arm)
     todo = [s for s in seeds if s not in done]
 
+    # CODE MANIFEST. The co-sim binary and its firmware are a SNAPSHOT -- on a remote node
+    # they are whatever was last scp'd. If either drifts and the copy does not, the run
+    # produces a clean, confident, WRONG A/B with no symptom (hetzner-node hit exactly this
+    # class: a source file edited 12 minutes after a sync, detected only by a hash on one
+    # field of one rare seed). Stamping the artifact hashes into every row means any result
+    # can be tied back to the binaries that produced it, after the fact.
     import hashlib
-    fw_md5 = hashlib.md5(open(os.path.join(a.fw, "copro_rom.hex"), "rb").read()).hexdigest()
+
+    def _md5(p):
+        return hashlib.md5(open(p, "rb").read()).hexdigest()
+
+    fw_md5 = _md5(os.path.join(a.fw, "copro_rom.hex"))
+    manifest = {"farm_vsim": _md5(FARM_BIN), "copro_rom_hex": fw_md5}
+    for _src in ("game.py", "cosim.py", "run_farm.py"):
+        manifest[_src] = _md5(os.path.join(HERE, _src))
+    manifest["rolled"] = hashlib.sha256(
+        "".join(f"{k}={manifest[k]}" for k in sorted(manifest)).encode()).hexdigest()[:16]
+    print("code manifest: " + "  ".join(f"{k}={v[:8]}" for k, v in manifest.items()),
+          flush=True)
     print(f"arm={a.arm} fw={fw_md5} exec={a.exec_mode} pressure={a.pressure} "
           f"level={a.level} seeds {seeds[0]}..{seeds[-1]} "
           f"({len(todo)} to run, {len(done)} already done) "
@@ -149,6 +175,9 @@ def main():
                 r = {"seed": s, "result": "ERROR", "error": repr(e)[:400]}
             r["arm"] = a.arm
             r["fw_md5_expected"] = fw_md5
+            r["manifest"] = manifest["rolled"]
+            r["bin_md5"] = manifest["farm_vsim"]
+            r["pressure_model"] = "bursty_v1.1" if a.pressure == "bursty" else "clean"
             fh.write(json.dumps(r) + "\n")
             fh.flush()
             n += 1
