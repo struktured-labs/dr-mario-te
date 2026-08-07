@@ -22,7 +22,11 @@ for attempt in $(seq 1 200); do
     # would let a "BLOCK COMPLETE" left over from a previous, differently-ranged
     # run end the loop before the current block finished.
     marker=$(mktemp)
-    "$PY" "$BASE/census.py" --lo 0 --hi 65536 --workers 4 --chunk 200 \
+    # nice 10: the census is a multi-day background grind and must yield to the
+    # shorter, time-sensitive experiments sharing this 2-core box. Applied here
+    # rather than by `renice` so it survives a systemd restart, and inherited by
+    # every worker the pool forks.
+    nice -n 10 "$PY" "$BASE/census.py" --lo 0 --hi 65536 --workers 4 --chunk 200 \
         --out "$OUT" 2>&1 | tee -a "$LOG" | tail -5 > "$marker"
     rc=${PIPESTATUS[0]}
     if grep -q "BLOCK COMPLETE" "$marker"; then
