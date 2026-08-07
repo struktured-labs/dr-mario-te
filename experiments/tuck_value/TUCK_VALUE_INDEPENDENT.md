@@ -469,17 +469,30 @@ reconvergence is only scored while both games are live), the superseded outputs 
 generic one: **a paired rig that silently scores an unfinished game as a loss will invent
 whatever effect makes its reference finish first.**
 
-### Whether anything washes out — pending re-measurement
+### Nothing ever washes out — for anything
 
-The first run put "never reconverges" at 98.0% for tucks and 92.3% for the control, i.e.
-exact board equality is essentially never restored after *any* perturbation. That statistic is
-less exposed to the truncation defect than the outcome numbers were (both branches were
-measured over the same window) but it is not immune — a shortened window can only *increase* an
-apparent never-reconverges rate — so it is being re-measured too and is not quoted as a result
-here. The qualitative claim it supports, if it survives, is worth stating in advance because it
-cuts against the premise of the question: if nothing ever washes out, then persistence is not
-evidence of value either, and "the effect lasted N pills" measures the game's chaos rather than
-the maneuver.
+Re-measured with the loop fixed (0 unfinished branches of 298, against 253 before), clean
+stream, n=300:
+
+| branch | never reconverges with the reference | when it does |
+|---|---|---|
+| **T** tuck executed | **292/298 (98.0%)** | median 2 pills (n=6) |
+| **C** second-best base drop | 275/298 (92.3%) | median 1 pill (n=23) |
+
+Both figures are **identical to the pre-fix run**, which is the expected result — reconvergence
+was scored while both games were live, so it was the one statistic the truncation could not
+reach. Exact board equality is essentially never restored after *any* perturbation.
+
+**This inverts the premise of the question.** The worry was that a maneuver might improve the
+board for three pills and then wash out, making per-placement statistics overstate its worth.
+In this game nothing washes out — placements are permanent — so that particular discount does
+not apply. The corollary is the one to carry forward: because *nothing* washes out, persistence
+is not evidence of value either, and any "the effect was still visible N pills later" claim
+measures the game's chaos rather than the maneuver.
+
+The fixed run also cross-validates the two rigs. Both now put the reference branch at **37.2%**
+and the control at **39.3%** — identical to three significant figures, on the same seeds
+through independently written game loops.
 
 ---
 
