@@ -35,11 +35,12 @@ echo "GUARD PASS: DBGPUB=0 is byte-identical to the shipped s20t3 image"
 
 build dbg_pub1 1
 build dbg_pub2 2
+build dbg_pub3 3
 
 # The debug images must NOT collide with the control -- an identical hash here is the
 # signature of the emit not reaching the image at all, which is exactly how the
 # cross-worktree tuck_v3 import first showed itself.
-for a in dbg_pub1 dbg_pub2; do
+for a in dbg_pub1 dbg_pub2 dbg_pub3; do
   h=$(md5sum "$FW/$a/copro_rom.hex" | cut -c1-8)
   [ "$h" != "$CTL" ] || { echo "GUARD FAILED: $a is identical to the control ($h)"; exit 5; }
 done
