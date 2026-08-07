@@ -219,3 +219,66 @@ threshold looks like (which would monotonically starve tucks).
 Fix order: the overflow first (it admits the no-ops), the EH one-liner second
 (it restores the intended firing rate). Fixing EH alone would make tucks fire
 *less* while still admitting bad ones.
+
+---
+
+# CLOSED: the cause is SPURIOUS WIN-SCORING of tuck candidates
+
+**Overflow is REFUTED by direct measurement.** A debug firmware read the actual
+gate operands off 30 boards (co-sim lane):
+
+```
+base (gate reference)      : 1184 .. 5963
+best tuck candidate value  : 30000 / 30040 / 30400      <- WIN sentinel = 30000
+base + theta, theta=150    : 1334 .. 6113      no wrap
+base + theta, theta=20000  : 21184 .. 25963    no wrap   (int16 limit 32767)
+```
+
+Nothing approaches the 16-bit boundary at any θ tested. **The overflow hazard is
+real in the code and is not what is happening.**
+
+**The firmware scores tuck candidates AT THE WIN SENTINEL.** Every candidate
+reaching the gate is valued as if the position were already won, against a base
+of 1184-5963 — a margin of ~25,000. That is why θ was inert below ~24,000, and
+why a threshold of 150 is cleared trivially by everything, no-ops included.
+
+```
+firmware scores tuck candidates as WIN (spurious)
+  -> every candidate clears the gate by ~25,000
+  -> no-ops are selected freely (they tie at the sentinel)
+  -> the root-placement overwrite faithfully enacts them
+  -> arm D collapses
+```
+
+## What this lane's 4.9% contributed, and what it did not
+
+**Contributed — it is the control.** Same candidates, same eval, same gate,
+**correct scoring** → no-ops fall to 2/41 = 4.9% against silicon's 16/31 = 52%.
+That isolates the defect to **the value assigned to a tuck candidate** rather
+than to the set, the ranking, the execution, the overwrite, or the arithmetic.
+
+**⚠ Did NOT — the 64/64 "publishes best-in-set" result licenses less than it
+appeared to.** It was computed in THIS model, where candidate values are on the
+ordinary eval scale, so it is a valid statement about **the EH term's effect on
+ranking** (the EH omission does not disturb the argmax). It is **not** a
+statement about what the firmware actually selects, because the firmware's
+values are pinned at 30000/30040/30400 — near-ties on a sentinel, where "best"
+is close to meaningless. Scope error to avoid repeating: a model that omits the
+defect cannot certify the component the defect lives in.
+
+## Final table
+
+| component | status |
+|---|---|
+| candidate SET | **better** than the proof enumerator (p=2e-4) |
+| SELECTION rank under correct scoring | clean (64/64) — but see the caveat above |
+| EH omission | **real**, effective θ ≈ 387 vs 150; suppresses HOW OFTEN tucks fire |
+| θ gate arithmetic / 16-bit overflow | **REFUTED** — operands measured, no wrap at any tested θ |
+| **tuck candidate VALUE** | **THE CAUSE — spurious WIN-sentinel scoring** |
+| execution | clean (n_incoherent = 0 / 881) |
+| root-placement overwrite | delivery mechanism, not cause |
+
+**FIX ORDER (unchanged, and still counterintuitive): the WIN-scoring defect
+FIRST, the EH one-liner SECOND.** EH alone makes tucks fire *less* while still
+admitting bad ones — applied out of order it would read as a regression and be
+misread as "tucks don't help".
