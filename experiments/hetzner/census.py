@@ -180,38 +180,42 @@ def main():
                                         "workers": a.workers, "chunk": a.chunk})
     print(f"[census] code manifest {rolled[:16]} -> {a.out}/manifest.json", flush=True)
 
-    # HALF THE SEED SPACE IS REDUNDANT. step_lfsr shifts s1 RIGHT, so the
-    # seed's LOW BIT is shifted out before it can influence any output -- seeds
-    # 2k and 2k+1 generate IDENTICAL 128-capsule buffers. Plus NesPillSource
-    # remaps (0,0) onto the ROM warm-boot seed, so 0 aliases 35208/35209.
-    # There are 32,767 DISTINCT playable streams, not 65,536 -- exactly the
-    # "all 32767 seeds" figure nes_pills.py's own docstring cites from the
-    # dmwit/dr-mario-ngrams prior art. Censusing 0..65535 does 2x the necessary
-    # work AND would ship duplicated pairs inside a result billed as
-    # exhaustive. audit_pill_streams.py computes this skip list exhaustively.
+    # ⚠ DO NOT SKIP ALIASED SEEDS HERE -- an earlier revision did, and it
+    # HALVED COVERAGE instead of removing duplicates.
+    #
+    # True: seeds 2k and 2k+1 share a 128-capsule stream, because step_lfsr
+    # shifts the seed's low bit out before it can reach the feedback. The ROM
+    # STREAM space really is 32,767, not 65,536.
+    # NOT true: that they are the same GAME *in this harness*. play_seed builds
+    # FaithfulDrMarioEnv(seed=seed), whose VIRUS LAYOUT is drawn from
+    # numpy.default_rng(seed); NesPillSource.attach replaces only `_rand_pill`.
+    # A twin pair therefore shares its pills and plays a DIFFERENT BOARD.
+    # Measured on this census's own rows: **292 of 299** twin pairs reached
+    # different outcomes.
+    #
+    # The 32,767 figure remains correct as a COVERAGE DENOMINATOR for anything
+    # enumerating ROM streams; it is simply not a deduplication rule for a
+    # numpy-seeded-board harness. Only genuinely unplayable seeds are skipped
+    # here -- those whose stream cannot deliver three colours (exactly one,
+    # seed 1), which are non-games under ANY board.
     skip = set()
     skip_path = os.path.join(HERE, "degenerate_seeds.json")
     if os.path.exists(skip_path):
         with open(skip_path) as f:
             doc = json.load(f)
-        skip = set(doc.get("skip_seeds", []))
-        print(f"[census] skip list: {len(doc.get('degenerate_seeds', []))} degenerate "
-              f"+ {len(doc.get('redundant_seeds', []))} aliased duplicates = {len(skip)}; "
-              f"target {doc.get('distinct_playable_streams')} distinct streams",
-              flush=True)
-    else:
-        print(f"[census] ⚠ {skip_path} missing -- will census every seed, "
-              f"including ~32768 redundant aliases. Run audit_pill_streams.py.",
+        skip = set(doc.get("degenerate_seeds", []))
+        print(f"[census] skipping {len(skip)} degenerate seed(s) (unplayable "
+              f"stream). Aliased seeds are NOT skipped -- this harness draws "
+              f"viruses from numpy(seed), so twins are different boards.",
               flush=True)
 
     done = load_done(census_path)
     todo = [s for s in range(a.lo, a.hi) if s not in done and s not in skip]
     total = len([s for s in range(a.lo, a.hi) if s not in skip])
     done_canonical = len([s for s in done if s not in skip])
-    print(f"[census] block {a.lo}..{a.hi - 1} ({total} canonical seeds), "
-          f"{done_canonical} canonical already done "
-          f"({len(done) - done_canonical} redundant rows also on disk), "
-          f"{len(todo)} to go, {a.workers} workers", flush=True)
+    print(f"[census] block {a.lo}..{a.hi - 1} ({total} playable seeds), "
+          f"{done_canonical} already done, {len(todo)} to go, "
+          f"{a.workers} workers", flush=True)
 
     t_start = time.monotonic()
     n_done_run = 0
