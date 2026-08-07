@@ -89,7 +89,7 @@ def cmd_extract(args):
     v1 = np.empty(NCELL, dtype=np.int8)
     base = np.empty(FX.NBASE, dtype=np.int64)
 
-    rows_pos, rows_act, rows_ts, rows_tr = [], [], [], []
+    rows_pos, rows_act, rows_ts, rows_tr, rows_win = [], [], [], [], []
     checked = mismatch = 0
     for r in recs:
         i = r["idx"]
@@ -106,16 +106,32 @@ def cmd_extract(args):
             # terms of the board THE SEARCH believes it reaches
             FX._base_scan(c1, v1, fl, base)
             ts = base[:FX.NT].astype(np.int64).copy()
-            # SELF-CHECK: recombining must reproduce the leaf value recorded at
-            # labelling time. Asserts the numbers, not that the call returned.
-            recomb = int(FX._combine_terms(ts, w))
-            rec_leaf = int(r["leaf_search"][str(a)])
+            # TERMINAL WINS ARE NOT LINEAR-EVAL BOARDS. _leafv_ship short-circuits
+            # to _WIN_SHIP when the placement clears the last virus, so those rows
+            # carry a sentinel, not a score the eval's weights produced. Folding
+            # them into the regression would fit 11 board features to the constant
+            # 30000 and quietly corrupt every coefficient. They are flagged here
+            # and dropped from the fit; the depth-3 policy still handles them
+            # correctly, because champ_root goes through _leafv_ship too.
+            # (Found by this self-check, not by inspection.)
+            win = int(FX._virus_count(v1) == 0)
             checked += 1
-            if recomb != rec_leaf:
-                mismatch += 1
-                if mismatch <= 3:
-                    print(f"  TERM MISMATCH idx={i} a={a} "
-                          f"recombined={recomb} recorded={rec_leaf}")
+            if win:
+                if int(r["leaf_search"][str(a)]) != int(FX._WIN_SHIP):
+                    mismatch += 1
+                    if mismatch <= 3:
+                        print(f"  WIN SENTINEL MISMATCH idx={i} a={a} "
+                              f"recorded={r['leaf_search'][str(a)]}")
+            else:
+                # SELF-CHECK: recombining must reproduce the leaf value recorded at
+                # labelling time. Asserts the numbers, not that the call returned.
+                recomb = int(FX._combine_terms(ts, w))
+                rec_leaf = int(r["leaf_search"][str(a)])
+                if recomb != rec_leaf:
+                    mismatch += 1
+                    if mismatch <= 3:
+                        print(f"  TERM MISMATCH idx={i} a={a} "
+                              f"recombined={recomb} recorded={rec_leaf}")
             # terms of the board the REAL sim reaches (full cascade)
             E.attach_stream(env, 1)
             E.set_board(env.board, col, vir, link)
@@ -131,6 +147,7 @@ def cmd_extract(args):
             rows_act.append(a)
             rows_ts.append(ts)
             rows_tr.append(tr)
+            rows_win.append(win)
 
     print(f"self-check: {checked} boards, {mismatch} term mismatches "
           f"-> {'PASS' if mismatch == 0 else 'FAIL'}")
@@ -140,7 +157,8 @@ def cmd_extract(args):
                         pos=np.array(rows_pos, dtype=np.int64),
                         act=np.array(rows_act, dtype=np.int64),
                         terms_search=np.stack(rows_ts),
-                        terms_real=np.stack(rows_tr))
+                        terms_real=np.stack(rows_tr),
+                        win=np.array(rows_win, dtype=np.int64))
     print(f"wrote {args.out}  ({len(rows_pos)} labelled boards)")
     return 0
 
@@ -238,6 +256,7 @@ def cmd_fit(args):
     f = np.load(args.feats)
     pos, act = f["pos"], f["act"]
     T = f["terms_real" if args.real else "terms_search"].astype(np.float64)
+    WIN = f["win"] if "win" in f else np.zeros(len(pos), dtype=np.int64)
 
     recs = {r["idx"]: r for r in (json.loads(l) for l in open(args.labels))}
     CENSOR = 200.0
@@ -271,7 +290,9 @@ def cmd_fit(args):
     print(f"usable positions {len(blocks)}")
 
     # ---- cross-validated linear fit ------------------------------------------
+    import stage1 as _S1
     rng = random.Random(args.seed)
+    split_rng = random.Random(args.seed + 1)
     order = list(range(len(blocks)))
     rng.shuffle(order)
     folds = [order[i::args.folds] for i in range(args.folds)]
@@ -290,6 +311,11 @@ def cmd_fit(args):
         for b in train:
             ft = T[b["rows"]]
             tv = np.array([st.mean(v) for v in b["vals"]])
+            keep = WIN[b["rows"]] == 0        # terminal wins carry a sentinel leaf
+            if keep.sum() < 3:
+                continue
+            ft = ft[keep]
+            tv = tv[keep]
             X.append(ft - ft.mean(axis=0))
             y.append(tv - tv.mean())
         X = np.vstack(X)
@@ -322,10 +348,14 @@ def cmd_fit(args):
                 continue
             ih = acts.index(b["hand"])
 
-            # split-sample oracle (same ruler as stage1.py)
-            iA = int(np.argmax(vA))
-            iB = int(np.argmax(vB))
-            reg_oracle.append(((vB[iA] - vB[ih]) + (vA[iB] - vA[ih])) / 2.0)
+            # Split-sample oracle on the SAME ruler stage1.py now uses: averaged
+            # over many random selection/evaluation partitions rather than one
+            # fixed half/half, which on this data moved the estimate by >2 pills
+            # purely through split luck. H_linear and H_total must be measured the
+            # same way or their difference is meaningless.
+            vd = {a: b["vals"][k] for k, a in enumerate(acts)}
+            reg_oracle.append(_S1._split_regret(vd, acts, b["hand"],
+                                                 split_rng, args.splits))
 
             # depth-3 search with the REFIT leaf. Its argmax is restricted to the
             # LABELLED actions -- only those have a value to score against, and the
@@ -400,6 +430,8 @@ def main():
     g.add_argument("--ridge", type=float, default=1.0)
     g.add_argument("--seed", type=int, default=11)
     g.add_argument("--corpus", default="out/corpus.npz")
+    g.add_argument("--splits", type=int, default=100,
+                   help="random selection/evaluation partitions averaged per position")
     g.add_argument("--real", action="store_true",
                    help="use terms of the REAL post-cascade board instead of the "
                         "board the search believes it reaches")
