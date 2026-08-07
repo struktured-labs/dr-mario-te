@@ -156,6 +156,44 @@ def fit_mlp(X, y, hidden=64, epochs=600, lr=0.02, lam=1e-4, seed=0):
     return lambda Z: (np.tanh(Z @ W1 + b1) @ W2 + b2).ravel()
 
 
+
+# Stage-1 reference values, for the like-for-like comparison below.
+S1_N = 140
+S1_SE_NAIVE = 4.202      # stage1.py  "MC noise: se per action"
+S1_SE_CRN = 3.309        # stage1_denoise.py  "MC noise sd (CRN-corrected)"
+S1_TAU = 6.373           # stage1_denoise.py  "TRUE action-value sd (tau)"
+
+
+def label_noise(blocks):
+    """Per-label noise and the TRUE across-action spread, on both bases.
+
+    THE AXIS THE GATES DO NOT SWEEP. Gates B and C vary the number of POSITIONS --
+    label QUANTITY. Neither varies ROLLOUTS PER POSITION -- label QUALITY. A flat
+    learning curve therefore rules out "more positions would help" but says nothing
+    about "better labels would help", and at fixed per-label noise the coefficient
+    error falls only as 1/sqrt(n): over the 4x range the curve spans that is a 2x
+    reduction, easily lost inside the wobble. So "converged" and "noise-limited on
+    the unswept axis" are INDISTINGUISHABLE from what the gates collect.
+
+    This makes the missing axis visible. Moving to depth 2 traded label quality for
+    label quantity, and the exchange rate was unknown when I proposed it; the
+    effective-signal ratio below is that exchange rate, measured.
+    """
+    naive, crn, taus = [], [], []
+    for b in blocks:
+        M = b["M"]
+        V = np.array([b["vals"][a] for a in b["acts"]], dtype=np.float64)  # (K, M)
+        if V.shape[0] < 2 or M < 2:
+            continue
+        naive.append(math.sqrt(V.var(axis=1, ddof=1).mean() / M))
+        d = V - V.mean(axis=0, keepdims=True)     # centre each stream on its own mean
+        within = d.var(axis=1, ddof=1).mean()
+        between = d.mean(axis=1).var()
+        crn.append(math.sqrt(within / M))
+        taus.append(math.sqrt(max(0.0, between - within / M)))
+    return naive, crn, taus
+
+
 def load(args):
     import sp_engine as E
     import fast_rtl_x as FX
@@ -339,6 +377,30 @@ def main():
 
     print()
     print("=" * 78)
+    print("LABEL QUALITY -- the axis the gates do NOT sweep")
+    print("=" * 78)
+    nz, cz, tz = label_noise(blocks)
+    se_n = st.mean(nz); se_c = st.mean(cz); tau = st.mean(tz)
+    print(f"  per-label SE, naive          {se_n:6.2f}   (Stage 1: {S1_SE_NAIVE:.2f})")
+    print(f"  per-label SE, CRN-corrected  {se_c:6.2f}   (Stage 1: {S1_SE_CRN:.2f})")
+    print(f"  true across-action spread    {tau:6.2f}   (Stage 1: {S1_TAU:.2f})")
+    print(f"  per-label SNR (tau / SE_crn) {tau/se_c:6.2f}   "
+          f"(Stage 1: {S1_TAU/S1_SE_CRN:.2f})")
+    print()
+    rn = math.sqrt(T["P"] / S1_N) * (S1_SE_NAIVE / se_n)
+    rc = math.sqrt(T["P"] / S1_N) * (S1_SE_CRN / se_c)
+    print(f"  EFFECTIVE SIGNAL vs Stage 1 = sqrt(n2/n1) x (SE1/SE2)")
+    print(f"    positions {S1_N} -> {T['P']}  =  {math.sqrt(T['P']/S1_N):.2f}x from count alone")
+    print(f"    net, naive basis  {rn:5.2f}x        net, CRN basis  {rc:5.2f}x")
+    print("  ^ this is the exchange rate the depth-2 move was betting on. If it is")
+    print("    ~4x or better, a GATE A failure means the linear class is genuinely")
+    print("    exhausted. If it is ~2x or worse, the position gain was eaten by")
+    print("    noisier labels and the next lever is MORE ROLLOUTS PER POSITION, not")
+    print("    more positions -- a different spend, and the gates cannot tell them")
+    print("    apart on their own.")
+
+    print()
+    print("=" * 78)
     print("CALIBRATION GATE -- runs FIRST, and nothing downstream is computed if it fails")
     print("=" * 78)
     h = line("  HAND weights, depth 2 (the bar)", hand)
@@ -383,7 +445,21 @@ def main():
         print()
         print("  The richer arms are NOT run. Their numbers would be uninterpretable and")
         print("  reporting them would repeat the Stage-1 error exactly.")
-        print(f"  Next lever: more labelled positions (currently {T['P']}).")
+        print()
+        print("  WHICH LEVER -- read this off the effective-signal ratio above, not off")
+        print("  the gate outcome, because the gate alone cannot distinguish them:")
+        if rc >= 3.5:
+            print(f"    ratio {rc:.2f}x: this run carried MUCH more effective signal than")
+            print("    Stage 1 and STILL could not reach the hand weights. That points at")
+            print("    the linear class being genuinely exhausted -- i.e. the hand weights")
+            print("    are near-optimal in it -- rather than at the label budget.")
+        elif rc >= 2.0:
+            print(f"    ratio {rc:.2f}x: a real but modest signal gain. AMBIGUOUS. Neither")
+            print("    'class exhausted' nor 'label-limited' is supported over the other.")
+        else:
+            print(f"    ratio {rc:.2f}x: the 21x position gain was largely EATEN by noisier")
+            print("    depth-2 labels. This is label QUALITY, not quantity: the next lever")
+            print("    is MORE ROLLOUTS PER POSITION. More positions would not have helped.")
         return 2
 
     if not converged:
