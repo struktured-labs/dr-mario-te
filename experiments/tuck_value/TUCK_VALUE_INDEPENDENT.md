@@ -11,16 +11,18 @@ still running; this document is updated in place as they land.
 
 ## The answer, in one paragraph
 
-**Executing tucks is worth a lot at a small dose and is fatal at the dose the tier-3 firmware
-actually delivers.** At this rig's firing rate — a tuck on 5.7% of decisions — the full program
-beats the shipped champion by **−6.50 points of bad-end rate [−11.25, −1.75], p=0.0088**, and
-clears 26 pills faster. The real firmware fires on **38%** of decisions, six times more often,
-and at that dose the co-sim farm's RTL has it losing **17 of 17 games**. So the honest answer
-to "is a cart rebuild worth it" is: **not against `s20t3` as it is built today.** The θ gate
-has to be retuned upward first, and that retune has to be confirmed on the co-sim before
-anything touches hardware. Neither rig could have reached that conclusion alone — see
-[the disagreement](#the-disagreement-that-matters-and-what-it-costs), which is the most
-important section here.
+**In this rig the tuck executor is clearly worth having, and the more it fires the better; on
+the co-sim's real RTL the same configuration loses every game. That contradiction is unresolved
+and it blocks the rebuild.** Here, the full program beats the shipped champion by **−6.50
+points of bad-end rate [−11.25, −1.75], p=0.0088** and clears 26 pills faster, and nearly
+tripling the firing rate improves it further (−8.75 points, p=0.0003). The co-sim, running the
+real firmware at a 6× higher firing rate, has arm D at **0 of 17 games cleared**. I proposed
+that the fire-rate gap was the explanation — tucks good in small doses, fatal in large ones —
+and then my own θ sweep refuted it. **So: do not commit hands to a cart rebuild yet.** The
+discriminating experiment is one extra firmware arm on the co-sim and is described in
+[the disagreement](#the-disagreement-that-matters-and-what-it-costs), the most important
+section here. What *is* settled, by both rigs independently, is that tier-3 firmware must never
+ship to a cart without the executor.
 
 ---
 
@@ -94,9 +96,11 @@ within-seed paired.
 | **C − A** v1 executor | 19.2% → 26.2% | **+0.070 [+0.018, +0.123]** | 46 vs 74, p=0.013 | **+12.70 [+5.3, +20.0]** (n=249) |
 | **B − A** tier-3 today | 19.2% → 80.8% | +0.615 [+0.560, +0.670] | 13 vs 259, p=1.5e−60 | +28.25 [+11.3, +44.8] (n=64) |
 
-**Dies-ahead moved on no arm.** Every dies-ahead CI includes zero (D − A: −0.003
-[−0.048, +0.040]). The executor changes whether games are lost, not the signature of how they
-are lost. Anyone citing this work for a dies-ahead claim is citing it wrongly.
+**Dies-ahead moved on no arm at θ=150.** Every dies-ahead CI in the table above includes zero
+(D − A: −0.003 [−0.048, +0.040]). At this dose the executor changes whether games are lost, not
+the signature of how they are lost. The one exception anywhere in this study is arm D at θ=0,
+where the dose is 2.8× higher and dies-ahead does move (11.0% → 6.5%, −4.5 points
+[−8.25, −0.75]) — see the θ sweep below.
 
 ### Clean stream — speed (L11, n=400, θ=150)
 
@@ -341,26 +345,48 @@ after the θ compare falls through to `tre_gok` (lines 629-661). A published tie
 co-sim's 38% is the rate at which the real firmware wins its own gate, and this rig's 5.7% is
 the rate at which it wins mine.
 
-### What that implies, and it is actionable
+### The obvious explanation — dose — is REFUTED by this rig's own θ sweep
 
-- **This rig's arm D is under-dosed by ~6×.** Its positive result describes an executor firing
-  on 5.7% of decisions. It is not a prediction for `s20t3` as built.
-- **The co-sim's arm D is the firmware-true dose, and at that dose the program fails** — 0/17,
-  which against an 86% clear rate would be a probability of about 10⁻¹⁴. This is a real
-  disagreement, not sampling noise.
-- **Both arm-B results move the same way for the same reason.** The RTL corrupts steering on
-  36% of decisions and dies at 45 pills; this rig corrupts 11.5% and dies at 121. One parameter
-  explains both discrepancies in both arms, in the right direction and roughly the right
-  magnitude. That coherence is why the diagnosis is credible.
-- **Therefore: tucks appear to help at low dose and to be fatal at high dose.** The deliverable
-  is not "ship it" or "kill it" but **retune θ upward and re-measure on the co-sim**. This rig
-  cannot find the right θ itself: even at θ=0 only 20% of its decisions have a tuck that beats
-  the best base at all, so its scale cannot reach the firmware's 38%. The gate has to be tuned
-  in firmware units, on the co-sim, against fire rate — not by copying a constant across two
-  eval chains that do not share a scale.
+The natural reading of the fire-rate gap is a dose-response: tucks help in small doses and are
+fatal in large ones, so the RTL's 38% poisons a build that this rig's 5.7% improves. **I
+published that explanation, and then tested it, and it is wrong.**
 
-That last point is the thing neither rig produces alone, and it is worth more than either arm-D
-number.
+The θ sweep varies this rig's own dose. Arm D against the shipped champion, bursty v1.1, n=400
+paired:
+
+| θ | fires / decision | fires / game | bad ends | **D − A** bad-end rate | McNemar |
+|---|---|---|---|---|---|
+| 150 | 5.7% | 7.24 | 56/400 (14.0%) | −5.25 pts [−10.0, −0.8] | 57 vs 36, p=0.038 |
+| **0** | **16.2%** | **20.52** | **42/400 (10.5%)** | **−8.75 pts [−13.5, −4.3]** | **63 vs 28, p=0.0003** |
+
+**Nearly tripling the dose makes the program better, not worse**, on every axis at once — bad
+ends, stalls (28 → 14, p=0.038), topouts (49 → 28, p=0.013) and dies-ahead (11.0% → 6.5%,
+−4.5 points [−8.25, −0.75], which is the *only* arm anywhere in this study where dies-ahead
+moves at all). Over the range this rig can reach, more tucks is monotonically better. Nothing
+about that trend predicts a collapse at 38%.
+
+So the dose hypothesis does not survive contact with the data, and the disagreement with the
+co-sim on arm D **remains open**. What is left:
+
+- the RTL may be *selecting* materially worse tucks than this rig does, rather than more of
+  them — a quality difference, not a quantity one;
+- the co-sim's tuck-execution path may have a defect that its `n_illegal` / `n_incoherent`
+  counters do not catch;
+- or this rig's tuck execution is too generous in a way its own gates did not catch, though
+  `_place_cells ≡ env.step` (1,992 placements, 0 mismatches) rules out the most likely form of
+  that.
+
+**The discriminating experiment is cheap and belongs on the co-sim**, and its rationale is now
+the opposite of what I first suggested: build one arm with `DRCOPRO_TUCKV3_THETA` raised so the
+RTL fires on ~6–16% of decisions and run it in tuck mode. If arm D recovers, dose matters in
+their rig even though it does not in mine, and the gate is the answer after all. **If arm D
+fails at every dose, it is not dose at all** — it is selection quality or a defect, and the
+next step is a direct comparison of *which* placement each rig picks on identical boards, which
+their `decide_compare` harness can already produce.
+
+What survives from this section unchanged: **arm B agrees across both rigs and both are
+catastrophic**, and the fire-rate gap itself is real and worth fixing regardless of what it
+does or does not explain.
 
 ---
 
