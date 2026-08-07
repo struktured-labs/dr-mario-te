@@ -45,7 +45,8 @@ FIXED_TUCK, FIXED_DROP = "s20t3fix_tuck", "s20t3fix_drop"
 # which is the only reason their split test carries any weight -- and the same reason it
 # must be honoured here rather than re-chosen to taste.
 BLOCK_BOUNDARY = 120
-WAVE2_START = 135          # first seed of the out-of-sample wave chosen AFTER their split
+WAVE2_START = 135          # first seed of wave 2
+S0_BOUNDARY = 256          # s0=(seed>>8)&0xFF changes here -- the ONE real LFSR boundary
 
 PREDICTION = {
     "source": "fast-sim lane, registered before the fixed-firmware re-run existed",
@@ -222,12 +223,27 @@ def main():
 
     by = load(a.jsonl)
 
-    # STRATIFY, ALWAYS. The fast-sim lane's arm-D effect is absent below seed 120 and
-    # carries entirely above it (permutation on the block labels p=0.023, with their
-    # clean champion arm unmoved by the same split, so it is the tuck effect that
-    # differs and not board difficulty). A pooled number is an average over a possibly
-    # non-uniform effect -- which is precisely the error that lane just corrected in
-    # itself. The pooled row is printed LAST and labelled, never on its own.
+    # ⚠ THE SEED-120 SPLIT IS RETRACTED BY THE LANE THAT FOUND IT. Their own five-way
+    # check killed it: the wobble WITHIN the "effect" block (thirds at -0.172, -0.075,
+    # -0.022, spread 0.151) is ~3x the gap that defined the block (0.055), so it is a
+    # gradient, not a cliff -- and a scan finds bigger splits elsewhere 39% of the time
+    # under the null. Their p=0.023 was honest for a boundary specified in advance and
+    # STILL pointed at nothing: a low p on a pre-specified boundary cannot tell you the
+    # structure is AT that boundary.
+    #
+    # The strata stay anyway, for two reasons that survive the retraction: that lane
+    # asked for 135-234 separately as reporting discipline ("a pooled number can't be
+    # un-pooled later"), and 40-of-55 seeds in one narrow range is thin coverage on its
+    # own merits. What changes is the EXPECTATION -- blocks looking alike is now the
+    # predicted result and a second confirmation of the fluke, not a null.
+    #
+    # ⚠⚠ THE COVERAGE FACT THAT DOES SURVIVE, and it is mechanism-backed rather than
+    # fitted: NesPillSource takes s0 = (seed>>8)&0xFF, so EVERY seed below 256 has s0=0.
+    # Waves 1 and 2 are seeds 0-234, so the ENTIRE experiment sits inside one LFSR state
+    # region, which has a measurably different pill_switch_rate (0.833 vs 0.867). That
+    # lane measured the effect as FLAT across this boundary (p=0.92), so it is an
+    # external-validity limit rather than a hidden effect -- but nothing here generalises
+    # past seed 255 until the s0-crossing wave lands.
     # FOUR strata, not two. The lead wants 0-119 vs 120+; the fast-sim lane asked for
     # 135-234 reported SEPARATELY and is right to. 120-134 rode in on arm A's existing
     # seed set before their split was known; 135-234 was chosen AFTER it was known and is
@@ -235,12 +251,16 @@ def main():
     # effect hide inside an average -- the precise failure being guarded against. Report
     # the pieces and the union, and both requests are satisfied at once.
     strata = [
-        ("block 0-119   (wave 1, their null block)", lambda s: s < BLOCK_BOUNDARY),
-        ("block 120-134 (wave 1, in-sample tail)",
+        ("block 0-119    (wave 1)", lambda s: s < BLOCK_BOUNDARY),
+        ("block 120-134  (wave 1 tail)",
          lambda s: BLOCK_BOUNDARY <= s < WAVE2_START),
-        ("block 135-234 (wave 2, OUT-OF-SAMPLE)", lambda s: s >= WAVE2_START),
-        ("block 120+    (union, the lead's split)", lambda s: s >= BLOCK_BOUNDARY),
-        ("POOLED (avg over a possibly non-uniform effect)", None),
+        ("block 135-234  (wave 2, out-of-sample for the retracted split)",
+         lambda s: WAVE2_START <= s < S0_BOUNDARY),
+        ("block 120+     (union, sub-256)",
+         lambda s: BLOCK_BOUNDARY <= s < S0_BOUNDARY),
+        ("seeds 256+     (wave 3, s0!=0 -- the ONE real LFSR boundary)",
+         lambda s: s >= S0_BOUNDARY),
+        ("POOLED (avg; every sub-256 seed shares s0=0)", None),
     ]
 
     res = {"prediction": PREDICTION, "block_boundary": BLOCK_BOUNDARY,
