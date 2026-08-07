@@ -1,0 +1,91 @@
+=== STAGE 1h/1i  FITTING PROBES  2026-08-07T01:16:16-04:00 ===
+
+positions 140  features 12
+
+==============================================================================
+REGRET vs the split-sample oracle  (lower = better play)
+==============================================================================
+  champion (real depth-3)                     +3.658 [+2.161,+5.312] n=140 pills
+  depth-4, same hand eval                     +2.856 [+1.460,+4.385] n=137 pills
+  HAND eval at depth 1 (calibration ctrl)     +3.861 [+2.317,+5.567] n=124 pills
+
+  models below are ALL depth-1 over the SAME features, so the only
+  difference between them is FUNCTION CLASS:
+    linear                                    +4.942 [+3.310,+6.789] n=140 pills
+    quad                                      +4.668 [+3.121,+6.344] n=140 pills
+    rbf                                       +5.702 [+4.094,+7.436] n=140 pills
+    mlp                                       +7.175 [+5.194,+9.274] n=140 pills
+
+  shuffled-target CONTROL (must be ~ the champion's own regret: a model
+  fitted on permuted targets carries no information and should rank no
+  better than an arbitrary pick):
+    linear [shuffled]                         +6.757 [+4.808,+8.823] n=140 pills
+    quad [shuffled]                           +7.186 [+5.261,+9.233] n=140 pills
+    rbf [shuffled]                            +7.292 [+5.447,+9.273] n=140 pills
+
+==============================================================================
+WITHIN-POSITION rank correlation with true value
+==============================================================================
+  linear                                      +0.153 [+0.093,+0.211] n=136 rho
+  quad                                        +0.128 [+0.060,+0.194] n=136 rho
+  rbf                                         +0.091 [+0.026,+0.152] n=136 rho
+  mlp                                         +0.010 [-0.059,+0.078] n=136 rho
+
+==============================================================================
+VERDICT
+==============================================================================
+  champion, real depth-3            +3.66 pills
+  HAND eval at depth 1              +3.86 pills   <- the bar to clear
+  best FITTED LINEAR, depth 1       +4.94 pills
+  best FITTED NONLINEAR (quad  )    +4.67 pills
+  function-class delta (lin - nonlin) +0.27 pills
+
+  *** INCONCLUSIVE -- THE CALIBRATION CONTROL FAILED. ***
+
+  A fitted LINEAR model over these features scores +4.94, WORSE than the
+  hand-tuned weights over the SAME features at the SAME depth (+3.86).
+  The shipped eval IS a linear model over exactly these terms, so a fit that
+  cannot match it has not exhausted the linear class -- it has run out of
+  data. The binding constraint here is the FITTING (140 positions, ~4.2
+  pills of MC noise per action against a 6.4-pill true spread), not the
+  function class and not the feature set.
+
+  Therefore the nonlinear arms CANNOT support 'the vocabulary is the
+  limit'. The function-class delta is measured on a base that is itself
+  below the bar, so it says nothing about what a well-fitted nonlinear
+  model could do. Do NOT read this as a negative for nonlinear evals.
+
+  What would make it conclusive: raise the label budget until a fitted
+  linear MATCHES the hand weights at depth 1, then re-run. That is more
+  positions and/or more rollouts per action -- the same cost wall as
+  before (~8 s/rollout), so it is a real spend, not a tweak.
+
+
+positions 140  features 12
+
+==============================================================================
+DIRECT POLICY SEARCH over the existing features (linear)
+==============================================================================
+  champion, real depth-3                        +3.784 [+2.271,+5.429] n=140
+  HAND weights at depth 1  <- the bar           +4.004 [+2.477,+5.725] n=124
+  policy-optimised, depth 1 (held out)          +4.625 [+3.054,+6.477] n=140
+  shuffled-target CONTROL                       +5.170 [+3.811,+6.658] n=140
+
+==============================================================================
+VERDICT
+==============================================================================
+  Even DIRECT optimisation of the exact objective cannot match the hand
+  weights at depth 1 (+4.63 vs +4.00) on this label budget.
+  The obstacle is the LABELS, not the loss function and not the feature
+  set: with 140 positions and ~4.2 pills of Monte-Carlo noise per action
+  against a 6.4-pill true spread, there is not enough signal to recover
+  weights that took a far better-powered objective to tune.
+
+  => Stage 1b's negative CANNOT be read as 'the vocabulary is the limit'.
+     It is 'this label budget cannot fit these features'. The distinction
+     matters because the two imply different next steps.
+
+  Note on what SURVIVES regardless: every Stage-1 number that involves no
+  fitting is untouched -- the oracle gap (+3.73), the within-position rank
+  correlation (0.27), and the eval-vs-horizon split (85/15), which compares
+  SEARCH ARMS rather than fitted models.

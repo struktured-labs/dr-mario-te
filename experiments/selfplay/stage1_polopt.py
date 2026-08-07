@@ -117,67 +117,100 @@ def main():
     # Precompute the split-sample partitions ONCE and share them across every arm,
     # so all arms are scored on identical partitions -- the comparison is paired
     # rather than each arm drawing its own luck.
+    #
+    # Everything is then PADDED INTO DENSE ARRAYS so a candidate weight vector is
+    # scored with one matmul instead of a python loop over positions. The loop
+    # version ran 40+ minutes without finishing a single arm; vectorised, a full
+    # objective evaluation is microseconds, which is what makes thousands of
+    # restarts affordable and the search meaningful rather than token.
     rng = np.random.default_rng(args.seed)
     NS = 60
-    for b in blocks:
-        M, half = b["M"], b["M"] // 2
-        P = np.stack([rng.permutation(M) for _ in range(NS)])
-        sel, ev = P[:, :half], P[:, half:]
-        # (NS, K): mean over the selection / evaluation halves
-        b["vs"] = np.stack([b["V"][:, sel[s]].mean(axis=1) for s in range(NS)])
-        b["ve"] = np.stack([b["V"][:, ev[s]].mean(axis=1) for s in range(NS)])
-        b["orc"] = b["ve"][np.arange(NS), np.argmax(b["vs"], axis=1)]
+    P = len(blocks)
+    Kmax = max(len(b["acts"]) for b in blocks)
+    D = Tz.shape[1]
+    Xall = np.zeros((P, Kmax, D))
+    valid = np.zeros((P, Kmax), dtype=bool)
+    winm = np.zeros((P, Kmax), dtype=bool)
+    VE = np.zeros((P, NS, Kmax))
+    ORC = np.zeros((P, NS))
+    hand_i = np.zeros(P, dtype=np.int64)
+    d1_i = np.full(P, -1, dtype=np.int64)
+    for pi, b in enumerate(blocks):
+        K, M, half = len(b["acts"]), b["M"], b["M"] // 2
+        Xall[pi, :K] = b["X"]
+        valid[pi, :K] = True
+        winm[pi, :K] = b["win"]
+        perm = np.stack([rng.permutation(M) for _ in range(NS)])
+        sel, ev = perm[:, :half], perm[:, half:]
+        vs = np.stack([b["V"][:, sel[s]].mean(axis=1) for s in range(NS)])   # (NS,K)
+        ve = np.stack([b["V"][:, ev[s]].mean(axis=1) for s in range(NS)])
+        VE[pi, :, :K] = ve
+        ORC[pi] = ve[np.arange(NS), np.argmax(vs, axis=1)]
+        hand_i[pi] = b["hand"]
+        d1_i[pi] = b["acts"].index(b["d1"]) if b["d1"] in b["acts"] else -1
 
-    def regret_of(b, k):
-        """split-sample regret of choosing action index k at this position"""
-        return float((b["orc"] - b["ve"][:, k]).mean())
+    NEG = -1e18
+    POSI = 1e18
 
-    def policy_pick(b, beta):
-        s = b["X"] @ beta
-        s = np.where(b["win"], np.inf, s)
-        return int(np.argmax(s))
+    def picks(beta, idx):
+        s = Xall[idx] @ beta
+        s = np.where(winm[idx], POSI, s)
+        s = np.where(valid[idx], s, NEG)
+        return np.argmax(s, axis=1)
 
-    def obj(beta, bs):
-        return sum(regret_of(b, policy_pick(b, beta)) for b in bs) / len(bs)
+    def regret_idx(idx, k):
+        """mean split-sample regret over positions `idx` choosing action index k[p]"""
+        ve = VE[idx][np.arange(len(idx))[:, None], np.arange(NS)[None, :], k[:, None]]
+        return (ORC[idx] - ve).mean(axis=1)
 
-    order = list(range(len(blocks)))
+    def obj_idx(beta, idx):
+        return float(regret_idx(idx, picks(beta, idx)).mean())
+
+    order = list(range(P))
     random.Random(args.seed).shuffle(order)
     folds = [order[i::args.folds] for i in range(args.folds)]
 
-    def search(bs, seed):
-        """random restarts + Nelder-Mead on a piecewise-constant objective"""
+    def search(idx, seed):
         g = np.random.default_rng(seed)
         best, bb = None, None
-        for r in range(args.restarts):
-            x0 = g.normal(0, 1, Tz.shape[1])
-            res = minimize(obj, x0, args=(bs,), method="Nelder-Mead",
-                           options={"maxiter": 3000, "xatol": 1e-3, "fatol": 1e-4})
+        for _ in range(args.restarts):
+            x0 = g.normal(0, 1, D)
+            res = minimize(obj_idx, x0, args=(idx,), method="Nelder-Mead",
+                           options={"maxiter": 4000, "xatol": 1e-3, "fatol": 1e-4})
             if best is None or res.fun < best:
                 best, bb = res.fun, res.x
-        return bb, best
+        return bb
 
     def run(shuffled):
         te_reg = []
         for fi in range(args.folds):
-            test = set(folds[fi])
-            tr = [b for j, b in enumerate(blocks) if j not in test]
-            te = [blocks[j] for j in folds[fi]]
+            test = np.array(sorted(folds[fi]))
+            tr = np.array(sorted(set(range(P)) - set(folds[fi])))
             if shuffled:
-                # permute the ACTION LABELS of the training targets within position:
-                # optimisation still runs, but on values detached from the features
+                # detach features from values on the TRAINING positions only, by
+                # permuting each position's action axis in the evaluation tensor
                 pr = np.random.default_rng(args.seed + 500 + fi)
-                tr = [dict(b, orc=b["orc"], ve=b["ve"][:, pr.permutation(b["ve"].shape[1])])
-                      for b in tr]
-            beta, _ = search(tr, args.seed + fi)
-            te_reg += [regret_of(b, policy_pick(b, beta)) for b in te]
+                VEs, ORCs = VE.copy(), ORC.copy()
+                for pi in tr:
+                    K = int(valid[pi].sum())
+                    q = pr.permutation(K)
+                    VEs[pi, :, :K] = VE[pi, :, :K][:, q]
+                sv_VE, sv_ORC = VE.copy(), ORC.copy()
+                VE[...] = VEs
+                beta = search(tr, args.seed + fi)
+                VE[...] = sv_VE
+                ORC[...] = sv_ORC
+            else:
+                beta = search(tr, args.seed + fi)
+            te_reg += list(regret_idx(test, picks(beta, test)))
         return te_reg
 
     fitted = run(False)
     control = run(True)
-
-    hand_d3 = [regret_of(b, b["hand"]) for b in blocks]
-    hand_d1 = [regret_of(b, b["acts"].index(b["d1"]))
-               for b in blocks if b["d1"] in b["acts"]]
+    allidx = np.arange(P)
+    hand_d3 = list(regret_idx(allidx, hand_i))
+    m1 = d1_i >= 0
+    hand_d1 = list(regret_idx(allidx[m1], d1_i[m1]))
 
     def line(tag, xs):
         if not xs:
