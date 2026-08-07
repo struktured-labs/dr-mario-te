@@ -189,8 +189,13 @@ def load_done_pairs(path):
 
 def run_grid(seeds, doses, workers, out_path, tag, pressure,
              g_k=None, g_period=None, g_min=None):
+    # SEED-MAJOR ordering, deliberately. Dose-major would run all of arm 0
+    # before starting arm 20, so an interrupted run (this shares a box with a
+    # ~26h census and will be interrupted) leaves one complete arm and nothing
+    # to pair it against. Seed-major keeps every dose at the same n at all
+    # times, so ANY prefix of the run is a valid paired experiment.
     all_jobs = [(s, w, pressure, g_k, g_period, g_min)
-                for w in doses for s in seeds]
+                for s in seeds for w in doses]
     done_pairs = load_done_pairs(out_path)
     jobs = [j for j in all_jobs if (j[0], j[1]) not in done_pairs]
     print(f"[{tag}] {len(seeds)} seeds x {len(doses)} doses = {len(all_jobs)} games "
