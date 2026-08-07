@@ -24,8 +24,20 @@ this policy", not an exploration-inflated one.
 """
 from __future__ import annotations
 
-import sys
 import os
+# Cap BLAS/OpenMP thread pools BEFORE importing numpy/sklearn -- the same fix
+# train_adversary_model.py needed (a first attempt there hung >5 min on a
+# dataset that should score in seconds, root-caused to sklearn's internal
+# thread pool thrashing when many worker PROCESSES each spawn their own).
+# This module's model.predict_proba() runs inside batch_run.py's worker pool
+# (6-8 processes), so the same oversubscription applies here even harder --
+# each of those processes spawning its own multi-threaded BLAS call is very
+# likely why the learned-adversary VS-match arm took ~13 min at n=15 while
+# every numba-only arm took ~2.5 min for the same n.
+for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
+           "NUMEXPR_NUM_THREADS"):
+    os.environ.setdefault(_v, "1")
+import sys
 import pickle
 import numpy as np
 

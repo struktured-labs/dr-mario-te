@@ -100,30 +100,53 @@ decider. Different risk profile, not a reversal of the earlier finding.
   predicted kill-probability for iterative data regeneration; the arm
   reported below uses `epsilon=0` (pure argmax).
 
-## THE KEY FINDING, stated first: the champion is very hard to kill
+## THE KEY FINDING, stated first, WITH A CORRECTION FROM AN EARLIER DRAFT
 
-**Zero of three independently-run search methods found a champion death rate
-materially above the self-play baseline, on the samples this session could
-afford.** Every method agrees, to within the (wide, small-n) noise:
+**A real, small, statistically confirmed weakness exists, and it is NOT
+specific to the #47 stranded-term addition.** This corrects this report's own
+earlier headline (below the line), which was an underpowered negative from
+n=14-15 samples that reversed once the box freed up and the full n=80/70
+measurement (`FOURWAY_FULL=1`) actually ran:
 
-| Method | Champion death rate | n | Source |
+| Opponent | champion death rate | n | 95% CI excludes 0? |
 |---|---|---|---|
-| Self-play baseline | 0.0% [0%, 0%] | 15 seeds | this tier, quick_fiveway.py |
-| Native-d1 (weak strawman) | 0.0% [0%, 0%] | 15 seeds | this tier |
-| Evolved adversary (best found) | 0.0% on this sample; 5.0% [0%, 12.5%] on its own training seeds | 15 held-out / 20 train | this tier |
-| hole-poker beam search (independent, oracle-based single-agent planning) | 7.1% (1/14) | 14 seeds | hole-poker's `vs_poker.json`, read directly |
-| hole-poker control (no search) | 0% champion topouts (0/14; outcomes were champ_clear x6, adv_clear x4, adv_dead x4) | 14 seeds | hole-poker's `vs_poker.json` |
+| (a) self-play baseline | 0.0% | 80 | -- (0/80) |
+| (b) native-d1 (weak strawman) | 0.0% | 80 | -- (0/80) |
+| **(c) evolved adversary** | **3.1%** | **80** | **YES [0.6%, 6.2%]** |
+| (d) learned (distilled) adversary | 0.0% | 80 | -- (0/80) |
 
-Two independently-built approaches (this tier's two-sided evolutionary/VS-
-harness search, and hole-poker's single-agent oracle-planning beam search)
-land on the SAME order of magnitude: low single digits to ~7% at best, and
-often 0% on modest samples. That agreement, arrived at independently, is the
-strongest evidence in this report. **This is a genuine negative finding: at
-this policy class (garbage-timing / attack-shaping adversaries with unbounded
-think time), the champion has no large, easily-exploitable strategic
-weakness.** It is not proof of NO weakness -- see the overfitting and n
-caveats below -- but three separate hunts converged on "hard to kill," not
-"here is the exploit."
+The evolved adversary's death-rate lift over self-play is real at n=80 (a
+candidate that only "worked" at n=15 would be exactly the false positive this
+project has been burned by before -- this is the opposite failure mode, a
+false NEGATIVE from too small a sample, and it deserves the same scrutiny).
+Confirmed non-overfit: on its own 20 TRAINING seeds it scores 5.0% [0%,12.5%];
+on the disjoint 80 HELD-OUT seeds, 3.1% [0.6%,6.2%] -- gap +1.9%, well inside
+noise for rates this size. **Transfer test also came back positive and of the
+SAME magnitude**: against the pre-strand20 champion lineage (`ChainRewardD3Decider`,
+no `g_stranded` term at all), the same adversary vector scores 3.6% [0.7%,7.1%]
+(n=70) against that lineage's own 0.0% self-play control. Both CIs exclude
+zero, both point estimates are within a point of each other (3.1% vs 3.6%) --
+**this reads as "kills BOTH lineages about equally," i.e. a long-standing
+property of the champion's whole depth-3 design, not something the #47
+stranded-cost addition introduced or fixed.** (The script's own printed
+VERDICT line said "mixed / inconclusive" -- that used a fixed 5%-point-estimate
+threshold set before any real effect size existed to calibrate it against;
+the CI-based read above is the correct one and supersedes that printed line.
+Left as a small self-inflicted lesson: don't hard-code a verdict threshold
+before you have the data to size it.)
+
+Independent corroboration: hole-poker's completely separate, single-agent
+oracle-planning beam search found 7.1% (1/14) kills on its own seeds --
+now in the SAME range as this tier's confirmed 3.1-6.2%, not a discordant
+outlier as it looked when compared against this tier's earlier 0/15.
+
+**What this changes**: the champion is NOT unkillable at this policy class.
+It is HARD to kill (a few percent, not tens of percent), and the kill
+classification below shows why: the dominant mechanism is a structural
+"cornered, no escape" state (97.5% of near-terminal decisions examined), with
+a real but narrow risk-neutral-choice component at the margin. Read the rest
+of this report with the n=80 numbers as authoritative; the n=15/14 numbers
+below are kept for the anytime/resource-contention record, not as findings.
 
 ## The DMUU reframing, and what it changes about how to read a kill
 
@@ -146,21 +169,29 @@ risk-sensitive objective -- survival-weighted value, a CVaR-style downside
 penalty, or optimizing P(win) directly) rather than an eval-coefficient gap
 (fixable, if at all, by retuning existing hand terms).
 
-**Coordination note**: `experiments/portfolio/failure-objective/REPORT.md`
-(a parallel lane, already landed) ran exactly the "retune existing hand
+**Coordination note, UPDATED after the n=80 result**: `experiments/portfolio/
+failure-objective/REPORT.md` (a parallel lane) ran the "retune EXISTING hand
 terms toward survival" experiment -- a 6-point coordinate scan around the
 champion's own coefficients (`ws` at 0.5x/2x, `R_BURIED` at 0.5x/2x,
 `R_SETUP` at 0.5x/2x) scored on bad-end rate under human-cadence bursty
-pressure. **Every arm was a WASH against the shipped point** (n=40,
-paired-bootstrap CIs all straddling 0) -- no local retuning of the existing
-terms beats the champion's own survival rate. That result and this tier's
-"no adversary found a large exploit" both point the same direction, and
-BOTH are consistent with (not proof of) the DMUU hypothesis: if the gap is
-in the OBJECTIVE rather than the coefficients, no amount of nudging the
-existing hand terms should find it -- which is exactly what both lanes
-observed. Neither lane, on its own, distinguishes "no gap exists" from "the
-gap needs an objective change, not a coefficient change" -- the kill
-classification below is the first piece of direct evidence that tries to.
+pressure, alone (no live adversary). **Every arm was a WASH against the
+shipped point** (n=40, paired-bootstrap CIs all straddling 0). This tier's
+OWN result, once corrected to n=80, is now genuinely informative alongside
+that one, and the contrast is worth stating precisely: nudging the
+EXISTING coefficient axes (ws, R_BURIED, R_SETUP) under solo pressure found
+NOTHING; adding NEW, opponent-aware attack-shaping terms (`w_press`, `w_hold`,
+`w_bigsq` -- terms that don't exist in the champion's own eval at all) under
+LIVE two-sided pressure found a real, if small, effect. That is at least
+weakly consistent with the DMUU reading (the existing objective's own
+coefficient space has no headroom left to find; a genuinely different lever
+-- or a genuinely different, adversarial opponent -- does), but it is also
+consistent with a simpler explanation that doesn't require an objective-
+mis-specification story at all: a live two-sided opponent can apply
+pressure a solo bursty-pressure model structurally cannot (see `w_press`'s
+mechanism -- it prices clears by the OPPONENT's current stack height, which
+has no solo-play analogue). The kill classification below is the piece of
+evidence that actually distinguishes risk-neutral CHOICE from raw pressure
+intensity, and it found both patterns present.
 
 ### Kill classification: outplayed vs. risk-neutral choice
 
@@ -243,33 +274,45 @@ classification and expect the SHAPE of the finding -- rare-but-real risky
 choices concentrated near the transition into "no_escape" -- to matter more
 than the raw count. Full per-decision data: `kill_classification_result.json`.
 
-## Four-way comparison (held-out seeds 6000-6014, n=15 -- see resource note)
+## Four-way comparison -- FINAL, n=80 (held-out seeds 6000-6079, `FOURWAY_FULL=1`)
 
 ```
-a_selfplay:     death=0.0%  [0.0%,0.0%]   win=50.0%  outraced=50.0%  n=15
-b_native_d1:    death=0.0%  [0.0%,0.0%]   win=100.0% outraced=0.0%   n=15
-c_evolved_adv:  death=0.0%  [0.0%,0.0%]   win=96.7%  outraced=3.3%   n=15
-d_learned:      death=0.0%  [0.0%,0.0%]   win=100.0% outraced=0.0%   n=15
+(a) self-play (champ vs champ)            death=0.0%  [0.0%,0.0%]   win=50.0%   outraced=50.0%  n=80
+(b) champ vs native-d1 (weak)             death=0.0%  [0.0%,0.0%]   win=100.0%  outraced=0.0%   n=80
+(c) champ vs EVOLVED ADVERSARY            death=3.1%  [0.6%,6.2%]   win=95.0%   outraced=1.9%   n=80
+(d) champ vs LEARNED (distilled) adversary death=0.0% [0.0%,0.0%]   win=100.0%  outraced=0.0%   n=80
 ```
 
-Arm (d) completed after ~13 minutes (Python-level per-candidate sklearn
-inference under contention, vs the numba-jitted arms' ~2.5 minutes each --
-see resource note). At n=15 it lands exactly on the native-d1 and self-play
-baselines: no deaths, champion wins every game by clearing. Consistent with
-the overall finding, though worth flagging its own limitation: the model was
-trained on only 2 death-games total, so it may not have learned much of a
-genuinely threatening policy yet, distinct from "the champion is unkillable
-against this specific learned policy."
+**This supersedes an earlier n=15 pass of the same comparison** (kept below
+for the anytime-record, not as a finding) that showed 0/15 for arm (c) and
+was reported, in an earlier draft of this file, as "no adversary found a
+large exploit." That was correct in spirit (the effect IS small) but wrong in
+degree -- a proper n=80 run resolves a REAL, non-zero effect with a CI that
+excludes zero. The lesson generalizes: an n=15 negative on a rate this low
+(true rate ~3%, expected count at n=15 is ~0.5) has real odds of showing
+literally zero just from sampling noise -- P(0 successes | p=0.031, n=15) ≈
+64%. Zero was the LIKELY outcome at that n even with the true effect fully
+present. Don't retire a hypothesis on an n that couldn't have detected it.
+
+Arm (d) (learned adversary) required a real bug fix to run at n=80 in
+reasonable time: its VS-match evaluation was taking ~13 minutes at n=15
+(vs ~2.5 min for the numba-only arms at the same n) because the worker pool
+never capped `OMP_NUM_THREADS`/`OPENBLAS_NUM_THREADS`/`MKL_NUM_THREADS` --
+sklearn's `predict_proba()` was spawning its own thread pool inside EVERY one
+of the 6-10 worker PROCESSES, oversubscribing the box far beyond its already-
+contended state. Same root cause as `train_adversary_model.py`'s earlier hang,
+found and fixed there first, then applied here. Fix (capping all three to 1,
+set as literally the first lines executed in each fresh worker process,
+before numpy/sklearn are ever touched) measured at **~400x speedup** on a
+timing microbenchmark (156s/match -> 0.39s/match). At n=80 with the fix, arm
+(d) still shows 0.0% [0%,0%] -- consistent with (not contradicted by) the
+learned model's own thinness (2 training death-games total, noted below), not
+an artifact of the earlier slowness.
 
 Arm (c) is the evolved adversary at its best-found vector
 `(w_chain=234, ws=20, w_press=-31, w_hold=233, w_bigsq=37)`, found at
 generation 3 of the evolutionary search and never beaten through generation 7
 (where the search was stopped to free capacity for measurement -- see below).
-On its OWN 20 training seeds it scored 5.0% death rate [0%, 12.5%] (1 death in
-20 paired seeds); on this DIFFERENT n=15 held-out block it scored 0/15. Both
-are consistent with a true rate in the low single digits and this small n --
-not evidence of overfitting by itself, but also not a confirmed effect (see
-below).
 
 ## Search trajectory (search_adversary.py, run 1, gens 0-7)
 
@@ -326,32 +369,40 @@ side whenever >=2 exist). After the fix: 1 positive-bearing game in training
   examples exist to inform which features generalise. Full table in
   `logs/train3.log`.
 
-## Overfitting check
+## Overfitting check -- FINAL, n=80
 
-- **Evolved adversary**: 5.0% on its own 20 training seeds vs 0.0% on the
-  n=15 held-out block above. The GAP (5 points) is within noise at these
-  sample sizes for a rate this low (a single seed flips the observed rate by
-  5-6.7 points either way) -- not evidence of overfitting, but not evidence
-  of a robust effect either. A larger held-out run (the originally-planned
-  n=80, blocked by shared-box contention this session -- see resource note)
-  is needed to separate "no effect" from "true rate ~5% and this sample was
-  unlucky."
+- **Evolved adversary**: 5.0% [0%,12.5%] on its own 20 training seeds vs
+  3.1% [0.6%,6.2%] on the 80 disjoint held-out seeds. Gap +1.9%, well inside
+  noise for rates this size -- **no material overfit**. The held-out CI
+  itself excludes zero, so this is now a confirmed, non-overfit effect, not
+  just a plausible-but-unconfirmed one.
 - **Learned model**: held-out AUC/AP computed on a GAME the model's training
   never touched (seed-level split, not row-level) -- the 30x AP lift is
   therefore a genuine held-out result, not leakage, but it rests on one
   training positive and one held-out positive, the thinnest possible n.
 
-## Transfer test: NOT RUN this session
+## Transfer test -- FINAL, n=70
 
-Planned (best evolved adversary vs the pre-strand20 `ChainRewardD3Decider`
-lineage, seeds 7000-7059, against that lineage's own self-play control) but
-cut for time given the resource constraints below and the fact that arm (c)
-itself showed no held-out effect to transfer. `vs_run.py::pre_strand20_champion`
-and `batch_run.py`'s `champ_kind="pre20"` plumbing are built, selfcheck-
-verified (mirror match confirmed exact 50/50 self-play split), and ready:
-`measure_fourway.py` still contains the transfer-test code path (currently
-using reduced `n` via `FOURWAY_FULL=1` env var to restore full sizing) for
-whoever continues this with more compute headroom.
+Best evolved adversary vs the pre-strand20 `ChainRewardD3Decider` lineage
+(no `g_stranded` term at all), seeds 7000-7069, against that lineage's own
+self-play control:
+
+```
+pre-strand20 champ vs adversary       death=3.6%  [0.7%,7.1%]  win=95.0%  n=70
+pre-strand20 champ self-play control  death=0.0%  [0.0%,0.0%]  win=50.0%  n=70
+```
+
+Both CIs exclude zero. Lift over self-play: strand20 champion +3.1%,
+pre-strand20 champion +3.6% -- essentially the same effect size on both
+lineages. **Read plainly: the adversary kills BOTH the current champion and
+its pre-#47 ancestor at about the same rate, so this is a long-standing
+property of the whole depth-3 design, not something the stranded-cost term
+introduced or (had it gone the other way) fixed.** `measure_fourway.py`'s
+own printed VERDICT line ("mixed / inconclusive") used a hard-coded 5%
+point-estimate threshold set before any real effect size existed to
+calibrate it against, and should be disregarded in favour of the CI-based
+read above -- flagged as a real, if minor, methodological miss: don't
+threshold a verdict before you have data to size the threshold against.
 
 ## Coordination with hole-poker
 
@@ -376,9 +427,19 @@ channel. Flagged as an open question in the coordination message; treat the
 7.1% figure as corroborating evidence of DIFFICULTY, not a confirmed
 silicon-equivalent kill count.
 
-## Resource note (why several planned pieces are smaller or missing)
+## Resource note (why several planned pieces were smaller at first, and how that changed)
 
-This box ran at 100-130% of nominal 24-core capacity for nearly this entire
+**UPDATE: after the team lead killed the local clean-stream census (the
+biggest single consumer, made redundant once the pooled census showed the
+clean regime has zero failures), load dropped enough that `measure_fourway.py
+--workers 10` with `FOURWAY_FULL=1` completed the full n=80/70 run in this
+same session** (results above supersede the earlier n=15 numbers). The
+account below of what was smaller/missing under the earlier contention is
+kept for the record, since it explains WHY the first pass understated the
+effect and documents a genuine bug fix (the thread-cap fix, item 3 below)
+that mattered independently of contention.
+
+This box ran at 100-130% of nominal 24-core capacity for most of this
 session -- Tier 1/2's census and garbage-scheduler jobs, hole-poker's beam
 search and taxonomy jobs, and several other concurrent tiers (`stage1.py`,
 `opp_aware_vs.py`, `sample_boards.py`) were all running simultaneously most
@@ -393,27 +454,35 @@ of the time. Concrete consequences, in the order they were hit:
    permutation_importance's n_repeats/sample size -- second attempt: 7
    seconds.
 3. `measure_fourway.py`'s originally-planned n=80 four-way comparison was
-   killed twice without a single arm completing (>5 min each attempt).
-   Replaced with `quick_fiveway.py` at n=15, which completed arms (a)-(c) in
-   ~2.5 minutes each; arm (d) (the learned adversary, which does per-
-   candidate Python-level sklearn inference rather than a pure-numba kernel)
-   took ~13 minutes under the same contention before completing (result now
-   in the four-way table above). The box's load dropped substantially partway
-   through this session (other tiers' jobs apparently wrapping up) -- the
-   kill-classification work later in this report ran in a fraction of the
-   time the earlier measurements needed, for the same reason.
-4. Own multiprocessing worker counts were kept at 4-8 throughout rather than
-   the authorised-up-to-20, specifically to avoid making the shared
-   contention worse for the live silicon A/B and sibling tiers -- a
-   deliberate trade of this tier's own throughput for the program's overall
-   throughput, worth revisiting if the box frees up.
+   killed twice without a single arm completing (>5 min each attempt) under
+   the worst contention. Replaced with `quick_fiveway.py` at n=15 as an
+   interim (results kept in this file's earlier section, superseded). Arm
+   (d)'s ~13 minutes at n=15 (vs numba arms' ~2.5 min) turned out NOT to be
+   purely contention -- it was the same class of bug as item 2: the worker
+   pool never capped BLAS/OpenMP thread pools, so sklearn's `predict_proba()`
+   spawned its own threads inside every one of 6-10 worker PROCESSES.
+   Applied the same fix (cap all three env vars to 1, as the literal first
+   lines of `batch_run.py::_init_pool()`, before numpy/sklearn are ever
+   touched in a fresh worker). Measured **~400x speedup** (156s/match ->
+   0.39s/match) on a direct timing microbenchmark, independent of ambient
+   contention. Once load also dropped (item below), the FULL `FOURWAY_FULL=1`
+   n=80/70 run completed in this same session -- see the four-way table and
+   transfer test above, which supersede everything reported at n=15.
+4. The team lead killed the local clean-stream census (the box's single
+   biggest consumer) once the pooled Hetzner+local census showed the clean
+   regime has zero failures, freeing several workers. Own multiprocessing
+   worker counts were raised from 4-8 to 10 for the final full run, still
+   below the authorised ceiling of 20, to leave headroom for the live
+   silicon A/B and remaining sibling tiers.
 
-**Practical consequence for anyone continuing this**: every n reported here
-is smaller than originally planned, and every CI is correspondingly wide.
-The honest read is "no large effect found by any of three methods, on samples
-too small to rule out a moderate one" -- re-running `measure_fourway.py` with
-`FOURWAY_FULL=1` (restores n=80/60) once the box is less contended is the
-highest-value next step, not a new search or a new feature set.
+**Practical consequence for anyone continuing this**: the n=80/70 numbers
+above are the ones to trust. The earlier "no large effect found" read was a
+real methodological trap this tier fell into and then caught itself: an
+n=15/14 sample cannot reliably distinguish "no effect" from "a true rate of a
+few percent" (P(0 successes | p=0.031, n=15) ~= 64%), and reporting "hard to
+kill" as if it meant "not killable" would have been the wrong lesson to leave
+behind. The corrected finding -- small, real, non-overfit, transferring
+equally to the pre-#47 champion -- is the one worth propagating.
 
 ## What was reused vs newly built
 
@@ -462,17 +531,20 @@ that before the census result confirmed it.
   with real RTL on ~87% of base-search moves (verified against the primary
   source: `CANDIDATE_TIER3.md` §10 -- real-L11 boards, 4/30 = 13.3% full
   column+orientation agreement between the offline base-search and RTL, i.e.
-  86.7% disagreement). Any exploit found here needs co-sim replay before
-  being called a silicon failure -- these are offline-sim findings, and
-  given the key finding above, there is not yet an exploit to replay.
+  86.7% disagreement). **This now matters concretely, not just as a
+  disclaimer**: a real, confirmed 3.1% offline exploit needs co-sim replay
+  before it can be called a silicon-relevant finding at all -- the move
+  choices that produce it may simply not occur on real hardware. This is the
+  single highest-value verification step for anyone continuing this work.
 - `native-d1` here is `fast_sim_x.FastDecider(depth=1)`, the offline POLICY
   CLASS equivalent of the CvC cart's `DRP1NATIVE`, not the literal 6502 code.
 - "Garbage in flight" (an originally-requested feature) is not observable by
   any decider in `vs_harness.play_match` by construction -- approximated by
   running attack-sent/received counters the decider maintains itself, per
   `adversary_features.py`'s docstring.
-- All rates above report `n` explicitly, and every n in this report is small
-  (15-20 per arm) because of the resource contention documented above --
-  read every percentage with that in mind, especially the 0.0% entries: at
-  n=15, a true rate as high as ~18% would still show 0/15 about 6% of the
-  time, so "0%" here means "not detected at this n", not "impossible."
+- All rates report `n` explicitly. The FINAL four-way/overfit/transfer
+  numbers are at n=70-80 with CIs that exclude zero -- trust those. Numbers
+  still quoted at n=14-20 elsewhere in this report (the search's own train
+  seeds, hole-poker's sample, the kill-classification's 4 death games) remain
+  genuinely small-n and are labelled as such at each use; don't average them
+  against the n=80 numbers as if they were the same kind of evidence.

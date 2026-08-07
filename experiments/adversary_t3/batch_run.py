@@ -29,6 +29,18 @@ _POOL_STATE = {}
 
 
 def _init_pool():
+    # Cap BLAS/OpenMP thread pools as the FIRST thing this fresh worker
+    # process does, before numpy/sklearn are ever touched in it -- belt and
+    # suspenders alongside the same fix in learned_adversary.py's own import
+    # header. Root cause: train_adversary_model.py's first run hung >5 min on
+    # a dataset that should score in seconds, purely from sklearn's internal
+    # thread pool thrashing across many concurrent worker PROCESSES; the
+    # learned-adversary VS-match arm (which calls model.predict_proba() from
+    # inside THIS pool) is exactly the same hazard and was ~5x slower than
+    # the numba-only arms at matched n, consistent with the same cause.
+    for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
+               "NUMEXPR_NUM_THREADS"):
+        os.environ.setdefault(_v, "1")
     import vs_harness as H
     import fast_rtl_x as FX
     from vs_run import champion_decider, pre_strand20_champion, native_d1_opponent, warmup_all
