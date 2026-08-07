@@ -81,3 +81,58 @@ before the existing `a.label("eh_xcol")` — after which the tuck path does
 `cp_live_cur` and destroy the tuck's already-placed board). The note states this
 is **byte-neutral for the base path**, since a label is symbolic until something
 JSRs to it, so the flag-off byte-identity gate is unaffected.
+
+---
+
+# MEASURED: the ranking consequence is NULL. The gate consequence stands.
+
+`tuck_published_vs_best.py` models the firmware's ranking exactly as the
+documented difference — `_root_value` takes `w_excav`/`w_hang` as parameters, so
+"the score without the EH add-on" is not an approximation of the firmware, it IS
+the documented delta — gates at θ=150 against the base reference WITH EH, and
+compares the published pick's true value against the best in its own set.
+
+| seed block | gated tuck decisions | published == best-in-set | mean loss |
+|---|---|---|---|
+| 7000-7005 | 16 | **16/16 (100%)** | 0.0 |
+| 7100-7121 | 48 | **48/48 (100%)** | 0.0 |
+| **combined (disjoint)** | **64** | **64/64** | **0.0** |
+
+## ⚠ THIS REFUTES CONSEQUENCE (2), WHICH WAS MY OWN PREDICTION
+
+I predicted two consequences of the missing EH term and said explicitly they
+need not push the same way. They don't:
+
+- **(2) within-set MIS-RANKING — REFUTED.** The missing term does not change the
+  argmax on any of 64 gated decisions across two disjoint seed blocks. Plausible
+  reason: the excav+hang term is near-constant across different tuck placements
+  of the same pill on the same board, so it shifts every candidate equally and
+  cancels in the argmax.
+- **(1) θ-GATE MISCALIBRATION — STANDS, and is untested here.** It compares
+  `tuck_val` (no EH) against `best_base_val` (with EH) — different placements
+  entirely, so the term does NOT cancel. Consistent with the observed rarity:
+  only **64 gated tuck decisions in ~1,800**, ≈2.7%.
+
+## Verdict for the pincer
+
+```
+candidate SET     BETTER   (this lane, p=2e-4)
+SELECTION rank    CLEAN    (64/64, zero loss)
+EXECUTION         CLEAN    (co-sim: 0 executor bugs, n_incoherent=0 / 881)
+⇒ remaining suspect: the ROOT-PLACEMENT OVERWRITE
+```
+The EH defect is real and worth fixing — it biases the gate and is a mechanism
+for the co-sim's θ-inertness — but it is **not** what makes arm D catastrophic.
+It suppresses how OFTEN tucks fire, not WHICH tuck fires.
+
+## Team convention adopted here: STATUS files
+
+Four report/check crossings in one evening is a protocol problem, not luck, and
+polling `ps` only detects *stalled*, never *finished-but-unreported* — which bit
+twice tonight. Every long job now writes, next to its results:
+
+    STATUS: RUNNING <pid> <expected artifact>      (at launch)
+    STATUS: DONE <artifact> <n> <one-line headline> (at completion)
+
+One `cat` then distinguishes running / stalled / done-unreported without a
+round-trip. `tuck_published_vs_best.py` writes `STATUS.tuck_published_vs_best`.
