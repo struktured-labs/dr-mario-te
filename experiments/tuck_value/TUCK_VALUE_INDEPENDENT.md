@@ -455,9 +455,14 @@ the fork, then drop mode, identical continuation to R and C) and is running.
 
 ## Still running
 
+- **θ sweep — now the key experiment.** It was queued as a robustness check; the disagreement
+  with the co-sim promoted it to a direct test of the dose-response hypothesis *within this
+  rig*. θ=0 / 150 / 250 fire on roughly 20% / 10% / 5% of decisions, so the arms bracket this
+  rig's own dose by 4×. If tucks help *less* at θ=0 than at θ=250, the "helps at low dose,
+  fatal at high dose" story is supported from a second direction; if they help *more*, the
+  story is wrong and the disagreement with the co-sim needs a different explanation. Either
+  answer is decisive, which is why it is running ahead of the item below.
 - **Single-maneuver isolation** (`divergence_single.py`) — the T1 branch, n=300.
-- **θ sensitivity** — 0 / 150 / 250 on the headline pair. Note this can no longer be expected
-  to reach the firmware's fire rate; see the disagreement section.
 
 Completed since the first revision: the v1 hazard bracket (both ends negative), the
 failure-mode decomposition (which corrected this document's interpretation of *why* D − A
