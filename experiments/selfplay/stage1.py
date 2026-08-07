@@ -377,10 +377,31 @@ def _v_trunc(rec, a, T):
     return out
 
 
+def _split_regret(vals, acts, a_hand, rng, nsplits):
+    """Split-sample oracle gain, averaged over `nsplits` random selection/evaluation
+    partitions of the SAME rollouts.
+
+    Each partition selects argmax on one disjoint subset and evaluates on the other,
+    so each is individually unbiased; averaging them keeps that and cuts variance.
+    """
+    M = len(vals[acts[0]])
+    half = M // 2
+    tot = 0.0
+    for _ in range(nsplits):
+        idx = list(range(M))
+        rng.shuffle(idx)
+        sel, ev = idx[:half], idx[half:]
+        vs = {a: st.mean(vals[a][i] for i in sel) for a in acts}
+        ve = {a: st.mean(vals[a][i] for i in ev) for a in acts}
+        tot += ve[max(acts, key=lambda a: vs[a])] - ve[a_hand]
+    return tot / nsplits
+
+
 def cmd_analyze(args):
     recs = [json.loads(l) for l in open(args.labels)]
     print(f"positions: {len(recs)}")
     rng = random.Random(args.shuffle_seed)
+    split_rng = random.Random(args.shuffle_seed + 1)
 
     glob_leaf_s, glob_leaf_r, glob_v = [], [], []
     within_hand, within_leaf = [], []
@@ -430,34 +451,42 @@ def cmd_analyze(args):
         agree.append(1.0 if a_best_all == a_hand else 0.0)
         out_topk.append(1.0 if a_best_all in set(r.get("extra", [])) else 0.0)
 
-        # split-sample: select on A, evaluate on B, and symmetrically B -> A
-        a_star_A = max(acts, key=lambda a: vA[a])
-        a_star_B = max(acts, key=lambda a: vB[a])
-        regret_split.append(((vB[a_star_A] - vB[a_hand])
-                             + (vA[a_star_B] - vA[a_hand])) / 2.0)
-        agree_split.append(1.0 if a_star_A == a_hand else 0.0)
+        # SPLIT-SAMPLE, AVERAGED OVER MANY RANDOM SPLITS. One fixed half/half split
+        # is unbiased but extremely noisy: measured on the first 16 positions, the
+        # single-split version read +1.34 pills and the averaged version +3.69 on
+        # the SAME rollouts, because two positions drew an unlucky half. Every
+        # individual split is a valid selection/evaluation partition, and the mean
+        # of unbiased estimators is unbiased, so averaging buys variance for free.
+        regret_split.append(_split_regret(vals, acts, a_hand, split_rng, args.splits))
+        agree_split.append(1.0 if max(acts, key=lambda a: vA[a]) == a_hand else 0.0)
         regret_same.append(vAll[a_best_all] - vAll[a_hand])
 
         # PERMUTATION CONTROL. Enforces the null "every labelled action is equally
-        # good" while keeping everything else real, by permuting the action labels
-        # WITHIN each pill stream. Within-stream matters: pooling values across
-        # streams instead would manufacture variance that common random numbers
-        # deliberately cancel, and would report a large fake noise floor. Under
-        # this null the split-sample estimator should land at ~0 (it is unbiased)
-        # while the same-sample one stays positive -- that gap IS the winner's
-        # curse, measured on this data rather than argued from theory.
-        perm = {a: [] for a in acts}
-        for m in range(M):
-            colm = [vals[a][m] for a in acts]
-            rng.shuffle(colm)
-            for a, v in zip(acts, colm):
-                perm[a].append(v)
-        shA = {a: st.mean(perm[a][:half]) for a in acts}
-        shB = {a: st.mean(perm[a][half:]) for a in acts}
-        shAll = {a: st.mean(perm[a]) for a in acts}
-        regret_shuf.append(shB[max(acts, key=lambda a: shA[a])] - shB[a_hand])
-        regret_shuf_same.append(
-            shAll[max(acts, key=lambda a: shAll[a])] - shAll[a_hand])
+        # good" while keeping everything else real, by permuting action labels
+        # WITHIN each pill stream. Within-stream is the correct permutation:
+        # pooling across streams would manufacture variance that common random
+        # numbers deliberately cancel, and would report a large fake noise floor.
+        #
+        # AVERAGED OVER MANY PERMUTATIONS. A single draw has sd ~5.7 pills across
+        # positions, so at small n it lands far from zero by luck alone and looks
+        # like a bias in the estimator -- measured: one permutation gave -2.24,
+        # five gave +0.02, a hundred gave +0.08. Averaging turns this from a source
+        # of noise into what it is meant to be: a check that the split-sample
+        # estimator really is unbiased. It should read ~0. If it does not, the
+        # headline number should not be believed.
+        ctl, ctl_same = [], []
+        for _ in range(args.perms):
+            perm = {a: [] for a in acts}
+            for m in range(M):
+                colm = [vals[a][m] for a in acts]
+                rng.shuffle(colm)
+                for a, v in zip(acts, colm):
+                    perm[a].append(v)
+            ctl.append(_split_regret(perm, acts, a_hand, split_rng, args.splits))
+            pAll = {a: st.mean(perm[a]) for a in acts}
+            ctl_same.append(pAll[max(acts, key=lambda a: pAll[a])] - pAll[a_hand])
+        regret_shuf.append(st.mean(ctl))
+        regret_shuf_same.append(st.mean(ctl_same))
 
         spread.append(st.pstdev([vAll[a] for a in acts]))
         sds = [st.pstdev(vals[a]) for a in acts if len(set(vals[a])) > 1]
@@ -529,10 +558,15 @@ def cmd_analyze(args):
     if regret_split and regret_shuf:
         net = [a - b for a, b in zip(regret_split, regret_shuf)]
         r_net = line("  REGRET net of control", net, "pills")
-    print("    ^ split-sample is unbiased for a NOISY oracle => understates a")
-    print("      perfect one; same-sample is winner's-curse inflated => overstates.")
-    print("      The truth is bracketed between them. Net-of-control is the")
-    print("      headline: it is what survives after pure selection noise.")
+    print("    ^ HEADLINE is the split-sample line. It is unbiased for an oracle")
+    print("      that selects on M/2 rollouts, so it UNDERSTATES a perfect leaf;")
+    print("      stage1_denoise.py extrapolates the selection budget to remove that.")
+    print("      The perm CONTROL (split) must read ~0 -- that is what certifies the")
+    print("      estimator, and it is a validation, not a quantity to subtract.")
+    print("      Compare the two control lines: the same-split control shows how much")
+    print("      of the same-sample UPPER number is pure winner's curse. When those")
+    print("      two are close, the upper bracket is essentially all artefact and")
+    print("      carries no information about headroom.")
     print()
     line("  spread: sd(V) across actions", spread, "pills")
     line("  MC noise: se per action", se_per_action, "pills")
@@ -607,6 +641,10 @@ def main():
     # L11 starts at min((11+1)*4, 84) = 48 viruses (faithful_game.place_viruses).
     a.add_argument("--v0", type=int, default=48, help="starting virus count (L11=48)")
     a.add_argument("--shuffle-seed", type=int, default=7)
+    a.add_argument("--perms", type=int, default=20,
+                   help="permutations averaged for the null control")
+    a.add_argument("--splits", type=int, default=100,
+                   help="random selection/evaluation partitions averaged per position")
     a.add_argument("--json-out", default="")
     a.set_defaults(fn=cmd_analyze)
 
