@@ -194,7 +194,20 @@ under one simulator most of that error cancels, which is the whole argument for 
 tier — but it is not a licence to quote arm B's 19.2% as a silicon prediction. The co-sim farm
 is the instrument that can.
 
-Three modelling choices are mine, not measurements, and the co-sim can adjudicate all three:
+**One structural confound, found while writing this up, measured, and being controlled for.**
+Arms B and D take their base candidates from `reach_root.choose_reach_tier`'s
+*reachability-filtered* pool, while arm A is pure `base32` — and the shipped firmware's own
+search is not reachability-filtered. So D − A nominally confounds "the tuck program" with "the
+reach32 fix". Measured directly: on 2,873 real L11 decisions the filter changes the chosen
+action **0 times (0.00%)**, so on the board distribution the champion actually visits the
+confound is empty. That is not a proof for arm B, which dies on tall congested boards where a
+column walled to row 0 is far more likely, and where `REACH_ROOT_VERDICT`'s M3CASE analysis
+found the filter *does* bite. A control arm — the tier-3 decision path with θ set so high no
+tuck can pass the gate, i.e. reach-filtered base32 with no tucks — is running to settle
+D − A' (the tuck program alone) and A' − A (the filter alone).
+
+Three further modelling choices are mine, not measurements, and the co-sim can adjudicate all
+three:
 
 - **v1 traverse model.** The capsule is treated as switching columns instantaneously at the
   trigger row. Real DAS takes ~12 hooks per column edge while gravity keeps pulling, so a real
