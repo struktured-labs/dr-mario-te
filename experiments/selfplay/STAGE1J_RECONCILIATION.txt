@@ -1,0 +1,23 @@
+==========================================================================
+1. CAN MY CORPUS EVEN CONTAIN A DEATH POSITION?
+==========================================================================
+  rollouts total 11360, ended in a CLEAR 11305 (99.52%)
+  ended in topout or stall: 55
+  ^ my corpus is solo play with NO garbage and NO opponent pressure, sampled
+    from champion trajectories. Essentially nothing in it is death-adjacent,
+    so my +0.48 says NOTHING about the regime hole-poker measured. The two
+    results are not in tension; they do not overlap.
+
+==========================================================================
+2. DOES DEPTH'S BENEFIT CONCENTRATE WHERE THE STAKES ARE HIGH?
+==========================================================================
+  low  stakes (tau  1.67)  V(d4)-V(d3) = +0.152 [+0.000,+0.391]  n=46
+  mid  stakes (tau  5.32)  V(d4)-V(d3) = +0.155 [-0.141,+0.541]  n=46
+  HIGH stakes (tau 11.97)  V(d4)-V(d3) = +1.104 [-0.073,+2.977]  n=48
+
+  the top band is 34% of positions and carries 79% of ALL the depth benefit
+  ^ the shape supports 'worth little on average, decisive at specific
+    moments'. Note the high band's CI still includes 0, so the
+    CONCENTRATION is suggestive rather than established -- what is solid is
+    that the +0.48 average is not spread evenly, so quoting it as if depth
+    were uniformly worthless would be wrong.
