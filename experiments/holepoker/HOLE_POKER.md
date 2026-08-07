@@ -37,7 +37,11 @@ replayed through the Verilator co-sim.** Named validation targets are in §8.
    pressure models: E=1 = 38% [28–48%].** Gated-d4 is genuinely more selective
    under bursty (**55.1%** gate rate → **13.1x** vs drip's 20.2x) but still does
    not rescue d4's economics.
-7. **QD archive: 42/405 cells, 86 deaths, 0 rejected by the admission gate.**
+7. **The 11-feature vocabulary CANNOT separate the fatal move from the
+   surviving one** (73 deaths, matched random control, LOO-CV 44–61% ≈ chance).
+   The fatal move is *better* on the features the champion optimises — it is not
+   erring in its own terms. Confirms the eval-headroom wall on deaths.
+8. **QD archive: 42/405 cells, 86 deaths, 0 rejected by the admission gate.**
    `cascade_backfire` is a hard NULL (the champion never dies by clearing into
    its own death); `colour_starvation` occupies only E=1 (always shallow-
    escapable); `garbage_flood` spans every escape bin. Empty regions are the
@@ -556,6 +560,73 @@ adversary-driven rather than model-driven, or a different level/seed mix). I
 have not chased it. Treat 55.1% as an upper bound on the gate rate and 13.06x as
 the corresponding upper bound on the amortised multiplier; at their 47.8% it
 would be **11.5x**.
+
+## 6e. Can the 11 features tell a fatal move from a surviving one? NO.
+
+This lane owns the only corpus where BOTH are known. For each of **73 deaths
+with a verified escape**, I computed the champion's own leaf term vector on the
+board AFTER (a) the move it chose, which was fatal, and (b) the move that would
+have survived. The features are literally what a reweighting would reweight —
+`_combine_terms`'s eleven terms, verified to reconstruct `_eval_rtl` exactly.
+
+### The matched control is what produces the answer
+Almost every feature "separates" fatal from surviving — and separates the chosen
+move from a **random legal** alternative just as strongly. That is the champion's
+argmax moving its own objective by construction, not knowledge of death. Only
+the *excess* over the control is evidence:
+
+| | chosen−survivor | chosen−random | excess |
+|---|---|---|---|
+| HOLES (all) | −3.38, dz −0.67, p<0.001 | −3.12, dz −0.57, p=0.005 | **+0.10** |
+| TOPRISK (all) | −1.93, dz −0.61, p<0.001 | −1.86, dz −0.61, p<0.001 | **−0.00** |
+| BURIED (all) | −2.01, dz −0.58, p<0.001 | −1.53, dz −0.45, p=0.002 | **+0.13** |
+| SPAWN (all) | −0.49, dz −0.31, p=0.291 | −0.92, dz −0.66, p<0.001 | **−0.35** |
+
+**Only 13 of 44 feature×group tests show ANY excess over the control** — below
+the 50% you would get by chance. The control absorbs essentially all of the
+apparent signal.
+
+### A simple combination can't do it either
+Leave-one-out CV of a regularised linear model on the 11-dim difference vector
+(50% = cannot tell them apart):
+
+| group | n | LOO accuracy |
+|---|---|---|
+| ALL | 73 | **56.2%** |
+| E=1 (horizon-reachable) | 33 | **60.6%** |
+| E=2-3 | 13 | 3.8% ⚠ |
+| E≥4 (eval-only) | 27 | **44.4%** |
+
+⚠ The 3.8% is a small-n LOO artifact at n=13, not a finding — I report it rather
+than hide it, but it should not be interpreted.
+
+### Two flags, and they are what chance predicts
+`BURIED` at E=1 (excess 0.22) and `HOLES` at E≥4 (excess 0.28) clear
+p<0.05 with excess>0.2. But that is **2 hits from 44 tests, against 2.2 expected
+false positives at α=0.05.** Exactly chance. I am not reporting either as a
+finding.
+
+### ⇒ VERDICT: NULL, and it is the informative outcome
+**The existing 11-feature vocabulary cannot state the difference between the move
+that kills the champion and the move that saves it — in either the
+horizon-reachable population or the eval-only one.** This independently confirms
+the eval-headroom lane's vocabulary wall (best reweighting −0.57 pills vs an
+oracle's +3.70, CV R² = −0.304) **on the population that actually matters**, from
+a different direction: they measured average-case regret on ordinary positions,
+this measures move-level discrimination on deaths.
+
+⇒ A cheap re-weighting **is not available**, even one restricted to the
+pre-death regime. The learned-abstraction route is not a preference; it is what
+is left.
+
+### The mechanism, and it is the uncomfortable part
+Look at the signs: the fatal move has **fewer holes, lower toprisk, less buried
+material and lower poll** than the surviving move — it is *better* on the very
+features the champion optimises. **The champion is not making an error in its own
+terms. It picks the move its objective genuinely prefers, and that move is the
+one that kills it.** That is what a vocabulary wall looks like from the inside,
+and it is why re-weighting cannot fix it: no sign flip on these axes turns the
+survivor into the argmax without also breaking ordinary play.
 
 ## 7. G2 — admissibility of the bound
 
