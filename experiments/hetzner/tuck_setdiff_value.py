@@ -282,6 +282,10 @@ def main():
     ap.add_argument("--thetas", type=int, nargs="+", default=[150, 250])
     ap.add_argument("--out", required=True)
     ap.add_argument("--gate", action="store_true")
+    ap.add_argument("--discordant", action="store_true")
+    ap.add_argument("--target", type=int, default=175)
+    ap.add_argument("--max-wall", type=float, default=2400.0)
+    ap.add_argument("--audit-frac", type=float, default=0.06)
     a = ap.parse_args()
 
     FX.warmup_ship_eh(topk2=8)
@@ -290,6 +294,11 @@ def main():
 
     if a.gate and not gate(w, fl):
         sys.exit("gate FAILED -- njit scorer disagrees with the RTL mirror on sign(FW-PY)")
+
+    if a.discordant:
+        run_discordant(w, fl, a.seed0, 400, a.target, a.max_wall,
+                       a.audit_frac, a.out)
+        return
 
     rows = []
     for i in range(a.seeds):
@@ -319,6 +328,122 @@ def main():
     with open(a.out, "w") as f:
         json.dump({"n_decisions": len(rows), "summaries": out}, f, indent=2)
     print(f"wrote {a.out}")
+
+
+
+
+# ==========================================================================
+# DISCORDANT-ONLY MODE: the correct (RTL-mirror) ruler, spent only where it
+# can discriminate.
+#
+# Decisions where both sets pick the same move contribute zero power to
+# "worse vs merely different" -- they are pure denominator. So the mirror is
+# spent only on decisions where the sets plausibly disagree.
+#
+# ⚠ THE NJIT RULER IS USED ONLY AS A NOMINATOR, NEVER AS THE ANSWER. It failed
+# its sign gate 9/10, so it cannot decide anything -- but it is perfectly
+# adequate to ASK "might these two sets differ here?", because the mirror then
+# adjudicates every decision it nominates. The residual risk is FALSE
+# NEGATIVES: truly-discordant decisions the njit calls identical and we never
+# score. That is bounded, not ignored -- `--audit-frac` mirror-scores a random
+# sample of the nominated-concordant decisions and reports how many the
+# nominator missed.
+# ==========================================================================
+def mirror_margins(fb, cur, nxt, w, py, fw):
+    mp = ML.choose_root_with_tucks_mirrored(fb, cur, nxt, w, topk2=8,
+                                            tuck_cands=py, theta=0.0)
+    mf = ML.choose_root_with_tucks_mirrored(fb, cur, nxt, w, topk2=8,
+                                            tuck_cands=fw, theta=0.0)
+    pm = (float(mp["val"]) - float(mp["best_base_val"])) if mp["kind"] == "tuck" else None
+    fm = (float(mf["val"]) - float(mf["best_base_val"])) if mf["kind"] == "tuck" else None
+    po = orient_of(mp["placement"]["cells"]) if mp["kind"] == "tuck" else None
+    fo = orient_of(mf["placement"]["cells"]) if mf["kind"] == "tuck" else None
+    return pm, fm, po, fo
+
+
+def run_discordant(w, fl, seed0, n_seeds, target, max_wall, audit_frac, out):
+    import time, random
+    from drmario.faithful_env import FaithfulDrMarioEnv
+    from nes_pills import NesPillSource
+    from fb import FB
+    rng = random.Random(12345)
+    t0 = time.monotonic()
+    scored, audit = [], []
+    n_seen = n_nominated = 0
+
+    for si in range(n_seeds):
+        if len(scored) >= target or time.monotonic() - t0 > max_wall:
+            break
+        seed = seed0 + si
+        env = FaithfulDrMarioEnv(level=11, seed=seed, max_pills=300)
+        env.reset()
+        NesPillSource(seed=seed).attach(env)
+        env.cur = env._rand_pill(); env.nxt = env._rand_pill()
+        for _ in range(300):
+            if len(scored) >= target or time.monotonic() - t0 > max_wall:
+                break
+            if env.board.virus_count() == 0:
+                break
+            fb = FB.from_board(env.board)
+            ca, cb = int(env.cur.a), int(env.cur.b)
+            na, nb = int(env.nxt.a), int(env.nxt.b)
+            py = RS.tuck_root_candidates(fb, ca, cb, 12, True)
+            fw = fw_candidates(fb, ca, cb)
+            n_seen += 1
+
+            _b, pm_f, fm_f, _po, _fo = score_sets(fb, ca, cb, na, nb, py, fw,
+                                                  w, fl, RR_WS)
+            nominated = (pm_f or 0.0) != (fm_f or 0.0)
+            if nominated:
+                n_nominated += 1
+                pm, fm, po, fo = mirror_margins(fb, env.cur, env.nxt, w, py, fw)
+                scored.append({"seed": seed, "py_margin": pm, "fw_margin": fm,
+                               "py_or": po, "fw_or": fo})
+            elif rng.random() < audit_frac:
+                pm, fm, po, fo = mirror_margins(fb, env.cur, env.nxt, w, py, fw)
+                audit.append({"seed": seed, "py_margin": pm, "fw_margin": fm,
+                              "missed": (pm or 0.0) != (fm or 0.0)})
+
+            a = RR.choose_base32(
+                np.frombuffer(bytes(fb.col), dtype=np.uint8).astype(np.int8),
+                np.frombuffer(bytes(fb.vir), dtype=np.uint8).astype(np.int8),
+                ca, cb, na, nb)["action"]
+            if a is None:
+                break
+            _, _, term, trunc, _ = env.step(int(a))
+            if term or trunc:
+                break
+        print(f"  seed {seed}: seen {n_seen}, scored {len(scored)}, "
+              f"audit {len(audit)}, {time.monotonic() - t0:.0f}s", flush=True)
+
+    print(f"\nMIRROR-SCORED {len(scored)} discordant decisions "
+          f"(nominated {n_nominated}/{n_seen} seen; audit sample {len(audit)}, "
+          f"of which nominator MISSED {sum(1 for a in audit if a['missed'])})")
+    res = {"n_seen": n_seen, "n_nominated": n_nominated,
+           "n_scored": len(scored), "n_audit": len(audit),
+           "audit_missed": sum(1 for a in audit if a["missed"]),
+           "rows": scored, "audit": audit}
+    for th in (150, 250):
+        s = summarise(scored, th)
+        res[f"theta{th}"] = s
+        print(f"\ntheta={th}  (RTL-mirror ruler, {s['n_decisions']} discordant decisions)")
+        print(f"  fires   PY {s['py_fire']}   FW {s['fw_fire']}")
+        print(f"  on {s['n_either']} where either fires: mean(FW-PY) "
+              f"{s['mean_fw_minus_py']:+.2f}, median {s['median_fw_minus_py']:+.2f}")
+        print(f"  FW better {s['fw_better']}   PY better {s['py_better']}   tie {s['tie']}")
+        n = s['fw_better'] + s['py_better']
+        if n:
+            from math import comb
+            k = min(s['fw_better'], s['py_better'])
+            p = min(1.0, 2 * sum(comb(n, i) for i in range(k + 1)) * 0.5 ** n)
+            print(f"  SIGN TEST on {n} non-tied pairs: p = {p:.4f}")
+            res[f"theta{th}"]["sign_p"] = p
+            res[f"theta{th}"]["sign_n"] = n
+        print(f"  winner orientation  FW {s['fw_orient']}  PY {s['py_orient']}")
+    os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
+    with open(out, "w") as f:
+        json.dump(res, f, indent=2)
+    print(f"\nwrote {out}")
 
 
 if __name__ == "__main__":
