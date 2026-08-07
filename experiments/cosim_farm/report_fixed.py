@@ -62,6 +62,90 @@ PREDICTION = {
 }
 
 
+# ================= PRE-REGISTERED DECISION RULE (team lead, before n=55 existed) =======
+# Three endpoints disagree, so choosing among them after seeing the data would be
+# indistinguishable from rationalisation. The rule is therefore applied by CODE, not by
+# whoever writes the summary. Do not edit these thresholds to fit a result.
+#
+#   PRIMARY ENDPOINT IS SURVIVAL (paired clear-rate discordance). NOT pills.
+#
+#   1. survival cost REPLICATES (p<0.05, one-directional toward the champion)
+#        -> NET HARMFUL. Do not build the executor -- EVEN IF conditional pills stays
+#           strongly negative. Speed does not buy back an absorbing state, and four
+#           independent lanes agree the champion's problem is risk-neutrality near one.
+#           A -40-pill headline beside a significant survival cost is a WORSE result
+#           than a null, not a better one.
+#   2. survival balanced AND conditional pills CI excludes 0 AND the failure-ranked
+#      combined test ALSO excludes 0
+#        -> GENUINE WIN. Executor becomes a hardware priority, re-proven on the
+#           near-death control first.
+#   3. survival balanced, combined still spans 0
+#        -> WASH at n=55. PARK IT. Still a real deliverable: it retires a question this
+#           project has spent weeks on, on validated firmware with a validated control.
+#   4. t3_noscan diverges on the NEAR-DEATH corpus
+#        -> ATTRIBUTION VOID. Checked FIRST, because it invalidates 1-3.
+#
+# BINDINGS:
+#   * conditional pills is NEVER promoted to primary on its own -- conditioning on
+#     mutually-cleared seeds drops exactly the games the candidate lost.
+#   * discordance under MIN_DISCORDANT either way -> "not testable at n=55", no direction.
+#     Rule 19 applies hardest when the direction agrees with what someone expected.
+MIN_DISCORDANT = 5
+NEARDEATH_CONTROL = "/mnt/data/drmario_cosim/results/control_noscan_death125.json"
+
+
+def preregistered_verdict(d):
+    """Apply the decision rule mechanically. Returns (outcome, text)."""
+    # --- outcome 4 first: it invalidates everything else ---
+    try:
+        with open(NEARDEATH_CONTROL) as fh:
+            ctl = json.load(fh)
+        diffs = None
+        for k, v in (ctl.get("comparisons") or {}).items():
+            diffs = v.get("n_placement_differs")
+        if diffs is not None and diffs > 0:
+            return (4, f"OUTCOME 4 -- ATTRIBUTION VOID: t3_noscan diverges from base on "
+                       f"{diffs} near-death boards, so both the pills delta and the "
+                       f"survival discordance are partly attributable to an unidentified "
+                       f"image difference.")
+    except FileNotFoundError:
+        pass                       # near-death control not run yet; note it below
+
+    if d.get("n_paired", 0) == 0:
+        return (None, "no data")
+    cl = d["clear"]
+    b, c = cl["discordant_cand_only"], cl["discordant_ctrl_only"]
+    tot = b + c
+    if tot < MIN_DISCORDANT:
+        return (0, f"NOT TESTABLE at this n: only {tot} discordant pair(s) "
+                   f"({b} cand-only / {c} ctrl-only). Report the count and the n, and "
+                   f"state NO direction -- rules 13 and 19.")
+
+    survival_bad = cl["mcnemar_p"] < 0.05 and c > b
+    if survival_bad:
+        return (1, f"OUTCOME 1 -- NET HARMFUL, DO NOT BUILD THE EXECUTOR. Survival cost "
+                   f"replicates: {c} champion-only vs {b} candidate-only, McNemar "
+                   f"p={cl['mcnemar_p']}. This verdict stands EVEN IF conditional pills "
+                   f"is strongly negative -- speed does not buy back an absorbing state.")
+
+    pb = d.get("pills_if_both_cleared") or {}
+    pills_excl0 = bool(pb) and not (pb["ci95"][0] <= 0 <= pb["ci95"][1])
+    cf = d.get("combined_failure_ranked") or {}
+    combined_excl0 = bool(cf) and all(not r["spans_zero"] for r in cf.values())
+
+    if pills_excl0 and combined_excl0:
+        return (2, f"OUTCOME 2 -- GENUINE WIN. Survival not significant ({b} vs {c}), "
+                   f"conditional pills {pb['mean_delta']:+.1f} CI excludes 0, AND the "
+                   f"failure-ranked combined test excludes 0 at every penalty. Executor "
+                   f"becomes a hardware priority -- re-prove on the near-death control "
+                   f"first.")
+    pills_txt = "" if not pb else f", conditional pills {pb['mean_delta']:+.1f}"
+    return (3, f"OUTCOME 3 -- WASH at this n. PARK IT. Survival NOT SIGNIFICANT ({b} cand-only vs {c} champion-only); "
+               f"the failure-ranked combined test still spans zero{pills_txt}. "
+               f"NOT a wasted night -- it retires a question this project has spent weeks "
+               f"on, on validated firmware with a validated control.")
+
+
 def block_verdict(d_null, d_oos):
     """Adjudicate the fast-sim lane's own split, out of sample."""
     if d_null.get("n_paired", 0) == 0 or d_oos.get("n_paired", 0) == 0:
@@ -377,9 +461,11 @@ def main():
             print(f"            delta {cl['delta_points']:+.1f} pts   discordant "
                   f"{cl['discordant_cand_only']}/{cl['discordant_ctrl_only']}   "
                   f"McNemar p={cl['mcnemar_p']}")
-            print(f"    [1] SURVIVAL   clear {cl['cand']} vs {cl['ctrl']}   "
-                  f"discordant {cl['discordant_cand_only']} cand-only / "
-                  f"{cl['discordant_ctrl_only']} ctrl-only   McNemar p={cl['mcnemar_p']}")
+            print(f"    [1] SURVIVAL (PRIMARY)  discordant "
+                  f"{cl['discordant_cand_only']} cand-only vs "
+                  f"{cl['discordant_ctrl_only']} champion-only   <- the interpretable "
+                  f"quantity; p is downstream of it")
+            print(f"        clear {cl['cand']} vs {cl['ctrl']}   McNemar p={cl['mcnemar_p']}")
             pb = d.get("pills_if_both_cleared")
             if pb:
                 print(f"    [2] SPEED | both cleared  n={pb['n']}  "
@@ -411,7 +497,12 @@ def main():
             print(f"    fire rate  published {f['published_per_placement']}  "
                   f"executed {f['executed_per_placement']}  "
                   f"incoherent {f['n_incoherent']}")
-            print(f"    VERDICT: {d['verdict']}")
+            if cand == FIXED_TUCK:
+                oc, txt = preregistered_verdict(d)
+                print(f"    >>> PRE-REGISTERED VERDICT: {txt}")
+                res["comparisons"][label]["preregistered_outcome"] = oc
+                res["comparisons"][label]["preregistered_text"] = txt
+            print(f"    (fire-rate note: {d['verdict']})")
 
         # --- secondary: blocks kept visible, one line each ---
         print(f"    by block (kept visible on request; the split itself is RETRACTED "
