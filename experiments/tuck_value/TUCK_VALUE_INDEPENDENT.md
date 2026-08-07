@@ -14,10 +14,11 @@ control arms, the θ sweep and the divergence rigs.
 
 On the fast sim the executor looks worth having: the full program beats the shipped champion by
 **−6.50 points of bad-end rate [−11.25, −1.75], p=0.0088** over 400 paired seeds, clears 26
-pills faster, and gets better as it fires more. But that average is not uniform. **On seeds
-0–119 — the exact block the co-sim's RTL arms run — the effect is a wash with the wrong sign
-(+3.3 points, p=0.57)**, and a permutation test says a split that extreme happens in 2.3% of
-random partitions of the same sizes. The whole of my headline lives in seeds 120–399.
+pills faster, and gets better as it fires more. That effect briefly appeared to be confined to
+seeds 120–399, which would have made it far less trustworthy — but five checks on the games
+already played established the split as a
+[coincidence](#the-block-split-was-a-coincidence-and-here-is-how-that-was-established), so the
+n=400 estimate stands as written. It is still a single modest p-value on one simulator.
 
 The RTL's own answer, which contradicted mine outright, has since been withdrawn: its tuck leaf
 scored *every* candidate a win because the board upload destroyed itself, and a separate
