@@ -74,11 +74,24 @@ def arm_table(rows, title):
               f"{sum(x['n_deeper'] for x in r) / n:>9.2f}")
 
 
-def delta(rows, ctrl, on, label):
+def delta(rows, ctrl, on, label, fired_only=False):
+    """`fired_only` restricts to seeds where the treatment arm's executor fired
+    at least once.
+
+    This is a legitimate subgroup, not a post-treatment filter: the two arms
+    are bit-identical up to the FIRST fire, so whether a first fire happens at
+    all is decided by the shared prefix both arms play. It is still a
+    conditional estimate and is reported alongside the all-seeds one, never
+    instead of it -- an executor that fires in a fifth of games dilutes an
+    all-seeds average by 5x, and both facts matter to a ship decision."""
     if ctrl not in rows or on not in rows:
         return None
     A, B = rows[ctrl], rows[on]
     ss = sorted(set(A) & set(B))
+    if fired_only:
+        ss = [s for s in ss if B[s]["fired_tuck"] > 0]
+        if not ss:
+            return None
     n = len(ss)
     both = [s for s in ss if A[s]["won"] and B[s]["won"]]
     dp = [B[s]["pills"] - A[s]["pills"] for s in both]
@@ -188,6 +201,11 @@ def main():
         delta(rows, "v1_drop", "v1_tuck", "C - A   executor value, v1 firmware held fixed")
         delta(rows, "v1_drop", "t3_drop", "B - A   ship tier-3 onto today's executor-less cart")
         delta(rows, "v1_drop", "t3_tuck", "D - A   the full program (cart rebuild + tier-3)")
+        print("\n--- restricted to seeds where the executor actually fired ---")
+        delta(rows, "t3_drop", "t3_tuck",
+              "D - B   executor value, tier-3, FIRED-ONLY subgroup", fired_only=True)
+        delta(rows, "v1_drop", "v1_tuck",
+              "C - A   executor value, v1, FIRED-ONLY subgroup", fired_only=True)
     print()
 
 
