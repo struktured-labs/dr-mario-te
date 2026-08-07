@@ -62,7 +62,15 @@ class VsMatch:
                 b.color[0, c] = col
                 b.link[0, c] = 0          # garbage is unlinked -- falls as a single cell
                 b.is_virus[0, c] = False
-        b.resolve()                       # settle + honour any clears the garbage completes
+        # ⚠ _apply_gravity() IS LOAD-BEARING. resolve() runs gravity ONLY after a
+        # clear step, so without this the tiles FLOAT AT ROW 0 forever. Since
+        # spawn_blocked() tests row 0 of columns 3 and 4 and GARBAGE_PAIRS
+        # contains column 3, one third of deliveries topped the receiver out
+        # INSTANTLY on any board -- measured 19/60 = 31.7% on healthy fresh L11
+        # boards, 0/60 after this line. Gate:
+        # dr-mario-qa-wt/experiments/holepoker/test_garbage_gravity.py
+        b._apply_gravity()                # tiles FALL to the stack, as on hardware
+        b.resolve()                       # then honour any clears they complete
 
     def _colours_of(self, board_before, board_after):
         """Colours present before but gone after -- i.e. what was cleared."""
