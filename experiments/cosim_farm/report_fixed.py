@@ -29,6 +29,11 @@ JSONL = "/mnt/data/drmario_cosim/results/tuck2x2_bursty.jsonl"
 BASE = "s20b_drop"                       # the only clean baseline
 FIXED_TUCK, FIXED_DROP = "s20t3fix_tuck", "s20t3fix_drop"
 
+# Stratification boundary. Specified by this lane BEFORE the fast-sim lane looked at it,
+# which is the only reason their split test carries any weight -- and the same reason it
+# must be honoured here rather than re-chosen to taste.
+BLOCK_BOUNDARY = 120
+
 PREDICTION = {
     "source": "fast-sim lane, registered before the fixed-firmware re-run existed",
     "clear_rate_gain_points": 5.0,
@@ -79,11 +84,17 @@ def load(path, drop_degenerate=True):
             dropped[r["arm"]] += 1
             continue
         by[r["arm"]][r["seed"]] = r
+    if dropped:
+        print("excluded degenerate seed(s) "
+              + ",".join(map(str, sorted(DEGENERATE_SEEDS))) + ": "
+              + "  ".join(f"{k}={v}" for k, v in sorted(dropped.items())))
     return by
 
 
-def compare(by, cand, ctrl):
+def compare(by, cand, ctrl, seed_filter=None):
     seeds = sorted(set(by.get(cand, {})) & set(by.get(ctrl, {})))
+    if seed_filter is not None:
+        seeds = [s for s in seeds if seed_filter(s)]
     n = len(seeds)
     out = {"candidate": cand, "control": ctrl, "n_paired": n,
            "cand_only": len(set(by.get(cand, {})) - set(by.get(ctrl, {}))),
@@ -172,34 +183,49 @@ def main():
     a = ap.parse_args()
 
     by = load(a.jsonl)
-    res = {"prediction": PREDICTION,
-           "D_fixed_vs_A": compare(by, FIXED_TUCK, BASE),
-           "B_fixed_vs_A": compare(by, FIXED_DROP, BASE)}
-    for k in ("D_fixed_vs_A", "B_fixed_vs_A"):
-        res[k]["verdict"] = verdict(res[k])
+
+    # STRATIFY, ALWAYS. The fast-sim lane's arm-D effect is absent below seed 120 and
+    # carries entirely above it (permutation on the block labels p=0.023, with their
+    # clean champion arm unmoved by the same split, so it is the tuck effect that
+    # differs and not board difficulty). A pooled number is an average over a possibly
+    # non-uniform effect -- which is precisely the error that lane just corrected in
+    # itself. The pooled row is printed LAST and labelled, never on its own.
+    strata = [("block 0-119 ", lambda s: s < BLOCK_BOUNDARY),
+              ("block 120+  ", lambda s: s >= BLOCK_BOUNDARY),
+              ("POOLED (avg over a possibly non-uniform effect)", None)]
+
+    res = {"prediction": PREDICTION, "block_boundary": BLOCK_BOUNDARY,
+           "degenerate_seeds_excluded": sorted(DEGENERATE_SEEDS), "comparisons": {}}
 
     print("arm row counts: " + "  ".join(f"{k}={len(v)}" for k, v in sorted(by.items())))
-    for k in ("D_fixed_vs_A", "B_fixed_vs_A"):
-        d = res[k]
-        print(f"\n=== {k}  ({d['candidate']} vs {d['control']}) ===")
-        if d.get("n_paired", 0) == 0:
-            print("  no paired seeds yet")
-            continue
-        print(f"  n paired {d['n_paired']}  (cand-only {d['cand_only']}, "
-              f"ctrl-only {d['ctrl_only']})   fw {d['fw']}")
-        cl = d["clear"]
-        print(f"  clear   cand {cl['cand']} CI[{cl['cand_ci'][0]:.1%},{cl['cand_ci'][1]:.1%}]"
-              f"   ctrl {cl['ctrl']} CI[{cl['ctrl_ci'][0]:.1%},{cl['ctrl_ci'][1]:.1%}]")
-        print(f"          delta {cl['delta_points']:+.1f} pts   discordant "
-              f"{cl['discordant_cand_only']}/{cl['discordant_ctrl_only']}   "
-              f"McNemar p={cl['mcnemar_p']}")
-        v = d["viruses_cleared"]
-        print(f"  viruses cleared  cand {v['cand']}  ctrl {v['ctrl']}  "
-              f"delta {v['paired_delta']:+.2f}")
-        f = d["fire_rate"]
-        print(f"  fire rate  published {f['published_per_placement']}  "
-              f"executed {f['executed_per_placement']}  incoherent {f['n_incoherent']}")
-        print(f"  VERDICT: {d['verdict']}")
+    for label, cand, ctrl in (("D_fixed_vs_A", FIXED_TUCK, BASE),
+                              ("B_fixed_vs_A", FIXED_DROP, BASE)):
+        res["comparisons"][label] = {}
+        print(f"\n################ {label}  ({cand} vs {ctrl}) ################")
+        for sname, sfilt in strata:
+            d = compare(by, cand, ctrl, sfilt)
+            d["verdict"] = verdict(d)
+            res["comparisons"][label][sname.strip()] = d
+            print(f"\n  --- {sname} ---")
+            if d.get("n_paired", 0) == 0:
+                print("      no paired seeds yet")
+                continue
+            cl = d["clear"]
+            print(f"      n paired {d['n_paired']}   fw {d['fw']}")
+            print(f"      clear   cand {cl['cand']} "
+                  f"CI[{cl['cand_ci'][0]:.1%},{cl['cand_ci'][1]:.1%}]"
+                  f"   ctrl {cl['ctrl']} CI[{cl['ctrl_ci'][0]:.1%},{cl['ctrl_ci'][1]:.1%}]")
+            print(f"              delta {cl['delta_points']:+.1f} pts   discordant "
+                  f"{cl['discordant_cand_only']}/{cl['discordant_ctrl_only']}   "
+                  f"McNemar p={cl['mcnemar_p']}")
+            v = d["viruses_cleared"]
+            print(f"      viruses cleared  cand {v['cand']}  ctrl {v['ctrl']}  "
+                  f"delta {v['paired_delta']:+.2f}")
+            f = d["fire_rate"]
+            print(f"      fire rate  published {f['published_per_placement']}  "
+                  f"executed {f['executed_per_placement']}  "
+                  f"incoherent {f['n_incoherent']}")
+            print(f"      VERDICT: {d['verdict']}")
 
     if a.out:
         json.dump(res, open(a.out, "w"), indent=1)
