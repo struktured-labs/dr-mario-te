@@ -125,15 +125,141 @@ weakness.** It is not proof of NO weakness -- see the overfitting and n
 caveats below -- but three separate hunts converged on "hard to kill," not
 "here is the exploit."
 
+## The DMUU reframing, and what it changes about how to read a kill
+
+Mid-session the owner reframed this program as decision-making under
+uncertainty, which sharpens what a "kill" should even mean here. The champion
+maximises EXPECTED CLEARING PROGRESS (its coefficients were tuned on clear
+rate / pills-to-clear). The actual goal is P(WIN), and death is an ABSORBING
+state -- those objectives coincide almost everywhere but can diverge sharply
+near the ruin boundary: with a rising stack, an expected-progress-maximizing
+agent keeps taking the highest-value placement; a win-probability-maximizing
+agent would sometimes trade value for survival margin once the downside is
+catastrophic and irreversible. "Dies while ahead" (already a tracked metric
+in this tier's harness, see `vs_run.py::_outcome`'s `dies_ahead`) is close to
+a definition of risk-neutral behaviour near ruin. So: when an adversary
+finds a kill, the diagnostic question isn't just "did it die" but "at the
+decisions leading up to death, did the champion's OWN evaluation have a
+materially safer option and rank it below a riskier, higher-value one?" If
+yes, that's evidence of OBJECTIVE mis-specification (fixable by a
+risk-sensitive objective -- survival-weighted value, a CVaR-style downside
+penalty, or optimizing P(win) directly) rather than an eval-coefficient gap
+(fixable, if at all, by retuning existing hand terms).
+
+**Coordination note**: `experiments/portfolio/failure-objective/REPORT.md`
+(a parallel lane, already landed) ran exactly the "retune existing hand
+terms toward survival" experiment -- a 6-point coordinate scan around the
+champion's own coefficients (`ws` at 0.5x/2x, `R_BURIED` at 0.5x/2x,
+`R_SETUP` at 0.5x/2x) scored on bad-end rate under human-cadence bursty
+pressure. **Every arm was a WASH against the shipped point** (n=40,
+paired-bootstrap CIs all straddling 0) -- no local retuning of the existing
+terms beats the champion's own survival rate. That result and this tier's
+"no adversary found a large exploit" both point the same direction, and
+BOTH are consistent with (not proof of) the DMUU hypothesis: if the gap is
+in the OBJECTIVE rather than the coefficients, no amount of nudging the
+existing hand terms should find it -- which is exactly what both lanes
+observed. Neither lane, on its own, distinguishes "no gap exists" from "the
+gap needs an objective change, not a coefficient change" -- the kill
+classification below is the first piece of direct evidence that tries to.
+
+### Kill classification: outplayed vs. risk-neutral choice
+
+Built `instrumented_champion.py` (a mechanical copy of the champion's own
+root loop that returns EVERY legal candidate's value and resulting
+spawn-lane headroom, not just the argmax -- `selfcheck()` proves its #1
+candidate always equals `StrandedChainD3Decider.choose()`, so it sees
+exactly what the champion saw, nothing more) and `classify_kills.py`, which
+replays each known death game and asks, at every champion decision in a
+window before the topout: among the FULL candidate set, did a materially
+SAFER placement (lower spawn-lane height -- `spawn_blocked()`'s own row0-
+cols{3,4} trigger, so this is the direct topout-proximity metric) exist?
+Three-way classification per decision:
+
+- `no_escape` -- no legal placement (of ~28-30 available) had lower
+  spawn-lane height than the one chosen. Physically boxed in.
+- `cheap_risk_neutral` -- a safer placement existed WITHIN the champion's
+  own near-optimal band (its own top-8, the same cutoff its ply-2 pruning
+  uses) -- declined a nearly-as-good, safer move for a slightly better one.
+- `expensive_risk_neutral` -- a safer placement existed somewhere in the
+  full candidate set but scored far enough below the top-8 that a pure
+  expected-value argmax would never reach it regardless of the safety gain.
+  This is the sharpest evidence for the DMUU framing: the champion isn't
+  choosing between two similar options, it's choosing between "safe at a
+  real, priced cost" and "best score, unsafe" -- exactly the choice a hard
+  survival floor would override and a pure risk-neutral maximizer never will.
+
+**Replayed all 4 concrete champion-death games this session's compute
+produced** (2 from the off-policy rollout corpus, 2 from the evolutionary
+search's own training seeds 5005/5012 -- both of the latter also independently
+flagged `dies_ahead=1`, i.e. the champion had FEWER remaining viruses than
+its killer at the moment it died). Classified the last 40 champion decisions
+before each topout (widened from an initial 3, then 15, after both showed
+spawn-lane height already stuck at 12-15 for the entire window -- the
+"still had real options" period turned out to extend much further back than
+expected):
+
+```
+no_escape:              156
+cheap_risk_neutral:        2
+expensive_risk_neutral:    2
+                     (n=160 decisions across 4 games)
+```
+
+**Reading it plainly**: the dominant pattern (97.5% of decisions examined)
+is `no_escape` -- once the champion's spawn-lane height reaches roughly
+12-13, EVERY one of its ~30 legal placements keeps or raises that height for
+many consecutive plies in a row (one game shows 30+ consecutive `no_escape`
+decisions). At that point the champion genuinely has no good option; this is
+NOT a risk-neutrality failure, it's a structural inevitability once the
+stack reaches that state (the more interesting question this raises -- when
+and why did the stack get there, likely much earlier in the game, is outside
+what this small sample can answer).
+
+**But 4 of 160 decisions (2.5%) DID show a real, priced escape the champion
+declined**, and both instances sit right at the edge of the no-escape
+region -- the last moment before the situation became fully locked-in, not
+buried in the middle of it:
+- Game `evosearch_death_5012`, plies 74-75: a candidate existed with 3 more
+  rows of spawn-lane headroom (`spawnh` 9 vs the chosen 12), ranked 8th-13th
+  by the champion's own value (i.e. `expensive_risk_neutral` -- well outside
+  its near-optimal band), at a real cost (15-24% of that decision's full
+  value range).
+- Game `rollout_death_2` (seed 42357), the LAST champion decision before its
+  topout: a candidate existed with 2 more rows of headroom (`spawnh` 14 vs
+  the chosen 16 -- 16 is essentially the top row), ranked 2nd by the
+  champion's own value (`cheap_risk_neutral` -- barely outside the argmax),
+  at a val cost of 147 (15.6% of that decision's value range).
+
+**Honest read, n=4 games / 4 flagged decisions**: this is an illustration of
+a method that works and finds real instances of the DMUU signature, not a
+statistically powered claim about how OFTEN it happens. What it does show:
+the risk-neutral-choice pattern is real and detectable in this data, it
+clusters at the transition INTO the locked-in state rather than throughout
+it, and in the one case with a big headroom gain available (3 rows, game
+5012) the champion still took the higher-value option across two consecutive
+decisions. Whoever runs a larger death-game corpus next (the highest-value
+use of more compute for this specific question) should run this same
+classification and expect the SHAPE of the finding -- rare-but-real risky
+choices concentrated near the transition into "no_escape" -- to matter more
+than the raw count. Full per-decision data: `kill_classification_result.json`.
+
 ## Four-way comparison (held-out seeds 6000-6014, n=15 -- see resource note)
 
 ```
 a_selfplay:     death=0.0%  [0.0%,0.0%]   win=50.0%  outraced=50.0%  n=15
 b_native_d1:    death=0.0%  [0.0%,0.0%]   win=100.0% outraced=0.0%   n=15
 c_evolved_adv:  death=0.0%  [0.0%,0.0%]   win=96.7%  outraced=3.3%   n=15
-d_learned:      PENDING -- see resource note; background job continuing at
-                report time, see logs/quickfive.log and quick_fiveway_result.json
+d_learned:      death=0.0%  [0.0%,0.0%]   win=100.0% outraced=0.0%   n=15
 ```
+
+Arm (d) completed after ~13 minutes (Python-level per-candidate sklearn
+inference under contention, vs the numba-jitted arms' ~2.5 minutes each --
+see resource note). At n=15 it lands exactly on the native-d1 and self-play
+baselines: no deaths, champion wins every game by clearing. Consistent with
+the overall finding, though worth flagging its own limitation: the model was
+trained on only 2 death-games total, so it may not have learned much of a
+genuinely threatening policy yet, distinct from "the champion is unkillable
+against this specific learned policy."
 
 Arm (c) is the evolved adversary at its best-found vector
 `(w_chain=234, ws=20, w_press=-31, w_hold=233, w_bigsq=37)`, found at
@@ -269,11 +395,13 @@ of the time. Concrete consequences, in the order they were hit:
 3. `measure_fourway.py`'s originally-planned n=80 four-way comparison was
    killed twice without a single arm completing (>5 min each attempt).
    Replaced with `quick_fiveway.py` at n=15, which completed arms (a)-(c) in
-   ~2.5 minutes each but arm (d) (the learned adversary, which does
-   per-candidate Python-level sklearn inference rather than a pure-numba
-   kernel) was still running past 7 minutes at report time -- left running
-   in the background (nohup+disowned); check `logs/quickfive.log` or
-   `quick_fiveway_result.json` for the completed number.
+   ~2.5 minutes each; arm (d) (the learned adversary, which does per-
+   candidate Python-level sklearn inference rather than a pure-numba kernel)
+   took ~13 minutes under the same contention before completing (result now
+   in the four-way table above). The box's load dropped substantially partway
+   through this session (other tiers' jobs apparently wrapping up) -- the
+   kill-classification work later in this report ran in a fraction of the
+   time the earlier measurements needed, for the same reason.
 4. Own multiprocessing worker counts were kept at 4-8 throughout rather than
    the authorised-up-to-20, specifically to avoid making the shared
    contention worse for the live silicon A/B and sibling tiers -- a
@@ -292,10 +420,26 @@ highest-value next step, not a new search or a new feature set.
 See `README.md` for the full inventory. Headline: the entire VS match loop
 (`vs_harness.play_match`) was reused unmodified; the champion's own depth-3
 numba kernels were mechanically copied and extended (not rewritten) for the
-evolved adversary, following this project's own established discipline; the
-off-policy pipeline (`adversary_features.py`, `gen_rollout_data.py`,
-`train_adversary_model.py`, `learned_adversary.py`) is new, built to the
-team lead's mid-session design update.
+evolved adversary AND for the kill-classifier's candidate-inspection kernel
+(`instrumented_champion.py`), following this project's own established
+discipline; the off-policy pipeline (`adversary_features.py`,
+`gen_rollout_data.py`, `train_adversary_model.py`, `learned_adversary.py`)
+and the kill classifier (`instrumented_champion.py`, `classify_kills.py`)
+are new, built to the team lead's two mid-session design updates.
+
+## Note on the concurrent census finding (clean stream unbreakable)
+
+The team lead reported the pooled clean-stream census (Hetzner + local,
+1,474 games) found ZERO failures -- rule-of-three puts the true clean
+failure rate below 0.20% at 95% confidence. That is independent evidence for
+the same shape this tier's results already show: seed variation ALONE,
+without an active attacker, essentially never kills the champion. It
+directly supports why this tier's adversary design deliberately does NOT
+include a "target column" or seed-manipulation knob (see the module
+docstrings) and instead spends its whole parameter budget on GARBAGE TIMING
+(`w_press`, `w_hold`, `w_bigsq`) -- per this finding, that channel is where
+whatever leverage exists actually is, and this tier's design already bet on
+that before the census result confirmed it.
 
 ## Fixtures
 
@@ -308,8 +452,9 @@ team lead's mid-session design update.
   472 games, 4 behaviour policies.
 - `search_checkpoint.json` / `search_log.jsonl` -- full evolutionary search
   record, anytime-resumable.
-- `quick_fiveway_result.json` -- the four/five-way comparison result,
-  updated live as arm (d) completes in the background.
+- `quick_fiveway_result.json` -- the completed four-way comparison result.
+- `kill_classification_result.json` -- full per-decision data behind the
+  outplayed-vs-risk-neutral-choice classification above, all 4 death games.
 
 ## Honesty notes (consolidated)
 

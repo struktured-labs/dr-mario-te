@@ -1,0 +1,1210 @@
+{
+  "rollout_death_1": {
+    "seed": 42165,
+    "vec": [
+      247,
+      21,
+      -25,
+      192,
+      38
+    ],
+    "adv_side": 0,
+    "champ_side": 1,
+    "reason": "topout",
+    "n_decisions": 72,
+    "classification": [
+      {
+        "ply": 32,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 33,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 34,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 35,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 36,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 37,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 38,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 39,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 40,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 41,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 42,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 43,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 44,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 45,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 46,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 47,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 48,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 49,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 50,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 51,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 52,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 53,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 54,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 55,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 56,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 57,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 58,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 59,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 60,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 61,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 62,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 63,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 64,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 65,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 66,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 67,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 68,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 69,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 70,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 71,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      }
+    ]
+  },
+  "rollout_death_2": {
+    "seed": 42357,
+    "vec": [
+      215,
+      28,
+      -29,
+      232,
+      37
+    ],
+    "adv_side": 1,
+    "champ_side": 0,
+    "reason": "topout",
+    "n_decisions": 57,
+    "classification": [
+      {
+        "ply": 17,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 18,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 19,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 20,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 21,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 22,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 23,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 24,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 25,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 26,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 27,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 28,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 29,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 30,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 31,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 32,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 33,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 34,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 35,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 36,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 37,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 38,
+        "classification": "cheap_risk_neutral",
+        "chosen_spawnh": 15,
+        "safer_spawnh": 14,
+        "headroom_gained": 1,
+        "chosen_val": 2981,
+        "safer_val": 2948,
+        "safer_rank": 1,
+        "n_candidates": 30,
+        "val_gap": 33,
+        "val_gap_frac_of_full_range": 0.035
+      },
+      {
+        "ply": 39,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 40,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 41,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 42,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 43,
+        "classification": "no_escape",
+        "chosen_spawnh": 12,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 44,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 45,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 46,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 47,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 48,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 49,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 50,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 51,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 52,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 26,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 53,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 54,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 55,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 56,
+        "classification": "cheap_risk_neutral",
+        "chosen_spawnh": 16,
+        "safer_spawnh": 14,
+        "headroom_gained": 2,
+        "chosen_val": 2226,
+        "safer_val": 2079,
+        "safer_rank": 2,
+        "n_candidates": 30,
+        "val_gap": 147,
+        "val_gap_frac_of_full_range": 0.156
+      }
+    ]
+  },
+  "evosearch_death_5005": {
+    "seed": 5005,
+    "vec": [
+      234,
+      20,
+      -31,
+      233,
+      37
+    ],
+    "adv_side": 0,
+    "champ_side": 1,
+    "reason": "topout",
+    "n_decisions": 76,
+    "classification": [
+      {
+        "ply": 36,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 37,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 38,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 39,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 40,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 41,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 42,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 43,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 44,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 45,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 46,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 47,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 48,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 49,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 50,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 51,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 52,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 53,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 54,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 55,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 56,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 57,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 58,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 59,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 60,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 61,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 62,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 63,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 64,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 65,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 66,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 67,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 68,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 69,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 70,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 71,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 72,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 73,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 74,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 75,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      }
+    ]
+  },
+  "evosearch_death_5012": {
+    "seed": 5012,
+    "vec": [
+      234,
+      20,
+      -31,
+      233,
+      37
+    ],
+    "adv_side": 0,
+    "champ_side": 1,
+    "reason": "topout",
+    "n_decisions": 114,
+    "classification": [
+      {
+        "ply": 74,
+        "classification": "expensive_risk_neutral",
+        "chosen_spawnh": 12,
+        "safer_spawnh": 9,
+        "headroom_gained": 3,
+        "chosen_val": 4244,
+        "safer_val": 3944,
+        "safer_rank": 13,
+        "n_candidates": 30,
+        "val_gap": 300,
+        "val_gap_frac_of_full_range": 0.238
+      },
+      {
+        "ply": 75,
+        "classification": "expensive_risk_neutral",
+        "chosen_spawnh": 12,
+        "safer_spawnh": 9,
+        "headroom_gained": 3,
+        "chosen_val": 4392,
+        "safer_val": 4165,
+        "safer_rank": 8,
+        "n_candidates": 30,
+        "val_gap": 227,
+        "val_gap_frac_of_full_range": 0.15
+      },
+      {
+        "ply": 76,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 77,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 78,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 79,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 80,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 81,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 82,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 83,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 84,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 85,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 86,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 87,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 88,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 89,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 90,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 91,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 92,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 93,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 94,
+        "classification": "no_escape",
+        "chosen_spawnh": 13,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 95,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 96,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 97,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 98,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 99,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 100,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 101,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 102,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 103,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 104,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 105,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 106,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 107,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 108,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 109,
+        "classification": "no_escape",
+        "chosen_spawnh": 14,
+        "n_candidates": 30,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 110,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 111,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 112,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      },
+      {
+        "ply": 113,
+        "classification": "no_escape",
+        "chosen_spawnh": 15,
+        "n_candidates": 28,
+        "note": "no legal placement had lower spawn-lane height"
+      }
+    ]
+  }
+}

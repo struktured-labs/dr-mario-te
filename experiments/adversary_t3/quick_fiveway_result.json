@@ -70,5 +70,27 @@
     "outraced_rate": 0.03333333333333333,
     "atk_sent_champ": 15.033333333333333,
     "atk_sent_opp": 23.8
+  },
+  "d_learned": {
+    "n_seeds": 15,
+    "opp_kind": "learned",
+    "vec": null,
+    "champ_death_rate": 0.0,
+    "death_ci": [
+      0.0,
+      0.0
+    ],
+    "dies_ahead_rate": 0.0,
+    "dies_ahead_ci": [
+      0.0,
+      0.0
+    ],
+    "champ_pills_to_clear": null,
+    "n_champ_wins": 0,
+    "champ_win_rate": 1.0,
+    "stall_rate": 0.0,
+    "outraced_rate": 0.0,
+    "atk_sent_champ": 1.3,
+    "atk_sent_opp": 0.03333333333333333
   }
 }
