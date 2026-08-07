@@ -119,6 +119,29 @@ own docstring predicted exactly this: *"publishing a tuck the executor cannot pe
 strictly worse than no tuck."* The measurement is that it is worse even when it *can* perform
 it, because v1 chooses its target column independently of `best_col`.
 
+### Both ends of the bracket say the same thing
+
+The numbers above use the **conservative** convention: a descriptor the executor cannot
+perform degrades to a plain drop. That is what the co-sim farm assumes, so the two rigs are
+comparable, but it is *not* what the driver source implies —
+`patch_cartridge_copro.py:1920-1926` steers to the approach column while the capsule is above
+the trigger row and to `best_col` at or below it, with no check anywhere that the switch is
+possible. If the traverse is blocked the capsule simply lands where it is. Running that
+convention instead:
+
+| convention | clear | bad ends | fires/game | vs A |
+|---|---|---|---|---|
+| conservative (`drop`) | 73.8% | 105/400 (26.2%) | 4.16 | rescued=46 harmed=74, **p=0.013** |
+| driver-implied (`approach`) | **6.8%** | **373/400 (93.3%)** | 36.01 | rescued=2 harmed=298, **p=4.4e−86** |
+
+Under the driver-implied convention the executor fires 36 times a game — nearly all of them
+blocked descriptors dumping the capsule in the approach column — and only 1.38 of those land
+deeper. Bad ends decompose into stalls 28 → 121 and topouts 49 → 252, both catastrophic.
+
+**The truth lies between the two rows, and the whole interval is negative.** No convention
+this rig can construct makes enabling the executor on v1 firmware anything other than a
+regression, which is the point of bracketing rather than picking one.
+
 ---
 
 ## The survival win is digging, not racing
@@ -243,11 +266,9 @@ three:
   at the trigger row, where `descriptor_audit.py` requires only that the pill can enter
   `best_col` there. On the shared 20 boards that is 4/7 coherent here against 6/7 there — a
   definition difference, not a measurement disagreement.
-- **The blocked-descriptor convention.** The runs above degrade an unperformable v1 descriptor
-  to a plain drop, which is conservative and matches the co-sim so the numbers are comparable.
-  The `approach` bracket — the capsule lands in the approach column, which is what the driver
-  source actually implies, since `patch_cartridge_copro.py:1920-1926` never checks that the
-  switch is possible — is still running.
+- **The blocked-descriptor convention.** Bracketed rather than chosen — both ends are reported
+  above and both are negative for v1. Which end the silicon sits at is a question only the
+  co-sim can answer.
 - **Vertical trigger-row half.** `legal()` treats the anchor as the bottom cell of a vertical
   capsule; whether `$0386` tracks that half is unresolved. Deliberately the same convention
   `descriptor_audit.py` uses.
@@ -287,8 +308,13 @@ rig's drop-degradation model is wrong, and that would be the most important resu
   boards reconverge, how often the eventual outcome changes, and whether either exceeds the
   control. A 12-seed smoke run had tucks never reconverging (11/11) against the control's 73%,
   with outcomes changing 36% vs 18% — too small to call, hence n=300.
-- **v1 hazard bracket** — the `approach` blocked-descriptor convention.
+- **Control arms A′** — the tier-3 decision path with θ so high no tuck can pass, isolating
+  D − A′ (the tuck program alone) from A′ − A (the reachability filter alone).
 - **θ sensitivity** — 0 / 150 / 250 on the headline pair.
+
+Completed since the first revision: the v1 hazard bracket (both ends negative, above) and the
+failure-mode decomposition (which corrected this document's interpretation of *why* D − A
+works).
 
 ## Reproducing
 
