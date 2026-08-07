@@ -24,10 +24,24 @@ scored *every* candidate a win because the board upload destroyed itself, and a 
 pill-colour bug voided its descriptor tables. So there is currently **no valid silicon
 measurement of tucks at all**, and my own result is suggestive rather than established.
 
-**Do not commit hands to a cart rebuild.** Two things *are* settled, by both methods and
-untouched by either defect: tier-3 firmware must never ship to a cart without the executor, and
-the executor must never be enabled on v1 firmware. Those are the night's real output — two
-reliable ways to destroy the champion, now documented so nobody does either by accident.
+**Do not commit hands to a cart rebuild.** Two safety findings survive, though with different
+strengths than this document claimed an hour ago:
+
+- **Never ship tier-3 firmware to a cart without the executor.** Confirmed on both rigs *as a
+  mechanism*, but **not yet as a magnitude**: the co-sim's arm B turned out to be contaminated
+  too (`tre_commit` writes `TP_TARGET → D_BC`, so drop mode ignores the *descriptor* but not
+  the *placement* — spurious wins moved its published column as well). Its 0/58 is the
+  mechanism running at a defect-inflated rate, not an independent check of my 80.8%. My own
+  number is the better current estimate, and it is now the more credible one for a reason that
+  emerged later: post-fix the RTL publishes on 13% of decisions against my 11.5%, so this rig
+  and the fixed firmware fire at nearly the same rate.
+- **Never enable the executor on v1 firmware.** This one is genuinely clean on both sides — v1
+  has no value gate, no tuck scoring, and never touches `LeafEval`, so neither defect can reach
+  it. Harmful under the conservative convention and catastrophic under the driver-implied one,
+  with the whole bracket negative.
+
+Those are the night's real output — two reliable ways to destroy the champion, now documented
+so nobody does either by accident.
 
 ---
 
@@ -553,11 +567,20 @@ colour — so a pill-colour bug cannot move it. What that bug *does* invalidate 
 depend on pill colours. **That 4/7 is withdrawn**, along with the co-sim's 6/7 it was compared
 against.
 
-**The one confirmation that still stands: arm B.** I predicted the RTL would see bad ends go
-from 19% to 81% and that n=20 would suffice. It reported 0/48 clear at n=12 paired, McNemar
-p=0.0010. Arm B does not involve the tuck executor at all — it is the drop-degradation path —
-so it is untouched by the tuck-leaf defect, and the colour bug applies equally to both of its
-arms. That finding is real on both methods.
+**Arm B: the mechanism is confirmed on both rigs, the magnitude is not.** I predicted the RTL
+would see bad ends go from 19% to 81% and that n=20 would suffice; it reported 0/48 clear at
+n=12 paired, McNemar p=0.0010. I first read that as a clean cross-method confirmation and
+**that was wrong** — the co-sim subsequently established that arm B is contaminated by the same
+tuck-leaf defect. Drop mode ignores the *descriptor*, but `tre_commit` writes
+`TP_TARGET → D_BC` regardless, so spuriously-won tucks moved arm B's published column too. Its
+arm B is the degradation mechanism running at a defect-inflated fire rate (53% of decisions
+against the post-fix 13%), which is why it reads even more catastrophic than mine.
+
+So the correct statement is: **both rigs agree the mechanism destroys the champion; only this
+rig has a magnitude for it.** That magnitude is more credible than it was, though, for a reason
+that arrived afterwards — post-fix the RTL fires on 13% of decisions and this rig fires on
+11.5%, so the two are now dosed almost identically, which is exactly the condition under which
+my 80.8% should transfer.
 
 ---
 
