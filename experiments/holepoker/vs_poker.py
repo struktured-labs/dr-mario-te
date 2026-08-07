@@ -34,10 +34,46 @@ ALL_ACTIONS = [v * 8 + c for v in range(4) for c in range(8)]
 ADV, CHAMP = 0, 1
 
 
+def pill_stream(seed, n=400):
+    """The seed's capsule sequence as a plain list (deepcopy-safe)."""
+    from nes_pills import NesPillSource
+    s = NesPillSource(seed=seed)
+    return [tuple(int(x) for x in s.next_pill()) for _ in range(n)]
+
+
 def new_match(seed, level, max_pills=300, chain_mode="first"):
+    """A VsMatch whose capsule supply survives copy.deepcopy.
+
+    ⚠ WHY THIS EXISTS. NesPillSource.attach installs
+        env._rand_pill = lambda: Pill(*self.next_pill())
+    -- a CLOSURE stored as an instance attribute. copy.deepcopy treats function
+    objects as atomic, so every deepcopied match keeps pointing at the ORIGINAL
+    source and all branches of a tree search draw from ONE SHARED, ADVANCING
+    cursor. Siblings then steal each other's capsules, the simulated game is not
+    the game the seed defines, and a 'kill' cannot be replayed from its own
+    action path. It fails silently and is deterministic run-to-run, so only a
+    REPLAY catches it (see test_deepcopy_pillshare.py).
+
+    Fix: keep the capsule sequence as a LIST on the match and a per-player
+    integer cursor -- both deepcopy cleanly -- and re-seat env.cur/env.nxt from
+    it after every placement (see `reseat`)."""
     from vs_env_exact import VsMatch
-    return VsMatch(seed, level=level, max_pills=max_pills, nes_pills=True,
-                   chain_mode=chain_mode, garbage=True)
+    m = VsMatch(seed, level=level, max_pills=max_pills, nes_pills=True,
+                chain_mode=chain_mode, garbage=True)
+    m.hp_stream = pill_stream(seed, max_pills + 8)
+    m.hp_cursor = [0, 0]
+    for who in (0, 1):
+        reseat(m, who)
+    return m
+
+
+def reseat(m, who):
+    """Point env.cur/env.nxt at the match's own list, by integer cursor."""
+    st, i = m.hp_stream, m.hp_cursor[who]
+    from drmario.faithful_game import Pill
+    e = m.env[who]
+    e.cur = Pill(*st[i % len(st)])
+    e.nxt = Pill(*st[(i + 1) % len(st)])
 
 
 def champ_decide(m):
@@ -84,8 +120,10 @@ def ply(m, adv_action):
     before = m.attacks_sent[ADV]
     done, res = m.step(ADV, adv_action)
     sent = m.attacks_sent[ADV] - before
+    m.hp_cursor[ADV] += 1
     if done:
         return ("adv_clear" if res == "clear" else "adv_dead"), sent
+    reseat(m, ADV)
     # --- champion
     m.deliver(CHAMP)
     if m.env[CHAMP].board.spawn_blocked():
@@ -94,8 +132,10 @@ def ply(m, adv_action):
     if a is None:
         return "champ_dead", sent
     done, res = m.step(CHAMP, a)
+    m.hp_cursor[CHAMP] += 1
     if done:
         return ("champ_clear" if res == "clear" else "champ_dead"), sent
+    reseat(m, CHAMP)
     return None, sent
 
 

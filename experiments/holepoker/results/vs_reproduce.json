@@ -1,0 +1,102 @@
+[
+ {
+  "seed": 1,
+  "K": 24,
+  "reproduced": true,
+  "note": "champion died at ply 24 (stored 24)",
+  "structural": true,
+  "fluke_note": "re-search killed at +22"
+ },
+ {
+  "seed": 4,
+  "K": 57,
+  "reproduced": false,
+  "note": "adversary action illegal at ply 9"
+ },
+ {
+  "seed": 9,
+  "K": 8,
+  "reproduced": false,
+  "note": "path exhausted without a kill"
+ },
+ {
+  "seed": 6,
+  "K": 23,
+  "reproduced": false,
+  "note": "path exhausted without a kill"
+ },
+ {
+  "seed": 12,
+  "K": 17,
+  "reproduced": false,
+  "note": "path exhausted without a kill"
+ },
+ {
+  "seed": 17,
+  "K": 40,
+  "reproduced": false,
+  "note": "line ended 'adv_dead' at ply 5"
+ },
+ {
+  "seed": 19,
+  "K": 54,
+  "reproduced": false,
+  "note": "adversary action illegal at ply 17"
+ },
+ {
+  "seed": 22,
+  "K": 42,
+  "reproduced": false,
+  "note": "champion died at ply 6 (stored 42)"
+ },
+ {
+  "seed": 23,
+  "K": 52,
+  "reproduced": false,
+  "note": "line ended 'adv_dead' at ply 25"
+ },
+ {
+  "seed": 27,
+  "K": 28,
+  "reproduced": false,
+  "note": "adversary action illegal at ply 10"
+ },
+ {
+  "seed": 31,
+  "K": 29,
+  "reproduced": false,
+  "note": "adversary action illegal at ply 20"
+ },
+ {
+  "seed": 36,
+  "K": 5,
+  "reproduced": false,
+  "note": "path exhausted without a kill"
+ },
+ {
+  "seed": 38,
+  "K": 40,
+  "reproduced": false,
+  "note": "adversary action illegal at ply 8"
+ },
+ {
+  "seed": 41,
+  "K": 32,
+  "reproduced": false,
+  "note": "adversary action illegal at ply 14"
+ },
+ {
+  "seed": 45,
+  "K": 4,
+  "reproduced": true,
+  "note": "champion died at ply 4 (stored 4)",
+  "structural": false,
+  "fluke_note": "re-search found no kill"
+ },
+ {
+  "seed": 44,
+  "K": 42,
+  "reproduced": false,
+  "note": "line ended 'adv_dead' at ply 23"
+ }
+]

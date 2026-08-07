@@ -59,7 +59,23 @@ def spawn_top(b):
 
 
 def h_lower_bound(b):
-    """Admissible: minimum placements before ANY death condition can hold."""
+    """Admissible lower bound on placements before ANY death condition holds.
+
+    Proof: a topout needs row 0 of column 3 or 4 occupied; a no-legal-move needs
+    every column filled to row <=1 (the weaker of the two, hence the -1). One
+    placement adds at most 2 cells to a single column, and clears + gravity only
+    ever RAISE the top-occupied row. So reaching either condition from
+    top_occ = t takes at least ceil((t-1)/2) placements.
+
+    ⚠ SOLO ONLY -- NOT VALID UNDER GARBAGE. The proof assumes cells enter only
+    via placements. VS garbage is inserted DIRECTLY AT ROW 0, and column 3 is
+    not immune (GARBAGE_PAIRS = (1,5),(2,6),(3,7); only 0 and 4 are immune), so
+    one garbage drop can top the board out from any height and the bound
+    collapses. Using this to prune a search that can receive garbage would
+    silently discard real kills. It is therefore used ONLY here (SoloPoker) and
+    as a survival certificate in m3_counterfactual, whose replays are
+    garbage-free by construction (continuity check 5/5). vs_poker/vs_escape use
+    spawn_top for RANKING only and never prune on it."""
     t = spawn_top(b)
     if t <= 1:
         return 0

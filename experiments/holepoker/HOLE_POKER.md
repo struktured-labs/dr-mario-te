@@ -17,14 +17,14 @@ replayed through the Verilator co-sim.** Named validation targets are in §8.
    The eval had a survivable move at all six commits, and exhaustive search shows
    every one of them was survivable. It was **execution** — confirming
    `VERDICT.md`'s H1 by forward search rather than by ranking argument.
-3. **Deep search does NOT reliably beat a reactive opponent.** VS beam 32% kills
-   vs 20% for the champion in the adversary seat, McNemar **p = 0.21, n = 50.**
-   The lead flagged this as the surprising-and-reportable outcome; it happened.
-4. **Depth-vs-eval, priced:** of 16 VS kills, **7 were avoidable by one different
-   champion move, 5 of them at E=1 (depth-4 dodges).** The other **9 (56%) had no
-   escape anywhere in the last 8 plies** — already lost. Avoidable deaths are
-   *fast* (K median 17); unavoidable ones are *slow attrition* (K median 42).
-   **Depth-4 buys roughly a third of the deaths. The majority need the eval.**
+3. **⚠ The VS results were RETRACTED mid-run** — a `copy.deepcopy` defect in the
+   shared VS substrate made every branch of the search draw from one shared
+   capsule cursor, so 14 of 16 "kills" would not replay. Root-caused, proven
+   with a regression test, fixed, and re-running. **Cross-cutting: any tier that
+   deepcopies `VsMatch` is affected** (§4).
+4. The one VS number that survives is the **control**: the champion playing the
+   adversary seat kills the champion in **10/50 seeds (20%)** — no deepcopy, so
+   no corruption.
 
 ---
 
@@ -131,45 +131,62 @@ badly-built adversary understated the champion's vulnerability by 5x.
 
 ---
 
-## 4. VS — where the champion actually dies
+## 4. VS — RETRACTED, root-caused, and re-running
 
-The adversary's real lever is not the pill stream (nobody chooses your capsules)
-but **garbage**: two simultaneous lines send two tiles. The adversary branches
-over **its own placements** — which cost no oracle calls — while the champion
-answers once per ply. That asymmetry makes deep VS search cheap.
+### ⚠ What happened
+The reproducibility gate (house rule: *a hole you cannot replay is an anecdote*)
+was run against the 16 VS kills. **Only 2 of 16 replayed** from their stored
+`(seed, adversary action path)`. The rest failed with "adversary action illegal
+at ply N" or ended as `adv_dead`.
 
-### Headline (pooled, n = 50 seeds, L11)
+### Root cause — a defect in the shared VS substrate
+`NesPillSource.attach` (`nes_pills.py:90`) installs
 
-| adversary | kills / 50 | median plies to kill |
-|---|---|---|
-| champion in the adversary seat (control) | 10 / 50 (**20.0%**) | 50 (range 7-81) |
-| deep-search beam | 16 / 50 (**32.0%**) | 32 (range 4-57) |
+```python
+env._rand_pill = lambda: Pill(*self.next_pill())
+```
 
-Paired by seed: **11 seeds the beam kills and the control doesn't; 5 the control
-kills and the beam doesn't.** McNemar exact on the 16 discordant pairs:
-**two-sided p = 0.21 — NOT SIGNIFICANT.**
+a **closure stored as an instance attribute**. `copy.deepcopy` treats function
+objects as **atomic** and returns the same object, so a deepcopied env's
+`_rand_pill` still points at the **original** `NesPillSource`. Every cloned
+branch of a tree search therefore draws from **one shared, advancing cursor** —
+siblings steal each other's capsules, the simulated game is not the game the seed
+defines, and a found line depends on the expansion interleaving rather than on
+the moves.
 
-> **Deep search does not reliably dominate a reactive opponent.** It is directionally
-> better and it kills faster (median 32 plies vs 50), but on kill *rate* the
-> difference is within noise at n=50. Compare against tier-3's evolved policy
-> using this same 50-seed control, not against the v2-only number below.
+Proven directly (`test_deepcopy_pillshare.py`): two independent deepcopies of the
+**same** state drew **different** capsules — `(3,3)` vs `(2,3)`.
 
-### The first 14 seeds lied — and that is the important part
-On seeds 0-13 alone: **beam 5/14 (35.7%) vs control 0/14 (0%)** — a decisive-looking
-win. Extending to seeds 14-49: **beam 11/36 (30.6%) vs control 10/36 (27.8%)**.
-The beam held its rate; **the control's 0% was pure seed-range luck.** A 14-seed
-VS comparison in this harness manufactured a 35-point effect out of nothing.
-(`dr-mario-sample-size-audit`, again.)
+### Why it survived every check but a replay
+It throws no exception and produces entirely plausible boards. It is also
+**deterministic run-to-run**, because the expansion order is deterministic — I
+re-ran the beam on seed 36 twice and got byte-identical action paths, which read
+as proof of correctness. **Determinism is not reproducibility.** Only replaying
+a line from a fresh state catches this.
 
-### The adversary's own competence bounds the answer
-The first adversary scored only garbage sent. It stacked its own board chasing
-double clears and **killed itself in 13 of 14 seeds** ("no surviving lines" —
-every beam line topped the *adversary* out). Adding self-preservation to the
-objective took it from 7.1% to 35.7% on the same seeds. Even the fixed version
-still loses 19/50 lines that way, so **32% is a floor on the champion's VS
-vulnerability, not a ceiling.**
+### Blast radius
+| affected | not affected |
+|---|---|
+| VS beam kill rate (the 32%) | **all SOLO results** — explicit pill lists, `FaithfulBoard.clone()`, no env deepcopy |
+| the escape-depth histogram built on those lines | **the m3 counterfactual** — explicit boards, fixed stream |
+| `vs_escape`'s replays (this also explains why `adv_substituted` was True on *every* escape found — the replay was diverging from the original line, exactly as the defect predicts) | **the champion-seat control** — plays one match forward, never deepcopies |
 
----
+**The control therefore stands: 10/50 (20%) — the champion, playing the adversary
+seat with its own eval, tops the champion out in a fifth of L11 matches.**
+
+### The fix
+Keep the capsule sequence as a **list** on the match plus a **per-player integer
+cursor** (both deepcopy cleanly) and re-seat `env.cur`/`env.nxt` from it after
+every placement — `new_match` + `reseat` in `vs_poker.py`. The end-to-end symptom
+test (same actions, siblings expanded in between → identical board) now passes.
+The upstream defect in `vs_env_exact`/`nes_pills` is **left in place and
+documented**, not silently patched, because other tiers depend on that module and
+need to make their own call.
+
+### Status
+Re-running with the fix (`results/vs_poker_fixed.json`). Any VS number in an
+earlier commit of this file is void. **Do not compare tier-3's evolved policy
+against the retracted 32%** — use the control (20%) and the corrected run.
 
 ## 5. COUNTERFACTUAL — the real m3 silicon death was NOT myopia
 
@@ -261,11 +278,27 @@ Both intended test sources produced no test cases — the death corpus had **zer
 topouts**, and the taxonomy found **zero killing lines**. Both are findings, but
 neither tests `h`. So deaths were manufactured: randomised near-death boards,
 kills found by IDA*, and `h` checked at every state of every killing line against
-the placements that actually remained.
+the placements that actually remained (`g2_admissibility.py`, results in
+`results/g2_admissibility.json`).
 
-*(`g2_admissibility.py` — result in `results/g2_admissibility.json`; see the
-run log. Analytically the bound is a proof: row 0 of a spawn column must be
-filled, one placement adds ≤2 cells to one column, clears only raise the top.)*
+Analytically the bound is a **proof**, not a hypothesis: a topout needs row 0 of
+a spawn column filled (a no-legal-move needs every column to row ≤1, hence the
+−1); one placement adds ≤2 cells to one column; clears and gravity only ever
+*raise* the top-occupied row.
+
+### ⚠ Scope: the bound is SOLO-ONLY and is invalid under garbage
+The proof assumes cells enter the board only via placements. **VS garbage is
+inserted directly at row 0, and column 3 is not immune** (`GARBAGE_PAIRS =
+(1,5),(2,6),(3,7)`; only columns 0 and 4 are immune). One garbage drop can
+therefore top a board out from *any* height, and `h` collapses. Pruning a
+garbage-exposed search with it would silently discard real kills.
+
+Audited: `h_lower_bound` prunes only in `poker.SoloPoker`, and serves as a
+survival certificate in `m3_counterfactual.survivable` — whose replays are
+garbage-free by construction (the Q1 continuity check proves no garbage arrived
+between the six commits). `vs_poker` and `vs_escape` use `spawn_top` for beam
+*ranking* only and never prune on it, so **no VS result depends on the bound.**
+The constraint is now recorded in the function's docstring.
 
 ---
 
