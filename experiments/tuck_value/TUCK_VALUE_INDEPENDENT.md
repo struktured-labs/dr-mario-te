@@ -403,14 +403,19 @@ and tuck modes would execute differently, the game forks three ways from one ide
 mode). C is the point: without it, "the boards were still different 40 pills later" is
 uninterpretable, because any perturbation might persist that long.
 
-Clean stream, n=300, 298 forked, first divergence at median pill 8.
+Run on both streams: clean (n=300, 298 forked, first divergence at median pill 8) and bursty
+(n=300, 299 forked). **The two regimes agree to within a point on every number**, which is
+itself worth noting — the effect is not a property of the pressure model.
 
 ### Nothing ever washes out — for anything
 
-| branch | never reconverges with R | when it does |
+| branch | never reconverges, clean | never reconverges, bursty |
 |---|---|---|
-| **T** tuck executed | **292/298 (98.0%)** | median 2 pills (n=6) |
-| **C** second-best base drop | 275/298 (92.3%) | median 1 pill (n=23) |
+| **T** tuck executed | **292/298 (98.0%)** | **293/299 (98.0%)** |
+| **C** second-best base drop | 275/298 (92.3%) | 277/299 (92.6%) |
+
+When reconvergence does happen it takes a median of 1–2 pills, i.e. it is the rare case where
+the perturbed placement was immediately cleared away.
 
 Exact board equality is essentially never restored, for the tuck *or* for the control. The
 worry that motivated this measurement — "a maneuver that improves the board for three pills and
@@ -431,12 +436,15 @@ Tucks and the control change the outcome at **indistinguishable rates** (+0.010
 [−0.067, +0.084], a wash) — so "executing a tuck changed the outcome 30% of the time" would
 have been a meaningless statistic on its own. What separates them is *sign*:
 
-- **T − R = +23.5 points [+17.8, +29.2]**, better=80 worse=10, p=1.1×10⁻¹⁴
-- **C − R = −20.5 points [−26.2, −14.8]**, better=13 worse=74, p=1.6×10⁻¹¹
+| | clean stream | bursty v1.1 |
+|---|---|---|
+| **T − R** (tuck) | **+23.5 [+17.8, +29.2]**, 80 vs 10, p=1.1e−14 | **+23.1 [+17.4, +29.1]**, 82 vs 13, p=2.1e−13 |
+| **C − R** (control) | **−20.5 [−26.2, −14.8]**, 13 vs 74, p=1.6e−11 | **−10.4 [−15.4, −5.4]**, 15 vs 46, p=8.8e−05 |
 
-A comparable perturbation is as disruptive as a tuck and hurts by about as much as the tuck
-helps. That is the strongest available evidence that the executor does something specific
-rather than merely stirring the board.
+A comparable perturbation is as disruptive as a tuck and hurts, where the tuck helps — and the
+tuck's +23 points is reproduced to within half a point across two independent pressure regimes.
+That is the strongest available evidence that the executor does something specific rather than
+merely stirring the board.
 
 **Stated limitation:** branch T continues in *tuck* mode while R and C continue in *drop* mode,
 so T − R is not a single-maneuver effect — it is D − B measured from the fork point. Only
@@ -447,7 +455,6 @@ the fork, then drop mode, identical continuation to R and C) and is running.
 
 ## Still running
 
-- **Divergence horizon under bursty pressure** — the run above, repeated under pressure.
 - **Single-maneuver isolation** (`divergence_single.py`) — the T1 branch, n=300.
 - **θ sensitivity** — 0 / 150 / 250 on the headline pair. Note this can no longer be expected
   to reach the firmware's fire rate; see the disagreement section.
