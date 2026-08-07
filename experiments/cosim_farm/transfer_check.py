@@ -35,6 +35,39 @@ for _p in (HERE, RL + "/tmp/combo_term", RL + "/tmp/endgame",
 
 RING_NAME = ("H", "V", "RH", "RV")
 RING_OF_O4 = (3, 1, 0, 2)
+# inverse of cosim.VAR_OF_O4 = (2, 3, 0, 1): variant -> o4
+VAR_OF_O4 = (2, 3, 0, 1)
+O4_OF_VAR = tuple(VAR_OF_O4.index(v) for v in range(4))
+
+
+def nes_to_board(nes):
+    """Inverse of cosim.board_to_nes: rebuild a FaithfulBoard from the 128 NES bytes.
+
+    Needed because the champion's decider takes a BOARD (it reads the link plane for the
+    chain engine), not the flat bytes the base search takes. The link nibble is threaded
+    back through -- dropping it would feed the chain reward a board of orphans and measure
+    the wrong decider.
+    """
+    import numpy as np
+    from drmario.faithful_game import (
+        FaithfulBoard, LINK_UP, LINK_DOWN, LINK_LEFT, LINK_RIGHT,
+    )
+    link_of_hi = {0x4: LINK_DOWN, 0x5: LINK_UP, 0x6: LINK_RIGHT, 0x7: LINK_LEFT}
+    b = FaithfulBoard(16, 8, rng=np.random.default_rng(0))
+    b.color[:, :] = 0
+    b.is_virus[:, :] = False
+    b.link[:, :] = 0
+    for i, v in enumerate(nes):
+        if v == 0xFF:
+            continue
+        r, c = divmod(i, 8)
+        hi = (v >> 4) & 0xF
+        b.color[r, c] = (v & 0x3) + 1
+        if hi == 0xD:
+            b.is_virus[r, c] = True
+        elif hi in link_of_hi:
+            b.link[r, c] = link_of_hi[hi]
+    return b
 
 
 def read_hostdata_full(path):
@@ -60,6 +93,22 @@ def main():
     import fast_rtl_x as FX
     FX.warmup_ship_eh(topk2=8)
 
+    # Which fast-sim decider to compare. "base" is FX.decide_ship_d3 -- the base search.
+    # "champion" is StrandedChainD3Decider(w_chain=180, ws=20), what the shipped champion
+    # and the adversary/VS lanes actually run. The distinction matters: a 68% figure
+    # measured on the base search is an EXTRAPOLATION when applied to lanes running the
+    # champion, and this project has been bitten by numbers travelling further than the
+    # thing they measured.
+    which = os.environ.get("TRANSFER_DECIDER", "base")
+    champ = None
+    if which == "champion":
+        from cascade_stranded_x import StrandedChainD3Decider
+        from drmario.faithful_game import Pill
+        w, fl = FX.variant("winner")
+        champ = (StrandedChainD3Decider(w, fl, topk2=8, maxpass=0, w_chain=180, ws=20),
+                 Pill)
+    print(f"decider under test: {which}")
+
     tot = agree = agree_col = agree_o4 = 0
     fast_none = 0
     per = []
@@ -72,13 +121,26 @@ def main():
         rtl_rows = r["rows"][r["base"]]        # the SHIPPED firmware is the ground truth
         n = a = ac = ao = 0
         for i, (board, cA, cB, nA, nB) in enumerate(cases):
-            # decide_ship_d3 takes NES low-nibble colours (faithful colour minus 1);
-            # the hostdata colours are already in that 0..2 convention.
-            got = FX.decide_ship_d3(board, cA, cB, nA, nB, w_vrdy=24, topk2=8)
-            if got is None:
-                fast_none += 1
-                continue
-            fcol, fo4 = int(got[0]), int(got[1])
+            if champ is None:
+                # decide_ship_d3 takes NES low-nibble colours (faithful colour minus 1);
+                # the hostdata colours are already in that 0..2 convention.
+                got = FX.decide_ship_d3(board, cA, cB, nA, nB, w_vrdy=24, topk2=8)
+                if got is None:
+                    fast_none += 1
+                    continue
+                fcol, fo4 = int(got[0]), int(got[1])
+            else:
+                # The champion decider takes a BOARD and 1-BASED Pill colours, and returns
+                # an ACTION (variant*8 + col). Invert VAR_OF_O4 to get back to o4 space so
+                # the comparison is like-for-like with the RTL's published (col, o4).
+                dec, Pill = champ
+                act = dec.choose(nes_to_board(board),
+                                 Pill(cA + 1, cB + 1), Pill(nA + 1, nB + 1))
+                if act is None:
+                    fast_none += 1
+                    continue
+                variant, fcol = divmod(int(act), 8)
+                fo4 = O4_OF_VAR[variant]
             rcol, ro4 = rtl_rows[i]["col"], rtl_rows[i]["o4"]
             n += 1
             orient_fast[RING_NAME[RING_OF_O4[fo4]]] += 1
@@ -112,8 +174,9 @@ def main():
            "per_corpus": per,
            "fast_no_move": fast_none,
            "orient_fast": dict(orient_fast), "orient_rtl": dict(orient_rtl),
-           "py65_reference_full_frac": 0.133}
-    dst = "/mnt/data/drmario_cosim/results/transfer_check.json"
+           "py65_reference_full_frac": 0.133,
+           "decider": which}
+    dst = "/mnt/data/drmario_cosim/results/transfer_check_%s.json" % which
     json.dump(out, open(dst, "w"), indent=1)
     print(f"wrote {dst}")
     return 0
