@@ -144,15 +144,33 @@ class VsMatch:
         self.attacks_sent = [0, 0]            # attack EVENTS, not tiles
 
     def _drop_garbage(self, who, colours):
-        """Insert 2 tiles at row 0 in one immune-safe column pair, then settle."""
+        """Insert 2 tiles at row 0 in one immune-safe column pair, then settle.
+
+        ⚠ THE _apply_gravity() CALL IS LOAD-BEARING. `resolve()` is
+            while True:
+                mask = self._find_clears()
+                if mask.sum() == 0: break     # <-- exits BEFORE any gravity
+                ...; self._apply_gravity()
+        i.e. gravity runs ONLY after a clear. Freshly dropped garbage almost
+        never completes a line, so `resolve()` alone left the tiles FLOATING AT
+        ROW 0 over empty space. Since `spawn_blocked()` is
+        `any(color[0, c] for c in (3, 4))` and GARBAGE_PAIRS contains column 3,
+        one third of all deliveries topped the receiver out INSTANTLY — on any
+        board, at any height, with any number of legal moves available.
+        Measured before the fix: one delivery onto a HEALTHY FRESH board ended
+        the game 19/60 = 31.7% of the time. Every VS kill rate taken through
+        this harness before 2026-08-06 is contaminated by that coin flip.
+        Regression test: experiments/holepoker/test_garbage_gravity.py
+        """
         b = self.env[who].board
         c1, c2 = self.rng.choice(GARBAGE_PAIRS)
         for c, col in ((c1, colours[0]), (c2, colours[-1])):
-            if b.color[0, c] == EMPTY:
+            if b.color[0, c] == EMPTY:        # column already full to the top
                 b.color[0, c] = col
                 b.link[0, c] = 0              # garbage is unlinked; falls as a single cell
                 b.is_virus[0, c] = False
-        b.resolve()                           # settle, and honour any clears it completes
+        b._apply_gravity()                    # tiles FALL to the stack, as on hardware
+        b.resolve()                           # then honour any clears they complete
 
     def step(self, who, action):
         """Advance one player by one placement. Returns (done, result)."""

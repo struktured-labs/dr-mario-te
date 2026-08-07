@@ -44,7 +44,7 @@ H0 = 8
 
 _W = {}                   # lazily-initialised champion weights
 _MEMO = {}                # (board_key, ca, cb, na, nb) -> action
-_STATS = {"calls": 0, "hits": 0}
+_STATS = {"calls": 0, "hits": 0, "db_hits": 0}
 
 
 def init_champion():
@@ -100,12 +100,49 @@ def champion_move(col, vir, ca, cb, na, nb):
     if hit is not _MISS:
         _STATS["hits"] += 1
         return hit
+    if _DB is not None:
+        dk = _DB.key(col, vir, ca, cb, na, nb)
+        v = _DB.get(dk)
+        if v is not _DB_MISS:
+            _STATS["hits"] += 1
+            _STATS["db_hits"] += 1
+            _MEMO[key] = v
+            return v
+        a, _c1, _v1, _val = _choose_base_raw(col, vir, ca, cb, na, nb)
+        _DB.put(dk, a)
+        _MEMO[key] = a
+        return a
     a, _c1, _v1, _val = _choose_base_raw(col, vir, ca, cb, na, nb)
     _MEMO[key] = a
     return a
 
 
 _MISS = object()
+
+# ------------------------------------------------- optional persistent store
+# champion_move is a PURE function of its six arguments, which is what makes a
+# durable store sound: a reply computed in any run, in any lane, at any time, is
+# valid forever. With no store attached the oracle behaves exactly as before, so
+# every existing script is unaffected.
+_DB = None
+_DB_MISS = None
+
+
+def attach_db(db):
+    global _DB, _DB_MISS
+    import memo_db
+    _DB, _DB_MISS = db, memo_db.MISS
+
+
+def detach_db():
+    global _DB
+    if _DB is not None:
+        _DB.flush()
+    _DB = None
+
+
+def db_info():
+    return _DB.info() if _DB is not None else None
 
 
 def memo_stats():
@@ -116,7 +153,7 @@ def memo_stats():
 
 def memo_clear():
     _MEMO.clear()
-    _STATS.update(calls=0, hits=0)
+    _STATS.update(calls=0, hits=0, db_hits=0)
 
 
 # ------------------------------------------------------- world state (faithful)
