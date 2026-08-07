@@ -87,7 +87,10 @@ def main():
     print(f"\n{bad} defective, {untested} untested, "
           f"{len(PATHS)-bad-untested} clean")
     print("UNTESTED is not CLEAN -- exercise it or state it as unknown.")
-    return 1 if bad else 0
+    # UNTESTED must FAIL the gate. The line printed above says so; the exit code
+    # used to disagree, so an ImportError made this audit pass while auditing
+    # nothing -- a check whose scope was smaller than its claim.
+    return 1 if (bad or untested) else 0
 
 
 if __name__ == "__main__":
