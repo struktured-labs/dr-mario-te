@@ -61,7 +61,7 @@ done
 
 echo
 echo "################ THROUGHPUT ################"
-for l in "$D"/logs/ab_*_*.log; do
+for l in "$D"/logs/ab_*_*.log "$D"/logs/2x2_*.log; do
   [ -f "$l" ] || continue
   n=$(grep -c "^\[" "$l" 2>/dev/null || echo 0)
   last=$(grep "^\[" "$l" 2>/dev/null | tail -1)
@@ -71,8 +71,15 @@ echo "  host $(hostname): $(nproc) cores, load $(cut -d' ' -f1-3 /proc/loadavg)"
 
 echo
 echo "################ PAIRED A/B ################"
-for f in "$D"/results/ab_*.jsonl; do
+for f in "$D"/results/ab_*.jsonl "$D"/results/tuck2x2_*.jsonl; do
   [ -f "$f" ] || continue
   echo; echo "--- $f ---"
-  $PY "$HERE/analyze.py" "$f" --a s20b --b s20t3 2>&1 | tail -30
+  case "$f" in
+    *tuck2x2*)
+      for pair in "s20b_drop s20t3_drop ship-tier3-today" "s20b_drop s20b_tuck executor-alone-v1fw" "s20b_drop s20t3_tuck FULL-program" "s20t3_drop s20t3_tuck executor-value-fw-fixed"; do
+        set -- $pair; echo; echo "--- $3 ---"
+        $PY "$HERE/analyze.py" "$f" --a "$1" --b "$2" 2>&1 | tail -22
+      done ;;
+    *) $PY "$HERE/analyze.py" "$f" --a s20b --b s20t3 2>&1 | tail -30 ;;
+  esac
 done
