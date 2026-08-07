@@ -781,25 +781,67 @@ above, +7.7 points from one tuck, is the one to quote for one tuck.
 
 ---
 
-## Still running
+## Scorecard: the first valid RTL data, against predictions recorded before it
 
-- **θ sweep — now the key experiment.** It was queued as a robustness check; the disagreement
-  with the co-sim promoted it to a direct test of the dose-response hypothesis *within this
-  rig*. θ=0 / 150 / 250 fire on roughly 20% / 10% / 5% of decisions, so the arms bracket this
-  rig's own dose by 4×. If tucks help *less* at θ=0 than at θ=250, the "helps at low dose,
-  fatal at high dose" story is supported from a second direction; if they help *more*, the
-  story is wrong and the disagreement with the co-sim needs a different explanation. Either
-  answer is decisive, which is why it is running ahead of the item below.
-- **Divergence-horizon re-run** with the truncation defect fixed, clean and bursty, n=300 each.
-  Only the reconvergence statistic is still outstanding; the directional question it was meant
-  to answer has already been answered correctly by `divergence_single.py`.
+Both predictions in this document were written down before the run that checks them. The
+co-sim's first post-fix rows have arrived (firmware `554a16a5`, same seeds, seed 1 excluded).
+**Neither is resolved, and both currently lean against me.** Recorded now rather than waited
+out, because a prediction you only score when it wins is not a prediction.
 
-Completed since the first revision: the v1 hazard bracket (both ends negative), the
-failure-mode decomposition (which corrected this document's interpretation of *why* D − A
-works), the A′ control arms (which closed the reachability-filter confound and slightly
-strengthened the headline), the full θ dose-response curve (which refuted my own explanation of
-the co-sim disagreement), and the single-maneuver isolation (which caught a truncation defect
-in the first divergence rig and withdrew two of its numbers).
+**First, the precondition that had to hold before anything else mattered: the fix works.** The
+tuck arm goes from **0/53 on the broken firmware to 10/12** here. Tucks can be executed in full
+games on real RTL, which is what every remaining question was blocked on.
+
+| prediction | observed | status |
+|---|---|---|
+| **Arm B** near 80% bad ends (this rig: 80.8%), not ~100%, not arm A's ~17% | **0/9 clear = 100% bad ends** | **not refuted, but in the tail** |
+| **Arm D** ~5-point clear-rate *gain* at a 5–15% fire rate | **83.3% vs A's 100% — a 16.7-point loss**, fire rate 15.1% | **sign opposite; unresolvable at this n** |
+
+- **Arm B.** Under my predicted 80.8%, seeing 9 of 9 bad has probability **0.147** — not a
+  refutation, but the tail, and it leans against me. If it holds at larger n, 80.8% is too
+  optimistic.
+- **Arm D.** Two discordant pairs, both favouring the champion, **p=0.50**. The sign is
+  opposite to my prediction and the data cannot distinguish that from noise. The co-sim's own
+  caveat is the right one: with arm A at 95–100%, its resolution is about 5 points, so small
+  deltas will correctly read *unresolved* either way.
+
+**The measured asymmetry, offered as a fact and explicitly not as an explanation:**
+
+| | RTL post-fix | this rig | ratio |
+|---|---|---|---|
+| arm B, drop mode | 24.3% of decisions | 11.5% | 2.1× |
+| arm D, tuck mode | 15.1% of decisions | 5.7% | 2.6× |
+
+The RTL still fires two to three times more often than this rig, in the direction that would
+make its arms worse than mine. **I am deliberately not leaning on that.** I proposed a dose
+explanation once tonight, published it to two agents, and refuted it with my own θ sweep. The
+point of writing predictions down in advance is to lose them cleanly rather than reach for the
+nearest rescue — and an untested causal aside offered while reporting a result is precisely
+what rule 18 above says not to act on. The gap is measured; that it *explains* these two rows
+is not.
+
+**The one clean result, and it is the ship answer.** Same firmware, same seeds, differing
+*only* in whether the maneuver is executed: **tuck mode 10/12, drop mode 0/9.** That is the
+incoherence of publishing a tuck placement and then plain-dropping at its column — measured
+rather than argued, on real RTL, post-fix. It is what this study opened with, it is the only
+finding now established on both instruments with valid firmware, and since the deployed cart
+has no executor it is the configuration that actually matters.
+
+---
+
+## Where this leaves the tuck program
+
+Nothing here licenses a cart rebuild. What it does license:
+
+1. **Two prohibitions, both safe to act on now.** Never ship tier-3 firmware to an
+   executor-less cart. Never enable the executor on v1 firmware.
+2. **A number that is unopposed rather than corroborated** — −5.25 points at p=0.038, n=400,
+   one simulator, currently leaning against on the first twelve RTL seeds.
+3. **A live test.** The co-sim's fixed-firmware arms are running on seeds this rig covers, plus
+   an extension to 400–459 that leaves this rig's range entirely. Both predictions above are
+   falsifiable against them and neither needs anything further from me.
+
+---
 
 ## Reproducing
 
