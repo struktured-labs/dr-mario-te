@@ -3,9 +3,9 @@
 Corroboration by a different method for the co-sim farm's RTL 2×2. Same four arms, different
 simulator, different failure modes, n=400 paired seeds per arm instead of tens.
 
-**Status:** the two primary runs (bursty, clean), the v1-hazard bracket and the A′ control arms
-are complete — 2,800 games. The divergence-horizon measurement and the θ sensitivity sweep are
-still running; this document is updated in place as they land.
+**Status:** complete except one re-run. 5,700 fast-sim games across the 2×2, the v1-hazard
+bracket, the A′ control arms, the θ sweep and the divergence rigs. The bursty divergence
+re-run is still finishing; everything else below is final.
 
 ---
 
@@ -115,6 +115,12 @@ Arm A's 1 failure in 400 clean games independently reproduces the 1,474-game cen
 that the champion essentially never fails on a clean stream — which is why the clean axis can
 only measure speed. On that axis the full program is **15.6 pills faster to clear** at an
 identical clear rate, and the v1 executor is **7.8 pills slower**.
+
+> **Read arms B, C and D against the co-sim before acting on them.** Arm B is confirmed by the
+> RTL and harsher there. Arm D is *contradicted* by the RTL, which has the same configuration
+> at 0 of 17 games cleared. The tables above are this rig's numbers; the contradiction and what
+> is known about it are in
+> [the disagreement](#the-disagreement-that-matters-and-what-it-costs).
 
 ---
 
@@ -396,8 +402,10 @@ does or does not explain.
 ## Reconciliation with the co-sim farm
 
 The arm-by-arm comparison is above. On every *descriptor-level* statistic — the things that do
-not depend on the θ gate — the two rigs agree closely, which is what makes the θ diagnosis
-credible rather than a convenient excuse:
+not depend on the θ gate — the two rigs agree closely. That agreement is what establishes the
+fire-rate gap as a real, isolated difference rather than one symptom of a rig that disagrees
+about everything; it does *not* establish that the gap explains arm D, which the θ sweep
+refutes:
 
 | statistic | co-sim (real RTL) | this rig (fast sim) |
 |---|---|---|
