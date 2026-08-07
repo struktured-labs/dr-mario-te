@@ -394,15 +394,63 @@ on real RTL, and by the harsher instrument.
 
 ---
 
+## Divergence horizon: does a fired tuck matter, or wash out?
+
+The measurement neither the co-sim nor the offline mirror rig has. At the first pill where drop
+and tuck modes would execute differently, the game forks three ways from one identical board:
+**R** (reference, continue in drop mode), **T** (execute the tuck, continue in tuck mode) and
+**C** (a *matched control* — take the second-best base drop instead, then continue in drop
+mode). C is the point: without it, "the boards were still different 40 pills later" is
+uninterpretable, because any perturbation might persist that long.
+
+Clean stream, n=300, 298 forked, first divergence at median pill 8.
+
+### Nothing ever washes out — for anything
+
+| branch | never reconverges with R | when it does |
+|---|---|---|
+| **T** tuck executed | **292/298 (98.0%)** | median 2 pills (n=6) |
+| **C** second-best base drop | 275/298 (92.3%) | median 1 pill (n=23) |
+
+Exact board equality is essentially never restored, for the tuck *or* for the control. The
+worry that motivated this measurement — "a maneuver that improves the board for three pills and
+then washes out is worth less than its per-placement stats suggest" — **does not apply to this
+game.** Placements are permanent. The corollary matters more: because *nothing* washes out,
+persistence is not evidence of value either, and any "the effect lasted N pills" claim measures
+the game's chaos rather than the maneuver.
+
+### The outcome-change rate was the wrong question; direction is everything
+
+| branch | outcome changed vs R | clear rate from the fork |
+|---|---|---|
+| **T** tuck | 90/298 (30.2%) | **60.7%** |
+| **C** control | 87/298 (29.2%) | **16.8%** |
+| **R** reference | — | 37.2% |
+
+Tucks and the control change the outcome at **indistinguishable rates** (+0.010
+[−0.067, +0.084], a wash) — so "executing a tuck changed the outcome 30% of the time" would
+have been a meaningless statistic on its own. What separates them is *sign*:
+
+- **T − R = +23.5 points [+17.8, +29.2]**, better=80 worse=10, p=1.1×10⁻¹⁴
+- **C − R = −20.5 points [−26.2, −14.8]**, better=13 worse=74, p=1.6×10⁻¹¹
+
+A comparable perturbation is as disruptive as a tuck and hurts by about as much as the tuck
+helps. That is the strongest available evidence that the executor does something specific
+rather than merely stirring the board.
+
+**Stated limitation:** branch T continues in *tuck* mode while R and C continue in *drop* mode,
+so T − R is not a single-maneuver effect — it is D − B measured from the fork point. Only
+C − R is a clean one-placement number. `divergence_single.py` adds the missing branch (tuck at
+the fork, then drop mode, identical continuation to R and C) and is running.
+
+---
+
 ## Still running
 
-- **Divergence horizon** (`divergence.py`) — at the first pill where drop and tuck modes
-  diverge, the game forks three ways from one board: reference, tuck executed, and a matched
-  control that takes the second-best base drop instead. Measures how many pills until the
-  boards reconverge, how often the eventual outcome changes, and whether either exceeds the
-  control. A 12-seed smoke run had tucks never reconverging (11/11) against the control's 73%,
-  with outcomes changing 36% vs 18% — too small to call, hence n=300.
-- **θ sensitivity** — 0 / 150 / 250 on the headline pair.
+- **Divergence horizon under bursty pressure** — the run above, repeated under pressure.
+- **Single-maneuver isolation** (`divergence_single.py`) — the T1 branch, n=300.
+- **θ sensitivity** — 0 / 150 / 250 on the headline pair. Note this can no longer be expected
+  to reach the firmware's fire rate; see the disagreement section.
 
 Completed since the first revision: the v1 hazard bracket (both ends negative), the
 failure-mode decomposition (which corrected this document's interpretation of *why* D − A
