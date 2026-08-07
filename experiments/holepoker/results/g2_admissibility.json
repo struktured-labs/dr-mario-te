@@ -1,0 +1,12 @@
+{
+ "pass": true,
+ "lines": 10,
+ "checked": 32,
+ "violations": 0,
+ "depths": {
+  "3": 4,
+  "4": 4,
+  "2": 2
+ },
+ "boards": 30
+}

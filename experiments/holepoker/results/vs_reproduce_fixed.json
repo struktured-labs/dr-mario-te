@@ -1,0 +1,50 @@
+[
+ {
+  "seed": 1,
+  "K": 24,
+  "reproduced": true,
+  "note": "champion died at ply 24 (stored 24)"
+ },
+ {
+  "seed": 6,
+  "K": 27,
+  "reproduced": true,
+  "note": "champion died at ply 27 (stored 27)"
+ },
+ {
+  "seed": 9,
+  "K": 14,
+  "reproduced": true,
+  "note": "champion died at ply 14 (stored 14)"
+ },
+ {
+  "seed": 12,
+  "K": 41,
+  "reproduced": true,
+  "note": "champion died at ply 41 (stored 41)"
+ },
+ {
+  "seed": 22,
+  "K": 4,
+  "reproduced": true,
+  "note": "champion died at ply 4 (stored 4)"
+ },
+ {
+  "seed": 20,
+  "K": 31,
+  "reproduced": true,
+  "note": "champion died at ply 31 (stored 31)"
+ },
+ {
+  "seed": 23,
+  "K": 29,
+  "reproduced": true,
+  "note": "champion died at ply 29 (stored 29)"
+ },
+ {
+  "seed": 29,
+  "K": 14,
+  "reproduced": true,
+  "note": "champion died at ply 14 (stored 14)"
+ }
+]

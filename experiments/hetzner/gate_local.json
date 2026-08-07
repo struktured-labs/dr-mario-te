@@ -1,0 +1,197 @@
+{
+  "digest": "13eec4a42bd0656ffd04c7d9767da65b715e6a9f6db6d5018e4819f16a77aa27",
+  "n_seeds": 20,
+  "seeds": [
+    1000,
+    1037,
+    1074,
+    1111,
+    1148,
+    1185,
+    1222,
+    1259,
+    1296,
+    1333,
+    32768,
+    33777,
+    34786,
+    35795,
+    36804,
+    37813,
+    38822,
+    39831,
+    40840,
+    41849
+  ],
+  "per_seed": [
+    {
+      "seed": 1000,
+      "result": "clear",
+      "pills": 97,
+      "viruses_left": 0,
+      "n_moves": 97,
+      "hash": "9aa1ec70c22b6c434a400848f1a934b3a7818e5fb1ca739f400b481f38037477"
+    },
+    {
+      "seed": 1037,
+      "result": "clear",
+      "pills": 98,
+      "viruses_left": 0,
+      "n_moves": 98,
+      "hash": "f7c0c2575e391d1a9f5fcf6ada1866073b85e13713476f9c949fdd80a798ce88"
+    },
+    {
+      "seed": 1074,
+      "result": "clear",
+      "pills": 90,
+      "viruses_left": 0,
+      "n_moves": 90,
+      "hash": "a46ae0d7479d017084c1e6b9f009c931ea93ec79e5c7cd222ccd1752aaebb621"
+    },
+    {
+      "seed": 1111,
+      "result": "clear",
+      "pills": 109,
+      "viruses_left": 0,
+      "n_moves": 109,
+      "hash": "ff7b2404196b70bc5209712d7d75dde89b3afc74c104f47f85dd1d7441197a77"
+    },
+    {
+      "seed": 1148,
+      "result": "clear",
+      "pills": 62,
+      "viruses_left": 0,
+      "n_moves": 62,
+      "hash": "69d50c570adcdd11da39b7dc8f80493d512ffd4f5d939a4f1d4c869a4226ad6c"
+    },
+    {
+      "seed": 1185,
+      "result": "clear",
+      "pills": 85,
+      "viruses_left": 0,
+      "n_moves": 85,
+      "hash": "5ddad7a2e8711104fca2d472a9a6f144669f40aa4b5eba9028f3ffaeb9ee8033"
+    },
+    {
+      "seed": 1222,
+      "result": "clear",
+      "pills": 89,
+      "viruses_left": 0,
+      "n_moves": 89,
+      "hash": "21b6b2fd247dc2f96add326dc57aed61cb851cb263a49a7683afd9e5221a24fc"
+    },
+    {
+      "seed": 1259,
+      "result": "clear",
+      "pills": 95,
+      "viruses_left": 0,
+      "n_moves": 95,
+      "hash": "4af5a967948ba99ad95b9debc39e1ca1710db6044e00d2ab73324042373a30dd"
+    },
+    {
+      "seed": 1296,
+      "result": "clear",
+      "pills": 119,
+      "viruses_left": 0,
+      "n_moves": 119,
+      "hash": "76279bc0738834e593a1e67385d644eac17d0f71715b3268cf256bd449357d96"
+    },
+    {
+      "seed": 1333,
+      "result": "clear",
+      "pills": 94,
+      "viruses_left": 0,
+      "n_moves": 94,
+      "hash": "5bfae10b7a439493abc82d1dac62006b9936713b03a59498fddf364c4ea3f693"
+    },
+    {
+      "seed": 32768,
+      "result": "clear",
+      "pills": 123,
+      "viruses_left": 0,
+      "n_moves": 123,
+      "hash": "dadc6927266d267cecd49c91ae019f6808bd01a04f38da49700d3b5c201e60fd"
+    },
+    {
+      "seed": 33777,
+      "result": "clear",
+      "pills": 87,
+      "viruses_left": 0,
+      "n_moves": 87,
+      "hash": "c9414dc5f0779a87f84e2763b27d9a0389e82fe02c35177b6f34188b82e014cc"
+    },
+    {
+      "seed": 34786,
+      "result": "clear",
+      "pills": 86,
+      "viruses_left": 0,
+      "n_moves": 86,
+      "hash": "7646684f12c117640396408a98fe5ded2d82b67227ad5286ff587d6572f4c027"
+    },
+    {
+      "seed": 35795,
+      "result": "clear",
+      "pills": 100,
+      "viruses_left": 0,
+      "n_moves": 100,
+      "hash": "85145bd2c13d026a93d4a2a30c99cbb0026e33912de53a82a0632a36d1f21b44"
+    },
+    {
+      "seed": 36804,
+      "result": "clear",
+      "pills": 85,
+      "viruses_left": 0,
+      "n_moves": 85,
+      "hash": "20a59d3e3bb50bb9235b632e69b44645ac0558bb1b30657cb79517ca01c974d8"
+    },
+    {
+      "seed": 37813,
+      "result": "clear",
+      "pills": 87,
+      "viruses_left": 0,
+      "n_moves": 87,
+      "hash": "82ac376d6a6707c7faa5423295016f86bb238ba8e532f0807de33c897dd06870"
+    },
+    {
+      "seed": 38822,
+      "result": "clear",
+      "pills": 108,
+      "viruses_left": 0,
+      "n_moves": 108,
+      "hash": "862bc12c987c75f40c600f15769a6abdc4b4cfbdabf59526a1c1b2a093e65ec0"
+    },
+    {
+      "seed": 39831,
+      "result": "clear",
+      "pills": 72,
+      "viruses_left": 0,
+      "n_moves": 72,
+      "hash": "edc56c91d1b292e9ca5550a6cab2077b5e42427b74405f3b3c224c613fb356a5"
+    },
+    {
+      "seed": 40840,
+      "result": "clear",
+      "pills": 90,
+      "viruses_left": 0,
+      "n_moves": 90,
+      "hash": "0dc533008db5daddf7516016b5beb7674de460cb5483f7bcaf5dec6791e77e1d"
+    },
+    {
+      "seed": 41849,
+      "result": "clear",
+      "pills": 114,
+      "viruses_left": 0,
+      "n_moves": 114,
+      "hash": "81fa8e568cf410ce8edac0603d0faafa4f55899097dff7b0b1bd0d3b839b3d16"
+    }
+  ],
+  "env": {
+    "node": "blackmage",
+    "machine": "x86_64",
+    "python": "3.12.11",
+    "numpy": "2.4.6",
+    "numba": "0.66.0",
+    "llvmlite": "0.48.0",
+    "cpu": "12th Gen Intel(R) Core(TM) i9-12900K"
+  }
+}

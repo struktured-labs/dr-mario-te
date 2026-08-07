@@ -1,0 +1,294 @@
+[
+ {
+  "killed": false,
+  "plies": 23,
+  "reason": "no surviving lines",
+  "calls": 4880,
+  "seed": 2,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 35.5
+ },
+ {
+  "killed": true,
+  "plies": 24,
+  "path": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "garbage_sent": 6,
+  "calls": 7951,
+  "seed": 1,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 37.5
+ },
+ {
+  "killed": false,
+  "plies": 22,
+  "reason": "no surviving lines",
+  "calls": 5004,
+  "seed": 3,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 39.5
+ },
+ {
+  "killed": false,
+  "plies": 27,
+  "reason": "no surviving lines",
+  "calls": 5722,
+  "seed": 5,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 61.0
+ },
+ {
+  "killed": false,
+  "plies": 16,
+  "reason": "no surviving lines",
+  "calls": 3746,
+  "seed": 7,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 30.4
+ },
+ {
+  "killed": false,
+  "plies": 34,
+  "reason": "no surviving lines",
+  "calls": 6592,
+  "seed": 4,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 71.8
+ },
+ {
+  "killed": false,
+  "plies": 20,
+  "reason": "no surviving lines",
+  "calls": 4158,
+  "seed": 8,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 37.2
+ },
+ {
+  "killed": false,
+  "plies": 39,
+  "reason": "no surviving lines",
+  "calls": 8226,
+  "seed": 0,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 90.9
+ },
+ {
+  "killed": false,
+  "plies": 27,
+  "reason": "no surviving lines",
+  "calls": 7054,
+  "seed": 6,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 62.3
+ },
+ {
+  "killed": false,
+  "plies": 19,
+  "reason": "no surviving lines",
+  "calls": 4610,
+  "seed": 12,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 33.1
+ },
+ {
+  "killed": false,
+  "plies": 300,
+  "reason": "adv_dead",
+  "seed": 1,
+  "mode": "control",
+  "secs": 2.4
+ },
+ {
+  "killed": false,
+  "plies": 24,
+  "reason": "no surviving lines",
+  "calls": 5222,
+  "seed": 9,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 56.6
+ },
+ {
+  "killed": false,
+  "plies": 22,
+  "reason": "no surviving lines",
+  "calls": 5068,
+  "seed": 11,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 51.8
+ },
+ {
+  "killed": false,
+  "plies": 75,
+  "reason": "adv_clear",
+  "seed": 3,
+  "mode": "control",
+  "secs": 20.9
+ },
+ {
+  "killed": false,
+  "plies": 106,
+  "reason": "champ_clear",
+  "seed": 0,
+  "mode": "control",
+  "secs": 45.5
+ },
+ {
+  "killed": false,
+  "plies": 86,
+  "reason": "champ_clear",
+  "seed": 4,
+  "mode": "control",
+  "secs": 23.0
+ },
+ {
+  "killed": false,
+  "plies": 30,
+  "reason": "no surviving lines",
+  "calls": 6602,
+  "seed": 13,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 63.0
+ },
+ {
+  "killed": false,
+  "plies": 103,
+  "reason": "champ_clear",
+  "seed": 2,
+  "mode": "control",
+  "secs": 45.1
+ },
+ {
+  "killed": false,
+  "plies": 37,
+  "reason": "no surviving lines",
+  "calls": 7274,
+  "seed": 10,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 93.3
+ },
+ {
+  "killed": false,
+  "plies": 39,
+  "reason": "adv_dead",
+  "seed": 6,
+  "mode": "control",
+  "secs": 19.2
+ },
+ {
+  "killed": false,
+  "plies": 75,
+  "reason": "adv_clear",
+  "seed": 5,
+  "mode": "control",
+  "secs": 25.3
+ },
+ {
+  "killed": false,
+  "plies": 29,
+  "reason": "adv_dead",
+  "seed": 9,
+  "mode": "control",
+  "secs": 17.2
+ },
+ {
+  "killed": false,
+  "plies": 59,
+  "reason": "adv_dead",
+  "seed": 10,
+  "mode": "control",
+  "secs": 18.8
+ },
+ {
+  "killed": false,
+  "plies": 104,
+  "reason": "adv_clear",
+  "seed": 7,
+  "mode": "control",
+  "secs": 33.7
+ },
+ {
+  "killed": false,
+  "plies": 84,
+  "reason": "adv_clear",
+  "seed": 12,
+  "mode": "control",
+  "secs": 18.7
+ },
+ {
+  "killed": false,
+  "plies": 91,
+  "reason": "champ_clear",
+  "seed": 8,
+  "mode": "control",
+  "secs": 35.7
+ },
+ {
+  "killed": false,
+  "plies": 75,
+  "reason": "champ_clear",
+  "seed": 11,
+  "mode": "control",
+  "secs": 27.2
+ },
+ {
+  "killed": false,
+  "plies": 97,
+  "reason": "champ_clear",
+  "seed": 13,
+  "mode": "control",
+  "secs": 19.5
+ }
+]

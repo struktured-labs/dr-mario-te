@@ -1,0 +1,764 @@
+[
+ {
+  "killed": false,
+  "plies": 34,
+  "reason": "no surviving lines",
+  "calls": 5966,
+  "seed": 2,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 31.4
+ },
+ {
+  "killed": false,
+  "plies": 44,
+  "reason": "no surviving lines",
+  "calls": 7346,
+  "seed": 5,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 36.1
+ },
+ {
+  "killed": false,
+  "plies": 39,
+  "reason": "no surviving lines",
+  "calls": 7580,
+  "seed": 4,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 36.6
+ },
+ {
+  "killed": false,
+  "plies": 30,
+  "reason": "no surviving lines",
+  "calls": 5626,
+  "seed": 0,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 37.7
+ },
+ {
+  "killed": false,
+  "plies": 58,
+  "reason": "no surviving lines",
+  "calls": 10380,
+  "seed": 6,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 45.6
+ },
+ {
+  "killed": false,
+  "plies": 44,
+  "reason": "no surviving lines",
+  "calls": 8348,
+  "seed": 8,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 49.0
+ },
+ {
+  "killed": false,
+  "plies": 51,
+  "reason": "no surviving lines",
+  "calls": 9888,
+  "seed": 7,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 51.0
+ },
+ {
+  "killed": false,
+  "plies": 66,
+  "reason": "no surviving lines",
+  "calls": 10342,
+  "seed": 3,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 54.8
+ },
+ {
+  "killed": false,
+  "plies": 49,
+  "reason": "no surviving lines",
+  "calls": 9106,
+  "seed": 9,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 56.4
+ },
+ {
+  "killed": false,
+  "plies": 29,
+  "reason": "no surviving lines",
+  "calls": 5408,
+  "seed": 11,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 23.7
+ },
+ {
+  "killed": false,
+  "plies": 41,
+  "reason": "no surviving lines",
+  "calls": 6426,
+  "seed": 10,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 31.9
+ },
+ {
+  "killed": false,
+  "plies": 47,
+  "reason": "no surviving lines",
+  "calls": 7864,
+  "seed": 14,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 33.9
+ },
+ {
+  "killed": false,
+  "plies": 38,
+  "reason": "no surviving lines",
+  "calls": 6444,
+  "seed": 15,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 33.7
+ },
+ {
+  "killed": false,
+  "plies": 38,
+  "reason": "no surviving lines",
+  "calls": 6172,
+  "seed": 18,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 29.6
+ },
+ {
+  "killed": false,
+  "plies": 46,
+  "reason": "no surviving lines",
+  "calls": 8558,
+  "seed": 16,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 36.7
+ },
+ {
+  "killed": false,
+  "plies": 38,
+  "reason": "no surviving lines",
+  "calls": 6408,
+  "seed": 19,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 28.7
+ },
+ {
+  "killed": false,
+  "plies": 65,
+  "reason": "no surviving lines",
+  "calls": 10864,
+  "seed": 12,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 54.0
+ },
+ {
+  "killed": false,
+  "plies": 65,
+  "reason": "no surviving lines",
+  "calls": 11632,
+  "seed": 13,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 65.4
+ },
+ {
+  "killed": false,
+  "plies": 64,
+  "reason": "no surviving lines",
+  "calls": 11144,
+  "seed": 17,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 51.2
+ },
+ {
+  "killed": false,
+  "plies": 44,
+  "reason": "no surviving lines",
+  "calls": 7160,
+  "seed": 21,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 32.6
+ },
+ {
+  "killed": false,
+  "plies": 52,
+  "reason": "no surviving lines",
+  "calls": 9312,
+  "seed": 20,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 50.5
+ },
+ {
+  "killed": false,
+  "plies": 49,
+  "reason": "no surviving lines",
+  "calls": 8404,
+  "seed": 25,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 35.2
+ },
+ {
+  "killed": false,
+  "plies": 50,
+  "reason": "no surviving lines",
+  "calls": 8212,
+  "seed": 26,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 41.2
+ },
+ {
+  "killed": false,
+  "plies": 32,
+  "reason": "no surviving lines",
+  "calls": 5364,
+  "seed": 27,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 31.1
+ },
+ {
+  "killed": false,
+  "plies": 64,
+  "reason": "no surviving lines",
+  "calls": 9228,
+  "seed": 24,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 46.1
+ },
+ {
+  "killed": false,
+  "plies": 90,
+  "reason": "cap",
+  "best_spawn_top": 9,
+  "garbage_sent": 21,
+  "calls": 32070,
+  "seed": 1,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 139.7
+ },
+ {
+  "killed": false,
+  "plies": 60,
+  "reason": "no surviving lines",
+  "calls": 11592,
+  "seed": 23,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 55.9
+ },
+ {
+  "killed": false,
+  "plies": 49,
+  "reason": "no surviving lines",
+  "calls": 8906,
+  "seed": 28,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 37.1
+ },
+ {
+  "killed": false,
+  "plies": 67,
+  "reason": "no surviving lines",
+  "calls": 11672,
+  "seed": 22,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 67.3
+ },
+ {
+  "killed": false,
+  "plies": 47,
+  "reason": "no surviving lines",
+  "calls": 8528,
+  "seed": 30,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 44.4
+ },
+ {
+  "killed": false,
+  "plies": 42,
+  "reason": "no surviving lines",
+  "calls": 8126,
+  "seed": 31,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 40.7
+ },
+ {
+  "killed": false,
+  "plies": 38,
+  "reason": "no surviving lines",
+  "calls": 6082,
+  "seed": 34,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 30.9
+ },
+ {
+  "killed": false,
+  "plies": 68,
+  "reason": "no surviving lines",
+  "calls": 11064,
+  "seed": 29,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 54.1
+ },
+ {
+  "killed": false,
+  "plies": 300,
+  "reason": "adv_dead",
+  "seed": 1,
+  "mode": "control",
+  "secs": 2.1
+ },
+ {
+  "killed": false,
+  "plies": 40,
+  "reason": "no surviving lines",
+  "calls": 7556,
+  "seed": 32,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 39.3
+ },
+ {
+  "killed": false,
+  "plies": 39,
+  "reason": "no surviving lines",
+  "calls": 7964,
+  "seed": 33,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 40.1
+ },
+ {
+  "killed": false,
+  "plies": 44,
+  "reason": "no surviving lines",
+  "calls": 6744,
+  "seed": 37,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 33.1
+ },
+ {
+  "killed": false,
+  "plies": 48,
+  "reason": "no surviving lines",
+  "calls": 8194,
+  "seed": 35,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 41.4
+ },
+ {
+  "killed": false,
+  "plies": 75,
+  "reason": "adv_clear",
+  "seed": 3,
+  "mode": "control",
+  "secs": 17.5
+ },
+ {
+  "killed": false,
+  "plies": 86,
+  "reason": "champ_clear",
+  "seed": 4,
+  "mode": "control",
+  "secs": 14.6
+ },
+ {
+  "killed": false,
+  "plies": 45,
+  "reason": "no surviving lines",
+  "calls": 8950,
+  "seed": 36,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 44.0
+ },
+ {
+  "killed": false,
+  "plies": 41,
+  "reason": "no surviving lines",
+  "calls": 6974,
+  "seed": 38,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 38.3
+ },
+ {
+  "killed": false,
+  "plies": 89,
+  "reason": "champ_clear",
+  "seed": 0,
+  "mode": "control",
+  "secs": 25.6
+ },
+ {
+  "killed": false,
+  "plies": 70,
+  "reason": "adv_clear",
+  "seed": 5,
+  "mode": "control",
+  "secs": 20.4
+ },
+ {
+  "killed": false,
+  "plies": 103,
+  "reason": "champ_clear",
+  "seed": 2,
+  "mode": "control",
+  "secs": 30.9
+ },
+ {
+  "killed": false,
+  "plies": 96,
+  "reason": "adv_clear",
+  "seed": 8,
+  "mode": "control",
+  "secs": 17.8
+ },
+ {
+  "killed": false,
+  "plies": 63,
+  "reason": "adv_clear",
+  "seed": 10,
+  "mode": "control",
+  "secs": 17.8
+ },
+ {
+  "killed": false,
+  "plies": 77,
+  "reason": "champ_clear",
+  "seed": 11,
+  "mode": "control",
+  "secs": 16.2
+ },
+ {
+  "killed": false,
+  "plies": 119,
+  "reason": "champ_clear",
+  "seed": 6,
+  "mode": "control",
+  "secs": 29.2
+ },
+ {
+  "killed": false,
+  "plies": 54,
+  "reason": "no surviving lines",
+  "calls": 9332,
+  "seed": 39,
+  "level": 11,
+  "width": 12,
+  "mode": "beam",
+  "secs": 47.3
+ },
+ {
+  "killed": false,
+  "plies": 104,
+  "reason": "adv_clear",
+  "seed": 7,
+  "mode": "control",
+  "secs": 25.8
+ },
+ {
+  "killed": false,
+  "plies": 81,
+  "reason": "adv_clear",
+  "seed": 12,
+  "mode": "control",
+  "secs": 16.8
+ },
+ {
+  "killed": false,
+  "plies": 108,
+  "reason": "champ_clear",
+  "seed": 9,
+  "mode": "control",
+  "secs": 25.5
+ },
+ {
+  "killed": false,
+  "plies": 106,
+  "reason": "champ_clear",
+  "seed": 13,
+  "mode": "control",
+  "secs": 18.9
+ },
+ {
+  "killed": false,
+  "plies": 78,
+  "reason": "champ_clear",
+  "seed": 14,
+  "mode": "control",
+  "secs": 16.3
+ },
+ {
+  "killed": false,
+  "plies": 73,
+  "reason": "champ_clear",
+  "seed": 15,
+  "mode": "control",
+  "secs": 21.1
+ },
+ {
+  "killed": false,
+  "plies": 69,
+  "reason": "adv_clear",
+  "seed": 21,
+  "mode": "control",
+  "secs": 17.9
+ },
+ {
+  "killed": false,
+  "plies": 105,
+  "reason": "champ_clear",
+  "seed": 19,
+  "mode": "control",
+  "secs": 22.2
+ },
+ {
+  "killed": false,
+  "plies": 87,
+  "reason": "champ_clear",
+  "seed": 16,
+  "mode": "control",
+  "secs": 24.2
+ },
+ {
+  "killed": false,
+  "plies": 96,
+  "reason": "adv_clear",
+  "seed": 17,
+  "mode": "control",
+  "secs": 25.7
+ },
+ {
+  "killed": false,
+  "plies": 106,
+  "reason": "champ_clear",
+  "seed": 18,
+  "mode": "control",
+  "secs": 25.5
+ },
+ {
+  "killed": false,
+  "plies": 87,
+  "reason": "adv_clear",
+  "seed": 20,
+  "mode": "control",
+  "secs": 27.2
+ },
+ {
+  "killed": false,
+  "plies": 107,
+  "reason": "champ_clear",
+  "seed": 24,
+  "mode": "control",
+  "secs": 25.5
+ },
+ {
+  "killed": false,
+  "plies": 108,
+  "reason": "adv_clear",
+  "seed": 22,
+  "mode": "control",
+  "secs": 29.7
+ },
+ {
+  "killed": false,
+  "plies": 98,
+  "reason": "champ_clear",
+  "seed": 23,
+  "mode": "control",
+  "secs": 30.2
+ },
+ {
+  "killed": false,
+  "plies": 71,
+  "reason": "adv_clear",
+  "seed": 26,
+  "mode": "control",
+  "secs": 19.5
+ },
+ {
+  "killed": false,
+  "plies": 86,
+  "reason": "champ_clear",
+  "seed": 25,
+  "mode": "control",
+  "secs": 23.3
+ },
+ {
+  "killed": false,
+  "plies": 72,
+  "reason": "champ_clear",
+  "seed": 30,
+  "mode": "control",
+  "secs": 17.7
+ },
+ {
+  "killed": false,
+  "plies": 70,
+  "reason": "adv_clear",
+  "seed": 29,
+  "mode": "control",
+  "secs": 18.3
+ },
+ {
+  "killed": false,
+  "plies": 89,
+  "reason": "adv_clear",
+  "seed": 28,
+  "mode": "control",
+  "secs": 20.8
+ },
+ {
+  "killed": false,
+  "plies": 82,
+  "reason": "champ_clear",
+  "seed": 27,
+  "mode": "control",
+  "secs": 21.7
+ },
+ {
+  "killed": false,
+  "plies": 71,
+  "reason": "champ_clear",
+  "seed": 32,
+  "mode": "control",
+  "secs": 19.1
+ },
+ {
+  "killed": false,
+  "plies": 82,
+  "reason": "adv_clear",
+  "seed": 31,
+  "mode": "control",
+  "secs": 26.6
+ },
+ {
+  "killed": false,
+  "plies": 73,
+  "reason": "champ_clear",
+  "seed": 37,
+  "mode": "control",
+  "secs": 13.3
+ },
+ {
+  "killed": false,
+  "plies": 88,
+  "reason": "adv_clear",
+  "seed": 33,
+  "mode": "control",
+  "secs": 21.2
+ },
+ {
+  "killed": false,
+  "plies": 110,
+  "reason": "champ_clear",
+  "seed": 35,
+  "mode": "control",
+  "secs": 21.3
+ },
+ {
+  "killed": false,
+  "plies": 79,
+  "reason": "champ_clear",
+  "seed": 38,
+  "mode": "control",
+  "secs": 16.9
+ },
+ {
+  "killed": false,
+  "plies": 98,
+  "reason": "adv_clear",
+  "seed": 34,
+  "mode": "control",
+  "secs": 23.2
+ },
+ {
+  "killed": false,
+  "plies": 87,
+  "reason": "adv_clear",
+  "seed": 39,
+  "mode": "control",
+  "secs": 18.9
+ },
+ {
+  "killed": false,
+  "plies": 106,
+  "reason": "adv_clear",
+  "seed": 36,
+  "mode": "control",
+  "secs": 24.8
+ }
+]

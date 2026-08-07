@@ -1,0 +1,46 @@
+{
+  "id": "hb_always_spawn_max_seed5000001",
+  "family": "overwhelm_max_pressure",
+  "mechanism": "Naive maximal-pressure heuristic: fire=1.0 every clear-size bin, always max observed volley size (6), always spawn-column targeting. NEGATIVE CONTROL for dies-ahead (worse than honest baseline, 0.8% vs 2.5%) but the single best schedule for raw TOPOUT (95.8%, 29x honest) -- a genuinely different failure mode from garbage_column_targeting (overwhelm-and-bury-early vs. precision-aim-at-the-doorstep). This fixture seed is a representative case: topout at pill 37 with 21/48 viruses still on the board (NOT dies_ahead -- the champion is buried early and outright, not late and 'almost clear'). Its own report metric is topout_rate, not dies_ahead_rate. STRUCTURAL-FILTER VERDICT: STRUCTURAL -- 5/5 perturbation categories survived (the cleanest sweep of any Hunt B candidate): [a] neighbouring-seeds=True (90.0% vs 2.5% honest), [b] history-shift=True (93.3% vs 0.0% honest), timing_jitter=True (100.0% vs 5.0% honest), column_jitter=True (55.0% vs 5.0% honest), size_jitter=True (82.5% vs 5.0% honest). THIS IS THE ONE STRUCTURALLY-CONFIRMED EXPLOIT IN THIS DOCUMENT: unlike all three garbage_column_targeting dies-ahead candidates (all FLUKE), this crude overwhelm schedule's topout effect generalizes robustly across every perturbation category tested. The gated predecessor A/B (ws=0 vs ws=20) was still running in transfer_filter.py's own background job at time of writing; this fixture's own --ws 0 spot check (ADVERSARY_FINDINGS.md sec4.1) already found it fails identically under both configs (long-standing, not strand20-introduced).",
+  "found_by": "Hunt B adversarial garbage scheduler (adversary_search.py hand-built control), holdout-validated n=120 (ADVERSARIAL_PRESSURE.md); this specific seed picked via a targeted re-run (not the rare dies_ahead outlier seed 5,000,007) to represent the mode's TYPICAL signature -- early bulk topout, not doorstep dies-ahead.",
+  "status": "STRUCTURAL -- transfer-filtered, 5/5 perturbation categories survived (confirmed); gated predecessor A/B (ws=0 vs ws=20) still running in the official transfer_filter.py job (see ADVERSARY_FINDINGS.md sec4.1 for this fixture's own --ws 0 spot check)",
+  "silicon_status": "OFFLINE PY65 SIM ONLY -- not replayed on the Verilator co-sim. See ADVERSARY_FINDINGS.md sec2 (silicon caveat) before treating this as a real-hardware failure.",
+  "seed": 5000001,
+  "schedule": {
+    "fire": {
+      "4-6": 1.0,
+      "7-10": 1.0,
+      "11-999": 1.0
+    },
+    "size_weights": {
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 1.0
+    },
+    "target_mode": "spawn"
+  },
+  "budget_halves": 53,
+  "max_pills": 300,
+  "expected": {
+    "result": "topout",
+    "viruses_left": 21,
+    "dies_ahead": false
+  },
+  "holdout_summary_n120": {
+    "n": 120,
+    "clear": 5,
+    "topout": 115,
+    "stall": 0,
+    "dies_ahead": 1,
+    "clear_rate": 0.041666666666666664,
+    "topout_rate": 0.9583333333333334,
+    "stall_rate": 0.0,
+    "dies_ahead_rate": 0.008333333333333333,
+    "avg_garbage": 33.925,
+    "max_garbage": 53,
+    "min_garbage": 12
+  },
+  "provenance": "adversary/validate_result.json (validate_only.py, n=120 holdout 5,000,000-5,000,119) for the genome + aggregate stats; this specific seed's per-seed outcome confirmed by a direct adversary_search.play_seed_adversarial re-run at full float precision (see ADVERSARY_FINDINGS.md sec4)."
+}

@@ -1,0 +1,45 @@
+{
+  "id": "hb_ga_near_spawn_a_seed5000000",
+  "family": "garbage_column_targeting",
+  "mechanism": "GA-discovered adversarial garbage schedule: fire probabilities tuned per clear-size bin (~37%/42%/2.5% on the 4-6/7-10/11+ bins) + near_spawn column targeting (columns ranked by distance to the NES spawn columns 3,4). Converged independently in 3 GA search runs (ADVERSARIAL_PRESSURE.md sec1.4). Raises the floor under the spawn lane so the champion increasingly has to choose between clearing a virus and keeping the spawn lane clear late in the game -- it dies DIES_AHEAD, holding viruses, not from raw pile-up. STRUCTURAL-FILTER VERDICT: FLUKE (1/5 perturbation categories survived -- only timing_jitter; neighbouring-seeds/history-shift/column-jitter/size-jitter all failed the CI-separation survival bar). The exact fire/size shape this genome found is overfit to its training/original-holdout seed block, not a general property.",
+  "found_by": "Hunt B adversarial garbage scheduler (adversary_search.py GA + hand-built controls), holdout-validated n=120 (ADVERSARIAL_PRESSURE.md), seed picked here via an exact-precision re-scan of the first 20 holdout seeds (find_fixture_seeds_exact.py) to guarantee bit-exact reproduction of validate_result.json's own genome floats (best_schedules.json's genome field is rounded to 3dp and was found to flip 1/120 outcomes on a spot check).",
+  "status": "FLUKE -- transfer-filtered, 1/5 perturbation categories survived (confirmed)",
+  "silicon_status": "OFFLINE PY65 SIM ONLY -- not replayed on the Verilator co-sim. See ADVERSARY_FINDINGS.md sec2 (silicon caveat) before treating this as a real-hardware failure.",
+  "seed": 5000000,
+  "schedule": {
+    "fire": {
+      "4-6": 0.36536897181816486,
+      "7-10": 0.4156494986616913,
+      "11-999": 0.025055204344575976
+    },
+    "size_weights": {
+      "2": 0.18410152926912224,
+      "3": 0.23279968847815752,
+      "4": 0.19903870175332875,
+      "5": 0.15207118141147202,
+      "6": 0.2319888990879195
+    },
+    "target_mode": "near_spawn"
+  },
+  "budget_halves": 53,
+  "max_pills": 300,
+  "expected": {
+    "result": "topout",
+    "dies_ahead": true
+  },
+  "holdout_summary_n120": {
+    "n": 120,
+    "clear": 41,
+    "topout": 79,
+    "stall": 0,
+    "dies_ahead": 39,
+    "clear_rate": 0.3416666666666667,
+    "topout_rate": 0.6583333333333333,
+    "stall_rate": 0.0,
+    "dies_ahead_rate": 0.325,
+    "avg_garbage": 35.083333333333336,
+    "max_garbage": 53,
+    "min_garbage": 10
+  },
+  "provenance": "adversary/validate_result.json (validate_only.py, n=120 holdout 5,000,000-5,000,119) for the genome + aggregate stats; this specific seed's per-seed outcome confirmed by find_fixture_seeds_exact.py (adversary_search.play_seed_adversarial re-run at full float precision)."
+}

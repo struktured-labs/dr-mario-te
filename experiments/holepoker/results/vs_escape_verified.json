@@ -1,0 +1,52 @@
+[
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 4,
+  "K": 57,
+  "secs": 2.6
+ },
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 1,
+  "K": 24,
+  "secs": 22.6
+ },
+ {
+  "E": 1,
+  "ply": 22,
+  "alt": 0,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 6,
+  "K": 23,
+  "secs": 24.8
+ },
+ {
+  "E": 1,
+  "ply": 16,
+  "alt": 0,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 12,
+  "K": 17,
+  "secs": 24.2
+ },
+ {
+  "E": 1,
+  "ply": 7,
+  "alt": 0,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 9,
+  "K": 8,
+  "secs": 28.5
+ }
+]

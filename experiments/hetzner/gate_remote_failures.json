@@ -1,0 +1,35 @@
+{
+  "digest": "7f4290729dedbaf1d6aea584fd1b204246ecf0c88d5352557954ae88f0163b64",
+  "n_seeds": 2,
+  "seeds": [
+    33269,
+    33754
+  ],
+  "per_seed": [
+    {
+      "seed": 33269,
+      "result": "topout",
+      "pills": 231,
+      "viruses_left": 1,
+      "n_moves": 231,
+      "hash": "6b43df01bf4efa2031b5114eac48f51b218761e18f3654eb720ed73f877ac14c"
+    },
+    {
+      "seed": 33754,
+      "result": "stall",
+      "pills": 300,
+      "viruses_left": 1,
+      "n_moves": 300,
+      "hash": "41a12d94a51012676ee1666e15a757e47be4689f763a8edfc2bf9fd5ba57b256"
+    }
+  ],
+  "env": {
+    "node": "rbm-train-2",
+    "machine": "x86_64",
+    "python": "3.12.3",
+    "numpy": "2.4.6",
+    "numba": "0.66.0",
+    "llvmlite": "0.48.0",
+    "cpu": "AMD EPYC-Milan Processor"
+  }
+}

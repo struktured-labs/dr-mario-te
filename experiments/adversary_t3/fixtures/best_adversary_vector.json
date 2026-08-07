@@ -1,0 +1,22 @@
+{
+  "note": "Best evolved-arm vector, evolutionary search run 1 (search_adversary.py), stopped at generation 7/18 to free CPU for measurement under this session's shared-box contention. Anytime-safe: checkpointed every generation, see search_checkpoint.json / search_log.jsonl for the full record.",
+  "vec": [234, 20, -31, 233, 37],
+  "vec_named": {"w_chain": 234, "ws": 20, "w_press": -31, "w_hold": 233, "w_bigsq": 37},
+  "found_at_generation": 3,
+  "still_best_at_generation": 7,
+  "train_seeds": {"lo": 5000, "hi": 5019, "n": 20},
+  "train_death_rate": 0.05,
+  "train_death_ci": [0.0, 0.125],
+  "heldout_seeds": {"lo": 6000, "hi": 6014, "n": 15},
+  "heldout_death_rate": 0.0,
+  "heldout_note": "0/15 on a DIFFERENT seed block than training; consistent with a true rate in the low single digits at this n, not evidence of overfitting or of a robust effect -- see ADVERSARY_T3.md overfitting-check section",
+  "champion_pinned": {
+    "leaf": "fast_rtl_x.variant(\"winner\")",
+    "decider": "cascade_stranded_x.StrandedChainD3Decider",
+    "w_chain": 180,
+    "ws": 20,
+    "topk2": 8,
+    "maxpass": 0
+  },
+  "corroboration": "hole-poker's independently-built single-agent oracle beam search found 1/14 (7.1%) kills on its own seed set -- same order of magnitude, independently arrived at. See ADVERSARY_T3.md key-finding section."
+}

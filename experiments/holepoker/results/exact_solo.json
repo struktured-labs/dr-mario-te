@@ -1,0 +1,233 @@
+[
+ {
+  "tag": "L17s11p109st2",
+  "spawn_top": 2,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 2118,
+  "secs": 120.8,
+  "viruses": 3
+ },
+ {
+  "tag": "L17s11p108st2",
+  "spawn_top": 2,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 3186,
+  "secs": 174.0,
+  "viruses": 3
+ },
+ {
+  "tag": "L20s6p53st2",
+  "spawn_top": 2,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 2478,
+  "secs": 225.0,
+  "viruses": 49
+ },
+ {
+  "tag": "L20s6p55st2",
+  "spawn_top": 2,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 594,
+  "secs": 53.8,
+  "viruses": 47
+ },
+ {
+  "tag": "L20s6p52st2",
+  "spawn_top": 2,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 3774,
+  "secs": 339.2,
+  "viruses": 49
+ },
+ {
+  "tag": "L20s6p54st2",
+  "spawn_top": 2,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 3402,
+  "secs": 244.7,
+  "viruses": 47
+ },
+ {
+  "tag": "L11s6p8st3",
+  "spawn_top": 3,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 816,
+  "secs": 60.1,
+  "viruses": 43
+ },
+ {
+  "tag": "L11s14p8st3",
+  "spawn_top": 3,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 492,
+  "secs": 43.1,
+  "viruses": 41
+ },
+ {
+  "tag": "L20s8p49st2",
+  "spawn_top": 2,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 1800,
+  "secs": 181.5,
+  "viruses": 49
+ },
+ {
+  "tag": "L20s8p7st2",
+  "spawn_top": 2,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 1776,
+  "secs": 236.5,
+  "viruses": 79
+ },
+ {
+  "tag": "L20s6p32st2",
+  "spawn_top": 2,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 4746,
+  "secs": 541.2,
+  "viruses": 63
+ },
+ {
+  "tag": "L15s19p10st3",
+  "spawn_top": 3,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 420,
+  "secs": 39.2,
+  "viruses": 57
+ },
+ {
+  "tag": "L15s11p22st3",
+  "spawn_top": 3,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 2304,
+  "secs": 147.4,
+  "viruses": 46
+ },
+ {
+  "tag": "L15s11p10st3",
+  "spawn_top": 3,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 2934,
+  "secs": 220.6,
+  "viruses": 55
+ },
+ {
+  "tag": "L15s11p14st3",
+  "spawn_top": 3,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 2694,
+  "secs": 214.5,
+  "viruses": 51
+ },
+ {
+  "tag": "L19s0p30st3",
+  "spawn_top": 3,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 324,
+  "secs": 17.1,
+  "viruses": 49
+ },
+ {
+  "tag": "L15s11p18st3",
+  "spawn_top": 3,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 3474,
+  "secs": 227.5,
+  "viruses": 48
+ },
+ {
+  "tag": "L19s20p61st3",
+  "spawn_top": 3,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 2070,
+  "secs": 73.2,
+  "viruses": 42
+ },
+ {
+  "tag": "L20s6p31st3",
+  "spawn_top": 3,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 3930,
+  "secs": 244.8,
+  "viruses": 63
+ },
+ {
+  "tag": "L15s18p23st3",
+  "spawn_top": 3,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 5280,
+  "secs": 299.4,
+  "viruses": 52
+ },
+ {
+  "tag": "L20s6p36st3",
+  "spawn_top": 3,
+  "h": 1,
+  "K": null,
+  "budget_hit": false,
+  "searched_to": 5,
+  "calls": 6222,
+  "secs": 336.4,
+  "viruses": 59
+ }
+]

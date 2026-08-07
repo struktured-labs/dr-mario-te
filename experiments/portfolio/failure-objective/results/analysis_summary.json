@@ -1,0 +1,139 @@
+{
+  "anchor_ws0_n120": [
+    47,
+    33,
+    120
+  ],
+  "anchor_ws20_n120": [
+    20,
+    9,
+    120
+  ],
+  "champion_ws20_n40_subset": [
+    9,
+    5,
+    40
+  ],
+  "arms": [
+    {
+      "tag": "R_BURIED_24",
+      "ws": 20,
+      "w_overrides": {
+        "9": 8.0,
+        "7": 24.0,
+        "8": 8.0,
+        "5": 32.0,
+        "6": 48.0
+      },
+      "n": 40,
+      "bad_ends": 15,
+      "bad_end_rate": 0.375,
+      "dies_ahead": 10,
+      "dies_ahead_rate": 0.25,
+      "ci_vs_ws20": [
+        -0.04999999999999999,
+        0.35
+      ],
+      "verdict": "WASH",
+      "beats": "no diff from ws=20"
+    },
+    {
+      "tag": "R_BURIED_96",
+      "ws": 20,
+      "w_overrides": {
+        "9": 8.0,
+        "7": 96.0,
+        "8": 8.0,
+        "5": 32.0,
+        "6": 48.0
+      },
+      "n": 40,
+      "bad_ends": 10,
+      "bad_end_rate": 0.25,
+      "dies_ahead": 2,
+      "dies_ahead_rate": 0.05,
+      "ci_vs_ws20": [
+        -0.12500000000000003,
+        0.19999999999999998
+      ],
+      "verdict": "WASH",
+      "beats": "no diff from ws=20"
+    },
+    {
+      "tag": "R_SETUP_16",
+      "ws": 20,
+      "w_overrides": {
+        "9": 8.0,
+        "7": 48.0,
+        "8": 8.0,
+        "5": 16.0,
+        "6": 48.0
+      },
+      "n": 40,
+      "bad_ends": 11,
+      "bad_end_rate": 0.275,
+      "dies_ahead": 4,
+      "dies_ahead_rate": 0.1,
+      "ci_vs_ws20": [
+        -0.1,
+        0.2
+      ],
+      "verdict": "WASH",
+      "beats": "no diff from ws=20"
+    },
+    {
+      "tag": "R_SETUP_64",
+      "ws": 20,
+      "w_overrides": {
+        "9": 8.0,
+        "7": 48.0,
+        "8": 8.0,
+        "5": 64.0,
+        "6": 48.0
+      },
+      "n": 40,
+      "bad_ends": 8,
+      "bad_end_rate": 0.2,
+      "dies_ahead": 1,
+      "dies_ahead_rate": 0.025,
+      "ci_vs_ws20": [
+        -0.17500000000000002,
+        0.125
+      ],
+      "verdict": "WASH",
+      "beats": "no diff from ws=20"
+    },
+    {
+      "tag": "ws10",
+      "ws": 10,
+      "w_overrides": {},
+      "n": 40,
+      "bad_ends": 8,
+      "bad_end_rate": 0.2,
+      "dies_ahead": 5,
+      "dies_ahead_rate": 0.125,
+      "ci_vs_ws20": [
+        -0.19999999999999998,
+        0.12500000000000003
+      ],
+      "verdict": "WASH",
+      "beats": "no diff from ws=20"
+    },
+    {
+      "tag": "ws40",
+      "ws": 40,
+      "w_overrides": {},
+      "n": 40,
+      "bad_ends": 10,
+      "bad_end_rate": 0.25,
+      "dies_ahead": 5,
+      "dies_ahead_rate": 0.125,
+      "ci_vs_ws20": [
+        -0.12500000000000003,
+        0.17500000000000002
+      ],
+      "verdict": "WASH",
+      "beats": "no diff from ws=20"
+    }
+  ]
+}
