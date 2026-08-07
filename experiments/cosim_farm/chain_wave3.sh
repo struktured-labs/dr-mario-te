@@ -49,8 +49,8 @@ launch() {  # launch <arm> <fwdir> <exec-mode> <workers>
     > "$LOGS/wave3_$1.log" 2>&1 &
 }
 
-launch s20b_drop      /mnt/data/drmario_cosim/fw/s20b         drop 8
-launch s20t3fix_tuck  /mnt/data/drmario_cosim/fw/fixslot_ctl  tuck 8
-launch s20t3fix_drop  /mnt/data/drmario_cosim/fw/fixslot_ctl  drop 8
+launch s20b_drop      /mnt/data/drmario_cosim/fw/s20b         drop 5
+launch s20t3fix_tuck  /mnt/data/drmario_cosim/fw/fixslot_ctl  tuck 5
+launch s20t3fix_drop  /mnt/data/drmario_cosim/fw/fixslot_ctl  drop 2
 sleep 30
 echo "$(date -Is) launched: $(pgrep -fc 'run_farm.py --arm') runners, $(pgrep -xc farm_vsim) co-sims" >&2
