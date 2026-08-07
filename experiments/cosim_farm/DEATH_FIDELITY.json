@@ -1,0 +1,287 @@
+{
+ "n": 125,
+ "full": 110,
+ "col": 112,
+ "orient": 113,
+ "full_frac": 0.88,
+ "per_seed": {
+  "6045": [
+   23,
+   25
+  ],
+  "6049": [
+   19,
+   25
+  ],
+  "6059": [
+   24,
+   25
+  ],
+  "6065": [
+   22,
+   25
+  ],
+  "6077": [
+   22,
+   25
+  ]
+ },
+ "by_plies_to_death": {
+  "last 5": [
+   22,
+   25
+  ],
+  "6-15": [
+   42,
+   50
+  ],
+  "16-25": [
+   46,
+   50
+  ]
+ },
+ "disagreements": [
+  {
+   "seed": 6045,
+   "ply": 63,
+   "plies_to_death": 17,
+   "virus_count": 27,
+   "max_height": 14,
+   "fast": [
+    0,
+    0
+   ],
+   "rtl": [
+    6,
+    3
+   ]
+  },
+  {
+   "seed": 6045,
+   "ply": 68,
+   "plies_to_death": 12,
+   "virus_count": 27,
+   "max_height": 15,
+   "fast": [
+    4,
+    1
+   ],
+   "rtl": [
+    5,
+    1
+   ]
+  },
+  {
+   "seed": 6049,
+   "ply": 31,
+   "plies_to_death": 19,
+   "virus_count": 29,
+   "max_height": 14,
+   "fast": [
+    0,
+    2
+   ],
+   "rtl": [
+    5,
+    2
+   ]
+  },
+  {
+   "seed": 6049,
+   "ply": 34,
+   "plies_to_death": 16,
+   "virus_count": 27,
+   "max_height": 14,
+   "fast": [
+    1,
+    0
+   ],
+   "rtl": [
+    0,
+    1
+   ]
+  },
+  {
+   "seed": 6049,
+   "ply": 39,
+   "plies_to_death": 11,
+   "virus_count": 25,
+   "max_height": 15,
+   "fast": [
+    3,
+    0
+   ],
+   "rtl": [
+    2,
+    2
+   ]
+  },
+  {
+   "seed": 6049,
+   "ply": 43,
+   "plies_to_death": 7,
+   "virus_count": 25,
+   "max_height": 15,
+   "fast": [
+    5,
+    0
+   ],
+   "rtl": [
+    1,
+    0
+   ]
+  },
+  {
+   "seed": 6049,
+   "ply": 46,
+   "plies_to_death": 4,
+   "virus_count": 25,
+   "max_height": 15,
+   "fast": [
+    6,
+    1
+   ],
+   "rtl": [
+    1,
+    3
+   ]
+  },
+  {
+   "seed": 6049,
+   "ply": 48,
+   "plies_to_death": 2,
+   "virus_count": 25,
+   "max_height": 15,
+   "fast": [
+    1,
+    0
+   ],
+   "rtl": [
+    5,
+    2
+   ]
+  },
+  {
+   "seed": 6059,
+   "ply": 102,
+   "plies_to_death": 4,
+   "virus_count": 6,
+   "max_height": 15,
+   "fast": [
+    1,
+    2
+   ],
+   "rtl": [
+    2,
+    0
+   ]
+  },
+  {
+   "seed": 6065,
+   "ply": 33,
+   "plies_to_death": 24,
+   "virus_count": 22,
+   "max_height": 14,
+   "fast": [
+    5,
+    1
+   ],
+   "rtl": [
+    2,
+    3
+   ]
+  },
+  {
+   "seed": 6065,
+   "ply": 43,
+   "plies_to_death": 14,
+   "virus_count": 18,
+   "max_height": 14,
+   "fast": [
+    0,
+    0
+   ],
+   "rtl": [
+    2,
+    2
+   ]
+  },
+  {
+   "seed": 6065,
+   "ply": 46,
+   "plies_to_death": 11,
+   "virus_count": 17,
+   "max_height": 14,
+   "fast": [
+    6,
+    0
+   ],
+   "rtl": [
+    6,
+    3
+   ]
+  },
+  {
+   "seed": 6077,
+   "ply": 45,
+   "plies_to_death": 11,
+   "virus_count": 28,
+   "max_height": 14,
+   "fast": [
+    6,
+    2
+   ],
+   "rtl": [
+    3,
+    3
+   ]
+  },
+  {
+   "seed": 6077,
+   "ply": 48,
+   "plies_to_death": 8,
+   "virus_count": 27,
+   "max_height": 15,
+   "fast": [
+    0,
+    0
+   ],
+   "rtl": [
+    0,
+    3
+   ]
+  },
+  {
+   "seed": 6077,
+   "ply": 49,
+   "plies_to_death": 7,
+   "virus_count": 27,
+   "max_height": 15,
+   "fast": [
+    7,
+    0
+   ],
+   "rtl": [
+    1,
+    2
+   ]
+  }
+ ],
+ "orient_fast": {
+  "RV": 69,
+  "RH": 18,
+  "V": 21,
+  "H": 17
+ },
+ "orient_rtl": {
+  "RV": 62,
+  "RH": 24,
+  "V": 20,
+  "H": 19
+ },
+ "midgame_reference": {
+  "n": 50,
+  "full": 50,
+  "full_frac": 1.0
+ }
+}
