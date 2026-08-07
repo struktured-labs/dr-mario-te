@@ -124,7 +124,7 @@ def preregistered_verdict(d):
     survival_bad = cl["mcnemar_p"] < 0.05 and c > b
     if survival_bad:
         return (1, f"OUTCOME 1 -- NET HARMFUL, DO NOT BUILD THE EXECUTOR. Survival cost "
-                   f"replicates: {c} champion-only vs {b} candidate-only, McNemar "
+                   f"replicates: {c} champion-only, {b} candidate-only, McNemar "
                    f"p={cl['mcnemar_p']}. This verdict stands EVEN IF conditional pills "
                    f"is strongly negative -- speed does not buy back an absorbing state.")
 
@@ -149,13 +149,17 @@ def preregistered_verdict(d):
     # at once, refusing "tuck is harmful" as firmly as "tuck has no survival cost".
     # Had it moved the decision, the flawed wording would have had to stand.
     if c != b:
-        toward = "the CHAMPION" if c > b else "the CANDIDATE"
+        # RULE 19 REFINEMENT: report the SPLIT, not the LEAN. "4-to-1 toward the
+        # champion" compresses in a reader's memory to "toward the champion" while the
+        # "(n.s.)" falls off in transit -- which is the exact mechanism rule 19 describes.
+        # The two counts sitting side by side carry the same information and cannot
+        # compress into a vector. Withholding the counts would be worse (a McNemar result
+        # is uninterpretable without the split); it is the preposition that goes.
         return (3.5, f"OUTCOME 3b -- DO NOT BUILD, AND DO NOT CLAIM HARM. Survival "
-                     f"discordance is NOT SIGNIFICANT but {max(b, c)}-to-{min(b, c)} "
-                     f"one-directional toward {toward} (p={cl['mcnemar_p']}). The "
-                     f"survival question is OPEN, NOT ANSWERED, and settling it needs n "
-                     f"well past this{pills_txt}. Same action as outcome 3; only the "
-                     f"characterisation differs.")
+                     f"discordance NOT SIGNIFICANT: {c} champion-only, {b} tuck-only, "
+                     f"p={cl['mcnemar_p']}. The survival question is OPEN, NOT ANSWERED; "
+                     f"settling it needs n well past this{pills_txt}. Same action as "
+                     f"outcome 3; only the characterisation differs.")
 
     return (3, f"OUTCOME 3 -- WASH at this n. PARK IT. Survival discordance is EVEN "
                f"({b} vs {c}); the failure-ranked combined test still spans "
@@ -472,17 +476,26 @@ def main():
             print("  no paired seeds yet")
         else:
             cl, v, f = d["clear"], d["viruses_cleared"], d["fire_rate"]
-            print(f"  {POOLED[0]}   n paired {d['n_paired']}   fw {d['fw']}")
+            # Unpaired rows in ONE direction only just mean that arm is behind -- normal
+            # mid-run. GENUINE seed divergence shows up as unpaired rows in BOTH
+            # directions, i.e. each arm holding seeds the other will never have. Warning
+            # on the sum fired instantly on an in-flight run and would have been a false
+            # alarm reported as a defect.
+            unp = min(d['cand_only'], d['ctrl_only'])
+            print(f"  {POOLED[0]}   n paired {d['n_paired']}   "
+                  f"UNPAIRED rows {d['cand_only']} cand / {d['ctrl_only']} ctrl"
+                  f"{'  <- WARNING: BOTH arms hold seeds the other lacks => genuine divergence' if unp > 0 else ''}"
+                  f"   fw {d['fw']}")
             print(f"    clear   cand {cl['cand']} "
                   f"CI[{cl['cand_ci'][0]:.1%},{cl['cand_ci'][1]:.1%}]"
                   f"   ctrl {cl['ctrl']} CI[{cl['ctrl_ci'][0]:.1%},{cl['ctrl_ci'][1]:.1%}]")
             print(f"            delta {cl['delta_points']:+.1f} pts   discordant "
                   f"{cl['discordant_cand_only']}/{cl['discordant_ctrl_only']}   "
                   f"McNemar p={cl['mcnemar_p']}")
-            print(f"    [1] SURVIVAL (PRIMARY)  discordant "
-                  f"{cl['discordant_cand_only']} cand-only vs "
-                  f"{cl['discordant_ctrl_only']} champion-only   <- the interpretable "
-                  f"quantity; p is downstream of it")
+            print(f"    [1] SURVIVAL (PRIMARY)  discordant: "
+                  f"{cl['discordant_ctrl_only']} champion-only, "
+                  f"{cl['discordant_cand_only']} tuck-only"
+                  f"   <- the interpretable quantity; p is downstream of it")
             print(f"        clear {cl['cand']} vs {cl['ctrl']}   McNemar p={cl['mcnemar_p']}")
             pb = d.get("pills_if_both_cleared")
             if pb:
