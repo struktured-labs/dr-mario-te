@@ -47,11 +47,26 @@ Intel i9-12900K and AMD EPYC-Milan agree bit-for-bit. Separately, 200 seeds
 were computed twice by two concurrent processes under full CPU contention and
 all 200 rows were byte-identical.
 
+## Its role: pure fast-sim, which is what makes rebuild-per-job realistic
+
+Most of this project's compute does not need cycle-accurate simulation. Seed
+censuses, dose sweeps, adversarial search and large-n replications all run in
+the numba fast sim; only a handful of final survivors need the Verilator co-sim,
+and that stays local. So this node needs **no Verilator, no Quartus, no RTL
+toolchain** — `apt install python3-venv`, a pinned venv, one rsync, and the
+gate. That is what turns "rebuild per job" from a theoretical policy into a
+few-minute scripted one (`PROVISIONING.md`).
+
+(A portable co-sim binary *does* run here — cosim-farm built `farm_vsim` with
+`-O2` and deliberately without `-march=native`, and it ran unmodified on a box
+with no Verilator installed. Worth knowing; it doesn't change the node's role.)
+
 ## What it delivered in its first few hours
 
-1. **A full seed census running** — 32,768 seeds, resumable, checkpointed,
-   auto-restarting, with the fatal board and full replay trace kept for every
-   failure.
+1. **The definitive clean-stream census** — now the FULL 16-bit space (all
+   65,536 seeds), after the local clean census was retired in favour of this
+   node. Resumable, checkpointed, auto-restarting, provenance-stamped, keeping
+   the fatal board and full replay trace for every failure.
 2. **A finding that corrects a project constant.** Pooling this node's census
    rows with the local agent's gives **~1,474 clean games with ZERO failures**
    → clean-stream failure rate **< 0.20%** (rule of three, 95%). The harness
@@ -72,10 +87,23 @@ all 200 rows were byte-identical.
    itself — but a summary-statistics gate would have reported perfect
    agreement. The gate now hashes the source files too.
 
-That fourth item is the strongest argument for the node. A second independent
-machine forced a discipline (hash the code, hash the full record) that a
-single-box workflow never would have, and the same class of drift silently
-affects any long-running experiment against an actively-edited tree.
+That fourth item is a **separate argument for keeping the box, independent of
+games/hour**, and it deserves to be weighed on its own. The node is an
+INDEPENDENT SECOND IMPLEMENTATION PATH. Different CPU vendor, different Python
+build, a physically separate copy of the tree — and running the same work twice
+across that boundary surfaced, within hours, a defect that a single-machine
+setup would have carried silently and indefinitely: one field, one rare seed,
+every summary statistic in agreement. Nothing about throughput would have found
+it. The same class of drift affects any long experiment against an
+actively-edited tree, including purely local ones, which is why the detector
+(`code_manifest.py`) is now a standalone utility rather than a gate-only trick.
+
+The habit generalises. The same "prove it on whole trajectories, not summary
+statistics" discipline was then applied to a proposed faster champion kernel:
+it passed on all 8 whole games (790 moves, byte-identical) but delivered only
+**1.09x**, because the cost lives in the inner depth search, not the root loop
+that was fused. That saved another agent from re-planning a program around a
+speedup that isn't there. Cheap to check, expensive to assume.
 
 ## The honest case against
 
@@ -107,21 +135,30 @@ the box spent 110 days idle. Its entire value is in utilisation.
 Two defensible options:
 
 1. **Keep it, and keep it loaded.** Only justified if there is a standing queue
-   of overnight jobs. There currently is (census, dose sweeps, large-n
-   replications of the project's chronic n=60 results). At ~1.5M games/month it
-   would deliver roughly **23 full 65,536-seed censuses per month**, or a 4-arm
-   paired experiment at n=10,000 every ~2.4 days. If the queue is real, this is
-   fine value.
-2. **Better: destroy it and rebuild per job.** Hetzner bills hourly. A 15.6 h
-   census costs on the order of a dollar of compute rather than a month of
-   rent, and `PROVISIONING.md` rebuilds the node from a bare image in a few
-   minutes (apt + pinned venv + one rsync + the gate). This keeps every
-   capability demonstrated here and removes the idle cost — which is the only
-   thing actually wrong with the box.
+   of overnight jobs. There currently is (the full-space census, dose sweeps,
+   and large-n replications of the project's chronic n=60 results). At ~1.5M
+   games/month it would deliver roughly **23 full 65,536-seed censuses per
+   month**, or a 4-arm paired experiment at n=10,000 every ~2.4 days. Three
+   agents wanted it simultaneously tonight. If that demand is real and
+   recurring, this is fine value.
+2. **Better: destroy it and rebuild per job.** Hetzner bills hourly. A ~31 h
+   full-space census costs a couple of dollars of compute rather than a month
+   of rent, and because the node needs **no RTL toolchain** — just python,
+   numpy, numba and one rsync — `PROVISIONING.md` rebuilds it from a bare image
+   in minutes. This keeps every capability demonstrated here, including the
+   independent-second-path property, and removes the idle cost, which is the
+   only thing actually wrong with the box.
 
 **I recommend option 2**, with option 1 as the fallback if per-job setup
 friction proves annoying in practice. The deciding fact is that this node's
 value is bursty and scheduled, and the cost model should match.
+
+Note the two arguments are independent and both survive under option 2: the
+throughput argument (uncontended overnight games/hour) and the
+**independent-second-implementation-path** argument (a physically separate copy
+of the tree on a different CPU vendor, which is what caught the code-skew
+defect). A rebuilt-per-job node retains both. An idle always-on node delivers
+neither.
 
 ⚠ Verify the actual line item against the invoice before acting — the "$100+"
 figure is as stated, and a CCX23 lists well below that, so there may be extra
@@ -137,3 +174,11 @@ Hetzner API token and did not need it; the SSH key was sufficient.
   isn't).
 - Keep single-writer discipline on any appended results file (`census.py` takes
   an exclusive `flock`).
+- Have every long job **stamp its own provenance at start**:
+  `code_manifest.stamp(out_dir + "/manifest.json")`. A 31 h census outlives
+  several edits to the tree it started from; without the stamp its rows cannot
+  be tied to the code that produced them. This applies to LOCAL jobs too — two
+  agents importing a module at different times have the same exposure.
+- When sharing the box, agree a worker budget explicitly. It is 2 physical
+  cores; three concurrent tenants at "4 workers" each is 3x oversubscription and
+  everyone's numbers get slower, not just the newcomer's.
