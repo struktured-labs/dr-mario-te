@@ -53,7 +53,10 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 RL = "/home/struktured/projects/dr_mario_rl"
 QA = "/home/struktured/projects/dr-mario-qa-wt/experiments"
-for _p in (HERE, RL + "/.claude/worktrees/faithful-sim/src", QA):
+# bursty_model lives in eval47/, not experiments/ directly -- same sys.path shape
+# firmware_tier3_ab.py uses for its own pressure arm.
+QA47 = QA + "/eval47"
+for _p in (HERE, RL + "/.claude/worktrees/faithful-sim/src", QA, QA47):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
@@ -125,17 +128,33 @@ def apply_tuck(board, ring, col, rest, ca, cb):
     board.is_virus[r1, c1] = False
 
 
+GARBAGE_MIN_PILLS = 25          # reach_root_ab.GARBAGE_MIN_PILLS, not re-chosen here
+DIES_AHEAD_VIRUS_THRESHOLD = 12  # reach_root_ab.DIES_AHEAD_VIRUS_THRESHOLD
+
+
 def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
-              trace: bool = False, exec_mode: str = "drop"):
+              trace: bool = False, exec_mode: str = "drop",
+              pressure: str = "clean", model=None):
     """Play one game. Returns a result dict; raises CosimError if the RTL fails.
 
     exec_mode: "drop" = the deployed cart's behaviour (descriptor ignored);
                "tuck" = honour the published tuck descriptor.
+    pressure:  "clean"  = no garbage. The champion has ~0 failures on a clean L11
+                          stream (1,474-game census), so a clean arm measures SPEED
+                          (pills-to-clear), not survival.
+               "bursty" = the project's fitted volley model (bursty_model), injected on
+                          the player's own clears exactly as reach_root_ab/
+                          firmware_tier3_ab do. This is where survival differences live.
     """
     if exec_mode not in ("drop", "tuck"):
         raise ValueError("exec_mode must be 'drop' or 'tuck'")
+    if pressure not in ("clean", "bursty"):
+        raise ValueError("pressure must be 'clean' or 'bursty'")
+    import numpy as np
     from drmario.faithful_env import FaithfulDrMarioEnv
     from nes_pills import NesPillSource
+    if pressure == "bursty":
+        from bursty_model import inject_bursty_garbage
 
     env = FaithfulDrMarioEnv(level=level, seed=seed, max_pills=max_pills)
     env.reset()
@@ -145,9 +164,11 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
 
     start_viruses = env.board.virus_count()
     res = "stall"
-    n_tuck = 0            # tucks actually EXECUTED (always 0 when exec_mode == "drop")
-    n_tuck_published = 0  # descriptors the copro published, executed or not
+    n_tuck = 0             # tucks actually EXECUTED (always 0 when exec_mode == "drop")
+    n_tuck_published = 0   # descriptors the copro published, executed or not
+    n_incoherent = 0       # published but UNPERFORMABLE (see below)
     n_illegal = 0
+    garbage = 0
     clocks = 0
     moves = []
 
@@ -163,11 +184,47 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
         col, o4, tcol, trow = d["col"], d["o4"], d["tcol"], d["trow"]
         if trace:
             moves.append((col, o4, tcol, trow))
-
         if tcol != NO_TUCK:
             n_tuck_published += 1
 
-        if tcol == NO_TUCK or exec_mode == "drop":
+        occ_before = int(np.count_nonzero(env.board.color)) if pressure == "bursty" else 0
+
+        do_tuck = (tcol != NO_TUCK and exec_mode == "tuck")
+        rest = None
+        if do_tuck:
+            rest = fall_from(env.board.color, col, RING_OF_O4[o4], trow)
+            if rest is None:
+                # INCOHERENT descriptor: the pill cannot enter best_col at the published
+                # trigger row, so the maneuver is unperformable. Measured on real L11
+                # boards, 15 of 26 tuck-v1 descriptors are like this (descriptor_audit.py)
+                # -- v1 enumerates over ALL target columns and keeps the globally deepest
+                # rest, while the driver takes its destination from best_col, so the two
+                # need not describe the same column.
+                #
+                # Modelled as degrading to a plain drop at best_col. That is CONSERVATIVE:
+                # on silicon the pill keeps falling wherever the DAS hold left it and can
+                # land in a different column entirely, i.e. worse than modelled here.
+                # Counted separately so this fallback can never hide inside the tuck rate.
+                n_incoherent += 1
+                do_tuck = False
+
+        if do_tuck:
+            apply_tuck(env.board, RING_OF_O4[o4], col, rest, ca, cb)
+            env.board.resolve()
+            n_tuck += 1
+            env.pills_placed += 1
+            if env.board.virus_count() == 0:
+                res = "clear"
+                break
+            if env.board.spawn_blocked():
+                res = "topout"
+                break
+            env.cur = env.nxt
+            env.nxt = env._rand_pill()
+            if not env.action_masks().any():
+                res = "topout"
+                break
+        else:
             action = VAR_OF_O4[o4] * COLS + col
             orient, acol, pill = env._decode(action)
             if env.board.resting_position(pill, orient, acol) is None:
@@ -184,26 +241,17 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
                 break
             if trunc:
                 break
-        else:
-            ring = RING_OF_O4[o4]
-            rest = fall_from(env.board.color, col, ring, trow)
-            if rest is None:
-                n_illegal += 1
-                res = "topout"
-                break
-            apply_tuck(env.board, ring, col, rest, ca, cb)
-            env.board.resolve()
-            n_tuck += 1
-            env.pills_placed += 1
+
+        if pressure == "bursty" and env.pills_placed >= GARBAGE_MIN_PILLS:
+            occ_after = int(np.count_nonzero(env.board.color))
+            clear_size = max(0, occ_before + 2 - occ_after)
+            if clear_size > 0:
+                garbage += inject_bursty_garbage(
+                    env.board, model, seed, env.pills_placed, clear_size)
             if env.board.virus_count() == 0:
                 res = "clear"
                 break
             if env.board.spawn_blocked():
-                res = "topout"
-                break
-            env.cur = env.nxt
-            env.nxt = env._rand_pill()
-            if not env.action_masks().any():
                 res = "topout"
                 break
 
@@ -216,10 +264,12 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
         "start_viruses": start_viruses,
         "viruses_left": viruses_left,
         "viruses_cleared": start_viruses - viruses_left,
+        "dies_ahead": int(res == "topout" and viruses_left <= DIES_AHEAD_VIRUS_THRESHOLD),
         "n_tuck": n_tuck, "n_tuck_published": n_tuck_published,
-        "n_illegal": n_illegal,
+        "n_incoherent": n_incoherent, "n_illegal": n_illegal,
+        "garbage": garbage,
         "clocks": clocks,
-        "exec_mode": exec_mode,
+        "exec_mode": exec_mode, "pressure": pressure,
         "fw_md5": cosim.fw_md5,
     }
     if trace:

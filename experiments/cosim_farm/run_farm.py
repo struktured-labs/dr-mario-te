@@ -41,7 +41,10 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 HERE = os.path.dirname(os.path.abspath(__file__))
 RL = "/home/struktured/projects/dr_mario_rl"
 QA = "/home/struktured/projects/dr-mario-qa-wt/experiments"
-for _p in (HERE, RL + "/.claude/worktrees/faithful-sim/src", QA):
+# bursty_model lives in eval47/, not experiments/ directly -- same sys.path shape
+# firmware_tier3_ab.py uses for its own pressure arm.
+QA47 = QA + "/eval47"
+for _p in (HERE, RL + "/.claude/worktrees/faithful-sim/src", QA, QA47):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
@@ -51,7 +54,7 @@ FARM_BIN = os.path.join(BUILD, "obj_farm", "farm_vsim")
 _W = {}
 
 
-def _init(fw_dir, level, max_pills, exec_mode, mem_cap_bytes):
+def _init(fw_dir, level, max_pills, exec_mode, mem_cap_bytes, pressure):
     if mem_cap_bytes:
         # Per-worker address-space ceiling. A worker that tries to balloon dies with
         # MemoryError instead of taking the machine down with it.
@@ -63,13 +66,24 @@ def _init(fw_dir, level, max_pills, exec_mode, mem_cap_bytes):
     _W["level"] = level
     _W["max_pills"] = max_pills
     _W["exec_mode"] = exec_mode
+    _W["pressure"] = pressure
+    if pressure == "bursty":
+        # Fitted once per worker from the project's own footage-derived volley model.
+        # Draws are keyed on (seed, pills_placed), so pairing across arms survives.
+        import bursty_model
+        m = bursty_model.fit_struktured_20260804()
+        m.meta = {k: v for k, v in m.meta.items() if k != "raw_events"}
+        _W["model"] = m
+    else:
+        _W["model"] = None
 
 
 def _play(seed):
     G = _W["G"]
     t0 = time.time()
     r = G.play_game(_W["cosim"], seed=seed, level=_W["level"],
-                    max_pills=_W["max_pills"], exec_mode=_W["exec_mode"])
+                    max_pills=_W["max_pills"], exec_mode=_W["exec_mode"],
+                    pressure=_W["pressure"], model=_W["model"])
     r["wall_secs"] = round(time.time() - t0, 2)
     r["host"] = socket.gethostname()
     return r
@@ -103,6 +117,7 @@ def main():
     ap.add_argument("--level", type=int, default=11)
     ap.add_argument("--max-pills", type=int, default=300)
     ap.add_argument("--exec-mode", default="drop", choices=["drop", "tuck"])
+    ap.add_argument("--pressure", default="clean", choices=["clean", "bursty"])
     ap.add_argument("--per-worker-rss-mb", type=int, default=2048,
                     help="hard per-worker address-space cap")
     a = ap.parse_args()
@@ -113,8 +128,9 @@ def main():
 
     import hashlib
     fw_md5 = hashlib.md5(open(os.path.join(a.fw, "copro_rom.hex"), "rb").read()).hexdigest()
-    print(f"arm={a.arm} fw={fw_md5} exec={a.exec_mode} level={a.level} "
-          f"seeds {seeds[0]}..{seeds[-1]} ({len(todo)} to run, {len(done)} already done) "
+    print(f"arm={a.arm} fw={fw_md5} exec={a.exec_mode} pressure={a.pressure} "
+          f"level={a.level} seeds {seeds[0]}..{seeds[-1]} "
+          f"({len(todo)} to run, {len(done)} already done) "
           f"workers={a.workers} host={socket.gethostname()}", flush=True)
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
@@ -123,7 +139,7 @@ def main():
     with open(a.out, "a") as fh, ProcessPoolExecutor(
             max_workers=a.workers, initializer=_init,
             initargs=(a.fw, a.level, a.max_pills, a.exec_mode,
-                      a.per_worker_rss_mb * 1024 * 1024)) as ex:
+                      a.per_worker_rss_mb * 1024 * 1024, a.pressure)) as ex:
         futs = {ex.submit(_play, s): s for s in todo}
         for f in as_completed(futs):
             s = futs[f]
