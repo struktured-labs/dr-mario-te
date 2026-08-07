@@ -129,9 +129,20 @@ def main():
     ap.add_argument("--pressure", default="clean", choices=["clean", "bursty"])
     ap.add_argument("--per-worker-rss-mb", type=int, default=2048,
                     help="hard per-worker address-space cap")
+    ap.add_argument("--seeds-file",
+                    help="explicit seed list, one per line; overrides --seed-start/"
+                         "--seed-count. Added to re-run ONE arm on exactly the seeds "
+                         "another arm already covers: the arms' seed sets are not "
+                         "contiguous, so a range either misses pairs or burns cores on "
+                         "seeds that cannot pair with anything.")
     a = ap.parse_args()
 
-    seeds = list(range(a.seed_start, a.seed_start + a.seed_count))
+    if a.seeds_file:
+        seeds = sorted({int(x) for x in open(a.seeds_file).read().split()})
+        if not seeds:
+            raise SystemExit(f"{a.seeds_file} contains no seeds")
+    else:
+        seeds = list(range(a.seed_start, a.seed_start + a.seed_count))
     done = load_done(a.out, a.arm)
     todo = [s for s in seeds if s not in done]
 
