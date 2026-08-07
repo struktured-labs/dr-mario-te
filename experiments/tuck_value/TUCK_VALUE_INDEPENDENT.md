@@ -10,22 +10,24 @@ control arms, the θ sweep and the divergence rigs.
 
 ## The answer, in one paragraph
 
-**In this rig the tuck executor is clearly worth having, and the more it fires the better. On
-the co-sim's real RTL the same configuration lost every game — but that turned out to be a
-firmware defect, found and fixed today, which voids every tier-3 tuck number ever taken on
-silicon.** Here, the full program beats the shipped champion by **−6.50 points of bad-end rate
-[−11.25, −1.75], p=0.0088** and clears 26 pills faster, and nearly tripling the firing rate
-improves it further (−8.75 points, p=0.0003). The RTL's contradicting result came from a tuck
-leaf that scored **every** candidate a win because its board upload destroyed itself
-([details](#the-disagreement-that-mattered--resolved-an-rtl-firmware-defect)); that also
-explains the 6× fire-rate gap this rig measured, which was the symptom that pointed at it.
+**Nobody has yet validly measured what a working tuck executor is worth — including me.**
 
-**So: still do not commit hands to a rebuild — but for a different reason than an hour ago.**
-Not because the two rigs disagree, but because there is now *no valid RTL measurement of tucks
-at all* until the 2×2 is re-run on the fixed arm. This rig's result stands unopposed, and
-unopposed is not corroborated. What *is* settled, by both rigs and unaffected by the defect, is
-that tier-3 firmware must never ship to a cart without the executor, and that the executor must
-never be enabled on v1 firmware.
+On the fast sim the executor looks worth having: the full program beats the shipped champion by
+**−6.50 points of bad-end rate [−11.25, −1.75], p=0.0088** over 400 paired seeds, clears 26
+pills faster, and gets better as it fires more. But that average is not uniform. **On seeds
+0–119 — the exact block the co-sim's RTL arms run — the effect is a wash with the wrong sign
+(+3.3 points, p=0.57)**, and a permutation test says a split that extreme happens in 2.3% of
+random partitions of the same sizes. The whole of my headline lives in seeds 120–399.
+
+The RTL's own answer, which contradicted mine outright, has since been withdrawn: its tuck leaf
+scored *every* candidate a win because the board upload destroyed itself, and a separate
+pill-colour bug voided its descriptor tables. So there is currently **no valid silicon
+measurement of tucks at all**, and my own result is suggestive rather than established.
+
+**Do not commit hands to a cart rebuild.** Two things *are* settled, by both methods and
+untouched by either defect: tier-3 firmware must never ship to a cart without the executor, and
+the executor must never be enabled on v1 firmware. Those are the night's real output — two
+reliable ways to destroy the champion, now documented so nobody does either by accident.
 
 ---
 
