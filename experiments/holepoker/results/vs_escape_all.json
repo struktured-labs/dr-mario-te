@@ -1,0 +1,162 @@
+[
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 4,
+  "K": 57,
+  "secs": 3.8
+ },
+ {
+  "E": 1,
+  "ply": 7,
+  "alt": 0,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 9,
+  "K": 8,
+  "secs": 12.7
+ },
+ {
+  "E": 1,
+  "ply": 22,
+  "alt": 0,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 6,
+  "K": 23,
+  "secs": 13.0
+ },
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 17,
+  "K": 40,
+  "secs": 0.6
+ },
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 1,
+  "K": 24,
+  "secs": 14.1
+ },
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 22,
+  "K": 42,
+  "secs": 0.6
+ },
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 27,
+  "K": 28,
+  "secs": 1.6
+ },
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 19,
+  "K": 54,
+  "secs": 2.9
+ },
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 23,
+  "K": 52,
+  "secs": 4.0
+ },
+ {
+  "E": 1,
+  "ply": 16,
+  "alt": 0,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 12,
+  "K": 17,
+  "secs": 15.6
+ },
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 38,
+  "K": 40,
+  "secs": 5.0
+ },
+ {
+  "E": 4,
+  "ply": 28,
+  "alt": 0,
+  "avoidable": true,
+  "adv_substituted": false,
+  "seed": 41,
+  "K": 32,
+  "secs": 4.7
+ },
+ {
+  "E": null,
+  "ply": null,
+  "alt": null,
+  "avoidable": false,
+  "adv_substituted": null,
+  "seed": 44,
+  "K": 42,
+  "secs": 2.7
+ },
+ {
+  "E": 1,
+  "ply": 28,
+  "alt": 0,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 31,
+  "K": 29,
+  "secs": 13.6
+ },
+ {
+  "E": 3,
+  "ply": 1,
+  "alt": 2,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 45,
+  "K": 4,
+  "secs": 16.1
+ },
+ {
+  "E": 1,
+  "ply": 4,
+  "alt": 1,
+  "avoidable": true,
+  "adv_substituted": true,
+  "seed": 36,
+  "K": 5,
+  "secs": 29.6
+ }
+]

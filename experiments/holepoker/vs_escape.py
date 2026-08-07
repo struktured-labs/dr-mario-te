@@ -101,8 +101,39 @@ def continue_with(m, path, start, K, champ_override=None):
     return True, subbed
 
 
-def escape_for_kill(seed, level, path, K, max_E=8):
-    """Latest champion ply with a one-move escape. Returns dict."""
+def adversary_research(m, width=8, max_plies=14):
+    """Can a LIVE adversary still kill from here? Fresh beam over the
+    adversary's own placements, exactly as vs_poker does.
+
+    This exists because replaying a FIXED adversary line after the champion
+    deviates is not a fair test: the champion's different move changes the
+    garbage it sends back, which can make the stored adversary action illegal,
+    and the fallback decider is not trying to kill anyone. Measured: every
+    escape found on the first pass had adv_substituted=True, i.e. the champion
+    'escaped' an adversary that had stopped attacking. An escape only counts if
+    a live adversary, re-searching from the new position, still cannot kill."""
+    frontier = [(m, 0)]
+    for d in range(max_plies):
+        nxt = []
+        for mm, sent in frontier:
+            for a in VP.adv_legal(mm):
+                m2 = copy.deepcopy(mm)
+                st, s = VP.ply(m2, a)
+                if st == "champ_dead":
+                    return True, d + 1
+                if st is not None:
+                    continue
+                nxt.append((m2, sent + s))
+        if not nxt:
+            return False, d
+        nxt.sort(key=lambda t: VP.score_state(t[0], t[1]))
+        frontier = nxt[:width]
+    return False, max_plies
+
+
+def escape_for_kill(seed, level, path, K, max_E=8, verify=True,
+                    verify_plies=14, verify_width=8):
+    """Latest champion ply with a one-move escape that SURVIVES RE-SEARCH."""
     for j in range(K - 1, max(-1, K - 1 - max_E), -1):
         base = replay_to(seed, level, path, j)
         if base is None:
@@ -112,6 +143,24 @@ def escape_for_kill(seed, level, path, K, max_E=8):
             alive, subbed = continue_with(m, path, j, K, champ_override=alt)
             if alive is None:
                 continue
+            if alive and verify:
+                m3 = copy.deepcopy(base)
+                a3, _ = adv_act(m3, path[j] if j < len(path) else None)
+                if a3 is not None:
+                    m3.deliver(VP.ADV)
+                    if not m3.env[VP.ADV].board.spawn_blocked():
+                        d3, _r3 = m3.step(VP.ADV, a3)
+                        if not d3:
+                            m3.deliver(VP.CHAMP)
+                            if (not m3.env[VP.CHAMP].board.spawn_blocked()
+                                    and m3.env[VP.CHAMP].action_masks()[alt]):
+                                d4, _r4 = m3.step(VP.CHAMP, alt)
+                                if not d4:
+                                    rekill, rd = adversary_research(
+                                        m3, width=verify_width,
+                                        max_plies=verify_plies)
+                                    if rekill:
+                                        continue   # only delayed the death
             if alive:
                 # confirm it is a REAL deviation (champion would not have chosen it)
                 m2 = copy.deepcopy(base)

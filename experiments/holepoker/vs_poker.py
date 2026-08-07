@@ -176,6 +176,8 @@ def _job(spec):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", type=int, default=12)
+    ap.add_argument("--seed0", type=int, default=0)
+    ap.add_argument("--no-control", action="store_true")
     ap.add_argument("--level", type=int, default=11)
     ap.add_argument("--width", type=int, default=16)
     ap.add_argument("--max-plies", type=int, default=80)
@@ -183,10 +185,12 @@ def main():
     ap.add_argument("--out", type=str, default="results/vs_poker.json")
     a = ap.parse_args()
 
-    specs = ([{"mode": "beam", "seed": s, "level": a.level, "width": a.width,
-               "max_plies": a.max_plies} for s in range(a.seeds)] +
-             [{"mode": "control", "seed": s, "level": a.level, "width": 0,
-               "max_plies": a.max_plies} for s in range(a.seeds)])
+    rng = range(a.seed0, a.seed0 + a.seeds)
+    specs = [{"mode": "beam", "seed": s, "level": a.level, "width": a.width,
+              "max_plies": a.max_plies} for s in rng]
+    if not a.no_control:
+        specs += [{"mode": "control", "seed": s, "level": a.level, "width": 0,
+                   "max_plies": a.max_plies} for s in rng]
     print(f"=== VS HOLE POKER: L{a.level}, {a.seeds} seeds, beam width={a.width}, "
           f"vs champion-seat control ===", flush=True)
     rows = []
