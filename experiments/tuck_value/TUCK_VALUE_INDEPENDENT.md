@@ -36,8 +36,28 @@ champion's bad-end rate under bursty human pressure from 19.2% to 14.0% — a pa
 of −5.25 points, 95% CI [−10.0, −0.75], McNemar rescued=57 harmed=36, p=0.0375, n=400 —
 and clears the level 26.0 pills faster, CI [−32.7, −19.3].**
 
-That is the D − A comparison: the full program versus what is on the cart today. Read it as
-*what a correctly-dosed executor would be worth*, not as a prediction for the current firmware.
+That is the D − A comparison: the full program versus what is on the cart today.
+
+**⚠ That average hides real heterogeneity, and the part it hides is the part the co-sim can
+see.** Split at the co-sim's own seed boundary — seeds 0–119 are exactly the block its RTL arms
+run — the effect is not uniform:
+
+| seed block | n | A → D bad ends | paired Δ [95% CI] | McNemar |
+|---|---|---|---|---|
+| **0–119** (the co-sim's block) | 120 | 16.7% → **20.0%** | **+0.033 [−0.050, +0.117]** | 12 vs 16, p=0.57 — **wash, wrong sign** |
+| 120–399 | 280 | 20.4% → 11.4% | −0.089 [−0.146, −0.032] | 45 vs 20, p=0.0026 |
+| 0–399 (headline) | 400 | 19.2% → 14.0% | −0.053 [−0.100, −0.008] | 57 vs 36, p=0.038 |
+
+A permutation test on the block labels — shuffling which seeds are called "0–119" 20,000 times,
+holding every game fixed — puts a split this extreme at **p=0.023**, so it is not what a random
+partition of the same sizes produces. The boundary was **not chosen by me and not chosen to
+maximise anything**: it is the co-sim's seed block, specified externally before I looked, which
+is what makes the test worth anything.
+
+**So treat −5.25 points at p=0.038 as suggestive, not established.** It is an average over an
+effect that is genuinely non-uniform, and on the 120 seeds where a second method can check it,
+this rig shows nothing. That is a weaker claim than the one this document made an hour ago, and
+it is the correct one.
 
 **The survival half of that is entirely stalls, not topouts** (28 → 12, p=0.014; topouts
 49 → 44, p=0.65 — a wash), which is the signature of digging buried viruses out rather than of
@@ -145,10 +165,12 @@ reconciliation point with the co-sim farm:
 | **C** v1 × tuck | 43,669 | 12,605 (28.9%) | **1,663 (3.8%)** |
 | **D** t3 × tuck | 2,896 | 2,896 (100%) | 2,896 (100%) |
 
-The co-sim farm's `descriptor_audit.py`, running the real RTL over a 50-board corpus, found
-**1 of 26 (4%)** v1 descriptors land deeper. This rig, on 43,669 descriptors from whole games
-in a different simulator, finds **3.8%**. Two rigs, two methods, three orders of magnitude
-apart in sample size, same answer.
+The co-sim's corresponding figures were **withdrawn** on 2026-08-07 — a 1-based/0-based pill
+colour bug at its copro mailbox, and then a tuck-leaf defect that scored every candidate a win,
+voided its descriptor tables and every tier-3 tuck number it had produced. **This document no
+longer cites them, and the earlier agreement it claimed against them should be disregarded**
+rather than treated as weakened. The rate above is this rig's own, unchecked by a second
+method until the co-sim re-runs.
 
 So v1 fires ~4 times a game, and when it fires it drops the pill into a deep pocket the search
 never scored — burying material the search had deliberately left reachable. `tuck_scan.py`'s
@@ -441,33 +463,37 @@ does or does not explain.
 
 ## Reconciliation with the co-sim farm
 
-The arm-by-arm comparison is above. On every *descriptor-level* statistic — the things that do
-not depend on the θ gate — the two rigs agree closely. That agreement is what establishes the
-fire-rate gap as a real, isolated difference rather than one symptom of a rig that disagrees
-about everything; it does *not* establish that the gap explains arm D, which the θ sweep
-refutes:
+**Most of what this section used to contain has been withdrawn by the co-sim, and I have
+removed it rather than downgraded it.** Two defects landed on 2026-08-07: a 1-based/0-based
+pill-colour bug at the copro mailbox, and a tuck-leaf defect that scored every candidate a WIN.
+Between them they void that rig's v1 and tier-3 descriptor tables, its placement-divergence
+rate, and every tier-3 tuck measurement it had produced. Treat their **direction as unknown**,
+not merely imprecise — which is why no number of theirs is quoted as corroboration below.
 
-| statistic | co-sim (real RTL) | this rig (fast sim) |
-|---|---|---|
-| v1 descriptors published, 20-board corpus | 7/20 | 7/20, and identical board-for-board |
-| v1 descriptors landing deeper | 1/26 (4%) | 1,663/43,669 (3.8%) |
-| tier-3 descriptor coherence | 100% (25/25, 9/9, 16/16) | 100% (2,896/2,896) |
-| tier-3 divergent picks horizontal | 8/9, 14/16 | 401/492 (81%) |
-| tier-3 depth gained | mean 3.4–3.5 rows | median 5 rows (winning tucks only) |
-| **v1 descriptors published per decision (ungated)** | **60.5%** | **66.8%** |
-| **tier-3 descriptors published per decision (θ-gated)** | **36–38%** | **5.7–11.5%** |
+What survives, because no simulation is involved in it:
 
-The depth-gain difference is a denominator difference, not a disagreement: they average over
-all *published* descriptors, this rig counts only the ones the search actually *picks*, and the
-search picks the deeper ones.
+| still solid | source |
+|---|---|
+| `DRTUCK` never enabled on any of 67 cart manifests; the deployed cart has no tuck executor | manifests |
+| `tuck_v3.py:644-645` overwrites `best_col`/`best_orient` when a tuck wins | driver source |
+| v1 has **no value gate at all** — it publishes the deepest rest unconditionally and never writes `D_BC`/`D_BO` | `tuck_scan.py`, grepped |
+| tier-3 θ is 150, applied as `TK2_BBV + THETA` against a reference captured once before any candidate | `tuck_v3.py:79, 629-630` |
+| the champion's 0 failures in 1,474 clean games | prior census |
+| bursty v1.1 is the honest pressure model | `BURSTY_V1_RESULTS.md` §5 |
 
-The last two rows are the whole story. Everything that does not pass through the θ gate agrees;
-the one thing that does, disagrees by 3–6×.
+And one measurement of mine that survives the colour bug **by construction**: the
+board-for-board match of my v1 descriptors against the RTL's published `(TUCK_COL, TUCK_ROW)`,
+20/20. `tuck_scan` is purely geometric — it reads occupancy (`!= 0xFF`) and never touches pill
+colour — so a pill-colour bug cannot move it. What that bug *does* invalidate is my v1
+*coherence* figure computed against the RTL's chosen `(col, o4)`, since the RTL's choice does
+depend on pill colours. **That 4/7 is withdrawn**, along with the co-sim's 6/7 it was compared
+against.
 
-**The falsification test handed to that agent came back positive.** The prediction was that if
-arm B really drives bad ends from 19% to 81%, their RTL would see it at n=20 — a 4× effect
-needs no large sample. Their arm B is 0/48 clear. The most actionable finding here is confirmed
-on real RTL, and by the harsher instrument.
+**The one confirmation that still stands: arm B.** I predicted the RTL would see bad ends go
+from 19% to 81% and that n=20 would suffice. It reported 0/48 clear at n=12 paired, McNemar
+p=0.0010. Arm B does not involve the tuck executor at all — it is the drop-degradation path —
+so it is untouched by the tuck-leaf defect, and the colour bug applies equally to both of its
+arms. That finding is real on both methods.
 
 ---
 

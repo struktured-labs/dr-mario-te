@@ -50,10 +50,18 @@ def mcnemar_exact(b, c):
     return min(1.0, p)
 
 
+SEED_MAX = None          # set by --seed-max; None = every seed in the file
+
+
+def _keep(seed):
+    return SEED_MAX is None or int(seed) <= SEED_MAX
+
+
 def load(path):
     with open(path) as fh:
         d = json.load(fh)
-    return d["config"], {k: {r["seed"]: r for r in v} for k, v in d["rows"].items()}
+    return d["config"], {k: {r["seed"]: r for r in v if _keep(r["seed"])}
+                         for k, v in d["rows"].items()}
 
 
 def arm_table(rows, title):
@@ -281,7 +289,7 @@ def control_analysis(results_dir, main_name, ctrl_name, label):
     main_d = json.load(open(mp))
     ctrl_d = json.load(open(cp))
     rows = {k: {x["seed"]: x for x in v} for k, v in main_d["rows"].items()}
-    rows["ctrl"] = {x["seed"]: x for x in ctrl_d["rows"]["t3_drop"]}
+    rows["ctrl"] = {x["seed"]: x for x in ctrl_d["rows"]["t3_drop"] if _keep(x["seed"])}
 
     fires = sum(x["fired_tuck"] for x in rows["ctrl"].values())
     wins = sum(x["n_published"] for x in rows["ctrl"].values())
@@ -308,7 +316,17 @@ def control_analysis(results_dir, main_name, ctrl_name, label):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--results", default=os.path.join(HERE, "results"))
+    ap.add_argument("--seed-max", type=int, default=None,
+                    help="restrict every analysis to seeds 0..N. Use 119 for the "
+                         "block the co-sim's RTL arms run, which makes the two "
+                         "studies per-seed comparable rather than two estimates "
+                         "of the same effect.")
     a = ap.parse_args()
+    global SEED_MAX
+    SEED_MAX = a.seed_max
+    if SEED_MAX is not None:
+        print(f"### RESTRICTED TO SEEDS 0..{SEED_MAX} "
+              f"(the co-sim's RTL seed block)\n")
 
     for path in sorted(glob.glob(os.path.join(a.results, "*.json"))):
         base = os.path.basename(path)
