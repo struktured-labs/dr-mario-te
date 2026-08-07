@@ -126,16 +126,34 @@ def main():
     print(f"\nDISTINCT PLAYABLE STREAMS: {distinct_playable}")
     print(f"  = {n} seeds - {len(bad)} degenerate - {len(redundant)} aliased duplicate(s)")
 
+    # ⚠ THERE IS DELIBERATELY NO "skip_seeds" KEY. An earlier revision emitted
+    # one (degenerate + redundant, pre-unioned) and the census consumed it as a
+    # dedup list -- which HALVED ITS COVERAGE. `FaithfulDrMarioEnv` draws the
+    # VIRUS LAYOUT from numpy(seed) and only the PILLS come from this LFSR, so
+    # twins there share a stream but play different boards: 292 of 299 twin
+    # pairs reached different outcomes. A single pre-unioned "skip" list is an
+    # invitation to that mistake, so the two sets are exposed separately with
+    # their scope in the key name. Callers must choose knowingly.
     with open(a.out, "w") as f:
-        json.dump({"min_colours": MIN_COLOURS,
-                   "n_audited": n,
-                   "degenerate_seeds": sorted(bad_set),
-                   "alias_groups": dupes,
-                   "redundant_seeds": sorted(redundant),
-                   "skip_seeds": sorted(bad_set | redundant),
-                   "distinct_playable_streams": distinct_playable,
-                   "detail": bad}, f, indent=2)
+        json.dump({
+            "min_colours": MIN_COLOURS,
+            "n_audited": n,
+            # ALWAYS safe to skip: unplayable under ANY board generator.
+            "degenerate_seeds": sorted(bad_set),
+            # Safe ONLY where the virus layout ALSO derives from this LFSR
+            # (the ROM-true m2a engine). Never for a numpy-seeded-board harness.
+            "stream_redundant_seeds__rom_true_engines_only": sorted(redundant),
+            "alias_groups": dupes,
+            "distinct_playable_streams": distinct_playable,
+            "WARNING": ("stream_redundant_seeds duplicate the CAPSULE STREAM "
+                        "only. Do not skip them unless the VIRUS LAYOUT also "
+                        "derives from this LFSR. In FaithfulDrMarioEnv the "
+                        "board comes from numpy(seed), so twins are DIFFERENT "
+                        "GAMES and skipping them halves coverage."),
+            "detail": bad}, f, indent=2)
     print(f"\nwrote {a.out}")
+    print("⚠ stream_redundant_seeds are STREAM duplicates only — safe to skip "
+          "ONLY on ROM-true engines. See the WARNING field.")
 
 
 if __name__ == "__main__":
