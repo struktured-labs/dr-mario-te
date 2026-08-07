@@ -94,7 +94,17 @@ with no Verilator installed. Worth knowing; it doesn't change the node's role.)
    constant in the harness. ⚠ It is *not* a licence to halve a census: see the
    throughput note above — I briefly did exactly that and it cut coverage rather
    than duplicates.
-5. **It caught a real bug — code skew.** The gate flagged one seed whose hash
+5. **It settled a shipped constant, and priced the next experiment.** The
+   phase-3 dose curve (5 arms x n=300, paired) found the shipped `ws=20` is
+   **failure-optimal** — a U with steep sides (off costs +18.7 points of
+   bad-ends, 4x costs +14.0, both p<=1e-4) and a flat basin. Crucially it is a
+   *real* null, not an untestable one: the arms produce ~80 discordant pairs
+   each, so the experiment had power and the answer is genuinely "already
+   right". Combined with two other lanes reaching the same place, that closes
+   coefficient tuning as a lever. The follow-on probe then measured that a NEW
+   gated spawn-lane term flips 4.28% of decisions — above the testability floor
+   — so the next night of compute has measured parameters instead of guesses.
+6. **It caught a real bug — code skew.** The gate flagged one seed whose hash
    differed across nodes while `result`, `pills`, `viruses_left` and `n_moves`
    all matched. Cause: the local agent improved `adversary_harness.py` 12
    minutes after the tree was synced, so the two nodes ran different code. The
@@ -102,7 +112,7 @@ with no Verilator installed. Worth knowing; it doesn't change the node's role.)
    itself — but a summary-statistics gate would have reported perfect
    agreement. The gate now hashes the source files too.
 
-That fifth item is a **separate argument for keeping the box, independent of
+That sixth item is a **separate argument for keeping the box, independent of
 games/hour**, and it deserves to be weighed on its own. The node is an
 INDEPENDENT SECOND IMPLEMENTATION PATH. Different CPU vendor, different Python
 build, a physically separate copy of the tree — and running the same work twice
