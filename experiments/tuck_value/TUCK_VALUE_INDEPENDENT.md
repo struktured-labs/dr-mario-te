@@ -297,11 +297,29 @@ placed:
 | `pill_distinct` | 8.92 | 8.99 | 0.107 |
 | **`pill_switch_rate`** | **0.833** | **0.867** | **0.0000** |
 
-One of ten features differs (chance expectation at ten tests: 0.5). Low seeds do produce
-slightly more repeated consecutive capsules — a real LFSR property, since `s0 = (seed>>8)&0xFF`
-is 0 for every seed below 256. **But that feature does not predict the effect** (r = −0.059,
-p = 0.23, check 5), and block membership can only matter through something the block
-determines.
+One of ten features differs (chance expectation at ten tests: 0.5). **But that feature does not
+predict the effect** (r = −0.059, p = 0.23, check 5), and block membership can only matter
+through something the block determines.
+
+**Where that difference actually comes from — and I attributed it wrongly at first.** I wrote
+that it was an `s0 = (seed>>8)&0xFF` property, since s0 is 0 for every seed below 256. Splitting
+three ways refutes that:
+
+| `pill_switch_rate` | 0–119 (s0=0, low s1) | 120–255 (s0=0, high s1) | 256–399 (s0=1) |
+|---|---|---|---|
+| mean | **0.8326** | 0.8690 | 0.8648 |
+
+| contrast | Δ | perm p |
+|---|---|---|
+| 0–119 vs 120–255 — **same s0**, differing s1 | −0.0364 | **0.0000** |
+| 120–255 vs 256–399 — **s0 changes** | +0.0042 | 0.44 |
+
+The anomaly is **low seeds**, not the LFSR high byte: it appears entirely *within* s0=0 and
+crossing the s0 boundary does nothing. Seeds below roughly 120 produce slightly more repeated
+consecutive capsules; seed 256 is not a meaningful boundary for the capsule stream. This
+matters for anyone designing a seed block — the boundary worth straddling is at the bottom of
+the range, not at 256 — and it does not change the fluke verdict, since the feature predicts
+nothing either way.
 
 **2. The shape is a gradient, not a cliff — and the wobble inside the "effect" block is bigger
 than the gap that defined it.**
@@ -324,11 +342,12 @@ points exceeds the k=119 value **39% of the time**. The p=0.023 remains honest *
 pre-specified boundary* — but the data is full of apparent block structure, which is what a
 binary outcome at this n looks like.
 
-**4. The one real boundary in the seed space shows nothing.** `NesPillSource` maps
-`s0 = (seed>>8)&0xFF`, so seeds below 256 and seeds 256+ occupy genuinely different LFSR state
-regions. That is the only discontinuity here that exists independently of anything I chose:
-effect −0.055 below 256 versus −0.049 at or above, **p=0.92**. If seed blocks were regimes,
-this is the boundary where it should show, and it is flat.
+**4. The one structural boundary in the seed space shows nothing.** `NesPillSource` maps
+`s0 = (seed>>8)&0xFF`, so seeds below 256 and seeds 256+ occupy different LFSR state regions —
+the only discontinuity here that exists independently of anything I chose. Effect −0.055 below
+256 versus −0.049 at or above, **p=0.92**. It is flat on the *outcome* side, and per the
+three-way split above it is flat on the *input* side too (p=0.44 on switch rate). Seed 256 is
+not a regime boundary in either sense.
 
 **5. Nothing predicts the per-seed effect.** One of ten features reaches p<0.05
 (`virus_colour_imbalance`, r = −0.104, p = 0.042) against a chance expectation of 0.5 — and at
