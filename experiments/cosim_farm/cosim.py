@@ -89,6 +89,20 @@ class Cosim:
 
     def decide(self, board128, cA, cB, nA, nB):
         """-> dict(col, o4, tcol, trow, clocks). tcol == 0xFF means 'no tuck'."""
+        # The copro's OWN convention is 0-BASED colour ids 0..2 -- the faithful sim's 1..3
+        # minus one. Asserted, not documented-and-hoped, because getting it wrong is
+        # SILENT: lev_a_ca/cb are 2-bit, so 1..3 is accepted as valid-looking, every
+        # colour shifts by one, and the only symptom is that the AI plays badly. That bug
+        # cost this lane a full 2x2 run (results/INVALID_1based_colors/README.txt).
+        # Authority: fpga/copro/gen_corpus.py draws rng.randint(0, 2); gen_m3_hostdata.py
+        # documents "0-based ... matching sim_mister.cpp's cA/cB/nA/nB fields directly".
+        for _n, _v in (("cA", cA), ("cB", cB), ("nA", nA), ("nB", nB)):
+            if not 0 <= _v <= 2:
+                raise CosimError(
+                    f"{_n}={_v} out of range: the copro takes 0-BASED colours 0..2. "
+                    f"The faithful sim's Pill colours are 1..3 -- subtract one.")
+        if len(board128) != NCELL:
+            raise CosimError(f"board has {len(board128)} cells, expected {NCELL}")
         if self.proc.poll() is not None:
             raise CosimError(f"co-sim server exited rc={self.proc.returncode}")
         line = "%d %d %d %d %s\n" % (

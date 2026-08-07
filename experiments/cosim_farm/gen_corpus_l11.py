@@ -66,9 +66,12 @@ def main():
                 break
         if not alive or env.board.virus_count() == 0:
             continue
+        # hostdata cA/cB/nA/nB are 0-BASED colour ids, matching the copro mailbox and
+        # sim_mister.cpp's own field convention (fpga/copro/gen_corpus.py draws
+        # rng.randint(0, 2)). The faithful sim's Pill colours are 1..3, hence the -1.
         cases.append((board_to_nes(env.board),
-                      int(env.cur.a), int(env.cur.b),
-                      int(env.nxt.a), int(env.nxt.b)))
+                      int(env.cur.a) - 1, int(env.cur.b) - 1,
+                      int(env.nxt.a) - 1, int(env.nxt.b) - 1))
 
     with open(a.out, "w") as fh:
         fh.write("%d\n" % len(cases))

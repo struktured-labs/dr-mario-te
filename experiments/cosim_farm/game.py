@@ -177,9 +177,12 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
             res = "clear"
             break
         b128 = board_to_nes(env.board)
+        # Faithful-sim Pill colours are 1..3; the copro mailbox takes 0..2. Keep both:
+        # ca/cb (1-based) are what apply_tuck writes into the board, ca0/cb0 (0-based) are
+        # what the copro is told. Cosim.decide() range-checks the 0-based pair.
         ca, cb = int(env.cur.a), int(env.cur.b)
         na, nb = int(env.nxt.a), int(env.nxt.b)
-        d = cosim.decide(b128, ca, cb, na, nb)
+        d = cosim.decide(b128, ca - 1, cb - 1, na - 1, nb - 1)
         clocks += d["clocks"]
         col, o4, tcol, trow = d["col"], d["o4"], d["tcol"], d["trow"]
         if trace:
