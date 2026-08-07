@@ -37,6 +37,27 @@ Deployment is NOT a constraint at this stage: no quantisation, no size limit, no
 integer arithmetic. The question is what near-optimal play looks like; making it fit
 on silicon is a later, separate problem.
 
+TWO DIRECTIONAL CAVEATS, PRE-REGISTERED BEFORE ANY NUMBER EXISTS
+----------------------------------------------------------------
+They point OPPOSITE ways, and stating only one would bias the reading:
+
+  1. On the GATE.  The hand weights were tuned for depth-3 play, so at depth 2 they
+     are off-design and the calibration bar is LOWER than Stage 1's. Passing it here
+     therefore proves less than passing it there would have. (This is why GATE B
+     exists: it asks whether the fit has converged, which needs no reference at all.)
+
+  2. On the HEADLINE, and it runs the other way.  At depth 2 there is less search to
+     compensate for a bad leaf, so the leaf carries MORE of the decision than it does
+     at depth 3. A better leaf should therefore help MORE here. Consequently:
+
+         a POSITIVE result at depth 2 is an UPPER BOUND on the depth-3 benefit,
+         not a prediction of it.
+
+     The asymmetry does not weaken a NEGATIVE. If a learned leaf cannot beat hand
+     tuning in the regime where the leaf matters MOST, it will not do so where the
+     search compensates for it. So: negative here is strong and transfers; positive
+     here is an upper bound and must be re-proven at depth 3 before it is claimed.
+
 Every number uses the Stage-1 machinery unchanged: split-sample regret estimator,
 cross-validation BY POSITION, within-position centring, permutation/shuffled-target
 controls, and terminal wins excluded from fitting but scored +inf in the policy.
@@ -405,15 +426,23 @@ def main():
     print(f"  gain over hand-tuned coefficients: {h - best_k[0]:+.3f} pills")
     if h - best_k[0] > 0.25:
         print("  => supervised learning on rollout labels BEATS hand tuning at matched")
-        print("     depth. Stage 3 (self-play) is licensed.")
+        print("     depth. Stage 3 is licensed, but the SIZE of this gain is an UPPER")
+        print("     BOUND on the depth-3 benefit and must NOT be quoted as a prediction")
+        print("     of it -- see caveat 2 below. Re-prove at depth 3 before claiming it.")
     else:
         print("  => supervised learning does NOT beat hand tuning at matched depth,")
-        print("     with a fitting procedure that PASSED its calibration gate. That is")
-        print("     a real negative and Stage 3 should not be started on it.")
+        print("     with a fitting procedure that passed BOTH gates. That is a real")
+        print("     negative, and by caveat 2 it TRANSFERS: the leaf has more leverage")
+        print("     at depth 2 than at depth 3, so failing here implies failing there.")
+        print("     Stage 3 should not be started on this.")
     print()
-    print("  Scope: depth 2, solo L11. The hand weights were tuned for depth 3, so")
-    print("  they are off-design here -- which flatters the learned arms, not the")
-    print("  hand ones. A win here is weaker than a win at depth 3 would be.")
+    print("  PRE-REGISTERED SCOPE (written before these numbers existed):")
+    print("   1. Hand weights were tuned for depth 3, so they are off-design here and")
+    print("      the calibration bar is LOWER than Stage 1's -- passing it proves less.")
+    print("   2. At depth 2 there is less search to compensate for a bad leaf, so the")
+    print("      leaf carries MORE of the decision. A POSITIVE is therefore an UPPER")
+    print("      BOUND on the depth-3 benefit; a NEGATIVE is unaffected and transfers.")
+    print("   These point in OPPOSITE directions and both are on the record.")
     return 0
 
 
