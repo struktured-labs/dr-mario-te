@@ -380,6 +380,142 @@ def _(fit_rig_lulu, fit_rig_v1, fit_rig_v11):
 
 @app.cell(hide_code=True)
 def _(mo):
+    mo.md(
+        r"""
+        ## Decision speed, and the instrument check that gates it
+
+        **Definition (identical for every player, so the numbers are comparable):**
+        `latency_frames = first_input_frame - spawn_frame` at 60 fps, from the per-pill
+        tracker CSVs; `ms = frames / 60 * 1000`. The **reactive population** is
+        `latency_frames > 6`; at or below 6 frames the pill is *pre-planned* (including 0,
+        a pill that appears already moving under a held button) and is excluded, as are
+        straight drops with no input before lock. This is the film review's own definition,
+        reused unchanged.
+
+        **These numbers are gated on a control.** The tracker failed on the P2 side of the
+        night-two capture — 19.4% of pills were recorded as locking while still in their
+        spawn row, against 0–6% across the reference corpus (task #95). A spawn-row lock is
+        a tracking-failure signature: the tracker lost the capsule and finalized it where it
+        started. A latency computed from a run like that is noise wearing a number's
+        clothes.
+
+        So each side is measured first, and its rate must fall inside the reference band
+        before any latency is published. The gate is applied in code below — a side that
+        fails cannot print a percentile.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(RESULTS, os):
+    import csv
+    import re
+    import statistics as stats
+
+    LATENCY_DIR = os.path.join(RESULTS, "latency_events")
+    SPAWN_LOCK_BAND = (0.0, 6.0)  # reference-corpus range, task #95
+    PREPLAN_THRESH = 6            # frames; <=6 is pre-planned, not a reaction
+
+    def read_rows(path):
+        match os.path.exists(path):
+            case False:
+                return None
+            case True:
+                with open(path) as fh:
+                    return list(csv.DictReader(fh))
+
+    def pctl(vals, p):
+        """Linear-interpolation percentile - the film review's own `pctl`."""
+        vals = sorted(vals)
+        k = (len(vals) - 1) * p
+        f = int(k)
+        c = min(f + 1, len(vals) - 1)
+        return vals[f] if f == c else vals[f] + (vals[c] - vals[f]) * (k - f)
+
+    def spawn_lock_rate(rows):
+        """Share of pills the tracker finalized still occupying spawn row 0."""
+        hits = sum(
+            1 for r in rows
+            if any(int(m) == 0 for m in re.findall(r"\((\d+),\d+\)", r["final_cells"]))
+        )
+        return len(rows), hits, (100.0 * hits / len(rows) if rows else 0.0)
+
+    def latency_profile(csv_paths):
+        """Control first; percentiles only if it passes. Always returns a status."""
+        loaded = [(p, read_rows(p)) for p in csv_paths]
+        missing = [p for p, r in loaded if r is None]
+        match missing:
+            case []:
+                pass
+            case _:
+                return {"status": "SOURCE MISSING", "missing": missing}
+
+        rows = [r for _p, rs in loaded for r in rs]
+        n_pills, lock_hits, lock_pct = spawn_lock_rate(rows)
+        lo, hi = SPAWN_LOCK_BAND
+        passed = lo <= lock_pct <= hi
+        out = {
+            "n_pills": n_pills,
+            "spawn_locks": lock_hits,
+            "spawn_lock_pct": lock_pct,
+            "control_passed": passed,
+        }
+        match passed:
+            case False:
+                out["status"] = "CONTROL FAILED"
+                return out
+            case True:
+                lat, preplan, straight = [], 0, 0
+                for r in rows:
+                    fi = r["first_input_frame"]
+                    match fi:
+                        case "":
+                            straight += 1
+                        case _:
+                            delta = int(fi) - int(r["spawn_frame"])
+                            match delta <= PREPLAN_THRESH:
+                                case True:
+                                    preplan += 1
+                                case False:
+                                    lat.append(delta)
+
+                def f2ms(frames):
+                    return frames / 60 * 1000
+
+                out.update(
+                    status="OK",
+                    n_reactive=len(lat),
+                    preplanned_pct=100.0 * preplan / n_pills,
+                    straight_pct=100.0 * straight / n_pills,
+                    p50_ms=f2ms(stats.median(lat)),
+                    p75_ms=f2ms(pctl(lat, 0.75)),
+                    p90_ms=f2ms(pctl(lat, 0.90)),
+                    sd_ms=f2ms(stats.stdev(lat)),
+                    max_ms=f2ms(max(lat)),
+                )
+                return out
+
+    LATENCY = {
+        "struktured": {
+            "profile": latency_profile([
+                os.path.join(LATENCY_DIR, "film_20260804", f"{m}.csv")
+                for m in ("m1", "m2", "m3", "m4")
+            ]),
+            "source": "20260804 capture, P1 (human) side, matches m1-m4",
+        },
+        "dr. lulu": {
+            "profile": latency_profile(
+                [os.path.join(LATENCY_DIR, "film_20260808", "p1_m3.csv")]
+            ),
+            "source": "20260808 capture, P1 (human) side, m3 window 555-739 s",
+        },
+    }
+    return LATENCY, SPAWN_LOCK_BAND
+
+
+@app.cell(hide_code=True)
+def _(mo):
     mo.md(r"""## The master table""")
     return
 
@@ -457,6 +593,7 @@ def _():
       font-size: 10.5px; font-weight: 700; letter-spacing: .04em; color: var(--text-secondary);
     }
     .pstat tr.suppressed td { background: var(--surface-2); }
+    .pstat td.blocked { box-shadow: inset 3px 0 0 var(--tier-nodata); }
     .pstat caption {
       caption-side: bottom; text-align: left; padding-top: 10px;
       color: var(--text-secondary); font-size: 11.5px; line-height: 1.55; white-space: normal;
@@ -468,6 +605,7 @@ def _():
 
 @app.cell(hide_code=True)
 def _(
+    LATENCY,
     PLAYER_RIG,
     PROFILES,
     RIGS,
@@ -521,6 +659,43 @@ def _(
                     f"{ctrl['dies_ahead_pct']:.1f}%</span></td>"
                 )
 
+    def latency_cell(handle):
+        """p50/p75/p90, or the precise reason there is no number."""
+        entry = LATENCY.get(handle)
+        match entry:
+            case None:
+                return (
+                    "<td><span class='n'>&mdash;</span>"
+                    "<span class='sub'>no per-pill tracking exists</span></td>"
+                )
+        p = entry["profile"]
+        match p["status"]:
+            case "SOURCE MISSING":
+                return (
+                    "<td><span class='n'>&mdash;</span>"
+                    "<span class='sub'>source CSV not found</span></td>"
+                )
+            case "CONTROL FAILED":
+                return (
+                    "<td class='blocked'><span class='n'>instrument blocked (#95)</span>"
+                    f"<span class='sub'>{p['spawn_lock_pct']:.1f}% spawn-row locks "
+                    f"({p['spawn_locks']}/{p['n_pills']}), band 0&ndash;6%</span></td>"
+                )
+            case _:
+                title = (
+                    f"{handle}: reactive latency, {entry['source']}. "
+                    f"n={p['n_reactive']} reactive of {p['n_pills']} pills "
+                    f"({p['preplanned_pct']:.1f}% pre-planned, {p['straight_pct']:.1f}% straight drops); "
+                    f"sd {p['sd_ms']:.0f} ms, max {p['max_ms']:.0f} ms. "
+                    f"Control: {p['spawn_lock_pct']:.1f}% spawn-row locks, inside the 0-6% band."
+                )
+                return (
+                    f"<td title='{title}'>"
+                    f"<span class='num'><b>{p['p50_ms']:.0f}</b> / {p['p75_ms']:.0f} / "
+                    f"{p['p90_ms']:.0f} ms</span>"
+                    f"<span class='sub'>sd {p['sd_ms']:.0f} ms &middot; n={p['n_reactive']} reactive</span></td>"
+                )
+
     def master_row(handle):
         prof, meta = PROFILES[handle], ROSTER[handle]
         suppressed = tier_suppresses_numbers(prof["tier"])
@@ -546,6 +721,7 @@ def _(
             f"<td>{p46}</td>",
             f"<td>{p710}</td>",
             dies_ahead_cell(handle),
+            latency_cell(handle),
             f"<td>{declined}</td>",
             f"<td>{corrections}</td>",
             f"<td>{latency}</td>",
@@ -562,7 +738,9 @@ def _(
         ("volley size", ""), ("inter-volley gap", ""),
         ("P(volley | 4-6 clear)", ""), ("P(volley | 7-10 clear)", ""),
         ("champion dies-ahead under THEIR pressure", ""),
-        ("declined clears", ""), ("corrections /100 pills", ""), ("median latency", ""),
+        ("decision latency p50 / p75 / p90", ""),
+        ("declined clears", ""), ("corrections /100 pills", ""),
+        ("median latency (dossier)", ""),
         ("style, one line", " class='wrap'"),
     ]
 
@@ -590,6 +768,7 @@ def _(
 
 @app.cell(hide_code=True)
 def _(
+    LATENCY,
     MASTER_ORDER,
     PLAYER_RIG,
     PROFILES,
@@ -606,6 +785,8 @@ def _(
         prof, meta = PROFILES[handle], ROSTER[handle]
         suppressed = tier_suppresses_numbers(prof["tier"])
         rig = RIGS.get(PLAYER_RIG.get(handle) or "", None)
+        lat = (LATENCY.get(handle) or {}).get("profile") or {}
+        ok = lat.get("status") == "OK"
         return {
             "player": handle,
             "confidence": prof["tier"],
@@ -619,6 +800,12 @@ def _(
             "champ_dies_ahead_pct": rounded(rig["arm"]["dies_ahead_pct"], 1) if rig else None,
             "champ_dies_ahead_n": rig["arm"]["n"] if rig else None,
             "rig_model": rig["model"] if rig else None,
+            "latency_p50_ms": rounded(lat.get("p50_ms"), 0) if ok else None,
+            "latency_p75_ms": rounded(lat.get("p75_ms"), 0) if ok else None,
+            "latency_p90_ms": rounded(lat.get("p90_ms"), 0) if ok else None,
+            "latency_sd_ms": rounded(lat.get("sd_ms"), 0) if ok else None,
+            "latency_n_reactive": lat.get("n_reactive") if ok else None,
+            "tracker_control": lat.get("status"),
             "declined_clear": (meta["battery"] or {}).get("declined_clear"),
             "corrections_per_100": (meta["battery"] or {}).get("corrections_per_100"),
             "median_latency": (meta["battery"] or {}).get("median_latency"),
@@ -745,6 +932,53 @@ def _(MASTER_ORDER, PROFILES, VIZ_CSS, mo, pct, tier_suppresses_numbers):
         + "<span></span></div>"
         + legend
         + "</div></div>"
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(LATENCY, SPAWN_LOCK_BAND, VIZ_CSS, mo):
+    def control_row(handle):
+        entry = LATENCY[handle]
+        p = entry["profile"]
+        match p["status"]:
+            case "SOURCE MISSING":
+                verdict, colour, detail = "NO SOURCE", "var(--text-secondary)", "&mdash;"
+            case "CONTROL FAILED":
+                verdict, colour = "FAIL", "#d03b3b"
+                detail = (f"{p['spawn_lock_pct']:.1f}% "
+                          f"({p['spawn_locks']}/{p['n_pills']})")
+            case _:
+                verdict, colour = "PASS", "var(--tier-fitted)"
+                detail = (f"{p['spawn_lock_pct']:.1f}% "
+                          f"({p['spawn_locks']}/{p['n_pills']})")
+        published = (
+            f"{p['p50_ms']:.0f} / {p['p75_ms']:.0f} / {p['p90_ms']:.0f} ms"
+            if p["status"] == "OK" else "<span class='n'>none &mdash; withheld</span>"
+        )
+        return (
+            f"<tr><td class='handle'>{handle}</td>"
+            f"<td class='n'>{entry['source']}</td>"
+            f"<td class='num'>{detail}</td>"
+            f"<td style='color:{colour};font-weight:700'>{verdict}</td>"
+            f"<td class='num'>{published}</td></tr>"
+        )
+
+    lo, hi = SPAWN_LOCK_BAND
+    mo.Html(
+        VIZ_CSS
+        + "<div class='pstat'><div class='scroll'><table style='min-width:760px'><thead><tr>"
+        + "<th>player</th><th>footage measured</th><th>spawn-row lock rate</th>"
+        + f"<th>control ({lo:.0f}&ndash;{hi:.0f}%)</th><th>latency published</th>"
+        + "</tr></thead><tbody>"
+        + "".join(control_row(h) for h in ("struktured", "dr. lulu"))
+        + "</tbody><caption>"
+        + "The control is run on the same tracker output the latency would come from, so a "
+        + "pass certifies the exact numbers published. For reference the tracker scores "
+        + "1.2% (4/331) across the whole 20260804 corpus and <b>19.4% (18/93) on the P2 "
+        + "side of the night-two capture</b> &mdash; the failure recorded as task #95, "
+        + "reproduced here as the check's negative control."
+        + "</caption></table></div></div>"
     )
     return
 
@@ -900,7 +1134,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(PROFILES, RIGS, VIZ_CSS, fit_strukt_pooled, mo, pct, pk):
+def _(LATENCY, PROFILES, RIGS, VIZ_CSS, fit_strukt_pooled, mo, pct, pk):
     # Values as published in STYLE_ENSEMBLE_V1.md 7, dr_lulu_20260808_fit_report.md,
     # BURSTY_V1_RESULTS.md, the refit driver log, and player_styles/*.md.
     # Tolerances are one unit in the last published digit.
@@ -930,6 +1164,16 @@ def _(PROFILES, RIGS, VIZ_CSS, fit_strukt_pooled, mo, pct, pk):
         ("struktured rig v1.1", "dies-ahead ws=0", RIGS["strukt_sending"]["ctrl"]["dies_ahead_pct"], 27.5, 0.05, "BURSTY_V1_RESULTS 5"),
         ("struktured rig v1", "dies-ahead ws=20", RIGS["strukt_pooled"]["arm"]["dies_ahead_pct"], 13.3, 0.05, "BURSTY_V1_RESULTS 3"),
         ("struktured rig v1", "bad-ends ws=20", RIGS["strukt_pooled"]["arm"]["bad_ends_pct"], 26.7, 0.05, "BURSTY_V1_RESULTS 3"),
+        # Latency: the film review's own published reactive population is the control for
+        # this recomputation. The dossier's "median 250 ms" must equal the computed p50,
+        # which is why both a transcribed and a computed latency column exist.
+        ("struktured latency", "n reactive", LATENCY["struktured"]["profile"].get("n_reactive"), 244, 0, "analysis/latency.md"),
+        ("struktured latency", "p50 ms", LATENCY["struktured"]["profile"].get("p50_ms"), 250.0, 0.05, "analysis/latency.md + dossier"),
+        ("struktured latency", "p75 ms", LATENCY["struktured"]["profile"].get("p75_ms"), 366.7, 0.05, "analysis/latency.md"),
+        ("struktured latency", "p90 ms", LATENCY["struktured"]["profile"].get("p90_ms"), 511.7, 0.05, "analysis/latency.md"),
+        ("struktured latency", "pre-planned %", LATENCY["struktured"]["profile"].get("preplanned_pct"), 23.6, 0.05, "SCORECARD + dossier"),
+        ("struktured latency", "straight-drop %", LATENCY["struktured"]["profile"].get("straight_pct"), 2.7, 0.05, "dossier"),
+        ("struktured latency", "control spawn-lock %", LATENCY["struktured"]["profile"].get("spawn_lock_pct"), 1.2, 0.05, "reference corpus, task #95"),
     ]
 
     def check_row(who, metric, derived, cited, tol, src):
@@ -992,26 +1236,35 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(MASTER_ORDER, PLAYER_RIG, PROFILES, ROSTER, VIZ_CSS, mo):
+def _(LATENCY, MASTER_ORDER, PLAYER_RIG, PROFILES, ROSTER, VIZ_CSS, mo):
     def coverage_row(handle):
         prof, meta = PROFILES[handle], ROSTER[handle]
         yes = "<span style='color:var(--tier-fitted);font-weight:700'>yes</span>"
         no = "<span class='n'>no</span>"
         has_pressure = {"FITTED": yes, "LOW-CONF": yes, "UNINFORMATIVE": yes, "NO DATA": no}[prof["tier"]]
+        lat_status = ((LATENCY.get(handle) or {}).get("profile") or {}).get("status")
+        lat_cell = {
+            "OK": f"{yes} <span class='n'>(control passed)</span>",
+            "CONTROL FAILED": "<span class='n'>blocked (#95)</span>",
+            "SOURCE MISSING": "<span class='n'>no source</span>",
+            None: no,
+        }[lat_status]
         return (
             f"<tr><td class='handle'>{handle}</td>"
             f"<td>{yes}</td>"
             f"<td>{has_pressure} <span class='n'>({prof['tier']}, {prof['scope']})</span></td>"
             f"<td>{yes if handle in PLAYER_RIG else no}</td>"
+            f"<td>{lat_cell}</td>"
             f"<td>{yes if meta['battery'] else no}</td>"
             f"<td>{yes if meta['record'] != 'never played the AI' else no}</td></tr>"
         )
 
     mo.Html(
         VIZ_CSS
-        + "<div class='pstat'><div class='scroll'><table style='min-width:720px'><thead><tr>"
+        + "<div class='pstat'><div class='scroll'><table style='min-width:820px'><thead><tr>"
         + "<th>player</th><th>dossier</th><th>pressure fit</th><th>rig run vs champion</th>"
-        + "<th>metric battery</th><th>played the AI</th></tr></thead><tbody>"
+        + "<th>decision latency</th><th>metric battery</th><th>played the AI</th>"
+        + "</tr></thead><tbody>"
         + "".join(coverage_row(h) for h in MASTER_ORDER)
         + "</tbody><caption>"
         + "The metric battery (declined-clear rate, corrections per 100 pills, decision "
@@ -1040,6 +1293,15 @@ def _(mo):
         - **Only two players have a rig run,** because a rig run needs a fitted model. The
           four below the confidence line cannot get a dies-ahead number without more footage —
           this is the column that most rewards extending the corpus.
+        - **The two latency samples are not the same size.** struktured's is 244 reactive
+          pills over four matches; dr. lulu's is 44 over a single match window. The gap
+          between them is large enough to survive that, but her percentiles will move more
+          than his as windows are added, and only her m3 window has been tracked at 60 fps.
+        - **Task #95 is narrower than it looked.** The P1 side of the night-two capture
+          passes the same control the P2 side fails (2.7% vs 19.4%, same footage, same
+          tracker, same window). Whatever breaks the tracker is specific to the P2 crop or
+          to what the AI's board does, not to the capture — which is a much smaller problem
+          than "the tracker does not work on captured footage."
         - **Three of six players sit below the n=20 line** and one is at zero. §8 of the
           ensemble report is blunt that an archetype grid is not possible on this data.
         - **davesmithsays needs a different window,** not a different method: his Speed-bracket
@@ -1082,6 +1344,10 @@ def _(
         ("dies-ahead: struktured bursty v1.1 (SENDING)", rel(path_rig_v11)),
         ("dies-ahead: struktured bursty v1 (POOLED)", rel(path_rig_v1)),
         ("rig driver log (dr. lulu, step 4/4)", "eval47/tmp/dr_lulu_20260808_refit.log"),
+        ("latency: struktured per-pill events", "eval47/results/latency_events/film_20260804/m{1,2,3,4}.csv"),
+        ("latency: dr. lulu per-pill events", "eval47/results/latency_events/film_20260808/p1_m3.csv"),
+        ("P1 tracker (produced p1_m3.csv)", "eval47/film_20260808/tracker_p1.py"),
+        ("P1 crop-geometry check", "eval47/film_20260808/verify_p1_crop.py"),
         ("confidence rule + per-player table", "eval47/STYLE_ENSEMBLE_V1.md §5-7"),
         ("struktured metric battery", "player_styles/FILM_REVIEW_20260804_SCORECARD.md"),
         ("dossiers", f"{os.path.relpath(STYLES, os.path.dirname(os.path.dirname(EVAL47)))}/*.md"),
