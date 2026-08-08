@@ -128,6 +128,21 @@ def apply_tuck(board, ring, col, rest, ca, cb):
     board.is_virus[r1, c1] = False
 
 
+def col_heights(color):
+    """Stack height of every column (0 = empty; row 0 = top, so height = ROWS - top
+    occupied row). READ-ONLY observation used by the latency capture below -- its
+    result never feeds a decision."""
+    out = []
+    for c in range(COLS):
+        h = 0
+        for r in range(ROWS):
+            if color[r, c] != 0:
+                h = ROWS - r
+                break
+        out.append(h)
+    return out
+
+
 GARBAGE_MIN_PILLS = 25          # reach_root_ab.GARBAGE_MIN_PILLS, not re-chosen here
 DIES_AHEAD_VIRUS_THRESHOLD = 12  # reach_root_ab.DIES_AHEAD_VIRUS_THRESHOLD
 
@@ -145,6 +160,34 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
                "bursty" = the project's fitted volley model (bursty_model), injected on
                           the player's own clears exactly as reach_root_ab/
                           firmware_tier3_ab do. This is where survival differences live.
+
+    LATENCY CAPTURE (report-only). Every result dict carries "lat": one entry per
+    decision, `[clocks, entry_row, max_h, post_garbage, h_hit]`:
+
+      clocks        raw co-sim clocks for this single decide() -- the per-decision
+                    value that used to be summed into `clocks` and discarded. Stored
+                    RAW on purpose: the verilated sim ticks clk and clk_cpu in
+                    lockstep (48 master clocks per NES CPU cycle) while real silicon
+                    runs the copro on its own 54.669 MHz async tap, so conversion
+                    belongs at ANALYSIS time, reporting BOTH domains:
+                    silicon frames = clocks/909,650 (54.669e6/60.0988) and
+                    sim-lockstep frames = clocks/(48*29780.5).
+      entry_row     resting anchor row of the placement actually made (bottom cell
+                    for vertical, the row for horizontal; row 0 = top). -1 when no
+                    placement was applied (the illegal-placement topout path).
+      max_h         max column stack height of the board the decision was made ON
+                    (before this pill was placed) -- prices the fall-time budget
+                    (13 frames/row at L11).
+      post_garbage  1 iff this decision immediately follows a bursty garbage
+                    injection, i.e. it sits at the release+settle edge where the
+                    264 - 16*h frame window applies. Always 0 under pressure="clean".
+      h_hit         when post_garbage=1: max settled stack height among the columns
+                    the garbage landed in (the tallest hit column sets the binding
+                    window); -1 otherwise.
+
+    Nothing in the capture feeds back into any decision -- it is pure observation,
+    and gate_validate.py's determinism key (result, pills, viruses_cleared, clocks,
+    moves) is untouched because the field is additive.
     """
     if exec_mode not in ("drop", "tuck"):
         raise ValueError("exec_mode must be 'drop' or 'tuck'")
@@ -171,6 +214,8 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
     garbage = 0
     clocks = 0
     moves = []
+    lat = []               # per-decision latency capture, see the docstring
+    pending_gh = -1        # settled max height in garbage-hit columns; -1 = none
 
     for _ in range(max_pills):
         if env.board.virus_count() == 0:
@@ -184,6 +229,12 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
         na, nb = int(env.nxt.a), int(env.nxt.b)
         d = cosim.decide(b128, ca - 1, cb - 1, na - 1, nb - 1)
         clocks += d["clocks"]
+        # Latency capture: record the per-decision cost with the board it was paid on.
+        # entry_row (slot 1) is back-filled once the placement is known; it stays -1
+        # only on the illegal-placement path, where nothing is applied.
+        lat.append([int(d["clocks"]), -1, max(col_heights(env.board.color)),
+                    int(pending_gh >= 0), pending_gh])
+        pending_gh = -1
         col, o4, tcol, trow = d["col"], d["o4"], d["tcol"], d["trow"]
         if trace:
             moves.append((col, o4, tcol, trow))
@@ -212,6 +263,7 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
                 do_tuck = False
 
         if do_tuck:
+            lat[-1][1] = int(rest)
             apply_tuck(env.board, RING_OF_O4[o4], col, rest, ca, cb)
             env.board.resolve()
             n_tuck += 1
@@ -230,7 +282,8 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
         else:
             action = VAR_OF_O4[o4] * COLS + col
             orient, acol, pill = env._decode(action)
-            if env.board.resting_position(pill, orient, acol) is None:
+            rcells = env.board.resting_position(pill, orient, acol)
+            if rcells is None:
                 # The RTL named a placement that does not fit. On silicon the driver
                 # would fail to seat the pill and the stack tops out; scoring it as a
                 # topout is the faithful outcome, and it is counted separately so a
@@ -238,6 +291,7 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
                 n_illegal += 1
                 res = "topout"
                 break
+            lat[-1][1] = int(rcells[1][0])
             _, _, term, trunc, info = env.step(int(action))
             if term:
                 res = "clear" if info["won"] else "topout"
@@ -249,8 +303,18 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
             occ_after = int(np.count_nonzero(env.board.color))
             clear_size = max(0, occ_before + 2 - occ_after)
             if clear_size > 0:
-                garbage += inject_bursty_garbage(
+                h_before = col_heights(env.board.color)
+                added = inject_bursty_garbage(
                     env.board, model, seed, env.pills_placed, clear_size)
+                garbage += added
+                if added > 0:
+                    # Release+settle edge: the NEXT decision is made inside the
+                    # 264 - 16*h garbage window. Hit columns are the ones whose
+                    # settled height changed; the tallest sets the binding window.
+                    h_after = col_heights(env.board.color)
+                    hit = [h_after[c] for c in range(COLS)
+                           if h_after[c] != h_before[c]]
+                    pending_gh = max(hit) if hit else max(h_after)
             if env.board.virus_count() == 0:
                 res = "clear"
                 break
@@ -272,6 +336,7 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
         "n_incoherent": n_incoherent, "n_illegal": n_illegal,
         "garbage": garbage,
         "clocks": clocks,
+        "lat": lat,
         "exec_mode": exec_mode, "pressure": pressure,
         "fw_md5": cosim.fw_md5,
     }
