@@ -918,7 +918,30 @@ OLD_STUDY_BLOB_EVAC_V2 = bytes.fromhex("A9808542" "20F688" "60") + b"\xFF" * 44 
 # the repointed draw call needs a safe target, nothing more) and the DRIVER draws the letters
 # too: tiles/X are static (probe-dumped), Y is mode-correct ($0F in 1P per the original
 # design, $08 in 2P clear of the header). One writer, zero races, slots 32-40 driver-owned.
-STUDY_BLOB_EVAC = b"\x60" + b"\xFF" * 51
+OLD_STUDY_BLOB_EVAC_V3 = b"\x60" + b"\xFF" * 51   # EVAC v3: bare RTS (the leak-era part1)
+# EVAC v4 (STUDY2P leak fix, 2026-08-08 field defect "flickers + STUDY on top in play"): the
+# s2p driver block drew STUDY + previews at visible Y on EVERY play hook, betting the game's
+# OAM rebuild would overwrite them -- but in VS play the game owns ZERO sprites and R8712 only
+# pads from the sprite high-water mark, so nothing ever cleaned slots 32-40 and the letters
+# rendered over live play continuously (Mesen: ~35k/35k play frames on the byte-exact field
+# cart 3e7c6ed9). Fix = give the s2p block a real pause detector. MEASURED call pattern of
+# this blob on that cart (two independent instrumented runs, exec counter at $D2CC):
+#   - exactly 1 call per UNPAUSED play frame (35,080/35,082; the misses are single-frame,
+#     at the mode-8 -> 4 transition), from the repointed draw site on the frame path;
+#   - ZERO calls while the real pause loop spins ($978E ticking 1/frame);
+#   - ZERO calls in menus / title / intro.
+# (The older "the pause loop re-runs the draw every spin frame" note above described the
+# probe-era standalone behaviour; on this copro cart the pause spin provably never reaches it.)
+# So part1 is a PLAY-FRAME HEARTBEAT: it tops up S2P_TTL every live frame, and the s2p hook
+# (2x/frame in NMI, which keeps running during the pause spin) decrements it. TTL drains to 0
+# only when the frame path stops calling us -- i.e. a mode-4 blocking wait: the pause loop
+# (draw STUDY: that IS the feature) or STAGE CLEAR's own wait (excluded via HOLD_ACTIVE).
+S2P_TTL = 0x61B0      # PRG-RAM heartbeat TTL ($6199-$61AF = DRPRESTART; $6200 = trace ring)
+S2P_TTL_N = 4         # top-up: 2 hook-decs/frame vs max measured heartbeat gap = 1 frame
+STUDY_BLOB_EVAC = (bytes([0xA9, S2P_TTL_N,                      # LDA #S2P_TTL_N
+                          0x8D, S2P_TTL & 0xFF, S2P_TTL >> 8,   # STA S2P_TTL
+                          0x60])                                # RTS
+                   + b"\xFF" * 46)                              # pad the audited 52 B run
 
 
 class StudyPatchError(Exception):
@@ -951,7 +974,7 @@ def apply_study_pause(rom, evac=False):
         targets = [
             (STUDY_BLOB_CPU, STUDY_BLOB_EVAC, 52,
              [OLD_STUDY_BLOB_V2, OLD_STUDY_BLOB_V3, OLD_STUDY_BLOB_V31, STUDY_BLOB,
-              OLD_STUDY_BLOB_EVAC_V82, OLD_STUDY_BLOB_EVAC_V2]),
+              OLD_STUDY_BLOB_EVAC_V82, OLD_STUDY_BLOB_EVAC_V2, OLD_STUDY_BLOB_EVAC_V3]),
         ]
     else:
         targets = [
@@ -1061,10 +1084,11 @@ def build_main(level=11, speed=1):
         a.label("dist_table_end")
     # PRG-RAM power-on init (SDRAM boots as garbage): magic byte at NAV_MAGIC
     a.ins16("LDA_abs", NAV_MAGIC); a.ins("CMP_imm", 0xA5)
-    if PRESTART:
+    if PRESTART or STUDY2P:
         # DRPRESTART's two extra init stores push this skip past the +-127 relative-branch range
-        # (measured: 128). Invert-and-JMP, the same idiom the TUCK/nf2_untorn sites use -- gated
-        # so a DRPRESTART=0 build keeps the original short branch and stays byte-identical.
+        # (measured: 128; STUDY2P's S2P_TTL store adds 3 more). Invert-and-JMP, the same idiom
+        # the TUCK/nf2_untorn sites use -- gated so a build with both knobs off keeps the
+        # original short branch and stays byte-identical.
         a.br("BNE", "do_init"); a.jmp("inited"); a.label("do_init")
     else:
         a.br("BEQ", "inited")
@@ -1092,6 +1116,11 @@ def build_main(level=11, speed=1):
         # nonzero value makes the FIRST spawn edge believe a prestart already owns the pill, so it
         # never sets PEND2 and the capsule falls with no search behind it.
         a.ins16("STA_abs", PRE_ACT2); a.ins16("STA_abs", PRE_LAST2)
+    if STUDY2P:
+        # A==0. Boot-garbage S2P_TTL is only a bounded nuisance (a nonzero value decays 2/frame
+        # while blanking, the safe direction), but init it with the rest of the sticky-PRG-RAM
+        # class so the first-ever pause is answerable immediately.
+        a.ins16("STA_abs", S2P_TTL)
     if COLDINIT:
         a.ins16("STA_abs", LASTY1); a.ins16("STA_abs", LASTY2)   # A==0: no suppressed first edge from garbage
         a.ins16("STA_abs", PEND1); a.ins16("STA_abs", PEND2)
@@ -1257,12 +1286,38 @@ def build_main(level=11, speed=1):
         # STUDY letters now -- probe round 2 proved the pause loop re-runs the draw call EVERY
         # spin frame, so any preview part1 wrote would stomp this block's writes each frame.
         # The driver therefore owns slots 37-40 outright: 1P layout when $0727==1, 2P when ==2.
-        # Invisible in play (the game's OAM rebuild runs after this hook); owns the pause.
         # entry: the block is >127B, out of relative-branch range -- short-branch over a JMP.
         a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BEQ", "s2p_go")
         a.jmp("s2p_no")
         a.label("s2p_go")
-        # STUDY letters (part1 is a bare RTS now -- EVAC v3): tiles/X static per the probe's
+        # ---- PAUSE GATE (leak fix; see the EVAC v4 comment at STUDY_BLOB_EVAC). The old block
+        # drew unconditionally on every mode-4 hook, betting "the game's OAM rebuild runs after
+        # this hook" -- FALSE in VS play (game sprite count 0, R8712 only pads from the sprite
+        # high-water mark), so STUDY+previews rendered over live play on ~every frame (the
+        # 2026-08-08 Pocket field defect). Now part1 ($D2CC) tops up S2P_TTL once per UNPAUSED
+        # play frame and this hook decrements it: TTL>0 = live play -> blank slots 32-40 and
+        # skip; TTL==0 = the frame path stopped in a mode-4 blocking wait = the pause loop ->
+        # draw. MATCH_ACTIVE!=0 excludes the first play hook of a match (heartbeat not yet
+        # started); HOLD_ACTIVE!=0 excludes STAGE CLEAR's own mode-4 blocking wait while the
+        # final board is held (drawing STUDY over the held board would be a new artifact).
+        a.ins16("LDA_abs", S2P_TTL); a.br("BEQ", "s2p_stale")
+        a.ins16("DEC_abs", S2P_TTL)
+        a.jmp("s2p_blank")
+        a.label("s2p_stale")
+        a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BEQ", "s2p_blank")
+        if HOLDBOARD:
+            a.ins16("LDA_abs", HOLD_ACTIVE); a.br("BNE", "s2p_blank")
+        a.jmp("s2p_draw")
+        a.label("s2p_blank")
+        # Single owner of slots 32-40 in play: park them offscreen (Y=$FF) every hook, so a
+        # pause's own draws (and any boot garbage in the shadow) are cleaned the moment play
+        # resumes -- there is no other cleaner (that absence is the root cause).
+        a.ins("LDA_imm", 0xFF)
+        for slot in range(32, 41):
+            a.ins16("STA_abs", 0x0200 + slot * 4)
+        a.jmp("s2p_no")
+        a.label("s2p_draw")
+        # STUDY letters (part1 is the heartbeat now -- EVAC v4): tiles/X static per the probe's
         # OAM dump, attr 0; Y is mode-correct below ($0F in 1P, STUDY_2P_Y in 2P).
         for slot, (tile, x) in zip((32, 33, 34, 35, 36),
                                    ((0x0D, 0x70), (0xA0, 0x78), (0x0C, 0x80),
@@ -1399,6 +1454,15 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_ACT2)
         a.ins16("LDA_abs", PRE_ATK2); a.ins16("STA_abs", PRE_LAST2)
         a.label("ga_pre_ok")
+    if STUDY2P:
+        # PER-MATCH: pre-arm the pause-gate heartbeat on the first play hook (the same hook
+        # sets MATCH_ACTIVE below, and s2p runs BEFORE this point in the hook). Without this,
+        # hook #2 of the first play frame sees MATCH_ACTIVE=1 with the $D2CC heartbeat not yet
+        # started (it first runs in this frame's MAIN LOOP, after the NMI) -> a 1-frame STUDY
+        # flash at round start (measured: exactly 1 frame in a 32.4k-frame soak, f=234).
+        a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "s2p_ma_ok")
+        a.ins("LDA_imm", S2P_TTL_N); a.ins16("STA_abs", S2P_TTL)
+        a.label("s2p_ma_ok")
     if USE_SEEDS:
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_on")  # first play frame of this match:
         a.ins16("LDA_abs", NAV_T); a.ins("ORA_imm", 0x01); a.ins16("STA_abs", SEED1)   # root seed
