@@ -651,6 +651,93 @@ HOLD_LASTCLK = 0x6196                      # last-seen $43 clock byte (edge-dete
 HOLD_CNT = 0x6197                          # 16-bit ($6197 lo, $6198 hi): frames held so far
 HOLD_BUF1, HOLD_BUF2 = 0x6300, 0x6400      # 256B mirrors of $0400 (P1) / $0500 (P2) playfields
 
+# ---- DRPRESTART=1 (default OFF -> byte-identical when unset): GARBAGE-WINDOW PRESTART ----
+# Today the ONLY search trigger is the new-pill Y edge ($0306/$0386 rising) + a 15-hook settle,
+# so the entire VS garbage window -- W = 264 - 16*h frames, h = stack height of the shallowest
+# garbage-hit column (ROM-derived, emulator-verified 8/8: empty 264 f, stack 6 168 f, stack 13
+# 56 f, stack 15 24 f) -- is DEAD TIME, and the answer lands ~150 frames after spawn while the
+# capsule is already falling at 13 f/row. DRPRESTART reclaims that window: it detects the
+# garbage release, PROJECTS the settled post-garbage board in 6502, uploads the projection and
+# GOes immediately, so the search overlaps the fall animation instead of following it.
+#
+# ★ THE TRIGGER, and why this edge and not another (read from the Rev0 disassembly, not assumed;
+#   `checkReleaseAttack` $9C01 -- the Nostaljipi listing is Rev A and sits $1A higher at $9C1B):
+#   attacks are buffered in the ATTACKER's OWN slot and consumed by the VICTIM.
+#   `checkReleaseAttack` runs with currentP = the RECEIVER and indexes `p1_attackSize,X` with
+#   X = otherPlayerRAM_addrOffset[currentP] = {p1($04): $80, p2($05): $00}.
+#   => P2's INCOMING volley is buffered at $0318 (p1_attackSize) / $0329 (p1_attackColors);
+#      P1's incoming volley is at $0398 / $03A9. That is the reverse of the naive reading and
+#      is the single easiest thing to get backwards here.
+#   The routine writes every garbage cell into row 0 of the receiver's field via
+#   `sta (currentP_fieldPointer),Y` (pointer lo = $00, hi = currentP = $04/$05 => $0400/$0500 + Y)
+#   and only THEN does `sta p1_attackSize,X` with A=0. The clear is the LAST write, so
+#   "incoming attackSize went nonzero -> 0" observed from the NMI hook is a RELEASE-COMPLETE
+#   edge by construction: every garbage byte is already in RAM when we see it. An NMI landing
+#   mid-routine sees the size still nonzero and simply waits for the next hook. No torn read is
+#   possible. (The alternative edges -- nextAction==pillPlaced, or diffing row 0 -- are both
+#   ambiguous with the ordinary pill-lock path; this one has exactly one writer.)
+#
+# ★ THE PROJECTION. RAM does NOT hold the settled board during the animation: post-garbage
+#   gravity is 16 FRAMES PER ROW (`checkDrop` $8C94 is gated on status==$FF, the nametable
+#   row-render cursor, so a full 16-row re-render must complete between sweeps), so a driver
+#   that uploads $0500 at the release frame uploads garbage FLOATING AT ROW 0 -- measured
+#   elsewhere in this project as ~1/3 of deliveries instantly topping out the receiver. The
+#   6502 must settle it itself. The settle is exact and cheap because of one invariant:
+#   ** the pre-garbage board is already settled, so the ONLY unsupported cells are the garbage
+#      singles, and they are all in row 0. ** So: for each column 0..7, if row 0 holds a
+#   `singleHalfPill` ($80 | colour -- the exact tile checkReleaseAttack writes), slide it down
+#   to rest on the first occupied cell. Nothing else can move.
+#   Consequences worth stating, because they remove bail cases the naive design needs:
+#     - We never have to work out WHICH row-0 cells are the garbage. A pre-existing settled
+#       single at row 0 has support at row 1, so its slide distance is 0 = a no-op.
+#     - Linked halves / viruses at row 0 are skipped by the $80 type test, and they are settled,
+#       so skipping them is correct rather than merely safe.
+#     - The garbage columns are {c,c+4} (size 2), {c,c+2,c+4} (size 3), {c,c+2,c+4,c+6} (size 4)
+#       -- NEVER horizontally adjacent -- so the landed cells cannot interact with each other.
+#   We deliberately do NOT reproduce the game's frameCounter column derivation (c =
+#   frameCounter & 3 or & 1): reading row 0 gives us the columns AND the colours directly, and
+#   it cannot drift from the frameCounter value that was live at the release instant.
+#
+# ★ THE PILL COLOURS ARE ONE STEP AHEAD OF THE NORMAL PATH -- the part that is easy to miss.
+#   At prestart time `generateNextPill` has NOT yet run for the capsule we are searching for, so
+#   the normal mailbox sources are stale by one: $0381/$0382 still hold the capsule that just
+#   LOCKED. The capsule that will actually spawn is the current PREVIEW ($039A/$039B), and the
+#   one after it is `pillsReserve[$03A7]` -- the whole 128-capsule stream is plain RAM at $0780,
+#   and the counter has not been incremented yet. `colorCombination_left/right` are
+#   [0,0,0,1,1,1,2,2,2] / [0,1,2,0,1,2,0,1,2], i.e. exactly (val/3, val%3), so the driver
+#   computes them with a 3-iteration subtract loop instead of reaching into a ROM data table
+#   from a bank it does not map. Feeding the stale pair here would be strictly WORSE than the
+#   idle baseline (misinformed lookahead measured at +6.2 pills vs +0.17 for perfect knowledge).
+#
+# ★ BAILS (each falls back to today's exact behaviour -- we simply never GO, and since a real
+#   `_start` rewrites all 128 window bytes there is no residue to undo):
+#     - a settled garbage cell completes a 4-in-a-row (cascades are NOT resolved in 6502);
+#     - a $B0 (clearing) or $F0 (just-emptied) tile is seen in a scanned column = the field is
+#       mid-animation and the "already settled" invariant does not hold;
+#     - a search is already in flight (ARMED != 0) or queued (PEND != 0) -- re-GOing a running
+#       copro is the GO-storm re-entrancy family and is not worth the window;
+#     - a SECOND volley arrives before the spawn (P1 can attack again while the first volley is
+#       still animating): the projection is now stale, so we INVALIDATE -- tear down the
+#       in-flight prestart (armed/wdog cleared, so its DONE is never read) and let the spawn
+#       edge run a normal search on the live board.
+# ★ SCOPE: P2 ONLY, deliberately. P2 is the copro AI on every shipping cart class (CvC leaves
+#   P1 to the wiggle/native/idle paths, DRHUMAN gives P1 to a human, DRPOCKET has ONE window and
+#   assigns it to P2), and on the deployed core $5000 is undecoded so handle(1) has only ever
+#   published open-bus. Mirroring this for P1 is a parameterisation exercise, not a design one,
+#   but it would double the emitted routine for a side no cart searches with.
+PRESTART = _os.environ.get("DRPRESTART", "0") == "1"
+PRE_ATK2 = 0x0318                       # P2's INCOMING volley = p1_attackSize (see the derivation above)
+# PRG-RAM: $6199-$61AF is free (past DRHOLDBOARD's HOLD_CNT hi at $6198, below the
+# DRTRACE/DRPROBE ring at $6200); PRE_BUF sits at $6500, clear of HOLD_BUF1/2 ($6300/$6400).
+PRE_LAST2 = 0x6199                      # last-seen $0318, latched every play hook (release edge detect)
+PRE_ACT2 = 0x619A                       # !=0: a prestarted search owns the NEXT P2 spawn
+PRE_PREV, PRE_CUR = 0x619B, 0x619C      # trigger scratch: previous / current incoming attack size
+PRE_COL, PRE_CELL, PRE_OFF, PRE_N = 0x619D, 0x619E, 0x619F, 0x61A0   # settle scratch
+PRE_LND = 0x61A1                        # $61A1-$61A8: board offsets of the settled cells
+PRE_I, PRE_RUN, PRE_MC, PRE_SOFF = 0x61A9, 0x61AA, 0x61AB, 0x61AC    # match-scan scratch
+PRE_TMP, PRE_MIN, PRE_MAX = 0x61AD, 0x61AE, 0x61AF
+PRE_BUF = 0x6500                        # 128B projected board ($6500-$657F)
+
 # DRBUILDID=1 (task: "which brain am I fighting", default ON for human-profile carts): stamp a
 # short build tag onto the settings screen ("2 PLAYER GAME" row 25, columns 6-14) -- the exact
 # row the STUDYCOUNTS OAM-leak garbled (task #48 job 1). Deliberate choice: not sprites (would
@@ -973,7 +1060,14 @@ def build_main(level=11, speed=1):
         a.raw(*DIST_TABLE)
         a.label("dist_table_end")
     # PRG-RAM power-on init (SDRAM boots as garbage): magic byte at NAV_MAGIC
-    a.ins16("LDA_abs", NAV_MAGIC); a.ins("CMP_imm", 0xA5); a.br("BEQ", "inited")
+    a.ins16("LDA_abs", NAV_MAGIC); a.ins("CMP_imm", 0xA5)
+    if PRESTART:
+        # DRPRESTART's two extra init stores push this skip past the +-127 relative-branch range
+        # (measured: 128). Invert-and-JMP, the same idiom the TUCK/nf2_untorn sites use -- gated
+        # so a DRPRESTART=0 build keeps the original short branch and stays byte-identical.
+        a.br("BNE", "do_init"); a.jmp("inited"); a.label("do_init")
+    else:
+        a.br("BEQ", "inited")
     a.ins("LDA_imm", 0xA5); a.ins16("STA_abs", NAV_MAGIC)
     a.ins("LDA_imm", 0); a.ins16("STA_abs", ARMED); a.ins16("STA_abs", NAV_T)
     a.ins16("STA_abs", STK1); a.ins16("STA_abs", STK2); a.ins16("STA_abs", MATCH_ACTIVE)
@@ -993,6 +1087,11 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", NAV_STABLE); a.ins16("STA_abs", NAV_1P)   # A==0: nav stability + 1P diag latch
     if NAVDWELL:
         a.ins16("STA_abs", DWELL_CNT); a.ins16("STA_abs", DWELL_LAST)   # A==0: title-dwell fresh at power-on
+    if PRESTART:
+        # A==0. PRE_ACT2 boot-garbage would be catastrophic in exactly the DRHUMAN-PEND1 way: a
+        # nonzero value makes the FIRST spawn edge believe a prestart already owns the pill, so it
+        # never sets PEND2 and the capsule falls with no search behind it.
+        a.ins16("STA_abs", PRE_ACT2); a.ins16("STA_abs", PRE_LAST2)
     if COLDINIT:
         a.ins16("STA_abs", LASTY1); a.ins16("STA_abs", LASTY2)   # A==0: no suppressed first edge from garbage
         a.ins16("STA_abs", PEND1); a.ins16("STA_abs", PEND2)
@@ -1243,7 +1342,14 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", B_START); a.ins("STA_zp", 0xF5)    # inject START to dismiss STAGE CLEAR
     a.label("fc_ret"); a.ins("RTS")
     a.label("fc_no")
-    a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "not_play")
+    a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04)
+    if PRESTART:
+        # DRPRESTART's per-match init sits inside the go_ai block this branch skips over, which
+        # takes the span past +-127 on the DRCOLDINIT arms (measured: 138). Invert-and-JMP; gated
+        # so a DRPRESTART=0 build keeps the original short branch and stays byte-identical.
+        a.br("BEQ", "is_play"); a.jmp("not_play"); a.label("is_play")
+    else:
+        a.br("BNE", "not_play")
     a.ins("LDA_zp", 0x04); a.br("BNE", "go_ai")            # $04 != 0 -> VS-CPU AI
     if NAVFIX:
         # DIAGNOSTIC: play-mode with $04==0 AND $0727==1 = a 1P game or the attract demo = the nav
@@ -1283,6 +1389,16 @@ def build_main(level=11, speed=1):
                 a.ins16("STA_abs", ARMED); a.ins16("STA_abs", WDOG); a.ins16("STA_abs", WDOGH1)
                 a.ins16("STA_abs", WRETRY)
         a.label("ga_cold_ok")
+    if PRESTART:
+        # PER-MATCH re-init (own block, not folded into the COLDINIT one above, which is gated on
+        # `COLDINIT or not NO_FREEZE` and so is absent from anytime carts). PRG-RAM persists across
+        # a core relaunch and across matches, so a PRE_ACT2 left set by an aborted match would
+        # silently swallow the next match's first search. PRE_LAST2 is seeded from the LIVE counter
+        # rather than zeroed so a stale nonzero value cannot manufacture a phantom release edge.
+        a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_pre_ok")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_ACT2)
+        a.ins16("LDA_abs", PRE_ATK2); a.ins16("STA_abs", PRE_LAST2)
+        a.label("ga_pre_ok")
     if USE_SEEDS:
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_on")  # first play frame of this match:
         a.ins16("LDA_abs", NAV_T); a.ins("ORA_imm", 0x01); a.ins16("STA_abs", SEED1)   # root seed
@@ -1575,9 +1691,22 @@ def build_main(level=11, speed=1):
     a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", LASTY1)
     a.ins16("LDA_abs", 0x0386); a.ins16("CMP_abs", LASTY2)
     a.br("BCC", "no_p2_new"); a.br("BEQ", "no_p2_new")
+    if PRESTART:
+        # A prestart already owns this capsule: its search was launched against the PROJECTED
+        # post-garbage board with THIS capsule's colours, so queueing a second one would either
+        # double-search the same pill or (worse) re-GO a copro that is still running -- the
+        # GO-storm re-entrancy family. Skip PEND2/DELAY2 only; every other per-pill reset below
+        # still runs. When the prestart has already DONE'd, PEND2==0 also means act_p2's settle
+        # guard opens on the FIRST hook of the fall, which is the whole point: the answer is
+        # already published in TGT_C2/TGT_O2 instead of arriving ~7.5 frames + a search later.
+        a.ins16("LDA_abs", PRE_ACT2); a.br("BNE", "p2_pre_own")
     a.ins("LDA_imm", 1); a.ins16("STA_abs", PEND2)
     a.ins("LDA_imm", 15); a.ins16("STA_abs", DELAY2)        # ~3 frames settle before upload
+    if PRESTART:
+        a.label("p2_pre_own")
     a.ins("LDA_imm", 0)
+    if PRESTART:
+        a.ins16("STA_abs", PRE_ACT2)                        # A==0: consumed (or was never set)
     a.ins16("STA_abs", WRETRY2 if WRETRY_FIX else WRETRY)   # FIX(B): reset P2's latch per P2 pill (was WRETRY=P1)
     if ROTFIX:
         a.ins16("STA_abs", ROT_DONE2)                       # A==0 here: new P2 pill -> re-enter pre-phase
@@ -1591,6 +1720,10 @@ def build_main(level=11, speed=1):
         a.label("p2_lockok")
     a.label("no_p2_new")
     a.ins16("LDA_abs", 0x0386); a.ins16("STA_abs", LASTY2)
+    if PRESTART:
+        # Runs BEFORE handle(2) so a prestart issued this hook starts its watchdog on this hook,
+        # exactly as a normal `_start` does. Body lives past freeze_pending (JSR-only territory).
+        a.jsr("pre_tick")
 
     # ---- stagnation detect: pill not moving while not search-frozen -> count up ----
     def stagnate(px, py, sx, sy, cnt, armed, pend, tag):
@@ -1698,6 +1831,12 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
         if MATURE and idx == 2:
             a.ins16("STA_abs", SLAM_ARM)                       # A==0: search timed out (slowest) -> disarm
+        if PRESTART and idx == 2:
+            # A==0. A timed-out prestart published nothing, so it must not go on owning the next
+            # spawn -- otherwise the spawn edge would skip PEND2 and the capsule would steer to
+            # the PREVIOUS pill's target. (The ~4-minute timeout cannot fire inside a <=264-frame
+            # garbage window, so this is insurance against the retry path, not a live case.)
+            a.ins16("STA_abs", PRE_ACT2)
         a.ins16("LDA_abs", wretry); a.br("BEQ", f"{L}_rt"); a.jmp(f"{L}_done"); a.label(f"{L}_rt")
         a.ins("LDA_imm", 1); a.ins16("STA_abs", wretry); a.ins16("STA_abs", pend)
         a.jmp(f"{L}_done")
@@ -1774,6 +1913,253 @@ def build_main(level=11, speed=1):
     a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
     a.label("fp_done")
     a.ins("RTS")
+
+    if PRESTART:
+        # ================= DRPRESTART: garbage-window prestart (P2) =================
+        # Emitted here because everything past `jmp("act")` above is reachable only by JSR.
+        # See the DRPRESTART flag comment for the trigger derivation, the settle invariant,
+        # the one-step-ahead colour sourcing, and the bail list.
+
+        # ---- pre_run: 4-in-a-row scanner along one axis -----------------------------------
+        # in : PRE_MC = colour (0..2), PRE_MIN = first offset, PRE_MAX = last offset (inclusive),
+        #      PRE_TMP = step (1 = along a row, 8 = down a column)
+        # out: PRE_MC = $FF iff a run of 4 was found (sentinel doubles as the return flag, so the
+        #      caller needs no extra byte and the routine can bail out of its own loop early).
+        # A cell participates iff its LOW nibble equals the colour -- viruses ($D0|c) and every
+        # pill-half type ($40..$A0 | c) all match on colour exactly as the game's own scan does,
+        # and $FF (empty) is excluded for free because its low nibble is $F, never 0..2.
+        a.label("pre_run")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_RUN)
+        a.ins16("LDA_abs", PRE_MIN); a.ins16("STA_abs", PRE_SOFF)
+        a.label("pr_l")
+        a.ins16("LDX_abs", PRE_SOFF)
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0x0F)
+        a.ins16("CMP_abs", PRE_MC); a.br("BNE", "pr_rst")
+        a.ins16("INC_abs", PRE_RUN)
+        a.ins16("LDA_abs", PRE_RUN); a.ins("CMP_imm", 4); a.br("BCC", "pr_nx")
+        a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", PRE_MC); a.ins("RTS")
+        a.label("pr_rst")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_RUN)
+        a.label("pr_nx")
+        a.ins16("LDA_abs", PRE_SOFF); a.ins16("CMP_abs", PRE_MAX); a.br("BEQ", "pr_end")
+        a.ins("CLC"); a.ins16("ADC_abs", PRE_TMP); a.ins16("STA_abs", PRE_SOFF)
+        a.jmp("pr_l")
+        a.label("pr_end")
+        a.ins("RTS")
+
+        # ---- pre_tick: called once per play hook ------------------------------------------
+        a.label("pre_tick")
+        a.ins16("LDA_abs", PRE_ATK2); a.ins16("STA_abs", PRE_CUR)
+        a.ins16("LDA_abs", PRE_LAST2); a.ins16("STA_abs", PRE_PREV)
+        a.ins16("LDA_abs", PRE_CUR); a.ins16("STA_abs", PRE_LAST2)   # latch for the next hook
+        a.ins16("LDA_abs", PRE_CUR); a.br("BEQ", "pt_zero")
+        a.ins("RTS")                                    # still buffered: not released yet
+        a.label("pt_zero")
+        a.ins16("LDA_abs", PRE_PREV); a.br("BNE", "pt_edge")
+        a.ins("RTS")                                    # was already 0: no edge
+        a.label("pt_edge")
+        # --- RELEASE EDGE: every garbage byte is already in $0500 row 0 (the size clear is the
+        #     LAST write checkReleaseAttack performs, so this observation cannot be torn).
+        a.ins16("LDA_abs", PRE_ACT2); a.br("BEQ", "pt_try")
+        # SECOND VOLLEY before the spawn: the projection we already searched is stale. Tear the
+        # in-flight prestart down -- with ARMED2 cleared, handle(2) routes to `_start` and never
+        # reads the copro's (now meaningless) DONE, and the next real GO resets the copro anyway.
+        # The spawn edge then behaves exactly as it does today.
+        a.ins("LDA_imm", 0)
+        a.ins16("STA_abs", PRE_ACT2); a.ins16("STA_abs", ARMED2)
+        a.ins16("STA_abs", WDOG2); a.ins16("STA_abs", WDOGH2)
+        a.ins("RTS")
+        a.label("pt_try")
+        a.ins16("LDA_abs", ARMED2); a.br("BEQ", "pt_g1")
+        a.ins("RTS")                                    # a search is already running -> never re-GO
+        a.label("pt_g1")
+        a.ins16("LDA_abs", PEND2); a.br("BEQ", "pt_g2")
+        a.ins("RTS")                                    # a search is already queued -> leave it
+        a.label("pt_g2")
+
+        # ---- copy $0500 -> PRE_BUF, normalising $00 -> $FF (same reason as _start's loop:
+        #      the copro parser treats only $FF as empty and a $00 cell reads as a phantom pill)
+        a.ins("LDX_imm", 0)
+        a.label("pt_cp")
+        a.ins16("LDA_absX", 0x0500); a.br("BNE", "pt_cpnz")
+        a.ins("LDA_imm", 0xFF)
+        a.label("pt_cpnz")
+        a.ins16("STA_absX", PRE_BUF)
+        a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "pt_cp")
+
+        # ---- orphan guard (MUST run as a separate pass, before anything moves) --------------
+        # checkReleaseAttack writes row 0 with a plain `sta` and no occupancy test, so a volley
+        # can DESTROY one half of a capsule locked at the top and leave its partner pointing at a
+        # cell that is now a garbage single. That state is outside both models: the faithful sim's
+        # `_bodies()` follows the link non-reciprocally and glues the orphan to the GARBAGE, then
+        # drops the two as a rigid pair (its own comment calls the case "shouldn't happen" -- the
+        # unconditional row-0 write is exactly what makes it happen); the ROM's `checkDrop` instead
+        # walks LEFT from a rightHalfPill looking for a leftHalfPill and, once the neighbour has
+        # itself fallen away, keeps walking off the end of the row. Measured 15/200 divergences,
+        # 100% of them this case and nothing else. Neither model is trustworthy here, so we BAIL --
+        # and we bail on ALL of them, including the ~40/200 where the two happen to agree, because
+        # agreeing by luck is not a reason to trust a projection.
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_COL)
+        a.label("pt_og")
+        a.ins16("LDX_abs", PRE_COL)
+        a.ins16("LDA_absX", PRE_BUF); a.ins("CMP_imm", 0xFF); a.br("BEQ", "pt_og_r1")
+        a.ins("AND_imm", 0xF0)
+        a.ins("CMP_imm", 0x60); a.br("BNE", "pt_og_n60")      # leftHalf: rightHalf must be at c+1
+        a.ins16("LDA_abs", PRE_COL); a.ins("CMP_imm", 7); a.br("BEQ", "pt_og_bail")
+        a.ins16("LDX_abs", PRE_COL); a.ins("INX")
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0xF0)
+        a.ins("CMP_imm", 0x70); a.br("BNE", "pt_og_bail")
+        a.jmp("pt_og_r1")
+        a.label("pt_og_n60")
+        a.ins("CMP_imm", 0x70); a.br("BNE", "pt_og_n70")      # rightHalf: leftHalf must be at c-1
+        a.ins16("LDA_abs", PRE_COL); a.br("BEQ", "pt_og_bail")
+        a.ins16("LDX_abs", PRE_COL); a.ins("DEX")
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0xF0)
+        a.ins("CMP_imm", 0x60); a.br("BNE", "pt_og_bail")
+        a.jmp("pt_og_r1")
+        a.label("pt_og_n70")
+        a.ins("CMP_imm", 0x40); a.br("BNE", "pt_og_n40")      # topHalf: bottomHalf must be below
+        a.ins16("LDA_abs", PRE_COL); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAX")
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0xF0)
+        a.ins("CMP_imm", 0x50); a.br("BNE", "pt_og_bail")
+        a.jmp("pt_og_r1")
+        a.label("pt_og_n40")
+        a.ins("CMP_imm", 0x50); a.br("BEQ", "pt_og_bail")     # bottomHalf at row 0: partner off-board
+        a.ins("CMP_imm", 0x90); a.br("BEQ", "pt_og_bail")     # middleVer/middleHor: 3+ cell capsules
+        a.ins("CMP_imm", 0xA0); a.br("BEQ", "pt_og_bail")     # are outside this projection's model
+        a.label("pt_og_r1")
+        # row 1: a bottomHalf here is the other way the same overwrite shows up (a VERTICAL
+        # capsule occupying rows 0-1 whose top half was the cell the volley landed on).
+        a.ins16("LDA_abs", PRE_COL); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAX")
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0xF0)
+        a.ins("CMP_imm", 0x50); a.br("BNE", "pt_og_nx")
+        a.ins16("LDX_abs", PRE_COL)
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0xF0)
+        a.ins("CMP_imm", 0x40); a.br("BEQ", "pt_og_nx")
+        a.label("pt_og_bail")
+        a.jmp("pt_bail")
+        a.label("pt_og_nx")
+        a.ins16("INC_abs", PRE_COL)
+        a.ins16("LDA_abs", PRE_COL); a.ins("CMP_imm", 8); a.br("BEQ", "pt_settle")
+        a.jmp("pt_og")
+        a.label("pt_settle")
+
+        # ---- settle: slide every row-0 singleHalfPill down onto the stack -------------------
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_N); a.ins16("STA_abs", PRE_COL)
+        a.label("pt_col")
+        a.ins16("LDX_abs", PRE_COL)
+        a.ins16("LDA_absX", PRE_BUF); a.ins("CMP_imm", 0xFF); a.br("BEQ", "pt_ncol")
+        a.ins16("STA_abs", PRE_CELL)
+        a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0x80); a.br("BEQ", "pt_drop")
+        a.jmp("pt_ncol")            # linked half / virus: already settled, and never garbage
+        a.label("pt_drop")
+        a.ins("TXA"); a.ins16("STA_abs", PRE_OFF)       # landing offset, starts at row 0
+        a.label("pt_dn")
+        a.ins16("LDA_abs", PRE_OFF); a.ins("CLC"); a.ins("ADC_imm", 8)
+        a.ins("CMP_imm", 128); a.br("BCS", "pt_land")   # next row is off the floor -> rest here
+        a.ins("TAX")
+        a.ins16("LDA_absX", PRE_BUF); a.ins("CMP_imm", 0xFF); a.br("BEQ", "pt_fall")
+        # occupied -- but first reject the two MID-ANIMATION tile types. $FF was peeled off above,
+        # which matters: $FF & $F0 == $F0 would otherwise trip the just-emptied test on every
+        # empty cell.
+        a.ins("AND_imm", 0xF0)                          # (invert-and-JMP: pt_bail is out of branch range)
+        a.ins("CMP_imm", 0xB0); a.br("BNE", "pt_nb0")   # clearedPillOrVirus: clear still animating
+        a.jmp("pt_bail")
+        a.label("pt_nb0")
+        a.ins("CMP_imm", 0xF0); a.br("BNE", "pt_nf0")   # fieldPosJustEmptied: ditto
+        a.jmp("pt_bail")
+        a.label("pt_nf0")
+        a.jmp("pt_land")
+        a.label("pt_fall")
+        a.ins("TXA"); a.ins16("STA_abs", PRE_OFF)
+        a.jmp("pt_dn")
+        a.label("pt_land")
+        a.ins16("LDA_abs", PRE_OFF); a.ins16("CMP_abs", PRE_COL); a.br("BEQ", "pt_rec")
+        a.ins16("LDX_abs", PRE_COL); a.ins("LDA_imm", 0xFF); a.ins16("STA_absX", PRE_BUF)
+        a.ins16("LDX_abs", PRE_OFF); a.ins16("LDA_abs", PRE_CELL); a.ins16("STA_absX", PRE_BUF)
+        a.label("pt_rec")
+        # Record it even when it did not move: a column already full to row 0 leaves the garbage
+        # AT row 0, and that cell still has to pass the match check.
+        a.ins16("LDX_abs", PRE_N)
+        a.ins16("LDA_abs", PRE_OFF); a.ins16("STA_absX", PRE_LND)
+        a.ins16("INC_abs", PRE_N)
+        a.label("pt_ncol")
+        a.ins16("INC_abs", PRE_COL)
+        a.ins16("LDA_abs", PRE_COL); a.ins("CMP_imm", 8); a.br("BEQ", "pt_match")
+        a.jmp("pt_col")
+
+        # ---- match check: bail if any settled cell completes a 4-run ------------------------
+        # Cascades are explicitly NOT resolved in 6502; a match means the board the game will
+        # actually spawn onto is not the board we projected, so we hand the pill back to the
+        # ordinary spawn-edge path.
+        a.label("pt_match")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_I)
+        a.label("pt_mchk")
+        a.ins16("LDA_abs", PRE_I); a.ins16("CMP_abs", PRE_N); a.br("BCC", "pt_mgo")
+        a.jmp("pt_commit")
+        a.label("pt_mgo")
+        a.ins16("LDX_abs", PRE_I)
+        a.ins16("LDA_absX", PRE_LND); a.ins16("STA_abs", PRE_OFF)
+        a.ins16("LDX_abs", PRE_OFF)
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", PRE_MC)
+        a.ins16("LDA_abs", PRE_OFF); a.ins("AND_imm", 0xF8); a.ins16("STA_abs", PRE_MIN)  # row scan
+        a.ins("CLC"); a.ins("ADC_imm", 7); a.ins16("STA_abs", PRE_MAX)
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", PRE_TMP)
+        a.jsr("pre_run")
+        a.ins16("LDA_abs", PRE_MC); a.ins("CMP_imm", 0xFF); a.br("BNE", "pt_mv")
+        a.jmp("pt_bail")
+        a.label("pt_mv")
+        a.ins16("LDA_abs", PRE_OFF); a.ins("AND_imm", 0x07); a.ins16("STA_abs", PRE_MIN)  # col scan
+        a.ins("CLC"); a.ins("ADC_imm", 120); a.ins16("STA_abs", PRE_MAX)
+        a.ins("LDA_imm", 8); a.ins16("STA_abs", PRE_TMP)
+        a.jsr("pre_run")
+        a.ins16("LDA_abs", PRE_MC); a.ins("CMP_imm", 0xFF); a.br("BNE", "pt_mnx")
+        a.jmp("pt_bail")
+        a.label("pt_mnx")
+        a.ins16("INC_abs", PRE_I)
+        a.jmp("pt_mchk")
+
+        # ---- commit: upload the projection, fill the mailbox, GO ----------------------------
+        a.label("pt_commit")
+        a.ins("LDX_imm", 0)
+        a.label("pt_up")
+        a.ins16("LDA_absX", PRE_BUF); a.ins16("STA_absX", W2_BASE)
+        a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "pt_up")
+        # cA/cB = the PREVIEW ($039A/$039B) -- the capsule that will actually spawn, since
+        # generateNextPill has not run yet -- carrying the tie-break seed nibbles exactly as
+        # handle()'s colour loop does.
+        a.ins16("LDA_abs", SEED2)
+        a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+        a.ins16("STA_abs", TMPSEED)
+        a.ins16("LDA_abs", 0x039A); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED)
+        a.ins16("STA_abs", W2_BASE + 0x80)
+        a.ins16("LDA_abs", SEED2); a.ins("AND_imm", 0xF0); a.ins16("STA_abs", TMPSEED)
+        a.ins16("LDA_abs", 0x039B); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED)
+        a.ins16("STA_abs", W2_BASE + 0x81)
+        # nA/nB = colorCombination_{left,right}[pillsReserve[p2_pillsCounter]] = (val/3, val%3).
+        # The reserve is 128 bytes of plain RAM at $0780 and the counter has NOT been incremented
+        # for the upcoming spawn, so this is the capsule after the one we are searching for. The
+        # tables live in a ROM bank the driver does not map, hence the 3-iteration divide (reserve
+        # values are 0..8 by construction: generatePillsReserve reduces mod 9).
+        a.ins16("LDX_abs", 0x03A7)
+        a.ins16("LDA_absX", 0x0780)
+        a.ins("LDX_imm", 0)
+        a.label("pt_dv")
+        a.ins("CMP_imm", 3); a.br("BCC", "pt_dvd")
+        a.ins("SEC"); a.ins("SBC_imm", 3); a.ins("INX")
+        a.jmp("pt_dv")
+        a.label("pt_dvd")
+        a.ins16("STA_abs", PRE_TMP)                                   # remainder = nB
+        a.ins("TXA"); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", W2_BASE + 0x82)
+        a.ins16("LDA_abs", PRE_TMP); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", W2_BASE + 0x83)
+        a.ins16("STA_abs", W2_BASE + 0x84)      # GO: any write to +$84 pulses reset + clears DONE
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", ARMED2); a.ins16("STA_abs", PRE_ACT2)
+        a.ins("LDA_imm", 0)
+        a.ins16("STA_abs", PEND2); a.ins16("STA_abs", WDOG2); a.ins16("STA_abs", WDOGH2)
+        # WRETRY2 is deliberately left alone: it is a once-per-PILL latch and this search belongs
+        # to a pill that has not spawned yet (same reasoning as WRETRY_FIX's dropped clear).
+        a.label("pt_bail")
+        a.ins("RTS")
 
     # (time-shared d_start / start_p1 / start_p2 removed: handle() above starts each player's
     #  search on its own copro.)
