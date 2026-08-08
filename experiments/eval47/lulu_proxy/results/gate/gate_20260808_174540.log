@@ -1,0 +1,74 @@
+=== LULU-PROXY STRIKER GATE  2026-08-08T17:31:20 ===
+seeds n=20 (seed 1 excluded): [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+H=6 timeout=9 metric=scaffold level=11 workers=3 decider=champion (wt=0 ws=20)
+bursty-v1 fit: n_matches=4 n_volleys=61 n_clears=188
+
+---------------- G1  TIMING-PREDICATE GATE ----------------
+  real striker        : 0 violations / 422 releases  -> PASS
+      real release heights min=2 max=16  bank age_newest min=1  reasons={'timeout': 45, 'height': 377}
+  mutant inverted     : 30 violations / 238 releases  -> KILLED   [non-equivalence: 20/20 seeds have a different release sequence than the real striker]
+      seed 0: pill 50: height-release at h=2 < H=6
+      seed 0: pill 58: height-release at h=2 < H=6
+  mutant inverted_lt  : 112 violations / 283 releases  -> KILLED   [non-equivalence: 20/20 seeds have a different release sequence than the real striker]
+      seed 0: pill 33: height-release at h=4 < H=6
+      seed 0: pill 40: height-release at h=4 < H=6
+  mutant random       : 55 violations / 344 releases  -> KILLED   [non-equivalence: 20/20 seeds have a different release sequence than the real striker]
+      seed 0: pill 35: height-release at h=5 < H=6
+      seed 0: pill 45: height-release at h=4 < H=6
+  mutant ignores_bank : 704 violations / 584 releases  -> KILLED   [non-equivalence: 20/20 seeds have a different release sequence than the real striker]
+      seed 0: pill 32: height-release at h=3 < H=6
+      seed 0: pill 32: banked 0 tick(s) < 1 before release
+  blind control's log : 784 violations / 392 releases  -> KILLED
+      seed 0: pill 29: unjustified release reason 'blind'
+      seed 0: pill 29: banked NONE tick(s) < 1 before release
+
+---------------- G2  PAIRING GATE ----------------
+  striker vs striker rerun (layout+capsules+banked volleys): 0 violations -> PASS
+  striker vs blind   (layout+capsule stream): 0 violations -> PASS
+      evidence: 20 seeds, 20 distinct virus layouts across seeds (so the md5 is not a constant), shortest compared capsule prefix 73 placements, 510 banked volleys reproduced
+  MUTANT pair_break (game seed +2): 60 violations -> KILLED
+      seed 0: virus layout differs (50c62e85 != be28a62d)
+      seed 0: capsule stream diverges within the first 108 placements
+      seed 0: banked volley sequence differs (5 events [(41, [2, 2]), (52, [3, 2, 2]), (69, [2, 2, 2]), (88, [4, 4, 2]), (98, [2, 2, 2, 2])] != 19 events [(36, [2, 2]), (45, [2, 2, 3]), (54, [2, 2]), (66, [3]), (67, [2]), (80, [4]), (81, [2]), (83, [4]), (92, [2]), (98, [2]), (108, [2]), (114, [2]), (115, [2]), (119, [2]), (128, [3]), (147, [2]), (155, [2]), (160, [2]), (161, [2])])
+
+---------------- G3  MATCHED-CONTROL GATE ----------------
+  scheduled vs released, per seed: 0 violations -> PASS
+   seed   volleys(str/ctl)   cells(str/ctl)   landed(str/ctl)  ctl undeliv
+      0       15/15             35/35             34/24                  5
+      2       31/31             85/85             80/30                 19
+      3       25/25             67/67             64/57                  0
+      4       22/22             55/55             52/26                 11
+      5       21/21             53/53             50/50                  0
+      6       16/16             33/33             32/14                  9
+      7       17/17             43/43             40/24                  7
+      8       11/11             23/23             22/22                  0
+      9       39/39            108/108           102/70                 12
+     10       31/31             73/73             70/30                 16
+     11       26/26             66/66             64/54                  4
+     12       48/48            115/115           108/64                 20
+     13       23/23             62/62             58/58                  0
+     14       11/11             24/24             24/18                  3
+     15       33/33             84/84             81/74                  0
+     16       32/32             83/83             78/43                 12
+     17       22/22             56/56             54/54                  0
+     18       33/33             82/82             77/72                  0
+     19       35/35             83/83             82/78                  0
+     20       19/19             49/49             48/48                  0
+  totals: 510 volleys / 1279 cells scheduled identically in both arms; LANDED differs only via full-column skips and early game ends (reported, not asserted)
+  MUTANT drop_one (control loses its largest volley): 60 violations -> KILLED
+      seed 0: volley COUNT 15 != 14
+      seed 0: total garbage CELLS 35 != 31
+      seed 0: size multiset [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 4, 4] != [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 4]
+
+---------------- G4  REGRESSION (new path == old blind bursty) ----
+  new play(bursty) vs pressure_rig.play(bursty) over 20 seeds x 9 fields: 0 diffs -> PASS
+      evidence the comparison is non-trivial: total pills 4064, clears 11/20, garbage halves 1531
+  COMPARATOR KILL: same comparison vs the old rig at ws=0 (wrong champion): 20/20 seeds differ -> KILLED
+
+================ VERDICT ================
+  G1_timing_predicate      PASS
+  G2_pairing               PASS
+  G3_matched_control       PASS
+  G4_regression            PASS
+  mutants killed: 8 (G1 inverted/inverted_lt/random/ignores_bank/blind-log, G2 pair_break, G3 drop_one, G4 ws0-comparator)
+  GATE PASSED

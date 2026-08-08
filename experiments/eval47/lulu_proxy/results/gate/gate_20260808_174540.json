@@ -1,0 +1,344 @@
+{
+ "started": "2026-08-08T17:31:20",
+ "n": 20,
+ "seeds": [
+  0,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20
+ ],
+ "H": 6,
+ "timeout": 9,
+ "height_metric": "scaffold",
+ "level": 11,
+ "mutants_killed": 8,
+ "passed": true,
+ "verdicts": {
+  "G1_timing_predicate": {
+   "real_violations": 0,
+   "real_releases": 422,
+   "real_release_height_min": 2,
+   "real_bank_age_min": 1,
+   "real_reasons": {
+    "timeout": 45,
+    "height": 377
+   },
+   "pass": true,
+   "mutants": {
+    "inverted": {
+     "violations": 30,
+     "releases": 238,
+     "seeds_differing_from_real": 20,
+     "killed": true,
+     "example": [
+      "seed 0: pill 50: height-release at h=2 < H=6",
+      "seed 0: pill 58: height-release at h=2 < H=6",
+      "seed 2: pill 29: height-release at h=2 < H=6"
+     ]
+    },
+    "inverted_lt": {
+     "violations": 112,
+     "releases": 283,
+     "seeds_differing_from_real": 20,
+     "killed": true,
+     "example": [
+      "seed 0: pill 33: height-release at h=4 < H=6",
+      "seed 0: pill 40: height-release at h=4 < H=6",
+      "seed 0: pill 44: height-release at h=5 < H=6"
+     ]
+    },
+    "random": {
+     "violations": 55,
+     "releases": 344,
+     "seeds_differing_from_real": 20,
+     "killed": true,
+     "example": [
+      "seed 0: pill 35: height-release at h=5 < H=6",
+      "seed 0: pill 45: height-release at h=4 < H=6",
+      "seed 0: pill 54: height-release at h=5 < H=6"
+     ]
+    },
+    "ignores_bank": {
+     "violations": 704,
+     "releases": 584,
+     "seeds_differing_from_real": 20,
+     "killed": true,
+     "example": [
+      "seed 0: pill 32: height-release at h=3 < H=6",
+      "seed 0: pill 32: banked 0 tick(s) < 1 before release",
+      "seed 0: pill 39: height-release at h=5 < H=6"
+     ]
+    },
+    "blind_log": {
+     "violations": 784,
+     "releases": 392,
+     "killed": true,
+     "example": [
+      "seed 0: pill 29: unjustified release reason 'blind'",
+      "seed 0: pill 29: banked NONE tick(s) < 1 before release",
+      "seed 0: pill 31: unjustified release reason 'blind'"
+     ]
+    }
+   },
+   "all_mutants_killed": true
+  },
+  "G2_pairing": {
+   "striker_vs_rerun_violations": 0,
+   "striker_vs_blind_violations": 0,
+   "distinct_virus_layouts": 20,
+   "shortest_capsule_prefix": 73,
+   "banked_volleys_reproduced": 510,
+   "mutant_pair_break_violations": 60,
+   "mutant_killed": true,
+   "pass": true
+  },
+  "G3_matched_control": {
+   "violations": 0,
+   "per_seed": [
+    {
+     "seed": 0,
+     "striker_volleys": 15,
+     "control_volleys": 15,
+     "striker_cells": 35,
+     "control_cells": 35,
+     "striker_landed": 34,
+     "control_landed": 24,
+     "control_undelivered": 5
+    },
+    {
+     "seed": 2,
+     "striker_volleys": 31,
+     "control_volleys": 31,
+     "striker_cells": 85,
+     "control_cells": 85,
+     "striker_landed": 80,
+     "control_landed": 30,
+     "control_undelivered": 19
+    },
+    {
+     "seed": 3,
+     "striker_volleys": 25,
+     "control_volleys": 25,
+     "striker_cells": 67,
+     "control_cells": 67,
+     "striker_landed": 64,
+     "control_landed": 57,
+     "control_undelivered": 0
+    },
+    {
+     "seed": 4,
+     "striker_volleys": 22,
+     "control_volleys": 22,
+     "striker_cells": 55,
+     "control_cells": 55,
+     "striker_landed": 52,
+     "control_landed": 26,
+     "control_undelivered": 11
+    },
+    {
+     "seed": 5,
+     "striker_volleys": 21,
+     "control_volleys": 21,
+     "striker_cells": 53,
+     "control_cells": 53,
+     "striker_landed": 50,
+     "control_landed": 50,
+     "control_undelivered": 0
+    },
+    {
+     "seed": 6,
+     "striker_volleys": 16,
+     "control_volleys": 16,
+     "striker_cells": 33,
+     "control_cells": 33,
+     "striker_landed": 32,
+     "control_landed": 14,
+     "control_undelivered": 9
+    },
+    {
+     "seed": 7,
+     "striker_volleys": 17,
+     "control_volleys": 17,
+     "striker_cells": 43,
+     "control_cells": 43,
+     "striker_landed": 40,
+     "control_landed": 24,
+     "control_undelivered": 7
+    },
+    {
+     "seed": 8,
+     "striker_volleys": 11,
+     "control_volleys": 11,
+     "striker_cells": 23,
+     "control_cells": 23,
+     "striker_landed": 22,
+     "control_landed": 22,
+     "control_undelivered": 0
+    },
+    {
+     "seed": 9,
+     "striker_volleys": 39,
+     "control_volleys": 39,
+     "striker_cells": 108,
+     "control_cells": 108,
+     "striker_landed": 102,
+     "control_landed": 70,
+     "control_undelivered": 12
+    },
+    {
+     "seed": 10,
+     "striker_volleys": 31,
+     "control_volleys": 31,
+     "striker_cells": 73,
+     "control_cells": 73,
+     "striker_landed": 70,
+     "control_landed": 30,
+     "control_undelivered": 16
+    },
+    {
+     "seed": 11,
+     "striker_volleys": 26,
+     "control_volleys": 26,
+     "striker_cells": 66,
+     "control_cells": 66,
+     "striker_landed": 64,
+     "control_landed": 54,
+     "control_undelivered": 4
+    },
+    {
+     "seed": 12,
+     "striker_volleys": 48,
+     "control_volleys": 48,
+     "striker_cells": 115,
+     "control_cells": 115,
+     "striker_landed": 108,
+     "control_landed": 64,
+     "control_undelivered": 20
+    },
+    {
+     "seed": 13,
+     "striker_volleys": 23,
+     "control_volleys": 23,
+     "striker_cells": 62,
+     "control_cells": 62,
+     "striker_landed": 58,
+     "control_landed": 58,
+     "control_undelivered": 0
+    },
+    {
+     "seed": 14,
+     "striker_volleys": 11,
+     "control_volleys": 11,
+     "striker_cells": 24,
+     "control_cells": 24,
+     "striker_landed": 24,
+     "control_landed": 18,
+     "control_undelivered": 3
+    },
+    {
+     "seed": 15,
+     "striker_volleys": 33,
+     "control_volleys": 33,
+     "striker_cells": 84,
+     "control_cells": 84,
+     "striker_landed": 81,
+     "control_landed": 74,
+     "control_undelivered": 0
+    },
+    {
+     "seed": 16,
+     "striker_volleys": 32,
+     "control_volleys": 32,
+     "striker_cells": 83,
+     "control_cells": 83,
+     "striker_landed": 78,
+     "control_landed": 43,
+     "control_undelivered": 12
+    },
+    {
+     "seed": 17,
+     "striker_volleys": 22,
+     "control_volleys": 22,
+     "striker_cells": 56,
+     "control_cells": 56,
+     "striker_landed": 54,
+     "control_landed": 54,
+     "control_undelivered": 0
+    },
+    {
+     "seed": 18,
+     "striker_volleys": 33,
+     "control_volleys": 33,
+     "striker_cells": 82,
+     "control_cells": 82,
+     "striker_landed": 77,
+     "control_landed": 72,
+     "control_undelivered": 0
+    },
+    {
+     "seed": 19,
+     "striker_volleys": 35,
+     "control_volleys": 35,
+     "striker_cells": 83,
+     "control_cells": 83,
+     "striker_landed": 82,
+     "control_landed": 78,
+     "control_undelivered": 0
+    },
+    {
+     "seed": 20,
+     "striker_volleys": 19,
+     "control_volleys": 19,
+     "striker_cells": 49,
+     "control_cells": 49,
+     "striker_landed": 48,
+     "control_landed": 48,
+     "control_undelivered": 0
+    }
+   ],
+   "total_volleys": 510,
+   "total_cells": 1279,
+   "mutant_drop_one_violations": 60,
+   "mutant_killed": true,
+   "pass": true
+  },
+  "G4_regression": {
+   "field_diffs": 0,
+   "examples": [],
+   "fields": [
+    "won",
+    "topout",
+    "stall",
+    "pills",
+    "garbage_injected",
+    "stranded_final",
+    "tower_final",
+    "viruses_left_at_end",
+    "dies_ahead"
+   ],
+   "n_seeds": 20,
+   "old_total_pills": 4064,
+   "old_clears": 11,
+   "old_garbage_halves": 1531,
+   "comparator_kill_seeds_differing_at_ws0": 20,
+   "comparator_killed": true,
+   "pass": true
+  }
+ }
+}
