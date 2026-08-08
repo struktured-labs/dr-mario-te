@@ -296,6 +296,90 @@ def _():
 
 @app.cell(hide_code=True)
 def _(mo):
+    mo.md(
+        r"""
+        ## Champion dies-ahead under each player's own pressure
+
+        The payoff column. Each fitted pressure model was replayed against the shipped
+        champion (ws=20) for n=120 paired games; **dies-ahead** counts games the AI topped
+        out while still holding a virus lead (`viruses_remaining <= 12` at death) — the
+        champion's known 82x pressured failure mode, and the thing a human actually
+        exploits.
+
+        Counts are recomputed here from the per-seed rows of each rig JSON, not read off a
+        summary line. Only two players have a fitted model at usable confidence, so only two
+        rows carry a number.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(RESULTS, load_json):
+    fit_rig_lulu, path_rig_lulu = load_json(
+        RESULTS, "dr_lulu_20260808_rig_n120_wt0_ws20.json"
+    )
+    fit_rig_v11, path_rig_v11 = load_json(RESULTS, "bursty_v1_1_n120_wt0_ws20.json")
+    fit_rig_v1, path_rig_v1 = load_json(RESULTS, "bursty_n120_wt0_ws20.json")
+    return (
+        fit_rig_lulu,
+        fit_rig_v1,
+        fit_rig_v11,
+        path_rig_lulu,
+        path_rig_v1,
+        path_rig_v11,
+    )
+
+
+@app.cell(hide_code=True)
+def _(fit_rig_lulu, fit_rig_v1, fit_rig_v11):
+    def rig_tally(rows):
+        n = len(rows)
+        dies = sum(1 for r in rows if r["dies_ahead"])
+        topout = sum(1 for r in rows if r["topout"])
+        stall = sum(1 for r in rows if r["stall"])
+        won = sum(1 for r in rows if r["won"])
+        return {
+            "n": n,
+            "dies_ahead": dies,
+            "dies_ahead_pct": 100.0 * dies / n,
+            "won": won,
+            "clear_pct": 100.0 * won / n,
+            "topout": topout,
+            "stall": stall,
+            "bad_ends": topout + stall,
+            "bad_ends_pct": 100.0 * (topout + stall) / n,
+        }
+
+    # arm == the shipped champion (ws=20); ctrl == ws=0, kept for the rescue delta.
+    RIGS = {
+        "lulu_pooled": {
+            "arm": rig_tally(fit_rig_lulu["arm"]),
+            "ctrl": rig_tally(fit_rig_lulu["ctrl"]),
+            "model": "dr. lulu 20260808 fit (POOLED)",
+            "file": "dr_lulu_20260808_rig_n120_wt0_ws20.json",
+        },
+        "strukt_sending": {
+            "arm": rig_tally(fit_rig_v11["arm"]),
+            "ctrl": rig_tally(fit_rig_v11["ctrl"]),
+            "model": "bursty v1.1 = struktured's SEPARATED P1 sending fit",
+            "file": "bursty_v1_1_n120_wt0_ws20.json",
+        },
+        "strukt_pooled": {
+            "arm": rig_tally(fit_rig_v1["arm"]),
+            "ctrl": rig_tally(fit_rig_v1["ctrl"]),
+            "model": "bursty v1 = struktured's POOLED fit (contaminated)",
+            "file": "bursty_n120_wt0_ws20.json",
+        },
+    }
+
+    # Only players whose own fitted model was actually run against the champion.
+    PLAYER_RIG = {"dr. lulu": "lulu_pooled", "struktured": "strukt_sending"}
+    return PLAYER_RIG, RIGS
+
+
+@app.cell(hide_code=True)
+def _(mo):
     mo.md(r"""## The master table""")
     return
 
@@ -383,7 +467,17 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(PROFILES, ROSTER, VIZ_CSS, fmt_num, fmt_pct, mo, tier_suppresses_numbers):
+def _(
+    PLAYER_RIG,
+    PROFILES,
+    RIGS,
+    ROSTER,
+    VIZ_CSS,
+    fmt_num,
+    fmt_pct,
+    mo,
+    tier_suppresses_numbers,
+):
     def chip(tier):
         cls = "NODATA" if tier == "NO DATA" else tier
         return f"<span class='chip chip-{cls}'>{tier}</span>"
@@ -398,6 +492,33 @@ def _(PROFILES, ROSTER, VIZ_CSS, fmt_num, fmt_pct, mo, tier_suppresses_numbers):
                     f"<span class='num'>{battery['declined_clear']}</span>",
                     f"<span class='num'>{battery['corrections_per_100']}</span>",
                     f"<span class='num'>{battery['median_latency']}</span>",
+                )
+
+    def dies_ahead_cell(handle):
+        """One cell carrying the rate, its n, and which fitted model produced it."""
+        key = PLAYER_RIG.get(handle)
+        match key:
+            case None:
+                return (
+                    "<td><span class='n'>&mdash;</span>"
+                    "<span class='sub'>no fitted model at usable confidence</span></td>"
+                )
+            case _:
+                rig = RIGS[key]
+                arm, ctrl = rig["arm"], rig["ctrl"]
+                scope = "POOLED" if "POOLED" in rig["model"] else "SENDING"
+                title = (
+                    f"{handle}: champion ws=20 under {rig['model']} — "
+                    f"{arm['dies_ahead']}/{arm['n']} dies-ahead, clear {arm['clear_pct']:.1f}%, "
+                    f"topout {arm['topout']} stall {arm['stall']}; "
+                    f"ws=0 control {ctrl['dies_ahead']}/{ctrl['n']}"
+                )
+                return (
+                    f"<td title='{title}'>"
+                    f"<span class='num'><b>{arm['dies_ahead_pct']:.1f}%</b></span> "
+                    f"<span class='n'>({arm['dies_ahead']}/{arm['n']})</span>"
+                    f"<span class='sub'>{scope} fit &middot; ws=0 ctrl "
+                    f"{ctrl['dies_ahead_pct']:.1f}%</span></td>"
                 )
 
     def master_row(handle):
@@ -424,6 +545,7 @@ def _(PROFILES, ROSTER, VIZ_CSS, fmt_num, fmt_pct, mo, tier_suppresses_numbers):
             f"<td>{gap}</td>",
             f"<td>{p46}</td>",
             f"<td>{p710}</td>",
+            dies_ahead_cell(handle),
             f"<td>{declined}</td>",
             f"<td>{corrections}</td>",
             f"<td>{latency}</td>",
@@ -439,6 +561,7 @@ def _(PROFILES, ROSTER, VIZ_CSS, fmt_num, fmt_pct, mo, tier_suppresses_numbers):
         ("fit scope", ""), ("n volleys", ""), ("confidence", ""),
         ("volley size", ""), ("inter-volley gap", ""),
         ("P(volley | 4-6 clear)", ""), ("P(volley | 7-10 clear)", ""),
+        ("champion dies-ahead under THEIR pressure", ""),
         ("declined clears", ""), ("corrections /100 pills", ""), ("median latency", ""),
         ("style, one line", " class='wrap'"),
     ]
@@ -452,10 +575,13 @@ def _(PROFILES, ROSTER, VIZ_CSS, fmt_num, fmt_pct, mo, tier_suppresses_numbers):
         + "".join(master_row(h) for h in MASTER_ORDER)
         + "</tbody><caption>"
         + "Pressure columns come from the fit JSONs named in the player cell; battery columns "
-        + "from FILM_REVIEW_20260804_SCORECARD.md. <b>Fit scope</b> distinguishes a POOLED fit "
-        + "(both sides' events, contaminated per STYLE_ENSEMBLE_V1.md &sect;6a) from a per-player "
-        + "SENDING fit. davesmithsays' pressure cells are suppressed programmatically by the "
-        + "NO DATA tier, not omitted by hand."
+        + "from FILM_REVIEW_20260804_SCORECARD.md; the dies-ahead column is recomputed from the "
+        + "per-seed rows of each n=120 rig JSON (champion ws=20, hover a cell for its full "
+        + "provenance). <b>Fit scope</b> distinguishes a POOLED fit (both sides' events, "
+        + "contaminated per STYLE_ENSEMBLE_V1.md &sect;6a) from a per-player SENDING fit &mdash; "
+        + "and it applies to the dies-ahead column too, so those two numbers are NOT "
+        + "scope-matched (see below). davesmithsays' pressure cells are suppressed "
+        + "programmatically by the NO DATA tier, not omitted by hand."
         + "</caption></table></div></div>"
     )
     master_table
@@ -463,13 +589,23 @@ def _(PROFILES, ROSTER, VIZ_CSS, fmt_num, fmt_pct, mo, tier_suppresses_numbers):
 
 
 @app.cell(hide_code=True)
-def _(MASTER_ORDER, PROFILES, ROSTER, mo, pct, tier_suppresses_numbers):
+def _(
+    MASTER_ORDER,
+    PLAYER_RIG,
+    PROFILES,
+    RIGS,
+    ROSTER,
+    mo,
+    pct,
+    tier_suppresses_numbers,
+):
     def rounded(x, digits):
         return None if x is None else round(x, digits)
 
     def sortable_record(handle):
         prof, meta = PROFILES[handle], ROSTER[handle]
         suppressed = tier_suppresses_numbers(prof["tier"])
+        rig = RIGS.get(PLAYER_RIG.get(handle) or "", None)
         return {
             "player": handle,
             "confidence": prof["tier"],
@@ -480,6 +616,9 @@ def _(MASTER_ORDER, PROFILES, ROSTER, mo, pct, tier_suppresses_numbers):
             "inter_volley_gap_s": None if suppressed else rounded(prof["gap_s"], 1),
             "p_volley_4_6_pct": None if suppressed else rounded(pct(prof["p46"]), 1),
             "p_volley_7_10_pct": None if suppressed else rounded(pct(prof["p710"]), 1),
+            "champ_dies_ahead_pct": rounded(rig["arm"]["dies_ahead_pct"], 1) if rig else None,
+            "champ_dies_ahead_n": rig["arm"]["n"] if rig else None,
+            "rig_model": rig["model"] if rig else None,
             "declined_clear": (meta["battery"] or {}).get("declined_clear"),
             "corrections_per_100": (meta["battery"] or {}).get("corrections_per_100"),
             "median_latency": (meta["battery"] or {}).get("median_latency"),
@@ -614,6 +753,69 @@ def _(MASTER_ORDER, PROFILES, VIZ_CSS, mo, pct, tier_suppresses_numbers):
 def _(mo):
     mo.md(
         r"""
+        ## The dies-ahead numbers are NOT scope-matched either
+
+        The same pooled-vs-sending trap reaches the payoff column, and here it changes the
+        headline. dr. lulu's rig run used her **pooled** fit; struktured's row uses bursty
+        **v1.1**, fit from his separated P1 sending stream. Read straight across, her
+        pressure looks far more lethal than his. Most of that gap is scope.
+
+        Run scope-matched — both pooled — the two are nearly the same, and the honest
+        statement is that her fitted pressure is *slightly* harder on the champion than his,
+        not dramatically so. The scope-matched pair is the row to quote in any comparison;
+        the per-player rows are the ones to quote about a single player.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(RIGS, VIZ_CSS, mo):
+    def da_row(label, key, note):
+        rig = RIGS[key]
+        arm, ctrl = rig["arm"], rig["ctrl"]
+        return (
+            f"<tr><td>{label}</td>"
+            f"<td class='num'><b>{arm['dies_ahead_pct']:.1f}%</b> "
+            f"<span class='n'>({arm['dies_ahead']}/{arm['n']})</span></td>"
+            f"<td class='num'>{ctrl['dies_ahead_pct']:.1f}% "
+            f"<span class='n'>({ctrl['dies_ahead']}/{ctrl['n']})</span></td>"
+            f"<td class='num'>{arm['clear_pct']:.1f}%</td>"
+            f"<td class='num'>{arm['bad_ends_pct']:.1f}% "
+            f"<span class='n'>({arm['topout']}t/{arm['stall']}s)</span></td>"
+            f"<td class='n'>{note}</td></tr>"
+        )
+
+    mo.Html(
+        VIZ_CSS
+        + "<div class='pstat'><div class='scroll'><table style='min-width:820px'><thead><tr>"
+        + "<th>pressure model driving the rig</th><th>dies-ahead, champion ws=20</th>"
+        + "<th>dies-ahead, ws=0 control</th><th>clear rate</th><th>bad ends</th>"
+        + "<th>source</th></tr></thead><tbody>"
+        + da_row("dr. lulu 20260808 &mdash; POOLED", "lulu_pooled",
+                 RIGS["lulu_pooled"]["file"])
+        + da_row("struktured bursty v1 &mdash; POOLED", "strukt_pooled",
+                 RIGS["strukt_pooled"]["file"])
+        + "<tr><td colspan='6' style='border-bottom:2px solid var(--rule)'></td></tr>"
+        + da_row("struktured bursty v1.1 &mdash; SENDING", "strukt_sending",
+                 RIGS["strukt_sending"]["file"])
+        + "</tbody><caption>"
+        + "<b>Scope-matched (top two rows): 14.2% vs 13.3%</b> &mdash; her fitted pressure kills "
+        + "the champion-while-ahead marginally more often than his, on 120 paired games each. "
+        + "The 14.2% vs 7.5% reading across the master table is inflated by comparing her pooled "
+        + "model to his separated one. v1.1 remains the right number to cite for struktured "
+        + "alone, and for &quot;how often does the shipped build die ahead under honest human "
+        + "cadence&quot; &mdash; 7.5%, not 13.3% (STYLE_ENSEMBLE_V1.md &sect;6a). Every count here "
+        + "is recomputed from per-seed rows."
+        + "</caption></table></div></div>"
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
         ## The one like-for-like comparison: dr. lulu vs struktured, both pooled
 
         This is the only cross-player comparison in the notebook that is scope-clean.
@@ -698,9 +900,10 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(PROFILES, VIZ_CSS, fit_strukt_pooled, mo, pct, pk):
+def _(PROFILES, RIGS, VIZ_CSS, fit_strukt_pooled, mo, pct, pk):
     # Values as published in STYLE_ENSEMBLE_V1.md 7, dr_lulu_20260808_fit_report.md,
-    # and player_styles/*.md. Tolerances are one unit in the last published digit.
+    # BURSTY_V1_RESULTS.md, the refit driver log, and player_styles/*.md.
+    # Tolerances are one unit in the last published digit.
     CITED = [
         ("struktured", "volley_size_mean", PROFILES["struktured"]["volley_size_mean"], 2.68, 0.005, "ENSEMBLE 7"),
         ("struktured", "gap_s", PROFILES["struktured"]["gap_s"], 27.4, 0.05, "ENSEMBLE 7"),
@@ -719,6 +922,14 @@ def _(PROFILES, VIZ_CSS, fit_strukt_pooled, mo, pct, pk):
         ("struktured (pooled)", "P(7-10)", pct(pk(fit_strukt_pooled, "7-10")), 74.1, 0.05, "lulu fit report"),
         ("struktured (pooled)", "n_volleys", fit_strukt_pooled["n_volleys"], 61, 0, "bursty_model docstring"),
         ("struktured (pooled)", "n_clears", fit_strukt_pooled["n_clears"], 188, 0, "bursty_model docstring"),
+        ("dr. lulu rig", "dies-ahead ws=20", RIGS["lulu_pooled"]["arm"]["dies_ahead"], 17, 0, "refit log [4/4]"),
+        ("dr. lulu rig", "dies-ahead ws=0", RIGS["lulu_pooled"]["ctrl"]["dies_ahead"], 41, 0, "refit log [4/4]"),
+        ("dr. lulu rig", "clear% ws=20", RIGS["lulu_pooled"]["arm"]["clear_pct"], 75.0, 0.05, "refit log [4/4]"),
+        ("struktured rig v1.1", "dies-ahead ws=20", RIGS["strukt_sending"]["arm"]["dies_ahead_pct"], 7.5, 0.05, "BURSTY_V1_RESULTS 5"),
+        ("struktured rig v1.1", "bad-ends ws=20", RIGS["strukt_sending"]["arm"]["bad_ends_pct"], 16.7, 0.05, "BURSTY_V1_RESULTS 5"),
+        ("struktured rig v1.1", "dies-ahead ws=0", RIGS["strukt_sending"]["ctrl"]["dies_ahead_pct"], 27.5, 0.05, "BURSTY_V1_RESULTS 5"),
+        ("struktured rig v1", "dies-ahead ws=20", RIGS["strukt_pooled"]["arm"]["dies_ahead_pct"], 13.3, 0.05, "BURSTY_V1_RESULTS 3"),
+        ("struktured rig v1", "bad-ends ws=20", RIGS["strukt_pooled"]["arm"]["bad_ends_pct"], 26.7, 0.05, "BURSTY_V1_RESULTS 3"),
     ]
 
     def check_row(who, metric, derived, cited, tol, src):
@@ -735,30 +946,32 @@ def _(PROFILES, VIZ_CSS, fit_strukt_pooled, mo, pct, pk):
     CHECK_ROWS = [check_row(*c) for c in CITED]
     N_PASS = sum(1 for _, ok in CHECK_ROWS if ok)
 
+    N_CHECKS = len(CHECK_ROWS)
+
     mo.Html(
         VIZ_CSS
-        + "<div class='pstat'><table style='min-width:720px'><thead><tr>"
+        + "<div class='pstat'><div class='scroll'><table style='min-width:720px'><thead><tr>"
         + "<th>player</th><th>metric</th><th>derived here</th><th>as published</th>"
         + "<th>published in</th><th>&nbsp;</th></tr></thead><tbody>"
         + "".join(html for html, _ in CHECK_ROWS)
-        + f"</tbody><caption><b>{N_PASS}/{len(CHECK_ROWS)} cross-checks pass.</b> "
-        + "Derived values are recomputed from the raw arrays in the fit JSONs; published "
-        + "values are transcribed from the reports named in the last column."
-        + "</caption></table></div>"
+        + f"</tbody><caption><b>{N_PASS}/{N_CHECKS} cross-checks pass.</b> "
+        + "Derived values are recomputed from the raw arrays and per-seed rows in the JSONs; "
+        + "published values are transcribed from the reports named in the last column."
+        + "</caption></table></div></div>"
     )
-    return (N_PASS,)
+    return N_CHECKS, N_PASS
 
 
 @app.cell(hide_code=True)
-def _(N_PASS, mo):
+def _(N_CHECKS, N_PASS, mo):
     mo.md(
         f"""
-        /// {"tip" if N_PASS == 17 else "danger"} | Cross-check result
+        /// {"tip" if N_PASS == N_CHECKS else "danger"} | Cross-check result
 
-        **{N_PASS}/17 derived values agree with the published reports.**
-        {"Every number in the master table traces to a fit file and matches the document that quotes it."
-         if N_PASS == 17 else
-         "A mismatch means a fit file and a report have diverged - reconcile before citing anything above."}
+        **{N_PASS}/{N_CHECKS} derived values agree with the published reports.**
+        {"Every number in the master table traces to a fit or rig file and matches the document that quotes it."
+         if N_PASS == N_CHECKS else
+         f"{N_CHECKS - N_PASS} MISMATCH(ES): a file and a report have diverged - reconcile before citing anything above."}
         ///
         """
     )
@@ -779,7 +992,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(MASTER_ORDER, PROFILES, ROSTER, VIZ_CSS, mo):
+def _(MASTER_ORDER, PLAYER_RIG, PROFILES, ROSTER, VIZ_CSS, mo):
     def coverage_row(handle):
         prof, meta = PROFILES[handle], ROSTER[handle]
         yes = "<span style='color:var(--tier-fitted);font-weight:700'>yes</span>"
@@ -789,22 +1002,23 @@ def _(MASTER_ORDER, PROFILES, ROSTER, VIZ_CSS, mo):
             f"<tr><td class='handle'>{handle}</td>"
             f"<td>{yes}</td>"
             f"<td>{has_pressure} <span class='n'>({prof['tier']}, {prof['scope']})</span></td>"
+            f"<td>{yes if handle in PLAYER_RIG else no}</td>"
             f"<td>{yes if meta['battery'] else no}</td>"
             f"<td>{yes if meta['record'] != 'never played the AI' else no}</td></tr>"
         )
 
     mo.Html(
         VIZ_CSS
-        + "<div class='pstat'><table style='min-width:640px'><thead><tr>"
-        + "<th>player</th><th>dossier</th><th>pressure fit</th>"
+        + "<div class='pstat'><div class='scroll'><table style='min-width:720px'><thead><tr>"
+        + "<th>player</th><th>dossier</th><th>pressure fit</th><th>rig run vs champion</th>"
         + "<th>metric battery</th><th>played the AI</th></tr></thead><tbody>"
         + "".join(coverage_row(h) for h in MASTER_ORDER)
         + "</tbody><caption>"
         + "The metric battery (declined-clear rate, corrections per 100 pills, decision "
-        + "latency, endgame seal counting) has been run for exactly one player. Extending it "
-        + "needs capture-card footage of the kind that only exists for struktured's 2026-08-04 "
-        + "set and dr. lulu's 2026-08-08 session."
-        + "</caption></table></div>"
+        + "latency, endgame seal counting) has been run for exactly one player. A rig run "
+        + "needs a fitted model first, so the four players below the confidence line have "
+        + "no dies-ahead number and cannot get one without more footage."
+        + "</caption></table></div></div>"
     )
     return
 
@@ -819,8 +1033,13 @@ def _(mo):
           carries some of the AI copro's near-deterministic attack cadence. Re-running her
           capture through the per-player split of `STYLE_ENSEMBLE_V1.md` §5 would make her
           directly comparable to struktured's 28.2% and is the single highest-value fix here.
+          It would also make the two dies-ahead numbers directly comparable, which they
+          currently are not.
         - **The metric battery is n=1 player.** Everything outside the pressure columns is
           struktured only.
+        - **Only two players have a rig run,** because a rig run needs a fitted model. The
+          four below the confidence line cannot get a dies-ahead number without more footage —
+          this is the column that most rewards extending the corpus.
         - **Three of six players sit below the n=20 line** and one is at zero. §8 of the
           ensemble report is blunt that an archetype grid is not possible on this data.
         - **davesmithsays needs a different window,** not a different method: his Speed-bracket
@@ -841,6 +1060,9 @@ def _(
     path_dss,
     path_jarsdad,
     path_lulu,
+    path_rig_lulu,
+    path_rig_v1,
+    path_rig_v11,
     path_roburrito,
     path_strukt_pooled,
     path_strukt_send,
@@ -856,6 +1078,10 @@ def _(
         ("jarsdad sending fit", rel(path_jarsdad)),
         ("roburrito sending fit", rel(path_roburrito)),
         ("davesmithsays sending fit", rel(path_dss)),
+        ("dies-ahead: dr. lulu rig (POOLED)", rel(path_rig_lulu)),
+        ("dies-ahead: struktured bursty v1.1 (SENDING)", rel(path_rig_v11)),
+        ("dies-ahead: struktured bursty v1 (POOLED)", rel(path_rig_v1)),
+        ("rig driver log (dr. lulu, step 4/4)", "eval47/tmp/dr_lulu_20260808_refit.log"),
         ("confidence rule + per-player table", "eval47/STYLE_ENSEMBLE_V1.md §5-7"),
         ("struktured metric battery", "player_styles/FILM_REVIEW_20260804_SCORECARD.md"),
         ("dossiers", f"{os.path.relpath(STYLES, os.path.dirname(os.path.dirname(EVAL47)))}/*.md"),
