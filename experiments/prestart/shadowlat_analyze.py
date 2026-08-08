@@ -80,6 +80,18 @@ def window_budget_frames(h_hit):
     return max(0, WINDOW_BASE - WINDOW_PER_H * h_hit)
 
 
+def wilson(k, n, z=1.96):
+    """95% Wilson score interval. A bare '69.2% late' on n=13 is not a number anyone can act
+    on; the interval is what says whether the band is decided or merely suggestive."""
+    if n == 0:
+        return (0.0, 0.0)
+    p = k / n
+    d = 1 + z * z / n
+    c = p + z * z / (2 * n)
+    h = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5)
+    return (max(0.0, (c - h) / d), min(1.0, (c + h) / d))
+
+
 def band_of(h):
     for lo, hi in BANDS:
         if lo <= h <= hi:
@@ -128,8 +140,8 @@ def _rate_table(title, subset, budget_fn, band_key, note):
     if not subset:
         print("  (no qualifying decisions)")
         return
-    print("  %-22s %-8s %7s %9s %9s %9s %9s" %
-          ("domain", "band", "n", "late", "late%", "med f", "p90 f"))
+    print("  %-22s %-8s %7s %7s %8s %-16s %8s %8s" %
+          ("domain", "band", "n", "late", "late%", "95% CI", "med f", "p90 f"))
     for dname, conv in DOMAINS.items():
         for lo, hi in BANDS:
             label = "%d-%d" % (lo, hi) if hi < 99 else "%d+" % lo
@@ -140,12 +152,16 @@ def _rate_table(title, subset, budget_fn, band_key, note):
             late = sum(1 for d in grp if conv(d["clocks"]) > budget_fn(d))
             med = fr[len(fr) // 2]
             p90 = fr[min(len(fr) - 1, int(0.9 * len(fr)))]
-            print("  %-22s %-8s %7d %9d %8.1f%% %9.1f %9.1f"
-                  % (dname, label, len(grp), late, 100.0 * late / len(grp), med, p90))
+            lo, hi = wilson(late, len(grp))
+            print("  %-22s %-8s %7d %7d %7.1f%% [%5.1f%%,%5.1f%%] %8.1f %8.1f"
+                  % (dname, label, len(grp), late, 100.0 * late / len(grp),
+                     100 * lo, 100 * hi, med, p90))
         allfr = sorted(conv(d["clocks"]) for d in subset)
         alllate = sum(1 for d in subset if conv(d["clocks"]) > budget_fn(d))
-        print("  %-22s %-8s %7d %9d %8.1f%% %9.1f %9.1f"
+        lo, hi = wilson(alllate, len(subset))
+        print("  %-22s %-8s %7d %7d %7.1f%% [%5.1f%%,%5.1f%%] %8.1f %8.1f"
               % (dname, "ALL", len(subset), alllate, 100.0 * alllate / len(subset),
+                 100 * lo, 100 * hi,
                  allfr[len(allfr) // 2], allfr[min(len(allfr) - 1, int(0.9 * len(allfr)))]))
     return
 
