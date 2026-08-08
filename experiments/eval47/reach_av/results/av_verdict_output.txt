@@ -1,0 +1,32 @@
+kernel_hash=5bc91049d1946531  n=300  L11  wt=0 ws=20  model=bursty-v1.1
+BASELINE (champion strand180_20, reach OFF w_rdyext=8): dies-ahead 30/300 = 10.00%   bad-ends 60/300 = 20.00%
+
+                             arm    DA n  DA rate  DA pts  DA disc    DA p   BE n  BE rate  BE pts  BE disc    BE p   clear
+---------------------------------------------------------------------------------------------------------------------------
+                  A_v w_rdyext=8      29   9.67%   +0.33       51  1.0000     57  19.00%   +1.00       85  0.8284   81.0%
+                 A_v w_rdyext=16      47  15.67%   -5.67       65  0.0464     70  23.33%   -3.33       92  0.3481   76.7%
+                 A_v w_rdyext=24      40  13.33%   -3.33       64  0.2604     83  27.67%   -7.67      105  0.0313   72.3%
+                 A_v w_rdyext=32      35  11.67%   -1.67       57  0.5966     80  26.67%   -6.67      100  0.0569   73.3%
+                 A_v w_rdyext=48      34  11.33%   -1.33       56  0.6889    116  38.67%  -18.67      122  0.0000   61.3%
+   SCALE-CTRL (no reach) w=6.004      34  11.33%   -1.33       52  0.6778     61  20.33%   -0.33       79  1.0000   79.7%
+  SCALE-CTRL (no reach) w=12.009      33  11.00%   -1.00       53  0.7838     67  22.33%   -2.33       91  0.5296   77.7%
+  SCALE-CTRL (no reach) w=18.013      25   8.33%   +1.67       51  0.5758     61  20.33%   -0.33       91  1.0000   79.7%
+  SCALE-CTRL (no reach) w=24.018      39  13.00%   -3.00       63  0.3135     94  31.33%  -11.33      108  0.0014   68.7%
+  SCALE-CTRL (no reach) w=36.027      32  10.67%   -0.67       58  0.8957     95  31.67%  -11.67      115  0.0014   68.3%
+
+BEST A_v arm on the primary endpoint: A_v w_rdyext=8
+
+  FAIL  (a) dies-ahead delta >= +2.5 pts              +0.33 pts
+  FAIL  (b) bad-ends  delta >= +3.0 pts               +1.00 pts
+  FAIL  (c) >= 60 discordant pairs (primary)          51 (b=26, c=25)
+  PASS  (d) scale-matched control does NOT reproduce it  best control SCALE-CTRL (no reach) w=18.013 = +1.67 pts
+
+  per-dose SHAPE test (A_v vs its OWN scale-matched control, same flip rate):
+                  A_v w_rdyext=8: A_v  +0.33 pts vs control(  6.004)  -1.33 pts   shape gap  +1.67 pts
+                 A_v w_rdyext=16: A_v  -5.67 pts vs control( 12.009)  -1.00 pts   shape gap  -4.67 pts
+                 A_v w_rdyext=24: A_v  -3.33 pts vs control( 18.013)  +1.67 pts   shape gap  -5.00 pts
+                 A_v w_rdyext=32: A_v  -1.67 pts vs control( 24.018)  -3.00 pts   shape gap  +1.33 pts
+                 A_v w_rdyext=48: A_v  -1.33 pts vs control( 36.027)  -0.67 pts   shape gap  -0.67 pts
+
+PRE-REGISTERED VERDICT: REFUTED
+  REFUTED -- report the numbers and stop.
