@@ -27,7 +27,10 @@ spawn claim is reported as a boundary rather than a single yes/no.
 BASELINE ARM is the same emitter with DRPRESTART unset, run through the same timeline, so
 every number below is a paired A/B on one code path -- not this build against a remembered one.
 
-    experiments/prestart/prestart_timing_rig.py
+    experiments/prestart/prestart_timing_rig.py [T_s hooks] [arm]
+        arm = "mister" (default) or "pocket" (DRPOCKET=1 DRHUMAN=1 -> P2 mailbox at $5000,
+              handle(1) not emitted at all). Both are measured because the Pocket image is a
+              different driver, not the same driver on different hardware.
 """
 from __future__ import annotations
 
@@ -45,7 +48,10 @@ EMPTY = 0xFF
 SINGLE = 0x80
 T_S_DEFAULT = 300            # warm depth-3 search, in HOOKS (= 150 frames at 2 hooks/frame)
 
-_FLAGS_BASE = {"DRCOLDINIT": "1", "DRWRETRY": "1"}
+_ARMS = {
+    "mister": {"DRCOLDINIT": "1", "DRWRETRY": "1"},
+    "pocket": {"DRCOLDINIT": "1", "DRWRETRY": "1", "DRPOCKET": "1", "DRHUMAN": "1"},
+}
 _seq = [0]
 
 
@@ -272,11 +278,13 @@ def run_second_volley(flags, h, t_s=T_S_DEFAULT):
 
 def main():
     t_s = int(sys.argv[1]) if len(sys.argv) > 1 else T_S_DEFAULT
-    on = dict(_FLAGS_BASE, DRPRESTART="1")
-    off = dict(_FLAGS_BASE)
+    arm = sys.argv[2] if len(sys.argv) > 2 else "mister"
+    assert arm in _ARMS, "arm must be one of %s" % sorted(_ARMS)
+    on = dict(_ARMS[arm], DRPRESTART="1")
+    off = dict(_ARMS[arm])
 
     print("=" * 96)
-    print("DRPRESTART timing -- real emitted driver, modelled VS garbage window")
+    print("DRPRESTART timing [arm=%s] -- real emitted driver, modelled VS garbage window" % arm)
     print("search latency T_s = %d hooks = %.1f frames (warm depth-3)" % (t_s, t_s / 2.0))
     print("=" * 96)
     print("%-5s %-8s | %-11s %-10s %-13s | %-11s %-13s | %s"

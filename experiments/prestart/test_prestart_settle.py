@@ -22,7 +22,12 @@ COLOUR CONVENTION (the trap in dr-mario-copro-0based-colors): the faithful sim's
 plane is 1..3; the NES field byte and the copro mailbox are 0-based, i.e. `tile = hi<<4 |
 (c-1)`.  The conversion lives in `to_nes` below and is asserted at the boundary, not assumed.
 
-    experiments/prestart/test_prestart_settle.py [N]      # default N = 200 cases
+    experiments/prestart/test_prestart_settle.py [N] [arm]
+        N   = number of cases (default 200)
+        arm = "mister" (default, W2_BASE=$5200) or "pocket" (DRPOCKET=1 DRHUMAN=1, which
+              moves P2's whole mailbox to $5000). The arm MATTERS: the prestart writes its
+              projection to W2_BASE, so a rig that only ever exercised $5200 would say
+              nothing about the image the Pocket core actually runs.
 """
 from __future__ import annotations
 
@@ -228,9 +233,19 @@ def has_four(b, cols):
     return False
 
 
+ARMS = {
+    "mister": {"DRPRESTART": "1"},
+    # DRPOCKET asserts DRHUMAN, and under DRHUMAN handle(1) is never emitted -- so on this arm
+    # the $5000 window belongs to P2 alone and the prestart cannot collide with a P1 search.
+    "pocket": {"DRPRESTART": "1", "DRPOCKET": "1", "DRHUMAN": "1"},
+}
+
+
 def main():
     n_want = int(sys.argv[1]) if len(sys.argv) > 1 else 200
-    M, unit1, labels = build_emitter({"DRPRESTART": "1"})
+    arm = sys.argv[2] if len(sys.argv) > 2 else "mister"
+    assert arm in ARMS, "arm must be one of %s" % sorted(ARMS)
+    M, unit1, labels = build_emitter(ARMS[arm])
     rig = Rig(M, unit1, labels)
     boards = settled_boards(n_want)
     rng = np.random.default_rng(4242)
@@ -315,6 +330,7 @@ def main():
     print("=" * 74)
     print("DRPRESTART settle: emitted 6502 vs FaithfulBoard gravity")
     print("=" * 74)
+    print("arm                : %s   (P2 mailbox at $%04X)" % (arm, M.W2_BASE))
     print("cases              : %d  (from %d distinct real post-resolve boards)"
           % (n_want, len(boards)))
     print("  projected + GO   : %d   (board compared cell-for-cell + mailbox)" % gos)
