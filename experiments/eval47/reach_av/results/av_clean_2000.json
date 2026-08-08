@@ -1,0 +1,31 @@
+{
+ "kernel_hash": "5bc91049d1946531",
+ "n": 2000,
+ "arm": {
+  "reach": 1,
+  "w_rdyext": 8.0,
+  "wt": 0,
+  "ws": 20,
+  "kernel_hash": "5bc91049d1946531"
+ },
+ "arm_failures": 4,
+ "arm_rate": 0.002,
+ "arm_failed_seeds": [
+  65434,
+  13686,
+  9444,
+  61244
+ ],
+ "auto_kill_threshold": 0.0025,
+ "verdict": "pass",
+ "base_failures": 4,
+ "base_rate": 0.002,
+ "base_failed_seeds": [
+  18500,
+  11874,
+  7798,
+  65328
+ ],
+ "discordant_b": 4,
+ "discordant_c": 4
+}

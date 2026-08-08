@@ -1,0 +1,29 @@
+=== CLEAN-SOLO SAFETY  kernel_hash=5bc91049d1946531 ===
+n=2000 canonical seeds, L11, no pressure, arm = reach1 w_rdyext=8
+    A_v reach=1 w=8: 200/2000  failures so far 1
+    A_v reach=1 w=8: 400/2000  failures so far 2
+    A_v reach=1 w=8: 600/2000  failures so far 2
+    A_v reach=1 w=8: 800/2000  failures so far 2
+    A_v reach=1 w=8: 1000/2000  failures so far 2
+    A_v reach=1 w=8: 1200/2000  failures so far 3
+    A_v reach=1 w=8: 1400/2000  failures so far 3
+    A_v reach=1 w=8: 1600/2000  failures so far 4
+    A_v reach=1 w=8: 1800/2000  failures so far 4
+    A_v reach=1 w=8: 2000/2000  failures so far 4
+  A_v reach=1 w=8: 4/2000 failures = 0.2000%
+    champion reach=0 w=8: 200/2000  failures so far 0
+    champion reach=0 w=8: 400/2000  failures so far 3
+    champion reach=0 w=8: 600/2000  failures so far 3
+    champion reach=0 w=8: 800/2000  failures so far 3
+    champion reach=0 w=8: 1000/2000  failures so far 3
+    champion reach=0 w=8: 1200/2000  failures so far 3
+    champion reach=0 w=8: 1400/2000  failures so far 3
+    champion reach=0 w=8: 1600/2000  failures so far 3
+    champion reach=0 w=8: 1800/2000  failures so far 4
+    champion reach=0 w=8: 2000/2000  failures so far 4
+  champion reach=0 w=8: 4/2000 failures = 0.2000%
+
+  ARM      : 4/2000 = 0.2000%   (auto-kill if > 0.2500%)  -> PASS
+  CHAMPION : 4/2000 = 0.2000%  (full-space census reference: 0.0809%)
+  paired   : discordant b=4 (champ fails, arm clears) c=4 (champ clears, arm fails)
+wrote results/av_clean_2000.json
