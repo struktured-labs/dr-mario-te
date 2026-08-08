@@ -1,0 +1,53 @@
+=== A_v BIT-EXACTNESS GATE  kernel_hash=5bc91049d1946531 ===
+corpora: static=948 boards, real=6196 boards
+  P1 static value-exactness  : 5688 comparisons, 0 fail
+  P2 real value-exactness    : 30980 comparisons, 0 fail
+  P3 whole-chain root values : 7500 comparisons, 0 fail
+  P4 argmax identity (ws=20) : 250 boards, 0 fail
+  N1 flag binds              : leaf changed on 4808/6196 (77.6%), rdy_ext changed on 4808/6196 (77.6%)
+  N2 physics cases (numba kernel):
+    A covered-hole-below     reach0=  1(want   1)  reach1=  0(want   0)  ok
+    B open-sky-above         reach0=  1(want   1)  reach1=  1(want   1)  ok
+    C capped-column          reach0=  1(want   1)  reach1=  0(want   0)  ok
+    D open-run-above         reach0=  9(want   9)  reach1=  9(want   9)  ok
+    E horizontal-thru-hole   reach0=  9(want   9)  reach1=  9(want   9)  ok
+    F both-blocked           reach0=  1(want   1)  reach1=  0(want   0)  ok
+  N3 reference + mutant kill:
+    -- reference python predicate (must PASS) --
+    ref A covered-hole-below     reach0=  1(want   1)  reach1=  0(want   0)  ok
+    ref B open-sky-above         reach0=  1(want   1)  reach1=  1(want   1)  ok
+    ref C capped-column          reach0=  1(want   1)  reach1=  0(want   0)  ok
+    ref D open-run-above         reach0=  9(want   9)  reach1=  9(want   9)  ok
+    ref E horizontal-thru-hole   reach0=  9(want   9)  reach1=  9(want   9)  ok
+    ref F both-blocked           reach0=  1(want   1)  reach1=  0(want   0)  ok
+    -- mutant 'hreach' (must FAIL) --
+    hrea A covered-hole-below     reach0=  1(want   1)  reach1=  0(want   0)  ok
+    hrea B open-sky-above         reach0=  1(want   1)  reach1=  1(want   1)  ok
+    hrea C capped-column          reach0=  1(want   1)  reach1=  0(want   0)  ok
+    hrea D open-run-above         reach0=  9(want   9)  reach1=  9(want   9)  ok
+    hrea E horizontal-thru-hole   reach0=  9(want   9)  reach1=  1(want   9)  FAIL
+    hrea F both-blocked           reach0=  1(want   1)  reach1=  0(want   0)  ok
+    mutant 'hreach': killed (good)
+    -- mutant 'uponly' (must FAIL) --
+    upon A covered-hole-below     reach0=  1(want   1)  reach1=  1(want   0)  FAIL
+    upon B open-sky-above         reach0=  1(want   1)  reach1=  1(want   1)  ok
+    upon C capped-column          reach0=  1(want   1)  reach1=  0(want   0)  ok
+    upon D open-run-above         reach0=  9(want   9)  reach1=  9(want   9)  ok
+    upon E horizontal-thru-hole   reach0=  9(want   9)  reach1=  9(want   9)  ok
+    upon F both-blocked           reach0=  1(want   1)  reach1=  1(want   0)  FAIL
+    mutant 'uponly': killed (good)
+    -- mutant 'inverted' (must FAIL) --
+    inve A covered-hole-below     reach0=  1(want   1)  reach1=  1(want   0)  FAIL
+    inve B open-sky-above         reach0=  1(want   1)  reach1=  0(want   1)  FAIL
+    inve C capped-column          reach0=  1(want   1)  reach1=  1(want   0)  FAIL
+    inve D open-run-above         reach0=  9(want   9)  reach1=  0(want   9)  FAIL
+    inve E horizontal-thru-hole   reach0=  9(want   9)  reach1=  9(want   9)  ok
+    inve F both-blocked           reach0=  1(want   1)  reach1=  1(want   0)  FAIL
+    mutant 'inverted': killed (good)
+  N4 numba == python ref     : 4000 comparisons, 0 fail
+  L1 column-additivity       : 300 boards, 0 fail
+
+GATE PASSED: reach=0 is value-exact with the shipped kernel at every dose,
+through the whole depth-3 chain and the argmax; reach=1 binds; the physics
+cases kill all three wrong predicates and pass the independent reference;
+numba and python agree on the real corpus; the vertical term is column-additive.

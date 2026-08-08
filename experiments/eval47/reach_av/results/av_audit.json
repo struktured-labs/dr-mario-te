@@ -1,0 +1,86 @@
+{
+ "kernel_hash": "5bc91049d1946531",
+ "per_file": {
+  "boards_clean.npz": {
+   "label": "clean",
+   "n": 2336,
+   "mean_off": 41.01412671232877,
+   "mean_on": 31.142979452054796,
+   "total_off": 95809,
+   "total_on": 72750,
+   "unreachable_share": 0.24067676314333727,
+   "boards_touched": 1898
+  },
+  "boards_bursty.npz": {
+   "label": "bursty",
+   "n": 3860,
+   "mean_off": 27.026165803108807,
+   "mean_on": 20.067357512953368,
+   "total_off": 104321,
+   "total_on": 77460,
+   "unreachable_share": 0.25748411154034184,
+   "boards_touched": 2910
+  }
+ },
+ "combined": {
+  "label": "COMBINED",
+  "n": 6196,
+  "mean_off": 32.299870884441575,
+  "mean_on": 24.24306003873467,
+  "total_off": 200130,
+  "total_on": 150210,
+  "unreachable_share": 0.24943786538749813,
+  "boards_touched": 4808
+ },
+ "scale_match_ratio": 0.7505621346125019,
+ "control_weight_for_dose": {
+  "8": 6.004497076900015,
+  "16": 12.00899415380003,
+  "24": 18.013491230700044,
+  "32": 24.01798830760006,
+  "48": 36.02698246140009
+ },
+ "argmax_flips": {
+  "reach1_w8.0": [
+   46,
+   1200
+  ],
+  "reach1_w16.0": [
+   211,
+   1200
+  ],
+  "reach1_w24.0": [
+   316,
+   1200
+  ],
+  "reach1_w32.0": [
+   377,
+   1200
+  ],
+  "reach1_w48.0": [
+   460,
+   1200
+  ],
+  "reach0_w6.004": [
+   47,
+   1200
+  ],
+  "reach0_w12.009": [
+   92,
+   1200
+  ],
+  "reach0_w18.013": [
+   232,
+   1200
+  ],
+  "reach0_w24.018": [
+   319,
+   1200
+  ],
+  "reach0_w36.027": [
+   410,
+   1200
+  ]
+ },
+ "flip_limit": 1200
+}
