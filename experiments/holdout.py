@@ -25,6 +25,13 @@ for p in (HERE, ROOT + "/tmp/combo_term", ROOT + "/tmp/pillrng",
 from h2h_vs import WINNER, run, fmt
 
 CANDS = {
+    "vrdy=12":    {"vrdy": 12},     # screen 57.2% [51.9,62.5] on seeds 2000-2159.
+                                    # 2 of 30 arms cleared 50% where 1.5 are expected by
+                                    # chance -- so this is a CANDIDATE, not a finding.
+                                    # Kept because the dose-response is MONOTONE: vrdy=4
+                                    # is significantly WORSE (43.8% [38.4,49.1]), which a
+                                    # lone noise spike would not produce.
+    "setup=48":   {"setup": 48},    # screen 55.2% [50.5,60.0], same caveat, no dose support.
     "spawn=250":  {"spawn": 250},
     "spawn=300":  {"spawn": 300},
     "spawn=200":  {"spawn": 200},
