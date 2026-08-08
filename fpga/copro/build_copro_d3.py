@@ -13,6 +13,65 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(ROOT, "tests")); sys.path.insert(0, ROOT)
+
+# ---- IMPORT-ORDER GUARD (root-caused 2026-08-05, task #17) -----------------------
+# test_vrdy.py and test_readiness_ext.py each unconditionally `sys.path.insert(0, ...)`
+# a HARDCODED sibling worktree ("/home/struktured/projects/dr-mario-mods"), not
+# gated on "already present" the way this file's own inserts are effectively gated
+# by running first. If anything below imports them (directly or transitively)
+# BEFORE `import test_search_d3`, that worktree's copy -- which can be on a
+# different branch and genuinely stale -- silently wins the name resolution instead
+# of THIS tree's tests/test_search_d3.py, because Python only resolves a module by
+# path on its FIRST import; whichever sys.path entry is first at that moment wins,
+# silently, with no error. Traced via a `Asm6502.label` call-sequence diff between a
+# working and a broken import order: identical up to one line, where the broken run
+# silently skips emitting the "eh_terms_scan" label (added on this tree's branch,
+# absent from dr-mario-mods' study-pause-branch copy) -- confirmed by printing
+# `test_search_d3.__file__` in the broken scenario: it resolved to dr-mario-mods,
+# not this file's own tests/. See TUCK_BFS_PORT_REPORT.md for the day's fuller
+# investigation log (the original bug report + workaround before this fix).
+#
+# FIX: force-register the CORRECT test_search_d3 (this tree's own tests/) into
+# sys.modules before anything else has a chance to import it under a polluted
+# path -- the same force-preload dbg_build.py already uses for its own (deliberate,
+# delta-emitter) override, just moved into the library so every entry point
+# inherits the protection instead of needing to know about this trap.
+#
+# Guard condition is "absent OR specifically the known-stale sibling", not just
+# "absent" -- a plain "not in sys.modules" only protects THIS file's own internal
+# import order (test_vrdy/test_readiness_ext are imported below, by this file,
+# AFTER this guard runs, so a bare presence check would suffice for that). But the
+# same trap can also be sprung by code OUTSIDE this file that imports test_vrdy/
+# test_readiness_ext (or anything else that pollutes sys.path the same way) before
+# ever importing build_copro_d3 -- in that case "test_search_d3" is ALREADY in
+# sys.modules by the time this guard runs, just pointing at the wrong file, and a
+# bare presence check would wrongly treat that as "already claimed, leave it
+# alone". Detecting the SPECIFIC known-bad path and re-registering over it handles
+# both cases while still never touching a genuinely different, deliberate override
+# (dbg_build.py's own incr-delta emitter has a different __file__ entirely, so it
+# never matches this condition and is left untouched).
+#
+# LIMIT: this can only fix module-registry resolution from this point forward. A
+# caller that already did its own `import test_search_d3 as D3` (or `from
+# test_search_d3 import X`) before ever importing build_copro_d3 has already bound
+# ITS OWN name to whatever was cached at that moment -- re-registering the sys.
+# modules entry here cannot retroactively fix a reference the caller already holds.
+# That is a different, narrower failure mode than the one this guard closes (this
+# file's own internal resolution, and any OTHER code's later resolution of the
+# name), and is inherent to how Python's import cache works, not fixable from a
+# library's own import block.
+_bad_cached = ("test_search_d3" in sys.modules
+               and "dr-mario-mods/" in getattr(sys.modules["test_search_d3"], "__file__", ""))
+if "test_search_d3" not in sys.modules or _bad_cached:
+    import importlib.util as _ilu
+    _spec = _ilu.spec_from_file_location(
+        "test_search_d3", os.path.join(ROOT, "tests", "test_search_d3.py"))
+    _mod = _ilu.module_from_spec(_spec)
+    sys.modules["test_search_d3"] = _mod
+    _spec.loader.exec_module(_mod)
+    del _ilu, _spec, _mod
+del _bad_cached
+
 import patch_vs_cpu
 patch_vs_cpu.OPS.setdefault("SEI", 0x78)
 patch_vs_cpu.OPS.setdefault("TXS", 0x9A)
@@ -20,6 +79,9 @@ from patch_vs_cpu import Asm6502
 from py65_harness import Cpu
 import test_vrdy, test_readiness_ext
 import test_search_d3 as D3
+assert "dr-mario-mods/" not in D3.__file__, (
+    f"test_search_d3 resolved to the known-stale sibling worktree: {D3.__file__} "
+    "-- the import-order guard above should have prevented this; see its comment")
 from test_search_d3 import (THIRD, PILLA, PILLB, D_BC, D_BO, make_fewlegal)
 from test_depth2 import S_CA, S_CB, S_NA, S_NB, S_BEST_C, S_BEST_O
 import primitives as P
@@ -43,6 +105,33 @@ TUCK_COL, TUCK_ROW = 0x6139, 0x613A
 EMIT_TUCK_V3 = os.environ.get("DRCOPRO_TUCKV3", "0") == "1"
 assert not (EMIT_TUCK and EMIT_TUCK_V3), "EMIT_TUCK (v1) and EMIT_TUCK_V3 are alternatives"
 TUCK_V3_ROM = 0x9000          # well clear of search-end (~$88E1) and v1's TUCK_ROM ($A800)
+# DRCOPRO_TUCKBFS=1: task #17 stage 4 -- the TE-free BFS enumerator (tests/tuck_bfs_6502.py,
+# bit-exact 200/200 vs tuck_enum.py's motion-truth reachable set) + its CANDLIST translation
+# (tests/tuck_bfs_translate_6502.py) feeding tuck_v3.py's UNCHANGED scoring/gating functions
+# (tuck_cell_prep/tuck_ply2_score/tuck_root_extension) in place of tuck_v3's own tuck_scan_v3
+# enumerator. Alternative to EMIT_TUCK_V3 (same CANDLIST/TS_CNT/TS_DROP/TUCK_COL/TUCK_ROW
+# mailbox, same driver-side executor), not simultaneous -- asserted below. Shares
+# TUCK_V3_ROM's address (never co-resident, so no collision) rather than claiming a 4th ROM
+# region. Default OFF keeps this builder's output byte-identical.
+EMIT_TUCK_BFS = os.environ.get("DRCOPRO_TUCKBFS", "0") == "1"
+assert not (EMIT_TUCK and EMIT_TUCK_BFS), "EMIT_TUCK (v1) and EMIT_TUCK_BFS are alternatives"
+assert not (EMIT_TUCK_V3 and EMIT_TUCK_BFS), \
+    "EMIT_TUCK_V3 and EMIT_TUCK_BFS are alternative enumerators for the same tuck_v3 scoring"
+TUCK_BFS_ROM = TUCK_V3_ROM
+# DRCOPRO_TUCKBFS_TIER3=1: tier-3 mission (2026-08-05) -- widens tuck_bfs's CANDLIST
+# translation (tests/tuck_bfs_translate_6502.py, tier 1: target+/-1 approach columns) to
+# tests/tuck_bfs_tier3_6502.py's tier-3 vocabulary (any approach column, mono-reachable-
+# verified) as a FALLBACK tried only when tier 1 finds nothing for a candidate -- see
+# tuck_bfs_tier3_6502.py's own module docstring for the driver investigation that makes
+# this safe (mv_p2's steering was already general over all 8 columns; only the search's
+# own translation was narrow). ADDITIVE on top of EMIT_TUCK_BFS, not an alternative to it
+# (asserted below) -- swaps ONE call (tr_translate -> tr_translate_tier3) in the tuck_bfs_v3
+# entry point; tuck_bfs_6502.py and tuck_bfs_translate_6502.py are never modified, so
+# DRCOPRO_TUCKBFS=1 alone (this knob off) keeps its existing byte-for-byte behaviour.
+EMIT_TUCK_BFS_TIER3 = os.environ.get("DRCOPRO_TUCKBFS_TIER3", "0") == "1"
+assert not (EMIT_TUCK_BFS_TIER3 and not EMIT_TUCK_BFS), \
+    "DRCOPRO_TUCKBFS_TIER3 requires DRCOPRO_TUCKBFS=1 (tier 3 is a translation upgrade, " \
+    "not a standalone enumerator)"
 SQ_ROM, PILL_ROM = 0xB000, 0xB030
 MAX_STEPS = 3_000_000_000
 
@@ -129,6 +218,67 @@ def build_image(board, cA, cB, nA, nB):
             f"tuck_v3 overruns the free ROM window before $A800 ({len(tuck_v3_code)}B)"
         assert 0x8000 + len(code) <= TUCK_V3_ROM, "search overruns tuck_v3"
 
+    tuck_bfs_code = b""
+    tuck_bfs_ep = None
+    if EMIT_TUCK_BFS:
+        import tuck_bfs_6502 as TB
+        import tuck_bfs_translate_6502 as TRB
+        import tuck_v3 as TV
+        resolve_capped_addr = 0x8000 + labels["resolve_capped"]
+        expectimax_addr = 0x8000 + labels["expectimax"]
+        eh_terms_scan_addr = 0x8000 + labels["eh_terms_scan"]
+        cp_live_cur_addr = 0x8000 + labels["cp_live_cur"]
+        tvb = Asm6502(TUCK_BFS_ROM)
+        TB.emit_tuck_bfs(tvb)                    # enumerator: "tuck_bfs" label
+        TRB.emit_translate(tvb)                  # translation: "tr_translate" label,
+                                                   # writes tuck_v3.py's own CANDLIST/TS_CNT/
+                                                   # TS_DROP -- same bytes tuck_scan_v3 would
+        translate_entry = "tr_translate"
+        if EMIT_TUCK_BFS_TIER3:
+            import tuck_bfs_tier3_6502 as T3
+            T3.emit_tier3(tvb)                   # adds tr_derive_cascade/tr_translate_tier3
+            translate_entry = "tr_translate_tier3"  # tier1-then-tier3, same CANDLIST bytes
+        TV.emit_land_place_at(tvb, board=TV.CUR)
+        TV.emit_tuck_cell_prep(tvb, s_ca=S_CA, s_cb=S_CB)
+        TV.emit_tuck_imm1(tvb)
+        TV.emit_tuck_slot0_inject(tvb, eh_terms_scan_addr, D3.D_L1L, D3.D_L1H, board=TV.CUR)
+        TV.emit_tuck_ply2_score(
+            tvb, D_C2=D3.D_C2, D_O2=D3.D_O2, D_TKC=D3.D_TKC, D_J=D3.D_J,
+            D_MKL=D3.D_MKL, D_MKH=D3.D_MKH, D_MI=D3.D_MI, D_B2L=D3.D_B2L, D_B2H=D3.D_B2H,
+            D_I1L=D3.D_I1L, D_I1H=D3.D_I1H, D_I2L=D3.D_I2L, D_I2H=D3.D_I2H,
+            D_L1L=D3.D_L1L, D_L1H=D3.D_L1H, D_V1L=D3.D_V1L, D_V1H=D3.D_V1H,
+            D_V3L=D3.D_V3L, D_V3H=D3.D_V3H, D_EL=D3.D_EL, D_EH=D3.D_EH,
+            D_ADL=D3.D_ADL, D_ADH=D3.D_ADH, S_NA=S_NA, S_NB=S_NB,
+            TK_KL=D3.TK_KL, TK_KH=D3.TK_KH, TK_O=D3.TK_O, TK_C=D3.TK_C,
+            TK_IL=D3.TK_IL, TK_IH=D3.TK_IH, WIN=D3.WIN, DISC=D3.DISC,
+            expectimax_addr=expectimax_addr,
+        )
+        TV.emit_tuck_root_extension(
+            tvb, D_BVL=D3.D_BVL, D_BVH=D3.D_BVH, D_BC=D_BC, D_BO=D_BO,
+            S_BEST_C=S_BEST_C, S_BEST_O=S_BEST_O,
+            D_V1L=D3.D_V1L, D_V1H=D3.D_V1H, D_I1L=D3.D_I1L, D_I1H=D3.D_I1H,
+            resolve_capped_addr=resolve_capped_addr,
+            cp_live_cur_addr=cp_live_cur_addr,
+        )
+        tvb.label("tuck_bfs_v3")
+        # tuck_bfs's own contract (module docstring): PILL_A/PILL_B must hold the two pill
+        # colours before calling. Unused downstream in THIS integration (tuck_cell_prep
+        # re-derives colour from S_CA/S_CB directly, not from tuck_bfs's OUT_CA/OUT_CB --
+        # CANDLIST carries no colour field at all), but set correctly anyway so tuck_bfs
+        # never reads uninitialised zero page and its documented contract holds regardless
+        # of which downstream consumer is wired to it.
+        tvb.ins16("LDA_abs", S_CA); tvb.ins("STA_zp", TB.PILL_A)
+        tvb.ins16("LDA_abs", S_CB); tvb.ins("STA_zp", TB.PILL_B)
+        tvb.jsr("tuck_bfs")
+        tvb.jsr(translate_entry)
+        tvb.jsr("tuck_root_extension")
+        tvb.ins("RTS")
+        tuck_bfs_code = tvb.assemble()
+        tuck_bfs_ep = TUCK_BFS_ROM + tvb.labels["tuck_bfs_v3"]
+        assert TUCK_BFS_ROM + len(tuck_bfs_code) <= 0xA800, \
+            f"tuck_bfs overruns the free ROM window before $A800 ({len(tuck_bfs_code)}B)"
+        assert 0x8000 + len(code) <= TUCK_BFS_ROM, "search overruns tuck_bfs"
+
     stub = Asm6502(STUB)
     stub.ins("SEI"); stub.ins("CLD")
     stub.ins("LDX_imm", 0xFF); stub.ins("TXS")
@@ -136,7 +286,7 @@ def build_image(board, cA, cB, nA, nB):
     stub.label("cp2")
     stub.ins16("LDA_absX", PILL_ROM); stub.ins16("STA_absX", PILLA)
     stub.ins("DEX"); stub.br("BPL", "cp2")
-    if EMIT_TUCK or EMIT_TUCK_V3:
+    if EMIT_TUCK or EMIT_TUCK_V3 or EMIT_TUCK_BFS:
         # descriptor defaults BEFORE the search: wiring $5087/$5088 in CoproDrMario turned
         # them from a scratch alias into real copro RAM, so an uninitialised pair would make
         # a DRTUCK=1 driver steer to a random column. Gated so the SHIPPED firmware stays
@@ -148,6 +298,8 @@ def build_image(board, cA, cB, nA, nB):
         stub.jsr(TUCK_ROM)
     if EMIT_TUCK_V3:
         stub.jsr(tuck_v3_ep)
+    if EMIT_TUCK_BFS:
+        stub.jsr(tuck_bfs_ep)
     stub.ins("LDA_zp", D_BC); stub.ins16("STA_abs", S_BEST_C)
     stub.ins("LDA_zp", D_BO); stub.ins16("STA_abs", S_BEST_O)
     stub.ins("LDA_imm", 1); stub.ins16("STA_abs", DONE)
@@ -161,6 +313,8 @@ def build_image(board, cA, cB, nA, nB):
         img[TUCK_ROM:TUCK_ROM + len(tuck_code)] = tuck_code
     if tuck_v3_code:
         img[TUCK_V3_ROM:TUCK_V3_ROM + len(tuck_v3_code)] = tuck_v3_code
+    if tuck_bfs_code:
+        img[TUCK_BFS_ROM:TUCK_BFS_ROM + len(tuck_bfs_code)] = tuck_bfs_code
     for i in range(17):
         img[SQ_ROM + i] = (i * i) & 0xFF
         img[SQ_ROM + 17 + i] = (i * i) >> 8

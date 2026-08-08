@@ -1,0 +1,978 @@
+{
+ "prediction": {
+  "source": "fast-sim lane, registered before the fixed-firmware re-run existed",
+  "clear_rate_gain_points": 5.0,
+  "fire_rate_range": [
+   0.05,
+   0.15
+  ],
+  "block_split_is_real_iff": "delta(135-234) meaningfully better than delta(0-119)"
+ },
+ "block_boundary": 120,
+ "degenerate_seeds_excluded": [
+  1
+ ],
+ "comparisons": {
+  "D_fixed_vs_A": {
+   "POOLED": {
+    "candidate": "s20t3fix_tuck",
+    "control": "s20b_drop",
+    "n_paired": 54,
+    "cand_only": 0,
+    "ctrl_only": 0,
+    "fw": {
+     "s20t3fix_tuck": [
+      "554a16a5"
+     ],
+     "s20b_drop": [
+      "e970e9ab"
+     ]
+    },
+    "clear": {
+     "cand": "48/54 = 88.9%",
+     "ctrl": "53/54 = 98.1%",
+     "cand_ci": [
+      0.7781,
+      0.9481
+     ],
+     "ctrl_ci": [
+      0.9023,
+      0.9967
+     ],
+     "delta_points": -9.3,
+     "discordant_cand_only": 1,
+     "discordant_ctrl_only": 6,
+     "mcnemar_p": 0.125
+    },
+    "viruses_cleared": {
+     "cand": 47.57,
+     "ctrl": 47.98,
+     "paired_delta": -0.41,
+     "paired_delta_ci95": [
+      -1.0,
+      -0.04
+     ],
+     "n_seeds_moved": 7,
+     "WARNING": "CEILING-CENSORED. viruses_cleared pins at 48 whenever BOTH arms clear, and the champion clears ~96% of clean L11, so this metric has almost no dynamic range here. d=0 means 'both finished the job', NOT 'same game' -- measured, the arms differ in PILLS on 15/15 mutually-cleared seeds, median 43 pills apart. Do not read 'seeds moved' off this endpoint; use pills_if_both_cleared."
+    },
+    "pills_if_both_cleared": {
+     "n": 47,
+     "mean_delta": -10.2,
+     "ci95": [
+      -23.8,
+      4.2
+     ],
+     "faster": 29,
+     "slower": 16,
+     "ties": 2,
+     "sign_test_p": 0.0725
+    },
+    "combined_failure_ranked": {
+     "penalty_250": {
+      "mean_delta": 1.1,
+      "ci95": [
+       -15.6,
+       18.6
+      ],
+      "spans_zero": true,
+      "sign_test_p": 0.3317
+     },
+     "penalty_500": {
+      "mean_delta": 24.3,
+      "ci95": [
+       -11.2,
+       62.7
+      ],
+      "spans_zero": true,
+      "sign_test_p": 0.3317
+     },
+     "penalty_750": {
+      "mean_delta": 47.4,
+      "ci95": [
+       -9.0,
+       109.2
+      ],
+      "spans_zero": true,
+      "sign_test_p": 0.3317
+     },
+     "penalty_1000": {
+      "mean_delta": 70.6,
+      "ci95": [
+       -8.3,
+       156.2
+      ],
+      "spans_zero": true,
+      "sign_test_p": 0.3317
+     }
+    },
+    "tucks_by_outcome": {
+     "cleared": {
+      "n": 48,
+      "executed_per_game": 23.96,
+      "pills_per_game": 117.54,
+      "executed_per_placement": 0.2038
+     },
+     "failed": {
+      "n": 6,
+      "executed_per_game": 50.83,
+      "pills_per_game": 210.67,
+      "executed_per_placement": 0.2413
+     }
+    },
+    "fire_rate": {
+     "published_per_placement": 0.2107,
+     "executed_per_placement": 0.2107,
+     "n_incoherent": 0
+    },
+    "power": {
+     "control_rate": 0.9815,
+     "min_detectable_delta_points_approx": 5.1
+    },
+    "verdict": "observed clear-rate delta -9.3 points, McNemar p=0.125; not significant; fire rate 21.1% (OUTSIDE the pre-registered 5%-15%); => the pre-registered prediction was conditioned on a fire rate this arm does not have; it is not a fair test of it"
+   },
+   "preregistered_outcome": 3.5,
+   "preregistered_text": "OUTCOME 3b -- DO NOT BUILD, AND DO NOT CLAIM HARM. Survival discordance NOT SIGNIFICANT: 6 champion-only, 1 tuck-only, p=0.125. The survival question is OPEN, NOT ANSWERED; settling it needs n well past this, conditional pills -10.2. Same action as outcome 3; only the characterisation differs.",
+   "block 0-119    (wave 1)": {
+    "candidate": "s20t3fix_tuck",
+    "control": "s20b_drop",
+    "n_paired": 39,
+    "cand_only": 0,
+    "ctrl_only": 0,
+    "fw": {
+     "s20t3fix_tuck": [
+      "554a16a5"
+     ],
+     "s20b_drop": [
+      "e970e9ab"
+     ]
+    },
+    "clear": {
+     "cand": "35/39 = 89.7%",
+     "ctrl": "38/39 = 97.4%",
+     "cand_ci": [
+      0.7642,
+      0.9594
+     ],
+     "ctrl_ci": [
+      0.8682,
+      0.9955
+     ],
+     "delta_points": -7.7,
+     "discordant_cand_only": 1,
+     "discordant_ctrl_only": 4,
+     "mcnemar_p": 0.375
+    },
+    "viruses_cleared": {
+     "cand": 47.49,
+     "ctrl": 47.97,
+     "paired_delta": -0.49,
+     "paired_delta_ci95": [
+      -1.31,
+      0.0
+     ],
+     "n_seeds_moved": 5,
+     "WARNING": "CEILING-CENSORED. viruses_cleared pins at 48 whenever BOTH arms clear, and the champion clears ~96% of clean L11, so this metric has almost no dynamic range here. d=0 means 'both finished the job', NOT 'same game' -- measured, the arms differ in PILLS on 15/15 mutually-cleared seeds, median 43 pills apart. Do not read 'seeds moved' off this endpoint; use pills_if_both_cleared."
+    },
+    "pills_if_both_cleared": {
+     "n": 34,
+     "mean_delta": -16.8,
+     "ci95": [
+      -31.8,
+      -1.7
+     ],
+     "faster": 22,
+     "slower": 10,
+     "ties": 2,
+     "sign_test_p": 0.0501
+    },
+    "combined_failure_ranked": {
+     "penalty_250": {
+      "mean_delta": -6.4,
+      "ci95": [
+       -25.6,
+       13.5
+      ],
+      "spans_zero": true,
+      "sign_test_p": 0.1877
+     },
+     "penalty_500": {
+      "mean_delta": 12.9,
+      "ci95": [
+       -29.4,
+       58.8
+      ],
+      "spans_zero": true,
+      "sign_test_p": 0.1877
+     },
+     "penalty_750": {
+      "mean_delta": 32.1,
+      "ci95": [
+       -35.5,
+       105.2
+      ],
+      "spans_zero": true,
+      "sign_test_p": 0.1877
+     },
+     "penalty_1000": {
+      "mean_delta": 51.3,
+      "ci95": [
+       -42.2,
+       151.9
+      ],
+      "spans_zero": true,
+      "sign_test_p": 0.1877
+     }
+    },
+    "tucks_by_outcome": {
+     "cleared": {
+      "n": 35,
+      "executed_per_game": 24.49,
+      "pills_per_game": 117.31,
+      "executed_per_placement": 0.2087
+     },
+     "failed": {
+      "n": 4,
+      "executed_per_game": 48.5,
+      "pills_per_game": 183.0,
+      "executed_per_placement": 0.265
+     }
+    },
+    "fire_rate": {
+     "published_per_placement": 0.2172,
+     "executed_per_placement": 0.2172,
+     "n_incoherent": 0
+    },
+    "power": {
+     "control_rate": 0.9744,
+     "min_detectable_delta_points_approx": 7.0
+    }
+   },
+   "block 120-134  (wave 1 tail)": {
+    "candidate": "s20t3fix_tuck",
+    "control": "s20b_drop",
+    "n_paired": 15,
+    "cand_only": 0,
+    "ctrl_only": 0,
+    "fw": {
+     "s20t3fix_tuck": [
+      "554a16a5"
+     ],
+     "s20b_drop": [
+      "e970e9ab"
+     ]
+    },
+    "clear": {
+     "cand": "13/15 = 86.7%",
+     "ctrl": "15/15 = 100.0%",
+     "cand_ci": [
+      0.6212,
+      0.9626
+     ],
+     "ctrl_ci": [
+      0.7961,
+      1.0
+     ],
+     "delta_points": -13.3,
+     "discordant_cand_only": 0,
+     "discordant_ctrl_only": 2,
+     "mcnemar_p": 0.5
+    },
+    "viruses_cleared": {
+     "cand": 47.8,
+     "ctrl": 48.0,
+     "paired_delta": -0.2,
+     "paired_delta_ci95": [
+      -0.53,
+      0.0
+     ],
+     "n_seeds_moved": 2,
+     "WARNING": "CEILING-CENSORED. viruses_cleared pins at 48 whenever BOTH arms clear, and the champion clears ~96% of clean L11, so this metric has almost no dynamic range here. d=0 means 'both finished the job', NOT 'same game' -- measured, the arms differ in PILLS on 15/15 mutually-cleared seeds, median 43 pills apart. Do not read 'seeds moved' off this endpoint; use pills_if_both_cleared."
+    },
+    "pills_if_both_cleared": {
+     "n": 13,
+     "mean_delta": 7.0,
+     "ci95": [
+      -20.5,
+      40.5
+     ],
+     "faster": 7,
+     "slower": 6,
+     "ties": 0,
+     "sign_test_p": 1.0
+    },
+    "combined_failure_ranked": {
+     "penalty_250": {
+      "mean_delta": 20.6,
+      "ci95": [
+       -10.6,
+       55.8
+      ],
+      "spans_zero": true,
+      "sign_test_p": 1.0
+     },
+     "penalty_500": {
+      "mean_delta": 53.9,
+      "ci95": [
+       -5.0,
+       126.9
+      ],
+      "spans_zero": true,
+      "sign_test_p": 1.0
+     },
+     "penalty_750": {
+      "mean_delta": 87.3,
+      "ci95": [
+       -4.6,
+       206.7
+      ],
+      "spans_zero": true,
+      "sign_test_p": 1.0
+     },
+     "penalty_1000": {
+      "mean_delta": 120.6,
+      "ci95": [
+       -4.6,
+       289.6
+      ],
+      "spans_zero": true,
+      "sign_test_p": 1.0
+     }
+    },
+    "tucks_by_outcome": {
+     "cleared": {
+      "n": 13,
+      "executed_per_game": 22.54,
+      "pills_per_game": 118.15,
+      "executed_per_placement": 0.1908
+     },
+     "failed": {
+      "n": 2,
+      "executed_per_game": 55.5,
+      "pills_per_game": 266.0,
+      "executed_per_placement": 0.2086
+     }
+    },
+    "fire_rate": {
+     "published_per_placement": 0.1954,
+     "executed_per_placement": 0.1954,
+     "n_incoherent": 0
+    },
+    "power": {
+     "control_rate": 1.0,
+     "min_detectable_delta_points_approx": null
+    }
+   },
+   "block 135-234  (wave 2, out-of-sample for the retracted split)": {
+    "candidate": "s20t3fix_tuck",
+    "control": "s20b_drop",
+    "n_paired": 0,
+    "cand_only": 0,
+    "ctrl_only": 0,
+    "note": "no paired seeds yet"
+   },
+   "block 120+     (union, sub-256)": {
+    "candidate": "s20t3fix_tuck",
+    "control": "s20b_drop",
+    "n_paired": 15,
+    "cand_only": 0,
+    "ctrl_only": 0,
+    "fw": {
+     "s20t3fix_tuck": [
+      "554a16a5"
+     ],
+     "s20b_drop": [
+      "e970e9ab"
+     ]
+    },
+    "clear": {
+     "cand": "13/15 = 86.7%",
+     "ctrl": "15/15 = 100.0%",
+     "cand_ci": [
+      0.6212,
+      0.9626
+     ],
+     "ctrl_ci": [
+      0.7961,
+      1.0
+     ],
+     "delta_points": -13.3,
+     "discordant_cand_only": 0,
+     "discordant_ctrl_only": 2,
+     "mcnemar_p": 0.5
+    },
+    "viruses_cleared": {
+     "cand": 47.8,
+     "ctrl": 48.0,
+     "paired_delta": -0.2,
+     "paired_delta_ci95": [
+      -0.53,
+      0.0
+     ],
+     "n_seeds_moved": 2,
+     "WARNING": "CEILING-CENSORED. viruses_cleared pins at 48 whenever BOTH arms clear, and the champion clears ~96% of clean L11, so this metric has almost no dynamic range here. d=0 means 'both finished the job', NOT 'same game' -- measured, the arms differ in PILLS on 15/15 mutually-cleared seeds, median 43 pills apart. Do not read 'seeds moved' off this endpoint; use pills_if_both_cleared."
+    },
+    "pills_if_both_cleared": {
+     "n": 13,
+     "mean_delta": 7.0,
+     "ci95": [
+      -20.5,
+      40.5
+     ],
+     "faster": 7,
+     "slower": 6,
+     "ties": 0,
+     "sign_test_p": 1.0
+    },
+    "combined_failure_ranked": {
+     "penalty_250": {
+      "mean_delta": 20.6,
+      "ci95": [
+       -10.6,
+       55.8
+      ],
+      "spans_zero": true,
+      "sign_test_p": 1.0
+     },
+     "penalty_500": {
+      "mean_delta": 53.9,
+      "ci95": [
+       -5.0,
+       126.9
+      ],
+      "spans_zero": true,
+      "sign_test_p": 1.0
+     },
+     "penalty_750": {
+      "mean_delta": 87.3,
+      "ci95": [
+       -4.6,
+       206.7
+      ],
+      "spans_zero": true,
+      "sign_test_p": 1.0
+     },
+     "penalty_1000": {
+      "mean_delta": 120.6,
+      "ci95": [
+       -4.6,
+       289.6
+      ],
+      "spans_zero": true,
+      "sign_test_p": 1.0
+     }
+    },
+    "tucks_by_outcome": {
+     "cleared": {
+      "n": 13,
+      "executed_per_game": 22.54,
+      "pills_per_game": 118.15,
+      "executed_per_placement": 0.1908
+     },
+     "failed": {
+      "n": 2,
+      "executed_per_game": 55.5,
+      "pills_per_game": 266.0,
+      "executed_per_placement": 0.2086
+     }
+    },
+    "fire_rate": {
+     "published_per_placement": 0.1954,
+     "executed_per_placement": 0.1954,
+     "n_incoherent": 0
+    },
+    "power": {
+     "control_rate": 1.0,
+     "min_detectable_delta_points_approx": null
+    }
+   },
+   "seeds 400+     (wave 3, outside BOTH studied ranges)": {
+    "candidate": "s20t3fix_tuck",
+    "control": "s20b_drop",
+    "n_paired": 0,
+    "cand_only": 0,
+    "ctrl_only": 0,
+    "note": "no paired seeds yet"
+   }
+  },
+  "B_fixed_vs_A": {
+   "POOLED": {
+    "candidate": "s20t3fix_drop",
+    "control": "s20b_drop",
+    "n_paired": 54,
+    "cand_only": 0,
+    "ctrl_only": 0,
+    "fw": {
+     "s20t3fix_drop": [
+      "554a16a5"
+     ],
+     "s20b_drop": [
+      "e970e9ab"
+     ]
+    },
+    "clear": {
+     "cand": "7/54 = 13.0%",
+     "ctrl": "53/54 = 98.1%",
+     "cand_ci": [
+      0.0642,
+      0.2442
+     ],
+     "ctrl_ci": [
+      0.9023,
+      0.9967
+     ],
+     "delta_points": -85.2,
+     "discordant_cand_only": 0,
+     "discordant_ctrl_only": 46,
+     "mcnemar_p": 0.0
+    },
+    "viruses_cleared": {
+     "cand": 30.91,
+     "ctrl": 47.98,
+     "paired_delta": -17.07,
+     "paired_delta_ci95": [
+      -19.78,
+      -14.37
+     ],
+     "n_seeds_moved": 47,
+     "WARNING": "CEILING-CENSORED. viruses_cleared pins at 48 whenever BOTH arms clear, and the champion clears ~96% of clean L11, so this metric has almost no dynamic range here. d=0 means 'both finished the job', NOT 'same game' -- measured, the arms differ in PILLS on 15/15 mutually-cleared seeds, median 43 pills apart. Do not read 'seeds moved' off this endpoint; use pills_if_both_cleared."
+    },
+    "pills_if_both_cleared": {
+     "n": 7,
+     "mean_delta": 34.1,
+     "ci95": [
+      10.0,
+      61.9
+     ],
+     "faster": 1,
+     "slower": 6,
+     "ties": 0,
+     "sign_test_p": 0.125
+    },
+    "combined_failure_ranked": {
+     "penalty_250": {
+      "mean_delta": 103.1,
+      "ci95": [
+       89.8,
+       115.7
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.0
+     },
+     "penalty_500": {
+      "mean_delta": 316.1,
+      "ci95": [
+       280.0,
+       348.0
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.0
+     },
+     "penalty_750": {
+      "mean_delta": 529.0,
+      "ci95": [
+       467.8,
+       582.7
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.0
+     },
+     "penalty_1000": {
+      "mean_delta": 742.0,
+      "ci95": [
+       655.4,
+       818.4
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.0
+     }
+    },
+    "tucks_by_outcome": {
+     "cleared": {
+      "n": 7,
+      "executed_per_game": 0.0,
+      "pills_per_game": 128.29,
+      "executed_per_placement": 0.0
+     },
+     "failed": {
+      "n": 47,
+      "executed_per_game": 0.0,
+      "pills_per_game": 83.19,
+      "executed_per_placement": 0.0
+     }
+    },
+    "fire_rate": {
+     "published_per_placement": 0.2209,
+     "executed_per_placement": 0.0,
+     "n_incoherent": 0
+    },
+    "power": {
+     "control_rate": 0.9815,
+     "min_detectable_delta_points_approx": 5.1
+    },
+    "verdict": "observed clear-rate delta -85.2 points, McNemar p=0.0; SIGNIFICANT; fire rate 22.1% (OUTSIDE the pre-registered 5%-15%); => the pre-registered prediction was conditioned on a fire rate this arm does not have; it is not a fair test of it"
+   },
+   "block 0-119    (wave 1)": {
+    "candidate": "s20t3fix_drop",
+    "control": "s20b_drop",
+    "n_paired": 39,
+    "cand_only": 0,
+    "ctrl_only": 0,
+    "fw": {
+     "s20t3fix_drop": [
+      "554a16a5"
+     ],
+     "s20b_drop": [
+      "e970e9ab"
+     ]
+    },
+    "clear": {
+     "cand": "5/39 = 12.8%",
+     "ctrl": "38/39 = 97.4%",
+     "cand_ci": [
+      0.056,
+      0.2671
+     ],
+     "ctrl_ci": [
+      0.8682,
+      0.9955
+     ],
+     "delta_points": -84.6,
+     "discordant_cand_only": 0,
+     "discordant_ctrl_only": 33,
+     "mcnemar_p": 0.0
+    },
+    "viruses_cleared": {
+     "cand": 30.44,
+     "ctrl": 47.97,
+     "paired_delta": -17.54,
+     "paired_delta_ci95": [
+      -20.82,
+      -14.23
+     ],
+     "n_seeds_moved": 34,
+     "WARNING": "CEILING-CENSORED. viruses_cleared pins at 48 whenever BOTH arms clear, and the champion clears ~96% of clean L11, so this metric has almost no dynamic range here. d=0 means 'both finished the job', NOT 'same game' -- measured, the arms differ in PILLS on 15/15 mutually-cleared seeds, median 43 pills apart. Do not read 'seeds moved' off this endpoint; use pills_if_both_cleared."
+    },
+    "pills_if_both_cleared": {
+     "n": 5,
+     "mean_delta": 43.4,
+     "ci95": [
+      15.8,
+      74.4
+     ],
+     "faster": 0,
+     "slower": 5,
+     "ties": 0,
+     "sign_test_p": 0.0625
+    },
+    "combined_failure_ranked": {
+     "penalty_250": {
+      "mean_delta": 99.0,
+      "ci95": [
+       84.4,
+       113.0
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.0
+     },
+     "penalty_500": {
+      "mean_delta": 310.5,
+      "ci95": [
+       271.2,
+       346.7
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.0
+     },
+     "penalty_750": {
+      "mean_delta": 522.1,
+      "ci95": [
+       454.7,
+       583.6
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.0
+     },
+     "penalty_1000": {
+      "mean_delta": 733.6,
+      "ci95": [
+       637.5,
+       820.7
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.0
+     }
+    },
+    "tucks_by_outcome": {
+     "cleared": {
+      "n": 5,
+      "executed_per_game": 0.0,
+      "pills_per_game": 142.8,
+      "executed_per_placement": 0.0
+     },
+     "failed": {
+      "n": 34,
+      "executed_per_game": 0.0,
+      "pills_per_game": 80.38,
+      "executed_per_placement": 0.0
+     }
+    },
+    "fire_rate": {
+     "published_per_placement": 0.2228,
+     "executed_per_placement": 0.0,
+     "n_incoherent": 0
+    },
+    "power": {
+     "control_rate": 0.9744,
+     "min_detectable_delta_points_approx": 7.0
+    }
+   },
+   "block 120-134  (wave 1 tail)": {
+    "candidate": "s20t3fix_drop",
+    "control": "s20b_drop",
+    "n_paired": 15,
+    "cand_only": 0,
+    "ctrl_only": 0,
+    "fw": {
+     "s20t3fix_drop": [
+      "554a16a5"
+     ],
+     "s20b_drop": [
+      "e970e9ab"
+     ]
+    },
+    "clear": {
+     "cand": "2/15 = 13.3%",
+     "ctrl": "15/15 = 100.0%",
+     "cand_ci": [
+      0.0374,
+      0.3788
+     ],
+     "ctrl_ci": [
+      0.7961,
+      1.0
+     ],
+     "delta_points": -86.7,
+     "discordant_cand_only": 0,
+     "discordant_ctrl_only": 13,
+     "mcnemar_p": 0.00024
+    },
+    "viruses_cleared": {
+     "cand": 32.13,
+     "ctrl": 48.0,
+     "paired_delta": -15.87,
+     "paired_delta_ci95": [
+      -20.67,
+      -11.13
+     ],
+     "n_seeds_moved": 13,
+     "WARNING": "CEILING-CENSORED. viruses_cleared pins at 48 whenever BOTH arms clear, and the champion clears ~96% of clean L11, so this metric has almost no dynamic range here. d=0 means 'both finished the job', NOT 'same game' -- measured, the arms differ in PILLS on 15/15 mutually-cleared seeds, median 43 pills apart. Do not read 'seeds moved' off this endpoint; use pills_if_both_cleared."
+    },
+    "pills_if_both_cleared": {
+     "n": 2,
+     "mean_delta": 11.0,
+     "ci95": [
+      -12.0,
+      34.0
+     ],
+     "faster": 1,
+     "slower": 1,
+     "ties": 0,
+     "sign_test_p": 1.0
+    },
+    "combined_failure_ranked": {
+     "penalty_250": {
+      "mean_delta": 113.8,
+      "ci95": [
+       85.0,
+       140.2
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.001
+     },
+     "penalty_500": {
+      "mean_delta": 330.5,
+      "ci95": [
+       257.0,
+       388.3
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.001
+     },
+     "penalty_750": {
+      "mean_delta": 547.1,
+      "ci95": [
+       424.7,
+       638.3
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.001
+     },
+     "penalty_1000": {
+      "mean_delta": 763.8,
+      "ci95": [
+       591.3,
+       888.3
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.001
+     }
+    },
+    "tucks_by_outcome": {
+     "cleared": {
+      "n": 2,
+      "executed_per_game": 0.0,
+      "pills_per_game": 92.0,
+      "executed_per_placement": 0.0
+     },
+     "failed": {
+      "n": 13,
+      "executed_per_game": 0.0,
+      "pills_per_game": 90.54,
+      "executed_per_placement": 0.0
+     }
+    },
+    "fire_rate": {
+     "published_per_placement": 0.216,
+     "executed_per_placement": 0.0,
+     "n_incoherent": 0
+    },
+    "power": {
+     "control_rate": 1.0,
+     "min_detectable_delta_points_approx": null
+    }
+   },
+   "block 135-234  (wave 2, out-of-sample for the retracted split)": {
+    "candidate": "s20t3fix_drop",
+    "control": "s20b_drop",
+    "n_paired": 0,
+    "cand_only": 0,
+    "ctrl_only": 0,
+    "note": "no paired seeds yet"
+   },
+   "block 120+     (union, sub-256)": {
+    "candidate": "s20t3fix_drop",
+    "control": "s20b_drop",
+    "n_paired": 15,
+    "cand_only": 0,
+    "ctrl_only": 0,
+    "fw": {
+     "s20t3fix_drop": [
+      "554a16a5"
+     ],
+     "s20b_drop": [
+      "e970e9ab"
+     ]
+    },
+    "clear": {
+     "cand": "2/15 = 13.3%",
+     "ctrl": "15/15 = 100.0%",
+     "cand_ci": [
+      0.0374,
+      0.3788
+     ],
+     "ctrl_ci": [
+      0.7961,
+      1.0
+     ],
+     "delta_points": -86.7,
+     "discordant_cand_only": 0,
+     "discordant_ctrl_only": 13,
+     "mcnemar_p": 0.00024
+    },
+    "viruses_cleared": {
+     "cand": 32.13,
+     "ctrl": 48.0,
+     "paired_delta": -15.87,
+     "paired_delta_ci95": [
+      -20.67,
+      -11.13
+     ],
+     "n_seeds_moved": 13,
+     "WARNING": "CEILING-CENSORED. viruses_cleared pins at 48 whenever BOTH arms clear, and the champion clears ~96% of clean L11, so this metric has almost no dynamic range here. d=0 means 'both finished the job', NOT 'same game' -- measured, the arms differ in PILLS on 15/15 mutually-cleared seeds, median 43 pills apart. Do not read 'seeds moved' off this endpoint; use pills_if_both_cleared."
+    },
+    "pills_if_both_cleared": {
+     "n": 2,
+     "mean_delta": 11.0,
+     "ci95": [
+      -12.0,
+      34.0
+     ],
+     "faster": 1,
+     "slower": 1,
+     "ties": 0,
+     "sign_test_p": 1.0
+    },
+    "combined_failure_ranked": {
+     "penalty_250": {
+      "mean_delta": 113.8,
+      "ci95": [
+       85.0,
+       140.2
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.001
+     },
+     "penalty_500": {
+      "mean_delta": 330.5,
+      "ci95": [
+       257.0,
+       388.3
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.001
+     },
+     "penalty_750": {
+      "mean_delta": 547.1,
+      "ci95": [
+       424.7,
+       638.3
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.001
+     },
+     "penalty_1000": {
+      "mean_delta": 763.8,
+      "ci95": [
+       591.3,
+       888.3
+      ],
+      "spans_zero": false,
+      "sign_test_p": 0.001
+     }
+    },
+    "tucks_by_outcome": {
+     "cleared": {
+      "n": 2,
+      "executed_per_game": 0.0,
+      "pills_per_game": 92.0,
+      "executed_per_placement": 0.0
+     },
+     "failed": {
+      "n": 13,
+      "executed_per_game": 0.0,
+      "pills_per_game": 90.54,
+      "executed_per_placement": 0.0
+     }
+    },
+    "fire_rate": {
+     "published_per_placement": 0.216,
+     "executed_per_placement": 0.0,
+     "n_incoherent": 0
+    },
+    "power": {
+     "control_rate": 1.0,
+     "min_detectable_delta_points_approx": null
+    }
+   },
+   "seeds 400+     (wave 3, outside BOTH studied ranges)": {
+    "candidate": "s20t3fix_drop",
+    "control": "s20b_drop",
+    "n_paired": 0,
+    "cand_only": 0,
+    "ctrl_only": 0,
+    "note": "no paired seeds yet"
+   }
+  }
+ },
+ "block_split_adjudication": "not yet testable -- need paired seeds in BOTH 0-119 and 135-234"
+}
