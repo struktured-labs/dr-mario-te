@@ -28,6 +28,8 @@ ARMED2, WDOG2, WDOGH2 = 0x6161, 0x6162, 0x6166
 PEND2, DELAY2 = 0x614F, 0x615F
 TGT_C2, TGT_O2 = 0x6152, 0x6153
 ROT_DONE2 = 0x616E
+LAST_COL2, LAST_ORI2, STABLE_CT2 = 0x616F, 0x6170, 0x6171   # DRSLAM argmax-stability state
+SLAM_ARM, LAST_LAT = 0x6172, 0x6173                         # DRSLAM_MATURE armed latch + last search latency
 STK2 = 0x615B
 LASTY1, LASTY2 = 0x6154, 0x6155
 P1Y = 0x0306
@@ -38,16 +40,43 @@ SENTINEL = 0x0400
 FLUSH_Y = 0x08          # mock: capsule can rotate only while Y (height) > FLUSH_Y
 
 
-def load_build(rotfix):
-    for k in ("DRNOFREEZE", "DRROTFIX", "DRHUMAN", "DRPOCKET"):
+_KNOB_ENV = {"kopen": "DRSLAM_KOPEN", "kend": "DRSLAM_KEND", "kcross": "DRSLAM_KCROSS",
+             "vcend": "DRSLAM_VCEND", "lowy": "DRSLAM_LOWY", "minthink": "DRMINTHINK"}
+
+
+def load_build(rotfix, slam=True, mature=2, human=False, pocket=False, coldinit=False, patcher=WT, **knobs):
+    """Import the patcher fresh (module-level env is read at import) and return build_main bytes.
+    slam=True/False sets DRSLAM; mature sets DRSLAM_MATURE (FAST_HI threshold; 0 disables the gate);
+    human/pocket select the shipped variants (DRHUMAN/DRPOCKET); coldinit sets DRCOLDINIT (P0.3 fix:
+    per-match state reset incl. ARMED2/WDOG2/LASTY1-2, and re-arms MATCH_ACTIVE on every menu hook so a
+    rematch without a power-cycle re-runs the cold-state init -- task #43 opening-quality instrument);
+    **knobs override the phase table (kopen/kend/kcross/vcend/lowy) and the min-think floor (minthink)
+    so scenarios stay deterministic."""
+    for k in ("DRNOFREEZE", "DRROTFIX", "DRHUMAN", "DRPOCKET", "DRSLAM", "DRSLAM_MATURE", "DRNAVFIX",
+              "DRCOLDINIT", *_KNOB_ENV.values()):
         os.environ.pop(k, None)
     os.environ["DRNOFREEZE"] = "1"
     os.environ["DRROTFIX"] = "1" if rotfix else "0"
-    wtdir = os.path.dirname(WT)
+    os.environ["DRSLAM"] = "1" if slam else "0"
+    os.environ["DRSLAM_MATURE"] = str(mature)
+    os.environ["DRNAVFIX"] = "0"   # nav is orthogonal to the slam lane; pin it off so the slam
+                                   #   byte-exactness (DRSLAM=0 == canonical) is unaffected by DRNAVFIX
+
+    if human:
+        os.environ["DRHUMAN"] = "1"
+    if pocket:
+        os.environ["DRPOCKET"] = "1"
+    if coldinit:
+        os.environ["DRCOLDINIT"] = "1"
+    for name, val in knobs.items():
+        os.environ[_KNOB_ENV[name]] = str(val)
+    wtdir = os.path.dirname(patcher)
     for p in (wtdir, os.path.join(wtdir, "tests")):
         if p not in sys.path:
             sys.path.insert(0, p)
-    spec = importlib.util.spec_from_file_location(f"pc_{rotfix}", WT)
+    # unique module name per (patcher, config) so env changes take effect (module body re-runs)
+    key = f"pc_{abs(hash((patcher, rotfix, slam, mature, human, pocket, coldinit, tuple(sorted(knobs.items()))))):x}"
+    spec = importlib.util.spec_from_file_location(key, patcher)
     m = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = m
     spec.loader.exec_module(m)
@@ -56,8 +85,8 @@ def load_build(rotfix):
 
 
 class Sim:
-    def __init__(self, rotfix):
-        self.code, self.lab = load_build(rotfix)
+    def __init__(self, rotfix, slam=True, **knobs):
+        self.code, self.lab = load_build(rotfix, slam=slam, **knobs)
         self.mpu = MPU()
         self.mem = [0] * 0x10000
         for i, b in enumerate(self.code):
@@ -76,6 +105,9 @@ class Sim:
         self.presses = []                   # ($F6) each frame
         self.grav_period = 1                # hooks per 1-row fall (1=every frame; macro test slows it
         self.gcount = 0                     #  to ~L11 so the driver has time to commit + steer)
+        self.soft_drop = False              # SLAM tests: model DOWN($04)-held soft-drop (fixed 2 f/row,
+        self.soft_period = 2                #  speed-invariant per TEMPO_DESIGN §2.1) vs natural gravity
+        self.scount = 0
 
     def run_main(self, maxins=20000):
         mpu = self.mpu
@@ -109,12 +141,19 @@ class Sim:
                 self.mem[P2X] -= 1
             if f6 & 0x01 and self.mem[P2X] < 7:      # RIGHT
                 self.mem[P2X] += 1
-            if not froze:                   # gravity: fall one row every grav_period hooks
-                self.gcount += 1
-                if self.gcount >= self.grav_period:
-                    self.gcount = 0
-                    if self.mem[P2Y] > 0:
-                        self.mem[P2Y] -= 1
+            if not froze:                   # gravity: fall one row per period (soft-drop if DOWN held)
+                if self.soft_drop and (f6 & 0x04):   # DOWN = fixed soft-drop rate (faster than natural)
+                    self.scount += 1
+                    if self.scount >= self.soft_period:
+                        self.scount = 0
+                        if self.mem[P2Y] > 0:
+                            self.mem[P2Y] -= 1
+                else:
+                    self.gcount += 1
+                    if self.gcount >= self.grav_period:
+                        self.gcount = 0
+                        if self.mem[P2Y] > 0:
+                            self.mem[P2Y] -= 1
         return dict(f6=f6, froze=froze, y=self.mem[P2Y], x=self.mem[P2X],
                     o=self.mem[P2O], rot=self.mem[ROT_DONE2], tgt_o=self.mem[TGT_O2],
                     tgt_c=self.mem[TGT_C2], wdog=self.mem[WDOG2], armed=self.mem[ARMED2])
@@ -129,6 +168,8 @@ def spawn_pill(s, y=0x0D, x=3, orient=0):
     s.mem[ROT_DONE2] = 0; s.mem[STK2] = 0
     s.mem[W2_DONE] = 0; s.mem[W2_OR] = 0xFF; s.mem[W2_COL] = 0  # no candidate
     s.mem[TGT_C2] = 3; s.mem[TGT_O2] = orient
+    s.mem[SLAM_ARM] = 1  # normal mid-match: the last search was fast -> slam armed. The maturity
+                         #   scenarios below clear this to test DRSLAM_MATURE arm/disarm explicitly.
 
 
 # scenarios speak GAME orient; the copro mailbox is copro-space and the driver maps it
@@ -286,6 +327,235 @@ for (G, C, so, sx) in [(3, 6, 0, 3), (0, 1, 0, 4), (2, 5, 0, 2), (1, 7, 0, 0)]:
     o, x = land_pill(G, C, spawn_orient=so, spawn_x=sx)
     check(f"pill LANDS orient={G} col={C} (spawn o={so} x={sx})", o == G and x == C,
           f"landed orient={o} col={x}  <- would be raw/unmapped if the nf2 map regressed")
+
+# ================================================================ DRSLAM confidence-gated slam ====
+# The macro gate above (16 checks) is the pre-existing DRROTFIX suite and MUST stay green with the
+# slam default-on -- that is task item (e). The scenarios below add the DRSLAM behavior (a)-(d),(f)
+# plus the DRSLAM=0 byte-exactness gate. Knobs are shrunk (small K / min-think) so each runs fast.
+
+# ---------------------------------------------------------------- (a) engages only after the gate
+print("SCENARIO A (DRSLAM=1): slam engages ONLY after stability + min-think + aligned + rotated")
+s = Sim(rotfix=True, slam=True, minthink=30, kopen=6, vcend=10, lowy=8)
+s.soft_drop = True
+s.grav_period = 25                     # keep the capsule HIGH (Y>=8) until min-think opens, so the
+spawn_pill(s, y=0x0D, x=3, orient=0)    #   commit is the MIN-THINK floor, not the low-Y crossover
+publish_live(s, col=3, orient=2)       # aligned column (x=3=col 3); orient needs 2 rotations first
+downs = []                             # (frame, ROT_DONE2, y) for every DOWN-held frame
+for i in range(140):
+    st = s.frame(apply_physics=True)
+    if st["f6"] & 0x04:
+        downs.append((i, st["rot"], st["y"]))
+    if st["y"] == 0:
+        break
+early = [d for d in downs if not d[1]]  # any DOWN before ROT_DONE2 = a min-think-floor breach
+check("A: no slam before ROT_DONE2 (min-think floor + rotation-complete are prerequisites)",
+      len(early) == 0, f"early-DOWN frames={early[:3]}")
+check("A: slam DID engage once committed+aligned+stable", len(downs) > 0 and downs[0][1] == 1,
+      f"first DOWN at frame={downs[0][0] if downs else None} rot={downs[0][1] if downs else '-'}")
+ys = [d[2] for d in downs]
+span = (ys[0] - ys[-1]) if len(ys) >= 4 else 0
+rate = (len(ys) - 1) / span if span else 999   # frames-per-row under sustained DOWN
+check("A: under DOWN the capsule descends ~2 f/row (soft-drop, vs natural 25 f/row)",
+      1.5 <= rate <= 3.0, f"measured {rate:.2f} f/row over {len(ys)} DOWN frames (spawn grav=25 f/row)")
+
+# ---------------------------------------------------------------- (b) aborts + re-steers on change
+print("SCENARIO B (DRSLAM=1): slam ABORTS + re-steers if the stable argmax changes pre-lock")
+s = Sim(rotfix=True, slam=True, minthink=8, kopen=4, vcend=10, lowy=6)
+s.grav_period = 40                     # high Y: exercise the OPEN-K abort (not the crossover)
+spawn_pill(s, y=0x0D, x=3, orient=0)
+publish_live(s, col=3, orient=0)       # aligned, no rotation -> commit fast, then slam on stability
+slam_frame = None
+for i in range(90):
+    st = s.frame(apply_physics=True)
+    if (st["f6"] & 0x04) and st["rot"]:
+        slam_frame = i
+        break
+check("B: reached the slam state (DOWN held while committed + still armed)", slam_frame is not None,
+      f"slam_frame={slam_frame}")
+publish_live(s, col=6, orient=0)       # search changes its mind: a NEW column
+released = resteered = reslam_instant = False
+for i in range(14):
+    st = s.frame(apply_physics=True)
+    if not (st["f6"] & 0x04):
+        released = True
+    if st["f6"] & 0x01:                # RIGHT toward the new column 6
+        resteered = True
+    if i == 0 and (st["f6"] & 0x04):
+        reslam_instant = True
+check("B: DOWN releases on argmax change; no instant re-slam (STABLE_CT2 was zeroed)",
+      released and not reslam_instant, f"released={released} reslam_instant={reslam_instant}")
+check("B: re-steers toward the new column (TGT_C2 refreshed -> un-aligned -> mv_p2)", resteered,
+      f"TGT_C2={s.mem[TGT_C2]} STABLE_CT2={s.mem[STABLE_CT2]}")
+
+# ---------------------------------------------------------------- (c) never-DONE crossover
+print("SCENARIO C (DRSLAM=1): never-DONE crossover -- min-think yields + gate commits, no drift-lock")
+# HIGH min-think that never opens + never DONE + fast gravity: without the crossover escapes the
+# orient would never lock and the pill would drift-lock. With them: commit low, slam the stable argmax.
+s = Sim(rotfix=True, slam=True, minthink=250, kopen=250, kcross=6, vcend=10, lowy=8)
+s.soft_drop = True; s.grav_period = 4
+spawn_pill(s, y=0x0D, x=5, orient=0)
+publish_live(s, col=5, orient=0)       # aligned; only the low-Y crossover paths can commit / slam
+committed_y = slam_y = None
+for i in range(140):
+    st = s.frame(apply_physics=True)
+    if st["rot"] and committed_y is None:
+        committed_y = st["y"]
+    if (st["f6"] & 0x04) and slam_y is None:
+        slam_y = st["y"]
+    if st["y"] == 0:
+        break
+check("C: min-think YIELDS under fast gravity (ROT_DONE2 latches though it never opened + never DONE)",
+      committed_y is not None and committed_y < 8 and s.mem[ARMED2] != 0,
+      f"committed at Y={committed_y} armed={s.mem[ARMED2]}")
+check("C: gate commits on stability alone (slam fired LOW, never DONE, lands at target = no drift-lock)",
+      slam_y is not None and slam_y < 8 and s.mem[P2X] == 5, f"slam Y={slam_y} landed col={s.mem[P2X]} (target 5)")
+# steering variant: reaches a FAR target under never-DONE fast gravity (drift-lock would miss it)
+s2 = Sim(rotfix=True, slam=True, minthink=6, kopen=250, kcross=6, vcend=10, lowy=8)
+s2.soft_drop = True; s2.grav_period = 6
+spawn_pill(s2, y=0x0D, x=2, orient=0)
+publish_live(s2, col=6, orient=0)
+for i in range(180):
+    st = s2.frame(apply_physics=True)
+    if st["y"] == 0:
+        break
+check("C: never-DONE, still steers to a far column + lands there (col 6 from spawn 2)",
+      s2.mem[P2X] == 6 and s2.mem[ARMED2] != 0, f"landed col={s2.mem[P2X]} armed={s2.mem[ARMED2]}")
+
+# ---------------------------------------------------------------- (d) endgame requires DONE
+print("SCENARIO D (DRSLAM=1): endgame (low virus count) requires DONE -- no stability slam above the crossover")
+s = Sim(rotfix=True, slam=True, minthink=5, kopen=3, kend=255, vcend=10, lowy=8)
+s.mem[VCOUNT_P2] = 5                    # endgame: vc < VC_ENDGAME(10)
+spawn_pill(s, y=0x0D, x=3, orient=0)    # aligned, no rotation
+publish_live(s, col=3, orient=0)        # perfectly stable argmax -- but endgame + high Y must NOT slam
+endgame_downs = 0
+for i in range(320):                    # long enough that STABLE_CT2 hits its 0xFE ceiling
+    st = s.frame(apply_physics=False)   # Y frozen HIGH (13): no crossover -> pure endgame-DONE policy
+    if st["f6"] & 0x04:
+        endgame_downs += 1
+check("D: endgame never slams on stability, even at the STABLE_CT2 ceiling (K_END=255 => DONE-only)",
+      endgame_downs == 0 and s.mem[STABLE_CT2] == 0xFE,
+      f"DOWN frames while endgame+armed+stable+high = {endgame_downs}; STABLE_CT2 saturated at "
+      f"{s.mem[STABLE_CT2]} (0xFE, < K_END=255 => the compare can never fire)")
+publish_done(s, col=3, orient=0)        # DONE arrives -> the ceiling slam still fires
+done_slam = False
+for i in range(10):
+    st = s.frame(apply_physics=False)
+    if st["f6"] & 0x04:
+        done_slam = True
+check("D: DONE still opens the ceiling slam in endgame", done_slam,
+      f"DOWN after DONE={done_slam} armed={s.mem[ARMED2]}")
+
+# ---------------------------------------------------------------- (f) fairness: gravity-pin audit
+print("SCENARIO F (DRSLAM=1): FAIRNESS gravity-pin audit -- the SLAM path pins gravity 0 frames")
+s = Sim(rotfix=True, slam=True, minthink=8, kopen=4, kcross=6, vcend=10, lowy=8)
+s.soft_drop = True; s.grav_period = 6
+spawn_pill(s, y=0x0D, x=2, orient=1)    # full lifecycle: rotate + slide + min-think + commit + slam
+publish_live(s, col=6, orient=3)        # never DONE -> also drives the crossover slam path
+for i in range(220):
+    st = s.frame(apply_physics=True)
+    if st["y"] == 0:
+        break
+check("F: ZERO gravity pins across a full SLAM-path pill (rotate+min-think+slam, all under live gravity)",
+      not any(s.froze_hist), f"pinned={sum(s.froze_hist)}/{len(s.froze_hist)} frames")
+
+# ---------------------------------------------------------------- (g) DRSLAM_MATURE arm/disarm
+print("SCENARIO G (DRSLAM_MATURE): the slam is armed/disarmed by the LAST search's latency")
+# G1: disarmed (SLAM_ARM=0) -> the confidence slam is HELD (canonical DONE-wait fallback)
+s = Sim(rotfix=True, slam=True, minthink=8, kopen=4, vcend=10, lowy=6)
+s.grav_period = 40                       # Y high -> isolate the OPEN stability gate (no crossover)
+spawn_pill(s, y=0x0D, x=3, orient=0)
+s.mem[SLAM_ARM] = 0                       # search not keeping pace -> disarmed
+publish_live(s, col=3, orient=0)
+g1_downs = sum(1 for _ in range(60) if s.frame(apply_physics=False)["f6"] & 0x04)
+check("G: disarmed (SLAM_ARM=0) -> the confidence slam is held (canonical DONE-wait)",
+      g1_downs == 0, f"DOWN frames={g1_downs}")
+# G2: a FAST DONE (WDOGH2 < FAST_HI=2) ARMS the slam
+s.mem[WDOGH2] = 0                         # this search was fast
+publish_done(s, col=3, orient=0)
+for _ in range(6):
+    s.frame(apply_physics=False)
+check("G: a FAST DONE (WDOGH2 < FAST_HI) arms the slam", s.mem[SLAM_ARM] == 1,
+      f"SLAM_ARM={s.mem[SLAM_ARM]} LAST_LAT={s.mem[LAST_LAT]}")
+# G3: a SLOW DONE (WDOGH2 >= FAST_HI) does NOT arm -- it DISARMS
+s3 = Sim(rotfix=True, slam=True, minthink=8, kopen=4, vcend=10, lowy=6)
+spawn_pill(s3, y=0x0D, x=3, orient=0)
+s3.mem[SLAM_ARM] = 1                      # was armed
+s3.mem[WDOGH2] = 2                        # this search was SLOW (>= FAST_HI)
+publish_done(s3, col=3, orient=0)
+for _ in range(6):
+    s3.frame(apply_physics=False)
+check("G: a SLOW DONE (WDOGH2 >= FAST_HI) DISARMS the slam", s3.mem[SLAM_ARM] == 0,
+      f"SLAM_ARM={s3.mem[SLAM_ARM]} LAST_LAT={s3.mem[LAST_LAT]}")
+# G4: a pill that LOCKS while its search is still ARMED disarms (search can't keep pace with the fall)
+s4 = Sim(rotfix=True, slam=True, minthink=8, kopen=4, vcend=10, lowy=6)
+spawn_pill(s4, y=0x02, x=3, orient=0)
+s4.mem[SLAM_ARM] = 1; s4.mem[ARMED2] = 1  # armed + still searching
+s4.mem[P2Y] = 0x0D; s4.mem[LASTY2] = 0x02  # force a pill-lock edge (Y jumps up) while ARMED2 set
+s4.frame(apply_physics=False)
+check("G: lock-while-armed disarms (the search never DONE'd before the pill locked)",
+      s4.mem[SLAM_ARM] == 0, f"SLAM_ARM={s4.mem[SLAM_ARM]}")
+
+# ---------------------------------------------------------------- (h) round-1 dead-round + vicious cycle
+print("SCENARIO H (regression): the round-1 dead round + the mid-game vicious cycle")
+# Ha: cold match entry -- the pre-DONE window is a WRONG move (col1); the search DONEs the RIGHT move
+# (col6) only late (cold/slow). DRSLAM_MATURE=0 (pre-fix) commits the wrong window; default waits.
+def cold_first_pill(mature):
+    s = Sim(rotfix=True, slam=True, mature=mature, minthink=8, kopen=4, kcross=6, vcend=10, lowy=6)
+    s.soft_drop = True; s.grav_period = 16
+    spawn_pill(s, y=0x0D, x=3, orient=0)
+    s.mem[SLAM_ARM] = 0                    # first pill of the match: disarmed (no prior latency)
+    for i in range(300):
+        if i < 120:
+            publish_live(s, col=1, orient=0)   # cold pre-DONE window = a WRONG move
+        else:
+            s.mem[WDOGH2] = 0                   # the DONE that finally lands is itself timely
+            publish_done(s, col=6, orient=0)    # the real answer, only now validated
+        if s.frame(apply_physics=True)["y"] == 0:
+            break
+    return s.mem[P2X]
+buggy, fixed = cold_first_pill(0), cold_first_pill(2)
+check("H: DRSLAM_MATURE=0 (pre-fix) commits the WRONG pre-DONE move (col1) = the dead round",
+      buggy == 1, f"pre-fix landed col={buggy} (wrong=1, correct=6)")
+check("H: DRSLAM_MATURE=2 (default) waits for the validated DONE, lands correct (col6)",
+      fixed == 6, f"fixed landed col={fixed}")
+# Hb: a MID-GAME slow-search episode disarms (canonical anytime for that pill), then a FAST DONE
+# re-arms -- breaking the vicious cycle (bad placement -> denser board -> slower search) at the root.
+s = Sim(rotfix=True, slam=True, minthink=8, kopen=4, vcend=10, lowy=6)
+spawn_pill(s, y=0x0D, x=3, orient=0)
+s.mem[SLAM_ARM] = 1; s.mem[WDOGH2] = 3    # armed, but THIS search is slow -> should disarm the next pill
+publish_done(s, col=3, orient=0)          # handle() processes the DONE (ARMED2=1 from spawn) -> disarm
+for _ in range(4):
+    s.frame(apply_physics=False)
+disarmed = s.mem[SLAM_ARM]
+s.mem[ARMED2] = 1; s.mem[WDOG2] = 0; s.mem[WDOGH2] = 0   # a NEW search that DONEs FAST
+publish_done(s, col=3, orient=0)
+for _ in range(4):
+    s.frame(apply_physics=False)
+rearmed = s.mem[SLAM_ARM]
+check("H: a mid-game SLOW search disarms, a later FAST DONE re-arms (breaks the vicious cycle)",
+      disarmed == 0 and rearmed == 1, f"after-slow={disarmed} after-fast={rearmed}")
+
+# ---------------------------------------------------------------- byte-exactness (immutable c300acb)
+print("BYTE-EXACT: DRSLAM=0 == canonical (c300acb); DRSLAM_MATURE=0 == the pre-fix slam (aea9f6e)")
+import hashlib
+def sha(code):
+    return hashlib.sha256(bytes(code)).hexdigest()[:16]
+VARIANTS = {"ab": {}, "human": {"human": True}, "pocket": {"human": True, "pocket": True}}
+# immutable goldens: build_main(11,1) at c300acb (DRSLAM=0 = canonical) and aea9f6e (DRSLAM=1 = pre-fix
+# slam). The live canonical worktree tracks HEAD and drifts as this work merges, so we pin to commits.
+GOLD_CANON = {"ab": "855ca99a2cc3c8aa", "human": "70568fdbb39422cc", "pocket": "d1c7f8165767b4a4"}
+GOLD_PREFIX = {"ab": "47e3ed7cf8a2e650", "human": "e53c36f0efbd2cb2", "pocket": "36003fb7268db303"}
+for name, kw in VARIANTS.items():
+    # pin minthink=90: MIN_THINK is ROTFIX-level (in both goldens); its default moved to 25 (task #40
+    # tempo lever), so hold 90 here to keep pinning the historical c300acb / aea9f6e bytes.
+    canon = sha(load_build(rotfix=True, slam=False, minthink=90, **kw)[0])
+    check(f"BYTE-EXACT {name}: DRSLAM=0 == canonical c300acb golden", canon == GOLD_CANON[name],
+          f"got {canon} want {GOLD_CANON[name]}")
+    # pin kopen=40 (K_OPEN was 40 at aea9f6e; default now 255) + minthink=90 (default now 25) -- hold both
+    # historical values so this golden keeps testing the aea9f6e pre-fix-slam artifact.
+    prefix = sha(load_build(rotfix=True, slam=True, mature=0, kopen=40, minthink=90, **kw)[0])
+    check(f"BYTE-EXACT {name}: DRSLAM_MATURE=0 == pre-fix slam aea9f6e golden", prefix == GOLD_PREFIX[name],
+          f"got {prefix} want {GOLD_PREFIX[name]}")
 
 print()
 npass = sum(1 for _, c, _ in results if c)

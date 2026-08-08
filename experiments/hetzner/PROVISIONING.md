@@ -1,12 +1,17 @@
 # Hetzner experiment node — provisioning notes
 
+> ⚠ The node's IP and SSH key filename are redacted here (`<NODE_IP>`,
+> `<KEYFILE>`). This repo is public and the box accepts root SSH; a rebuilt
+> node gets a new IP anyway, so the concrete values add nothing to the
+> rebuild procedure this file exists to document.
+
 Everything needed to rebuild this box from a bare Ubuntu image. Written so the
 node is disposable: if it is ever cancelled and later re-created, this file is
 the only thing required to bring it back.
 
-**Box**: Hetzner CCX23, `178.104.197.190`, Ubuntu 24.04, 4 vCPU (**2 physical
+**Box**: Hetzner CCX23, `<NODE_IP>`, Ubuntu 24.04, 4 vCPU (**2 physical
 cores + SMT**, AMD EPYC-Milan), 16 GB RAM, ~86 GB free.
-**Access**: `ssh -i ~/.ssh/hetzner_rbm root@178.104.197.190`
+**Access**: `ssh -i ~/.ssh/<KEYFILE> root@<NODE_IP>`
 **Hands off**: `/root/rbm-mccfr` and `/root/rbm_mccfr` are an unrelated older
 project. Leave them alone.
 

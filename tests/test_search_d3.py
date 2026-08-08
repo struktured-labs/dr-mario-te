@@ -3,7 +3,7 @@
 ply1 rank + top-8 select (Pass 0) x [ply2 rank + top-8 select + expectimax over 8 pills],
 TARGETED capped resolve, 16-bit WIN=30000, integer expectimax. Validated vs decide_d3
 (firmware-faithful golden). Reuses the validated leaf_score_d3 + land/resolve/calc_imm."""
-import sys, random
+import sys, os, random
 HERE = "/home/struktured/projects/dr-mario-mods"
 sys.path.insert(0, HERE + "/tests"); sys.path.insert(0, HERE)
 import primitives as P
@@ -50,8 +50,13 @@ TK1_KL, TK1_KH, TK1_O, TK1_C = 0x0A00, 0x0A20, 0x0A40, 0x0A60
 D_L1L, D_L1H = 0x68, 0x69     # ply-1 leaf (for the temporal discount)
 D_ADL, D_ADH = 0x6A, 0x6B     # eh_terms weighted accumulator = W_EXCAV*excav + W_HANG*hang(b1)
 EH_T0, EH_T1, EH_T2, EH_T3 = 0x6C, 0x6D, 0x6E, 0x6F   # eh_terms board-scan scratch ($6C-$6F)
+D_STR, D_P1L, D_P1H = 0x70, 0x71, 0x72   # #47: root-child stranded count + dose product ($70-$72)
 DISC = False                   # emit discounted combine (set by build_copro_d3)
 EH_PLY1 = False                # emit the ply-1 excav+hang add-on (eh_terms; set by build_copro_d3)
+DRSTRAND = 0                   # #47 stranded-half root cost dose (set by build_copro_d3 from env
+                               # DRSTRAND). 0 emits NOTHING -> byte-identical firmware, which the
+                               # hex drift guard depends on. Offline gates for dose 20: mirror
+                               # -9.85 REAL, VS 54.2% vs chain180 (eval47/SILICON_PLAN.md).
 
 THIRD = [(0, 1), (1, 2), (2, 0), (1, 1)]   # stratified 4-pill subset (3 mixed + 1 double), /4=shift
 RESOLVE_LBL = "resolve_capped"   # TARGETED (deploy config, isolation 12/12); "resolve_capped_full" for full
@@ -60,7 +65,41 @@ USE_ENGINE = False               # True: FULL BoardEngine (copies/land/resolve/l
 LEV_BOARD, LEV_SCO, LEV_WIN_R, LEV_GO = 0x7000, 0x70F0, 0x70F2, 0x70F8
 LEV_A_O4, LEV_A_COL, LEV_A_CA, LEV_A_CB, LEV_A_SL = 0x70E0, 0x70E1, 0x70E2, 0x70E3, 0x70E4
 LEV_LEGAL, LEV_RVC, LEV_RVV, LEV_IMM = 0x70E8, 0x70E9, 0x70EA, 0x70EB
+LEV_DVFB = 0x70ED   # delta clearing-fallback flag (CoproDrMario read-mux $70xD)
 LEV_WSLOT, LEV_CMD = 0x70F3, 0x70F4
+LEV_STRAND_R = 0x70F3   # READ of $70F3 = CMD-8 (#47) stranded count (the WRITE there is wslot)
+# ---- LINK-ENGINE ARM SELECT (chain-capable LeafEval.sv only) ----------------------
+# The link engine resolves leaves under BODY gravity and can iterate to a fixpoint,
+# counting rounds. Two mailbox bytes pick the arm; both power up to the no-op value, so
+# firmware that writes neither gets lnk1 with no chain reward. Emitting them is OPT-IN
+# (DRCOPRO_ARM=1) purely so the default build stays byte-identical to the shipped
+# c87e60a1 -- the emitted bytes are patchable immediates, DRMINTHINK-style, which is what
+# makes the hardware A/B a hex patch rather than a two-hour resynthesis.
+LEV_A_FIX, LEV_A_CHW = 0x70E5, 0x70E6
+EMIT_ARM = os.environ.get("DRCOPRO_ARM", "0") == "1"
+DRFIX = int(os.environ.get("DRFIX", "0"))        # 0 = one clear round (lnk1), 1 = fixpoint
+DRCHAIN = int(os.environ.get("DRCHAIN", "0"))    # chain reward dose; measured 180 and 360,
+                                                 # knee above 360. Sent as dose/4 (one byte).
+USE_DELTA = False   # incremental-leaf: CMD-6 BASE per parent + CMD-7 DELTA per child (+ CMD-4 fallback)
+DELTA_P0 = DELTA_P2 = DELTA_P3 = None   # per-ply gates for bisection; None -> follow USE_DELTA
+DEBUG_VAL1 = False   # diagnostic: dump per-ply1-candidate (C1,O1,V1L,V1H,B2L,B2H) into copro
+                     # RAM ring at DBG_RING (stride 8, X=D_J1*8 -- unchanged), PLUS a SECOND
+                     # ring at DBG_RING2 (imm1/leaf1/eh: I1L,I1H,L1L,L1H,ADL,ADH), reusing the
+                     # SAME X value. Two 8-byte-stride rings, not one 16-byte-stride ring,
+                     # because X is an 8-bit 6502 register: TOPK1=32 candidates * 16 would
+                     # need X up to 31*16=496, which overflows/wraps mod 256 and would alias
+                     # ring entries -- caught before emitting it, not after. 31*8=248 fits.
+                     # Extended (task #17 stage 3, tuck-vs-offline localization) so a specific
+                     # ply-1 candidate's full component breakdown (imm1, leaf1, best2-raw,
+                     # blend, eh, total) can be read back and compared against
+                     # root_search.py's offline components term-by-term -- gated behind this
+                     # same flag (default False), so every existing build (DEBUG_VAL1 never
+                     # set True in production) is byte-identical to before this change.
+DBG_RING = 0x0C00    # free copro RAM (LIVE$0500 WORK1$0600 CUR$0700 MARK$0780 WORK2$0B00 -> $0C00 free)
+DBG_RING2 = 0x0D00   # second ring, right after DBG_RING's 32*8=256B span (0x0C00-0x0CFF)
+DELTA_P2_LOOP = True   # diagnostic: False keeps ply2 base-latch but uses full-node loop (engine vs orch)
+def _d(flag):
+    return USE_DELTA if flag is None else flag
 TOPK1 = 32   # ply1 keep-width; 32 = FULL (T1C <= 30). MEASURED (isolation 2026-07-10):
              # topk1=8 = 70% clears vs FULL = 91% (n=24, FW model) -- the depth-1 Pass-0 key
              # under-ranks setup moves; ply1 pruning is NOT quality-safe at depth-3. Cost:
@@ -148,6 +187,30 @@ def _e_node(a, o_zp, c_zp, ca_abs, cb_abs):
     _e_poll(a)
 
 
+def _e_base(a):
+    """CMD 6: scan CUR (parent) and LATCH the base accumulators + column heights for the delta."""
+    a.ins("LDA_imm", 6); a.ins16("STA_abs", LEV_CMD)
+    _e_poll(a)
+
+
+def _e_dnode(a, o_zp, c_zp, ca_abs, cb_abs, rslot):
+    """Incremental NODE: CMD 7 DELTA (child leaf from base+delta; leaves CUR = parent unless it
+    hit a clearing placement). On dv_fallback (clear), restore CUR<-slot rslot and re-run CMD 4
+    full NODE (args stay latched), then restore CUR again for the next delta. Result regs
+    (sco/imm/legal/win) match _e_node either way. Assumes base already latched (CMD 6) and CUR=parent."""
+    a.ins("LDA_zp", o_zp); a.ins16("STA_abs", LEV_A_O4)
+    a.ins("LDA_zp", c_zp); a.ins16("STA_abs", LEV_A_COL)
+    a.ins16("LDA_abs", ca_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CA)
+    a.ins16("LDA_abs", cb_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CB)
+    a.ins("LDA_imm", 7); a.ins16("STA_abs", LEV_CMD); _e_poll(a)      # CMD 7 DELTA
+    n = _ec[0]; _ec[0] += 1
+    a.ins16("LDA_abs", LEV_DVFB); a.br("BEQ", f"dn{n}")              # dv_fallback==0 -> delta result OK
+    _e_copy(a, rslot, True)                                          # clearing: restore CUR <- parent
+    a.ins("LDA_imm", 4); a.ins16("STA_abs", LEV_CMD); _e_poll(a)     # CMD 4 full NODE (args latched)
+    _e_copy(a, rslot, True)                                          # restore CUR <- parent for next delta
+    a.label(f"dn{n}")
+
+
 def _lda_absx_label(a, label):
     """Emit `LDA <label>,X` where <label> is an internal code label resolved to its absolute
     address (base+offset) at assemble time. The assembler's abs fixups already accept string
@@ -173,6 +236,15 @@ def _emit_eh_terms(a):
     a.ins16("LDA_abs", S_CB); a.ins("AND_imm", 0x0F); a.ins("STA_zp", PCB)
     a.jsr("land_place")                                   # legal by construction (Pass-0 kept it)
     a.jsr("resolve_capped")                               # targeted cap-1 resolve -> b1 in CUR
+    a.label("eh_terms_scan")
+    # ENTRY POINT FOR EXTERNAL CALLERS whose own ply-1 landing already resolved b1 into CUR
+    # by other means (e.g. the tuck v3 scoring path's land_place_at + resolve_capped) --
+    # skips the rebuild-from-root-plus-replay-candidate preamble above, which would
+    # otherwise DESTROY an already-placed non-base-action board. A label costs zero bytes
+    # and does not affect this build's own byte-identical flag-off output either way --
+    # see fpga/copro/tuck_v3.py's emit_eh_terms_scan_call for the JSR-by-raw-address
+    # caller (labels only resolve within their own Asm6502 image; a cross-image call needs
+    # this label's OWN resolved address, known once this file's code has been assembled).
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_ADL); a.ins("STA_zp", D_ADH)
     # ===================== g_excav: run^2 of the same-color pile-top over a buried virus =====
     a.ins("LDA_imm", 0); a.ins("STA_zp", EH_T0)           # EH_T0 = c
@@ -235,17 +307,58 @@ def _emit_eh_terms(a):
     a.label("eh_hland")
     a.ins("AND_imm", 0x0F); a.ins("STA_zp", EH_T1)        # EH_T1 = landing low nibble
     a.ins("LDA_zp", EH_T0); a.ins("AND_imm", 0x0F); a.ins("CMP_zp", EH_T1); a.br("BNE", "eh_hnext")
-    a.ins("LDA_zp", D_ADL); a.ins("CLC"); a.ins("ADC_imm", G3.W_HANG); a.ins("STA_zp", D_ADL)
-    a.ins("LDA_zp", D_ADH); a.ins("ADC_imm", 0); a.ins("STA_zp", D_ADH)
+    if G3.HANG_VIRUS_COL_ONLY or G3.HANG_DEPTH_PROP:
+        a.jsr("eh_hcredit")                               # R4 out-of-line credit (keeps loop branches short)
+    else:
+        a.ins("LDA_zp", D_ADL); a.ins("CLC"); a.ins("ADC_imm", G3.W_HANG); a.ins("STA_zp", D_ADL)
+        a.ins("LDA_zp", D_ADH); a.ins("ADC_imm", 0); a.ins("STA_zp", D_ADH)
     a.label("eh_hnext")
     a.ins("INX"); a.jmp("eh_hloop")
     a.label("eh_hdone")
     a.ins("RTS")
+    # --- R4 credit subroutine (JSR-only; on entry X = hang idx, Y = landing idx) ---
+    if G3.HANG_VIRUS_COL_ONLY or G3.HANG_DEPTH_PROP:
+        a.label("eh_hcredit")
+        a.ins("STY_zp", EH_T3)                            # save landing idx (Y clobbered below)
+        if G3.HANG_VIRUS_COL_ONLY:
+            a.ins("TXA"); a.ins("AND_imm", 0x07); a.ins("TAY")   # Y = column c = idx & 7
+            a.label("eh_hvc")                             # scan column c for a virus
+            a.ins16("LDA_absY", CUR); a.ins("CMP_imm", 0xFF); a.br("BEQ", "eh_hvcs")
+            a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BEQ", "eh_hvok")   # virus present
+            a.label("eh_hvcs")
+            a.ins("TYA"); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAY")
+            a.ins("CPY_imm", 128); a.br("BCC", "eh_hvc"); a.ins("RTS")   # no virus in col -> no credit
+            a.label("eh_hvok")
+        if G3.HANG_DEPTH_PROP:
+            a.ins("STX_zp", EH_T2)                        # save hang idx
+            a.ins("LDA_zp", EH_T3); a.ins("SEC"); a.ins("SBC_zp", EH_T2)   # A = landing - hang (mult of 8)
+            a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A")                 # >>3 = rows between
+            a.ins("SEC"); a.ins("SBC_imm", 1)                             # gap = rows_between - 1
+            a.ins("TAX")                                                  # X = gap (table index)
+            _lda_absx_label(a, "eh_hang_lo"); a.ins("CLC"); a.ins("ADC_zp", D_ADL); a.ins("STA_zp", D_ADL)
+            _lda_absx_label(a, "eh_hang_hi"); a.ins("ADC_zp", D_ADH); a.ins("STA_zp", D_ADH)
+            a.ins("LDX_zp", EH_T2)                        # restore hang idx
+        else:
+            a.ins("LDA_zp", D_ADL); a.ins("CLC"); a.ins("ADC_imm", G3.W_HANG); a.ins("STA_zp", D_ADL)
+            a.ins("LDA_zp", D_ADH); a.ins("ADC_imm", 0); a.ins("STA_zp", D_ADH)
+        a.ins("RTS")
     a.label("eh_excav_tab"); a.raw(0, G3.W_EXCAV * 1, G3.W_EXCAV * 4, G3.W_EXCAV * 9)   # [min(run,3)]
+    if G3.HANG_DEPTH_PROP:                                 # R4: credit[gap] = W_HANG + W_HANG_GAP*gap
+        _hv = [G3.W_HANG + G3.W_HANG_GAP * g for g in range(16)]
+        a.label("eh_hang_lo"); a.raw(*[v & 0xFF for v in _hv])
+        a.label("eh_hang_hi"); a.raw(*[(v >> 8) & 0xFF for v in _hv])
 
 
 def _emit_search_d3_engine(a):
     a.label("search")
+    if EMIT_ARM:
+        # Arm select. Written every search because the copro is reset on each GO; the
+        # engine's arg registers survive that reset, so this is idempotent and costs
+        # 12 cycles a pill. DRCHAIN is scaled by 4 to fit a byte (dose 720 -> 180).
+        assert 0 <= DRCHAIN <= 1020 and DRCHAIN % 4 == 0, \
+            "DRCHAIN must be 0..1020 in steps of 4 (it is sent as dose/4)"
+        a.ins("LDA_imm", 1 if DRFIX else 0); a.ins16("STA_abs", LEV_A_FIX)
+        a.ins("LDA_imm", DRCHAIN // 4);      a.ins16("STA_abs", LEV_A_CHW)
     a.ins("LDA_imm", 0xFF); a.ins("STA_zp", D_BO)
     a.ins16("STA_abs", S_BEST_O)                    # ANYTIME: live mailbox invalid until 1st cand
     a.ins("LDA_imm", 0x00); a.ins("STA_zp", D_BVL); a.ins("LDA_imm", 0x80); a.ins("STA_zp", D_BVH)
@@ -260,11 +373,17 @@ def _emit_search_d3_engine(a):
     a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "up_l")
     a.ins("LDA_imm", 0); a.ins16("STA_abs", LEV_WSLOT)
     # ---- Pass 0 ----
+    if _d(DELTA_P0):
+        _e_copy(a, 1, True)                               # CUR <- slot1 (root parent), once
+        _e_base(a)                                        # latch base accumulators + col heights
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_T1C); a.ins("STA_zp", D_O1)
     a.label("p0_o"); a.ins("LDA_imm", 0); a.ins("STA_zp", D_C1)
     a.label("p0_c")
-    _e_copy(a, 1, True)
-    _e_node(a, D_O1, D_C1, S_CA, S_CB)
+    if _d(DELTA_P0):
+        _e_dnode(a, D_O1, D_C1, S_CA, S_CB, 1)           # child leaf from base+delta (CUR stays = slot1)
+    else:
+        _e_copy(a, 1, True)
+        _e_node(a, D_O1, D_C1, S_CA, S_CB)
     a.ins16("LDA_abs", LEV_LEGAL); a.br("BNE", "p0_leg"); a.jmp("p0_next")
     a.label("p0_leg")
     _e_score(a)
@@ -305,6 +424,15 @@ def _emit_search_d3_engine(a):
     _e_copy(a, 1, True)
     _e_node(a, D_O1, D_C1, S_CA, S_CB)
     a.ins16("LDA_abs", LEV_IMM); a.ins("STA_zp", D_I1L); a.ins16("LDA_abs", LEV_IMM + 1); a.ins("STA_zp", D_I1H)
+    if DRSTRAND:
+        # #47: the engine's working board holds the RESOLVED ROOT CHILD right here
+        # (CMD-4 NODE just ran). CMD 8 counts its stranded halves -- read-only, touches
+        # none of the result regs read above/below -- and the count lands in D_STR for
+        # the o_cand subtraction. Runs for EVERY root candidate (win and no-ply2 paths
+        # included), matching cascade_stranded_x's unconditional root application.
+        a.ins("LDA_imm", 8); a.ins16("STA_abs", LEV_CMD)
+        _e_poll(a)
+        a.ins16("LDA_abs", LEV_STRAND_R); a.ins("STA_zp", D_STR)
     if DISC:
         a.ins16("LDA_abs", LEV_SCO); a.ins("STA_zp", D_L1L)
         a.ins16("LDA_abs", LEV_SCO + 1); a.ins("STA_zp", D_L1H)
@@ -316,11 +444,17 @@ def _emit_search_d3_engine(a):
     _e_copy(a, 2, False)                                   # w1 <- cur
     if EH_PLY1:
         a.jsr("eh_terms")                                 # D_AD = W_EXCAV*excav(b1)+W_HANG*hang(b1)
+    if _d(DELTA_P2):
+        _e_copy(a, 2, True)                               # CUR <- w1 (b1 parent), once
+        _e_base(a)                                        # latch base from parent
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_TKC); a.ins("STA_zp", D_O2)
     a.label("i_outer"); a.ins("LDA_imm", 0); a.ins("STA_zp", D_C2)
     a.label("i_inner")
-    _e_copy(a, 2, True)                                    # cur <- w1
-    _e_node(a, D_O2, D_C2, S_NA, S_NB)
+    if _d(DELTA_P2) and DELTA_P2_LOOP:
+        _e_dnode(a, D_O2, D_C2, S_NA, S_NB, 2)            # child leaf from base+delta (CUR stays = slot2)
+    else:
+        _e_copy(a, 2, True)                               # cur <- w1
+        _e_node(a, D_O2, D_C2, S_NA, S_NB)
     a.ins16("LDA_abs", LEV_LEGAL); a.br("BNE", "i_leg"); a.jmp("i_next")
     a.label("i_leg")
     _e_score(a)
@@ -404,6 +538,42 @@ def _emit_search_d3_engine(a):
         a.ins("CLC"); a.ins("LDA_zp", D_V1L); a.ins("ADC_zp", D_ADL); a.ins("STA_zp", D_V1L)
         a.ins("LDA_zp", D_V1H); a.ins("ADC_zp", D_ADH); a.ins("STA_zp", D_V1H)
     a.label("o_cand")
+    if DRSTRAND:
+        # #47: val1 -= DRSTRAND * D_STR (16-bit). Double-and-add over the dose's bits,
+        # MSB->LSB -- the assembler has no ROL_A, so the 16-bit double is P1 += P1 via
+        # ADC. count <= 96, dose <= 255 -> product < 24480, no signed-16 hazard against
+        # val1's scale (WIN=30000 dominates by construction). Applied at o_cand so the
+        # WIN and no-legal-ply2 paths (which JMP here) pay the term too, exactly like
+        # cascade_stranded_x's unconditional root subtraction.
+        assert 1 <= DRSTRAND <= 255
+        bits = [int(b) for b in bin(DRSTRAND)[2:]]
+        a.ins("LDA_zp", D_STR); a.ins("STA_zp", D_P1L)      # P1 = count (MSB of dose)
+        a.ins("LDA_imm", 0); a.ins("STA_zp", D_P1H)
+        for b in bits[1:]:
+            a.ins("CLC"); a.ins("LDA_zp", D_P1L); a.ins("ADC_zp", D_P1L); a.ins("STA_zp", D_P1L)
+            a.ins("LDA_zp", D_P1H); a.ins("ADC_zp", D_P1H); a.ins("STA_zp", D_P1H)
+            if b:
+                a.ins("CLC"); a.ins("LDA_zp", D_P1L); a.ins("ADC_zp", D_STR); a.ins("STA_zp", D_P1L)
+                a.ins("LDA_zp", D_P1H); a.ins("ADC_imm", 0); a.ins("STA_zp", D_P1H)
+        a.ins("SEC"); a.ins("LDA_zp", D_V1L); a.ins("SBC_zp", D_P1L); a.ins("STA_zp", D_V1L)
+        a.ins("LDA_zp", D_V1H); a.ins("SBC_zp", D_P1H); a.ins("STA_zp", D_V1H)
+    if DEBUG_VAL1:                                    # dump (C1,O1,V1L,V1H,B2L,B2H) at
+                                                        # ring[D_J1*8] (pre-jitter), PLUS
+                                                        # (I1L,I1H,L1L,L1H,ADL,ADH) at
+                                                        # ring2[D_J1*8] (SAME X, no recompute)
+        a.ins("LDA_zp", D_J1); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("TAX")
+        a.ins("LDA_zp", D_C1);  a.ins16("STA_absX", DBG_RING + 0)
+        a.ins("LDA_zp", D_O1);  a.ins16("STA_absX", DBG_RING + 1)
+        a.ins("LDA_zp", D_V1L); a.ins16("STA_absX", DBG_RING + 2)
+        a.ins("LDA_zp", D_V1H); a.ins16("STA_absX", DBG_RING + 3)
+        a.ins("LDA_zp", D_B2L); a.ins16("STA_absX", DBG_RING + 4)
+        a.ins("LDA_zp", D_B2H); a.ins16("STA_absX", DBG_RING + 5)
+        a.ins("LDA_zp", D_I1L); a.ins16("STA_absX", DBG_RING2 + 0)
+        a.ins("LDA_zp", D_I1H); a.ins16("STA_absX", DBG_RING2 + 1)
+        a.ins("LDA_zp", D_L1L); a.ins16("STA_absX", DBG_RING2 + 2)
+        a.ins("LDA_zp", D_L1H); a.ins16("STA_absX", DBG_RING2 + 3)
+        a.ins("LDA_zp", D_ADL); a.ins16("STA_absX", DBG_RING2 + 4)
+        a.ins("LDA_zp", D_ADH); a.ins16("STA_absX", DBG_RING2 + 5)
     a.ins("LDA_zp", D_SEED); a.br("BEQ", "o_nj")
     a.ins("LDA_zp", D_O1); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ORA_zp", D_C1)
     a.ins("EOR_zp", D_SEED); a.ins("STA_zp", D_JT)
@@ -425,6 +595,8 @@ def _emit_search_d3_engine(a):
 def _emit_expectimax_engine(a):
     a.label("expectimax")
     _e_copy(a, 3, False)                                   # w2 <- cur
+    if _d(DELTA_P3):
+        _e_base(a)                                        # latch base from b2 (const across all pills)
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_SL); a.ins("STA_zp", D_SM); a.ins("STA_zp", D_SH)
     a.ins("STA_zp", D_PI)
     a.label("ex_pill")
@@ -432,12 +604,25 @@ def _emit_expectimax_engine(a):
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_EA); a.ins("STA_zp", D_O3)
     a.label("ex_o"); a.ins("LDA_imm", 0); a.ins("STA_zp", D_C3)
     a.label("ex_c")
-    _e_copy(a, 3, True)                                    # cur <- w2
-    a.ins("LDA_zp", D_O3); a.ins16("STA_abs", LEV_A_O4)
-    a.ins("LDA_zp", D_C3); a.ins16("STA_abs", LEV_A_COL)
-    a.ins("LDX_zp", D_PI); a.ins16("LDA_absX", PILLA); a.ins16("STA_abs", LEV_A_CA)
-    a.ins16("LDA_absX", PILLB); a.ins16("STA_abs", LEV_A_CB)
-    a.ins("LDA_imm", 4); a.ins16("STA_abs", LEV_CMD); _e_poll(a)
+    if _d(DELTA_P3):
+        a.ins("LDA_zp", D_O3); a.ins16("STA_abs", LEV_A_O4)
+        a.ins("LDA_zp", D_C3); a.ins16("STA_abs", LEV_A_COL)
+        a.ins("LDX_zp", D_PI); a.ins16("LDA_absX", PILLA); a.ins16("STA_abs", LEV_A_CA)
+        a.ins16("LDA_absX", PILLB); a.ins16("STA_abs", LEV_A_CB)
+        a.ins("LDA_imm", 7); a.ins16("STA_abs", LEV_CMD); _e_poll(a)   # CMD 7 DELTA (CUR stays = w2)
+        _n = _ec[0]; _ec[0] += 1
+        a.ins16("LDA_abs", LEV_DVFB); a.br("BEQ", f"exd{_n}")          # dv_fallback==0 -> delta OK
+        _e_copy(a, 3, True)                                           # clearing: CUR <- w2
+        a.ins("LDA_imm", 4); a.ins16("STA_abs", LEV_CMD); _e_poll(a)  # CMD 4 full NODE (args latched)
+        _e_copy(a, 3, True)                                           # restore CUR <- w2 for next delta
+        a.label(f"exd{_n}")
+    else:
+        _e_copy(a, 3, True)                                    # cur <- w2
+        a.ins("LDA_zp", D_O3); a.ins16("STA_abs", LEV_A_O4)
+        a.ins("LDA_zp", D_C3); a.ins16("STA_abs", LEV_A_COL)
+        a.ins("LDX_zp", D_PI); a.ins16("LDA_absX", PILLA); a.ins16("STA_abs", LEV_A_CA)
+        a.ins16("LDA_absX", PILLB); a.ins16("STA_abs", LEV_A_CB)
+        a.ins("LDA_imm", 4); a.ins16("STA_abs", LEV_CMD); _e_poll(a)
     a.ins16("LDA_abs", LEV_LEGAL); a.br("BNE", "ex_leg"); a.jmp("ex_cnext")
     a.label("ex_leg")
     a.ins("LDA_imm", 1); a.ins("STA_zp", D_EA)
@@ -530,6 +715,24 @@ def attach_engine_emu(cpu):
             st["slots"][0] = nb
             sco, win = leaf_of(nb)
             post(1, cells, vir, sco, win)
+        elif cmd == 8:
+            # #47 stranded-half count of CUR (NES-byte board), mirroring the RTL
+            # CMD-8 scan (tb_strand 200/200 vs terms47.g_stranded). Read-only:
+            # only the count byte + GO are posted, no result regs touched.
+            n8 = 0
+            for i in range(128):
+                b = cur[i]
+                if b == 0xFF or (b & 0xF0) == 0xD0:
+                    continue
+                k = b & 0x0F
+                same = False
+                for j, cond in ((i - 8, i >= 8), (i + 8, i <= 119),
+                                (i - 1, (i & 7) != 0), (i + 1, (i & 7) != 7)):
+                    if cond and cur[j] != 0xFF and (cur[j] & 0x0F) == k:
+                        same = True; break
+                if not same:
+                    n8 += 1
+            base[LEV_STRAND_R] = n8; base[LEV_GO] = 1
 
     obs.subscribe_to_write(range(LEV_BOARD, LEV_BOARD + 128), wr_board)
     obs.subscribe_to_write([LEV_WSLOT], wr_wslot)

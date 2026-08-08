@@ -2,7 +2,16 @@
 """128B-board INTEGER depth-3 golden for the copro port (the reference emit_search_d3 must
 match cell-exact). depth-3 = topk1 ply1-prune + topk2 ply2-prune + expectimax over a pill
 subset, with the ext+pollute leaf eval (x10 firmware weights). Cross-checked vs the faithful
-CartDepth3 (the 91.7% config) -- agreement is modulo integer-vs-float mean rounding."""
+CartDepth3 (the 91.7% config) -- agreement is modulo integer-vs-float mean rounding.
+
+*** WEEKEND-ERA LEAF -- NOT the shipped R47 leaf. ***  leaf_d3() here hardcodes 12*vrdy,
+uses the FLAT test_eval_terms.g_buried, and has NO matched60 term. It does NOT read the R47
+flags (BURIED_COLOR_AWARE / W_VRDY / MATCHED_COVER_SETUP / BURIED_NEAREST2_CAP) that
+build_copro_d3.py sets on this module -- those set-attrs are effectively NO-OPS. The shipped
+brain scores leaves entirely in RTL (LeafEval.sv S_DONE2), and the RTL-faithful python mirror
+is fpga/copro/leaf_r47.py (validated 100% cell-exact vs the RTL). Use leaf_r47 for anything
+that must match the shipped eval; this golden is fine for the argmax-level SEARCH decision
+tests only (move selection is robust to weight scale) but must NOT be trusted for leaf VALUES."""
 import os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)

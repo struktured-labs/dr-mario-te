@@ -17,6 +17,22 @@
 #
 # Usage:  ./sync_to_pocket.sh [DEST_DIR]
 #   DEST_DIR defaults to the Pocket worktree's vendor dir. Pass a scratch dir for a dry preview.
+#
+# ============================= INCIDENT / DO NOT REGRESS ==============================
+# 2026-07-26: this script used to copy copro_rom.hex over the vendored (shipped) hex
+# VERBATIM on any difference. The firmware that actually ships to Pocket/MiSTer is the
+# co-sim-validated DELTA build (CMD-6/7 incremental-leaf engine + illegal-exit fix),
+# md5 c87e60a1, vendored 2026-07-25. But the COMMITTED canonical hex was the older
+# cell-exact BASE build, md5 412615b2 (fd8e495 "R47 brain", 2026-07-22), because several
+# build paths (build_copro_d3 / build_firmware / run_gate) default to or leave BASE
+# behind. A blind re-run therefore SILENTLY REVERTED the shipped delta engine — and with
+# an eval change riding along it, would have presented on silicon as "the new eval plays
+# worse", sending everyone chasing the eval instead of the reverted search engine.
+# GUARD (HEX section below): never overwrite a DIFFERING vendored hex — fail loudly with
+# both md5s. A deliberate firmware change validates cell-exactness via ./run_gate.sh, then
+# re-runs with ALLOW_HEX_UPDATE=1. Rebuild the shipped hex with `dbg_build.py all 0`.
+# Full base-vs-delta story + the three drift sources: FIRMWARE.md.
+# =====================================================================================
 set -euo pipefail
 
 # SRC defaults to this script's dir (the canonical copro source); override with COPRO_SRC for testing.
@@ -62,13 +78,36 @@ for f in "${RTL[@]}"; do
   vendor_one "$f"
 done
 
-# firmware hex: pure data (readmemh-parsed) -> no header stamp; copy verbatim on change.
+# firmware hex: pure data (readmemh-parsed). The SHIPPED firmware is the co-sim-validated DELTA build
+# (dbg_build.py all 0, md5 c87e60a1); build_copro_d3 / build_firmware / run_gate all DEFAULT to (or
+# leave behind) the cell-exact BASE build (412615b2). To stop an RTL-only sync -- or a canonical tree
+# that has drifted to the base build -- from silently shipping a firmware regression, we NEVER
+# overwrite a differing vendored hex. Fail loudly instead. A deliberate firmware update sets
+# ALLOW_HEX_UPDATE=1 AFTER validating cell-exactness via ./run_gate.sh.
+#   (History: a blind sync here would have reverted the shipped CMD-6/7 delta engine under the r47b5
+#    eval build -- presenting on silicon as "the new eval plays worse." See FIRMWARE.md.)
 if [ -f "$SRC/$HEX" ]; then
-  if [ ! -f "$DST/$HEX" ] || ! diff -q "$SRC/$HEX" "$DST/$HEX" >/dev/null; then
-    cp "$SRC/$HEX" "$DST/$HEX"; echo "--- vendor: $HEX (updated $(wc -l < "$DST/$HEX") lines) ---"; changed=$((changed+1))
+  if [ ! -f "$DST/$HEX" ]; then
+    cp "$SRC/$HEX" "$DST/$HEX"; echo "--- vendor: $HEX (initial, $(wc -l < "$DST/$HEX") lines) ---"; changed=$((changed+1))
+  elif diff -q "$SRC/$HEX" "$DST/$HEX" >/dev/null; then
+    : # canonical == vendored: firmware already in sync, nothing to do
+  elif [ "${ALLOW_HEX_UPDATE:-0}" = "1" ]; then
+    echo "--- vendor: $HEX (ALLOW_HEX_UPDATE=1: $(md5sum "$DST/$HEX" | cut -c1-8) -> $(md5sum "$SRC/$HEX" | cut -c1-8)) ---"
+    cp "$SRC/$HEX" "$DST/$HEX"; changed=$((changed+1))
+  else
+    echo "ERROR: canonical firmware hex DIFFERS from the vendored (shipped) hex -- NOT overwriting." >&2
+    echo "       canonical  $SRC/$HEX  md5 $(md5sum "$SRC/$HEX" | cut -c1-8)" >&2
+    echo "       vendored   $DST/$HEX  md5 $(md5sum "$DST/$HEX" | cut -c1-8)" >&2
+    echo "       RTL-only syncs must never touch shipped firmware. The shipped firmware is the DELTA" >&2
+    echo "       build: 'python dbg_build.py all 0' (co-sim-validated cell-exact vs base; md5 c87e60a1)." >&2
+    echo "       * If canonical drifted to the BASE build (build_copro_d3 / build_firmware / run_gate" >&2
+    echo "         leave base behind), restore it:  python dbg_build.py all 0" >&2
+    echo "       * If this IS a deliberate firmware change, validate via ./run_gate.sh then re-run" >&2
+    echo "         with ALLOW_HEX_UPDATE=1." >&2
+    exit 4
   fi
 else
-  echo "WARN: $SRC/$HEX missing -- run ./build_firmware.sh to (re)generate it." >&2
+  echo "WARN: $SRC/$HEX missing -- regenerate the shipped firmware with 'python dbg_build.py all 0'." >&2
 fi
 
 # (re)generate the qip so Quartus compiles the vendored RTL. The hex is found via a SEARCH_PATH

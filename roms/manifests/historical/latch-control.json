@@ -1,0 +1,25 @@
+{
+  "base_rom": {
+    "md5": "7d307c3051ebc0f8a10e259e3c270acb",
+    "path": "drmario_v28cs.nes"
+  },
+  "determinism": "verified: two builds byte-identical",
+  "emitter": {
+    "file": "patch_cartridge_copro.py",
+    "md5": "8e66ed1d6093ee2ff061e92fa3cf2757"
+  },
+  "flags": {
+    "DRNOFREEZE": "1"
+  },
+  "git": {
+    "branch": "driver-nav",
+    "commit": "155579bd21bf7fd182069d7c4e4e9cfcf64f8d49",
+    "dirty": true
+  },
+  "output": {
+    "md5": "21349cb1455eda2a2b95a9f3297d0d03",
+    "name": "A_control.nes",
+    "size": 98320
+  },
+  "tag": "latch-control"
+}

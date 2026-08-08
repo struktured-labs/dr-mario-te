@@ -27,7 +27,10 @@ This tests the DEFECT (does an unsupported tile stay up?) and then the FIX
 from __future__ import annotations
 import sys, os
 sys.path.insert(0, "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src")
-sys.path.insert(0, "/home/struktured/projects/dr-mario-qa-wt/experiments")
+# Test the tree THIS FILE lives in, not a hardcoded worktree. The old absolute
+# path meant the gate certified dr-mario-qa-wt no matter where it was run from,
+# so it would have reported green on main even if main's copy were broken.
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import numpy as np                                   # noqa: E402
 from drmario.faithful_game import FaithfulBoard      # noqa: E402
 

@@ -1,43 +1,72 @@
-# Virtual environment
-.venv/
-
-# Python cache
-__pycache__/
-*.pyc
-
-# ROMs (don't commit copyrighted content)
-*.nes
 
 # Emulator save states and configs
+# Python cache
+# ROMs (don't commit copyrighted content)
+# Scratch / scratchpad (ad-hoc debug + cross-check harnesses)
+# Verilator build outputs — generated, never source. Tracking these kept the tree
+# Virtual environment
+# agent scratch
+# expansion test ROMs
+# permanently dirty, which made the provenance dirty-check fire on every build and
+# recorded gameplay clips (large binaries)
+# scratch manifests (leading underscore) — not shipped builds
+# trained us to ignore the one signal that matters.
+# transient emulator/run logs
+*.log
+*.mp4
+*.nes
+*.pyc
 *.sav
 *.srm
 *.state
-
-# Scratch / scratchpad (ad-hoc debug + cross-check harnesses)
-tmp/
-log/
-setenv.sh
-
-# transient emulator/run logs
-*.log
-mesen*.log
-
-# expansion test ROMs
-drmario_exp.nes
+.letta/
+.venv
+.venv/
 /tmp/
-drmario_v28cs_exp.nes
+<<<<<<< HEAD
+=======
+>>>>>>> origin/copro-qa-harness
+__pycache__/
 drmario_banktest.nes
 drmario_cart.nes
-
-# recorded gameplay clips (large binaries)
-*.mp4
-# agent scratch
-.letta/
-
-# Verilator build outputs — generated, never source. Tracking these kept the tree
-# permanently dirty, which made the provenance dirty-check fire on every build and
-# trained us to ignore the one signal that matters.
-fpga/copro/obj_mister/
-fpga/copro/obj_leafeval/
+drmario_exp.nes
+drmario_v28cs_exp.nes
 fpga/copro/build/
 fpga/copro/obj_*/
+fpga/copro/obj_leafeval/
+fpga/copro/obj_mister/
+log/
+mesen*.log
+roms/manifests/_*.json
+setenv.sh
+tmp/
+
+
+
+
+
+
+
+
+release/kit_out/
+
+
+
+
+
+
+
+fpga/copro/obj_strand/
+fpga/copro/strand_cases.txt
+
+
+
+
+
+
+
+
+
+# task #49 fingerprint/candidate-build scratch carts (built artifacts, *.nes already ignored
+# above, but the whole dir is scratch and shouldn't be scanned/committed as source)
+tmp_carts/

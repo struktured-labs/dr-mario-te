@@ -1,0 +1,334 @@
+% References for the Dr. Mario enhancement-chip AI paper.
+% Compiled 2026-07-22 from the RELATED_WORK.md sweep. Entries marked "% VERIFY" have a
+% detail (pages/venue/date) that was inferred or came from a secondary source — confirm
+% against the primary before camera-ready. Web/@misc entries carry an urldate.
+
+% ========================= Dr. Mario prior art =========================
+
+@misc{birken2017drmario,
+  author       = {Birken, Michael},
+  title        = {Applying Artificial Intelligence to {Dr.} {Mario}},
+  year         = {2017},
+  howpublished = {\url{https://meatfighter.com/drmarioai/}},
+  note         = {meatfighter.com; Java agent in the Nintaco NES emulator; depth-2 BFS over
+                  current x next pill; plays 1P (L20-24) and 2P-VS-as-P2 vs a human under real
+                  gravity. The single closest prior Dr. Mario agent.},
+  urldate      = {2026-07-22}
+}
+
+@misc{tirmazi2024gameboy,
+  author       = {Tirmazi, Hayder and Tirmazi, Ali and Tran, Tien Phuoc},
+  title        = {Computational Complexity of {Game} {Boy} Games},
+  year         = {2024},
+  eprint       = {2412.15469},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CC},
+  note         = {States (in the body): ``We leave the NP-hardness of Dr. Mario as an open
+                  problem.''},
+  url          = {https://arxiv.org/abs/2412.15469}
+}
+
+@misc{nintendo1994tetrisdrmario,
+  title        = {Tetris \& {Dr.} {Mario} (SNES) --- VS. COM mode},
+  year         = {1994},
+  howpublished = {\url{https://tetris.fandom.com/wiki/Tetris_\%26_Dr._Mario}},
+  note         = {Shipped Easy/Med/Hard CPU opponent; undocumented, entertainment-tuned.},
+  urldate      = {2026-07-22}
+}
+
+@misc{drmario64_2001,
+  title        = {{Dr.} {Mario} 64 --- Vs. Computer},
+  year         = {2001},
+  howpublished = {\url{https://www.mariowiki.com/Dr._Mario_64}},
+  note         = {Hard / S-Hard shipped CPU tiers; anecdotally strong; undocumented.},
+  urldate      = {2026-07-22}
+}
+
+% ========================= Falling-block AI lineage =========================
+
+@misc{cannon_stackrabbit,
+  author       = {Cannon, Gregory},
+  title        = {{StackRabbit}: an {AI} for playing {NES} {Tetris} at a high level},
+  howpublished = {\url{https://github.com/GregoryCannon/StackRabbit}},
+  note         = {Search + value-iteration board eval; FCEUX-Lua and Raspberry-Pi console
+                  clients; reached L237 / 102{,}252{,}920 pts with input limits removed.},
+  urldate      = {2026-07-22}
+}
+
+@misc{birken_nestetris,
+  author       = {Birken, Michael},
+  title        = {Applying Artificial Intelligence to {Nintendo} {Tetris} (and Revisited)},
+  howpublished = {\url{https://meatfighter.com/nintendotetrisai/}, \url{https://meatfighter.com/tetrisairevisited/}},
+  note         = {Revisited: 17-feature PSO-tuned linear eval under real gravity, Nintaco.},
+  urldate      = {2026-07-22}
+}
+
+@misc{fahey2003tetris,
+  author       = {Fahey, Colin P.},
+  title        = {{Tetris} AI / StandardTetris benchmark},
+  year         = {2003},
+  howpublished = {\url{https://www.colinfahey.com/tetris/tetris.html}},
+  note         = {Canonical standardized Tetris benchmark; hosts Dellacherie's algorithm.
+                  (Site TLS cert currently expired; URL canonical.)},
+  urldate      = {2026-07-22}
+}
+
+@misc{elnabarawy2013eltetris,
+  author       = {ElNabarawy, Islam},
+  title        = {{El-Tetris}: an improvement on {Pierre} {Dellacherie}'s algorithm},
+  year         = {2013},
+  howpublished = {\url{https://github.com/YuhanXiaoJY/Implementation-of-El-Tetris}},
+  note         = {Re-weighted 6-feature linear evaluator.},
+  urldate      = {2026-07-22}
+}
+
+@article{szita2006tetris,
+  author  = {Szita, Istv{\'a}n and L{\H{o}}rincz, Andr{\'a}s},
+  title   = {Learning {Tetris} Using the Noisy Cross-Entropy Method},
+  journal = {Neural Computation},
+  volume  = {18}, number = {12}, pages = {2936--2941}, year = {2006}
+}
+
+@article{thiery2009bcts,
+  author  = {Thiery, Christophe and Scherrer, Bruno},
+  title   = {Improvements on Learning {Tetris} with Cross-Entropy},
+  journal = {International Computer Games Association Journal},
+  volume  = {32}, number = {1}, pages = {23--33}, year = {2009},
+  note    = {The BCTS controller; won the 2008 Reinforcement Learning Competition Tetris track.}
+}
+
+@inproceedings{bohm2005tetris,
+  author    = {B{\"o}hm, Niko and K{\'o}kai, Gabriella and Mandl, Stefan},
+  title     = {An Evolutionary Approach to {Tetris}},
+  booktitle = {Proc. Metaheuristics International Conference (MIC)},
+  year      = {2005},
+  note      = {Genetic tuning; up to ~4.8e8 lines with two-piece lookahead.} % VERIFY venue
+}
+
+@inproceedings{gabillon2013tetris,
+  author    = {Gabillon, Victor and Ghavamzadeh, Mohammad and Scherrer, Bruno},
+  title     = {Approximate Dynamic Programming Finally Performs Well in the Game of {Tetris}},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {26}, year = {2013},
+  note      = {CBMPI reaches ~5.1e7 lines; best learning-based result.}
+}
+
+@book{bertsekas1996ndp,
+  author    = {Bertsekas, Dimitri P. and Tsitsiklis, John N.},
+  title     = {Neuro-Dynamic Programming},
+  publisher = {Athena Scientific}, year = {1996},
+  note      = {Feature-based ADP for Tetris; the 22-feature set reused by later work.}
+}
+
+@misc{algorta2019tetris,
+  author       = {Algorta, Simon and {\c{S}}im{\c{s}}ek, {\"O}zg{\"u}r},
+  title        = {The Game of {Tetris} in Machine Learning},
+  year         = {2019},
+  eprint       = {1905.01652}, archivePrefix = {arXiv}, primaryClass = {cs.LG},
+  url          = {https://arxiv.org/abs/1905.01652}
+}
+
+@article{demaine2004tetris,
+  author  = {Breukelaar, Ron and Demaine, Erik D. and Hohenberger, Susan and
+             Hoogeboom, Hendrik Jan and Kosters, Walter A. and Liben-Nowell, David},
+  title   = {{Tetris} is Hard, Even to Approximate},
+  journal = {International Journal of Computational Geometry \& Applications},
+  volume  = {14}, number = {1--2}, pages = {41--68}, year = {2004},
+  note    = {COCOON 2003 conference version; \url{https://erikdemaine.org/papers/Tetris_IJCGA/}}
+}
+
+@inproceedings{silva2017gbtetris,
+  author    = {Silva, Lucas and Parpinelli, Rafael S.},
+  title     = {Playing the Original {Game} {Boy} {Tetris} Using a Real-Coded Genetic Algorithm},
+  booktitle = {Brazilian Conf. on Intelligent Systems (BRACIS)}, year = {2017},
+  note      = {\url{https://ieeexplore.ieee.org/document/8247067/}}
+}
+
+% ========================= Enhancement chips / hardware game AI =========================
+
+@misc{seta_st018,
+  title        = {{Seta} {ST018} enhancement chip (Hayazashi Nidan Morita Shougi 2)},
+  year         = {1995},
+  howpublished = {\url{https://sneslab.net/wiki/ST018}, \url{https://snescentral.com/chips.php?chiptype=ST018}},
+  note         = {32-bit ARMv3 core @ 21.47 MHz in the cartridge running Kazuro Morita's shogi
+                  engine as the opponent. Prior art: game-playing AI in the cart slot.},
+  urldate      = {2026-07-22}
+}
+
+@misc{seta_st010,
+  title        = {{Seta} {ST010} enhancement chip ({F1} {ROC} {II}: Race of Champions)},
+  year         = {1994},
+  howpublished = {\url{https://en.wikipedia.org/wiki/F1_ROC_II:_Race_of_Champions}},
+  note         = {NEC uPD96050 DSP running the opponent-car racing AI in the cartridge.},
+  urldate      = {2026-07-22}
+}
+
+@misc{snes_sa1,
+  title        = {{SA-1} (Super Accelerator 1)},
+  howpublished = {\url{https://sneslab.net/wiki/SA-1}},
+  note         = {65C816 coprocessor @ 10.74 MHz in the cart; general game logic (Super Mario
+                  RPG, Kirby Super Star). The named lineage anchor.},
+  urldate      = {2026-07-22}
+}
+
+@misc{superfx,
+  author       = {San, Jez and {Argonaut Games}},
+  title        = {Super {FX} (GSU) graphics coprocessor},
+  year         = {1993},
+  howpublished = {\url{https://en.wikipedia.org/wiki/Super_FX}},
+  note         = {Polygon/2D graphics accelerator (Star Fox). Graphics only; no AI.},
+  urldate      = {2026-07-22}
+}
+
+@article{hsu1999deepblue,
+  author  = {Hsu, Feng-hsiung},
+  title   = {{IBM}'s {Deep} {Blue} Chess Grandmaster Chips},
+  journal = {IEEE Micro},
+  volume  = {19}, number = {2}, pages = {70--81}, year = {1999},
+  note    = {480 custom chips with hardware board evaluation; ancestor of hardware game-tree
+             search + eval (cf. our RTL leaf-eval accelerator).}
+}
+
+@misc{tasbot,
+  title        = {{TASBot} and console-verification replay devices},
+  howpublished = {\url{https://tasvideos.org/TASBot}},
+  note         = {Replays precomputed frame-perfect input scripts on real consoles; no
+                  perception/search/reaction. Replay, not a reactive agent.},
+  urldate      = {2026-07-22}
+}
+
+@misc{pelli_nesai,
+  author       = {Pelli, Erik},
+  title        = {nes-ai: a neural network running on a stock {NES} 6502},
+  howpublished = {\url{https://github.com/ErikPelli/nes-ai}},
+  note         = {MLP MNIST classifier (Q16.16, cc65) on the 1.79 MHz 6502; closest ``AI on the
+                  actual 6502'' but not a game player.},
+  urldate      = {2026-07-22}
+}
+
+@misc{fpganes2013,
+  author       = {Blum, Jeremy and Wright, Jason and Mitra, Sima},
+  title        = {{FPGA}-based Super Mario Bros. AI ("Nintendo Ninja")},
+  year         = {2013},
+  howpublished = {\url{https://github.com/jpwright/fpganes}},
+  note         = {Vision-based Verilog FPGA plays SMB on a real NES via NTSC decode (external
+                  vision, not an in-cart coprocessor).},
+  urldate      = {2026-07-22}
+}
+
+@inproceedings{cho2019fa3c,
+  author    = {Cho, Hyungmin and others},
+  title     = {{FA3C}: {FPGA}-Accelerated Deep Reinforcement Learning},
+  booktitle = {ASPLOS}, year = {2019},
+  note      = {\url{https://dl.acm.org/doi/10.1145/3297858.3304058}. Trains RL off-console.} % VERIFY authors
+}
+
+% ========================= Fairness / real-time / anytime =========================
+
+@article{vinyals2019alphastar,
+  author  = {Vinyals, Oriol and others},
+  title   = {Grandmaster level in {StarCraft} {II} using multi-agent reinforcement learning},
+  journal = {Nature}, volume = {575}, pages = {350--354}, year = {2019},
+  note    = {Camera interface, <=22 actions/5s, observation delays, pro-approved: the canonical
+             fairness-by-constraint case.}
+}
+
+@misc{berner2019openaifive,
+  author       = {Berner, Christopher and others},
+  title        = {{Dota} 2 with Large Scale Deep Reinforcement Learning},
+  year         = {2019}, eprint = {1912.06680}, archivePrefix = {arXiv},
+  url          = {https://arxiv.org/abs/1912.06680},
+  note         = {Reaction time raised 80ms->200ms for fairness; acts every 4th frame.}
+}
+
+@article{zilberstein1996anytime,
+  author  = {Zilberstein, Shlomo},
+  title   = {Using Anytime Algorithms in Intelligent Systems},
+  journal = {AI Magazine}, volume = {17}, number = {3}, pages = {73--83}, year = {1996}
+}
+
+@inproceedings{dean1988anytime,
+  author    = {Dean, Thomas and Boddy, Mark},
+  title     = {An Analysis of Time-Dependent Planning},
+  booktitle = {AAAI}, year = {1988},
+  note      = {Coined ``anytime algorithm.''}
+}
+
+@article{korf1990rts,
+  author  = {Korf, Richard E.},
+  title   = {Real-Time Heuristic Search},
+  journal = {Artificial Intelligence}, volume = {42}, number = {2--3}, pages = {189--211}, year = {1990},
+  note    = {RTA*/LRTA*: commit within bounded time under a limited horizon.}
+}
+
+@inproceedings{likhachev2003ara,
+  author    = {Likhachev, Maxim and Gordon, Geoffrey and Thrun, Sebastian},
+  title     = {{ARA*}: Anytime {A*} with Provable Bounds on Sub-Optimality},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2003}
+}
+
+@article{browne2012mcts,
+  author  = {Browne, Cameron B. and others},
+  title   = {A Survey of {Monte} {Carlo} Tree Search Methods},
+  journal = {IEEE Trans. Computational Intelligence and AI in Games},
+  volume  = {4}, number = {1}, pages = {1--43}, year = {2012}
+}
+
+@inproceedings{ramstedt2019realtimerl,
+  author    = {Ramstedt, Simon and Pal, Christopher},
+  title     = {Real-Time Reinforcement Learning},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)}, year = {2019},
+  note      = {Formalizes that the environment does not pause during action selection ---
+               the paradigm our ``gravity is the budget'' instantiates. arXiv:1911.04448.}
+}
+
+@article{bellemare2013ale,
+  author  = {Bellemare, Marc G. and Naddaf, Yavar and Veness, Joel and Bowling, Michael},
+  title   = {The {Arcade} {Learning} {Environment}: An Evaluation Platform for General Agents},
+  journal = {Journal of Artificial Intelligence Research}, volume = {47}, pages = {253--279}, year = {2013}
+}
+
+@article{perezliebana2019gvgai,
+  author  = {Perez-Liebana, Diego and others},
+  title   = {General Video Game {AI}: A Multitrack Framework for Evaluating Agents, Games, and Content Generation Algorithms},
+  journal = {IEEE Trans. Games}, year = {2019},
+  note    = {40 ms per-decision budget. arXiv:1802.10363.}
+}
+
+@inproceedings{lu2013fightingice,
+  author    = {Lu, Feiyu and others},
+  title     = {{Fighting} game artificial intelligence competition platform},
+  booktitle = {IEEE Global Conf. on Consumer Electronics / CIG}, year = {2013},
+  note      = {16.66 ms/frame budget + 15-frame mandatory reaction delay for fairness.
+               DareFightingICE fairness follow-up: arXiv:2312.16010.} % VERIFY venue
+}
+
+% ========================= Match-3 / Puyo =========================
+
+@misc{puyoai_repo,
+  title        = {puyoai: a {Puyo} {Puyo} versus AI framework and bots},
+  howpublished = {\url{https://github.com/puyoai/puyoai}, \url{https://github.com/citrus610/ama}},
+  note         = {Decades-deep competitive Puyo AI scene (shipped counter-chain CPUs since 1991;
+                  strong open-source PvP bots). Undercuts ``first strong versus falling-block AI.''},
+  urldate      = {2026-07-22}
+}
+
+@inproceedings{guala2014match3,
+  author    = {Gual{\`a}, Luciano and Leucci, Stefano and Natale, Emanuele},
+  title     = {{Bejeweled}, {Candy} {Crush} and Other Match-Three Games are (NP-)Hard},
+  booktitle = {IEEE Conf. Computational Intelligence and Games (CIG)}, year = {2014}
+}
+
+% ========================= Platforms =========================
+
+@misc{mister,
+  title        = {{MiSTer} FPGA},
+  howpublished = {\url{https://mister-devel.github.io/MkDocs_MiSTer/}},
+  urldate      = {2026-07-22}
+}
+
+@misc{openfpga,
+  title        = {{Analogue} openFPGA developer program ({Analogue} {Pocket})},
+  howpublished = {\url{https://www.analogue.co/developer}},
+  urldate      = {2026-07-22}
+}

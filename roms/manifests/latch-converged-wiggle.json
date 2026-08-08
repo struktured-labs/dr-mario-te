@@ -1,0 +1,36 @@
+{
+  "base_rom": {
+    "md5": "7d307c3051ebc0f8a10e259e3c270acb",
+    "path": "drmario_v28cs.nes"
+  },
+  "determinism": "verified: two builds byte-identical",
+  "emitter": {
+    "file": "patch_cartridge_copro.py",
+    "md5": "7c47d2bff36b8a565125abc1c8033be7"
+  },
+  "flags": {
+    "DRBUSYESC": "1",
+    "DRCOLDINIT": "1",
+    "DRMINTHINK": "12",
+    "DRNAVDWELL": "0",
+    "DRNAVESC": "1",
+    "DRNOFREEZE": "1",
+    "DRP1WIGGLE": "1",
+    "DRPENDBOUND": "1",
+    "DRRECOMMIT_NOFREEZE": "1",
+    "DRSLAM_KOPEN": "32",
+    "DRSTALLWD": "1",
+    "DRWRETRY": "1"
+  },
+  "git": {
+    "branch": "driver-nav",
+    "commit": "baefa328d7cb927438f3a9c0dfb3de8ded139e47",
+    "dirty": false
+  },
+  "output": {
+    "md5": "06ed2cf787d85b20c2cec173a826c2a6",
+    "name": "latch_converged_wiggle.nes",
+    "size": 98320
+  },
+  "tag": "latch-converged-wiggle"
+}
