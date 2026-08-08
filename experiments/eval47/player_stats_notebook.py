@@ -95,7 +95,12 @@ def _(ENSEMBLE, RESULTS, load_json):
     fit_jarsdad, path_jarsdad = load_json(ENSEMBLE, "white_bottom_Jarsdad_sending_fit.json")
     fit_roburrito, path_roburrito = load_json(ENSEMBLE, "red_bracket_RobBurrito_sending_fit.json")
     fit_dss, path_dss = load_json(ENSEMBLE, "green_bottom_davesmithsays_sending_fit.json")
+    # The AI's own SENDING profile from the same session -- scope-matched to struktured's.
+    fit_ai_send, path_ai_send = load_json(
+        ENSEMBLE, "struktured_20260804_P2_sending_fit.json"
+    )
     return (
+        fit_ai_send,
         fit_bidwell,
         fit_dss,
         fit_jarsdad,
@@ -103,6 +108,7 @@ def _(ENSEMBLE, RESULTS, load_json):
         fit_roburrito,
         fit_strukt_pooled,
         fit_strukt_send,
+        path_ai_send,
         path_bidwell,
         path_dss,
         path_jarsdad,
@@ -186,6 +192,7 @@ def _():
 @app.cell(hide_code=True)
 def _(
     confidence_tier,
+    fit_ai_send,
     fit_bidwell,
     fit_dss,
     fit_jarsdad,
@@ -209,6 +216,7 @@ def _(
         }
 
     PROFILES = {
+        "Combo Stomper (AI)": profile(fit_ai_send, "SENDING"),
         "dr. lulu": profile(fit_lulu, "POOLED"),
         "struktured": profile(fit_strukt_send, "SENDING"),
         "bidwell": profile(fit_bidwell, "SENDING"),
@@ -225,6 +233,25 @@ def _():
     # computed from a fit file, except the battery block, which is quoted from the
     # film-review scorecard and carries its source line.
     ROSTER = {
+        "Combo Stomper (AI)": {
+            "role": "The AI. FPGA coprocessor champion, strand180_20 (core a0d5190f) on Pocket/MiSTer",
+            "record": (
+                "vs struktured 3-2 in sets, but ACROSS BUILDS (v3, v4, strand20); "
+                "vs dr. lulu 0 sets won, lifetime. On strand20 alone: 1-1 vs struktured, 0-1 vs dr. lulu"
+            ),
+            "battery": {
+                # Not "not run": these have different answers for a machine.
+                "declined_clear": "<span class='n'>pending</span>",
+                "corrections_per_100": "<span class='n'>n/a &mdash; deterministic nav</span>",
+                "median_latency": "<span class='n'>see speed column</span>",
+                "src": "declined-clear decomposition doc is not in this worktree",
+            },
+            "style": (
+                "Risk-neutral racer: wins by out-racing, never out-building; dies while ahead "
+                "under timed pressure (the 82x edge case); no attack timing."
+            ),
+            "src": "player_styles/struktured.md + dr_lulu.md record tables",
+        },
         "dr. lulu": {
             "role": "Household champion; first human ever to KO the Combo Stomper",
             "record": "UNDEFEATED in sets vs every Stomper build; 3–0 vs strand180_20 (2026-08-08)",
@@ -634,6 +661,15 @@ def _(
 
     def dies_ahead_cell(handle):
         """One cell carrying the rate, its n, and which fitted model produced it."""
+        match handle:
+            case "Combo Stomper (AI)":
+                # The column asks how the champion fares under a player's pressure; for
+                # the champion itself the question is inverted, and the answer is the
+                # survival ladder below rather than a single cell.
+                return (
+                    "<td><span class='n'>n/a &mdash; it IS the champion</span>"
+                    "<span class='sub'>see the survival ladder</span></td>"
+                )
         key = PLAYER_RIG.get(handle)
         match key:
             case None:
@@ -661,6 +697,20 @@ def _(
 
     def latency_cell(handle):
         """p50/p75/p90, or the precise reason there is no number."""
+        match handle:
+            case "Combo Stomper (AI)":
+                # Two different clocks. Only the film-observed one exists today, and it is
+                # a placement INTERVAL (wall-clock, silicon), not a decision latency -- the
+                # per-decision search latency is a different quantity in a different domain.
+                return (
+                    "<td title='Film-observed placement interval, m4 case study, "
+                    "struktured.md: 1.54 s early to 2.13 s late in the match. SILICON domain "
+                    "(Pocket, wall-clock). NOT the per-decision search latency, which is "
+                    "sim-lockstep domain and differs by 1.57x.'>"
+                    "<span class='num'>1.54 &rarr; 2.13 s</span>"
+                    "<span class='sub'>placement interval &middot; SILICON &middot; "
+                    "search latency pending pilot</span></td>"
+                )
         entry = LATENCY.get(handle)
         match entry:
             case None:
@@ -730,7 +780,10 @@ def _(
         klass = " class='suppressed'" if suppressed else ""
         return f"<tr{klass}>" + "".join(cells) + "</tr>"
 
-    MASTER_ORDER = ["dr. lulu", "struktured", "bidwell", "jarsdad", "roburrito", "davesmithsays"]
+    MASTER_ORDER = [
+        "Combo Stomper (AI)",
+        "dr. lulu", "struktured", "bidwell", "jarsdad", "roburrito", "davesmithsays",
+    ]
 
     HEADERS = [
         ("player", " class='handle'"), ("scene role", " class='wrap'"), ("record vs the AI", " class='wrap'"),
@@ -978,6 +1031,115 @@ def _(LATENCY, SPAWN_LOCK_BAND, VIZ_CSS, mo):
         + "1.2% (4/331) across the whole 20260804 corpus and <b>19.4% (18/93) on the P2 "
         + "side of the night-two capture</b> &mdash; the failure recorded as task #95, "
         + "reproduced here as the check's negative control."
+        + "</caption></table></div></div>"
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
+        ## The AI's survival ladder — its signature stat
+
+        No human row has this: the same champion, the same build, measured across three
+        pressure regimes. It is the clearest single statement of what the AI is.
+
+        **One metric, held constant.** The ladder is quoted in *dies-ahead* — topping out
+        while still holding a virus lead. Mixing a solo *failure* rate with a pressured
+        *dies-ahead* rate would compare two different events and manufacture a slope, so
+        both are shown per row and the ladder is read down the dies-ahead column.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(RIGS, VIZ_CSS, mo, os):
+    import json as _json
+
+    CENSUS = (
+        "/home/struktured/projects/dr-mario-qa-wt/experiments/adversary/"
+        "census/census_results.jsonl"
+    )
+
+    def census_tally():
+        match os.path.exists(CENSUS):
+            case False:
+                return None
+            case True:
+                rows = [_json.loads(l) for l in open(CENSUS) if l.strip()]
+                bad = [r for r in rows if r.get("result") != "clear"]
+                dies = [r for r in bad if r.get("dies_ahead")]
+                return {
+                    "n": len(rows),
+                    "bad": len(bad),
+                    "bad_pct": 100.0 * len(bad) / len(rows),
+                    "dies": len(dies),
+                    "dies_pct": 100.0 * len(dies) / len(rows),
+                    "detail": ", ".join(
+                        f"seed {r['seed']} {r['result']} at {r.get('viruses_left')} virus"
+                        for r in bad
+                    ),
+                }
+
+    CEN = census_tally()
+
+    def ladder_row(regime, dies_pct, dies_n, n, bad_pct, source, note):
+        return (
+            f"<tr><td>{regime}</td>"
+            f"<td class='num'><b>{dies_pct}</b> <span class='n'>({dies_n}/{n})</span></td>"
+            f"<td class='num'>{bad_pct}</td>"
+            f"<td class='n'>{source}</td><td class='n'>{note}</td></tr>"
+        )
+
+    solo = (
+        ladder_row(
+            "Solo, clean stream (no pressure)",
+            f"{CEN['dies_pct']:.2f}%", CEN["dies"], CEN["n"], f"{CEN['bad_pct']:.3f}%",
+            "adversary/census/census_results.jsonl",
+            f"partial census, {100*CEN['n']/65536:.1f}% of seed values. Only failure: {CEN['detail']}",
+        )
+        if CEN else
+        "<tr><td>Solo, clean stream</td><td colspan='4' class='n'>census file not found</td></tr>"
+    )
+
+    mo.Html(
+        VIZ_CSS
+        + "<div class='pstat'><div class='scroll'><table style='min-width:900px'><thead><tr>"
+        + "<th>pressure regime</th><th>dies-ahead</th><th>all bad ends</th>"
+        + "<th>source</th><th>caveat</th></tr></thead><tbody>"
+        + solo
+        + ladder_row(
+            "Under struktured's fitted pressure",
+            f"{RIGS['strukt_sending']['arm']['dies_ahead_pct']:.1f}%",
+            RIGS["strukt_sending"]["arm"]["dies_ahead"], 120,
+            f"{RIGS['strukt_sending']['arm']['bad_ends_pct']:.1f}%",
+            "bursty_v1_1_n120_wt0_ws20.json",
+            "SENDING-scope fit (bursty v1.1)",
+        )
+        + ladder_row(
+            "Under dr. lulu's fitted pressure",
+            f"{RIGS['lulu_pooled']['arm']['dies_ahead_pct']:.1f}%",
+            RIGS["lulu_pooled"]["arm"]["dies_ahead"], 120,
+            f"{RIGS['lulu_pooled']['arm']['bad_ends_pct']:.1f}%",
+            "dr_lulu_20260808_rig_n120_wt0_ws20.json",
+            "POOLED-scope fit &mdash; not scope-matched to the row above",
+        )
+        + "</tbody><caption>"
+        + "<b>Every number here is recomputed from a result file.</b> The ladder is the "
+        + "82x story made concrete: the champion is near-flawless with nobody shooting at "
+        + "it and fails an order of magnitude more often once a human is applying timed "
+        + "pressure. Note the solo failure is a <i>stall at one virus</i> and is NOT "
+        + "dies-ahead &mdash; solo dies-ahead is genuinely zero in this sample, so the "
+        + "failure mode does not merely intensify under pressure, it <i>changes kind</i>. "
+        + "<br>&#9888; The often-quoted full-space figure <b>0.0809% (53/65,536)</b> could "
+        + "NOT be verified here: it was produced on the Hetzner node and "
+        + "<code>experiments/hetzner/results/</code> is gitignored, so no result file backs "
+        + "it in this worktree. It is also denominated in seed <i>values</i>, and seeds 2k "
+        + "and 2k+1 are the same game (HETZNER_NODE.md &sect;4) &mdash; so a per-distinct-"
+        + "stream rate has roughly half the denominator. Treat it as a task record, not a "
+        + "measurement, until the file is recovered."
         + "</caption></table></div></div>"
     )
     return
