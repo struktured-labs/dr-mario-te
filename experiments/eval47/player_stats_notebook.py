@@ -542,6 +542,14 @@ def _(RESULTS, os):
 
 
 @app.cell(hide_code=True)
+def _(RESULTS, load_json):
+    # Shadow-latency pilot (task #92). Cached by eval47/cache_shadowlat.py, which imports
+    # the gated analyzer and refuses to write unless its killed-mutant selftest passes.
+    SHADOWLAT, path_shadowlat = load_json(RESULTS, "shadowlat_pilot_summary.json")
+    return SHADOWLAT, path_shadowlat
+
+
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""## The master table""")
     return
@@ -637,6 +645,7 @@ def _(
     PROFILES,
     RIGS,
     ROSTER,
+    SHADOWLAT,
     VIZ_CSS,
     fmt_num,
     fmt_pct,
@@ -699,17 +708,25 @@ def _(
         """p50/p75/p90, or the precise reason there is no number."""
         match handle:
             case "Combo Stomper (AI)":
-                # Two different clocks. Only the film-observed one exists today, and it is
-                # a placement INTERVAL (wall-clock, silicon), not a decision latency -- the
-                # per-decision search latency is a different quantity in a different domain.
+                # Per-decision SEARCH latency, silicon domain. The sim-lockstep pair and the
+                # film-observed placement interval are DIFFERENT quantities; they live in the
+                # detail table below rather than being averaged into one number.
+                sil, sim = SHADOWLAT["silicon"], SHADOWLAT["sim_lockstep"]
+                title = (
+                    f"Per-decision search latency, champion {SHADOWLAT['arm']}, "
+                    f"n={sil['n_decisions']} decisions over {SHADOWLAT['n_games']} games. "
+                    f"SILICON median {sil['median_frames']:.1f} f "
+                    f"({sil['median_seconds']:.2f} s), p90 {sil['p90_frames']:.1f} f. "
+                    f"SIM-LOCKSTEP median {sim['median_frames']:.1f} f — the domains differ "
+                    f"{SHADOWLAT['domain_ratio']:.4f}x. Film-observed placement INTERVAL, a "
+                    f"different quantity, is 1.54 to 2.13 s."
+                )
                 return (
-                    "<td title='Film-observed placement interval, m4 case study, "
-                    "struktured.md: 1.54 s early to 2.13 s late in the match. SILICON domain "
-                    "(Pocket, wall-clock). NOT the per-decision search latency, which is "
-                    "sim-lockstep domain and differs by 1.57x.'>"
-                    "<span class='num'>1.54 &rarr; 2.13 s</span>"
-                    "<span class='sub'>placement interval &middot; SILICON &middot; "
-                    "search latency pending pilot</span></td>"
+                    f"<td title='{title}'>"
+                    f"<span class='num'><b>{sil['median_frames']:.1f}</b> / "
+                    f"{sil['p90_frames']:.1f} f</span>"
+                    f"<span class='sub'>~{sil['median_seconds']:.2f} s median &middot; "
+                    f"<b>SILICON</b> &middot; n={sil['n_decisions']} decisions</span></td>"
                 )
         entry = LATENCY.get(handle)
         match entry:
@@ -1040,6 +1057,79 @@ def _(LATENCY, SPAWN_LOCK_BAND, VIZ_CSS, mo):
 def _(mo):
     mo.md(
         r"""
+        ## The AI's decision speed, in both clock domains
+
+        The human latency column and this one measure different things and must not be
+        read across: a human's number is *reaction* time from spawn to first input; the
+        AI's is *search* time for one `decide()` call. And the AI's own number exists in
+        two clocks — the verilated sim ticks the coprocessor in lockstep at 48 master
+        clocks per CPU cycle, while real silicon runs it on a 54.669 MHz async tap. They
+        differ by a factor the analyzer computes rather than assumes, and quoting one
+        without saying which is how that factor travels into a wrong conclusion.
+
+        Two budgets, also not interchangeable. **Fall** asks whether the answer arrived
+        after the capsule had already fallen past its target, which makes the placement
+        unreachable. **Window** asks whether the answer would have landed before the
+        capsule even spawned — the DRPRESTART question — and uses the tallest *hit*
+        column against the 264 − 16·h garbage window.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(SHADOWLAT, VIZ_CSS, mo):
+    def dom_row(label, key, emphasis):
+        s = SHADOWLAT[key]
+        w = SHADOWLAT["window_miss_h13plus_" + ("silicon" if key == "silicon" else "sim")]
+
+        def em(text):
+            return f"<b>{text}</b>" if emphasis else text
+
+        med = em(f"{s['median_frames']:.1f}")
+        late = em(f"{s['late_pct']:.1f}%")
+        return (
+            f"<tr><td>{em(label)}</td>"
+            f"<td class='num'>{med} f</td>"
+            f"<td class='num'>{s['p90_frames']:.1f} f</td>"
+            f"<td class='num'>{late}</td>"
+            f"<td class='num'>{s['band_9_12_late_pct']:.1f}%</td>"
+            f"<td class='num'>{w['miss_pct']:.1f}% "
+            f"<span class='n'>({w['miss']}/{w['n']})</span></td></tr>"
+        )
+
+    mo.Html(
+        VIZ_CSS
+        + "<div class='pstat'><div class='scroll'><table style='min-width:860px'><thead><tr>"
+        + "<th>clock domain</th><th>median search</th><th>p90</th>"
+        + "<th>LATE vs fall budget</th><th>LATE at height 9-12</th>"
+        + "<th>misses garbage window, h&ge;13</th></tr></thead><tbody>"
+        + dom_row("silicon (54.669 MHz async tap) &mdash; the real one", "silicon", True)
+        + dom_row("sim-lockstep (48x per CPU cycle)", "sim_lockstep", False)
+        + "</tbody><caption>"
+        + f"n={SHADOWLAT['silicon']['n_decisions']} decisions over "
+        + f"{SHADOWLAT['n_games']} games, champion {SHADOWLAT['arm']}. Domain ratio "
+        + f"<b>{SHADOWLAT['domain_ratio']:.4f}x</b>, computed by the analyzer from its own "
+        + "clock constants. <b>The domain choice changes the verdict, not just the digits:</b> "
+        + "on silicon the champion is late on 14.1% of decisions at board height 9-12 &mdash; "
+        + "exactly the crowded boards where a late answer costs a game &mdash; but the same "
+        + "runs read 2.8% in sim-lockstep. A sim-domain reader would conclude the search is "
+        + "comfortably fast. It is not, on the hardware it ships on."
+        + "<br>&#9888; <b>The h&ge;13 window miss is a LIMIT, not a prize.</b> At a tall "
+        + "board the 264&minus;16&middot;h window has shrunk to almost nothing, so the "
+        + "search cannot finish inside it however early it starts &mdash; that is where "
+        + "DRPRESTART is <i>weakest</i>, not where it pays. Reading this row as the case "
+        + "for prestart inverts the mechanism; the instrument's value sits at h&le;12, "
+        + "where the window is long enough to absorb a whole search."
+        + "</caption></table></div></div>"
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
         ## The AI's survival ladder — its signature stat
 
         No human row has this: the same champion, the same build, measured across three
@@ -1296,7 +1386,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(LATENCY, PROFILES, RIGS, VIZ_CSS, fit_strukt_pooled, mo, pct, pk):
+def _(LATENCY, PROFILES, RIGS, SHADOWLAT, VIZ_CSS, fit_strukt_pooled, mo, pct, pk):
     # Values as published in STYLE_ENSEMBLE_V1.md 7, dr_lulu_20260808_fit_report.md,
     # BURSTY_V1_RESULTS.md, the refit driver log, and player_styles/*.md.
     # Tolerances are one unit in the last published digit.
@@ -1336,6 +1426,16 @@ def _(LATENCY, PROFILES, RIGS, VIZ_CSS, fit_strukt_pooled, mo, pct, pk):
         ("struktured latency", "pre-planned %", LATENCY["struktured"]["profile"].get("preplanned_pct"), 23.6, 0.05, "SCORECARD + dossier"),
         ("struktured latency", "straight-drop %", LATENCY["struktured"]["profile"].get("straight_pct"), 2.7, 0.05, "dossier"),
         ("struktured latency", "control spawn-lock %", LATENCY["struktured"]["profile"].get("spawn_lock_pct"), 1.2, 0.05, "reference corpus, task #95"),
+        # Shadow-latency pilot: the cache must agree with the gated analyzer's own tables.
+        ("AI shadowlat", "silicon median f", SHADOWLAT["silicon"]["median_frames"], 49.6, 0.05, "shadowlat_analyze table A"),
+        ("AI shadowlat", "silicon p90 f", SHADOWLAT["silicon"]["p90_frames"], 63.8, 0.05, "shadowlat_analyze table A"),
+        ("AI shadowlat", "silicon late %", SHADOWLAT["silicon"]["late_pct"], 9.5, 0.05, "shadowlat_analyze table A"),
+        ("AI shadowlat", "silicon late % h9-12", SHADOWLAT["silicon"]["band_9_12_late_pct"], 14.1, 0.05, "shadowlat_analyze table A"),
+        ("AI shadowlat", "sim median f", SHADOWLAT["sim_lockstep"]["median_frames"], 31.6, 0.05, "shadowlat_analyze table A"),
+        ("AI shadowlat", "sim late %", SHADOWLAT["sim_lockstep"]["late_pct"], 2.5, 0.05, "shadowlat_analyze table A"),
+        ("AI shadowlat", "window miss % h>=13", SHADOWLAT["window_miss_h13plus_silicon"]["miss_pct"], 68.2, 0.05, "shadowlat_analyze table B"),
+        ("AI shadowlat", "domain ratio", SHADOWLAT["domain_ratio"], 1.5714, 0.0005, "analyzer clock constants"),
+        ("AI shadowlat", "n decisions", SHADOWLAT["silicon"]["n_decisions"], 1500, 0, "pilot jsonl"),
     ]
 
     def check_row(who, metric, derived, cited, tol, src):
@@ -1488,6 +1588,7 @@ def _(
     path_rig_v1,
     path_rig_v11,
     path_roburrito,
+    path_shadowlat,
     path_strukt_pooled,
     path_strukt_send,
 ):
@@ -1506,6 +1607,9 @@ def _(
         ("dies-ahead: struktured bursty v1.1 (SENDING)", rel(path_rig_v11)),
         ("dies-ahead: struktured bursty v1 (POOLED)", rel(path_rig_v1)),
         ("rig driver log (dr. lulu, step 4/4)", "eval47/tmp/dr_lulu_20260808_refit.log"),
+        ("AI search latency (cached pilot summary)", rel(path_shadowlat)),
+        ("AI search latency: gated analyzer", "dr-mario-prestart-wt/experiments/prestart/shadowlat_analyze.py"),
+        ("AI search latency: cache generator", "eval47/cache_shadowlat.py"),
         ("latency: struktured per-pill events", "eval47/results/latency_events/film_20260804/m{1,2,3,4}.csv"),
         ("latency: dr. lulu per-pill events", "eval47/results/latency_events/film_20260808/p1_m3.csv"),
         ("P1 tracker (produced p1_m3.csv)", "eval47/film_20260808/tracker_p1.py"),
