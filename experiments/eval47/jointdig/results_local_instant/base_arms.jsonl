@@ -1,0 +1,960 @@
+{"seed": 5, "res": "clear", "won": 1, "topout": 0, "pills": 96, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 4, "res": "clear", "won": 1, "topout": 0, "pills": 130, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 3, "res": "clear", "won": 1, "topout": 0, "pills": 140, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 2, "res": "clear", "won": 1, "topout": 0, "pills": 165, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 7, "res": "clear", "won": 1, "topout": 0, "pills": 97, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 9, "res": "clear", "won": 1, "topout": 0, "pills": 132, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 10, "res": "clear", "won": 1, "topout": 0, "pills": 103, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 6, "res": "clear", "won": 1, "topout": 0, "pills": 294, "garbage": 66, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 8, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 68, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 11, "res": "clear", "won": 1, "topout": 0, "pills": 136, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 12, "res": "clear", "won": 1, "topout": 0, "pills": 84, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 13, "res": "clear", "won": 1, "topout": 0, "pills": 100, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 14, "res": "clear", "won": 1, "topout": 0, "pills": 93, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 16, "res": "clear", "won": 1, "topout": 0, "pills": 163, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 18, "res": "clear", "won": 1, "topout": 0, "pills": 138, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 17, "res": "clear", "won": 1, "topout": 0, "pills": 190, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 15, "res": "topout", "won": 0, "topout": 1, "pills": 275, "garbage": 61, "dies_ahead": 1, "arm": "base", "model": "drip"}
+{"seed": 21, "res": "clear", "won": 1, "topout": 0, "pills": 94, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 19, "res": "clear", "won": 1, "topout": 0, "pills": 172, "garbage": 36, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 22, "res": "clear", "won": 1, "topout": 0, "pills": 117, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 20, "res": "clear", "won": 1, "topout": 0, "pills": 171, "garbage": 36, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 25, "res": "clear", "won": 1, "topout": 0, "pills": 107, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 26, "res": "clear", "won": 1, "topout": 0, "pills": 110, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 23, "res": "clear", "won": 1, "topout": 0, "pills": 200, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 24, "res": "clear", "won": 1, "topout": 0, "pills": 193, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 27, "res": "clear", "won": 1, "topout": 0, "pills": 121, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 30, "res": "clear", "won": 1, "topout": 0, "pills": 102, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 29, "res": "clear", "won": 1, "topout": 0, "pills": 146, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 28, "res": "clear", "won": 1, "topout": 0, "pills": 166, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 31, "res": "clear", "won": 1, "topout": 0, "pills": 89, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 33, "res": "clear", "won": 1, "topout": 0, "pills": 81, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 34, "res": "clear", "won": 1, "topout": 0, "pills": 94, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 32, "res": "clear", "won": 1, "topout": 0, "pills": 131, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 35, "res": "clear", "won": 1, "topout": 0, "pills": 78, "garbage": 12, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 36, "res": "clear", "won": 1, "topout": 0, "pills": 77, "garbage": 12, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 38, "res": "clear", "won": 1, "topout": 0, "pills": 96, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 39, "res": "clear", "won": 1, "topout": 0, "pills": 136, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 40, "res": "clear", "won": 1, "topout": 0, "pills": 112, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 37, "res": "clear", "won": 1, "topout": 0, "pills": 212, "garbage": 46, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 41, "res": "clear", "won": 1, "topout": 0, "pills": 118, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 42, "res": "clear", "won": 1, "topout": 0, "pills": 69, "garbage": 10, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 43, "res": "clear", "won": 1, "topout": 0, "pills": 153, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 46, "res": "clear", "won": 1, "topout": 0, "pills": 92, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 45, "res": "clear", "won": 1, "topout": 0, "pills": 105, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 47, "res": "clear", "won": 1, "topout": 0, "pills": 83, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 44, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 66, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 48, "res": "clear", "won": 1, "topout": 0, "pills": 195, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 49, "res": "clear", "won": 1, "topout": 0, "pills": 189, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 50, "res": "clear", "won": 1, "topout": 0, "pills": 122, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 52, "res": "clear", "won": 1, "topout": 0, "pills": 102, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 51, "res": "clear", "won": 1, "topout": 0, "pills": 152, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 54, "res": "clear", "won": 1, "topout": 0, "pills": 87, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 53, "res": "clear", "won": 1, "topout": 0, "pills": 91, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 55, "res": "clear", "won": 1, "topout": 0, "pills": 89, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 57, "res": "clear", "won": 1, "topout": 0, "pills": 104, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 58, "res": "clear", "won": 1, "topout": 0, "pills": 151, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 56, "res": "clear", "won": 1, "topout": 0, "pills": 187, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 59, "res": "clear", "won": 1, "topout": 0, "pills": 101, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 60, "res": "clear", "won": 1, "topout": 0, "pills": 119, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 61, "res": "clear", "won": 1, "topout": 0, "pills": 81, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 62, "res": "clear", "won": 1, "topout": 0, "pills": 86, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 63, "res": "clear", "won": 1, "topout": 0, "pills": 104, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 65, "res": "clear", "won": 1, "topout": 0, "pills": 132, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 64, "res": "clear", "won": 1, "topout": 0, "pills": 178, "garbage": 38, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 67, "res": "clear", "won": 1, "topout": 0, "pills": 101, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 66, "res": "clear", "won": 1, "topout": 0, "pills": 159, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 70, "res": "clear", "won": 1, "topout": 0, "pills": 81, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 68, "res": "clear", "won": 1, "topout": 0, "pills": 170, "garbage": 36, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 69, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 71, "res": "clear", "won": 1, "topout": 0, "pills": 132, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 73, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 74, "res": "clear", "won": 1, "topout": 0, "pills": 123, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 75, "res": "clear", "won": 1, "topout": 0, "pills": 108, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 72, "res": "clear", "won": 1, "topout": 0, "pills": 158, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 76, "res": "clear", "won": 1, "topout": 0, "pills": 65, "garbage": 10, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 79, "res": "clear", "won": 1, "topout": 0, "pills": 95, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 78, "res": "clear", "won": 1, "topout": 0, "pills": 126, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 77, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 80, "res": "clear", "won": 1, "topout": 0, "pills": 94, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 81, "res": "clear", "won": 1, "topout": 0, "pills": 99, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 84, "res": "clear", "won": 1, "topout": 0, "pills": 132, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 82, "res": "clear", "won": 1, "topout": 0, "pills": 219, "garbage": 48, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 85, "res": "clear", "won": 1, "topout": 0, "pills": 107, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 83, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 64, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 87, "res": "clear", "won": 1, "topout": 0, "pills": 97, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 88, "res": "clear", "won": 1, "topout": 0, "pills": 79, "garbage": 12, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 86, "res": "clear", "won": 1, "topout": 0, "pills": 194, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 89, "res": "clear", "won": 1, "topout": 0, "pills": 111, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 90, "res": "clear", "won": 1, "topout": 0, "pills": 111, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 92, "res": "clear", "won": 1, "topout": 0, "pills": 80, "garbage": 12, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 93, "res": "clear", "won": 1, "topout": 0, "pills": 102, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 91, "res": "clear", "won": 1, "topout": 0, "pills": 205, "garbage": 43, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 95, "res": "clear", "won": 1, "topout": 0, "pills": 74, "garbage": 12, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 94, "res": "clear", "won": 1, "topout": 0, "pills": 145, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 97, "res": "clear", "won": 1, "topout": 0, "pills": 134, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 96, "res": "clear", "won": 1, "topout": 0, "pills": 177, "garbage": 38, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 98, "res": "clear", "won": 1, "topout": 0, "pills": 109, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 99, "res": "clear", "won": 1, "topout": 0, "pills": 138, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 100, "res": "clear", "won": 1, "topout": 0, "pills": 129, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 102, "res": "clear", "won": 1, "topout": 0, "pills": 106, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 101, "res": "clear", "won": 1, "topout": 0, "pills": 129, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 103, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 104, "res": "clear", "won": 1, "topout": 0, "pills": 131, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 105, "res": "clear", "won": 1, "topout": 0, "pills": 158, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 107, "res": "clear", "won": 1, "topout": 0, "pills": 111, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 106, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 68, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 109, "res": "clear", "won": 1, "topout": 0, "pills": 95, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 108, "res": "clear", "won": 1, "topout": 0, "pills": 160, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 110, "res": "clear", "won": 1, "topout": 0, "pills": 106, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 111, "res": "clear", "won": 1, "topout": 0, "pills": 116, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 112, "res": "clear", "won": 1, "topout": 0, "pills": 134, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 114, "res": "clear", "won": 1, "topout": 0, "pills": 116, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 113, "res": "clear", "won": 1, "topout": 0, "pills": 208, "garbage": 43, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 115, "res": "clear", "won": 1, "topout": 0, "pills": 132, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 117, "res": "clear", "won": 1, "topout": 0, "pills": 103, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 118, "res": "clear", "won": 1, "topout": 0, "pills": 113, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 120, "res": "clear", "won": 1, "topout": 0, "pills": 94, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 119, "res": "clear", "won": 1, "topout": 0, "pills": 122, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 116, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 68, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 121, "res": "clear", "won": 1, "topout": 0, "pills": 108, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 123, "res": "clear", "won": 1, "topout": 0, "pills": 86, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 122, "res": "clear", "won": 1, "topout": 0, "pills": 122, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 124, "res": "clear", "won": 1, "topout": 0, "pills": 84, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 125, "res": "clear", "won": 1, "topout": 0, "pills": 136, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 126, "res": "clear", "won": 1, "topout": 0, "pills": 89, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 127, "res": "clear", "won": 1, "topout": 0, "pills": 84, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 128, "res": "clear", "won": 1, "topout": 0, "pills": 110, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 129, "res": "clear", "won": 1, "topout": 0, "pills": 96, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 130, "res": "clear", "won": 1, "topout": 0, "pills": 87, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 132, "res": "clear", "won": 1, "topout": 0, "pills": 78, "garbage": 12, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 131, "res": "clear", "won": 1, "topout": 0, "pills": 142, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 133, "res": "clear", "won": 1, "topout": 0, "pills": 96, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 134, "res": "clear", "won": 1, "topout": 0, "pills": 110, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 135, "res": "clear", "won": 1, "topout": 0, "pills": 102, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 138, "res": "clear", "won": 1, "topout": 0, "pills": 82, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 137, "res": "clear", "won": 1, "topout": 0, "pills": 93, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 136, "res": "clear", "won": 1, "topout": 0, "pills": 145, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 140, "res": "clear", "won": 1, "topout": 0, "pills": 108, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 141, "res": "clear", "won": 1, "topout": 0, "pills": 101, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 139, "res": "clear", "won": 1, "topout": 0, "pills": 181, "garbage": 38, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 142, "res": "clear", "won": 1, "topout": 0, "pills": 166, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 144, "res": "clear", "won": 1, "topout": 0, "pills": 106, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 146, "res": "clear", "won": 1, "topout": 0, "pills": 114, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 147, "res": "clear", "won": 1, "topout": 0, "pills": 96, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 143, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 66, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 145, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 67, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 148, "res": "clear", "won": 1, "topout": 0, "pills": 91, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 149, "res": "clear", "won": 1, "topout": 0, "pills": 121, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 151, "res": "clear", "won": 1, "topout": 0, "pills": 101, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 150, "res": "clear", "won": 1, "topout": 0, "pills": 191, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 153, "res": "clear", "won": 1, "topout": 0, "pills": 82, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 154, "res": "clear", "won": 1, "topout": 0, "pills": 85, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 152, "res": "clear", "won": 1, "topout": 0, "pills": 192, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 155, "res": "clear", "won": 1, "topout": 0, "pills": 107, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 156, "res": "clear", "won": 1, "topout": 0, "pills": 139, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 157, "res": "clear", "won": 1, "topout": 0, "pills": 104, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 158, "res": "clear", "won": 1, "topout": 0, "pills": 138, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 159, "res": "topout", "won": 0, "topout": 1, "pills": 200, "garbage": 43, "dies_ahead": 1, "arm": "base", "model": "drip"}
+{"seed": 161, "res": "clear", "won": 1, "topout": 0, "pills": 152, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 160, "res": "clear", "won": 1, "topout": 0, "pills": 164, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 162, "res": "clear", "won": 1, "topout": 0, "pills": 148, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 163, "res": "clear", "won": 1, "topout": 0, "pills": 121, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 164, "res": "clear", "won": 1, "topout": 0, "pills": 131, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 165, "res": "clear", "won": 1, "topout": 0, "pills": 250, "garbage": 56, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 168, "res": "clear", "won": 1, "topout": 0, "pills": 101, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 166, "res": "clear", "won": 1, "topout": 0, "pills": 182, "garbage": 38, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 167, "res": "topout", "won": 0, "topout": 1, "pills": 216, "garbage": 48, "dies_ahead": 1, "arm": "base", "model": "drip"}
+{"seed": 170, "res": "clear", "won": 1, "topout": 0, "pills": 80, "garbage": 12, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 172, "res": "clear", "won": 1, "topout": 0, "pills": 73, "garbage": 12, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 169, "res": "clear", "won": 1, "topout": 0, "pills": 119, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 171, "res": "clear", "won": 1, "topout": 0, "pills": 106, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 173, "res": "clear", "won": 1, "topout": 0, "pills": 103, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 175, "res": "clear", "won": 1, "topout": 0, "pills": 103, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 176, "res": "clear", "won": 1, "topout": 0, "pills": 110, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 174, "res": "topout", "won": 0, "topout": 1, "pills": 211, "garbage": 43, "dies_ahead": 1, "arm": "base", "model": "drip"}
+{"seed": 177, "res": "clear", "won": 1, "topout": 0, "pills": 99, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 179, "res": "clear", "won": 1, "topout": 0, "pills": 98, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 178, "res": "clear", "won": 1, "topout": 0, "pills": 151, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 181, "res": "clear", "won": 1, "topout": 0, "pills": 79, "garbage": 12, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 180, "res": "clear", "won": 1, "topout": 0, "pills": 108, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 182, "res": "clear", "won": 1, "topout": 0, "pills": 84, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 183, "res": "clear", "won": 1, "topout": 0, "pills": 93, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 184, "res": "clear", "won": 1, "topout": 0, "pills": 88, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 185, "res": "clear", "won": 1, "topout": 0, "pills": 151, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 188, "res": "clear", "won": 1, "topout": 0, "pills": 74, "garbage": 12, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 186, "res": "clear", "won": 1, "topout": 0, "pills": 135, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 187, "res": "clear", "won": 1, "topout": 0, "pills": 144, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 189, "res": "clear", "won": 1, "topout": 0, "pills": 88, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 191, "res": "clear", "won": 1, "topout": 0, "pills": 86, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 190, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 192, "res": "clear", "won": 1, "topout": 0, "pills": 119, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 194, "res": "clear", "won": 1, "topout": 0, "pills": 172, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 195, "res": "clear", "won": 1, "topout": 0, "pills": 124, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 196, "res": "clear", "won": 1, "topout": 0, "pills": 122, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 193, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 67, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 197, "res": "clear", "won": 1, "topout": 0, "pills": 119, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 198, "res": "clear", "won": 1, "topout": 0, "pills": 98, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 199, "res": "clear", "won": 1, "topout": 0, "pills": 119, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 200, "res": "clear", "won": 1, "topout": 0, "pills": 122, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 201, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 203, "res": "clear", "won": 1, "topout": 0, "pills": 109, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 204, "res": "clear", "won": 1, "topout": 0, "pills": 80, "garbage": 12, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 202, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 68, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 205, "res": "clear", "won": 1, "topout": 0, "pills": 147, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 206, "res": "clear", "won": 1, "topout": 0, "pills": 140, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 207, "res": "clear", "won": 1, "topout": 0, "pills": 119, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 210, "res": "clear", "won": 1, "topout": 0, "pills": 95, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 209, "res": "clear", "won": 1, "topout": 0, "pills": 131, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 208, "res": "clear", "won": 1, "topout": 0, "pills": 204, "garbage": 44, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 211, "res": "clear", "won": 1, "topout": 0, "pills": 145, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 213, "res": "clear", "won": 1, "topout": 0, "pills": 89, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 212, "res": "clear", "won": 1, "topout": 0, "pills": 119, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 214, "res": "clear", "won": 1, "topout": 0, "pills": 97, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 215, "res": "clear", "won": 1, "topout": 0, "pills": 135, "garbage": 25, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 216, "res": "clear", "won": 1, "topout": 0, "pills": 144, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 217, "res": "clear", "won": 1, "topout": 0, "pills": 157, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 219, "res": "clear", "won": 1, "topout": 0, "pills": 105, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 218, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 220, "res": "clear", "won": 1, "topout": 0, "pills": 71, "garbage": 10, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 222, "res": "clear", "won": 1, "topout": 0, "pills": 115, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 223, "res": "clear", "won": 1, "topout": 0, "pills": 108, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 221, "res": "clear", "won": 1, "topout": 0, "pills": 170, "garbage": 36, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 224, "res": "clear", "won": 1, "topout": 0, "pills": 150, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 225, "res": "clear", "won": 1, "topout": 0, "pills": 101, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 226, "res": "clear", "won": 1, "topout": 0, "pills": 115, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 227, "res": "clear", "won": 1, "topout": 0, "pills": 107, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 229, "res": "clear", "won": 1, "topout": 0, "pills": 104, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 230, "res": "clear", "won": 1, "topout": 0, "pills": 88, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 228, "res": "clear", "won": 1, "topout": 0, "pills": 174, "garbage": 36, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 233, "res": "clear", "won": 1, "topout": 0, "pills": 97, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 231, "res": "clear", "won": 1, "topout": 0, "pills": 234, "garbage": 52, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 232, "res": "clear", "won": 1, "topout": 0, "pills": 153, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 234, "res": "clear", "won": 1, "topout": 0, "pills": 180, "garbage": 38, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 235, "res": "clear", "won": 1, "topout": 0, "pills": 106, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 236, "res": "clear", "won": 1, "topout": 0, "pills": 107, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 237, "res": "clear", "won": 1, "topout": 0, "pills": 96, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 238, "res": "clear", "won": 1, "topout": 0, "pills": 100, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 240, "res": "clear", "won": 1, "topout": 0, "pills": 105, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 241, "res": "clear", "won": 1, "topout": 0, "pills": 65, "garbage": 10, "dies_ahead": 0, "arm": "base", "model": "drip"}
+{"seed": 239, "res": "topout", "won": 0, "topout": 1, "pills": 137, "garbage": 28, "dies_ahead": 1, "arm": "base", "model": "drip"}
+{"seed": 3, "res": "clear", "won": 1, "topout": 0, "pills": 72, "garbage": 10, "dies_ahead": 0, "pol_takes": 12, "pol_instant_takes": 11, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 5, "res": "clear", "won": 1, "topout": 0, "pills": 180, "garbage": 38, "dies_ahead": 0, "pol_takes": 29, "pol_instant_takes": 22, "pol_completes": 3, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 2, "res": "topout", "won": 0, "topout": 1, "pills": 296, "garbage": 61, "dies_ahead": 1, "pol_takes": 44, "pol_instant_takes": 26, "pol_completes": 7, "pol_complete_fallback": 11, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 8, "res": "topout", "won": 0, "topout": 1, "pills": 14, "garbage": 0, "dies_ahead": 0, "pol_takes": 4, "pol_instant_takes": 1, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 4, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 65, "dies_ahead": 0, "pol_takes": 46, "pol_instant_takes": 30, "pol_completes": 10, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 6, "res": "topout", "won": 0, "topout": 1, "pills": 266, "garbage": 55, "dies_ahead": 1, "pol_takes": 56, "pol_instant_takes": 34, "pol_completes": 8, "pol_complete_fallback": 14, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 11, "res": "topout", "won": 0, "topout": 1, "pills": 40, "garbage": 4, "dies_ahead": 0, "pol_takes": 7, "pol_instant_takes": 5, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 7, "res": "topout", "won": 0, "topout": 1, "pills": 224, "garbage": 45, "dies_ahead": 1, "pol_takes": 46, "pol_instant_takes": 33, "pol_completes": 9, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 9, "res": "topout", "won": 0, "topout": 1, "pills": 251, "garbage": 55, "dies_ahead": 1, "pol_takes": 38, "pol_instant_takes": 23, "pol_completes": 6, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 12, "res": "clear", "won": 1, "topout": 0, "pills": 78, "garbage": 12, "dies_ahead": 0, "pol_takes": 19, "pol_instant_takes": 15, "pol_completes": 2, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 10, "res": "topout", "won": 0, "topout": 1, "pills": 263, "garbage": 58, "dies_ahead": 1, "pol_takes": 50, "pol_instant_takes": 37, "pol_completes": 5, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 16, "res": "topout", "won": 0, "topout": 1, "pills": 41, "garbage": 4, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 5, "pol_completes": 2, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 13, "res": "clear", "won": 1, "topout": 0, "pills": 152, "garbage": 30, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 25, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 17, "res": "topout", "won": 0, "topout": 1, "pills": 40, "garbage": 4, "dies_ahead": 0, "pol_takes": 5, "pol_instant_takes": 4, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 15, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 51, "dies_ahead": 0, "pol_takes": 50, "pol_instant_takes": 31, "pol_completes": 8, "pol_complete_fallback": 11, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 18, "res": "clear", "won": 1, "topout": 0, "pills": 103, "garbage": 18, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 9, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 14, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 66, "dies_ahead": 0, "pol_takes": 56, "pol_instant_takes": 35, "pol_completes": 13, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 21, "res": "clear", "won": 1, "topout": 0, "pills": 81, "garbage": 14, "dies_ahead": 0, "pol_takes": 18, "pol_instant_takes": 14, "pol_completes": 1, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 19, "res": "topout", "won": 0, "topout": 1, "pills": 218, "garbage": 45, "dies_ahead": 1, "pol_takes": 20, "pol_instant_takes": 15, "pol_completes": 4, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 20, "res": "clear", "won": 1, "topout": 0, "pills": 194, "garbage": 40, "dies_ahead": 0, "pol_takes": 36, "pol_instant_takes": 28, "pol_completes": 5, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 22, "res": "clear", "won": 1, "topout": 0, "pills": 131, "garbage": 26, "dies_ahead": 0, "pol_takes": 24, "pol_instant_takes": 22, "pol_completes": 0, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 23, "res": "clear", "won": 1, "topout": 0, "pills": 199, "garbage": 36, "dies_ahead": 0, "pol_takes": 39, "pol_instant_takes": 21, "pol_completes": 8, "pol_complete_fallback": 10, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 26, "res": "clear", "won": 1, "topout": 0, "pills": 103, "garbage": 18, "dies_ahead": 0, "pol_takes": 9, "pol_instant_takes": 9, "pol_completes": 0, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 24, "res": "clear", "won": 1, "topout": 0, "pills": 214, "garbage": 46, "dies_ahead": 0, "pol_takes": 49, "pol_instant_takes": 31, "pol_completes": 10, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 27, "res": "topout", "won": 0, "topout": 1, "pills": 104, "garbage": 19, "dies_ahead": 1, "pol_takes": 13, "pol_instant_takes": 7, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 25, "res": "clear", "won": 1, "topout": 0, "pills": 262, "garbage": 57, "dies_ahead": 0, "pol_takes": 64, "pol_instant_takes": 43, "pol_completes": 9, "pol_complete_fallback": 12, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 28, "res": "topout", "won": 0, "topout": 1, "pills": 160, "garbage": 34, "dies_ahead": 0, "pol_takes": 34, "pol_instant_takes": 21, "pol_completes": 7, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 29, "res": "clear", "won": 1, "topout": 0, "pills": 165, "garbage": 30, "dies_ahead": 0, "pol_takes": 27, "pol_instant_takes": 20, "pol_completes": 2, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 30, "res": "clear", "won": 1, "topout": 0, "pills": 163, "garbage": 33, "dies_ahead": 0, "pol_takes": 24, "pol_instant_takes": 18, "pol_completes": 3, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 32, "res": "topout", "won": 0, "topout": 1, "pills": 56, "garbage": 6, "dies_ahead": 0, "pol_takes": 15, "pol_instant_takes": 7, "pol_completes": 3, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 33, "res": "topout", "won": 0, "topout": 1, "pills": 40, "garbage": 2, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 5, "pol_completes": 2, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 31, "res": "clear", "won": 1, "topout": 0, "pills": 281, "garbage": 64, "dies_ahead": 0, "pol_takes": 49, "pol_instant_takes": 38, "pol_completes": 8, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 34, "res": "topout", "won": 0, "topout": 1, "pills": 103, "garbage": 18, "dies_ahead": 1, "pol_takes": 14, "pol_instant_takes": 10, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 35, "res": "clear", "won": 1, "topout": 0, "pills": 120, "garbage": 24, "dies_ahead": 0, "pol_takes": 19, "pol_instant_takes": 12, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 36, "res": "clear", "won": 1, "topout": 0, "pills": 185, "garbage": 40, "dies_ahead": 0, "pol_takes": 24, "pol_instant_takes": 15, "pol_completes": 5, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 38, "res": "clear", "won": 1, "topout": 0, "pills": 87, "garbage": 14, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 10, "pol_completes": 1, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 37, "res": "clear", "won": 1, "topout": 0, "pills": 125, "garbage": 24, "dies_ahead": 0, "pol_takes": 15, "pol_instant_takes": 12, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 42, "res": "topout", "won": 0, "topout": 1, "pills": 39, "garbage": 2, "dies_ahead": 0, "pol_takes": 5, "pol_instant_takes": 2, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 39, "res": "clear", "won": 1, "topout": 0, "pills": 260, "garbage": 58, "dies_ahead": 0, "pol_takes": 47, "pol_instant_takes": 31, "pol_completes": 10, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 41, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 49, "dies_ahead": 0, "pol_takes": 54, "pol_instant_takes": 38, "pol_completes": 10, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 40, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 57, "dies_ahead": 0, "pol_takes": 52, "pol_instant_takes": 36, "pol_completes": 11, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 43, "res": "clear", "won": 1, "topout": 0, "pills": 180, "garbage": 36, "dies_ahead": 0, "pol_takes": 31, "pol_instant_takes": 20, "pol_completes": 8, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 44, "res": "topout", "won": 0, "topout": 1, "pills": 74, "garbage": 12, "dies_ahead": 0, "pol_takes": 18, "pol_instant_takes": 6, "pol_completes": 7, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 48, "res": "clear", "won": 1, "topout": 0, "pills": 88, "garbage": 14, "dies_ahead": 0, "pol_takes": 22, "pol_instant_takes": 13, "pol_completes": 4, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 47, "res": "clear", "won": 1, "topout": 0, "pills": 154, "garbage": 32, "dies_ahead": 0, "pol_takes": 14, "pol_instant_takes": 13, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 45, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 66, "dies_ahead": 0, "pol_takes": 58, "pol_instant_takes": 44, "pol_completes": 9, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 46, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 68, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 22, "pol_completes": 5, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 50, "res": "clear", "won": 1, "topout": 0, "pills": 110, "garbage": 20, "dies_ahead": 0, "pol_takes": 14, "pol_instant_takes": 8, "pol_completes": 3, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 52, "res": "topout", "won": 0, "topout": 1, "pills": 80, "garbage": 13, "dies_ahead": 0, "pol_takes": 12, "pol_instant_takes": 4, "pol_completes": 6, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 49, "res": "topout", "won": 0, "topout": 1, "pills": 190, "garbage": 40, "dies_ahead": 1, "pol_takes": 45, "pol_instant_takes": 31, "pol_completes": 9, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 51, "res": "clear", "won": 1, "topout": 0, "pills": 227, "garbage": 46, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 23, "pol_completes": 6, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 54, "res": "clear", "won": 1, "topout": 0, "pills": 79, "garbage": 12, "dies_ahead": 0, "pol_takes": 5, "pol_instant_takes": 4, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 53, "res": "clear", "won": 1, "topout": 0, "pills": 265, "garbage": 57, "dies_ahead": 0, "pol_takes": 39, "pol_instant_takes": 24, "pol_completes": 10, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 55, "res": "clear", "won": 1, "topout": 0, "pills": 164, "garbage": 32, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 14, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 56, "res": "clear", "won": 1, "topout": 0, "pills": 186, "garbage": 40, "dies_ahead": 0, "pol_takes": 30, "pol_instant_takes": 26, "pol_completes": 1, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 57, "res": "clear", "won": 1, "topout": 0, "pills": 192, "garbage": 38, "dies_ahead": 0, "pol_takes": 39, "pol_instant_takes": 21, "pol_completes": 9, "pol_complete_fallback": 9, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 59, "res": "clear", "won": 1, "topout": 0, "pills": 113, "garbage": 22, "dies_ahead": 0, "pol_takes": 14, "pol_instant_takes": 12, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 61, "res": "topout", "won": 0, "topout": 1, "pills": 56, "garbage": 8, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 7, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 58, "res": "topout", "won": 0, "topout": 1, "pills": 200, "garbage": 42, "dies_ahead": 1, "pol_takes": 25, "pol_instant_takes": 16, "pol_completes": 3, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 62, "res": "topout", "won": 0, "topout": 1, "pills": 80, "garbage": 11, "dies_ahead": 1, "pol_takes": 9, "pol_instant_takes": 4, "pol_completes": 5, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 60, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 58, "dies_ahead": 0, "pol_takes": 39, "pol_instant_takes": 25, "pol_completes": 7, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 63, "res": "clear", "won": 1, "topout": 0, "pills": 150, "garbage": 30, "dies_ahead": 0, "pol_takes": 15, "pol_instant_takes": 13, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 65, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 24, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 13, "pol_completes": 3, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 64, "res": "topout", "won": 0, "topout": 1, "pills": 224, "garbage": 42, "dies_ahead": 1, "pol_takes": 32, "pol_instant_takes": 18, "pol_completes": 10, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 67, "res": "topout", "won": 0, "topout": 1, "pills": 90, "garbage": 14, "dies_ahead": 1, "pol_takes": 14, "pol_instant_takes": 9, "pol_completes": 3, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 66, "res": "topout", "won": 0, "topout": 1, "pills": 96, "garbage": 16, "dies_ahead": 1, "pol_takes": 16, "pol_instant_takes": 8, "pol_completes": 5, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 68, "res": "clear", "won": 1, "topout": 0, "pills": 150, "garbage": 29, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 16, "pol_completes": 3, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 69, "res": "topout", "won": 0, "topout": 1, "pills": 171, "garbage": 36, "dies_ahead": 1, "pol_takes": 32, "pol_instant_takes": 21, "pol_completes": 6, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 70, "res": "clear", "won": 1, "topout": 0, "pills": 190, "garbage": 34, "dies_ahead": 0, "pol_takes": 21, "pol_instant_takes": 20, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 71, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 61, "dies_ahead": 0, "pol_takes": 49, "pol_instant_takes": 37, "pol_completes": 8, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 74, "res": "clear", "won": 1, "topout": 0, "pills": 175, "garbage": 36, "dies_ahead": 0, "pol_takes": 19, "pol_instant_takes": 17, "pol_completes": 0, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 73, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 55, "dies_ahead": 0, "pol_takes": 30, "pol_instant_takes": 25, "pol_completes": 4, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 72, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 63, "dies_ahead": 0, "pol_takes": 35, "pol_instant_takes": 26, "pol_completes": 5, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 75, "res": "clear", "won": 1, "topout": 0, "pills": 149, "garbage": 30, "dies_ahead": 0, "pol_takes": 15, "pol_instant_takes": 12, "pol_completes": 0, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 76, "res": "clear", "won": 1, "topout": 0, "pills": 161, "garbage": 32, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 24, "pol_completes": 6, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 77, "res": "clear", "won": 1, "topout": 0, "pills": 131, "garbage": 26, "dies_ahead": 0, "pol_takes": 21, "pol_instant_takes": 16, "pol_completes": 1, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 78, "res": "clear", "won": 1, "topout": 0, "pills": 154, "garbage": 32, "dies_ahead": 0, "pol_takes": 23, "pol_instant_takes": 18, "pol_completes": 3, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 80, "res": "topout", "won": 0, "topout": 1, "pills": 72, "garbage": 12, "dies_ahead": 0, "pol_takes": 16, "pol_instant_takes": 10, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 79, "res": "clear", "won": 1, "topout": 0, "pills": 220, "garbage": 48, "dies_ahead": 0, "pol_takes": 28, "pol_instant_takes": 18, "pol_completes": 8, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 83, "res": "topout", "won": 0, "topout": 1, "pills": 57, "garbage": 8, "dies_ahead": 0, "pol_takes": 7, "pol_instant_takes": 4, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 81, "res": "topout", "won": 0, "topout": 1, "pills": 206, "garbage": 40, "dies_ahead": 1, "pol_takes": 36, "pol_instant_takes": 26, "pol_completes": 6, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 82, "res": "clear", "won": 1, "topout": 0, "pills": 120, "garbage": 20, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 8, "pol_completes": 7, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 84, "res": "clear", "won": 1, "topout": 0, "pills": 103, "garbage": 18, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 13, "pol_completes": 3, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 86, "res": "clear", "won": 1, "topout": 0, "pills": 149, "garbage": 30, "dies_ahead": 0, "pol_takes": 28, "pol_instant_takes": 18, "pol_completes": 7, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 85, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 59, "dies_ahead": 0, "pol_takes": 41, "pol_instant_takes": 36, "pol_completes": 4, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 88, "res": "clear", "won": 1, "topout": 0, "pills": 113, "garbage": 22, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 15, "pol_completes": 2, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 87, "res": "topout", "won": 0, "topout": 1, "pills": 233, "garbage": 51, "dies_ahead": 1, "pol_takes": 41, "pol_instant_takes": 23, "pol_completes": 12, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 89, "res": "clear", "won": 1, "topout": 0, "pills": 121, "garbage": 24, "dies_ahead": 0, "pol_takes": 21, "pol_instant_takes": 18, "pol_completes": 1, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 90, "res": "clear", "won": 1, "topout": 0, "pills": 141, "garbage": 28, "dies_ahead": 0, "pol_takes": 12, "pol_instant_takes": 11, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 91, "res": "clear", "won": 1, "topout": 0, "pills": 146, "garbage": 27, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 14, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 92, "res": "clear", "won": 1, "topout": 0, "pills": 138, "garbage": 28, "dies_ahead": 0, "pol_takes": 16, "pol_instant_takes": 11, "pol_completes": 4, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 95, "res": "clear", "won": 1, "topout": 0, "pills": 122, "garbage": 24, "dies_ahead": 0, "pol_takes": 14, "pol_instant_takes": 13, "pol_completes": 0, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 94, "res": "clear", "won": 1, "topout": 0, "pills": 161, "garbage": 33, "dies_ahead": 0, "pol_takes": 16, "pol_instant_takes": 11, "pol_completes": 5, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 93, "res": "clear", "won": 1, "topout": 0, "pills": 298, "garbage": 67, "dies_ahead": 0, "pol_takes": 24, "pol_instant_takes": 12, "pol_completes": 7, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 98, "res": "topout", "won": 0, "topout": 1, "pills": 164, "garbage": 27, "dies_ahead": 1, "pol_takes": 16, "pol_instant_takes": 13, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 96, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 66, "dies_ahead": 0, "pol_takes": 74, "pol_instant_takes": 42, "pol_completes": 14, "pol_complete_fallback": 18, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 97, "res": "topout", "won": 0, "topout": 1, "pills": 227, "garbage": 42, "dies_ahead": 1, "pol_takes": 52, "pol_instant_takes": 32, "pol_completes": 8, "pol_complete_fallback": 11, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 99, "res": "clear", "won": 1, "topout": 0, "pills": 190, "garbage": 39, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 14, "pol_completes": 1, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 101, "res": "topout", "won": 0, "topout": 1, "pills": 119, "garbage": 20, "dies_ahead": 1, "pol_takes": 16, "pol_instant_takes": 11, "pol_completes": 5, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 102, "res": "topout", "won": 0, "topout": 1, "pills": 150, "garbage": 30, "dies_ahead": 1, "pol_takes": 24, "pol_instant_takes": 15, "pol_completes": 7, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 104, "res": "clear", "won": 1, "topout": 0, "pills": 131, "garbage": 26, "dies_ahead": 0, "pol_takes": 21, "pol_instant_takes": 19, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 100, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 68, "dies_ahead": 0, "pol_takes": 48, "pol_instant_takes": 34, "pol_completes": 7, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 105, "res": "clear", "won": 1, "topout": 0, "pills": 200, "garbage": 39, "dies_ahead": 0, "pol_takes": 30, "pol_instant_takes": 24, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 103, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 66, "dies_ahead": 0, "pol_takes": 48, "pol_instant_takes": 32, "pol_completes": 9, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 106, "res": "clear", "won": 1, "topout": 0, "pills": 149, "garbage": 30, "dies_ahead": 0, "pol_takes": 18, "pol_instant_takes": 12, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 107, "res": "clear", "won": 1, "topout": 0, "pills": 139, "garbage": 28, "dies_ahead": 0, "pol_takes": 18, "pol_instant_takes": 15, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 108, "res": "clear", "won": 1, "topout": 0, "pills": 153, "garbage": 32, "dies_ahead": 0, "pol_takes": 14, "pol_instant_takes": 12, "pol_completes": 0, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 111, "res": "topout", "won": 0, "topout": 1, "pills": 48, "garbage": 6, "dies_ahead": 0, "pol_takes": 9, "pol_instant_takes": 7, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 109, "res": "clear", "won": 1, "topout": 0, "pills": 180, "garbage": 38, "dies_ahead": 0, "pol_takes": 18, "pol_instant_takes": 8, "pol_completes": 4, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 110, "res": "clear", "won": 1, "topout": 0, "pills": 180, "garbage": 36, "dies_ahead": 0, "pol_takes": 28, "pol_instant_takes": 15, "pol_completes": 9, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 112, "res": "topout", "won": 0, "topout": 1, "pills": 73, "garbage": 12, "dies_ahead": 0, "pol_takes": 16, "pol_instant_takes": 10, "pol_completes": 1, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 114, "res": "clear", "won": 1, "topout": 0, "pills": 111, "garbage": 20, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 9, "pol_completes": 3, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 113, "res": "clear", "won": 1, "topout": 0, "pills": 185, "garbage": 40, "dies_ahead": 0, "pol_takes": 34, "pol_instant_takes": 23, "pol_completes": 6, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 117, "res": "topout", "won": 0, "topout": 1, "pills": 56, "garbage": 8, "dies_ahead": 0, "pol_takes": 5, "pol_instant_takes": 3, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 115, "res": "clear", "won": 1, "topout": 0, "pills": 209, "garbage": 43, "dies_ahead": 0, "pol_takes": 23, "pol_instant_takes": 18, "pol_completes": 5, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 118, "res": "clear", "won": 1, "topout": 0, "pills": 131, "garbage": 26, "dies_ahead": 0, "pol_takes": 24, "pol_instant_takes": 15, "pol_completes": 6, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 116, "res": "clear", "won": 1, "topout": 0, "pills": 239, "garbage": 52, "dies_ahead": 0, "pol_takes": 31, "pol_instant_takes": 25, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 120, "res": "clear", "won": 1, "topout": 0, "pills": 108, "garbage": 20, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 13, "pol_completes": 3, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 119, "res": "clear", "won": 1, "topout": 0, "pills": 198, "garbage": 42, "dies_ahead": 0, "pol_takes": 35, "pol_instant_takes": 19, "pol_completes": 10, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 122, "res": "clear", "won": 1, "topout": 0, "pills": 162, "garbage": 33, "dies_ahead": 0, "pol_takes": 28, "pol_instant_takes": 20, "pol_completes": 3, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 123, "res": "clear", "won": 1, "topout": 0, "pills": 116, "garbage": 22, "dies_ahead": 0, "pol_takes": 22, "pol_instant_takes": 15, "pol_completes": 3, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 121, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 56, "dies_ahead": 0, "pol_takes": 41, "pol_instant_takes": 31, "pol_completes": 6, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 124, "res": "clear", "won": 1, "topout": 0, "pills": 169, "garbage": 31, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 13, "pol_completes": 3, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 126, "res": "clear", "won": 1, "topout": 0, "pills": 97, "garbage": 18, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 15, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 127, "res": "topout", "won": 0, "topout": 1, "pills": 70, "garbage": 10, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 12, "pol_completes": 2, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 125, "res": "clear", "won": 1, "topout": 0, "pills": 138, "garbage": 28, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 12, "pol_completes": 2, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 128, "res": "topout", "won": 0, "topout": 1, "pills": 136, "garbage": 26, "dies_ahead": 1, "pol_takes": 22, "pol_instant_takes": 14, "pol_completes": 2, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 130, "res": "topout", "won": 0, "topout": 1, "pills": 128, "garbage": 26, "dies_ahead": 1, "pol_takes": 21, "pol_instant_takes": 14, "pol_completes": 4, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 132, "res": "clear", "won": 1, "topout": 0, "pills": 84, "garbage": 14, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 10, "pol_completes": 1, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 131, "res": "clear", "won": 1, "topout": 0, "pills": 153, "garbage": 32, "dies_ahead": 0, "pol_takes": 25, "pol_instant_takes": 16, "pol_completes": 5, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 129, "res": "clear", "won": 1, "topout": 0, "pills": 200, "garbage": 42, "dies_ahead": 0, "pol_takes": 39, "pol_instant_takes": 29, "pol_completes": 0, "pol_complete_fallback": 10, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 133, "res": "clear", "won": 1, "topout": 0, "pills": 174, "garbage": 36, "dies_ahead": 0, "pol_takes": 30, "pol_instant_takes": 20, "pol_completes": 5, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 136, "res": "topout", "won": 0, "topout": 1, "pills": 102, "garbage": 18, "dies_ahead": 1, "pol_takes": 14, "pol_instant_takes": 10, "pol_completes": 4, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 135, "res": "clear", "won": 1, "topout": 0, "pills": 177, "garbage": 35, "dies_ahead": 0, "pol_takes": 22, "pol_instant_takes": 12, "pol_completes": 7, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 134, "res": "clear", "won": 1, "topout": 0, "pills": 262, "garbage": 56, "dies_ahead": 0, "pol_takes": 41, "pol_instant_takes": 27, "pol_completes": 11, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 138, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 24, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 13, "pol_completes": 3, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 139, "res": "clear", "won": 1, "topout": 0, "pills": 135, "garbage": 26, "dies_ahead": 0, "pol_takes": 16, "pol_instant_takes": 13, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 137, "res": "clear", "won": 1, "topout": 0, "pills": 205, "garbage": 44, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 23, "pol_completes": 5, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 141, "res": "topout", "won": 0, "topout": 1, "pills": 75, "garbage": 10, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 7, "pol_completes": 3, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 140, "res": "clear", "won": 1, "topout": 0, "pills": 179, "garbage": 37, "dies_ahead": 0, "pol_takes": 29, "pol_instant_takes": 18, "pol_completes": 7, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 145, "res": "topout", "won": 0, "topout": 1, "pills": 44, "garbage": 4, "dies_ahead": 0, "pol_takes": 4, "pol_instant_takes": 0, "pol_completes": 4, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 143, "res": "topout", "won": 0, "topout": 1, "pills": 115, "garbage": 22, "dies_ahead": 1, "pol_takes": 22, "pol_instant_takes": 12, "pol_completes": 6, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 142, "res": "clear", "won": 1, "topout": 0, "pills": 175, "garbage": 36, "dies_ahead": 0, "pol_takes": 29, "pol_instant_takes": 17, "pol_completes": 6, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 144, "res": "clear", "won": 1, "topout": 0, "pills": 167, "garbage": 33, "dies_ahead": 0, "pol_takes": 19, "pol_instant_takes": 12, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 147, "res": "clear", "won": 1, "topout": 0, "pills": 89, "garbage": 16, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 13, "pol_completes": 0, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 146, "res": "clear", "won": 1, "topout": 0, "pills": 206, "garbage": 41, "dies_ahead": 0, "pol_takes": 28, "pol_instant_takes": 22, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 149, "res": "clear", "won": 1, "topout": 0, "pills": 101, "garbage": 18, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 8, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 150, "res": "clear", "won": 1, "topout": 0, "pills": 87, "garbage": 14, "dies_ahead": 0, "pol_takes": 9, "pol_instant_takes": 8, "pol_completes": 0, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 148, "res": "clear", "won": 1, "topout": 0, "pills": 223, "garbage": 42, "dies_ahead": 0, "pol_takes": 24, "pol_instant_takes": 15, "pol_completes": 8, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 153, "res": "topout", "won": 0, "topout": 1, "pills": 44, "garbage": 4, "dies_ahead": 0, "pol_takes": 9, "pol_instant_takes": 5, "pol_completes": 2, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 151, "res": "topout", "won": 0, "topout": 1, "pills": 85, "garbage": 14, "dies_ahead": 0, "pol_takes": 11, "pol_instant_takes": 5, "pol_completes": 5, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 152, "res": "topout", "won": 0, "topout": 1, "pills": 195, "garbage": 29, "dies_ahead": 0, "pol_takes": 31, "pol_instant_takes": 19, "pol_completes": 8, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 154, "res": "topout", "won": 0, "topout": 1, "pills": 62, "garbage": 8, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 8, "pol_completes": 3, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 156, "res": "topout", "won": 0, "topout": 1, "pills": 96, "garbage": 18, "dies_ahead": 0, "pol_takes": 11, "pol_instant_takes": 7, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 155, "res": "topout", "won": 0, "topout": 1, "pills": 226, "garbage": 39, "dies_ahead": 0, "pol_takes": 37, "pol_instant_takes": 21, "pol_completes": 7, "pol_complete_fallback": 9, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 157, "res": "clear", "won": 1, "topout": 0, "pills": 129, "garbage": 26, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 15, "pol_completes": 2, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 158, "res": "clear", "won": 1, "topout": 0, "pills": 184, "garbage": 38, "dies_ahead": 0, "pol_takes": 29, "pol_instant_takes": 21, "pol_completes": 5, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 159, "res": "clear", "won": 1, "topout": 0, "pills": 147, "garbage": 30, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 15, "pol_completes": 1, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 161, "res": "clear", "won": 1, "topout": 0, "pills": 173, "garbage": 35, "dies_ahead": 0, "pol_takes": 36, "pol_instant_takes": 23, "pol_completes": 6, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 160, "res": "topout", "won": 0, "topout": 1, "pills": 251, "garbage": 55, "dies_ahead": 1, "pol_takes": 52, "pol_instant_takes": 27, "pol_completes": 11, "pol_complete_fallback": 13, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 162, "res": "topout", "won": 0, "topout": 1, "pills": 276, "garbage": 60, "dies_ahead": 1, "pol_takes": 36, "pol_instant_takes": 26, "pol_completes": 7, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 163, "res": "clear", "won": 1, "topout": 0, "pills": 272, "garbage": 56, "dies_ahead": 0, "pol_takes": 49, "pol_instant_takes": 40, "pol_completes": 6, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 164, "res": "clear", "won": 1, "topout": 0, "pills": 208, "garbage": 43, "dies_ahead": 0, "pol_takes": 33, "pol_instant_takes": 24, "pol_completes": 5, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 165, "res": "topout", "won": 0, "topout": 1, "pills": 182, "garbage": 37, "dies_ahead": 1, "pol_takes": 26, "pol_instant_takes": 17, "pol_completes": 6, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 166, "res": "topout", "won": 0, "topout": 1, "pills": 162, "garbage": 31, "dies_ahead": 0, "pol_takes": 33, "pol_instant_takes": 13, "pol_completes": 12, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 167, "res": "topout", "won": 0, "topout": 1, "pills": 125, "garbage": 23, "dies_ahead": 0, "pol_takes": 23, "pol_instant_takes": 12, "pol_completes": 8, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 168, "res": "clear", "won": 1, "topout": 0, "pills": 136, "garbage": 24, "dies_ahead": 0, "pol_takes": 27, "pol_instant_takes": 22, "pol_completes": 3, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 170, "res": "topout", "won": 0, "topout": 1, "pills": 59, "garbage": 8, "dies_ahead": 1, "pol_takes": 12, "pol_instant_takes": 10, "pol_completes": 0, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 172, "res": "clear", "won": 1, "topout": 0, "pills": 77, "garbage": 12, "dies_ahead": 0, "pol_takes": 15, "pol_instant_takes": 13, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 171, "res": "clear", "won": 1, "topout": 0, "pills": 154, "garbage": 32, "dies_ahead": 0, "pol_takes": 31, "pol_instant_takes": 19, "pol_completes": 8, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 169, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 67, "dies_ahead": 0, "pol_takes": 61, "pol_instant_takes": 42, "pol_completes": 13, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 173, "res": "clear", "won": 1, "topout": 0, "pills": 185, "garbage": 38, "dies_ahead": 0, "pol_takes": 28, "pol_instant_takes": 21, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 174, "res": "topout", "won": 0, "topout": 1, "pills": 252, "garbage": 51, "dies_ahead": 1, "pol_takes": 30, "pol_instant_takes": 14, "pol_completes": 11, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 175, "res": "topout", "won": 0, "topout": 1, "pills": 246, "garbage": 48, "dies_ahead": 1, "pol_takes": 33, "pol_instant_takes": 12, "pol_completes": 14, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 177, "res": "clear", "won": 1, "topout": 0, "pills": 187, "garbage": 40, "dies_ahead": 0, "pol_takes": 35, "pol_instant_takes": 30, "pol_completes": 1, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 178, "res": "clear", "won": 1, "topout": 0, "pills": 109, "garbage": 20, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 12, "pol_completes": 3, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 179, "res": "clear", "won": 1, "topout": 0, "pills": 87, "garbage": 14, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 11, "pol_completes": 0, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 176, "res": "clear", "won": 1, "topout": 0, "pills": 279, "garbage": 62, "dies_ahead": 0, "pol_takes": 60, "pol_instant_takes": 45, "pol_completes": 8, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 180, "res": "clear", "won": 1, "topout": 0, "pills": 115, "garbage": 22, "dies_ahead": 0, "pol_takes": 12, "pol_instant_takes": 10, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 182, "res": "clear", "won": 1, "topout": 0, "pills": 134, "garbage": 26, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 8, "pol_completes": 4, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 181, "res": "clear", "won": 1, "topout": 0, "pills": 184, "garbage": 38, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 16, "pol_completes": 3, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 183, "res": "clear", "won": 1, "topout": 0, "pills": 163, "garbage": 34, "dies_ahead": 0, "pol_takes": 14, "pol_instant_takes": 10, "pol_completes": 3, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 184, "res": "clear", "won": 1, "topout": 0, "pills": 120, "garbage": 22, "dies_ahead": 0, "pol_takes": 9, "pol_instant_takes": 9, "pol_completes": 0, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 185, "res": "clear", "won": 1, "topout": 0, "pills": 184, "garbage": 38, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 11, "pol_completes": 5, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 187, "res": "clear", "won": 1, "topout": 0, "pills": 156, "garbage": 30, "dies_ahead": 0, "pol_takes": 18, "pol_instant_takes": 11, "pol_completes": 4, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 186, "res": "clear", "won": 1, "topout": 0, "pills": 187, "garbage": 38, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 11, "pol_completes": 5, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 188, "res": "clear", "won": 1, "topout": 0, "pills": 173, "garbage": 36, "dies_ahead": 0, "pol_takes": 21, "pol_instant_takes": 16, "pol_completes": 4, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 189, "res": "clear", "won": 1, "topout": 0, "pills": 120, "garbage": 21, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 11, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 191, "res": "clear", "won": 1, "topout": 0, "pills": 126, "garbage": 24, "dies_ahead": 0, "pol_takes": 18, "pol_instant_takes": 13, "pol_completes": 3, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 194, "res": "topout", "won": 0, "topout": 1, "pills": 11, "garbage": 0, "dies_ahead": 0, "pol_takes": 1, "pol_instant_takes": 0, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 192, "res": "clear", "won": 1, "topout": 0, "pills": 116, "garbage": 22, "dies_ahead": 0, "pol_takes": 27, "pol_instant_takes": 19, "pol_completes": 4, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 190, "res": "clear", "won": 1, "topout": 0, "pills": 268, "garbage": 55, "dies_ahead": 0, "pol_takes": 41, "pol_instant_takes": 25, "pol_completes": 5, "pol_complete_fallback": 11, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 193, "res": "topout", "won": 0, "topout": 1, "pills": 120, "garbage": 21, "dies_ahead": 0, "pol_takes": 23, "pol_instant_takes": 12, "pol_completes": 5, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 196, "res": "clear", "won": 1, "topout": 0, "pills": 123, "garbage": 24, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 11, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 195, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 53, "dies_ahead": 0, "pol_takes": 42, "pol_instant_takes": 31, "pol_completes": 5, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 197, "res": "clear", "won": 1, "topout": 0, "pills": 257, "garbage": 58, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 23, "pol_completes": 6, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 199, "res": "clear", "won": 1, "topout": 0, "pills": 185, "garbage": 40, "dies_ahead": 0, "pol_takes": 39, "pol_instant_takes": 25, "pol_completes": 9, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 198, "res": "topout", "won": 0, "topout": 1, "pills": 299, "garbage": 65, "dies_ahead": 1, "pol_takes": 62, "pol_instant_takes": 39, "pol_completes": 11, "pol_complete_fallback": 12, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 200, "res": "clear", "won": 1, "topout": 0, "pills": 265, "garbage": 56, "dies_ahead": 0, "pol_takes": 38, "pol_instant_takes": 25, "pol_completes": 6, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 201, "res": "topout", "won": 0, "topout": 1, "pills": 172, "garbage": 36, "dies_ahead": 1, "pol_takes": 26, "pol_instant_takes": 20, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 202, "res": "clear", "won": 1, "topout": 0, "pills": 136, "garbage": 26, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 14, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 204, "res": "clear", "won": 1, "topout": 0, "pills": 139, "garbage": 28, "dies_ahead": 0, "pol_takes": 25, "pol_instant_takes": 21, "pol_completes": 3, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 206, "res": "clear", "won": 1, "topout": 0, "pills": 101, "garbage": 18, "dies_ahead": 0, "pol_takes": 12, "pol_instant_takes": 9, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 203, "res": "clear", "won": 1, "topout": 0, "pills": 271, "garbage": 60, "dies_ahead": 0, "pol_takes": 36, "pol_instant_takes": 28, "pol_completes": 5, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 205, "res": "topout", "won": 0, "topout": 1, "pills": 176, "garbage": 33, "dies_ahead": 1, "pol_takes": 30, "pol_instant_takes": 17, "pol_completes": 10, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 209, "res": "topout", "won": 0, "topout": 1, "pills": 40, "garbage": 2, "dies_ahead": 0, "pol_takes": 7, "pol_instant_takes": 4, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 211, "res": "topout", "won": 0, "topout": 1, "pills": 57, "garbage": 8, "dies_ahead": 0, "pol_takes": 8, "pol_instant_takes": 6, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 207, "res": "clear", "won": 1, "topout": 0, "pills": 193, "garbage": 41, "dies_ahead": 0, "pol_takes": 22, "pol_instant_takes": 13, "pol_completes": 5, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 210, "res": "clear", "won": 1, "topout": 0, "pills": 226, "garbage": 42, "dies_ahead": 0, "pol_takes": 27, "pol_instant_takes": 21, "pol_completes": 2, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 208, "res": "clear", "won": 1, "topout": 0, "pills": 247, "garbage": 53, "dies_ahead": 0, "pol_takes": 40, "pol_instant_takes": 33, "pol_completes": 7, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 212, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 24, "dies_ahead": 0, "pol_takes": 15, "pol_instant_takes": 12, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 213, "res": "clear", "won": 1, "topout": 0, "pills": 98, "garbage": 18, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 9, "pol_completes": 0, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 215, "res": "topout", "won": 0, "topout": 1, "pills": 127, "garbage": 24, "dies_ahead": 1, "pol_takes": 22, "pol_instant_takes": 16, "pol_completes": 5, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 217, "res": "clear", "won": 1, "topout": 0, "pills": 91, "garbage": 16, "dies_ahead": 0, "pol_takes": 7, "pol_instant_takes": 6, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 219, "res": "topout", "won": 0, "topout": 1, "pills": 10, "garbage": 0, "dies_ahead": 0, "pol_takes": 4, "pol_instant_takes": 1, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 216, "res": "clear", "won": 1, "topout": 0, "pills": 167, "garbage": 34, "dies_ahead": 0, "pol_takes": 15, "pol_instant_takes": 10, "pol_completes": 4, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 214, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 68, "dies_ahead": 0, "pol_takes": 49, "pol_instant_takes": 35, "pol_completes": 11, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 220, "res": "clear", "won": 1, "topout": 0, "pills": 144, "garbage": 28, "dies_ahead": 0, "pol_takes": 24, "pol_instant_takes": 16, "pol_completes": 5, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 218, "res": "clear", "won": 1, "topout": 0, "pills": 219, "garbage": 45, "dies_ahead": 0, "pol_takes": 33, "pol_instant_takes": 29, "pol_completes": 4, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 221, "res": "topout", "won": 0, "topout": 1, "pills": 221, "garbage": 38, "dies_ahead": 1, "pol_takes": 31, "pol_instant_takes": 17, "pol_completes": 10, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 222, "res": "clear", "won": 1, "topout": 0, "pills": 122, "garbage": 23, "dies_ahead": 0, "pol_takes": 12, "pol_instant_takes": 10, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 223, "res": "clear", "won": 1, "topout": 0, "pills": 213, "garbage": 43, "dies_ahead": 0, "pol_takes": 18, "pol_instant_takes": 13, "pol_completes": 4, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 226, "res": "clear", "won": 1, "topout": 0, "pills": 109, "garbage": 20, "dies_ahead": 0, "pol_takes": 15, "pol_instant_takes": 13, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 224, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 63, "dies_ahead": 0, "pol_takes": 55, "pol_instant_takes": 36, "pol_completes": 11, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 225, "res": "clear", "won": 1, "topout": 0, "pills": 224, "garbage": 48, "dies_ahead": 0, "pol_takes": 44, "pol_instant_takes": 28, "pol_completes": 10, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 228, "res": "topout", "won": 0, "topout": 1, "pills": 47, "garbage": 4, "dies_ahead": 0, "pol_takes": 7, "pol_instant_takes": 2, "pol_completes": 4, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 230, "res": "topout", "won": 0, "topout": 1, "pills": 17, "garbage": 0, "dies_ahead": 0, "pol_takes": 3, "pol_instant_takes": 1, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 227, "res": "clear", "won": 1, "topout": 0, "pills": 160, "garbage": 30, "dies_ahead": 0, "pol_takes": 22, "pol_instant_takes": 17, "pol_completes": 2, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 231, "res": "clear", "won": 1, "topout": 0, "pills": 119, "garbage": 22, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 9, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 229, "res": "topout", "won": 0, "topout": 1, "pills": 208, "garbage": 45, "dies_ahead": 1, "pol_takes": 30, "pol_instant_takes": 18, "pol_completes": 11, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 232, "res": "clear", "won": 1, "topout": 0, "pills": 270, "garbage": 57, "dies_ahead": 0, "pol_takes": 36, "pol_instant_takes": 23, "pol_completes": 6, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 233, "res": "clear", "won": 1, "topout": 0, "pills": 249, "garbage": 55, "dies_ahead": 0, "pol_takes": 31, "pol_instant_takes": 21, "pol_completes": 7, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 235, "res": "topout", "won": 0, "topout": 1, "pills": 112, "garbage": 22, "dies_ahead": 1, "pol_takes": 15, "pol_instant_takes": 8, "pol_completes": 3, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 234, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 63, "dies_ahead": 0, "pol_takes": 44, "pol_instant_takes": 28, "pol_completes": 12, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 237, "res": "clear", "won": 1, "topout": 0, "pills": 141, "garbage": 28, "dies_ahead": 0, "pol_takes": 24, "pol_instant_takes": 18, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 238, "res": "clear", "won": 1, "topout": 0, "pills": 126, "garbage": 24, "dies_ahead": 0, "pol_takes": 19, "pol_instant_takes": 16, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 236, "res": "clear", "won": 1, "topout": 0, "pills": 193, "garbage": 42, "dies_ahead": 0, "pol_takes": 37, "pol_instant_takes": 24, "pol_completes": 7, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 240, "res": "topout", "won": 0, "topout": 1, "pills": 15, "garbage": 0, "dies_ahead": 0, "pol_takes": 4, "pol_instant_takes": 3, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 241, "res": "topout", "won": 0, "topout": 1, "pills": 47, "garbage": 4, "dies_ahead": 0, "pol_takes": 9, "pol_instant_takes": 5, "pol_completes": 2, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 239, "res": "topout", "won": 0, "topout": 1, "pills": 136, "garbage": 28, "dies_ahead": 0, "pol_takes": 24, "pol_instant_takes": 14, "pol_completes": 7, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "drip"}
+{"seed": 2, "res": "clear", "won": 1, "topout": 0, "pills": 177, "garbage": 56, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 4, "res": "topout", "won": 0, "topout": 1, "pills": 234, "garbage": 77, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 5, "res": "topout", "won": 0, "topout": 1, "pills": 273, "garbage": 108, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 3, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 90, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 6, "res": "clear", "won": 1, "topout": 0, "pills": 107, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 7, "res": "clear", "won": 1, "topout": 0, "pills": 166, "garbage": 62, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 9, "res": "clear", "won": 1, "topout": 0, "pills": 183, "garbage": 54, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 10, "res": "clear", "won": 1, "topout": 0, "pills": 196, "garbage": 92, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 8, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 100, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 11, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 106, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 12, "res": "topout", "won": 0, "topout": 1, "pills": 195, "garbage": 84, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 13, "res": "clear", "won": 1, "topout": 0, "pills": 134, "garbage": 52, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 14, "res": "clear", "won": 1, "topout": 0, "pills": 184, "garbage": 56, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 17, "res": "clear", "won": 1, "topout": 0, "pills": 110, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 15, "res": "clear", "won": 1, "topout": 0, "pills": 267, "garbage": 106, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 16, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 124, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 18, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 121, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 19, "res": "clear", "won": 1, "topout": 0, "pills": 211, "garbage": 78, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 20, "res": "clear", "won": 1, "topout": 0, "pills": 121, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 21, "res": "clear", "won": 1, "topout": 0, "pills": 162, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 22, "res": "clear", "won": 1, "topout": 0, "pills": 299, "garbage": 123, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 25, "res": "clear", "won": 1, "topout": 0, "pills": 105, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 23, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 109, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 24, "res": "clear", "won": 1, "topout": 0, "pills": 262, "garbage": 108, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 26, "res": "topout", "won": 0, "topout": 1, "pills": 145, "garbage": 34, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 29, "res": "clear", "won": 1, "topout": 0, "pills": 107, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 27, "res": "clear", "won": 1, "topout": 0, "pills": 161, "garbage": 62, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 28, "res": "clear", "won": 1, "topout": 0, "pills": 257, "garbage": 100, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 32, "res": "clear", "won": 1, "topout": 0, "pills": 148, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 30, "res": "clear", "won": 1, "topout": 0, "pills": 188, "garbage": 68, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 33, "res": "clear", "won": 1, "topout": 0, "pills": 104, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 31, "res": "topout", "won": 0, "topout": 1, "pills": 205, "garbage": 80, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 36, "res": "clear", "won": 1, "topout": 0, "pills": 72, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 34, "res": "clear", "won": 1, "topout": 0, "pills": 86, "garbage": 36, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 35, "res": "clear", "won": 1, "topout": 0, "pills": 119, "garbage": 36, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 39, "res": "clear", "won": 1, "topout": 0, "pills": 108, "garbage": 52, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 38, "res": "clear", "won": 1, "topout": 0, "pills": 140, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 40, "res": "clear", "won": 1, "topout": 0, "pills": 102, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 37, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 87, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 42, "res": "clear", "won": 1, "topout": 0, "pills": 81, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 41, "res": "clear", "won": 1, "topout": 0, "pills": 100, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 43, "res": "clear", "won": 1, "topout": 0, "pills": 123, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 44, "res": "clear", "won": 1, "topout": 0, "pills": 178, "garbage": 50, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 45, "res": "topout", "won": 0, "topout": 1, "pills": 109, "garbage": 37, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 46, "res": "clear", "won": 1, "topout": 0, "pills": 126, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 47, "res": "clear", "won": 1, "topout": 0, "pills": 167, "garbage": 55, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 49, "res": "clear", "won": 1, "topout": 0, "pills": 165, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 50, "res": "clear", "won": 1, "topout": 0, "pills": 204, "garbage": 62, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 48, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 119, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 51, "res": "topout", "won": 0, "topout": 1, "pills": 295, "garbage": 123, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 54, "res": "clear", "won": 1, "topout": 0, "pills": 92, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 52, "res": "clear", "won": 1, "topout": 0, "pills": 151, "garbage": 74, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 53, "res": "clear", "won": 1, "topout": 0, "pills": 179, "garbage": 56, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 56, "res": "clear", "won": 1, "topout": 0, "pills": 99, "garbage": 46, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 57, "res": "topout", "won": 0, "topout": 1, "pills": 187, "garbage": 76, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 58, "res": "clear", "won": 1, "topout": 0, "pills": 246, "garbage": 88, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 55, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 127, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 59, "res": "topout", "won": 0, "topout": 1, "pills": 215, "garbage": 76, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 60, "res": "clear", "won": 1, "topout": 0, "pills": 106, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 61, "res": "clear", "won": 1, "topout": 0, "pills": 107, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 62, "res": "clear", "won": 1, "topout": 0, "pills": 124, "garbage": 54, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 63, "res": "clear", "won": 1, "topout": 0, "pills": 124, "garbage": 62, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 64, "res": "topout", "won": 0, "topout": 1, "pills": 185, "garbage": 54, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 66, "res": "clear", "won": 1, "topout": 0, "pills": 105, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 65, "res": "topout", "won": 0, "topout": 1, "pills": 219, "garbage": 93, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 68, "res": "clear", "won": 1, "topout": 0, "pills": 115, "garbage": 48, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 67, "res": "topout", "won": 0, "topout": 1, "pills": 289, "garbage": 128, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 69, "res": "clear", "won": 1, "topout": 0, "pills": 133, "garbage": 50, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 70, "res": "topout", "won": 0, "topout": 1, "pills": 82, "garbage": 32, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 71, "res": "clear", "won": 1, "topout": 0, "pills": 100, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 74, "res": "clear", "won": 1, "topout": 0, "pills": 81, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 73, "res": "clear", "won": 1, "topout": 0, "pills": 123, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 76, "res": "clear", "won": 1, "topout": 0, "pills": 74, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 75, "res": "clear", "won": 1, "topout": 0, "pills": 116, "garbage": 48, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 77, "res": "clear", "won": 1, "topout": 0, "pills": 164, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 78, "res": "clear", "won": 1, "topout": 0, "pills": 79, "garbage": 20, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 72, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 116, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 79, "res": "clear", "won": 1, "topout": 0, "pills": 104, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 82, "res": "clear", "won": 1, "topout": 0, "pills": 104, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 81, "res": "topout", "won": 0, "topout": 1, "pills": 100, "garbage": 32, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 80, "res": "clear", "won": 1, "topout": 0, "pills": 153, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 84, "res": "clear", "won": 1, "topout": 0, "pills": 61, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 83, "res": "clear", "won": 1, "topout": 0, "pills": 162, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 85, "res": "clear", "won": 1, "topout": 0, "pills": 99, "garbage": 36, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 88, "res": "clear", "won": 1, "topout": 0, "pills": 95, "garbage": 54, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 89, "res": "clear", "won": 1, "topout": 0, "pills": 101, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 86, "res": "clear", "won": 1, "topout": 0, "pills": 208, "garbage": 90, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 87, "res": "topout", "won": 0, "topout": 1, "pills": 261, "garbage": 81, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 90, "res": "clear", "won": 1, "topout": 0, "pills": 136, "garbage": 52, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 91, "res": "clear", "won": 1, "topout": 0, "pills": 113, "garbage": 38, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 92, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 94, "res": "clear", "won": 1, "topout": 0, "pills": 111, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 96, "res": "clear", "won": 1, "topout": 0, "pills": 82, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 95, "res": "clear", "won": 1, "topout": 0, "pills": 129, "garbage": 46, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 93, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 110, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 99, "res": "clear", "won": 1, "topout": 0, "pills": 138, "garbage": 64, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 100, "res": "clear", "won": 1, "topout": 0, "pills": 114, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 97, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 104, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 98, "res": "topout", "won": 0, "topout": 1, "pills": 272, "garbage": 84, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 101, "res": "clear", "won": 1, "topout": 0, "pills": 194, "garbage": 80, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 102, "res": "clear", "won": 1, "topout": 0, "pills": 135, "garbage": 46, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 104, "res": "clear", "won": 1, "topout": 0, "pills": 93, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 103, "res": "clear", "won": 1, "topout": 0, "pills": 178, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 105, "res": "clear", "won": 1, "topout": 0, "pills": 155, "garbage": 54, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 107, "res": "clear", "won": 1, "topout": 0, "pills": 142, "garbage": 38, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 106, "res": "clear", "won": 1, "topout": 0, "pills": 198, "garbage": 84, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 108, "res": "topout", "won": 0, "topout": 1, "pills": 223, "garbage": 77, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 110, "res": "clear", "won": 1, "topout": 0, "pills": 95, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 109, "res": "clear", "won": 1, "topout": 0, "pills": 145, "garbage": 58, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 111, "res": "clear", "won": 1, "topout": 0, "pills": 137, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 114, "res": "clear", "won": 1, "topout": 0, "pills": 109, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 113, "res": "clear", "won": 1, "topout": 0, "pills": 117, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 112, "res": "clear", "won": 1, "topout": 0, "pills": 181, "garbage": 44, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 115, "res": "clear", "won": 1, "topout": 0, "pills": 97, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 118, "res": "clear", "won": 1, "topout": 0, "pills": 78, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 116, "res": "clear", "won": 1, "topout": 0, "pills": 152, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 117, "res": "clear", "won": 1, "topout": 0, "pills": 215, "garbage": 100, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 119, "res": "clear", "won": 1, "topout": 0, "pills": 163, "garbage": 48, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 121, "res": "clear", "won": 1, "topout": 0, "pills": 94, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 122, "res": "clear", "won": 1, "topout": 0, "pills": 118, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 120, "res": "clear", "won": 1, "topout": 0, "pills": 255, "garbage": 116, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 123, "res": "clear", "won": 1, "topout": 0, "pills": 189, "garbage": 56, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 126, "res": "clear", "won": 1, "topout": 0, "pills": 88, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 125, "res": "clear", "won": 1, "topout": 0, "pills": 135, "garbage": 54, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 124, "res": "topout", "won": 0, "topout": 1, "pills": 242, "garbage": 98, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 129, "res": "clear", "won": 1, "topout": 0, "pills": 84, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 128, "res": "clear", "won": 1, "topout": 0, "pills": 119, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 127, "res": "clear", "won": 1, "topout": 0, "pills": 187, "garbage": 88, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 130, "res": "clear", "won": 1, "topout": 0, "pills": 227, "garbage": 97, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 132, "res": "clear", "won": 1, "topout": 0, "pills": 102, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 133, "res": "clear", "won": 1, "topout": 0, "pills": 160, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 131, "res": "clear", "won": 1, "topout": 0, "pills": 167, "garbage": 48, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 134, "res": "clear", "won": 1, "topout": 0, "pills": 142, "garbage": 58, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 137, "res": "clear", "won": 1, "topout": 0, "pills": 112, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 136, "res": "clear", "won": 1, "topout": 0, "pills": 163, "garbage": 46, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 138, "res": "clear", "won": 1, "topout": 0, "pills": 97, "garbage": 18, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 135, "res": "clear", "won": 1, "topout": 0, "pills": 234, "garbage": 76, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 140, "res": "clear", "won": 1, "topout": 0, "pills": 123, "garbage": 48, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 142, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 141, "res": "topout", "won": 0, "topout": 1, "pills": 199, "garbage": 69, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 139, "res": "clear", "won": 1, "topout": 0, "pills": 238, "garbage": 90, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 143, "res": "clear", "won": 1, "topout": 0, "pills": 153, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 144, "res": "clear", "won": 1, "topout": 0, "pills": 155, "garbage": 38, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 146, "res": "clear", "won": 1, "topout": 0, "pills": 224, "garbage": 88, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 147, "res": "clear", "won": 1, "topout": 0, "pills": 104, "garbage": 44, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 148, "res": "clear", "won": 1, "topout": 0, "pills": 66, "garbage": 12, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 145, "res": "clear", "won": 1, "topout": 0, "pills": 268, "garbage": 93, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 149, "res": "clear", "won": 1, "topout": 0, "pills": 148, "garbage": 38, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 151, "res": "clear", "won": 1, "topout": 0, "pills": 230, "garbage": 86, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 150, "res": "topout", "won": 0, "topout": 1, "pills": 298, "garbage": 112, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 153, "res": "clear", "won": 1, "topout": 0, "pills": 176, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 152, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 116, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 157, "res": "clear", "won": 1, "topout": 0, "pills": 110, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 154, "res": "clear", "won": 1, "topout": 0, "pills": 237, "garbage": 86, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 155, "res": "clear", "won": 1, "topout": 0, "pills": 236, "garbage": 86, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 156, "res": "clear", "won": 1, "topout": 0, "pills": 143, "garbage": 38, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 161, "res": "clear", "won": 1, "topout": 0, "pills": 127, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 160, "res": "clear", "won": 1, "topout": 0, "pills": 147, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 158, "res": "clear", "won": 1, "topout": 0, "pills": 171, "garbage": 48, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 159, "res": "topout", "won": 0, "topout": 1, "pills": 283, "garbage": 103, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 162, "res": "clear", "won": 1, "topout": 0, "pills": 130, "garbage": 48, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 164, "res": "clear", "won": 1, "topout": 0, "pills": 101, "garbage": 44, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 163, "res": "clear", "won": 1, "topout": 0, "pills": 149, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 165, "res": "clear", "won": 1, "topout": 0, "pills": 103, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 166, "res": "clear", "won": 1, "topout": 0, "pills": 116, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 168, "res": "clear", "won": 1, "topout": 0, "pills": 142, "garbage": 44, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 169, "res": "topout", "won": 0, "topout": 1, "pills": 168, "garbage": 56, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 170, "res": "clear", "won": 1, "topout": 0, "pills": 104, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 167, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 94, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 172, "res": "clear", "won": 1, "topout": 0, "pills": 97, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 173, "res": "clear", "won": 1, "topout": 0, "pills": 114, "garbage": 48, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 171, "res": "clear", "won": 1, "topout": 0, "pills": 198, "garbage": 75, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 175, "res": "clear", "won": 1, "topout": 0, "pills": 145, "garbage": 58, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 177, "res": "clear", "won": 1, "topout": 0, "pills": 97, "garbage": 36, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 176, "res": "clear", "won": 1, "topout": 0, "pills": 150, "garbage": 50, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 174, "res": "clear", "won": 1, "topout": 0, "pills": 265, "garbage": 90, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 179, "res": "clear", "won": 1, "topout": 0, "pills": 104, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 178, "res": "clear", "won": 1, "topout": 0, "pills": 137, "garbage": 38, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 180, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 181, "res": "clear", "won": 1, "topout": 0, "pills": 134, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 182, "res": "clear", "won": 1, "topout": 0, "pills": 113, "garbage": 52, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 183, "res": "clear", "won": 1, "topout": 0, "pills": 105, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 184, "res": "clear", "won": 1, "topout": 0, "pills": 86, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 185, "res": "topout", "won": 0, "topout": 1, "pills": 168, "garbage": 59, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 188, "res": "clear", "won": 1, "topout": 0, "pills": 104, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 187, "res": "clear", "won": 1, "topout": 0, "pills": 126, "garbage": 44, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 186, "res": "clear", "won": 1, "topout": 0, "pills": 237, "garbage": 62, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 190, "res": "clear", "won": 1, "topout": 0, "pills": 118, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 191, "res": "clear", "won": 1, "topout": 0, "pills": 108, "garbage": 36, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 189, "res": "topout", "won": 0, "topout": 1, "pills": 278, "garbage": 106, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 194, "res": "clear", "won": 1, "topout": 0, "pills": 166, "garbage": 54, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 193, "res": "clear", "won": 1, "topout": 0, "pills": 167, "garbage": 58, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 192, "res": "clear", "won": 1, "topout": 0, "pills": 245, "garbage": 86, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 195, "res": "clear", "won": 1, "topout": 0, "pills": 142, "garbage": 40, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 196, "res": "clear", "won": 1, "topout": 0, "pills": 171, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 199, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 197, "res": "topout", "won": 0, "topout": 1, "pills": 197, "garbage": 86, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 198, "res": "clear", "won": 1, "topout": 0, "pills": 217, "garbage": 58, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 200, "res": "topout", "won": 0, "topout": 1, "pills": 77, "garbage": 14, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 202, "res": "clear", "won": 1, "topout": 0, "pills": 116, "garbage": 44, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 204, "res": "clear", "won": 1, "topout": 0, "pills": 85, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 201, "res": "topout", "won": 0, "topout": 1, "pills": 181, "garbage": 61, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 203, "res": "clear", "won": 1, "topout": 0, "pills": 151, "garbage": 64, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 206, "res": "clear", "won": 1, "topout": 0, "pills": 87, "garbage": 28, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 205, "res": "clear", "won": 1, "topout": 0, "pills": 138, "garbage": 52, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 208, "res": "clear", "won": 1, "topout": 0, "pills": 136, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 207, "res": "clear", "won": 1, "topout": 0, "pills": 210, "garbage": 81, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 210, "res": "clear", "won": 1, "topout": 0, "pills": 138, "garbage": 44, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 209, "res": "clear", "won": 1, "topout": 0, "pills": 226, "garbage": 91, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 211, "res": "clear", "won": 1, "topout": 0, "pills": 185, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 212, "res": "clear", "won": 1, "topout": 0, "pills": 128, "garbage": 48, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 213, "res": "clear", "won": 1, "topout": 0, "pills": 132, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 215, "res": "clear", "won": 1, "topout": 0, "pills": 153, "garbage": 42, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 216, "res": "clear", "won": 1, "topout": 0, "pills": 105, "garbage": 26, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 214, "res": "topout", "won": 0, "topout": 1, "pills": 211, "garbage": 74, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 217, "res": "topout", "won": 0, "topout": 1, "pills": 140, "garbage": 54, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 219, "res": "clear", "won": 1, "topout": 0, "pills": 105, "garbage": 34, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 220, "res": "clear", "won": 1, "topout": 0, "pills": 93, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 218, "res": "clear", "won": 1, "topout": 0, "pills": 169, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 221, "res": "clear", "won": 1, "topout": 0, "pills": 136, "garbage": 44, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 222, "res": "clear", "won": 1, "topout": 0, "pills": 121, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 223, "res": "clear", "won": 1, "topout": 0, "pills": 145, "garbage": 48, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 225, "res": "clear", "won": 1, "topout": 0, "pills": 174, "garbage": 60, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 226, "res": "clear", "won": 1, "topout": 0, "pills": 144, "garbage": 52, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 224, "res": "clear", "won": 1, "topout": 0, "pills": 238, "garbage": 76, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 228, "res": "clear", "won": 1, "topout": 0, "pills": 86, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 230, "res": "clear", "won": 1, "topout": 0, "pills": 102, "garbage": 24, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 227, "res": "clear", "won": 1, "topout": 0, "pills": 202, "garbage": 66, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 229, "res": "clear", "won": 1, "topout": 0, "pills": 170, "garbage": 76, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 231, "res": "clear", "won": 1, "topout": 0, "pills": 143, "garbage": 48, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 233, "res": "clear", "won": 1, "topout": 0, "pills": 91, "garbage": 22, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 232, "res": "topout", "won": 0, "topout": 1, "pills": 199, "garbage": 60, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 236, "res": "clear", "won": 1, "topout": 0, "pills": 98, "garbage": 30, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 234, "res": "clear", "won": 1, "topout": 0, "pills": 208, "garbage": 82, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 235, "res": "clear", "won": 1, "topout": 0, "pills": 122, "garbage": 36, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 237, "res": "clear", "won": 1, "topout": 0, "pills": 94, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 240, "res": "topout", "won": 0, "topout": 1, "pills": 39, "garbage": 16, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 238, "res": "clear", "won": 1, "topout": 0, "pills": 90, "garbage": 32, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 239, "res": "topout", "won": 0, "topout": 1, "pills": 140, "garbage": 40, "dies_ahead": 1, "arm": "base", "model": "lulu"}
+{"seed": 241, "res": "clear", "won": 1, "topout": 0, "pills": 174, "garbage": 66, "dies_ahead": 0, "arm": "base", "model": "lulu"}
+{"seed": 3, "res": "topout", "won": 0, "topout": 1, "pills": 55, "garbage": 14, "dies_ahead": 0, "pol_takes": 11, "pol_instant_takes": 9, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 4, "res": "clear", "won": 1, "topout": 0, "pills": 109, "garbage": 16, "dies_ahead": 0, "pol_takes": 14, "pol_instant_takes": 9, "pol_completes": 3, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 5, "res": "clear", "won": 1, "topout": 0, "pills": 114, "garbage": 38, "dies_ahead": 0, "pol_takes": 18, "pol_instant_takes": 12, "pol_completes": 2, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 8, "res": "topout", "won": 0, "topout": 1, "pills": 14, "garbage": 0, "dies_ahead": 0, "pol_takes": 4, "pol_instant_takes": 1, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 2, "res": "clear", "won": 1, "topout": 0, "pills": 197, "garbage": 88, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 22, "pol_completes": 3, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 6, "res": "clear", "won": 1, "topout": 0, "pills": 196, "garbage": 74, "dies_ahead": 0, "pol_takes": 48, "pol_instant_takes": 31, "pol_completes": 10, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 10, "res": "topout", "won": 0, "topout": 1, "pills": 91, "garbage": 42, "dies_ahead": 1, "pol_takes": 19, "pol_instant_takes": 14, "pol_completes": 3, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 11, "res": "topout", "won": 0, "topout": 1, "pills": 28, "garbage": 2, "dies_ahead": 0, "pol_takes": 7, "pol_instant_takes": 5, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 7, "res": "topout", "won": 0, "topout": 1, "pills": 194, "garbage": 68, "dies_ahead": 1, "pol_takes": 46, "pol_instant_takes": 34, "pol_completes": 10, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 9, "res": "clear", "won": 1, "topout": 0, "pills": 242, "garbage": 122, "dies_ahead": 0, "pol_takes": 36, "pol_instant_takes": 25, "pol_completes": 5, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 13, "res": "topout", "won": 0, "topout": 1, "pills": 70, "garbage": 18, "dies_ahead": 0, "pol_takes": 14, "pol_instant_takes": 10, "pol_completes": 4, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 12, "res": "topout", "won": 0, "topout": 1, "pills": 121, "garbage": 30, "dies_ahead": 1, "pol_takes": 28, "pol_instant_takes": 15, "pol_completes": 6, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 14, "res": "topout", "won": 0, "topout": 1, "pills": 157, "garbage": 42, "dies_ahead": 0, "pol_takes": 36, "pol_instant_takes": 22, "pol_completes": 8, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 15, "res": "clear", "won": 1, "topout": 0, "pills": 234, "garbage": 80, "dies_ahead": 0, "pol_takes": 39, "pol_instant_takes": 27, "pol_completes": 6, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 16, "res": "topout", "won": 0, "topout": 1, "pills": 219, "garbage": 70, "dies_ahead": 1, "pol_takes": 35, "pol_instant_takes": 20, "pol_completes": 8, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 17, "res": "topout", "won": 0, "topout": 1, "pills": 212, "garbage": 89, "dies_ahead": 1, "pol_takes": 31, "pol_instant_takes": 20, "pol_completes": 6, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 18, "res": "clear", "won": 1, "topout": 0, "pills": 223, "garbage": 92, "dies_ahead": 0, "pol_takes": 25, "pol_instant_takes": 18, "pol_completes": 1, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 21, "res": "clear", "won": 1, "topout": 0, "pills": 107, "garbage": 34, "dies_ahead": 0, "pol_takes": 22, "pol_instant_takes": 17, "pol_completes": 2, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 22, "res": "topout", "won": 0, "topout": 1, "pills": 55, "garbage": 12, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 8, "pol_completes": 3, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 20, "res": "clear", "won": 1, "topout": 0, "pills": 155, "garbage": 43, "dies_ahead": 0, "pol_takes": 29, "pol_instant_takes": 23, "pol_completes": 2, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 23, "res": "topout", "won": 0, "topout": 1, "pills": 52, "garbage": 12, "dies_ahead": 0, "pol_takes": 11, "pol_instant_takes": 5, "pol_completes": 2, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 19, "res": "topout", "won": 0, "topout": 1, "pills": 276, "garbage": 84, "dies_ahead": 1, "pol_takes": 35, "pol_instant_takes": 17, "pol_completes": 12, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 25, "res": "clear", "won": 1, "topout": 0, "pills": 114, "garbage": 32, "dies_ahead": 0, "pol_takes": 25, "pol_instant_takes": 17, "pol_completes": 4, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 24, "res": "clear", "won": 1, "topout": 0, "pills": 146, "garbage": 72, "dies_ahead": 0, "pol_takes": 35, "pol_instant_takes": 29, "pol_completes": 1, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 26, "res": "topout", "won": 0, "topout": 1, "pills": 154, "garbage": 54, "dies_ahead": 1, "pol_takes": 22, "pol_instant_takes": 15, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 28, "res": "topout", "won": 0, "topout": 1, "pills": 64, "garbage": 18, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 6, "pol_completes": 3, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 27, "res": "clear", "won": 1, "topout": 0, "pills": 202, "garbage": 76, "dies_ahead": 0, "pol_takes": 31, "pol_instant_takes": 21, "pol_completes": 8, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 29, "res": "clear", "won": 1, "topout": 0, "pills": 133, "garbage": 46, "dies_ahead": 0, "pol_takes": 25, "pol_instant_takes": 18, "pol_completes": 2, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 31, "res": "topout", "won": 0, "topout": 1, "pills": 55, "garbage": 14, "dies_ahead": 1, "pol_takes": 9, "pol_instant_takes": 6, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 32, "res": "topout", "won": 0, "topout": 1, "pills": 49, "garbage": 14, "dies_ahead": 0, "pol_takes": 12, "pol_instant_takes": 5, "pol_completes": 3, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 33, "res": "topout", "won": 0, "topout": 1, "pills": 33, "garbage": 4, "dies_ahead": 0, "pol_takes": 8, "pol_instant_takes": 4, "pol_completes": 2, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 30, "res": "clear", "won": 1, "topout": 0, "pills": 171, "garbage": 64, "dies_ahead": 0, "pol_takes": 27, "pol_instant_takes": 19, "pol_completes": 6, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 34, "res": "clear", "won": 1, "topout": 0, "pills": 156, "garbage": 74, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 18, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 35, "res": "topout", "won": 0, "topout": 1, "pills": 234, "garbage": 68, "dies_ahead": 1, "pol_takes": 30, "pol_instant_takes": 17, "pol_completes": 8, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 36, "res": "topout", "won": 0, "topout": 1, "pills": 154, "garbage": 48, "dies_ahead": 1, "pol_takes": 20, "pol_instant_takes": 11, "pol_completes": 7, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 39, "res": "clear", "won": 1, "topout": 0, "pills": 131, "garbage": 48, "dies_ahead": 0, "pol_takes": 23, "pol_instant_takes": 21, "pol_completes": 0, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 37, "res": "topout", "won": 0, "topout": 1, "pills": 285, "garbage": 99, "dies_ahead": 1, "pol_takes": 33, "pol_instant_takes": 25, "pol_completes": 6, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 38, "res": "clear", "won": 1, "topout": 0, "pills": 208, "garbage": 68, "dies_ahead": 0, "pol_takes": 33, "pol_instant_takes": 27, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 42, "res": "topout", "won": 0, "topout": 1, "pills": 35, "garbage": 2, "dies_ahead": 0, "pol_takes": 4, "pol_instant_takes": 1, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 40, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 101, "dies_ahead": 0, "pol_takes": 48, "pol_instant_takes": 35, "pol_completes": 7, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 41, "res": "topout", "won": 0, "topout": 1, "pills": 57, "garbage": 16, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 8, "pol_completes": 4, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 43, "res": "topout", "won": 0, "topout": 1, "pills": 41, "garbage": 8, "dies_ahead": 0, "pol_takes": 5, "pol_instant_takes": 3, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 46, "res": "topout", "won": 0, "topout": 1, "pills": 45, "garbage": 12, "dies_ahead": 0, "pol_takes": 3, "pol_instant_takes": 2, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 44, "res": "clear", "won": 1, "topout": 0, "pills": 233, "garbage": 113, "dies_ahead": 0, "pol_takes": 46, "pol_instant_takes": 34, "pol_completes": 7, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 45, "res": "topout", "won": 0, "topout": 1, "pills": 280, "garbage": 100, "dies_ahead": 1, "pol_takes": 51, "pol_instant_takes": 33, "pol_completes": 11, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 48, "res": "topout", "won": 0, "topout": 1, "pills": 191, "garbage": 80, "dies_ahead": 1, "pol_takes": 53, "pol_instant_takes": 35, "pol_completes": 11, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 47, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 99, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 18, "pol_completes": 8, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 50, "res": "topout", "won": 0, "topout": 1, "pills": 46, "garbage": 10, "dies_ahead": 0, "pol_takes": 6, "pol_instant_takes": 3, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 51, "res": "topout", "won": 0, "topout": 1, "pills": 67, "garbage": 13, "dies_ahead": 0, "pol_takes": 8, "pol_instant_takes": 3, "pol_completes": 4, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 52, "res": "topout", "won": 0, "topout": 1, "pills": 73, "garbage": 30, "dies_ahead": 0, "pol_takes": 11, "pol_instant_takes": 8, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 49, "res": "topout", "won": 0, "topout": 1, "pills": 225, "garbage": 70, "dies_ahead": 1, "pol_takes": 51, "pol_instant_takes": 31, "pol_completes": 12, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 54, "res": "clear", "won": 1, "topout": 0, "pills": 89, "garbage": 16, "dies_ahead": 0, "pol_takes": 8, "pol_instant_takes": 6, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 56, "res": "topout", "won": 0, "topout": 1, "pills": 54, "garbage": 16, "dies_ahead": 0, "pol_takes": 11, "pol_instant_takes": 8, "pol_completes": 1, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 55, "res": "clear", "won": 1, "topout": 0, "pills": 148, "garbage": 65, "dies_ahead": 0, "pol_takes": 18, "pol_instant_takes": 15, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 53, "res": "clear", "won": 1, "topout": 0, "pills": 285, "garbage": 126, "dies_ahead": 0, "pol_takes": 44, "pol_instant_takes": 30, "pol_completes": 11, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 57, "res": "clear", "won": 1, "topout": 0, "pills": 258, "garbage": 98, "dies_ahead": 0, "pol_takes": 51, "pol_instant_takes": 27, "pol_completes": 12, "pol_complete_fallback": 12, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 58, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 100, "dies_ahead": 0, "pol_takes": 39, "pol_instant_takes": 26, "pol_completes": 4, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 59, "res": "topout", "won": 0, "topout": 1, "pills": 218, "garbage": 76, "dies_ahead": 1, "pol_takes": 29, "pol_instant_takes": 19, "pol_completes": 5, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 61, "res": "clear", "won": 1, "topout": 0, "pills": 98, "garbage": 32, "dies_ahead": 0, "pol_takes": 14, "pol_instant_takes": 9, "pol_completes": 3, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 60, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 104, "dies_ahead": 0, "pol_takes": 51, "pol_instant_takes": 32, "pol_completes": 12, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 62, "res": "clear", "won": 1, "topout": 0, "pills": 142, "garbage": 51, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 10, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 63, "res": "topout", "won": 0, "topout": 1, "pills": 242, "garbage": 83, "dies_ahead": 1, "pol_takes": 26, "pol_instant_takes": 14, "pol_completes": 7, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 64, "res": "clear", "won": 1, "topout": 0, "pills": 216, "garbage": 67, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 19, "pol_completes": 8, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 65, "res": "topout", "won": 0, "topout": 1, "pills": 157, "garbage": 59, "dies_ahead": 1, "pol_takes": 26, "pol_instant_takes": 13, "pol_completes": 4, "pol_complete_fallback": 9, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 66, "res": "topout", "won": 0, "topout": 1, "pills": 98, "garbage": 26, "dies_ahead": 1, "pol_takes": 15, "pol_instant_takes": 9, "pol_completes": 3, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 70, "res": "clear", "won": 1, "topout": 0, "pills": 90, "garbage": 24, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 11, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 68, "res": "clear", "won": 1, "topout": 0, "pills": 183, "garbage": 61, "dies_ahead": 0, "pol_takes": 35, "pol_instant_takes": 21, "pol_completes": 10, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 67, "res": "clear", "won": 1, "topout": 0, "pills": 282, "garbage": 126, "dies_ahead": 0, "pol_takes": 50, "pol_instant_takes": 35, "pol_completes": 11, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 69, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 82, "dies_ahead": 0, "pol_takes": 54, "pol_instant_takes": 30, "pol_completes": 15, "pol_complete_fallback": 9, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 71, "res": "clear", "won": 1, "topout": 0, "pills": 251, "garbage": 58, "dies_ahead": 0, "pol_takes": 40, "pol_instant_takes": 27, "pol_completes": 8, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 73, "res": "clear", "won": 1, "topout": 0, "pills": 222, "garbage": 57, "dies_ahead": 0, "pol_takes": 25, "pol_instant_takes": 15, "pol_completes": 4, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 74, "res": "topout", "won": 0, "topout": 1, "pills": 203, "garbage": 74, "dies_ahead": 1, "pol_takes": 22, "pol_instant_takes": 16, "pol_completes": 5, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 72, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 112, "dies_ahead": 0, "pol_takes": 34, "pol_instant_takes": 21, "pol_completes": 10, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 75, "res": "topout", "won": 0, "topout": 1, "pills": 216, "garbage": 83, "dies_ahead": 1, "pol_takes": 24, "pol_instant_takes": 15, "pol_completes": 7, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 76, "res": "topout", "won": 0, "topout": 1, "pills": 120, "garbage": 32, "dies_ahead": 1, "pol_takes": 22, "pol_instant_takes": 15, "pol_completes": 6, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 79, "res": "topout", "won": 0, "topout": 1, "pills": 63, "garbage": 18, "dies_ahead": 0, "pol_takes": 7, "pol_instant_takes": 5, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 77, "res": "clear", "won": 1, "topout": 0, "pills": 178, "garbage": 48, "dies_ahead": 0, "pol_takes": 30, "pol_instant_takes": 23, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 78, "res": "topout", "won": 0, "topout": 1, "pills": 99, "garbage": 26, "dies_ahead": 1, "pol_takes": 12, "pol_instant_takes": 7, "pol_completes": 4, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 81, "res": "topout", "won": 0, "topout": 1, "pills": 58, "garbage": 16, "dies_ahead": 0, "pol_takes": 13, "pol_instant_takes": 7, "pol_completes": 3, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 82, "res": "clear", "won": 1, "topout": 0, "pills": 89, "garbage": 24, "dies_ahead": 0, "pol_takes": 12, "pol_instant_takes": 10, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 84, "res": "clear", "won": 1, "topout": 0, "pills": 77, "garbage": 28, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 10, "pol_completes": 0, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 80, "res": "topout", "won": 0, "topout": 1, "pills": 221, "garbage": 84, "dies_ahead": 1, "pol_takes": 43, "pol_instant_takes": 29, "pol_completes": 7, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 86, "res": "topout", "won": 0, "topout": 1, "pills": 55, "garbage": 14, "dies_ahead": 0, "pol_takes": 12, "pol_instant_takes": 9, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 85, "res": "topout", "won": 0, "topout": 1, "pills": 170, "garbage": 58, "dies_ahead": 1, "pol_takes": 35, "pol_instant_takes": 22, "pol_completes": 8, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 83, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 129, "dies_ahead": 0, "pol_takes": 46, "pol_instant_takes": 33, "pol_completes": 9, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 87, "res": "clear", "won": 1, "topout": 0, "pills": 220, "garbage": 84, "dies_ahead": 0, "pol_takes": 37, "pol_instant_takes": 26, "pol_completes": 7, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 89, "res": "clear", "won": 1, "topout": 0, "pills": 100, "garbage": 26, "dies_ahead": 0, "pol_takes": 16, "pol_instant_takes": 12, "pol_completes": 2, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 88, "res": "clear", "won": 1, "topout": 0, "pills": 242, "garbage": 95, "dies_ahead": 0, "pol_takes": 48, "pol_instant_takes": 30, "pol_completes": 9, "pol_complete_fallback": 9, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 92, "res": "topout", "won": 0, "topout": 1, "pills": 172, "garbage": 54, "dies_ahead": 1, "pol_takes": 16, "pol_instant_takes": 8, "pol_completes": 5, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 90, "res": "clear", "won": 1, "topout": 0, "pills": 241, "garbage": 104, "dies_ahead": 0, "pol_takes": 29, "pol_instant_takes": 21, "pol_completes": 5, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 91, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 111, "dies_ahead": 0, "pol_takes": 38, "pol_instant_takes": 27, "pol_completes": 6, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 93, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 86, "dies_ahead": 0, "pol_takes": 30, "pol_instant_takes": 20, "pol_completes": 3, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 95, "res": "topout", "won": 0, "topout": 1, "pills": 279, "garbage": 80, "dies_ahead": 1, "pol_takes": 37, "pol_instant_takes": 23, "pol_completes": 5, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 94, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 91, "dies_ahead": 0, "pol_takes": 40, "pol_instant_takes": 26, "pol_completes": 8, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 97, "res": "topout", "won": 0, "topout": 1, "pills": 248, "garbage": 94, "dies_ahead": 1, "pol_takes": 61, "pol_instant_takes": 39, "pol_completes": 12, "pol_complete_fallback": 9, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 96, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 115, "dies_ahead": 0, "pol_takes": 80, "pol_instant_takes": 42, "pol_completes": 20, "pol_complete_fallback": 17, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 98, "res": "topout", "won": 0, "topout": 1, "pills": 107, "garbage": 32, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 8, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 99, "res": "topout", "won": 0, "topout": 1, "pills": 178, "garbage": 80, "dies_ahead": 1, "pol_takes": 22, "pol_instant_takes": 16, "pol_completes": 3, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 100, "res": "clear", "won": 1, "topout": 0, "pills": 112, "garbage": 22, "dies_ahead": 0, "pol_takes": 11, "pol_instant_takes": 9, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 101, "res": "topout", "won": 0, "topout": 1, "pills": 69, "garbage": 20, "dies_ahead": 0, "pol_takes": 8, "pol_instant_takes": 4, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 102, "res": "clear", "won": 1, "topout": 0, "pills": 129, "garbage": 38, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 13, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 104, "res": "clear", "won": 1, "topout": 0, "pills": 206, "garbage": 67, "dies_ahead": 0, "pol_takes": 31, "pol_instant_takes": 19, "pol_completes": 10, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 105, "res": "clear", "won": 1, "topout": 0, "pills": 199, "garbage": 60, "dies_ahead": 0, "pol_takes": 26, "pol_instant_takes": 21, "pol_completes": 4, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 103, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 97, "dies_ahead": 0, "pol_takes": 41, "pol_instant_takes": 21, "pol_completes": 12, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 109, "res": "topout", "won": 0, "topout": 1, "pills": 64, "garbage": 18, "dies_ahead": 0, "pol_takes": 3, "pol_instant_takes": 2, "pol_completes": 0, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 106, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 108, "dies_ahead": 0, "pol_takes": 39, "pol_instant_takes": 23, "pol_completes": 11, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 107, "res": "clear", "won": 1, "topout": 0, "pills": 145, "garbage": 44, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 14, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 111, "res": "topout", "won": 0, "topout": 1, "pills": 47, "garbage": 8, "dies_ahead": 0, "pol_takes": 9, "pol_instant_takes": 7, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 110, "res": "topout", "won": 0, "topout": 1, "pills": 118, "garbage": 48, "dies_ahead": 1, "pol_takes": 17, "pol_instant_takes": 10, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 112, "res": "topout", "won": 0, "topout": 1, "pills": 63, "garbage": 12, "dies_ahead": 0, "pol_takes": 12, "pol_instant_takes": 8, "pol_completes": 1, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 108, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 95, "dies_ahead": 0, "pol_takes": 30, "pol_instant_takes": 19, "pol_completes": 5, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 114, "res": "clear", "won": 1, "topout": 0, "pills": 132, "garbage": 64, "dies_ahead": 0, "pol_takes": 15, "pol_instant_takes": 13, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 113, "res": "topout", "won": 0, "topout": 1, "pills": 228, "garbage": 85, "dies_ahead": 1, "pol_takes": 40, "pol_instant_takes": 25, "pol_completes": 8, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 115, "res": "clear", "won": 1, "topout": 0, "pills": 185, "garbage": 54, "dies_ahead": 0, "pol_takes": 26, "pol_instant_takes": 19, "pol_completes": 6, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 117, "res": "topout", "won": 0, "topout": 1, "pills": 84, "garbage": 24, "dies_ahead": 0, "pol_takes": 8, "pol_instant_takes": 5, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 116, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 84, "dies_ahead": 0, "pol_takes": 30, "pol_instant_takes": 24, "pol_completes": 2, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 119, "res": "clear", "won": 1, "topout": 0, "pills": 184, "garbage": 53, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 22, "pol_completes": 7, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 118, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 84, "dies_ahead": 0, "pol_takes": 50, "pol_instant_takes": 35, "pol_completes": 8, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 120, "res": "clear", "won": 1, "topout": 0, "pills": 261, "garbage": 112, "dies_ahead": 0, "pol_takes": 42, "pol_instant_takes": 26, "pol_completes": 11, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 121, "res": "clear", "won": 1, "topout": 0, "pills": 198, "garbage": 74, "dies_ahead": 0, "pol_takes": 38, "pol_instant_takes": 28, "pol_completes": 6, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 122, "res": "topout", "won": 0, "topout": 1, "pills": 139, "garbage": 50, "dies_ahead": 0, "pol_takes": 25, "pol_instant_takes": 12, "pol_completes": 9, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 123, "res": "topout", "won": 0, "topout": 1, "pills": 157, "garbage": 60, "dies_ahead": 1, "pol_takes": 34, "pol_instant_takes": 18, "pol_completes": 10, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 124, "res": "topout", "won": 0, "topout": 1, "pills": 206, "garbage": 86, "dies_ahead": 1, "pol_takes": 24, "pol_instant_takes": 16, "pol_completes": 4, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 126, "res": "clear", "won": 1, "topout": 0, "pills": 131, "garbage": 42, "dies_ahead": 0, "pol_takes": 25, "pol_instant_takes": 18, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 127, "res": "topout", "won": 0, "topout": 1, "pills": 125, "garbage": 54, "dies_ahead": 0, "pol_takes": 25, "pol_instant_takes": 14, "pol_completes": 7, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 125, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 112, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 22, "pol_completes": 9, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 129, "res": "topout", "won": 0, "topout": 1, "pills": 156, "garbage": 49, "dies_ahead": 1, "pol_takes": 28, "pol_instant_takes": 19, "pol_completes": 3, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 131, "res": "topout", "won": 0, "topout": 1, "pills": 37, "garbage": 4, "dies_ahead": 0, "pol_takes": 5, "pol_instant_takes": 3, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 130, "res": "clear", "won": 1, "topout": 0, "pills": 140, "garbage": 52, "dies_ahead": 0, "pol_takes": 21, "pol_instant_takes": 11, "pol_completes": 5, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 128, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 113, "dies_ahead": 0, "pol_takes": 44, "pol_instant_takes": 33, "pol_completes": 5, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 133, "res": "topout", "won": 0, "topout": 1, "pills": 108, "garbage": 34, "dies_ahead": 1, "pol_takes": 18, "pol_instant_takes": 11, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 132, "res": "clear", "won": 1, "topout": 0, "pills": 117, "garbage": 32, "dies_ahead": 0, "pol_takes": 21, "pol_instant_takes": 15, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 135, "res": "topout", "won": 0, "topout": 1, "pills": 154, "garbage": 53, "dies_ahead": 1, "pol_takes": 26, "pol_instant_takes": 14, "pol_completes": 7, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 134, "res": "topout", "won": 0, "topout": 1, "pills": 195, "garbage": 82, "dies_ahead": 1, "pol_takes": 33, "pol_instant_takes": 22, "pol_completes": 8, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 137, "res": "topout", "won": 0, "topout": 1, "pills": 133, "garbage": 60, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 11, "pol_completes": 5, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 136, "res": "topout", "won": 0, "topout": 1, "pills": 158, "garbage": 54, "dies_ahead": 1, "pol_takes": 22, "pol_instant_takes": 15, "pol_completes": 3, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 139, "res": "topout", "won": 0, "topout": 1, "pills": 218, "garbage": 80, "dies_ahead": 1, "pol_takes": 28, "pol_instant_takes": 15, "pol_completes": 8, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 138, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 90, "dies_ahead": 0, "pol_takes": 42, "pol_instant_takes": 24, "pol_completes": 10, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 140, "res": "clear", "won": 1, "topout": 0, "pills": 174, "garbage": 54, "dies_ahead": 0, "pol_takes": 30, "pol_instant_takes": 18, "pol_completes": 6, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 141, "res": "clear", "won": 1, "topout": 0, "pills": 238, "garbage": 74, "dies_ahead": 0, "pol_takes": 38, "pol_instant_takes": 26, "pol_completes": 8, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 142, "res": "topout", "won": 0, "topout": 1, "pills": 69, "garbage": 20, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 6, "pol_completes": 2, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 144, "res": "topout", "won": 0, "topout": 1, "pills": 101, "garbage": 26, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 6, "pol_completes": 4, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 143, "res": "topout", "won": 0, "topout": 1, "pills": 145, "garbage": 60, "dies_ahead": 1, "pol_takes": 28, "pol_instant_takes": 18, "pol_completes": 5, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 146, "res": "clear", "won": 1, "topout": 0, "pills": 177, "garbage": 68, "dies_ahead": 0, "pol_takes": 26, "pol_instant_takes": 19, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 147, "res": "topout", "won": 0, "topout": 1, "pills": 162, "garbage": 53, "dies_ahead": 1, "pol_takes": 23, "pol_instant_takes": 13, "pol_completes": 8, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 148, "res": "topout", "won": 0, "topout": 1, "pills": 198, "garbage": 56, "dies_ahead": 1, "pol_takes": 21, "pol_instant_takes": 10, "pol_completes": 7, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 145, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 125, "dies_ahead": 0, "pol_takes": 36, "pol_instant_takes": 23, "pol_completes": 9, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 152, "res": "topout", "won": 0, "topout": 1, "pills": 115, "garbage": 32, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 10, "pol_completes": 7, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 150, "res": "topout", "won": 0, "topout": 1, "pills": 177, "garbage": 49, "dies_ahead": 1, "pol_takes": 26, "pol_instant_takes": 14, "pol_completes": 6, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 151, "res": "topout", "won": 0, "topout": 1, "pills": 154, "garbage": 52, "dies_ahead": 0, "pol_takes": 25, "pol_instant_takes": 11, "pol_completes": 8, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 149, "res": "topout", "won": 0, "topout": 1, "pills": 231, "garbage": 72, "dies_ahead": 1, "pol_takes": 26, "pol_instant_takes": 19, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 153, "res": "clear", "won": 1, "topout": 0, "pills": 96, "garbage": 30, "dies_ahead": 0, "pol_takes": 15, "pol_instant_takes": 11, "pol_completes": 1, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 154, "res": "clear", "won": 1, "topout": 0, "pills": 184, "garbage": 54, "dies_ahead": 0, "pol_takes": 39, "pol_instant_takes": 25, "pol_completes": 9, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 156, "res": "topout", "won": 0, "topout": 1, "pills": 119, "garbage": 16, "dies_ahead": 1, "pol_takes": 17, "pol_instant_takes": 10, "pol_completes": 6, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 155, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 109, "dies_ahead": 0, "pol_takes": 61, "pol_instant_takes": 35, "pol_completes": 18, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 158, "res": "topout", "won": 0, "topout": 1, "pills": 125, "garbage": 48, "dies_ahead": 1, "pol_takes": 19, "pol_instant_takes": 15, "pol_completes": 3, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 157, "res": "topout", "won": 0, "topout": 1, "pills": 293, "garbage": 88, "dies_ahead": 1, "pol_takes": 41, "pol_instant_takes": 26, "pol_completes": 7, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 159, "res": "topout", "won": 0, "topout": 1, "pills": 180, "garbage": 73, "dies_ahead": 1, "pol_takes": 28, "pol_instant_takes": 17, "pol_completes": 6, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 160, "res": "topout", "won": 0, "topout": 1, "pills": 86, "garbage": 28, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 9, "pol_completes": 4, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 164, "res": "topout", "won": 0, "topout": 1, "pills": 38, "garbage": 8, "dies_ahead": 0, "pol_takes": 5, "pol_instant_takes": 3, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 162, "res": "topout", "won": 0, "topout": 1, "pills": 179, "garbage": 70, "dies_ahead": 0, "pol_takes": 28, "pol_instant_takes": 19, "pol_completes": 6, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 163, "res": "clear", "won": 1, "topout": 0, "pills": 165, "garbage": 54, "dies_ahead": 0, "pol_takes": 24, "pol_instant_takes": 15, "pol_completes": 6, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 165, "res": "clear", "won": 1, "topout": 0, "pills": 135, "garbage": 26, "dies_ahead": 0, "pol_takes": 21, "pol_instant_takes": 15, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 161, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 108, "dies_ahead": 0, "pol_takes": 66, "pol_instant_takes": 41, "pol_completes": 15, "pol_complete_fallback": 10, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 169, "res": "topout", "won": 0, "topout": 1, "pills": 37, "garbage": 6, "dies_ahead": 0, "pol_takes": 5, "pol_instant_takes": 3, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 168, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 93, "dies_ahead": 0, "pol_takes": 49, "pol_instant_takes": 37, "pol_completes": 9, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 170, "res": "topout", "won": 0, "topout": 1, "pills": 40, "garbage": 2, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 8, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 166, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 110, "dies_ahead": 0, "pol_takes": 61, "pol_instant_takes": 39, "pol_completes": 12, "pol_complete_fallback": 10, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 167, "res": "topout", "won": 0, "topout": 1, "pills": 269, "garbage": 103, "dies_ahead": 1, "pol_takes": 50, "pol_instant_takes": 29, "pol_completes": 10, "pol_complete_fallback": 11, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 172, "res": "clear", "won": 1, "topout": 0, "pills": 153, "garbage": 50, "dies_ahead": 0, "pol_takes": 29, "pol_instant_takes": 20, "pol_completes": 6, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 171, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 117, "dies_ahead": 0, "pol_takes": 54, "pol_instant_takes": 40, "pol_completes": 5, "pol_complete_fallback": 9, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 173, "res": "clear", "won": 1, "topout": 0, "pills": 245, "garbage": 91, "dies_ahead": 0, "pol_takes": 41, "pol_instant_takes": 25, "pol_completes": 13, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 174, "res": "clear", "won": 1, "topout": 0, "pills": 263, "garbage": 65, "dies_ahead": 0, "pol_takes": 36, "pol_instant_takes": 22, "pol_completes": 10, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 175, "res": "topout", "won": 0, "topout": 1, "pills": 249, "garbage": 81, "dies_ahead": 1, "pol_takes": 34, "pol_instant_takes": 23, "pol_completes": 6, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 176, "res": "topout", "won": 0, "topout": 1, "pills": 72, "garbage": 18, "dies_ahead": 0, "pol_takes": 16, "pol_instant_takes": 13, "pol_completes": 1, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 177, "res": "topout", "won": 0, "topout": 1, "pills": 123, "garbage": 54, "dies_ahead": 1, "pol_takes": 27, "pol_instant_takes": 18, "pol_completes": 5, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 180, "res": "clear", "won": 1, "topout": 0, "pills": 96, "garbage": 32, "dies_ahead": 0, "pol_takes": 11, "pol_instant_takes": 8, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 178, "res": "clear", "won": 1, "topout": 0, "pills": 212, "garbage": 72, "dies_ahead": 0, "pol_takes": 35, "pol_instant_takes": 27, "pol_completes": 4, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 179, "res": "topout", "won": 0, "topout": 1, "pills": 227, "garbage": 83, "dies_ahead": 1, "pol_takes": 37, "pol_instant_takes": 25, "pol_completes": 10, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 182, "res": "clear", "won": 1, "topout": 0, "pills": 94, "garbage": 34, "dies_ahead": 0, "pol_takes": 6, "pol_instant_takes": 6, "pol_completes": 0, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 181, "res": "topout", "won": 0, "topout": 1, "pills": 203, "garbage": 72, "dies_ahead": 1, "pol_takes": 23, "pol_instant_takes": 18, "pol_completes": 3, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 183, "res": "clear", "won": 1, "topout": 0, "pills": 101, "garbage": 26, "dies_ahead": 0, "pol_takes": 9, "pol_instant_takes": 7, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 184, "res": "clear", "won": 1, "topout": 0, "pills": 96, "garbage": 16, "dies_ahead": 0, "pol_takes": 8, "pol_instant_takes": 5, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 187, "res": "topout", "won": 0, "topout": 1, "pills": 137, "garbage": 52, "dies_ahead": 1, "pol_takes": 17, "pol_instant_takes": 9, "pol_completes": 4, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 185, "res": "topout", "won": 0, "topout": 1, "pills": 283, "garbage": 85, "dies_ahead": 1, "pol_takes": 31, "pol_instant_takes": 24, "pol_completes": 3, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 186, "res": "topout", "won": 0, "topout": 1, "pills": 255, "garbage": 82, "dies_ahead": 1, "pol_takes": 34, "pol_instant_takes": 21, "pol_completes": 7, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 188, "res": "clear", "won": 1, "topout": 0, "pills": 257, "garbage": 86, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 23, "pol_completes": 5, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 190, "res": "topout", "won": 0, "topout": 1, "pills": 76, "garbage": 28, "dies_ahead": 1, "pol_takes": 8, "pol_instant_takes": 5, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 189, "res": "topout", "won": 0, "topout": 1, "pills": 245, "garbage": 95, "dies_ahead": 1, "pol_takes": 27, "pol_instant_takes": 17, "pol_completes": 7, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 194, "res": "topout", "won": 0, "topout": 1, "pills": 11, "garbage": 0, "dies_ahead": 0, "pol_takes": 1, "pol_instant_takes": 0, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 191, "res": "clear", "won": 1, "topout": 0, "pills": 229, "garbage": 88, "dies_ahead": 0, "pol_takes": 30, "pol_instant_takes": 22, "pol_completes": 4, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 193, "res": "topout", "won": 0, "topout": 1, "pills": 276, "garbage": 103, "dies_ahead": 0, "pol_takes": 73, "pol_instant_takes": 52, "pol_completes": 10, "pol_complete_fallback": 11, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 192, "res": "topout", "won": 0, "topout": 1, "pills": 199, "garbage": 74, "dies_ahead": 1, "pol_takes": 55, "pol_instant_takes": 30, "pol_completes": 11, "pol_complete_fallback": 14, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 195, "res": "clear", "won": 1, "topout": 0, "pills": 213, "garbage": 60, "dies_ahead": 0, "pol_takes": 35, "pol_instant_takes": 22, "pol_completes": 10, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 196, "res": "clear", "won": 1, "topout": 0, "pills": 164, "garbage": 58, "dies_ahead": 0, "pol_takes": 19, "pol_instant_takes": 15, "pol_completes": 2, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 200, "res": "topout", "won": 0, "topout": 1, "pills": 43, "garbage": 6, "dies_ahead": 0, "pol_takes": 4, "pol_instant_takes": 3, "pol_completes": 0, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 198, "res": "clear", "won": 1, "topout": 0, "pills": 197, "garbage": 85, "dies_ahead": 0, "pol_takes": 41, "pol_instant_takes": 29, "pol_completes": 8, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 197, "res": "topout", "won": 0, "topout": 1, "pills": 252, "garbage": 96, "dies_ahead": 1, "pol_takes": 31, "pol_instant_takes": 23, "pol_completes": 1, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 199, "res": "topout", "won": 0, "topout": 1, "pills": 192, "garbage": 76, "dies_ahead": 1, "pol_takes": 40, "pol_instant_takes": 19, "pol_completes": 16, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 203, "res": "topout", "won": 0, "topout": 1, "pills": 173, "garbage": 48, "dies_ahead": 1, "pol_takes": 21, "pol_instant_takes": 14, "pol_completes": 3, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 202, "res": "topout", "won": 0, "topout": 1, "pills": 287, "garbage": 99, "dies_ahead": 1, "pol_takes": 36, "pol_instant_takes": 23, "pol_completes": 4, "pol_complete_fallback": 9, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 204, "res": "topout", "won": 0, "topout": 1, "pills": 121, "garbage": 42, "dies_ahead": 1, "pol_takes": 20, "pol_instant_takes": 13, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 201, "res": "topout", "won": 0, "topout": 1, "pills": 235, "garbage": 110, "dies_ahead": 1, "pol_takes": 34, "pol_instant_takes": 25, "pol_completes": 8, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 205, "res": "topout", "won": 0, "topout": 1, "pills": 127, "garbage": 45, "dies_ahead": 0, "pol_takes": 25, "pol_instant_takes": 12, "pol_completes": 7, "pol_complete_fallback": 5, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 206, "res": "clear", "won": 1, "topout": 0, "pills": 149, "garbage": 52, "dies_ahead": 0, "pol_takes": 19, "pol_instant_takes": 17, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 208, "res": "topout", "won": 0, "topout": 1, "pills": 178, "garbage": 54, "dies_ahead": 1, "pol_takes": 30, "pol_instant_takes": 21, "pol_completes": 7, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 210, "res": "topout", "won": 0, "topout": 1, "pills": 86, "garbage": 22, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 6, "pol_completes": 3, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 211, "res": "topout", "won": 0, "topout": 1, "pills": 49, "garbage": 8, "dies_ahead": 0, "pol_takes": 6, "pol_instant_takes": 4, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 207, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 130, "dies_ahead": 0, "pol_takes": 43, "pol_instant_takes": 29, "pol_completes": 8, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 209, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 122, "dies_ahead": 0, "pol_takes": 46, "pol_instant_takes": 30, "pol_completes": 12, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 212, "res": "topout", "won": 0, "topout": 1, "pills": 86, "garbage": 12, "dies_ahead": 1, "pol_takes": 7, "pol_instant_takes": 1, "pol_completes": 5, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 213, "res": "clear", "won": 1, "topout": 0, "pills": 143, "garbage": 62, "dies_ahead": 0, "pol_takes": 20, "pol_instant_takes": 14, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 214, "res": "topout", "won": 0, "topout": 1, "pills": 198, "garbage": 62, "dies_ahead": 1, "pol_takes": 27, "pol_instant_takes": 21, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 216, "res": "clear", "won": 1, "topout": 0, "pills": 114, "garbage": 30, "dies_ahead": 0, "pol_takes": 10, "pol_instant_takes": 7, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 219, "res": "topout", "won": 0, "topout": 1, "pills": 10, "garbage": 0, "dies_ahead": 0, "pol_takes": 4, "pol_instant_takes": 1, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 218, "res": "topout", "won": 0, "topout": 1, "pills": 107, "garbage": 30, "dies_ahead": 1, "pol_takes": 20, "pol_instant_takes": 15, "pol_completes": 4, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 217, "res": "clear", "won": 1, "topout": 0, "pills": 144, "garbage": 40, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 10, "pol_completes": 5, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 220, "res": "clear", "won": 1, "topout": 0, "pills": 101, "garbage": 36, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 11, "pol_completes": 4, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 215, "res": "topout", "won": 0, "topout": 1, "pills": 286, "garbage": 102, "dies_ahead": 1, "pol_takes": 48, "pol_instant_takes": 31, "pol_completes": 9, "pol_complete_fallback": 8, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 223, "res": "topout", "won": 0, "topout": 1, "pills": 141, "garbage": 52, "dies_ahead": 0, "pol_takes": 17, "pol_instant_takes": 9, "pol_completes": 7, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 222, "res": "topout", "won": 0, "topout": 1, "pills": 148, "garbage": 40, "dies_ahead": 1, "pol_takes": 18, "pol_instant_takes": 10, "pol_completes": 6, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 224, "res": "clear", "won": 1, "topout": 0, "pills": 219, "garbage": 55, "dies_ahead": 0, "pol_takes": 38, "pol_instant_takes": 27, "pol_completes": 9, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 221, "res": "clear", "won": 1, "topout": 0, "pills": 241, "garbage": 89, "dies_ahead": 0, "pol_takes": 35, "pol_instant_takes": 25, "pol_completes": 7, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 226, "res": "topout", "won": 0, "topout": 1, "pills": 267, "garbage": 58, "dies_ahead": 1, "pol_takes": 34, "pol_instant_takes": 21, "pol_completes": 10, "pol_complete_fallback": 3, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 225, "res": "clear", "won": 1, "topout": 0, "pills": 199, "garbage": 62, "dies_ahead": 0, "pol_takes": 36, "pol_instant_takes": 27, "pol_completes": 5, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 229, "res": "topout", "won": 0, "topout": 1, "pills": 53, "garbage": 2, "dies_ahead": 0, "pol_takes": 8, "pol_instant_takes": 4, "pol_completes": 2, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 230, "res": "topout", "won": 0, "topout": 1, "pills": 17, "garbage": 0, "dies_ahead": 0, "pol_takes": 3, "pol_instant_takes": 1, "pol_completes": 2, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 227, "res": "topout", "won": 0, "topout": 1, "pills": 242, "garbage": 73, "dies_ahead": 1, "pol_takes": 31, "pol_instant_takes": 19, "pol_completes": 11, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 233, "res": "clear", "won": 1, "topout": 0, "pills": 99, "garbage": 32, "dies_ahead": 0, "pol_takes": 11, "pol_instant_takes": 9, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 231, "res": "clear", "won": 1, "topout": 0, "pills": 130, "garbage": 48, "dies_ahead": 0, "pol_takes": 14, "pol_instant_takes": 11, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 228, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 131, "dies_ahead": 0, "pol_takes": 44, "pol_instant_takes": 23, "pol_completes": 11, "pol_complete_fallback": 10, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 232, "res": "stall", "won": 0, "topout": 0, "pills": 300, "garbage": 83, "dies_ahead": 0, "pol_takes": 40, "pol_instant_takes": 28, "pol_completes": 7, "pol_complete_fallback": 4, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 234, "res": "clear", "won": 1, "topout": 0, "pills": 178, "garbage": 60, "dies_ahead": 0, "pol_takes": 23, "pol_instant_takes": 21, "pol_completes": 1, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 236, "res": "topout", "won": 0, "topout": 1, "pills": 137, "garbage": 48, "dies_ahead": 1, "pol_takes": 23, "pol_instant_takes": 16, "pol_completes": 6, "pol_complete_fallback": 1, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 235, "res": "clear", "won": 1, "topout": 0, "pills": 196, "garbage": 48, "dies_ahead": 0, "pol_takes": 27, "pol_instant_takes": 18, "pol_completes": 3, "pol_complete_fallback": 6, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 240, "res": "topout", "won": 0, "topout": 1, "pills": 15, "garbage": 0, "dies_ahead": 0, "pol_takes": 4, "pol_instant_takes": 3, "pol_completes": 1, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 237, "res": "clear", "won": 1, "topout": 0, "pills": 106, "garbage": 32, "dies_ahead": 0, "pol_takes": 18, "pol_instant_takes": 15, "pol_completes": 1, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 238, "res": "clear", "won": 1, "topout": 0, "pills": 146, "garbage": 48, "dies_ahead": 0, "pol_takes": 22, "pol_instant_takes": 19, "pol_completes": 3, "pol_complete_fallback": 0, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 241, "res": "clear", "won": 1, "topout": 0, "pills": 103, "garbage": 38, "dies_ahead": 0, "pol_takes": 15, "pol_instant_takes": 12, "pol_completes": 1, "pol_complete_fallback": 2, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
+{"seed": 239, "res": "topout", "won": 0, "topout": 1, "pills": 214, "garbage": 82, "dies_ahead": 0, "pol_takes": 32, "pol_instant_takes": 15, "pol_completes": 10, "pol_complete_fallback": 7, "pol_take_fallback": 0, "arm": "forced", "model": "lulu"}
