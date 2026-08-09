@@ -434,7 +434,7 @@ def run_gates():
     gates["pass"] = ok
     with open(os.path.join(HERE, "gates_result.json"), "w") as f:
         json.dump(gates, f, indent=1, default=str)
-    print(f"[gates] G1 leak_auc={a_leak:.3f} G2 max_absdev={max(devs):.4f} "
+    print(f"[gates] G1 leak_auc={a_leak:.3f} G2 max_bias={max_bias:.4f} "
           f"G3 {'PASS' if gates['G3']['pass'] else 'FAIL'} "
           f"G4 {'PASS' if gates['G4']['pass'] else 'FAIL'} -> "
           f"{'PASS' if ok else 'FAIL'}", flush=True)

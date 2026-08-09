@@ -104,3 +104,38 @@ Winner wired into choose_base32 as a penalty term, n=240 paired seeds vs base
 under the same drip regime; PRIMARY endpoints pre-registered as dies-ahead count
 + bad-ends (topout+stall) count, paired. To be pre-registered in detail (dose,
 seeds) in this file BEFORE that run starts.
+
+## ADDENDUM SCREEN PRE-REGISTRATION (2026-08-09, before the screen ran)
+
+The pre-registered verdict was NONE SEPARATES (baseline floor = SPAWN at
+|AUC-0.5| = 0.4002). The automatic screen therefore does NOT trigger. This is a
+SEPARATE, exploratory-motivated screen, pre-registered here before running:
+the paired-difference bootstrap (addendum_result.json) showed d_spawn_h
+(= max(H[3],H[4]) post-move) carries MORE information than the champion's own
+SPAWN term on identical resamples: +0.0288 |AUC|, CI [+0.0195,+0.0348],
+200/200 reps positive — the SPAWN term saturates (it counts only rows 0-3 of
+cols 3-4); raw lane height does not.
+
+- Penalty: val -= WQ * max(0, spawn_h_post - 10). K=10 chosen from the offline
+  argmax-flip probe (flip_probe.json, law dr-mario-spawn-lane-gate-probe):
+  fires only when the spawn lane is already >= 11 high (survival regime),
+  flips 4.4% (wq=60) of fatal-decision argmaxes and 3.0% of control-decision
+  argmaxes — above the ~2% testability bar with the least ordinary-play
+  contact. PRIMARY dose WQ=60; WQ=120 run as a secondary dose.
+- Seeds (rng=20260812): 240 sampled from the 890 census topout seeds + 240
+  sampled from the 38,182 cleared seeds (<40000, seed 1 excluded).
+- Arms: base (WQ=0) and treatment on all 480 seeds; base MUST reproduce the
+  census row for every seed (fidelity gate; abort otherwise). Treatment != base
+  trace on >=1 seed is the killed-mutant check that the penalty is live.
+- PRIMARY endpoints (counts): rescues = # topout-seeds -> clear under
+  treatment; breakages = # cleared-seeds -> topout|stall under treatment;
+  dies-ahead count change on the topout-seed arm. Population-scaled net
+  bad-end change per 40k seeds = 890*(rescues/240)/... i.e.
+  net = breakages/240*38182 - rescues/240*890  (negative = good), with a
+  seed-level bootstrap 95% CI. NOTE the asymmetry is the point: one breakage
+  costs ~159 population games, one rescue buys ~3.7 — the penalty must rescue
+  essentially without breaking.
+- This screen yields a SHIP-signal only if net < 0 with CI excluding 0;
+  otherwise counts are reported and the term goes to the phase-3 learned-
+  abstraction lane as a feature, not a penalty (memory: penalties have
+  repeatedly been harmful/inert; this is the priced test of that prior).
