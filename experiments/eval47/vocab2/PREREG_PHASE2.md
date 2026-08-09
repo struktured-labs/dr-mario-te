@@ -139,3 +139,29 @@ cols 3-4); raw lane height does not.
   otherwise counts are reported and the term goes to the phase-3 learned-
   abstraction lane as a feature, not a penalty (memory: penalties have
   repeatedly been harmful/inert; this is the priced test of that prior).
+
+## LULU SCREEN PRE-REGISTRATION (2026-08-09, written+committed BEFORE the run)
+
+Same penalty (val -= WQ*max(0, spawn_h_post-10), WQ in {60,120}, primary 60)
+screened under the LULU fit (bursty pressure, eval47/results/
+dr_lulu_20260808_fit.json, loader per jointdig/p0_ab.py), because the drip
+model is only one pressure regime and the phase-3 task names both.
+
+- Rig: replica of pressure_rig.play() bursty path (screen_lulu.py) with the
+  penalty inside the _choose_base loop; PR._init(11, 0, 20, bursty, lulu fit).
+- Seeds: 2..241 (240 seeds; seed 1 excluded; 2k/2k+1 share pill streams =>
+  ~120 distinct streams — a stream-collapsed sensitivity count is reported).
+- Arms: reference (the REAL pressure_rig.play), base (replica wq=0), wq60,
+  wq120 — 960 games.
+- Gates: G-L1 identity — replica wq=0 must equal the real rig on ALL 240
+  seeds (res/pills/garbage), abort otherwise. G-L2 killed mutant — synthetic
+  col-3 height-12 board, hand value spawn_h=12/penalty units=2; a rows-0-1
+  saturating mutant must disagree. G-L3 liveness — each dose's trace must
+  differ from base on >=1 seed.
+- PRIMARY endpoints (counts): paired bad-ends (topout+stall) base vs wq60 —
+  fixed (bad->clear) and broken (clear->bad) seed counts, McNemar exact
+  two-sided; dies-ahead count change. SECONDARY: wq120 same, seed-bootstrap
+  95% CI on the net bad-end delta, stream-collapsed fixed/broken counts.
+- Verdict rule: SHIP-signal only if net bad-end delta < 0 with CI excluding
+  0 AND McNemar p < 0.05 in the harmful direction absent. Otherwise: counts
+  reported, term goes to the phase-3 learned-abstraction lane.
