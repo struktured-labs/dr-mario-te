@@ -535,14 +535,60 @@ RELATCH = ROTFIX and (_os.environ.get("DRRELATCH", "0") == "1")
 # under the corrected numbers, not 96 -- worth a follow-up re-audit of that earlier "physically
 # infeasible" conclusion, not done here (task #49's ORIGINAL increment is already committed/pushed;
 # flagging rather than silently rewriting it).
+#
+# ★★ SURFACE-RELATIVE REBUILD (2026-08-09, v6c acceptance follow-on -- wf_c6d25d83 forensics).
+# The FIRST DISTGATE indexed the budget by $0386 DIRECTLY -- but $0386 is FLOOR-relative Y
+# (counts UP from the floor, memory dr-mario-savestate-layout), i.e. "rows until the BOTTLE
+# FLOOR", not "rows until the capsule actually locks". On a filled board (height h >= 12, the
+# census defect regime) the capsule locks at HIGH $0386 (>= h), so DIST_TABLE[$0386] with the
+# corrected constants saturates at 7 = the whole board width and the gate NEVER RESTRICTS in
+# exactly the regime it exists for: acceptance census 2026-08-09 measured class-a 29/1038
+# pill-for-pill IDENTICAL to the gate-OFF arm (h>=12: 29/307 = 9.45%) -- FAILED VACUOUSLY.
+# The rebuild indexes by SURFACE-RELATIVE REMAINING FALL: how many rows the capsule can still
+# fall before reaching the STACK SURFACE, scanned from the live board the driver already owns
+# ($0500, the same bytes it uploads to the copro). Constants and DIST_TABLE are UNCHANGED --
+# only the table INDEX changed. Signal choice (CONSTRAINT, documented per the rebuild spec):
+#   remaining fall = (rows strictly below the capsule's row that are fully EMPTY across the
+#   column span [min(PX2,target)..max(PX2,target)]), i.e. fall to the MAX SURFACE EN ROUTE,
+#   endpoints inclusive. Chosen over "target column's surface only" because a taller pillar
+#   BETWEEN the capsule and the target catches the capsule first -- target-only would promise
+#   fall time the capsule does not have (unsafe, over-budgets). Chosen over a whole-board max
+#   because columns outside the travel span cannot intercept (over-restricts, no safety gain).
+#   Conservative residual: a pillar past the CLAMPED column still shrinks the budget (span is
+#   computed against the RAW target) -- costs optimality only, never promises the unreachable.
+#   NOT modeled (capsule treated as a point at ($0385,$0386), consistent with every other user
+#   of the pose in this driver): the horizontal partner column PX2+1 and the vertical second
+#   half; empty cells are $FF *or* $00 (tile-encoding, same normalization rule as the _start
+#   upload loop) and anything else reads as stack.
+# Scan cost is bounded by DIST_SCANCAP (below): the table saturates at its max value by index
+# DIST_SCANCAP, so scanning more than DIST_SCANCAP empty rows cannot change the budget --
+# worst case 3 rows x 8 columns = 24 cell reads per hook at the default constants.
+# DRDIST_FLOORREL=1 re-emits the ORIGINAL floor-relative index ($0386 -> table, no board scan).
+# It exists ONLY as the killed mutant for tests/test_task49_distgate.py (house gate standard:
+# the old defective indexing must demonstrably FAIL the new tests). NEVER ship it.
 # DRDISTGATE=0 rebuilds byte-exact (nothing emitted; verified in tests/test_task49_distgate.py).
 DISTGATE = _os.environ.get("DRDISTGATE", "0") == "1"
+DIST_FLOORREL = _os.environ.get("DRDIST_FLOORREL", "0") == "1"   # TEST-ONLY mutant, see above
 DIST_DASEDGE = int(_os.environ.get("DRDIST_DASEDGE", "12"))
 DIST_GRAVROW = int(_os.environ.get("DRDIST_GRAVROW", "30"))
-DIST_TABLE_LEN = 16   # BOARD_Y ($0386) row-space; 16 covers the full playfield height with margin
+DIST_TABLE_LEN = 16   # index space is ROWS OF REMAINING FALL (0..15); 16 covers the playfield
 DIST_TABLE = bytes(
     0 if y == 0 else max(1, min(7, (y * DIST_GRAVROW) // DIST_DASEDGE))
     for y in range(DIST_TABLE_LEN))
+# First index at which DIST_TABLE reaches its own maximum (table is monotone nondecreasing by
+# construction). Scanning deeper than this many empty rows cannot change the budget, so the
+# 6502 board scan caps its row count here. max(1,...) guards a degenerate all-flat override.
+DIST_SCANCAP = max(1, next(i for i in range(DIST_TABLE_LEN)
+                           if DIST_TABLE[i] == DIST_TABLE[DIST_TABLE_LEN - 1]))
+# Surface-scan scratch (PRG-RAM $61B1-$61B7: first free bytes past DRSTUDY2P's S2P_TTL at
+# $61B0; next allocation is the trace ring at $6200). All are per-hook scratch, no state
+# carried across hooks.
+DG_YC   = 0x61B1   # $0386 clamped to 0..15 (defensive: table/row math assumes row-space)
+DG_FALL = 0x61B2   # scanned remaining-fall rows (the new DIST_TABLE index)
+DG_N    = 0x61B3   # rows left to scan = min(DG_YC, DIST_SCANCAP)
+DG_OFF  = 0x61B4   # current row's board offset (row*8 + DG_LO)
+DG_LO, DG_HI = 0x61B5, 0x61B6   # column span [min(PX2,target) .. max(PX2,target)]
+DG_CSPAN = 0x61B7  # span width DG_HI-DG_LO+1 (1..8), inner-loop counter reload value
 # DRNAVFIX=1 (default): STABILITY-GATED AUTONAV. The canonical an_title fires START the instant $04!=0;
 # a cold-boot garbage-nonzero $04 (title fade-in, before menu-init) then STARTs into a 1P game. DRNAVFIX
 # withholds START until VS-CPU-armed ($04!=0 AND $0727==2) has held for NAV_M consecutive hooks -- the
@@ -2432,20 +2478,74 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", EFF_C2)
     _EC = EFF_C2 if TUCK else TGT_C2
     if DISTGATE:
-        # DRDISTGATE (see the flag comment above; REVIEW #6.2): clamp _EC to the columns that are
-        # DAS-reachable from PX2 ($0385) given the remaining fall budget (BOARD_Y=$0386), instead
-        # of steering toward a target that will never arrive in time. Substituting EFF_DIST2 for
-        # _EC here means EVERYTHING below (alignment check, WEAVE steering, dn_p2's confidence
-        # gate) is unchanged code, now just reading a distance-bounded target.
-        #   budget = DIST_TABLE[min(BOARD_Y, DIST_TABLE_LEN-1)]
-        a.ins16("LDA_abs", 0x0386)
-        a.ins("CMP_imm", DIST_TABLE_LEN)
-        a.br("BCC", "dg_yok")
-        a.ins("LDA_imm", DIST_TABLE_LEN - 1)
-        a.label("dg_yok")
-        a.ins("TAX")
-        a.ins16("LDA_absX", DIST_TABLE_ADDR)
-        a.ins16("STA_abs", DG_BUDGET)
+        # DRDISTGATE (see the flag comment above; REVIEW #6.2 + the SURFACE-RELATIVE REBUILD
+        # note): clamp _EC to the columns that are DAS-reachable from PX2 ($0385) given the
+        # remaining fall budget, instead of steering toward a target that will never arrive in
+        # time. Substituting EFF_DIST2 for _EC here means EVERYTHING below (alignment check,
+        # WEAVE steering, dn_p2's confidence gate) is unchanged code, now just reading a
+        # distance-bounded target.
+        #   budget = DIST_TABLE[remaining_fall]  where remaining_fall = fully-empty rows
+        #   strictly below the capsule across the span [min(PX2,_EC)..max(PX2,_EC)] of the LIVE
+        #   board $0500 (capped at DIST_SCANCAP -- deeper rows can't change the budget). $0386
+        #   counts UP from the floor, so board row = 15 - $0386 and "below" = higher offsets.
+        if DIST_FLOORREL:
+            # ---- TEST-ONLY MUTANT (DRDIST_FLOORREL=1): the ORIGINAL, census-refuted floor-
+            # relative index, budget = DIST_TABLE[min($0386, len-1)]. Kept buildable solely so
+            # tests/test_task49_distgate.py can demonstrate the old indexing FAILS the new
+            # tests (killed-mutant discipline). NEVER ship this arm.
+            a.ins16("LDA_abs", 0x0386)
+            a.ins("CMP_imm", DIST_TABLE_LEN)
+            a.br("BCC", "dg_yok")
+            a.ins("LDA_imm", DIST_TABLE_LEN - 1)
+            a.label("dg_yok")
+            a.ins("TAX")
+            a.ins16("LDA_absX", DIST_TABLE_ADDR)
+            a.ins16("STA_abs", DG_BUDGET)
+        else:
+            # ---- surface-relative remaining fall (the shipping arm) ----
+            # DG_YC = min($0386, 15) -- defensive clamp, the row math below assumes 0..15
+            a.ins16("LDA_abs", 0x0386); a.ins("CMP_imm", 16); a.br("BCC", "dg_yok")
+            a.ins("LDA_imm", 15)
+            a.label("dg_yok"); a.ins16("STA_abs", DG_YC)
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", DG_FALL)
+            # rows to scan: DG_N = min(DG_YC, DIST_SCANCAP); 0 -> capsule at the floor, no scan
+            a.ins16("LDA_abs", DG_YC); a.ins("CMP_imm", DIST_SCANCAP); a.br("BCC", "dg_nok")
+            a.ins("LDA_imm", DIST_SCANCAP)
+            a.label("dg_nok"); a.ins16("STA_abs", DG_N)
+            a.ins("CMP_imm", 0); a.br("BEQ", "dg_scand")
+            # span [DG_LO..DG_HI] = [min(PX2,_EC)..max(PX2,_EC)] -- the RAW target's span (see
+            # the flag comment: en-route max, endpoints inclusive)
+            a.ins16("LDA_abs", _EC); a.ins16("CMP_abs", 0x0385); a.br("BCS", "dg_spr")
+            a.ins16("STA_abs", DG_LO)
+            a.ins16("LDA_abs", 0x0385); a.ins16("STA_abs", DG_HI); a.jmp("dg_spd")
+            a.label("dg_spr")
+            a.ins16("STA_abs", DG_HI)
+            a.ins16("LDA_abs", 0x0385); a.ins16("STA_abs", DG_LO)
+            a.label("dg_spd")
+            a.ins16("LDA_abs", DG_HI); a.ins("SEC"); a.ins16("SBC_abs", DG_LO)
+            a.ins("CLC"); a.ins("ADC_imm", 1); a.ins16("STA_abs", DG_CSPAN)
+            # first row below the capsule: row = (15 - DG_YC) + 1 = 16 - DG_YC; offset = row*8
+            # + DG_LO. DG_YC >= 1 here, so row <= 15 and offset <= 120+DG_LO <= 127: no carry.
+            a.ins("LDA_imm", 16); a.ins("SEC"); a.ins16("SBC_abs", DG_YC)
+            a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+            a.ins("CLC"); a.ins16("ADC_abs", DG_LO); a.ins16("STA_abs", DG_OFF)
+            a.label("dg_row")
+            a.ins16("LDA_abs", DG_OFF); a.ins("TAX")           # X walks the row's span cells
+            a.ins16("LDY_abs", DG_CSPAN)                       # Y = cells left in this row
+            a.label("dg_cell")
+            a.ins16("LDA_absX", 0x0500)
+            a.br("BEQ", "dg_ce")                               # $00 = empty (tile-encoding)
+            a.ins("CMP_imm", 0xFF); a.br("BNE", "dg_scand")    # not $FF either -> STACK: stop,
+            a.label("dg_ce")                                   #   DG_FALL is final
+            a.ins("INX"); a.ins("DEY"); a.br("BNE", "dg_cell")
+            a.ins16("INC_abs", DG_FALL)                        # whole row empty -> 1 more row of fall
+            a.ins16("DEC_abs", DG_N); a.br("BEQ", "dg_scand")  # scanned enough (cap/floor reached)
+            a.ins16("LDA_abs", DG_OFF); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins16("STA_abs", DG_OFF)
+            a.jmp("dg_row")
+            a.label("dg_scand")
+            a.ins16("LDA_abs", DG_FALL); a.ins("TAX")          # DG_FALL <= DIST_SCANCAP < len
+            a.ins16("LDA_absX", DIST_TABLE_ADDR)
+            a.ins16("STA_abs", DG_BUDGET)
         #   direction: _EC (target) vs PX2 -- unsigned CMP is safe, both are 0..7
         a.ins16("LDA_abs", _EC); a.ins16("CMP_abs", 0x0385); a.br("BCS", "dg_right")
         # --- LEFTWARD: target < PX2. EFF = max(target, floor) where floor = max(0, PX2-budget) ---
