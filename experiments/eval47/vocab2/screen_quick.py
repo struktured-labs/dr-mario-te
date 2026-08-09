@@ -15,7 +15,7 @@ import adversary_harness as AH
 SCREEN_RNG = 20260812
 N_EACH = 240
 K_LANE = 10
-DOSES = (60, 120)
+DOSES = (15, 30)
 
 
 def decide_penalized(col, vir, ca, cb, na, nb, wq):
