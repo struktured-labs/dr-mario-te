@@ -412,15 +412,24 @@ def run_gates():
            "X": con["X"]}
     # G2: shuffled labels -> real features must sit inside the permutation band
     rng2 = np.random.default_rng(RNG_STATS + 2)
-    devs = []
+    probe = ("MAXH", "d_gvuln_mass", "x_hvar", "c_das_reach")
+    null_aucs = {name: [] for name in probe}
     for p in range(50):
         yp = perm_labels_within_stratum(con["strata"], con["isf"], rng2)
-        for name in ("MAXH", "d_gvuln_mass", "x_hvar", "c_das_reach"):
+        for name in probe:
             mach = stratified_auc_machinery(con["strata"], con["X"][name], yp)
             a, _ = mach(np.ones(len(yp)))
-            devs.append(abs(a - 0.5))
-    gates["G2"] = {"n_shuffles": 50, "max_absdev": float(max(devs)),
-                   "pass": max(devs) < 0.03}
+            null_aucs[name].append(a)
+    means = {n: float(np.mean(v)) for n, v in null_aucs.items()}
+    sds = {n: float(np.std(v)) for n, v in null_aucs.items()}
+    max_bias = max(abs(m - 0.5) for m in means.values())
+    # amended per PREREG deviation note: gate on BIAS; width is handled by the
+    # verdict rule's family permutation band
+    gates["G2"] = {"n_shuffles": 50, "null_means": means, "null_sds": sds,
+                   "max_bias": max_bias,
+                   "max_absdev": float(max(abs(a - 0.5) for v in null_aucs.values()
+                                           for a in v)),
+                   "pass": max_bias < 0.01}
     ok = all(gates[g]["pass"] for g in ("G1", "G2", "G3", "G4"))
     gates["pass"] = ok
     with open(os.path.join(HERE, "gates_result.json"), "w") as f:

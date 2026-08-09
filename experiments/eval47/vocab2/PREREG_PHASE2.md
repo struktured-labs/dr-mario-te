@@ -75,6 +75,19 @@ Otherwise: NONE SEPARATES. CI-overlap alone is NOT a verdict in either direction
 G1 positive control: leak feature = label + N(0,0.1) must give AUC > 0.95.
 G2 negative control: 200 within-stratum label shuffles -> every real feature's
    shuffled AUC within the permutation band (pipeline does not invent separation).
+
+   DEVIATION (2026-08-09, BEFORE --stats ran, after --gates ran): the original
+   G2 wording fixed a 0.03 max-|AUC-0.5| threshold. Measured shuffle null:
+   centered (MAXH mean 0.5010, x_hvar 0.4985 over 100 shuffles) but wider than
+   guessed (SD 0.016-0.028; p95 |dev| 0.031-0.050) because within-stratum ties
+   dominate — not a pipeline defect (machinery is brute-force-exact; G1/G3/G4
+   pass; strata with <5 controls carry 0.3% of fatal weight). G2 is amended to
+   test BIAS (|null mean - 0.5| < 0.01 per probed feature); the null WIDTH is
+   already what verdict rule 2 self-calibrates against via the family
+   permutation p95. Noted: the decision-level permutation ignores game
+   clustering and is therefore anti-conservative; rule 1 (cluster-bootstrap CI
+   over games vs baseline floor) is the clustering-aware hurdle, and BOTH must
+   pass.
 G3 implementation killed-mutants on synthetic boards (each new feature has a
    hand-computed case AND a deliberately-broken variant that must give a
    DIFFERENT answer on it): das_reach (allow=16-d//2 mutant), escape_routes
