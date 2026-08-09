@@ -194,3 +194,90 @@ class Scanner:
             setups_v=setups_v, setups_o=setups_o,
             witness_v=wit_v, witness_o=wit_o,
         )
+
+
+# ---------------------------------------------------------------------------------------
+# P0 -- the owner's canonical instance of the joint dig (task #96, second refinement):
+#   "my most common use of it is a monocolor + dual color of which one is same as mono.
+#    that guarantees a clear if you can vert the mono."
+#
+# cur = (X,X) mono; nxt contains X; the danger column's EXPOSED TOP cell is colour X and
+# the column has >= 2 free rows. Vert the mono onto it -> 3 X stacked in that column; the
+# KNOWN next pill delivers the 4th -> a deterministic vertical clear that removes the bad
+# column's top cell, with a one-pill risk window and the off-colour half disposed of by the
+# clear itself.
+#
+# ★ It is decidable at the ROOT: no search, just a pattern match on (cur, nxt, board). That
+# is what makes a systematic decline diagnostic rather than merely suboptimal.
+# ★ It is nonetheless VERIFIED by simulation here, never asserted from the pattern alone --
+# the pattern is the cheap filter, `_expand_chain` is the judge. A pattern that "should"
+# clear but does not (an interfering horizontal match, a cascade, a colour I mis-read) is
+# counted as not-P0.
+# ⚠ ASSUMPTION: nav-reachability is NOT modelled. The fast sim lets any column be reached,
+# exactly as the champion's own action space does, so P0 availability here is an upper
+# bound on what a nav-constrained cart could execute.
+# ---------------------------------------------------------------------------------------
+
+def top_row(col, c):
+    """Row index of the topmost occupied cell in column c, or None if empty."""
+    for r in range(ROWS):
+        if col[r * COLS + c] != 0:
+            return r
+    return None
+
+
+def p0_precondition(col, cur, nxt, d):
+    """Cheap pattern filter. Returns X (the mono colour) or None."""
+    if cur[0] != cur[1]:
+        return None
+    x = cur[0]
+    if nxt[0] != x and nxt[1] != x:
+        return None
+    t = top_row(col, d)
+    if t is None or t < 2:                 # need the column occupied and >= 2 free rows
+        return None
+    if col[t * COLS + d] != x:             # exposed top cell must BE the mono colour
+        return None
+    return x
+
+
+class P0Scanner:
+    """Verifies a P0 line end to end. Shares Scanner's kernel discipline (own buffers)."""
+
+    def __init__(self):
+        self.a = tuple(np.empty(NCELL, np.int8) for _ in range(3))
+        self.b = tuple(np.empty(NCELL, np.int8) for _ in range(3))
+        self.mk = np.empty(NCELL, np.int8)
+
+    def _place(self, col, vir, lnk, variant, column, pa, pb, out):
+        return C._expand_chain(col, vir, lnk, variant, column, pa, pb,
+                               out[0], out[1], out[2], self.mk, 0)
+
+    def check(self, col, vir, lnk, cur, nxt, d):
+        """-> None, or a dict describing the verified P0 line."""
+        x = p0_precondition(col, cur, nxt, d)
+        if x is None:
+            return None
+        v0 = col_viruses(col, vir, d)
+        o0 = col_occupancy(col, d)
+        # step 1: vert the mono onto d. Mono => variants 2 and 3 are identical; use 2.
+        ok, _, cells1, _ = self._place(col, vir, lnk, 2, d, cur[0], cur[1], self.a)
+        if not ok or cells1 != 0:
+            return None                      # must not clear yet -- that would be a SINGLE dig
+        a1, v1, l1 = self.a
+        # step 2: deliver the next pill's X half onto d. Vertical with X DOWN is the
+        # canonical delivery; variant 2 puts pa on top and pb below, so X must be pb.
+        for variant, (pa, pb) in ((2, (nxt[0], nxt[1])), (3, (nxt[1], nxt[0]))):
+            if pb != x:
+                continue
+            ok2, nv2, cells2, _ = self._place(a1, v1, l1, variant, d, pa, pb, self.b)
+            if not ok2 or cells2 == 0:
+                continue
+            a2, v2p, _ = self.b
+            vdug = v0 - col_viruses(a2, v2p, d)
+            odug = (o0 + 4) - col_occupancy(a2, d)     # 2 mono cells + 2 next-pill cells
+            if odug > 0:
+                return dict(x=x, d=d, setup=(2, d), cash=(variant, d),
+                            vdug=vdug, odug=odug, cleared=cells2, top_was_virus=bool(
+                                vir[top_row(col, d) * COLS + d]))
+        return None

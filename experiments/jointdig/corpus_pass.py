@@ -70,7 +70,7 @@ def build_decider():
     return F.FastShipD3DeciderEHDelta(w, fl, topk2=8)
 
 
-def run_game(dec, seed, level, scan=True, h_min=J.H_MIN_DEFAULT, S=None, verify=True):
+def run_game(dec, seed, level, scan=True, h_min=J.H_MIN_DEFAULT, S=None, verify=True, P0=None):
     env = FaithfulDrMarioEnv(level=level, seed=seed, max_pills=300)
     env.reset()
     NesPillSource(seed=seed).attach(env)
@@ -80,6 +80,8 @@ def run_game(dec, seed, level, scan=True, h_min=J.H_MIN_DEFAULT, S=None, verify=
     moves = []
     map_bad = 0
     pending = {}      # mode -> (danger column, viruses in it right after the setup half)
+    p0rec = []
+    p0pend = []       # [pill_idx_recorded, d, occ_at_decline, ttl] for declined-P0 followup
     while True:
         a = dec.choose(env.board, env.cur, env.nxt)
         if a is None:
@@ -113,7 +115,28 @@ def run_game(dec, seed, level, scan=True, h_min=J.H_MIN_DEFAULT, S=None, verify=
                             rr["completed"] = bool(now < pv)
                             break
                 del pending[mode]
+            # ---- P0: the owner's canonical mono+dual pattern, on any danger column ----
+            for i, (ri, pd, pocc, ttl) in enumerate(list(p0pend)):
+                if ok:
+                    now = J.col_occupancy(chose_col, pd)
+                    if now < pocc:
+                        p0rec[ri]["dug_later"] = True
+                        p0pend[i] = None
+                        continue
+                p0pend[i] = (ri, pd, pocc, ttl - 1) if ttl > 1 else None
+            p0pend = [x for x in p0pend if x]
             dgs = J.danger_columns(col, vir, h_min=h_min)
+            dcols = sorted({c for m in ("tall", "buried") for c in dgs[m]})
+            for d in dcols:
+                hit = P0.check(col, vir, lnk, (env.cur.a, env.cur.b), (env.nxt.a, env.nxt.b), d)
+                if hit is None:
+                    continue
+                took = ok and variant >= 2 and c == d          # verted the mono onto d
+                p0rec.append(dict(seed=seed, pill=len(moves), d=d, x=hit["x"],
+                                  top_was_virus=hit["top_was_virus"], vdug=hit["vdug"],
+                                  took=took, chose=(variant, c), dug_later=False))
+                if not took:
+                    p0pend.append((len(p0rec) - 1, d, J.col_occupancy(chose_col, d) if ok else 99, 2))
             n_legal = len(S.legal(col, vir, lnk, env.cur.a, env.cur.b))
             for mode in ("tall", "buried"):
                 for d in dgs[mode][:1]:                       # most-dangerous column only
@@ -136,7 +159,7 @@ def run_game(dec, seed, level, scan=True, h_min=J.H_MIN_DEFAULT, S=None, verify=
         if term or trunc:
             break
     return dict(seed=seed, pills=env.pills_placed, viruses_left=env.board.virus_count(),
-                moves=moves, rec=rec, map_bad=map_bad)
+                moves=moves, rec=rec, p0rec=p0rec, map_bad=map_bad)
 
 
 def main():
@@ -147,6 +170,7 @@ def main():
         level = int(sys.argv[sys.argv.index("--level") + 1])
     dec = build_decider()
     S = J.Scanner()
+    P0 = J.P0Scanner()
     verify = True
     if "--verify-frac" in sys.argv:
         verify = float(sys.argv[sys.argv.index("--verify-frac") + 1]) > 0
@@ -155,7 +179,7 @@ def main():
         print("REPLAY GATE: same seed with and without the scanner must be IDENTICAL")
         bad = 0
         for s in range(2000, 2000 + min(n, 6)):
-            g1 = run_game(dec, s, level, scan=True, S=S, verify=True)
+            g1 = run_game(dec, s, level, scan=True, S=S, verify=True, P0=P0)
             g0 = run_game(dec, s, level, scan=False)
             same = (g1["moves"] == g0["moves"] and g1["pills"] == g0["pills"]
                     and g1["viruses_left"] == g0["viruses_left"])
@@ -169,10 +193,11 @@ def main():
             return 1
         print()
 
-    allrec, map_bad, pills_tot = [], 0, 0
+    allrec, allp0, map_bad, pills_tot = [], [], 0, 0
     for s in range(2000, 2000 + n):
-        g = run_game(dec, s, level, scan=True, S=S, verify=verify)
+        g = run_game(dec, s, level, scan=True, S=S, verify=verify, P0=P0)
         allrec += g["rec"]
+        allp0 += g["p0rec"]
         map_bad += g["map_bad"]
         pills_tot += g["pills"]
     print("=" * 84)
@@ -180,6 +205,39 @@ def main():
           % (n, pills_tot, level))
     print("=" * 84)
     print("placement-mapping / kernel-vs-sim mismatches: %d (must be 0)" % map_bad)
+    print()
+    print("-" * 84)
+    print("P0 -- owner's canonical pattern: mono cur + next containing the mono colour,")
+    print("      danger column whose EXPOSED TOP CELL is that colour, >=2 free rows.")
+    print("      Vert the mono -> 3 stacked; the KNOWN next pill delivers the 4th.")
+    print("      Deterministic, one-pill risk window, decidable at the ROOT (no search).")
+    print("-" * 84)
+    if not allp0:
+        print("  0 P0 opportunities in this corpus")
+    else:
+        took = [r for r in allp0 if r["took"]]
+        vir_p0 = [r for r in allp0 if r["top_was_virus"]]
+        vt = [r for r in vir_p0 if r["took"]]
+        decl = [r for r in allp0 if not r["took"]]
+        later = [r for r in decl if r["dug_later"]]
+        print("  P0 opportunities            : %5d  (%.2f per game, over %d pills)"
+              % (len(allp0), len(allp0) / n, pills_tot))
+        print("    ...where the top cell is a VIRUS: %d" % len(vir_p0))
+        print("  TAKEN (verted mono onto d)  : %5d/%-5d (%5.1f%%)"
+              % (len(took), len(allp0), 100 * len(took) / len(allp0)))
+        if vir_p0:
+            print("    taken | top cell is a virus: %5d/%-5d (%5.1f%%)"
+                  % (len(vt), len(vir_p0), 100 * len(vt) / len(vir_p0)))
+        if decl:
+            print("  DECLINED                    : %5d" % len(decl))
+            print("    ...column dug anyway within 2 pills: %5d/%-5d (%5.1f%%)"
+                  % (len(later), len(decl), 100 * len(later) / len(decl)))
+            import collections
+            cc = collections.Counter(("vertical col %d" % r["chose"][1]) if r["chose"][0] >= 2
+                                     else ("horizontal col %d" % r["chose"][1]) for r in decl)
+            print("    counterfactual, what it played instead (top 5):")
+            for k, v in cc.most_common(5):
+                print("      %-22s %d" % (k, v))
     for mode in ("tall", "buried"):
         R = [r for r in allrec if r["mode"] == mode]
         if not R:
