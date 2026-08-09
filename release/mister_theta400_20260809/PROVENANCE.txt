@@ -1,0 +1,109 @@
+STAGED 2026-08-09 (phase 1 of the theta400 MiSTer champion-candidate build; NO hardware contact made)
+
+drmario_tuck_demo_mister.nes  md5 7611d54b35290950d407f08966eb240e  (98320 B)
+  First cart ever built with the DRTUCK executor wired (dr-mario-cart-no-tuck-executor closed).
+  Flag line = deployed MiSTer probe cart (ee32402e, reproduced byte-exact with DRTUCK unset)
+  + DRTUCK=1, DRBUILDID=0 pinned.
+  Branch tuck-cart-mister @ 69459c6 (pushed, tag tuck-cart-mister-v1-20260809).
+  Rebuild:  tools/romgen.py rebuild roms/manifests/mister-tuck-demo-theta400.json
+  Emitter fix in 15225f7: W_TCOL/W_TROW = W2_BASE+$87/$88 (was hardcoded $5087/$5088 =
+  OPEN BUS on the winner single-copro core; Pocket DRTUCK line proven 0-byte unchanged).
+
+Pairs with firmware: /mnt/data/drmario_cosim/fw/theta_sweep/th400/copro_rom.hex
+  md5 f78f1e9376405dc996404f68dfa9dfb8, RECIPE.json env reproduced byte-exact 2026-08-09
+  from dr-mario-cosimfarm-wt @ 2c027a7 via build_dbgpub.py (emitter modules pinned).
+
+Gates (all pass, runners committed on the branch):
+  tools/verify_tuck_cart.py        gates 0-5 on the integrated cart bytes
+  tools/verify_tuckbfs_fw_image.py gates A/B + 200/200 tuck_enum bit-exact + capacity-64
+                                   on the integrated theta400 image
+
+NOT yet done (later phases): theta400 core synthesis (must prove fw in image, not
+update_mif), Mesen cart-level QA (wait for v6c's Mesen use to finish; single instance),
+>=3-board fingerprint vs co-sim, first cart-executed-tuck proof + screenshot, DEPLOY.md
+runbook. Do not flash anything without the busy-brick-safe procedure.
+
+== PHASE 2 (2026-08-09): theta400 MiSTer core BUILT + FIRMWARE-IN-IMAGE PROVEN ==
+NES_theta400_20260809.rbf  md5 de7dea35a9fa03a622cccc8068bd935e  (3,565,528 B)
+Built: NES_MiSTer-winner @ ff1db5a (branch claude/winner-single-copro), SEED 13,
+clean-db full flow under systemd unit drm-quartus-theta400 via
+experiments/rtl_chain/ship_build.sh (archive: dr_mario_rl/tmp/rtl_chain/ship/theta400-seed13/).
+Stage times: Synthesis 3:54, Fitter 16:57, Assembler 0:19, STA 0:14 (no smart-recompile
+skips; update_mif no-op defeated by rm -rf db incremental_db before the flow).
+Verdict (fit_verdict.sh): SHIP AS-IS -- ALM 37575/41910 (4335 free) PASS;
+copro slack +0.391 ns (bar +0.10) PASS; pll_hdmi +0.051 ns (baseline -0.012) PASS.
+Firmware guard: copro_rom.hex md5 f78f1e9376405dc996404f68dfa9dfb8 asserted PRE and POST flow.
+
+FIRMWARE-IN-IMAGE PROOF (two independent links, killed-mutant controlled):
+ (1) Post-fit sim netlist (quartus_eda --simulation from the SAME compiled db the
+     assembler serialized): the 16 one-bit BRAM slices of copro2|rom_rtl_0 form a
+     PERFECT BIJECTION 16/16 with the (lane,half) slices of the th400 hex.
+     Controls: th150 fails in EXACTLY the 3 predicted dose-lane slices
+     (rom[7525] bits1,2 + rom[7531] bit0, low half); preship f4b6dfbf fails 16/16.
+ (2) Synthesis-produced init image db/NES.ram0_CoproDrMario_15c5156a.hdl.mif ==
+     th400 hex 0/16384 diffs; th150 exactly 2 diffs (7525,7531); preship 5834 diffs.
+     Effective dose read FROM THE IMAGE INIT: rom[7525]=0x90 rom[7531]=0x01 -> theta=400.
+Proof program + output archived: ship/theta400-seed13/{fw_bijection_proof.py,
+FW_IN_IMAGE_PROOF.txt, NES.ram0_CoproDrMario_15c5156a.hdl.mif}.
+
+Bit-exactness gates (dr_mario_rl/tmp/bitexact_gate, byte-identical to committed qa-wt copy):
+ selfcheck PASS (all mutants killed; o4 map (2,3,0,1) unique on the blessed 250-case
+   corpus -- stock selfcheck currently red from qa-wt corpus skew, reported to
+   exactness-gate agent; discriminating power verified intact both ways)
+ candidate GATE PASS 948 cases x 23 variants
+ pairs     GATE PASS 3147 no-clear pairs x 23 variants
+ rtl       PHASE1 LEAF 948/948, PHASE2 NODE 4238/4494 (by-design sco-only on clearing,
+           link-aware .sv -- exact match to documented profile), PHASE3 DELTA 4494/4494
+ linknode  GATE PASS 7282 cases (winner LeafEval.sv md5 5f062096), 9/9 mutants killed
+NO HARDWARE CONTACT: nothing scp'd, no load_core, soaking core untouched.
+
+== PHASE 3 (2026-08-09): EMULATOR VALIDATION -- FINGERPRINTS + FIRST CART-EXECUTED TUCK ==
+All in Mesen (copro harness; NO hardware contact). Cart under test = the staged
+drmario_tuck_demo_mister.nes (7611d54b) remapped header-only to MMC1 (52f392a0,
+PRG+CHR byte-identical). Decision-maker = the REAL theta400 firmware f78f1e93 on the
+verilated CoproDrMario (cosim farm farm_vsim), served into the cart's $5200 P2 mailbox
+by mesen_qa/copro_emu_tuck.lua (adds W+$87/$88 TUCK_COL/TUCK_ROW) over a blocking
+file bridge (mesen_qa/cosim_bridge.py, fw md5 asserted at daemon start).
+
+FINGERPRINTS (mesen_qa/analyze_fp.py; committed TGT_C2/TGT_O2 + physically landed
+cells + colors vs the co-sim's published decision, geometry from descriptor_audit.py):
+  run1 natural play      : 58 landed pills, 58 PASS / 0 FAIL (60 decisions; 2 airborne
+                           at round end). 0 bridge misses.
+  run2 inject l11_20 #18 : 13 PASS / 0 FAIL, incl. 3 EXECUTED tuck descriptors
+                           (tcol=5->col=4, same-depth laterals; TT trace shows
+                           x 3->4->5 approach, switch exactly at trigger row, slide back).
+  run3+run4 inject hz30 #29: 10 PASS / 0 FAIL each (deterministic replicate), incl.
+                           THE DEPTH-GAIN TUCK (below).
+  Totals: 81 landed fingerprints, 81 PASS / 0 FAIL.
+
+FIRST CART-EXECUTED TUCK (proof, run3 replicated by run4 with nametable redraw):
+  Board = hostdata_l11_hz30.txt #29 injected at a fresh P2 spawn (silicon-rig reset
+  recipe as live RAM pokes), pill pinned (cA,cB)=(0,2). Shipped th400 published
+  col=3 o4=2 TUCK_COL=2 TUCK_ROW=4 (verified board-byte-identical + decision-identical
+  to the offline co-sim screen, mesen_qa/screen_depthgain.py). Driver latched
+  TUCK_C2=2 / TUCK_R2=11; executor approached col2 (x 3->2), fell to rowcnt=11
+  (= trigger, board row 4), switched EFF_C2 2->3, DAS-slid right and locked at
+  (4,3),(4,4) UNDER the (3,4) lip -- rest row 4 vs straight-drop row 2 = DEPTH GAIN 2,
+  traversable-verified; the blue half completed a 4-blue column clearing 2 viruses no
+  straight drop can reach. Landed cells + colors exact. Screenshots:
+  mesen_qa/run4_inject_hz30_29_redraw/shots/{inject_after,tuck_fall_*,tuck_lock_s05,
+  tuck_settle_s05}.png (+_zoomP2 crops).
+
+NOTES: (1) THETA_SWEEP.json tuck rows came from the OLDER s20t3_th400 build
+(bbe3ef6d); the shipped f78f1e93 declines that sweep's board-18 pristine tuck --
+fw provenance, not a cart defect. (2) Shipped-fw publish rate on 100 corpus boards:
+4 publishes, 2 distinct boards, 1 executable depth-gain (used above), 1 tcol==col
+weave-class (executor would land at the straight row -- known miss class).
+(3) TUCK_C2 boots 0 (not FF) => a few pre-first-search frames steer at col0, same as
+TGT_C2 boot behavior on every prior cart; first search start invalidates it (D2 fix).
+VERDICT: cart is DEPLOY-READY at the emulator gate -- no fingerprint mismatch anywhere.
+
+== PHASE 4 (2026-08-09): STAGED RELEASE — mister_theta400_20260809 ==
+Full artifact set gathered into staging/mister_theta400_20260809/ (this dir):
+rbf de7dea35 + cart 7611d54b + theta400_tuck_demo.mgl + fw f78f1e93 (hex+RECIPE)
++ core manifests/gate logs/IMAGE_PROOF + cart romgen manifest + tuck-proof
+screenshots + DEPLOY.md (owner one-session runbook: record-prior-core,
+busy-brick-safe load, >=3-board silicon fingerprint plan, silicon tuck proof,
+soak+alarm commands, rollback) + CHECKSUMS.md5 (md5sum -c clean at stage time).
+NO hardware contact in any phase; deployment is owner-guided per DEPLOY.md.
+Runbook + mgl + checksums committed on branch tuck-cart-mister (dr-mario-mods).

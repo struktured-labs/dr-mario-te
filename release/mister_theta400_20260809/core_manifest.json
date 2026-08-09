@@ -1,0 +1,13 @@
+{
+  "tag": "theta400",
+  "seed": 13,
+  "rtl_commit": "ff1db5aaaf3cce1350a570266a13042fa99d4844",
+  "rtl_branch": "claude/winner-single-copro",
+  "leafeval_md5": "5f06209642d1547e99cea077523662dc",
+  "copro_md5": "da3e5e808762f760ddc46c23c88dc96e",
+  "firmware_md5": "f78f1e9376405dc996404f68dfa9dfb8",
+  "rbf_md5": "de7dea35a9fa03a622cccc8068bd935e",
+  "verdict_rc": 0,
+  "when": "2026-08-09T09:26:24-04:00",
+  "rebuild": "re-pin SEED 13 in NES.qsf, clean fit, expect the same slack"
+}
