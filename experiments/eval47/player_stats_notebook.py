@@ -1130,6 +1130,154 @@ def _(SHADOWLAT, VIZ_CSS, mo):
 def _(mo):
     mo.md(
         r"""
+        ## Owner's four-metric battery — what each instrument can actually answer
+
+        Two of the four are cleanly computable from the per-pill tracker CSVs, one is
+        computable only in a weaker form than the question implies, and one has no
+        instrument that passes a control today. They are reported that way.
+
+        **1. Horizontal vs vertical clears — WEAK form only.** The CSVs record the
+        orientation of the *pill*, so what is computable is how the clearing placement was
+        lying. The likely intent — whether the cleared *line* ran along a row or a column —
+        needs the board state either side of the clear, which these files do not carry. A
+        second limit: a clear is detected by the virus count dropping, so pill-only clears
+        are invisible and these are virus-clearing placements specifically.
+
+        **2. Drop speed min/max — answered.** Spawn to lock in 60 fps frames. Spawn-row
+        locks are excluded; they contribute near-zero lifetimes, and the minimum is exactly
+        the statistic such an artifact would capture.
+
+        **3. A vs B — answered as rotation DIRECTION.** The tracker sees orientation
+        transitions, never buttons. Monocolor pills are reported separately as `tog`: with
+        both halves identical the direction is genuinely unknowable, and folding them into
+        either side would invent a preference.
+
+        **4. Cascade vs instant — NOT computable.** Separating a settle-clear from a direct
+        placement clear needs per-clear board state; the CSVs carry only a virus count per
+        pill, which cannot tell a cascade from a multi-line direct clear.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(VIZ_CSS, mo, os):
+    import collections as _coll
+    import csv as _csv
+    import re as _re
+    import statistics as _st
+
+    _LE = ("/home/struktured/projects/dr-mario-qa-wt/experiments/eval47/results/"
+           "latency_events")
+    B4_SRC = {
+        "struktured": [f"{_LE}/film_20260804/{m}.csv" for m in ("m1", "m2", "m3", "m4")],
+        "dr. lulu": [f"{_LE}/film_20260808/p1_m3.csv"],
+    }
+    B4_HORIZ = {"H", "HF"}
+
+    def b4_profile(paths):
+        mats = []
+        for p in paths:
+            if not os.path.exists(p):
+                return None
+            with open(p) as fh:
+                mats.append(list(_csv.DictReader(fh)))
+
+        clearing = []
+        for rows in mats:
+            vl = [int(r["viruses_left_p1"]) for r in rows]
+            clearing += [r for i, r in enumerate(rows[:-1]) if vl[i + 1] < vl[i]]
+        h = sum(1 for r in clearing if r["final_orient"] in B4_HORIZ)
+
+        def spawn_row_lock(r):
+            return any(int(m) == 0
+                       for m in _re.findall(r"\((\d+),\d+\)", r["final_cells"]))
+
+        life, excl = [], 0
+        for rows in mats:
+            for r in rows:
+                if spawn_row_lock(r):
+                    excl += 1
+                else:
+                    life.append(int(r["lock_frame"]) - int(r["spawn_frame"]))
+
+        rot = _coll.Counter()
+        for rows in mats:
+            for r in rows:
+                for tok in filter(None, r["rotation_seq"].split(",")):
+                    rot[tok.split("@")[0]] += 1
+        directional = rot["cw"] + rot["ccw"]
+
+        return {
+            "clear_n": len(clearing), "horiz": h,
+            "horiz_pct": 100.0 * h / len(clearing) if clearing else None,
+            "life_n": len(life), "life_excl": excl,
+            "min_f": min(life), "max_f": max(life), "med_f": _st.median(life),
+            "cw": rot["cw"], "ccw": rot["ccw"], "tog": rot["tog"],
+            "cw_pct": 100.0 * rot["cw"] / directional if directional else None,
+            "directional": directional,
+        }
+
+    B4 = {k: b4_profile(v) for k, v in B4_SRC.items()}
+
+    def b4_row(name):
+        p = B4[name]
+        if p is None:
+            return (f"<tr><td class='handle'>{name}</td>"
+                    "<td colspan='4' class='n'>source missing</td></tr>")
+        return (
+            f"<tr><td class='handle'>{name}</td>"
+            f"<td class='num'>{p['horiz_pct']:.1f}% H / {100 - p['horiz_pct']:.1f}% V"
+            f"<span class='sub'>n={p['clear_n']} virus-clearing pills</span></td>"
+            f"<td class='num'>{p['min_f']} &ndash; {p['max_f']} f"
+            f"<span class='sub'>{p['min_f']/60:.2f}&ndash;{p['max_f']/60:.2f} s &middot; "
+            f"median {p['med_f']:.0f} f &middot; n={p['life_n']} "
+            f"({p['life_excl']} excl)</span></td>"
+            f"<td class='num'>{p['cw_pct']:.0f}% CW / {100 - p['cw_pct']:.0f}% CCW"
+            f"<span class='sub'>n={p['directional']} directional &middot; "
+            f"{p['tog']} monocolor unknowable</span></td>"
+            f"<td class='n'>&mdash; no instrument</td></tr>"
+        )
+
+    def b4_absent(name, reason):
+        return (f"<tr><td class='handle'>{name}</td>"
+                f"<td colspan='4' class='n'>&mdash; {reason}</td></tr>")
+
+    mo.Html(
+        VIZ_CSS
+        + "<div class='pstat'><div class='scroll'><table style='min-width:960px'><thead><tr>"
+        + "<th>player</th><th>clearing-pill orientation</th>"
+        + "<th>drop speed min &ndash; max</th><th>rotation direction</th>"
+        + "<th>cascade vs instant</th></tr></thead><tbody>"
+        + b4_absent("Combo Stomper (AI)",
+                    "needs a replay pass (jointdig p0_corpus / Mesen census); not run this pass")
+        + b4_row("dr. lulu")
+        + b4_row("struktured")
+        + b4_absent("bidwell, jarsdad, roburrito, davesmithsays",
+                    "no per-pill tracking exists for any of them")
+        + "</tbody><caption>"
+        + "<b>The rotation column is the answer to &quot;A vs B&quot; this data can support, "
+        + "and it is a striking one:</b> dr. lulu rotated the same way on every single "
+        + "directional rotation in her window, while struktured splits 77/23 &mdash; a "
+        + "one-button player beside a two-button one, consistent with his dossier's "
+        + "&quot;two-button retrain baseline&quot;."
+        + "<br>&#9888; <b>Button mapping, corrected:</b> the ROM at $8E2B does "
+        + "<code>AND #$80 &rarr; DEC $A5</code> and <code>AND #$40 &rarr; INC $A5</code>, so "
+        + "<b>A rotates CCW and B rotates CW</b> &mdash; the opposite of the A=CW/B=CCW "
+        + "mapping this task was specified with, and <code>tuck_enum.py</code> flags the same "
+        + "inversion sitting in a comment at <code>drmario/controller.py:103</code>. The "
+        + "column still says CW/CCW: naming a button also needs the tracker's orientation "
+        + "ring to run the same direction as the ROM's <code>$A5</code>, which matches on "
+        + "parity but is unverified on direction, so the observable stays on the label."
+        + "</caption></table></div></div>"
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
         ## The AI's survival ladder — its signature stat
 
         No human row has this: the same champion, the same build, measured across three
