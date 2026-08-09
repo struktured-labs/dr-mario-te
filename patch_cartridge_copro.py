@@ -1398,10 +1398,16 @@ def build_main(level=11, speed=1):
     a.label("fc_ret"); a.ins("RTS")
     a.label("fc_no")
     a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04)
-    if PRESTART:
+    if PRESTART or (STUDY2P and not HUMAN_P1):
         # DRPRESTART's per-match init sits inside the go_ai block this branch skips over, which
         # takes the span past +-127 on the DRCOLDINIT arms (measured: 138). Invert-and-JMP; gated
         # so a DRPRESTART=0 build keeps the original short branch and stays byte-identical.
+        # (STUDY2P and not HUMAN_P1): on a CvC cart the COLDINIT arm keeps its 12 bytes of
+        # P1-side clears (HUMAN carts skip them) AND STUDY2P's 10-byte per-match TTL pre-arm is
+        # in the span -> 132 with the short branch (measured 2026-08-09, the DRPRESTART=0 mutant
+        # of the prestart-autotest cart). Same idiom as the power-on-init site above; every
+        # previously-built combo (HUMAN study carts, non-STUDY CvC carts) keeps its short branch
+        # and stays byte-identical.
         a.br("BEQ", "is_play"); a.jmp("not_play"); a.label("is_play")
     else:
         a.br("BNE", "not_play")
