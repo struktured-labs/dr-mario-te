@@ -1,0 +1,57 @@
+=== prior core record 2026-08-09T17:25:44Z IP=10.42.0.226 ===
+71d2de37b1fbcabbb92701fc4094f833  /media/fat/_Console/NES_stomper180_20260801.rbf
+6fa85844a255df936259678394838aed  /media/fat/_Console/NES_stomper180s20_20260804.rbf
+72d5a92fc73080baa9d6fe74da7810fd  /media/fat/_Console/NES_stomper180s20b_20260804.rbf
+caa5b5c669017dac7e14e82b8e94a722  /media/fat/_Console/NES_stomper180s20t3_20260805_seed13.rbf
+be266883c5b79759a615220e457fa3af  /media/fat/_Console/NES_tuckmb_20260731.rbf
+
+-rwxr-xr-x 1 root root 154 Aug  1 02:19 /media/fat/AB_control.mgl
+-rwxr-xr-x 1 root root 156 Aug  1 02:19 /media/fat/AB_converged.mgl
+-rwxr-xr-x 1 root root 170 Aug  5 23:02 /media/fat/AB_copro_human_latchfix.mgl
+-rwxr-xr-x 1 root root 163 Jul 30 03:43 /media/fat/AB_dwellfix.mgl
+-rwxr-xr-x 1 root root 167 Jul 30 03:18 /media/fat/AB_nd_converged.mgl
+-rwxr-xr-x 1 root root 162 Jul 30 03:15 /media/fat/AB_nodwell.mgl
+-rwxr-xr-x 1 root root 153 Aug  5 22:38 /media/fat/AB_vanilla_test.mgl
+-rwxr-xr-x 1 root root 172 Aug  5 22:22 /media/fat/AB_wedge_old180.mgl
+-rwxr-xr-x 1 root root 191 Jul 24 03:12 /media/fat/DrMP_reentry_te.mgl
+-rwxr-xr-x 1 root root 197 Jul 24 03:12 /media/fat/DrMP_te_v81_freezefix.mgl
+-rwxr-xr-x 1 root root 168 Jul 19 01:06 /media/fat/DrMarioAB.mgl
+-rwxr-xr-x 1 root root 182 Jul 23 01:24 /media/fat/DrMarioABProbe.mgl
+-rwxr-xr-x 1 root root 184 Jul 19 18:03 /media/fat/DrMarioABRotfix1.mgl
+-rwxr-xr-x 1 root root 181 Jul 22 12:26 /media/fat/DrMarioABSlam.mgl
+-rwxr-xr-x 1 root root 184 Jul 22 13:09 /media/fat/DrMarioABSlamCG.mgl
+-rwxr-xr-x 1 root root 185 Jul 22 13:24 /media/fat/DrMarioABSlamMat.mgl
+-rwxr-xr-x 1 root root 185 Jul 22 22:37 /media/fat/DrMarioABSlamNav.mgl
+-rwxr-xr-x 1 root root 186 Jul 22 23:02 /media/fat/DrMarioABSlamNav2.mgl
+-rwxr-xr-x 1 root root 186 Jul 22 23:27 /media/fat/DrMarioABSlamNav3.mgl
+-rwxr-xr-x 1 root root 190 Jul 19 20:55 /media/fat/DrMarioAB_rotfix_mapfix.mgl
+-rwxr-xr-x 1 root root 188 Jul 19 18:41 /media/fat/DrMarioAB_rotfix_mt45.mgl
+-rwxr-xr-x 1 root root 188 Jul 19 18:41 /media/fat/DrMarioAB_rotfix_mt90.mgl
+-rwxr-xr-x 1 root root 174 Jul 26 22:42 /media/fat/DrMarioAB_te.mgl
+-rwxr-xr-x 1 root root 179 Jul 23 01:39 /media/fat/DrMarioABv4.mgl
+-rwxr-xr-x 1 root root 184 Jul 23 02:21 /media/fat/DrMarioABv4final.mgl
+-rwxr-xr-x 1 root root 180 Jul 19 00:58 /media/fat/DrMarioClassic.mgl
+-rwxr-xr-x 1 root root 187 Jul 19 17:57 /media/fat/DrMarioHumanRotfix1.mgl
+-rwxr-xr-x 1 root root 184 Jul 28 23:40 /media/fat/DrMarioLatch_control.mgl
+-rwxr-xr-x 1 root root 186 Jul 28 23:40 /media/fat/DrMarioLatch_converged.mgl
+-rwxr-xr-x 1 root root 173 Jul 24 00:12 /media/fat/DrMarioTE8.mgl
+-rwxr-xr-x 1 root root 185 Jul 24 02:44 /media/fat/DrMarioTE81.mgl
+-rwxr-xr-x 1 root root 177 Jul 24 00:18 /media/fat/DrMarioV28.mgl
+-rwxr-xr-x 1 root root 168 Jul 19 01:03 /media/fat/DrMarioV2AB.mgl
+-rwxr-xr-x 1 root root 175 Jul 18 19:35 /media/fat/PocketTest.mgl
+-rwxr-xr-x 1 root root 175 Jul 26 02:23 /media/fat/QA_te82.mgl
+-rwxr-xr-x 1 root root 166 Jul 28 23:51 /media/fat/T_T_freeze_study.mgl
+-rwxr-xr-x 1 root root 168 Jul 28 23:51 /media/fat/T_T_nofreeze_study.mgl
+-rwxr-xr-x 1 root root 162 Aug  1 19:15 /media/fat/ab_native.mgl
+-rwxr-xr-x 1 root root 162 Aug  1 18:40 /media/fat/ab_wiggle.mgl
+-rwxr-xr-x 1 root root 166 Aug  1 20:29 /media/fat/combo_stomper.mgl
+-rwxr-xr-x 1 root root 166 Aug  1 21:20 /media/fat/combo_stomper_native.mgl
+-rwxr-xr-x 1 root root 172 Aug  2 23:18 /media/fat/combo_stomper_probe.mgl
+-rwxr-xr-x 1 root root 175 Aug  4 06:44 /media/fat/combo_stomper_s20_probe.mgl
+-rwxr-xr-x 1 root root 176 Aug  4 13:54 /media/fat/combo_stomper_s20b_probe.mgl
+-rwxr-xr-x 1 root root 184 Aug  6 03:51 /media/fat/combo_stomper_s20t3_probe.mgl
+-rwxr-xr-x 1 root root 164 Aug  2 23:50 /media/fat/human_vs_stomper.mgl
+-rwxr-xr-x 1 root root 163 Aug  2 14:43 /media/fat/navtest.mgl
+-rwxr-xr-x 1 root root 144 Aug  1 20:14 /media/fat/te_v9d_test.mgl
+
+NES
