@@ -6,7 +6,7 @@
   "determinism": "verified: two builds byte-identical + identical flag snapshot",
   "emitter": {
     "file": "patch_cartridge_copro.py",
-    "md5": "e0d884a8705f8c479f4931c2631fefd7"
+    "md5": "1166bb03563e931bc7b1e9bc7e02a8fd"
   },
   "flag_snapshot": {
     "DRBUILDID": "0",
@@ -16,6 +16,7 @@
     "DRCOLGATE": "1",
     "DRDISTGATE": "1",
     "DRDIST_DASEDGE": "12",
+    "DRDIST_FLOORREL": "0",
     "DRDIST_GRAVROW": "30",
     "DRHOLDBOARD": "0",
     "DRHOLDBOARD_F": "600",
@@ -120,11 +121,11 @@
   },
   "git": {
     "branch": "v6c-distlatch",
-    "commit": "b07ee07f0f41db3983c2c0cc915f5af6aeb7a74b",
+    "commit": "ff4da6193378e80c2f3b9295ea71c14f044c0300",
     "dirty": false
   },
   "output": {
-    "md5": "2197ceb43449d0ffd82df3a739d89fe2",
+    "md5": "b6f4b4e8099d9236a21646f6dea61137",
     "name": "cen6c-dg.nes",
     "size": 98320
   },

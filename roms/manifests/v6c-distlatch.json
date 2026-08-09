@@ -14,11 +14,11 @@
     "DRBUSYESC": "1",
     "DRCOLDINIT": "1",
     "DRCOLGATE": "1",
-    "DRDISTGATE": "0",
+    "DRDISTGATE": "1",
     "DRDIST_DASEDGE": "12",
     "DRDIST_FLOORREL": "0",
     "DRDIST_GRAVROW": "30",
-    "DRHOLDBOARD": "0",
+    "DRHOLDBOARD": "1",
     "DRHOLDBOARD_F": "600",
     "DRHUMAN": "1",
     "DRLEVEL": "11",
@@ -42,7 +42,7 @@
     "DRRECOMMIT": "1",
     "DRRECOMMIT_NOFREEZE": "1",
     "DRREENTRY": "1",
-    "DRRELATCH": "0",
+    "DRRELATCH": "1",
     "DRROTFIX": "1",
     "DRSEED": "1",
     "DRSLAM": "1",
@@ -70,10 +70,10 @@
     "DRBUSYESC": "1",
     "DRCOLDINIT": "1",
     "DRCOLGATE": "1",
-    "DRDISTGATE": "0",
+    "DRDISTGATE": "1",
     "DRDIST_DASEDGE": "12",
     "DRDIST_GRAVROW": "30",
-    "DRHOLDBOARD": "0",
+    "DRHOLDBOARD": "1",
     "DRHOLDBOARD_F": "600",
     "DRHUMAN": "1",
     "DRLEVEL": "11",
@@ -97,7 +97,7 @@
     "DRRECOMMIT": "1",
     "DRRECOMMIT_NOFREEZE": "1",
     "DRREENTRY": "1",
-    "DRRELATCH": "0",
+    "DRRELATCH": "1",
     "DRROTFIX": "1",
     "DRSEED": "1",
     "DRSLAM": "1",
@@ -125,9 +125,9 @@
     "dirty": false
   },
   "output": {
-    "md5": "1c4f762bfabdb89da11412504bc3c559",
-    "name": "cen6c-off.nes",
+    "md5": "94f2fbd0d998f04a6ed6220b566bb556",
+    "name": "v6c-distlatch-build2.nes",
     "size": 98320
   },
-  "tag": "cen6c-off"
+  "tag": "v6c-distlatch"
 }
