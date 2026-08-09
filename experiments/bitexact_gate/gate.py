@@ -267,11 +267,47 @@ def gate_pairs(args):
 
 
 # ---------------------------------------------------------------- o4 mapping
+def _is_link_free(rec):
+    """True iff neither parent nor child carries a 0x8x LINK cell.
+
+    `_expand_core` is the COMPACT mechanics: it carries a board as (col, vir) planes and
+    `arrays_to_nes` can only emit 0x40/0xD0/0xF0.  It is structurally incapable of
+    reproducing a child that carries link nibbles, so a link-bearing record cannot
+    byte-match under ANY o4 permutation -- it adds the same constant to every candidate's
+    failure count instead of discriminating between them.
+    """
+    return (not any((x & 0xF0) == 0x80 for x in rec[0])
+            and not any((x & 0xF0) == 0x80 for x in rec[11]))
+
+
 def recover_o4_map(verbose=False):
     """Empirically recover RTL a_o4 <-> fast_sim variant from the pinned node
-    corpus (mechanics are eval-independent, so the old corpus is authoritative)."""
+    corpus (mechanics are eval-independent, so the old corpus is authoritative).
+
+    ★ Restricted to LINK-FREE records.  The corpus was regenerated at fd8e495 (R47 brain)
+    from 250 compact cases to 436 link-aware ones, 169 of which carry 0x8x link cells.
+    Against the full 436 no permutation is perfect (best (2,3,0,1) at 162 bad), which
+    reads as "mechanics drift" but is corpus SCOPE, not drift: on the 267 link-free
+    records of that same corpus (2,3,0,1) is again uniquely perfect, next best 70 bad.
+
+    Filtering states the oracle's precondition rather than weakening the check.  Masking
+    the link plane instead would assert equality on a projection `_expand_core` was never
+    validated against, and would silently pass records whose link-plane mechanics really
+    do differ.  The skipped count is printed so the exclusion is never silent, and too
+    few survivors is a hard error rather than a map recovered from thin evidence.
+    """
     pinned = os.path.join(QA_COPRO, "leafeval_node_cases.txt")
-    recs = _load_pairs(pinned)
+    all_recs = _load_pairs(pinned)
+    recs = [r for r in all_recs if _is_link_free(r)]
+    skipped = len(all_recs) - len(recs)
+    if verbose and skipped:
+        print("o4 recovery: SKIPPING %d/%d node cases that carry 0x8x LINK cells "
+              "(compact _expand_core cannot represent them)" % (skipped, len(all_recs)))
+    if len(recs) < 100:
+        raise RuntimeError(
+            "only %d link-free node cases of %d -- too few to pin a 4-element o4 map. "
+            "Regenerate a compact corpus, or extend _expand_core to the link plane."
+            % (len(recs), len(all_recs)))
     ccol = np.empty(NCELL, dtype=np.int8); cvir = np.empty(NCELL, dtype=np.int8)
     perfect = []
     for perm in itertools.permutations(range(4)):
@@ -288,12 +324,12 @@ def recover_o4_map(verbose=False):
         if ok_all:
             perfect.append(perm)
     if verbose:
-        print("o4->variant maps reproducing all %d pinned node cases: %s"
+        print("o4->variant maps reproducing all %d link-free node cases: %s"
               % (len(recs), perfect))
     if not perfect:
-        raise RuntimeError("NO o4->variant mapping reproduces the pinned node corpus "
+        raise RuntimeError("NO o4->variant mapping reproduces the %d link-free node cases "
                            "-- _expand_core mechanics differ from RTL; gate cannot "
-                           "trust its pair oracles")
+                           "trust its pair oracles" % len(recs))
     if (0, 1, 2, 3) in perfect:
         return (0, 1, 2, 3), perfect
     if len(perfect) > 1:
