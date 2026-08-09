@@ -1275,6 +1275,143 @@ def _(VIZ_CSS, mo, os):
 
 
 @app.cell(hide_code=True)
+def _(VIZ_CSS, mo, os):
+    import collections as _c2
+    import csv as _csv2
+
+    _LE2 = ("/home/struktured/projects/dr-mario-qa-wt/experiments/eval47/results/"
+            "latency_events")
+    RING = ["H", "V", "HF", "VF"]          # spawn is always H, so delta = index(final)
+    ROT_SRC = {
+        "struktured": [f"{_LE2}/film_20260804/{m}.csv" for m in ("m1", "m2", "m3", "m4")],
+        "dr. lulu": [f"{_LE2}/film_20260808/p1_m3.csv"],
+    }
+
+    def rot_profile(paths):
+        rows = []
+        for p in paths:
+            if not os.path.exists(p):
+                return None
+            with open(p) as fh:
+                rows += list(_csv2.DictReader(fh))
+        a = _c2.Counter()
+        waste = waste_pills = mixed = bad = 0
+        for r in rows:
+            toks = [t.split("@")[0] for t in r["rotation_seq"].split(",") if t]
+            if "tog" in toks or r["final_orient"] not in RING:
+                a["mono"] += 1
+                continue
+            cw, ccw = toks.count("cw"), toks.count("ccw")
+            d = RING.index(r["final_orient"])
+            if (cw - ccw) % 4 != d:        # control: ring/spawn/labels mutually consistent
+                bad += 1
+            a["pills"] += 1
+            a["cw"] += cw
+            a["ccw"] += ccw
+            a[f"d{d}"] += 1
+            minimal = min(d, 4 - d)
+            a["ideal"] += minimal
+            match (cw > 0 and ccw > 0):
+                case True:
+                    mixed += 1
+                case False:
+                    if (cw + ccw) - minimal > 0:
+                        waste += (cw + ccw) - minimal
+                        waste_pills += 1
+        n1, n2, n3 = a["d1"], a["d2"], a["d3"]
+        direc = a["cw"] + a["ccw"]
+        return {
+            "n_rows": len(rows), "pills": a["pills"], "mono": a["mono"], "control_bad": bad,
+            "d0": a["d0"], "d1": n1, "d2": n2, "d3": n3,
+            "dump_cw": 100.0 * (n1 + 2 * n2) / (n1 + 2 * n2 + n3),
+            "split_cw": 100.0 * (n1 + n2) / (n1 + n3 + 2 * n2),
+            "actual_cw": 100.0 * a["cw"] / direc, "cw": a["cw"], "ccw": a["ccw"],
+            "presses": direc, "ideal": a["ideal"],
+            "waste": waste, "waste_pills": waste_pills, "mixed": mixed,
+            "waste_per100": 100.0 * waste / len(rows),
+        }
+
+    ROT = {k: rot_profile(v) for k, v in ROT_SRC.items()}
+
+    def rot_row(name):
+        p = ROT[name]
+        inside = p["split_cw"] <= p["actual_cw"] <= p["dump_cw"]
+        verdict = ("<b style='color:var(--tier-fitted)'>inside the optimal band</b>"
+                   if inside else "<b style='color:#d03b3b'>outside the band</b>")
+        return (
+            f"<tr><td class='handle'>{name}</td>"
+            f"<td class='num'>{p['d1']} CW-eff / {p['d3']} CCW-eff / {p['d2']} free"
+            f"<span class='sub'>{p['d0']} needed no rotation &middot; "
+            f"{p['mono']} monocolor excluded</span></td>"
+            f"<td class='num'>{p['split_cw']:.1f}% &ndash; {p['dump_cw']:.1f}%"
+            f"<span class='sub'>split-free &hellip; dump-free-into-CW</span></td>"
+            f"<td class='num'><b>{p['actual_cw']:.1f}%</b>"
+            f"<span class='sub'>{p['cw']} cw / {p['ccw']} ccw &middot; {verdict}</span></td>"
+            f"<td class='num'><b>{p['waste_per100']:.1f}</b> / 100 pills"
+            f"<span class='sub'>{p['waste']} presses over {p['waste_pills']} pills &middot; "
+            f"{p['mixed']} mixed-direction (corrections, not direction error)</span></td></tr>"
+        )
+
+    _ctrl = sum(p["control_bad"] for p in ROT.values() if p)
+    _tot = sum(p["pills"] for p in ROT.values() if p)
+    mo.Html(
+        VIZ_CSS
+        + "<div class='pstat'><div class='scroll'><table style='min-width:980px'><thead><tr>"
+        + "<th>player</th><th>placements needing rotation</th><th>OPTIMAL CW band</th>"
+        + "<th>ACTUAL CW share</th><th>direction waste</th></tr></thead><tbody>"
+        + rot_row("dr. lulu") + rot_row("struktured")
+        + "</tbody><caption>"
+        + "A pill spawns at H on the ring [H, V, HF, VF], so the distance to its locked "
+        + "orientation is 1 (cheaper CW), 3 (cheaper CCW) or <b>2 &mdash; a 180 flip "
+        + "costing two presses either way, i.e. a FREE choice</b>. Because free choices are "
+        + "cost-identical, optimal play is not one ratio but a <b>band</b>: anywhere from "
+        + "splitting them evenly to dumping them all one way is equally efficient. "
+        + f"<b>Control: (cw&minus;ccw) mod 4 == delta on {_tot}/{_tot} non-monocolor pills, "
+        + f"{_ctrl} violations</b> &mdash; ring, spawn orientation and direction labels are "
+        + "mutually consistent, and this analysis needs none of the ROM button mapping. "
+        + "Waste is charged only on pills rotated entirely one way that were cheaper the "
+        + "other way; mixed-direction pills are corrections, not direction errors, and free "
+        + "choices are unchargeable by construction."
+        + "</caption></table></div></div>"
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
+        ### What that says about the owner's hypothesis
+
+        **His guess was that his ideal is ~60/40 and that he over-favours CW at 77/23. The
+        placements say otherwise, and the free choice is why.** His forced placements are
+        almost perfectly symmetric — 28 CW-efficient against 30 CCW-efficient — so the
+        forced component alone would call for roughly an even split. But 71 of his 129
+        rotating placements are 180 flips, where direction costs nothing. That makes *any*
+        CW share between 49.5% and 85.0% exactly as cheap, and his actual 76.9% sits
+        **inside** that band. He is not over-favouring CW; he is spending free choices on
+        his strong hand, which is free.
+
+        His real direction cost is small and specific: **6.0 wasted presses per 100 pills**,
+        from 8 pills taken the long way round.
+
+        **dr. lulu's one-buttoning is the expensive one.** Her band is 47.8%–82.6% and she
+        plays 100% CW, outside it — a delta-3 placement, cheap at one CCW press, costs her
+        three CW presses instead. That is **32.4 wasted presses per 100 pills, 5.4x his
+        rate**, and it is the clearest mechanical inefficiency the film has produced for
+        either player.
+
+        **The link to her slower minimum drop does not hold.** His fastest pill used *zero*
+        rotations (a pure soft-drop, 10 f); hers used one. The two minima are over different
+        kinds of pill — an extreme-value statistic with one player on each side — so nothing
+        supports connecting her 0.32 s to her press waste. The mechanism fails before the
+        sample size does.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(
         r"""
