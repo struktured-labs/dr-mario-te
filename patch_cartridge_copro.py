@@ -440,6 +440,25 @@ P1_OWNED = P1WIGGLE or P1NATIVE   # act_p1 is replaced; the copro P1 path is not
 RECOMMIT = (MATURE
             and (not NO_FREEZE or _os.environ.get("DRRECOMMIT_NOFREEZE", "0") == "1")
             and (_os.environ.get("DRRECOMMIT", "1") != "0"))
+# DRRELATCH=1 (default OFF -- v6c candidate): RE-LATCH-ON-CHANGE, the classes-b/c/d fix from the
+# execution-fidelity census (wf_5583bec4-ed9, 2026-08-09; see the census memory note + the flip-arm
+# harness mesen_copro_qa/census/census_run_flip.lua). RECOMMIT (above) re-opens the orient latch
+# exactly ONCE, at DONE, inside handle() -- it fully covers stable commits (0/2644 in the census
+# stable arm). But the live-publish path (nf2_* in act, below) refreshes the COLUMN from the
+# running-best mailbox EVERY hook while the orient stays feasibility-locked, so when the copro's
+# running best FLIPS mid-pill (congested boards) the driver adopts the post-flip COLUMN (922/922
+# in the flip arm) yet keeps the PRE-flip ORIENTATION (112/922 stale adoptions) -> true backward
+# horizontals at the correct column, plus real nonsensical verticals. RELATCH extends RECOMMIT's
+# one-shot into on-change: whenever the live-published MAPPED orient differs from the latched
+# TGT_O2 AND rotation is still safe (BOARD_Y $0386 >= CROSS_LOWY; $0386 counts UP from the floor,
+# so >= means still high), adopt the new orient and re-open ROT_DONE2 -- act_p2's existing
+# pre-phase then rotates toward it and re-latches through the normal p2_commit think gate (the
+# SLAM stability counter resets automatically via LAST_ORI2, so a flip also re-earns its
+# confidence). Below the line the committed orient is KEPT -- the CROSS_LOWY no-backwards-lock
+# invariant, verbatim from RECOMMIT/ROTFIX, is preserved unconditionally. Gated on ROTFIX (the
+# orient latch this re-opens only exists under ROTFIX). DRRELATCH=0 rebuilds byte-exact (nothing
+# emitted; verified in tests/test_relatch.py + the v6b manifest replay).
+RELATCH = ROTFIX and (_os.environ.get("DRRELATCH", "0") == "1")
 # DRDISTGATE=1 (default OFF -- candidate, not yet A/B'd on silicon; see task #49's
 # CART_FIX_REPORT.md and REVIEW #6.2 in dr-mario-qa-wt/experiments/eval47/PAIR_LATCH_AUDIT.md):
 # neither COLGATE/RECOMMIT/SLAM reasons about *distance* -- how many columns the search's target
@@ -2232,7 +2251,14 @@ def build_main(level=11, speed=1):
     a.label("act")
     a.jsr("freeze_pending")
     # P2 first (only if we're not currently freezing it)
-    a.ins16("LDA_abs", ARMED2); a.br("BEQ", "act_p2")      # not searching P2 -> steer it
+    a.ins16("LDA_abs", ARMED2)
+    if RELATCH:
+        # far branch: the RELATCH block below pushes act_p2 past +-127. Invert-and-JMP, the same
+        # idiom as nf2_untorn / the TUCK {L}_wdone_ok fix ("rel too far"). Gated so DRRELATCH=0
+        # keeps the ORIGINAL short branch and stays byte-identical.
+        a.br("BNE", "act_p2_armd"); a.jmp("act_p2"); a.label("act_p2_armd")
+    else:
+        a.br("BEQ", "act_p2")                              # not searching P2 -> steer it
     if NO_FREEZE or ROTFIX:
         # ANYTIME (NO_FREEZE, or ANY ROTFIX shipping cart): refresh TGT from the LIVE mailbox and keep
         # steering during the search -- NEVER pin GRAV_P2 while ARMED (the fairness rework). The legacy
@@ -2266,7 +2292,9 @@ def build_main(level=11, speed=1):
             # FEASIBILITY-GATED retarget: refine the ORIENT only while pre-phase (orient not yet
             # committed). Once ROT_DONE2 latches, keep the committed orient so a late candidate
             # cannot rotate a low/flush capsule and lock it backwards.
-            a.ins16("LDA_abs", ROT_DONE2); a.br("BNE", "nf2_col_only")
+            # (DRRELATCH re-routes the latched case to nf2_rl_chk below: same lock by default,
+            #  but a CHANGED published orient may re-open it while still above CROSS_LOWY.)
+            a.ins16("LDA_abs", ROT_DONE2); a.br("BNE", "nf2_rl_chk" if RELATCH else "nf2_col_only")
             # MAP copro orient -> game orient here, exactly as handle() does at DONE
             # ({0:3,1:1,2:0,3:2}; 0xFF already peeled off to nf2_hold). The live mailbox is
             # copro-space; storing it UNMAPPED made the orient-lock freeze a wrong-game orient,
@@ -2291,6 +2319,30 @@ def build_main(level=11, speed=1):
         if not ROTFIX:
             a.ins16("STA_abs", GRAV_P2)
         a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
+        if RELATCH:
+            # RE-LATCH-ON-CHANGE (DRRELATCH -- see the flag comment above). Reached only with
+            # ROT_DONE2 latched. The COLUMN was already refined above (TGT_C2 <- $616D, the
+            # untorn snapshot); decide whether the latched ORIENT may follow the flip too.
+            a.label("nf2_rl_chk")
+            # Safety line FIRST: below CROSS_LOWY a rotation can lock the capsule backwards, so
+            # keep the committed orient unconditionally (the no-backwards-lock invariant).
+            a.ins16("LDA_abs", 0x0386); a.ins("CMP_imm", CROSS_LOWY); a.br("BCS", "nf2_rl_hi")
+            a.jmp("act_p2")                              # low -> keep committed orient, column-only
+            a.label("nf2_rl_hi")
+            # MAP copro orient -> game orient ({0:3,1:1,2:0,3:2}), same table as nf2_o*/handle();
+            # 0xFF ("no result") never reaches here -- it was peeled off to nf2_hold above. The
+            # comparison MUST be in game space: TGT_O2 is stored MAPPED (8d7ba75).
+            a.ins16("LDA_abs", 0x616C)
+            a.ins("CMP_imm", 0); a.br("BNE", "nf2_rl1"); a.ins("LDA_imm", 3); a.jmp("nf2_rlst")
+            a.label("nf2_rl1"); a.ins("CMP_imm", 1); a.br("BNE", "nf2_rl2"); a.ins("LDA_imm", 1); a.jmp("nf2_rlst")
+            a.label("nf2_rl2"); a.ins("CMP_imm", 2); a.br("BNE", "nf2_rl3"); a.ins("LDA_imm", 0); a.jmp("nf2_rlst")
+            a.label("nf2_rl3"); a.ins("LDA_imm", 2)
+            a.label("nf2_rlst"); a.ins16("CMP_abs", TGT_O2); a.br("BNE", "nf2_rl_go")
+            a.jmp("act_p2")                              # published orient unchanged -> keep latch
+            a.label("nf2_rl_go")
+            a.ins16("STA_abs", TGT_O2)                   # adopt the POST-flip orientation ...
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", ROT_DONE2)   # ... re-open: act_p2 rotates,
+            a.jmp("act_p2")                              # then re-latches via p2_commit's gate
     else:
         a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)       # searching P2 -> freeze + skip steer
         a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
