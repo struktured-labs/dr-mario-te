@@ -1,0 +1,5456 @@
+{
+ "summary": {
+  "seeds": 300,
+  "level": 11,
+  "arms": {
+   "A_v8_notuck": {
+    "clear": 0.9866666666666667,
+    "med_pills": 94.0,
+    "mean_pills": 103.23,
+    "fires_per_game": 0
+   },
+   "B_v8tuck_exec": {
+    "clear": 0.9933333333333333,
+    "med_pills": 89.0,
+    "mean_pills": 98.48666666666666,
+    "fires_per_game": 3.0233333333333334,
+    "paired_n": 294,
+    "paired_mean": -4.163265306122449,
+    "paired_ci": [
+     -7.608843537414966,
+     -0.6700680272108843
+    ],
+    "paired_median": -3.0,
+    "wins": 159,
+    "losses": 109,
+    "clear_only_B": 4,
+    "clear_only_A": 2
+   },
+   "C_upper_full": {
+    "clear": 0.99,
+    "med_pills": 86.5,
+    "mean_pills": 95.74666666666667,
+    "fires_per_game": 4.843333333333334,
+    "paired_n": 293,
+    "paired_mean": -6.921501706484642,
+    "paired_ci": [
+     -10.641638225255972,
+     -3.174061433447099
+    ],
+    "paired_median": -5,
+    "wins": 179,
+    "losses": 103,
+    "clear_only_B": 4,
+    "clear_only_A": 3
+   }
+  }
+ },
+ "rows": {
+  "A_v8_notuck": [
+   {
+    "seed": 2,
+    "won": 1,
+    "pills": 114,
+    "fired": 0
+   },
+   {
+    "seed": 4,
+    "won": 0,
+    "pills": 241,
+    "fired": 0
+   },
+   {
+    "seed": 6,
+    "won": 1,
+    "pills": 113,
+    "fired": 0
+   },
+   {
+    "seed": 8,
+    "won": 1,
+    "pills": 112,
+    "fired": 0
+   },
+   {
+    "seed": 10,
+    "won": 1,
+    "pills": 61,
+    "fired": 0
+   },
+   {
+    "seed": 12,
+    "won": 1,
+    "pills": 106,
+    "fired": 0
+   },
+   {
+    "seed": 14,
+    "won": 1,
+    "pills": 102,
+    "fired": 0
+   },
+   {
+    "seed": 16,
+    "won": 1,
+    "pills": 107,
+    "fired": 0
+   },
+   {
+    "seed": 18,
+    "won": 1,
+    "pills": 126,
+    "fired": 0
+   },
+   {
+    "seed": 20,
+    "won": 1,
+    "pills": 76,
+    "fired": 0
+   },
+   {
+    "seed": 22,
+    "won": 1,
+    "pills": 108,
+    "fired": 0
+   },
+   {
+    "seed": 24,
+    "won": 1,
+    "pills": 187,
+    "fired": 0
+   },
+   {
+    "seed": 26,
+    "won": 1,
+    "pills": 91,
+    "fired": 0
+   },
+   {
+    "seed": 28,
+    "won": 1,
+    "pills": 104,
+    "fired": 0
+   },
+   {
+    "seed": 30,
+    "won": 1,
+    "pills": 83,
+    "fired": 0
+   },
+   {
+    "seed": 32,
+    "won": 1,
+    "pills": 86,
+    "fired": 0
+   },
+   {
+    "seed": 34,
+    "won": 1,
+    "pills": 150,
+    "fired": 0
+   },
+   {
+    "seed": 36,
+    "won": 1,
+    "pills": 67,
+    "fired": 0
+   },
+   {
+    "seed": 38,
+    "won": 1,
+    "pills": 106,
+    "fired": 0
+   },
+   {
+    "seed": 40,
+    "won": 1,
+    "pills": 93,
+    "fired": 0
+   },
+   {
+    "seed": 42,
+    "won": 1,
+    "pills": 61,
+    "fired": 0
+   },
+   {
+    "seed": 44,
+    "won": 1,
+    "pills": 137,
+    "fired": 0
+   },
+   {
+    "seed": 46,
+    "won": 1,
+    "pills": 94,
+    "fired": 0
+   },
+   {
+    "seed": 48,
+    "won": 1,
+    "pills": 85,
+    "fired": 0
+   },
+   {
+    "seed": 50,
+    "won": 1,
+    "pills": 103,
+    "fired": 0
+   },
+   {
+    "seed": 52,
+    "won": 1,
+    "pills": 87,
+    "fired": 0
+   },
+   {
+    "seed": 54,
+    "won": 1,
+    "pills": 100,
+    "fired": 0
+   },
+   {
+    "seed": 56,
+    "won": 1,
+    "pills": 101,
+    "fired": 0
+   },
+   {
+    "seed": 58,
+    "won": 1,
+    "pills": 116,
+    "fired": 0
+   },
+   {
+    "seed": 60,
+    "won": 1,
+    "pills": 77,
+    "fired": 0
+   },
+   {
+    "seed": 62,
+    "won": 1,
+    "pills": 98,
+    "fired": 0
+   },
+   {
+    "seed": 64,
+    "won": 1,
+    "pills": 150,
+    "fired": 0
+   },
+   {
+    "seed": 66,
+    "won": 1,
+    "pills": 100,
+    "fired": 0
+   },
+   {
+    "seed": 68,
+    "won": 1,
+    "pills": 85,
+    "fired": 0
+   },
+   {
+    "seed": 70,
+    "won": 1,
+    "pills": 80,
+    "fired": 0
+   },
+   {
+    "seed": 72,
+    "won": 1,
+    "pills": 154,
+    "fired": 0
+   },
+   {
+    "seed": 74,
+    "won": 1,
+    "pills": 102,
+    "fired": 0
+   },
+   {
+    "seed": 76,
+    "won": 1,
+    "pills": 94,
+    "fired": 0
+   },
+   {
+    "seed": 78,
+    "won": 1,
+    "pills": 77,
+    "fired": 0
+   },
+   {
+    "seed": 80,
+    "won": 1,
+    "pills": 150,
+    "fired": 0
+   },
+   {
+    "seed": 82,
+    "won": 1,
+    "pills": 88,
+    "fired": 0
+   },
+   {
+    "seed": 84,
+    "won": 1,
+    "pills": 64,
+    "fired": 0
+   },
+   {
+    "seed": 86,
+    "won": 1,
+    "pills": 181,
+    "fired": 0
+   },
+   {
+    "seed": 88,
+    "won": 1,
+    "pills": 88,
+    "fired": 0
+   },
+   {
+    "seed": 90,
+    "won": 1,
+    "pills": 100,
+    "fired": 0
+   },
+   {
+    "seed": 92,
+    "won": 1,
+    "pills": 95,
+    "fired": 0
+   },
+   {
+    "seed": 94,
+    "won": 1,
+    "pills": 124,
+    "fired": 0
+   },
+   {
+    "seed": 96,
+    "won": 1,
+    "pills": 165,
+    "fired": 0
+   },
+   {
+    "seed": 98,
+    "won": 1,
+    "pills": 104,
+    "fired": 0
+   },
+   {
+    "seed": 100,
+    "won": 1,
+    "pills": 87,
+    "fired": 0
+   },
+   {
+    "seed": 102,
+    "won": 1,
+    "pills": 74,
+    "fired": 0
+   },
+   {
+    "seed": 104,
+    "won": 1,
+    "pills": 133,
+    "fired": 0
+   },
+   {
+    "seed": 106,
+    "won": 1,
+    "pills": 113,
+    "fired": 0
+   },
+   {
+    "seed": 108,
+    "won": 1,
+    "pills": 248,
+    "fired": 0
+   },
+   {
+    "seed": 110,
+    "won": 1,
+    "pills": 77,
+    "fired": 0
+   },
+   {
+    "seed": 112,
+    "won": 1,
+    "pills": 99,
+    "fired": 0
+   },
+   {
+    "seed": 114,
+    "won": 1,
+    "pills": 87,
+    "fired": 0
+   },
+   {
+    "seed": 116,
+    "won": 1,
+    "pills": 121,
+    "fired": 0
+   },
+   {
+    "seed": 118,
+    "won": 1,
+    "pills": 94,
+    "fired": 0
+   },
+   {
+    "seed": 120,
+    "won": 1,
+    "pills": 92,
+    "fired": 0
+   },
+   {
+    "seed": 122,
+    "won": 1,
+    "pills": 93,
+    "fired": 0
+   },
+   {
+    "seed": 124,
+    "won": 1,
+    "pills": 84,
+    "fired": 0
+   },
+   {
+    "seed": 126,
+    "won": 1,
+    "pills": 76,
+    "fired": 0
+   },
+   {
+    "seed": 128,
+    "won": 1,
+    "pills": 187,
+    "fired": 0
+   },
+   {
+    "seed": 130,
+    "won": 1,
+    "pills": 98,
+    "fired": 0
+   },
+   {
+    "seed": 132,
+    "won": 1,
+    "pills": 70,
+    "fired": 0
+   },
+   {
+    "seed": 134,
+    "won": 1,
+    "pills": 87,
+    "fired": 0
+   },
+   {
+    "seed": 136,
+    "won": 1,
+    "pills": 87,
+    "fired": 0
+   },
+   {
+    "seed": 138,
+    "won": 1,
+    "pills": 81,
+    "fired": 0
+   },
+   {
+    "seed": 140,
+    "won": 1,
+    "pills": 94,
+    "fired": 0
+   },
+   {
+    "seed": 142,
+    "won": 1,
+    "pills": 129,
+    "fired": 0
+   },
+   {
+    "seed": 144,
+    "won": 1,
+    "pills": 119,
+    "fired": 0
+   },
+   {
+    "seed": 146,
+    "won": 1,
+    "pills": 98,
+    "fired": 0
+   },
+   {
+    "seed": 148,
+    "won": 1,
+    "pills": 72,
+    "fired": 0
+   },
+   {
+    "seed": 150,
+    "won": 1,
+    "pills": 76,
+    "fired": 0
+   },
+   {
+    "seed": 152,
+    "won": 1,
+    "pills": 134,
+    "fired": 0
+   },
+   {
+    "seed": 154,
+    "won": 1,
+    "pills": 92,
+    "fired": 0
+   },
+   {
+    "seed": 156,
+    "won": 1,
+    "pills": 176,
+    "fired": 0
+   },
+   {
+    "seed": 158,
+    "won": 1,
+    "pills": 119,
+    "fired": 0
+   },
+   {
+    "seed": 160,
+    "won": 1,
+    "pills": 71,
+    "fired": 0
+   },
+   {
+    "seed": 162,
+    "won": 1,
+    "pills": 95,
+    "fired": 0
+   },
+   {
+    "seed": 164,
+    "won": 1,
+    "pills": 85,
+    "fired": 0
+   },
+   {
+    "seed": 166,
+    "won": 1,
+    "pills": 95,
+    "fired": 0
+   },
+   {
+    "seed": 168,
+    "won": 1,
+    "pills": 90,
+    "fired": 0
+   },
+   {
+    "seed": 170,
+    "won": 1,
+    "pills": 66,
+    "fired": 0
+   },
+   {
+    "seed": 172,
+    "won": 1,
+    "pills": 79,
+    "fired": 0
+   },
+   {
+    "seed": 174,
+    "won": 1,
+    "pills": 70,
+    "fired": 0
+   },
+   {
+    "seed": 176,
+    "won": 1,
+    "pills": 97,
+    "fired": 0
+   },
+   {
+    "seed": 178,
+    "won": 1,
+    "pills": 73,
+    "fired": 0
+   },
+   {
+    "seed": 180,
+    "won": 1,
+    "pills": 101,
+    "fired": 0
+   },
+   {
+    "seed": 182,
+    "won": 1,
+    "pills": 77,
+    "fired": 0
+   },
+   {
+    "seed": 184,
+    "won": 1,
+    "pills": 106,
+    "fired": 0
+   },
+   {
+    "seed": 186,
+    "won": 1,
+    "pills": 102,
+    "fired": 0
+   },
+   {
+    "seed": 188,
+    "won": 1,
+    "pills": 95,
+    "fired": 0
+   },
+   {
+    "seed": 190,
+    "won": 1,
+    "pills": 101,
+    "fired": 0
+   },
+   {
+    "seed": 192,
+    "won": 1,
+    "pills": 83,
+    "fired": 0
+   },
+   {
+    "seed": 194,
+    "won": 1,
+    "pills": 82,
+    "fired": 0
+   },
+   {
+    "seed": 196,
+    "won": 1,
+    "pills": 84,
+    "fired": 0
+   },
+   {
+    "seed": 198,
+    "won": 1,
+    "pills": 94,
+    "fired": 0
+   },
+   {
+    "seed": 200,
+    "won": 1,
+    "pills": 87,
+    "fired": 0
+   },
+   {
+    "seed": 202,
+    "won": 1,
+    "pills": 72,
+    "fired": 0
+   },
+   {
+    "seed": 204,
+    "won": 1,
+    "pills": 78,
+    "fired": 0
+   },
+   {
+    "seed": 206,
+    "won": 1,
+    "pills": 138,
+    "fired": 0
+   },
+   {
+    "seed": 208,
+    "won": 1,
+    "pills": 75,
+    "fired": 0
+   },
+   {
+    "seed": 210,
+    "won": 1,
+    "pills": 75,
+    "fired": 0
+   },
+   {
+    "seed": 212,
+    "won": 1,
+    "pills": 93,
+    "fired": 0
+   },
+   {
+    "seed": 214,
+    "won": 1,
+    "pills": 126,
+    "fired": 0
+   },
+   {
+    "seed": 216,
+    "won": 1,
+    "pills": 146,
+    "fired": 0
+   },
+   {
+    "seed": 218,
+    "won": 1,
+    "pills": 128,
+    "fired": 0
+   },
+   {
+    "seed": 220,
+    "won": 1,
+    "pills": 68,
+    "fired": 0
+   },
+   {
+    "seed": 222,
+    "won": 1,
+    "pills": 89,
+    "fired": 0
+   },
+   {
+    "seed": 224,
+    "won": 1,
+    "pills": 96,
+    "fired": 0
+   },
+   {
+    "seed": 226,
+    "won": 1,
+    "pills": 85,
+    "fired": 0
+   },
+   {
+    "seed": 228,
+    "won": 1,
+    "pills": 100,
+    "fired": 0
+   },
+   {
+    "seed": 230,
+    "won": 1,
+    "pills": 119,
+    "fired": 0
+   },
+   {
+    "seed": 232,
+    "won": 1,
+    "pills": 107,
+    "fired": 0
+   },
+   {
+    "seed": 234,
+    "won": 1,
+    "pills": 70,
+    "fired": 0
+   },
+   {
+    "seed": 236,
+    "won": 1,
+    "pills": 97,
+    "fired": 0
+   },
+   {
+    "seed": 238,
+    "won": 1,
+    "pills": 81,
+    "fired": 0
+   },
+   {
+    "seed": 240,
+    "won": 1,
+    "pills": 86,
+    "fired": 0
+   },
+   {
+    "seed": 242,
+    "won": 0,
+    "pills": 179,
+    "fired": 0
+   },
+   {
+    "seed": 244,
+    "won": 1,
+    "pills": 103,
+    "fired": 0
+   },
+   {
+    "seed": 246,
+    "won": 1,
+    "pills": 100,
+    "fired": 0
+   },
+   {
+    "seed": 248,
+    "won": 1,
+    "pills": 113,
+    "fired": 0
+   },
+   {
+    "seed": 250,
+    "won": 1,
+    "pills": 96,
+    "fired": 0
+   },
+   {
+    "seed": 252,
+    "won": 1,
+    "pills": 92,
+    "fired": 0
+   },
+   {
+    "seed": 254,
+    "won": 1,
+    "pills": 111,
+    "fired": 0
+   },
+   {
+    "seed": 256,
+    "won": 1,
+    "pills": 115,
+    "fired": 0
+   },
+   {
+    "seed": 258,
+    "won": 1,
+    "pills": 103,
+    "fired": 0
+   },
+   {
+    "seed": 260,
+    "won": 1,
+    "pills": 81,
+    "fired": 0
+   },
+   {
+    "seed": 262,
+    "won": 1,
+    "pills": 83,
+    "fired": 0
+   },
+   {
+    "seed": 264,
+    "won": 1,
+    "pills": 100,
+    "fired": 0
+   },
+   {
+    "seed": 266,
+    "won": 1,
+    "pills": 88,
+    "fired": 0
+   },
+   {
+    "seed": 268,
+    "won": 1,
+    "pills": 133,
+    "fired": 0
+   },
+   {
+    "seed": 270,
+    "won": 1,
+    "pills": 75,
+    "fired": 0
+   },
+   {
+    "seed": 272,
+    "won": 1,
+    "pills": 76,
+    "fired": 0
+   },
+   {
+    "seed": 274,
+    "won": 1,
+    "pills": 88,
+    "fired": 0
+   },
+   {
+    "seed": 276,
+    "won": 1,
+    "pills": 92,
+    "fired": 0
+   },
+   {
+    "seed": 278,
+    "won": 1,
+    "pills": 173,
+    "fired": 0
+   },
+   {
+    "seed": 280,
+    "won": 1,
+    "pills": 94,
+    "fired": 0
+   },
+   {
+    "seed": 282,
+    "won": 1,
+    "pills": 130,
+    "fired": 0
+   },
+   {
+    "seed": 284,
+    "won": 1,
+    "pills": 103,
+    "fired": 0
+   },
+   {
+    "seed": 286,
+    "won": 1,
+    "pills": 171,
+    "fired": 0
+   },
+   {
+    "seed": 288,
+    "won": 1,
+    "pills": 70,
+    "fired": 0
+   },
+   {
+    "seed": 290,
+    "won": 1,
+    "pills": 88,
+    "fired": 0
+   },
+   {
+    "seed": 292,
+    "won": 1,
+    "pills": 85,
+    "fired": 0
+   },
+   {
+    "seed": 294,
+    "won": 1,
+    "pills": 73,
+    "fired": 0
+   },
+   {
+    "seed": 296,
+    "won": 1,
+    "pills": 139,
+    "fired": 0
+   },
+   {
+    "seed": 298,
+    "won": 1,
+    "pills": 82,
+    "fired": 0
+   },
+   {
+    "seed": 300,
+    "won": 1,
+    "pills": 79,
+    "fired": 0
+   },
+   {
+    "seed": 302,
+    "won": 1,
+    "pills": 70,
+    "fired": 0
+   },
+   {
+    "seed": 304,
+    "won": 1,
+    "pills": 70,
+    "fired": 0
+   },
+   {
+    "seed": 306,
+    "won": 1,
+    "pills": 90,
+    "fired": 0
+   },
+   {
+    "seed": 308,
+    "won": 1,
+    "pills": 165,
+    "fired": 0
+   },
+   {
+    "seed": 310,
+    "won": 1,
+    "pills": 85,
+    "fired": 0
+   },
+   {
+    "seed": 312,
+    "won": 1,
+    "pills": 75,
+    "fired": 0
+   },
+   {
+    "seed": 314,
+    "won": 1,
+    "pills": 80,
+    "fired": 0
+   },
+   {
+    "seed": 316,
+    "won": 1,
+    "pills": 80,
+    "fired": 0
+   },
+   {
+    "seed": 318,
+    "won": 1,
+    "pills": 93,
+    "fired": 0
+   },
+   {
+    "seed": 320,
+    "won": 1,
+    "pills": 95,
+    "fired": 0
+   },
+   {
+    "seed": 322,
+    "won": 1,
+    "pills": 68,
+    "fired": 0
+   },
+   {
+    "seed": 324,
+    "won": 1,
+    "pills": 88,
+    "fired": 0
+   },
+   {
+    "seed": 326,
+    "won": 1,
+    "pills": 88,
+    "fired": 0
+   },
+   {
+    "seed": 328,
+    "won": 1,
+    "pills": 115,
+    "fired": 0
+   },
+   {
+    "seed": 330,
+    "won": 1,
+    "pills": 88,
+    "fired": 0
+   },
+   {
+    "seed": 332,
+    "won": 1,
+    "pills": 159,
+    "fired": 0
+   },
+   {
+    "seed": 334,
+    "won": 1,
+    "pills": 71,
+    "fired": 0
+   },
+   {
+    "seed": 336,
+    "won": 1,
+    "pills": 86,
+    "fired": 0
+   },
+   {
+    "seed": 338,
+    "won": 1,
+    "pills": 130,
+    "fired": 0
+   },
+   {
+    "seed": 340,
+    "won": 1,
+    "pills": 111,
+    "fired": 0
+   },
+   {
+    "seed": 342,
+    "won": 1,
+    "pills": 151,
+    "fired": 0
+   },
+   {
+    "seed": 344,
+    "won": 1,
+    "pills": 138,
+    "fired": 0
+   },
+   {
+    "seed": 346,
+    "won": 1,
+    "pills": 81,
+    "fired": 0
+   },
+   {
+    "seed": 348,
+    "won": 1,
+    "pills": 97,
+    "fired": 0
+   },
+   {
+    "seed": 350,
+    "won": 1,
+    "pills": 86,
+    "fired": 0
+   },
+   {
+    "seed": 352,
+    "won": 1,
+    "pills": 185,
+    "fired": 0
+   },
+   {
+    "seed": 354,
+    "won": 1,
+    "pills": 131,
+    "fired": 0
+   },
+   {
+    "seed": 356,
+    "won": 1,
+    "pills": 130,
+    "fired": 0
+   },
+   {
+    "seed": 358,
+    "won": 1,
+    "pills": 84,
+    "fired": 0
+   },
+   {
+    "seed": 360,
+    "won": 1,
+    "pills": 98,
+    "fired": 0
+   },
+   {
+    "seed": 362,
+    "won": 1,
+    "pills": 71,
+    "fired": 0
+   },
+   {
+    "seed": 364,
+    "won": 1,
+    "pills": 96,
+    "fired": 0
+   },
+   {
+    "seed": 366,
+    "won": 1,
+    "pills": 77,
+    "fired": 0
+   },
+   {
+    "seed": 368,
+    "won": 1,
+    "pills": 167,
+    "fired": 0
+   },
+   {
+    "seed": 370,
+    "won": 1,
+    "pills": 104,
+    "fired": 0
+   },
+   {
+    "seed": 372,
+    "won": 1,
+    "pills": 80,
+    "fired": 0
+   },
+   {
+    "seed": 374,
+    "won": 1,
+    "pills": 111,
+    "fired": 0
+   },
+   {
+    "seed": 376,
+    "won": 1,
+    "pills": 220,
+    "fired": 0
+   },
+   {
+    "seed": 378,
+    "won": 1,
+    "pills": 119,
+    "fired": 0
+   },
+   {
+    "seed": 380,
+    "won": 1,
+    "pills": 95,
+    "fired": 0
+   },
+   {
+    "seed": 382,
+    "won": 1,
+    "pills": 79,
+    "fired": 0
+   },
+   {
+    "seed": 384,
+    "won": 1,
+    "pills": 96,
+    "fired": 0
+   },
+   {
+    "seed": 386,
+    "won": 1,
+    "pills": 193,
+    "fired": 0
+   },
+   {
+    "seed": 388,
+    "won": 1,
+    "pills": 76,
+    "fired": 0
+   },
+   {
+    "seed": 390,
+    "won": 1,
+    "pills": 85,
+    "fired": 0
+   },
+   {
+    "seed": 392,
+    "won": 1,
+    "pills": 146,
+    "fired": 0
+   },
+   {
+    "seed": 394,
+    "won": 1,
+    "pills": 80,
+    "fired": 0
+   },
+   {
+    "seed": 396,
+    "won": 1,
+    "pills": 223,
+    "fired": 0
+   },
+   {
+    "seed": 398,
+    "won": 1,
+    "pills": 85,
+    "fired": 0
+   },
+   {
+    "seed": 400,
+    "won": 1,
+    "pills": 135,
+    "fired": 0
+   },
+   {
+    "seed": 402,
+    "won": 1,
+    "pills": 122,
+    "fired": 0
+   },
+   {
+    "seed": 404,
+    "won": 1,
+    "pills": 75,
+    "fired": 0
+   },
+   {
+    "seed": 406,
+    "won": 1,
+    "pills": 88,
+    "fired": 0
+   },
+   {
+    "seed": 408,
+    "won": 1,
+    "pills": 72,
+    "fired": 0
+   },
+   {
+    "seed": 410,
+    "won": 1,
+    "pills": 94,
+    "fired": 0
+   },
+   {
+    "seed": 412,
+    "won": 1,
+    "pills": 94,
+    "fired": 0
+   },
+   {
+    "seed": 414,
+    "won": 1,
+    "pills": 82,
+    "fired": 0
+   },
+   {
+    "seed": 416,
+    "won": 1,
+    "pills": 71,
+    "fired": 0
+   },
+   {
+    "seed": 418,
+    "won": 1,
+    "pills": 95,
+    "fired": 0
+   },
+   {
+    "seed": 420,
+    "won": 1,
+    "pills": 64,
+    "fired": 0
+   },
+   {
+    "seed": 422,
+    "won": 1,
+    "pills": 144,
+    "fired": 0
+   },
+   {
+    "seed": 424,
+    "won": 1,
+    "pills": 94,
+    "fired": 0
+   },
+   {
+    "seed": 426,
+    "won": 1,
+    "pills": 84,
+    "fired": 0
+   },
+   {
+    "seed": 428,
+    "won": 1,
+    "pills": 63,
+    "fired": 0
+   },
+   {
+    "seed": 430,
+    "won": 1,
+    "pills": 89,
+    "fired": 0
+   },
+   {
+    "seed": 432,
+    "won": 0,
+    "pills": 185,
+    "fired": 0
+   },
+   {
+    "seed": 434,
+    "won": 1,
+    "pills": 128,
+    "fired": 0
+   },
+   {
+    "seed": 436,
+    "won": 1,
+    "pills": 86,
+    "fired": 0
+   },
+   {
+    "seed": 438,
+    "won": 1,
+    "pills": 91,
+    "fired": 0
+   },
+   {
+    "seed": 440,
+    "won": 1,
+    "pills": 88,
+    "fired": 0
+   },
+   {
+    "seed": 442,
+    "won": 1,
+    "pills": 81,
+    "fired": 0
+   },
+   {
+    "seed": 444,
+    "won": 1,
+    "pills": 79,
+    "fired": 0
+   },
+   {
+    "seed": 446,
+    "won": 1,
+    "pills": 119,
+    "fired": 0
+   },
+   {
+    "seed": 448,
+    "won": 1,
+    "pills": 78,
+    "fired": 0
+   },
+   {
+    "seed": 450,
+    "won": 1,
+    "pills": 89,
+    "fired": 0
+   },
+   {
+    "seed": 452,
+    "won": 1,
+    "pills": 124,
+    "fired": 0
+   },
+   {
+    "seed": 454,
+    "won": 1,
+    "pills": 81,
+    "fired": 0
+   },
+   {
+    "seed": 456,
+    "won": 1,
+    "pills": 73,
+    "fired": 0
+   },
+   {
+    "seed": 458,
+    "won": 1,
+    "pills": 177,
+    "fired": 0
+   },
+   {
+    "seed": 460,
+    "won": 1,
+    "pills": 71,
+    "fired": 0
+   },
+   {
+    "seed": 462,
+    "won": 1,
+    "pills": 95,
+    "fired": 0
+   },
+   {
+    "seed": 464,
+    "won": 1,
+    "pills": 121,
+    "fired": 0
+   },
+   {
+    "seed": 466,
+    "won": 1,
+    "pills": 73,
+    "fired": 0
+   },
+   {
+    "seed": 468,
+    "won": 1,
+    "pills": 174,
+    "fired": 0
+   },
+   {
+    "seed": 470,
+    "won": 1,
+    "pills": 115,
+    "fired": 0
+   },
+   {
+    "seed": 472,
+    "won": 1,
+    "pills": 132,
+    "fired": 0
+   },
+   {
+    "seed": 474,
+    "won": 1,
+    "pills": 99,
+    "fired": 0
+   },
+   {
+    "seed": 476,
+    "won": 1,
+    "pills": 82,
+    "fired": 0
+   },
+   {
+    "seed": 478,
+    "won": 1,
+    "pills": 64,
+    "fired": 0
+   },
+   {
+    "seed": 480,
+    "won": 1,
+    "pills": 86,
+    "fired": 0
+   },
+   {
+    "seed": 482,
+    "won": 1,
+    "pills": 103,
+    "fired": 0
+   },
+   {
+    "seed": 484,
+    "won": 1,
+    "pills": 89,
+    "fired": 0
+   },
+   {
+    "seed": 486,
+    "won": 1,
+    "pills": 89,
+    "fired": 0
+   },
+   {
+    "seed": 488,
+    "won": 1,
+    "pills": 91,
+    "fired": 0
+   },
+   {
+    "seed": 490,
+    "won": 1,
+    "pills": 71,
+    "fired": 0
+   },
+   {
+    "seed": 492,
+    "won": 1,
+    "pills": 75,
+    "fired": 0
+   },
+   {
+    "seed": 494,
+    "won": 1,
+    "pills": 86,
+    "fired": 0
+   },
+   {
+    "seed": 496,
+    "won": 1,
+    "pills": 67,
+    "fired": 0
+   },
+   {
+    "seed": 498,
+    "won": 1,
+    "pills": 86,
+    "fired": 0
+   },
+   {
+    "seed": 500,
+    "won": 1,
+    "pills": 132,
+    "fired": 0
+   },
+   {
+    "seed": 502,
+    "won": 1,
+    "pills": 88,
+    "fired": 0
+   },
+   {
+    "seed": 504,
+    "won": 1,
+    "pills": 137,
+    "fired": 0
+   },
+   {
+    "seed": 506,
+    "won": 1,
+    "pills": 152,
+    "fired": 0
+   },
+   {
+    "seed": 508,
+    "won": 1,
+    "pills": 162,
+    "fired": 0
+   },
+   {
+    "seed": 510,
+    "won": 1,
+    "pills": 69,
+    "fired": 0
+   },
+   {
+    "seed": 512,
+    "won": 1,
+    "pills": 96,
+    "fired": 0
+   },
+   {
+    "seed": 514,
+    "won": 1,
+    "pills": 96,
+    "fired": 0
+   },
+   {
+    "seed": 516,
+    "won": 1,
+    "pills": 142,
+    "fired": 0
+   },
+   {
+    "seed": 518,
+    "won": 1,
+    "pills": 208,
+    "fired": 0
+   },
+   {
+    "seed": 520,
+    "won": 1,
+    "pills": 160,
+    "fired": 0
+   },
+   {
+    "seed": 522,
+    "won": 1,
+    "pills": 85,
+    "fired": 0
+   },
+   {
+    "seed": 524,
+    "won": 1,
+    "pills": 99,
+    "fired": 0
+   },
+   {
+    "seed": 526,
+    "won": 1,
+    "pills": 101,
+    "fired": 0
+   },
+   {
+    "seed": 528,
+    "won": 1,
+    "pills": 84,
+    "fired": 0
+   },
+   {
+    "seed": 530,
+    "won": 1,
+    "pills": 75,
+    "fired": 0
+   },
+   {
+    "seed": 532,
+    "won": 1,
+    "pills": 82,
+    "fired": 0
+   },
+   {
+    "seed": 534,
+    "won": 1,
+    "pills": 105,
+    "fired": 0
+   },
+   {
+    "seed": 536,
+    "won": 1,
+    "pills": 89,
+    "fired": 0
+   },
+   {
+    "seed": 538,
+    "won": 1,
+    "pills": 81,
+    "fired": 0
+   },
+   {
+    "seed": 540,
+    "won": 1,
+    "pills": 84,
+    "fired": 0
+   },
+   {
+    "seed": 542,
+    "won": 1,
+    "pills": 106,
+    "fired": 0
+   },
+   {
+    "seed": 544,
+    "won": 1,
+    "pills": 89,
+    "fired": 0
+   },
+   {
+    "seed": 546,
+    "won": 0,
+    "pills": 300,
+    "fired": 0
+   },
+   {
+    "seed": 548,
+    "won": 1,
+    "pills": 81,
+    "fired": 0
+   },
+   {
+    "seed": 550,
+    "won": 1,
+    "pills": 86,
+    "fired": 0
+   },
+   {
+    "seed": 552,
+    "won": 1,
+    "pills": 86,
+    "fired": 0
+   },
+   {
+    "seed": 554,
+    "won": 1,
+    "pills": 74,
+    "fired": 0
+   },
+   {
+    "seed": 556,
+    "won": 1,
+    "pills": 72,
+    "fired": 0
+   },
+   {
+    "seed": 558,
+    "won": 1,
+    "pills": 216,
+    "fired": 0
+   },
+   {
+    "seed": 560,
+    "won": 1,
+    "pills": 80,
+    "fired": 0
+   },
+   {
+    "seed": 562,
+    "won": 1,
+    "pills": 85,
+    "fired": 0
+   },
+   {
+    "seed": 564,
+    "won": 1,
+    "pills": 118,
+    "fired": 0
+   },
+   {
+    "seed": 566,
+    "won": 1,
+    "pills": 102,
+    "fired": 0
+   },
+   {
+    "seed": 568,
+    "won": 1,
+    "pills": 144,
+    "fired": 0
+   },
+   {
+    "seed": 570,
+    "won": 1,
+    "pills": 161,
+    "fired": 0
+   },
+   {
+    "seed": 572,
+    "won": 1,
+    "pills": 75,
+    "fired": 0
+   },
+   {
+    "seed": 574,
+    "won": 1,
+    "pills": 80,
+    "fired": 0
+   },
+   {
+    "seed": 576,
+    "won": 1,
+    "pills": 118,
+    "fired": 0
+   },
+   {
+    "seed": 578,
+    "won": 1,
+    "pills": 83,
+    "fired": 0
+   },
+   {
+    "seed": 580,
+    "won": 1,
+    "pills": 117,
+    "fired": 0
+   },
+   {
+    "seed": 582,
+    "won": 1,
+    "pills": 97,
+    "fired": 0
+   },
+   {
+    "seed": 584,
+    "won": 1,
+    "pills": 103,
+    "fired": 0
+   },
+   {
+    "seed": 586,
+    "won": 1,
+    "pills": 79,
+    "fired": 0
+   },
+   {
+    "seed": 588,
+    "won": 1,
+    "pills": 64,
+    "fired": 0
+   },
+   {
+    "seed": 590,
+    "won": 1,
+    "pills": 87,
+    "fired": 0
+   },
+   {
+    "seed": 592,
+    "won": 1,
+    "pills": 101,
+    "fired": 0
+   },
+   {
+    "seed": 594,
+    "won": 1,
+    "pills": 94,
+    "fired": 0
+   },
+   {
+    "seed": 596,
+    "won": 1,
+    "pills": 73,
+    "fired": 0
+   },
+   {
+    "seed": 598,
+    "won": 1,
+    "pills": 102,
+    "fired": 0
+   },
+   {
+    "seed": 600,
+    "won": 1,
+    "pills": 97,
+    "fired": 0
+   }
+  ],
+  "B_v8tuck_exec": [
+   {
+    "seed": 2,
+    "won": 0,
+    "pills": 300,
+    "fired": 2
+   },
+   {
+    "seed": 4,
+    "won": 1,
+    "pills": 108,
+    "fired": 3
+   },
+   {
+    "seed": 6,
+    "won": 1,
+    "pills": 91,
+    "fired": 2
+   },
+   {
+    "seed": 8,
+    "won": 1,
+    "pills": 70,
+    "fired": 3
+   },
+   {
+    "seed": 10,
+    "won": 1,
+    "pills": 75,
+    "fired": 3
+   },
+   {
+    "seed": 12,
+    "won": 1,
+    "pills": 61,
+    "fired": 3
+   },
+   {
+    "seed": 14,
+    "won": 1,
+    "pills": 72,
+    "fired": 3
+   },
+   {
+    "seed": 16,
+    "won": 1,
+    "pills": 139,
+    "fired": 5
+   },
+   {
+    "seed": 18,
+    "won": 1,
+    "pills": 184,
+    "fired": 4
+   },
+   {
+    "seed": 20,
+    "won": 1,
+    "pills": 86,
+    "fired": 3
+   },
+   {
+    "seed": 22,
+    "won": 1,
+    "pills": 117,
+    "fired": 4
+   },
+   {
+    "seed": 24,
+    "won": 1,
+    "pills": 92,
+    "fired": 1
+   },
+   {
+    "seed": 26,
+    "won": 1,
+    "pills": 103,
+    "fired": 6
+   },
+   {
+    "seed": 28,
+    "won": 1,
+    "pills": 76,
+    "fired": 4
+   },
+   {
+    "seed": 30,
+    "won": 1,
+    "pills": 88,
+    "fired": 5
+   },
+   {
+    "seed": 32,
+    "won": 1,
+    "pills": 107,
+    "fired": 5
+   },
+   {
+    "seed": 34,
+    "won": 1,
+    "pills": 87,
+    "fired": 4
+   },
+   {
+    "seed": 36,
+    "won": 1,
+    "pills": 131,
+    "fired": 2
+   },
+   {
+    "seed": 38,
+    "won": 1,
+    "pills": 93,
+    "fired": 3
+   },
+   {
+    "seed": 40,
+    "won": 1,
+    "pills": 96,
+    "fired": 2
+   },
+   {
+    "seed": 42,
+    "won": 1,
+    "pills": 61,
+    "fired": 2
+   },
+   {
+    "seed": 44,
+    "won": 1,
+    "pills": 123,
+    "fired": 4
+   },
+   {
+    "seed": 46,
+    "won": 1,
+    "pills": 80,
+    "fired": 2
+   },
+   {
+    "seed": 48,
+    "won": 1,
+    "pills": 85,
+    "fired": 4
+   },
+   {
+    "seed": 50,
+    "won": 1,
+    "pills": 80,
+    "fired": 4
+   },
+   {
+    "seed": 52,
+    "won": 1,
+    "pills": 87,
+    "fired": 0
+   },
+   {
+    "seed": 54,
+    "won": 1,
+    "pills": 113,
+    "fired": 2
+   },
+   {
+    "seed": 56,
+    "won": 1,
+    "pills": 102,
+    "fired": 1
+   },
+   {
+    "seed": 58,
+    "won": 1,
+    "pills": 104,
+    "fired": 1
+   },
+   {
+    "seed": 60,
+    "won": 1,
+    "pills": 77,
+    "fired": 0
+   },
+   {
+    "seed": 62,
+    "won": 1,
+    "pills": 82,
+    "fired": 7
+   },
+   {
+    "seed": 64,
+    "won": 1,
+    "pills": 93,
+    "fired": 1
+   },
+   {
+    "seed": 66,
+    "won": 1,
+    "pills": 101,
+    "fired": 2
+   },
+   {
+    "seed": 68,
+    "won": 1,
+    "pills": 76,
+    "fired": 3
+   },
+   {
+    "seed": 70,
+    "won": 1,
+    "pills": 67,
+    "fired": 3
+   },
+   {
+    "seed": 72,
+    "won": 1,
+    "pills": 107,
+    "fired": 4
+   },
+   {
+    "seed": 74,
+    "won": 1,
+    "pills": 83,
+    "fired": 2
+   },
+   {
+    "seed": 76,
+    "won": 1,
+    "pills": 94,
+    "fired": 0
+   },
+   {
+    "seed": 78,
+    "won": 1,
+    "pills": 91,
+    "fired": 5
+   },
+   {
+    "seed": 80,
+    "won": 1,
+    "pills": 162,
+    "fired": 2
+   },
+   {
+    "seed": 82,
+    "won": 1,
+    "pills": 112,
+    "fired": 3
+   },
+   {
+    "seed": 84,
+    "won": 1,
+    "pills": 103,
+    "fired": 1
+   },
+   {
+    "seed": 86,
+    "won": 1,
+    "pills": 136,
+    "fired": 5
+   },
+   {
+    "seed": 88,
+    "won": 1,
+    "pills": 81,
+    "fired": 3
+   },
+   {
+    "seed": 90,
+    "won": 1,
+    "pills": 102,
+    "fired": 4
+   },
+   {
+    "seed": 92,
+    "won": 1,
+    "pills": 67,
+    "fired": 4
+   },
+   {
+    "seed": 94,
+    "won": 1,
+    "pills": 76,
+    "fired": 2
+   },
+   {
+    "seed": 96,
+    "won": 1,
+    "pills": 165,
+    "fired": 0
+   },
+   {
+    "seed": 98,
+    "won": 1,
+    "pills": 111,
+    "fired": 3
+   },
+   {
+    "seed": 100,
+    "won": 1,
+    "pills": 98,
+    "fired": 4
+   },
+   {
+    "seed": 102,
+    "won": 1,
+    "pills": 74,
+    "fired": 0
+   },
+   {
+    "seed": 104,
+    "won": 1,
+    "pills": 95,
+    "fired": 8
+   },
+   {
+    "seed": 106,
+    "won": 1,
+    "pills": 98,
+    "fired": 1
+   },
+   {
+    "seed": 108,
+    "won": 1,
+    "pills": 188,
+    "fired": 5
+   },
+   {
+    "seed": 110,
+    "won": 1,
+    "pills": 57,
+    "fired": 4
+   },
+   {
+    "seed": 112,
+    "won": 1,
+    "pills": 75,
+    "fired": 2
+   },
+   {
+    "seed": 114,
+    "won": 1,
+    "pills": 71,
+    "fired": 4
+   },
+   {
+    "seed": 116,
+    "won": 1,
+    "pills": 102,
+    "fired": 5
+   },
+   {
+    "seed": 118,
+    "won": 1,
+    "pills": 76,
+    "fired": 2
+   },
+   {
+    "seed": 120,
+    "won": 1,
+    "pills": 80,
+    "fired": 3
+   },
+   {
+    "seed": 122,
+    "won": 1,
+    "pills": 122,
+    "fired": 2
+   },
+   {
+    "seed": 124,
+    "won": 1,
+    "pills": 87,
+    "fired": 1
+   },
+   {
+    "seed": 126,
+    "won": 1,
+    "pills": 83,
+    "fired": 5
+   },
+   {
+    "seed": 128,
+    "won": 1,
+    "pills": 91,
+    "fired": 5
+   },
+   {
+    "seed": 130,
+    "won": 1,
+    "pills": 117,
+    "fired": 2
+   },
+   {
+    "seed": 132,
+    "won": 1,
+    "pills": 95,
+    "fired": 2
+   },
+   {
+    "seed": 134,
+    "won": 1,
+    "pills": 88,
+    "fired": 2
+   },
+   {
+    "seed": 136,
+    "won": 1,
+    "pills": 99,
+    "fired": 3
+   },
+   {
+    "seed": 138,
+    "won": 1,
+    "pills": 81,
+    "fired": 0
+   },
+   {
+    "seed": 140,
+    "won": 1,
+    "pills": 102,
+    "fired": 2
+   },
+   {
+    "seed": 142,
+    "won": 1,
+    "pills": 101,
+    "fired": 1
+   },
+   {
+    "seed": 144,
+    "won": 1,
+    "pills": 106,
+    "fired": 5
+   },
+   {
+    "seed": 146,
+    "won": 1,
+    "pills": 78,
+    "fired": 6
+   },
+   {
+    "seed": 148,
+    "won": 1,
+    "pills": 72,
+    "fired": 0
+   },
+   {
+    "seed": 150,
+    "won": 1,
+    "pills": 69,
+    "fired": 3
+   },
+   {
+    "seed": 152,
+    "won": 1,
+    "pills": 148,
+    "fired": 4
+   },
+   {
+    "seed": 154,
+    "won": 1,
+    "pills": 79,
+    "fired": 2
+   },
+   {
+    "seed": 156,
+    "won": 1,
+    "pills": 129,
+    "fired": 5
+   },
+   {
+    "seed": 158,
+    "won": 1,
+    "pills": 102,
+    "fired": 5
+   },
+   {
+    "seed": 160,
+    "won": 1,
+    "pills": 71,
+    "fired": 0
+   },
+   {
+    "seed": 162,
+    "won": 1,
+    "pills": 91,
+    "fired": 1
+   },
+   {
+    "seed": 164,
+    "won": 1,
+    "pills": 102,
+    "fired": 6
+   },
+   {
+    "seed": 166,
+    "won": 1,
+    "pills": 101,
+    "fired": 1
+   },
+   {
+    "seed": 168,
+    "won": 1,
+    "pills": 97,
+    "fired": 2
+   },
+   {
+    "seed": 170,
+    "won": 1,
+    "pills": 69,
+    "fired": 2
+   },
+   {
+    "seed": 172,
+    "won": 1,
+    "pills": 74,
+    "fired": 1
+   },
+   {
+    "seed": 174,
+    "won": 1,
+    "pills": 97,
+    "fired": 3
+   },
+   {
+    "seed": 176,
+    "won": 1,
+    "pills": 102,
+    "fired": 3
+   },
+   {
+    "seed": 178,
+    "won": 1,
+    "pills": 89,
+    "fired": 6
+   },
+   {
+    "seed": 180,
+    "won": 1,
+    "pills": 92,
+    "fired": 4
+   },
+   {
+    "seed": 182,
+    "won": 1,
+    "pills": 88,
+    "fired": 2
+   },
+   {
+    "seed": 184,
+    "won": 1,
+    "pills": 215,
+    "fired": 6
+   },
+   {
+    "seed": 186,
+    "won": 1,
+    "pills": 88,
+    "fired": 4
+   },
+   {
+    "seed": 188,
+    "won": 1,
+    "pills": 79,
+    "fired": 4
+   },
+   {
+    "seed": 190,
+    "won": 1,
+    "pills": 68,
+    "fired": 4
+   },
+   {
+    "seed": 192,
+    "won": 1,
+    "pills": 80,
+    "fired": 3
+   },
+   {
+    "seed": 194,
+    "won": 1,
+    "pills": 87,
+    "fired": 6
+   },
+   {
+    "seed": 196,
+    "won": 1,
+    "pills": 82,
+    "fired": 2
+   },
+   {
+    "seed": 198,
+    "won": 1,
+    "pills": 130,
+    "fired": 4
+   },
+   {
+    "seed": 200,
+    "won": 1,
+    "pills": 87,
+    "fired": 4
+   },
+   {
+    "seed": 202,
+    "won": 1,
+    "pills": 82,
+    "fired": 5
+   },
+   {
+    "seed": 204,
+    "won": 1,
+    "pills": 78,
+    "fired": 0
+   },
+   {
+    "seed": 206,
+    "won": 1,
+    "pills": 142,
+    "fired": 3
+   },
+   {
+    "seed": 208,
+    "won": 1,
+    "pills": 81,
+    "fired": 3
+   },
+   {
+    "seed": 210,
+    "won": 1,
+    "pills": 84,
+    "fired": 2
+   },
+   {
+    "seed": 212,
+    "won": 1,
+    "pills": 110,
+    "fired": 2
+   },
+   {
+    "seed": 214,
+    "won": 1,
+    "pills": 124,
+    "fired": 6
+   },
+   {
+    "seed": 216,
+    "won": 1,
+    "pills": 122,
+    "fired": 4
+   },
+   {
+    "seed": 218,
+    "won": 1,
+    "pills": 113,
+    "fired": 1
+   },
+   {
+    "seed": 220,
+    "won": 1,
+    "pills": 68,
+    "fired": 4
+   },
+   {
+    "seed": 222,
+    "won": 1,
+    "pills": 80,
+    "fired": 3
+   },
+   {
+    "seed": 224,
+    "won": 1,
+    "pills": 104,
+    "fired": 4
+   },
+   {
+    "seed": 226,
+    "won": 1,
+    "pills": 70,
+    "fired": 3
+   },
+   {
+    "seed": 228,
+    "won": 1,
+    "pills": 137,
+    "fired": 3
+   },
+   {
+    "seed": 230,
+    "won": 1,
+    "pills": 141,
+    "fired": 1
+   },
+   {
+    "seed": 232,
+    "won": 1,
+    "pills": 103,
+    "fired": 1
+   },
+   {
+    "seed": 234,
+    "won": 1,
+    "pills": 59,
+    "fired": 1
+   },
+   {
+    "seed": 236,
+    "won": 1,
+    "pills": 91,
+    "fired": 5
+   },
+   {
+    "seed": 238,
+    "won": 1,
+    "pills": 64,
+    "fired": 6
+   },
+   {
+    "seed": 240,
+    "won": 1,
+    "pills": 67,
+    "fired": 7
+   },
+   {
+    "seed": 242,
+    "won": 1,
+    "pills": 80,
+    "fired": 3
+   },
+   {
+    "seed": 244,
+    "won": 1,
+    "pills": 81,
+    "fired": 6
+   },
+   {
+    "seed": 246,
+    "won": 1,
+    "pills": 76,
+    "fired": 5
+   },
+   {
+    "seed": 248,
+    "won": 1,
+    "pills": 178,
+    "fired": 1
+   },
+   {
+    "seed": 250,
+    "won": 1,
+    "pills": 80,
+    "fired": 4
+   },
+   {
+    "seed": 252,
+    "won": 1,
+    "pills": 89,
+    "fired": 1
+   },
+   {
+    "seed": 254,
+    "won": 1,
+    "pills": 82,
+    "fired": 4
+   },
+   {
+    "seed": 256,
+    "won": 1,
+    "pills": 98,
+    "fired": 3
+   },
+   {
+    "seed": 258,
+    "won": 1,
+    "pills": 118,
+    "fired": 6
+   },
+   {
+    "seed": 260,
+    "won": 1,
+    "pills": 152,
+    "fired": 3
+   },
+   {
+    "seed": 262,
+    "won": 1,
+    "pills": 89,
+    "fired": 3
+   },
+   {
+    "seed": 264,
+    "won": 1,
+    "pills": 86,
+    "fired": 1
+   },
+   {
+    "seed": 266,
+    "won": 1,
+    "pills": 76,
+    "fired": 1
+   },
+   {
+    "seed": 268,
+    "won": 1,
+    "pills": 75,
+    "fired": 1
+   },
+   {
+    "seed": 270,
+    "won": 1,
+    "pills": 67,
+    "fired": 2
+   },
+   {
+    "seed": 272,
+    "won": 1,
+    "pills": 96,
+    "fired": 5
+   },
+   {
+    "seed": 274,
+    "won": 1,
+    "pills": 84,
+    "fired": 5
+   },
+   {
+    "seed": 276,
+    "won": 1,
+    "pills": 106,
+    "fired": 2
+   },
+   {
+    "seed": 278,
+    "won": 1,
+    "pills": 128,
+    "fired": 1
+   },
+   {
+    "seed": 280,
+    "won": 1,
+    "pills": 100,
+    "fired": 1
+   },
+   {
+    "seed": 282,
+    "won": 1,
+    "pills": 247,
+    "fired": 3
+   },
+   {
+    "seed": 284,
+    "won": 1,
+    "pills": 95,
+    "fired": 1
+   },
+   {
+    "seed": 286,
+    "won": 1,
+    "pills": 128,
+    "fired": 4
+   },
+   {
+    "seed": 288,
+    "won": 1,
+    "pills": 103,
+    "fired": 4
+   },
+   {
+    "seed": 290,
+    "won": 1,
+    "pills": 88,
+    "fired": 4
+   },
+   {
+    "seed": 292,
+    "won": 1,
+    "pills": 102,
+    "fired": 3
+   },
+   {
+    "seed": 294,
+    "won": 1,
+    "pills": 86,
+    "fired": 3
+   },
+   {
+    "seed": 296,
+    "won": 1,
+    "pills": 106,
+    "fired": 2
+   },
+   {
+    "seed": 298,
+    "won": 1,
+    "pills": 72,
+    "fired": 3
+   },
+   {
+    "seed": 300,
+    "won": 1,
+    "pills": 79,
+    "fired": 3
+   },
+   {
+    "seed": 302,
+    "won": 1,
+    "pills": 91,
+    "fired": 1
+   },
+   {
+    "seed": 304,
+    "won": 1,
+    "pills": 83,
+    "fired": 2
+   },
+   {
+    "seed": 306,
+    "won": 1,
+    "pills": 99,
+    "fired": 2
+   },
+   {
+    "seed": 308,
+    "won": 1,
+    "pills": 93,
+    "fired": 3
+   },
+   {
+    "seed": 310,
+    "won": 1,
+    "pills": 79,
+    "fired": 4
+   },
+   {
+    "seed": 312,
+    "won": 1,
+    "pills": 83,
+    "fired": 2
+   },
+   {
+    "seed": 314,
+    "won": 1,
+    "pills": 80,
+    "fired": 1
+   },
+   {
+    "seed": 316,
+    "won": 1,
+    "pills": 130,
+    "fired": 5
+   },
+   {
+    "seed": 318,
+    "won": 1,
+    "pills": 101,
+    "fired": 2
+   },
+   {
+    "seed": 320,
+    "won": 1,
+    "pills": 78,
+    "fired": 3
+   },
+   {
+    "seed": 322,
+    "won": 1,
+    "pills": 77,
+    "fired": 2
+   },
+   {
+    "seed": 324,
+    "won": 1,
+    "pills": 102,
+    "fired": 5
+   },
+   {
+    "seed": 326,
+    "won": 1,
+    "pills": 76,
+    "fired": 2
+   },
+   {
+    "seed": 328,
+    "won": 1,
+    "pills": 150,
+    "fired": 1
+   },
+   {
+    "seed": 330,
+    "won": 1,
+    "pills": 69,
+    "fired": 5
+   },
+   {
+    "seed": 332,
+    "won": 1,
+    "pills": 85,
+    "fired": 2
+   },
+   {
+    "seed": 334,
+    "won": 1,
+    "pills": 88,
+    "fired": 5
+   },
+   {
+    "seed": 336,
+    "won": 1,
+    "pills": 79,
+    "fired": 3
+   },
+   {
+    "seed": 338,
+    "won": 1,
+    "pills": 87,
+    "fired": 3
+   },
+   {
+    "seed": 340,
+    "won": 1,
+    "pills": 73,
+    "fired": 4
+   },
+   {
+    "seed": 342,
+    "won": 1,
+    "pills": 103,
+    "fired": 1
+   },
+   {
+    "seed": 344,
+    "won": 1,
+    "pills": 93,
+    "fired": 4
+   },
+   {
+    "seed": 346,
+    "won": 1,
+    "pills": 81,
+    "fired": 0
+   },
+   {
+    "seed": 348,
+    "won": 1,
+    "pills": 75,
+    "fired": 6
+   },
+   {
+    "seed": 350,
+    "won": 1,
+    "pills": 86,
+    "fired": 3
+   },
+   {
+    "seed": 352,
+    "won": 1,
+    "pills": 137,
+    "fired": 3
+   },
+   {
+    "seed": 354,
+    "won": 1,
+    "pills": 131,
+    "fired": 0
+   },
+   {
+    "seed": 356,
+    "won": 1,
+    "pills": 110,
+    "fired": 4
+   },
+   {
+    "seed": 358,
+    "won": 1,
+    "pills": 74,
+    "fired": 2
+   },
+   {
+    "seed": 360,
+    "won": 1,
+    "pills": 105,
+    "fired": 4
+   },
+   {
+    "seed": 362,
+    "won": 1,
+    "pills": 81,
+    "fired": 3
+   },
+   {
+    "seed": 364,
+    "won": 1,
+    "pills": 121,
+    "fired": 3
+   },
+   {
+    "seed": 366,
+    "won": 1,
+    "pills": 77,
+    "fired": 0
+   },
+   {
+    "seed": 368,
+    "won": 1,
+    "pills": 151,
+    "fired": 4
+   },
+   {
+    "seed": 370,
+    "won": 1,
+    "pills": 116,
+    "fired": 4
+   },
+   {
+    "seed": 372,
+    "won": 1,
+    "pills": 73,
+    "fired": 1
+   },
+   {
+    "seed": 374,
+    "won": 1,
+    "pills": 111,
+    "fired": 3
+   },
+   {
+    "seed": 376,
+    "won": 1,
+    "pills": 151,
+    "fired": 5
+   },
+   {
+    "seed": 378,
+    "won": 1,
+    "pills": 118,
+    "fired": 4
+   },
+   {
+    "seed": 380,
+    "won": 1,
+    "pills": 160,
+    "fired": 4
+   },
+   {
+    "seed": 382,
+    "won": 0,
+    "pills": 161,
+    "fired": 2
+   },
+   {
+    "seed": 384,
+    "won": 1,
+    "pills": 107,
+    "fired": 5
+   },
+   {
+    "seed": 386,
+    "won": 1,
+    "pills": 169,
+    "fired": 1
+   },
+   {
+    "seed": 388,
+    "won": 1,
+    "pills": 99,
+    "fired": 3
+   },
+   {
+    "seed": 390,
+    "won": 1,
+    "pills": 88,
+    "fired": 4
+   },
+   {
+    "seed": 392,
+    "won": 1,
+    "pills": 100,
+    "fired": 1
+   },
+   {
+    "seed": 394,
+    "won": 1,
+    "pills": 87,
+    "fired": 4
+   },
+   {
+    "seed": 396,
+    "won": 1,
+    "pills": 175,
+    "fired": 6
+   },
+   {
+    "seed": 398,
+    "won": 1,
+    "pills": 95,
+    "fired": 6
+   },
+   {
+    "seed": 400,
+    "won": 1,
+    "pills": 135,
+    "fired": 5
+   },
+   {
+    "seed": 402,
+    "won": 1,
+    "pills": 84,
+    "fired": 1
+   },
+   {
+    "seed": 404,
+    "won": 1,
+    "pills": 163,
+    "fired": 4
+   },
+   {
+    "seed": 406,
+    "won": 1,
+    "pills": 80,
+    "fired": 3
+   },
+   {
+    "seed": 408,
+    "won": 1,
+    "pills": 67,
+    "fired": 1
+   },
+   {
+    "seed": 410,
+    "won": 1,
+    "pills": 120,
+    "fired": 3
+   },
+   {
+    "seed": 412,
+    "won": 1,
+    "pills": 219,
+    "fired": 6
+   },
+   {
+    "seed": 414,
+    "won": 1,
+    "pills": 63,
+    "fired": 2
+   },
+   {
+    "seed": 416,
+    "won": 1,
+    "pills": 72,
+    "fired": 2
+   },
+   {
+    "seed": 418,
+    "won": 1,
+    "pills": 87,
+    "fired": 1
+   },
+   {
+    "seed": 420,
+    "won": 1,
+    "pills": 60,
+    "fired": 2
+   },
+   {
+    "seed": 422,
+    "won": 1,
+    "pills": 98,
+    "fired": 5
+   },
+   {
+    "seed": 424,
+    "won": 1,
+    "pills": 78,
+    "fired": 4
+   },
+   {
+    "seed": 426,
+    "won": 1,
+    "pills": 76,
+    "fired": 6
+   },
+   {
+    "seed": 428,
+    "won": 1,
+    "pills": 74,
+    "fired": 5
+   },
+   {
+    "seed": 430,
+    "won": 1,
+    "pills": 56,
+    "fired": 6
+   },
+   {
+    "seed": 432,
+    "won": 1,
+    "pills": 153,
+    "fired": 3
+   },
+   {
+    "seed": 434,
+    "won": 1,
+    "pills": 79,
+    "fired": 4
+   },
+   {
+    "seed": 436,
+    "won": 1,
+    "pills": 85,
+    "fired": 1
+   },
+   {
+    "seed": 438,
+    "won": 1,
+    "pills": 80,
+    "fired": 3
+   },
+   {
+    "seed": 440,
+    "won": 1,
+    "pills": 84,
+    "fired": 3
+   },
+   {
+    "seed": 442,
+    "won": 1,
+    "pills": 94,
+    "fired": 4
+   },
+   {
+    "seed": 444,
+    "won": 1,
+    "pills": 76,
+    "fired": 2
+   },
+   {
+    "seed": 446,
+    "won": 1,
+    "pills": 97,
+    "fired": 1
+   },
+   {
+    "seed": 448,
+    "won": 1,
+    "pills": 73,
+    "fired": 1
+   },
+   {
+    "seed": 450,
+    "won": 1,
+    "pills": 103,
+    "fired": 2
+   },
+   {
+    "seed": 452,
+    "won": 1,
+    "pills": 89,
+    "fired": 5
+   },
+   {
+    "seed": 454,
+    "won": 1,
+    "pills": 83,
+    "fired": 5
+   },
+   {
+    "seed": 456,
+    "won": 1,
+    "pills": 136,
+    "fired": 2
+   },
+   {
+    "seed": 458,
+    "won": 1,
+    "pills": 102,
+    "fired": 5
+   },
+   {
+    "seed": 460,
+    "won": 1,
+    "pills": 58,
+    "fired": 4
+   },
+   {
+    "seed": 462,
+    "won": 1,
+    "pills": 95,
+    "fired": 0
+   },
+   {
+    "seed": 464,
+    "won": 1,
+    "pills": 157,
+    "fired": 5
+   },
+   {
+    "seed": 466,
+    "won": 1,
+    "pills": 97,
+    "fired": 4
+   },
+   {
+    "seed": 468,
+    "won": 1,
+    "pills": 100,
+    "fired": 1
+   },
+   {
+    "seed": 470,
+    "won": 1,
+    "pills": 106,
+    "fired": 6
+   },
+   {
+    "seed": 472,
+    "won": 1,
+    "pills": 120,
+    "fired": 2
+   },
+   {
+    "seed": 474,
+    "won": 1,
+    "pills": 97,
+    "fired": 2
+   },
+   {
+    "seed": 476,
+    "won": 1,
+    "pills": 82,
+    "fired": 4
+   },
+   {
+    "seed": 478,
+    "won": 1,
+    "pills": 82,
+    "fired": 2
+   },
+   {
+    "seed": 480,
+    "won": 1,
+    "pills": 78,
+    "fired": 2
+   },
+   {
+    "seed": 482,
+    "won": 1,
+    "pills": 85,
+    "fired": 4
+   },
+   {
+    "seed": 484,
+    "won": 1,
+    "pills": 77,
+    "fired": 3
+   },
+   {
+    "seed": 486,
+    "won": 1,
+    "pills": 75,
+    "fired": 4
+   },
+   {
+    "seed": 488,
+    "won": 1,
+    "pills": 75,
+    "fired": 7
+   },
+   {
+    "seed": 490,
+    "won": 1,
+    "pills": 116,
+    "fired": 5
+   },
+   {
+    "seed": 492,
+    "won": 1,
+    "pills": 79,
+    "fired": 3
+   },
+   {
+    "seed": 494,
+    "won": 1,
+    "pills": 92,
+    "fired": 6
+   },
+   {
+    "seed": 496,
+    "won": 1,
+    "pills": 105,
+    "fired": 2
+   },
+   {
+    "seed": 498,
+    "won": 1,
+    "pills": 96,
+    "fired": 2
+   },
+   {
+    "seed": 500,
+    "won": 1,
+    "pills": 124,
+    "fired": 3
+   },
+   {
+    "seed": 502,
+    "won": 1,
+    "pills": 77,
+    "fired": 1
+   },
+   {
+    "seed": 504,
+    "won": 1,
+    "pills": 88,
+    "fired": 3
+   },
+   {
+    "seed": 506,
+    "won": 1,
+    "pills": 108,
+    "fired": 2
+   },
+   {
+    "seed": 508,
+    "won": 1,
+    "pills": 79,
+    "fired": 4
+   },
+   {
+    "seed": 510,
+    "won": 1,
+    "pills": 69,
+    "fired": 0
+   },
+   {
+    "seed": 512,
+    "won": 1,
+    "pills": 79,
+    "fired": 2
+   },
+   {
+    "seed": 514,
+    "won": 1,
+    "pills": 128,
+    "fired": 2
+   },
+   {
+    "seed": 516,
+    "won": 1,
+    "pills": 137,
+    "fired": 4
+   },
+   {
+    "seed": 518,
+    "won": 1,
+    "pills": 129,
+    "fired": 3
+   },
+   {
+    "seed": 520,
+    "won": 1,
+    "pills": 89,
+    "fired": 5
+   },
+   {
+    "seed": 522,
+    "won": 1,
+    "pills": 78,
+    "fired": 3
+   },
+   {
+    "seed": 524,
+    "won": 1,
+    "pills": 90,
+    "fired": 3
+   },
+   {
+    "seed": 526,
+    "won": 1,
+    "pills": 99,
+    "fired": 7
+   },
+   {
+    "seed": 528,
+    "won": 1,
+    "pills": 77,
+    "fired": 3
+   },
+   {
+    "seed": 530,
+    "won": 1,
+    "pills": 82,
+    "fired": 4
+   },
+   {
+    "seed": 532,
+    "won": 1,
+    "pills": 72,
+    "fired": 3
+   },
+   {
+    "seed": 534,
+    "won": 1,
+    "pills": 88,
+    "fired": 4
+   },
+   {
+    "seed": 536,
+    "won": 1,
+    "pills": 106,
+    "fired": 5
+   },
+   {
+    "seed": 538,
+    "won": 1,
+    "pills": 78,
+    "fired": 3
+   },
+   {
+    "seed": 540,
+    "won": 1,
+    "pills": 135,
+    "fired": 4
+   },
+   {
+    "seed": 542,
+    "won": 1,
+    "pills": 96,
+    "fired": 6
+   },
+   {
+    "seed": 544,
+    "won": 1,
+    "pills": 137,
+    "fired": 5
+   },
+   {
+    "seed": 546,
+    "won": 1,
+    "pills": 97,
+    "fired": 3
+   },
+   {
+    "seed": 548,
+    "won": 1,
+    "pills": 79,
+    "fired": 2
+   },
+   {
+    "seed": 550,
+    "won": 1,
+    "pills": 83,
+    "fired": 2
+   },
+   {
+    "seed": 552,
+    "won": 1,
+    "pills": 82,
+    "fired": 2
+   },
+   {
+    "seed": 554,
+    "won": 1,
+    "pills": 85,
+    "fired": 1
+   },
+   {
+    "seed": 556,
+    "won": 1,
+    "pills": 102,
+    "fired": 3
+   },
+   {
+    "seed": 558,
+    "won": 1,
+    "pills": 248,
+    "fired": 2
+   },
+   {
+    "seed": 560,
+    "won": 1,
+    "pills": 77,
+    "fired": 2
+   },
+   {
+    "seed": 562,
+    "won": 1,
+    "pills": 133,
+    "fired": 2
+   },
+   {
+    "seed": 564,
+    "won": 1,
+    "pills": 83,
+    "fired": 2
+   },
+   {
+    "seed": 566,
+    "won": 1,
+    "pills": 120,
+    "fired": 1
+   },
+   {
+    "seed": 568,
+    "won": 1,
+    "pills": 87,
+    "fired": 4
+   },
+   {
+    "seed": 570,
+    "won": 1,
+    "pills": 111,
+    "fired": 2
+   },
+   {
+    "seed": 572,
+    "won": 1,
+    "pills": 74,
+    "fired": 2
+   },
+   {
+    "seed": 574,
+    "won": 1,
+    "pills": 76,
+    "fired": 1
+   },
+   {
+    "seed": 576,
+    "won": 1,
+    "pills": 106,
+    "fired": 2
+   },
+   {
+    "seed": 578,
+    "won": 1,
+    "pills": 144,
+    "fired": 5
+   },
+   {
+    "seed": 580,
+    "won": 1,
+    "pills": 98,
+    "fired": 1
+   },
+   {
+    "seed": 582,
+    "won": 1,
+    "pills": 77,
+    "fired": 3
+   },
+   {
+    "seed": 584,
+    "won": 1,
+    "pills": 79,
+    "fired": 5
+   },
+   {
+    "seed": 586,
+    "won": 1,
+    "pills": 74,
+    "fired": 3
+   },
+   {
+    "seed": 588,
+    "won": 1,
+    "pills": 79,
+    "fired": 3
+   },
+   {
+    "seed": 590,
+    "won": 1,
+    "pills": 87,
+    "fired": 0
+   },
+   {
+    "seed": 592,
+    "won": 1,
+    "pills": 74,
+    "fired": 2
+   },
+   {
+    "seed": 594,
+    "won": 1,
+    "pills": 91,
+    "fired": 2
+   },
+   {
+    "seed": 596,
+    "won": 1,
+    "pills": 84,
+    "fired": 2
+   },
+   {
+    "seed": 598,
+    "won": 1,
+    "pills": 90,
+    "fired": 1
+   },
+   {
+    "seed": 600,
+    "won": 1,
+    "pills": 89,
+    "fired": 2
+   }
+  ],
+  "C_upper_full": [
+   {
+    "seed": 2,
+    "won": 1,
+    "pills": 166,
+    "fired": 4
+   },
+   {
+    "seed": 4,
+    "won": 1,
+    "pills": 76,
+    "fired": 9
+   },
+   {
+    "seed": 6,
+    "won": 1,
+    "pills": 69,
+    "fired": 9
+   },
+   {
+    "seed": 8,
+    "won": 0,
+    "pills": 198,
+    "fired": 8
+   },
+   {
+    "seed": 10,
+    "won": 1,
+    "pills": 74,
+    "fired": 4
+   },
+   {
+    "seed": 12,
+    "won": 1,
+    "pills": 61,
+    "fired": 3
+   },
+   {
+    "seed": 14,
+    "won": 1,
+    "pills": 79,
+    "fired": 3
+   },
+   {
+    "seed": 16,
+    "won": 1,
+    "pills": 76,
+    "fired": 6
+   },
+   {
+    "seed": 18,
+    "won": 1,
+    "pills": 148,
+    "fired": 5
+   },
+   {
+    "seed": 20,
+    "won": 1,
+    "pills": 86,
+    "fired": 1
+   },
+   {
+    "seed": 22,
+    "won": 1,
+    "pills": 124,
+    "fired": 9
+   },
+   {
+    "seed": 24,
+    "won": 1,
+    "pills": 105,
+    "fired": 2
+   },
+   {
+    "seed": 26,
+    "won": 1,
+    "pills": 92,
+    "fired": 6
+   },
+   {
+    "seed": 28,
+    "won": 1,
+    "pills": 76,
+    "fired": 4
+   },
+   {
+    "seed": 30,
+    "won": 1,
+    "pills": 78,
+    "fired": 7
+   },
+   {
+    "seed": 32,
+    "won": 1,
+    "pills": 71,
+    "fired": 5
+   },
+   {
+    "seed": 34,
+    "won": 1,
+    "pills": 88,
+    "fired": 8
+   },
+   {
+    "seed": 36,
+    "won": 1,
+    "pills": 131,
+    "fired": 2
+   },
+   {
+    "seed": 38,
+    "won": 1,
+    "pills": 90,
+    "fired": 4
+   },
+   {
+    "seed": 40,
+    "won": 1,
+    "pills": 79,
+    "fired": 6
+   },
+   {
+    "seed": 42,
+    "won": 1,
+    "pills": 52,
+    "fired": 3
+   },
+   {
+    "seed": 44,
+    "won": 0,
+    "pills": 300,
+    "fired": 6
+   },
+   {
+    "seed": 46,
+    "won": 1,
+    "pills": 80,
+    "fired": 2
+   },
+   {
+    "seed": 48,
+    "won": 1,
+    "pills": 97,
+    "fired": 7
+   },
+   {
+    "seed": 50,
+    "won": 1,
+    "pills": 89,
+    "fired": 5
+   },
+   {
+    "seed": 52,
+    "won": 1,
+    "pills": 86,
+    "fired": 5
+   },
+   {
+    "seed": 54,
+    "won": 1,
+    "pills": 113,
+    "fired": 2
+   },
+   {
+    "seed": 56,
+    "won": 1,
+    "pills": 94,
+    "fired": 4
+   },
+   {
+    "seed": 58,
+    "won": 1,
+    "pills": 108,
+    "fired": 4
+   },
+   {
+    "seed": 60,
+    "won": 1,
+    "pills": 101,
+    "fired": 1
+   },
+   {
+    "seed": 62,
+    "won": 1,
+    "pills": 74,
+    "fired": 7
+   },
+   {
+    "seed": 64,
+    "won": 1,
+    "pills": 145,
+    "fired": 8
+   },
+   {
+    "seed": 66,
+    "won": 1,
+    "pills": 112,
+    "fired": 3
+   },
+   {
+    "seed": 68,
+    "won": 1,
+    "pills": 84,
+    "fired": 6
+   },
+   {
+    "seed": 70,
+    "won": 1,
+    "pills": 91,
+    "fired": 3
+   },
+   {
+    "seed": 72,
+    "won": 1,
+    "pills": 170,
+    "fired": 10
+   },
+   {
+    "seed": 74,
+    "won": 1,
+    "pills": 154,
+    "fired": 4
+   },
+   {
+    "seed": 76,
+    "won": 1,
+    "pills": 94,
+    "fired": 0
+   },
+   {
+    "seed": 78,
+    "won": 1,
+    "pills": 89,
+    "fired": 7
+   },
+   {
+    "seed": 80,
+    "won": 1,
+    "pills": 106,
+    "fired": 5
+   },
+   {
+    "seed": 82,
+    "won": 1,
+    "pills": 94,
+    "fired": 4
+   },
+   {
+    "seed": 84,
+    "won": 1,
+    "pills": 69,
+    "fired": 3
+   },
+   {
+    "seed": 86,
+    "won": 1,
+    "pills": 61,
+    "fired": 5
+   },
+   {
+    "seed": 88,
+    "won": 1,
+    "pills": 76,
+    "fired": 9
+   },
+   {
+    "seed": 90,
+    "won": 1,
+    "pills": 163,
+    "fired": 8
+   },
+   {
+    "seed": 92,
+    "won": 1,
+    "pills": 71,
+    "fired": 5
+   },
+   {
+    "seed": 94,
+    "won": 1,
+    "pills": 76,
+    "fired": 2
+   },
+   {
+    "seed": 96,
+    "won": 1,
+    "pills": 165,
+    "fired": 0
+   },
+   {
+    "seed": 98,
+    "won": 1,
+    "pills": 107,
+    "fired": 3
+   },
+   {
+    "seed": 100,
+    "won": 1,
+    "pills": 101,
+    "fired": 9
+   },
+   {
+    "seed": 102,
+    "won": 1,
+    "pills": 133,
+    "fired": 5
+   },
+   {
+    "seed": 104,
+    "won": 1,
+    "pills": 78,
+    "fired": 8
+   },
+   {
+    "seed": 106,
+    "won": 1,
+    "pills": 99,
+    "fired": 4
+   },
+   {
+    "seed": 108,
+    "won": 0,
+    "pills": 282,
+    "fired": 5
+   },
+   {
+    "seed": 110,
+    "won": 1,
+    "pills": 57,
+    "fired": 8
+   },
+   {
+    "seed": 112,
+    "won": 1,
+    "pills": 82,
+    "fired": 5
+   },
+   {
+    "seed": 114,
+    "won": 1,
+    "pills": 71,
+    "fired": 4
+   },
+   {
+    "seed": 116,
+    "won": 1,
+    "pills": 96,
+    "fired": 5
+   },
+   {
+    "seed": 118,
+    "won": 1,
+    "pills": 78,
+    "fired": 3
+   },
+   {
+    "seed": 120,
+    "won": 1,
+    "pills": 86,
+    "fired": 5
+   },
+   {
+    "seed": 122,
+    "won": 1,
+    "pills": 99,
+    "fired": 8
+   },
+   {
+    "seed": 124,
+    "won": 1,
+    "pills": 71,
+    "fired": 8
+   },
+   {
+    "seed": 126,
+    "won": 1,
+    "pills": 73,
+    "fired": 8
+   },
+   {
+    "seed": 128,
+    "won": 1,
+    "pills": 91,
+    "fired": 5
+   },
+   {
+    "seed": 130,
+    "won": 1,
+    "pills": 78,
+    "fired": 5
+   },
+   {
+    "seed": 132,
+    "won": 1,
+    "pills": 72,
+    "fired": 3
+   },
+   {
+    "seed": 134,
+    "won": 1,
+    "pills": 81,
+    "fired": 4
+   },
+   {
+    "seed": 136,
+    "won": 1,
+    "pills": 97,
+    "fired": 4
+   },
+   {
+    "seed": 138,
+    "won": 1,
+    "pills": 81,
+    "fired": 5
+   },
+   {
+    "seed": 140,
+    "won": 1,
+    "pills": 73,
+    "fired": 7
+   },
+   {
+    "seed": 142,
+    "won": 1,
+    "pills": 108,
+    "fired": 3
+   },
+   {
+    "seed": 144,
+    "won": 1,
+    "pills": 149,
+    "fired": 9
+   },
+   {
+    "seed": 146,
+    "won": 1,
+    "pills": 78,
+    "fired": 7
+   },
+   {
+    "seed": 148,
+    "won": 1,
+    "pills": 66,
+    "fired": 2
+   },
+   {
+    "seed": 150,
+    "won": 1,
+    "pills": 77,
+    "fired": 6
+   },
+   {
+    "seed": 152,
+    "won": 1,
+    "pills": 89,
+    "fired": 4
+   },
+   {
+    "seed": 154,
+    "won": 1,
+    "pills": 98,
+    "fired": 3
+   },
+   {
+    "seed": 156,
+    "won": 1,
+    "pills": 109,
+    "fired": 8
+   },
+   {
+    "seed": 158,
+    "won": 1,
+    "pills": 165,
+    "fired": 8
+   },
+   {
+    "seed": 160,
+    "won": 1,
+    "pills": 65,
+    "fired": 6
+   },
+   {
+    "seed": 162,
+    "won": 1,
+    "pills": 105,
+    "fired": 4
+   },
+   {
+    "seed": 164,
+    "won": 1,
+    "pills": 74,
+    "fired": 7
+   },
+   {
+    "seed": 166,
+    "won": 1,
+    "pills": 75,
+    "fired": 4
+   },
+   {
+    "seed": 168,
+    "won": 1,
+    "pills": 75,
+    "fired": 7
+   },
+   {
+    "seed": 170,
+    "won": 1,
+    "pills": 72,
+    "fired": 6
+   },
+   {
+    "seed": 172,
+    "won": 1,
+    "pills": 74,
+    "fired": 2
+   },
+   {
+    "seed": 174,
+    "won": 1,
+    "pills": 79,
+    "fired": 3
+   },
+   {
+    "seed": 176,
+    "won": 1,
+    "pills": 89,
+    "fired": 4
+   },
+   {
+    "seed": 178,
+    "won": 1,
+    "pills": 85,
+    "fired": 7
+   },
+   {
+    "seed": 180,
+    "won": 1,
+    "pills": 77,
+    "fired": 4
+   },
+   {
+    "seed": 182,
+    "won": 1,
+    "pills": 73,
+    "fired": 2
+   },
+   {
+    "seed": 184,
+    "won": 1,
+    "pills": 92,
+    "fired": 4
+   },
+   {
+    "seed": 186,
+    "won": 1,
+    "pills": 90,
+    "fired": 2
+   },
+   {
+    "seed": 188,
+    "won": 1,
+    "pills": 89,
+    "fired": 5
+   },
+   {
+    "seed": 190,
+    "won": 1,
+    "pills": 97,
+    "fired": 9
+   },
+   {
+    "seed": 192,
+    "won": 1,
+    "pills": 63,
+    "fired": 3
+   },
+   {
+    "seed": 194,
+    "won": 1,
+    "pills": 81,
+    "fired": 5
+   },
+   {
+    "seed": 196,
+    "won": 1,
+    "pills": 70,
+    "fired": 6
+   },
+   {
+    "seed": 198,
+    "won": 1,
+    "pills": 119,
+    "fired": 10
+   },
+   {
+    "seed": 200,
+    "won": 1,
+    "pills": 83,
+    "fired": 5
+   },
+   {
+    "seed": 202,
+    "won": 1,
+    "pills": 95,
+    "fired": 5
+   },
+   {
+    "seed": 204,
+    "won": 1,
+    "pills": 108,
+    "fired": 5
+   },
+   {
+    "seed": 206,
+    "won": 1,
+    "pills": 265,
+    "fired": 4
+   },
+   {
+    "seed": 208,
+    "won": 1,
+    "pills": 67,
+    "fired": 5
+   },
+   {
+    "seed": 210,
+    "won": 1,
+    "pills": 111,
+    "fired": 3
+   },
+   {
+    "seed": 212,
+    "won": 1,
+    "pills": 106,
+    "fired": 3
+   },
+   {
+    "seed": 214,
+    "won": 1,
+    "pills": 92,
+    "fired": 7
+   },
+   {
+    "seed": 216,
+    "won": 1,
+    "pills": 77,
+    "fired": 4
+   },
+   {
+    "seed": 218,
+    "won": 1,
+    "pills": 84,
+    "fired": 5
+   },
+   {
+    "seed": 220,
+    "won": 1,
+    "pills": 58,
+    "fired": 4
+   },
+   {
+    "seed": 222,
+    "won": 1,
+    "pills": 139,
+    "fired": 4
+   },
+   {
+    "seed": 224,
+    "won": 1,
+    "pills": 146,
+    "fired": 5
+   },
+   {
+    "seed": 226,
+    "won": 1,
+    "pills": 88,
+    "fired": 6
+   },
+   {
+    "seed": 228,
+    "won": 1,
+    "pills": 76,
+    "fired": 5
+   },
+   {
+    "seed": 230,
+    "won": 1,
+    "pills": 91,
+    "fired": 4
+   },
+   {
+    "seed": 232,
+    "won": 1,
+    "pills": 119,
+    "fired": 4
+   },
+   {
+    "seed": 234,
+    "won": 1,
+    "pills": 59,
+    "fired": 1
+   },
+   {
+    "seed": 236,
+    "won": 1,
+    "pills": 94,
+    "fired": 6
+   },
+   {
+    "seed": 238,
+    "won": 1,
+    "pills": 73,
+    "fired": 4
+   },
+   {
+    "seed": 240,
+    "won": 1,
+    "pills": 67,
+    "fired": 8
+   },
+   {
+    "seed": 242,
+    "won": 1,
+    "pills": 106,
+    "fired": 4
+   },
+   {
+    "seed": 244,
+    "won": 1,
+    "pills": 94,
+    "fired": 7
+   },
+   {
+    "seed": 246,
+    "won": 1,
+    "pills": 86,
+    "fired": 4
+   },
+   {
+    "seed": 248,
+    "won": 1,
+    "pills": 88,
+    "fired": 5
+   },
+   {
+    "seed": 250,
+    "won": 1,
+    "pills": 105,
+    "fired": 7
+   },
+   {
+    "seed": 252,
+    "won": 1,
+    "pills": 90,
+    "fired": 5
+   },
+   {
+    "seed": 254,
+    "won": 1,
+    "pills": 78,
+    "fired": 3
+   },
+   {
+    "seed": 256,
+    "won": 1,
+    "pills": 198,
+    "fired": 3
+   },
+   {
+    "seed": 258,
+    "won": 1,
+    "pills": 153,
+    "fired": 4
+   },
+   {
+    "seed": 260,
+    "won": 1,
+    "pills": 89,
+    "fired": 8
+   },
+   {
+    "seed": 262,
+    "won": 1,
+    "pills": 89,
+    "fired": 4
+   },
+   {
+    "seed": 264,
+    "won": 1,
+    "pills": 115,
+    "fired": 4
+   },
+   {
+    "seed": 266,
+    "won": 1,
+    "pills": 76,
+    "fired": 4
+   },
+   {
+    "seed": 268,
+    "won": 1,
+    "pills": 75,
+    "fired": 1
+   },
+   {
+    "seed": 270,
+    "won": 1,
+    "pills": 110,
+    "fired": 7
+   },
+   {
+    "seed": 272,
+    "won": 1,
+    "pills": 123,
+    "fired": 6
+   },
+   {
+    "seed": 274,
+    "won": 1,
+    "pills": 82,
+    "fired": 6
+   },
+   {
+    "seed": 276,
+    "won": 1,
+    "pills": 107,
+    "fired": 2
+   },
+   {
+    "seed": 278,
+    "won": 1,
+    "pills": 160,
+    "fired": 7
+   },
+   {
+    "seed": 280,
+    "won": 1,
+    "pills": 104,
+    "fired": 6
+   },
+   {
+    "seed": 282,
+    "won": 1,
+    "pills": 108,
+    "fired": 2
+   },
+   {
+    "seed": 284,
+    "won": 1,
+    "pills": 101,
+    "fired": 5
+   },
+   {
+    "seed": 286,
+    "won": 1,
+    "pills": 87,
+    "fired": 5
+   },
+   {
+    "seed": 288,
+    "won": 1,
+    "pills": 67,
+    "fired": 5
+   },
+   {
+    "seed": 290,
+    "won": 1,
+    "pills": 84,
+    "fired": 5
+   },
+   {
+    "seed": 292,
+    "won": 1,
+    "pills": 85,
+    "fired": 6
+   },
+   {
+    "seed": 294,
+    "won": 1,
+    "pills": 82,
+    "fired": 4
+   },
+   {
+    "seed": 296,
+    "won": 1,
+    "pills": 106,
+    "fired": 3
+   },
+   {
+    "seed": 298,
+    "won": 1,
+    "pills": 80,
+    "fired": 5
+   },
+   {
+    "seed": 300,
+    "won": 1,
+    "pills": 124,
+    "fired": 6
+   },
+   {
+    "seed": 302,
+    "won": 1,
+    "pills": 50,
+    "fired": 5
+   },
+   {
+    "seed": 304,
+    "won": 1,
+    "pills": 77,
+    "fired": 5
+   },
+   {
+    "seed": 306,
+    "won": 1,
+    "pills": 70,
+    "fired": 4
+   },
+   {
+    "seed": 308,
+    "won": 1,
+    "pills": 145,
+    "fired": 5
+   },
+   {
+    "seed": 310,
+    "won": 1,
+    "pills": 81,
+    "fired": 7
+   },
+   {
+    "seed": 312,
+    "won": 1,
+    "pills": 83,
+    "fired": 2
+   },
+   {
+    "seed": 314,
+    "won": 1,
+    "pills": 86,
+    "fired": 6
+   },
+   {
+    "seed": 316,
+    "won": 1,
+    "pills": 121,
+    "fired": 7
+   },
+   {
+    "seed": 318,
+    "won": 1,
+    "pills": 62,
+    "fired": 6
+   },
+   {
+    "seed": 320,
+    "won": 1,
+    "pills": 90,
+    "fired": 6
+   },
+   {
+    "seed": 322,
+    "won": 1,
+    "pills": 70,
+    "fired": 4
+   },
+   {
+    "seed": 324,
+    "won": 1,
+    "pills": 96,
+    "fired": 3
+   },
+   {
+    "seed": 326,
+    "won": 1,
+    "pills": 75,
+    "fired": 6
+   },
+   {
+    "seed": 328,
+    "won": 1,
+    "pills": 104,
+    "fired": 2
+   },
+   {
+    "seed": 330,
+    "won": 1,
+    "pills": 78,
+    "fired": 3
+   },
+   {
+    "seed": 332,
+    "won": 1,
+    "pills": 102,
+    "fired": 7
+   },
+   {
+    "seed": 334,
+    "won": 1,
+    "pills": 88,
+    "fired": 5
+   },
+   {
+    "seed": 336,
+    "won": 1,
+    "pills": 77,
+    "fired": 4
+   },
+   {
+    "seed": 338,
+    "won": 1,
+    "pills": 93,
+    "fired": 6
+   },
+   {
+    "seed": 340,
+    "won": 1,
+    "pills": 80,
+    "fired": 6
+   },
+   {
+    "seed": 342,
+    "won": 1,
+    "pills": 103,
+    "fired": 1
+   },
+   {
+    "seed": 344,
+    "won": 1,
+    "pills": 81,
+    "fired": 4
+   },
+   {
+    "seed": 346,
+    "won": 1,
+    "pills": 115,
+    "fired": 1
+   },
+   {
+    "seed": 348,
+    "won": 1,
+    "pills": 75,
+    "fired": 6
+   },
+   {
+    "seed": 350,
+    "won": 1,
+    "pills": 114,
+    "fired": 4
+   },
+   {
+    "seed": 352,
+    "won": 1,
+    "pills": 80,
+    "fired": 5
+   },
+   {
+    "seed": 354,
+    "won": 1,
+    "pills": 131,
+    "fired": 0
+   },
+   {
+    "seed": 356,
+    "won": 1,
+    "pills": 81,
+    "fired": 10
+   },
+   {
+    "seed": 358,
+    "won": 1,
+    "pills": 72,
+    "fired": 5
+   },
+   {
+    "seed": 360,
+    "won": 1,
+    "pills": 104,
+    "fired": 4
+   },
+   {
+    "seed": 362,
+    "won": 1,
+    "pills": 73,
+    "fired": 5
+   },
+   {
+    "seed": 364,
+    "won": 1,
+    "pills": 169,
+    "fired": 6
+   },
+   {
+    "seed": 366,
+    "won": 1,
+    "pills": 102,
+    "fired": 2
+   },
+   {
+    "seed": 368,
+    "won": 1,
+    "pills": 91,
+    "fired": 4
+   },
+   {
+    "seed": 370,
+    "won": 1,
+    "pills": 61,
+    "fired": 12
+   },
+   {
+    "seed": 372,
+    "won": 1,
+    "pills": 75,
+    "fired": 5
+   },
+   {
+    "seed": 374,
+    "won": 1,
+    "pills": 86,
+    "fired": 7
+   },
+   {
+    "seed": 376,
+    "won": 1,
+    "pills": 102,
+    "fired": 5
+   },
+   {
+    "seed": 378,
+    "won": 1,
+    "pills": 124,
+    "fired": 5
+   },
+   {
+    "seed": 380,
+    "won": 1,
+    "pills": 104,
+    "fired": 5
+   },
+   {
+    "seed": 382,
+    "won": 1,
+    "pills": 94,
+    "fired": 2
+   },
+   {
+    "seed": 384,
+    "won": 1,
+    "pills": 119,
+    "fired": 5
+   },
+   {
+    "seed": 386,
+    "won": 1,
+    "pills": 182,
+    "fired": 10
+   },
+   {
+    "seed": 388,
+    "won": 1,
+    "pills": 76,
+    "fired": 6
+   },
+   {
+    "seed": 390,
+    "won": 1,
+    "pills": 65,
+    "fired": 8
+   },
+   {
+    "seed": 392,
+    "won": 1,
+    "pills": 137,
+    "fired": 6
+   },
+   {
+    "seed": 394,
+    "won": 1,
+    "pills": 71,
+    "fired": 7
+   },
+   {
+    "seed": 396,
+    "won": 1,
+    "pills": 150,
+    "fired": 7
+   },
+   {
+    "seed": 398,
+    "won": 1,
+    "pills": 89,
+    "fired": 5
+   },
+   {
+    "seed": 400,
+    "won": 1,
+    "pills": 100,
+    "fired": 4
+   },
+   {
+    "seed": 402,
+    "won": 1,
+    "pills": 67,
+    "fired": 1
+   },
+   {
+    "seed": 404,
+    "won": 1,
+    "pills": 137,
+    "fired": 6
+   },
+   {
+    "seed": 406,
+    "won": 1,
+    "pills": 74,
+    "fired": 5
+   },
+   {
+    "seed": 408,
+    "won": 1,
+    "pills": 102,
+    "fired": 3
+   },
+   {
+    "seed": 410,
+    "won": 1,
+    "pills": 132,
+    "fired": 5
+   },
+   {
+    "seed": 412,
+    "won": 1,
+    "pills": 124,
+    "fired": 8
+   },
+   {
+    "seed": 414,
+    "won": 1,
+    "pills": 76,
+    "fired": 4
+   },
+   {
+    "seed": 416,
+    "won": 1,
+    "pills": 79,
+    "fired": 6
+   },
+   {
+    "seed": 418,
+    "won": 1,
+    "pills": 82,
+    "fired": 2
+   },
+   {
+    "seed": 420,
+    "won": 1,
+    "pills": 75,
+    "fired": 6
+   },
+   {
+    "seed": 422,
+    "won": 1,
+    "pills": 102,
+    "fired": 6
+   },
+   {
+    "seed": 424,
+    "won": 1,
+    "pills": 84,
+    "fired": 6
+   },
+   {
+    "seed": 426,
+    "won": 1,
+    "pills": 76,
+    "fired": 8
+   },
+   {
+    "seed": 428,
+    "won": 1,
+    "pills": 61,
+    "fired": 5
+   },
+   {
+    "seed": 430,
+    "won": 1,
+    "pills": 64,
+    "fired": 6
+   },
+   {
+    "seed": 432,
+    "won": 1,
+    "pills": 87,
+    "fired": 6
+   },
+   {
+    "seed": 434,
+    "won": 1,
+    "pills": 127,
+    "fired": 5
+   },
+   {
+    "seed": 436,
+    "won": 1,
+    "pills": 85,
+    "fired": 2
+   },
+   {
+    "seed": 438,
+    "won": 1,
+    "pills": 74,
+    "fired": 7
+   },
+   {
+    "seed": 440,
+    "won": 1,
+    "pills": 92,
+    "fired": 3
+   },
+   {
+    "seed": 442,
+    "won": 1,
+    "pills": 68,
+    "fired": 5
+   },
+   {
+    "seed": 444,
+    "won": 1,
+    "pills": 106,
+    "fired": 4
+   },
+   {
+    "seed": 446,
+    "won": 1,
+    "pills": 69,
+    "fired": 4
+   },
+   {
+    "seed": 448,
+    "won": 1,
+    "pills": 90,
+    "fired": 4
+   },
+   {
+    "seed": 450,
+    "won": 1,
+    "pills": 86,
+    "fired": 4
+   },
+   {
+    "seed": 452,
+    "won": 1,
+    "pills": 88,
+    "fired": 6
+   },
+   {
+    "seed": 454,
+    "won": 1,
+    "pills": 80,
+    "fired": 6
+   },
+   {
+    "seed": 456,
+    "won": 1,
+    "pills": 80,
+    "fired": 4
+   },
+   {
+    "seed": 458,
+    "won": 1,
+    "pills": 67,
+    "fired": 5
+   },
+   {
+    "seed": 460,
+    "won": 1,
+    "pills": 60,
+    "fired": 5
+   },
+   {
+    "seed": 462,
+    "won": 1,
+    "pills": 95,
+    "fired": 0
+   },
+   {
+    "seed": 464,
+    "won": 1,
+    "pills": 87,
+    "fired": 6
+   },
+   {
+    "seed": 466,
+    "won": 1,
+    "pills": 98,
+    "fired": 2
+   },
+   {
+    "seed": 468,
+    "won": 1,
+    "pills": 70,
+    "fired": 6
+   },
+   {
+    "seed": 470,
+    "won": 1,
+    "pills": 85,
+    "fired": 4
+   },
+   {
+    "seed": 472,
+    "won": 1,
+    "pills": 78,
+    "fired": 5
+   },
+   {
+    "seed": 474,
+    "won": 1,
+    "pills": 97,
+    "fired": 2
+   },
+   {
+    "seed": 476,
+    "won": 1,
+    "pills": 82,
+    "fired": 4
+   },
+   {
+    "seed": 478,
+    "won": 1,
+    "pills": 128,
+    "fired": 6
+   },
+   {
+    "seed": 480,
+    "won": 1,
+    "pills": 77,
+    "fired": 3
+   },
+   {
+    "seed": 482,
+    "won": 1,
+    "pills": 76,
+    "fired": 3
+   },
+   {
+    "seed": 484,
+    "won": 1,
+    "pills": 125,
+    "fired": 3
+   },
+   {
+    "seed": 486,
+    "won": 1,
+    "pills": 78,
+    "fired": 7
+   },
+   {
+    "seed": 488,
+    "won": 1,
+    "pills": 74,
+    "fired": 6
+   },
+   {
+    "seed": 490,
+    "won": 1,
+    "pills": 86,
+    "fired": 7
+   },
+   {
+    "seed": 492,
+    "won": 1,
+    "pills": 96,
+    "fired": 5
+   },
+   {
+    "seed": 494,
+    "won": 1,
+    "pills": 86,
+    "fired": 6
+   },
+   {
+    "seed": 496,
+    "won": 1,
+    "pills": 76,
+    "fired": 2
+   },
+   {
+    "seed": 498,
+    "won": 1,
+    "pills": 80,
+    "fired": 4
+   },
+   {
+    "seed": 500,
+    "won": 1,
+    "pills": 79,
+    "fired": 9
+   },
+   {
+    "seed": 502,
+    "won": 1,
+    "pills": 86,
+    "fired": 3
+   },
+   {
+    "seed": 504,
+    "won": 1,
+    "pills": 96,
+    "fired": 4
+   },
+   {
+    "seed": 506,
+    "won": 1,
+    "pills": 108,
+    "fired": 2
+   },
+   {
+    "seed": 508,
+    "won": 1,
+    "pills": 112,
+    "fired": 5
+   },
+   {
+    "seed": 510,
+    "won": 1,
+    "pills": 66,
+    "fired": 1
+   },
+   {
+    "seed": 512,
+    "won": 1,
+    "pills": 70,
+    "fired": 5
+   },
+   {
+    "seed": 514,
+    "won": 1,
+    "pills": 92,
+    "fired": 5
+   },
+   {
+    "seed": 516,
+    "won": 1,
+    "pills": 102,
+    "fired": 8
+   },
+   {
+    "seed": 518,
+    "won": 1,
+    "pills": 114,
+    "fired": 5
+   },
+   {
+    "seed": 520,
+    "won": 1,
+    "pills": 79,
+    "fired": 6
+   },
+   {
+    "seed": 522,
+    "won": 1,
+    "pills": 80,
+    "fired": 4
+   },
+   {
+    "seed": 524,
+    "won": 1,
+    "pills": 90,
+    "fired": 3
+   },
+   {
+    "seed": 526,
+    "won": 1,
+    "pills": 97,
+    "fired": 6
+   },
+   {
+    "seed": 528,
+    "won": 1,
+    "pills": 66,
+    "fired": 6
+   },
+   {
+    "seed": 530,
+    "won": 1,
+    "pills": 78,
+    "fired": 5
+   },
+   {
+    "seed": 532,
+    "won": 1,
+    "pills": 55,
+    "fired": 3
+   },
+   {
+    "seed": 534,
+    "won": 1,
+    "pills": 91,
+    "fired": 6
+   },
+   {
+    "seed": 536,
+    "won": 1,
+    "pills": 79,
+    "fired": 4
+   },
+   {
+    "seed": 538,
+    "won": 1,
+    "pills": 115,
+    "fired": 3
+   },
+   {
+    "seed": 540,
+    "won": 1,
+    "pills": 69,
+    "fired": 9
+   },
+   {
+    "seed": 542,
+    "won": 1,
+    "pills": 102,
+    "fired": 7
+   },
+   {
+    "seed": 544,
+    "won": 1,
+    "pills": 74,
+    "fired": 6
+   },
+   {
+    "seed": 546,
+    "won": 1,
+    "pills": 136,
+    "fired": 9
+   },
+   {
+    "seed": 548,
+    "won": 1,
+    "pills": 81,
+    "fired": 2
+   },
+   {
+    "seed": 550,
+    "won": 1,
+    "pills": 89,
+    "fired": 2
+   },
+   {
+    "seed": 552,
+    "won": 1,
+    "pills": 170,
+    "fired": 7
+   },
+   {
+    "seed": 554,
+    "won": 1,
+    "pills": 80,
+    "fired": 3
+   },
+   {
+    "seed": 556,
+    "won": 1,
+    "pills": 94,
+    "fired": 4
+   },
+   {
+    "seed": 558,
+    "won": 1,
+    "pills": 272,
+    "fired": 3
+   },
+   {
+    "seed": 560,
+    "won": 1,
+    "pills": 71,
+    "fired": 3
+   },
+   {
+    "seed": 562,
+    "won": 1,
+    "pills": 105,
+    "fired": 3
+   },
+   {
+    "seed": 564,
+    "won": 1,
+    "pills": 128,
+    "fired": 4
+   },
+   {
+    "seed": 566,
+    "won": 1,
+    "pills": 86,
+    "fired": 3
+   },
+   {
+    "seed": 568,
+    "won": 1,
+    "pills": 98,
+    "fired": 5
+   },
+   {
+    "seed": 570,
+    "won": 1,
+    "pills": 139,
+    "fired": 2
+   },
+   {
+    "seed": 572,
+    "won": 1,
+    "pills": 87,
+    "fired": 3
+   },
+   {
+    "seed": 574,
+    "won": 1,
+    "pills": 76,
+    "fired": 1
+   },
+   {
+    "seed": 576,
+    "won": 1,
+    "pills": 157,
+    "fired": 7
+   },
+   {
+    "seed": 578,
+    "won": 1,
+    "pills": 84,
+    "fired": 5
+   },
+   {
+    "seed": 580,
+    "won": 1,
+    "pills": 82,
+    "fired": 4
+   },
+   {
+    "seed": 582,
+    "won": 1,
+    "pills": 77,
+    "fired": 3
+   },
+   {
+    "seed": 584,
+    "won": 1,
+    "pills": 67,
+    "fired": 7
+   },
+   {
+    "seed": 586,
+    "won": 1,
+    "pills": 74,
+    "fired": 3
+   },
+   {
+    "seed": 588,
+    "won": 1,
+    "pills": 67,
+    "fired": 4
+   },
+   {
+    "seed": 590,
+    "won": 1,
+    "pills": 87,
+    "fired": 0
+   },
+   {
+    "seed": 592,
+    "won": 1,
+    "pills": 69,
+    "fired": 2
+   },
+   {
+    "seed": 594,
+    "won": 1,
+    "pills": 71,
+    "fired": 4
+   },
+   {
+    "seed": 596,
+    "won": 1,
+    "pills": 140,
+    "fired": 8
+   },
+   {
+    "seed": 598,
+    "won": 1,
+    "pills": 131,
+    "fired": 5
+   },
+   {
+    "seed": 600,
+    "won": 1,
+    "pills": 84,
+    "fired": 5
+   }
+  ]
+ }
+}
