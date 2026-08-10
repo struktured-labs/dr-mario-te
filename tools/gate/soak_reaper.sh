@@ -69,7 +69,18 @@ while :; do
     else
       sleep "$GRACE"
       command grep -aq '^ACHK ' "$lg" 2>/dev/null || continue
-      kill "$pid" 2>/dev/null && say "reaped pid=$pid tag=$(basename "$psout") -- arm finished, seat released early"
+      # ⚠ SIGKILL, NOT SIGTERM, AND THE REASON IS LOG LEGIBILITY, NOT SPEED. On SIGTERM this
+      # Mesen build crashes in its own shutdown path: the arm ends rc=139 and bash prints
+      # "Segmentation fault (core dumped)" into the soak log. Nothing is lost (ulimit -c is 0, so
+      # no core is actually written, and the reap precondition is that the lua already closed the
+      # log), but a soak log sprayed with segfault lines is one a reader -- including me at report
+      # time -- can easily misread as the CART crashing mid-run. That would be a fabricated
+      # instability finding in the primary artifact. SIGKILL bypasses the crashing handler and
+      # exits quietly. Safe here specifically because ACHK is on disk before we ever signal:
+      # there is nothing left to flush. run_soak.sh re-derives CLEAN/PARTIAL from the log rather
+      # than from rc, and clears the stale .NET mutex before each launch, so a hard kill does not
+      # arm any of the three silent launch failures.
+      kill -9 "$pid" 2>/dev/null && say "reaped pid=$pid tag=$(basename "$psout") -- arm finished, seat released early"
     fi
   done
   [ "$DRY" = 1 ] && { say "dry pass complete"; exit 0; }
