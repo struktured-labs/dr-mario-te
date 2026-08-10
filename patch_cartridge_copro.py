@@ -624,6 +624,12 @@ NAV_M = int(_os.environ.get("DRNAV_M", "24"))
 # touches $0727/$04, so a direct write == the toggle end-state) with ZERO window latency, holds a short
 # NAV_M4 confirm, then STARTs -- beating the fast advance. DRNAV_V4=0 -> old v3 (leaky toggle + force).
 NAV_V4 = NAVFIX and (_os.environ.get("DRNAV_V4", "1") != "0")
+# DRFCGATE=1 (default OFF, byte-neutral when off): narrow the v4 full-clear gate from mode>=4 to
+# mode==4 exactly. See the fc_no site for the mechanism -- mode 8 (the two-bottle intro) passes
+# mode>=4 with VCOUNT still 0 and VSEEN inherited, so fc_clear false-fires there and the intro can
+# never hand off to play. Independent of DRHOLDBOARD: HOLDBOARD is what leaves MATCH_ACTIVE set
+# after a match, but ANY path that does so arms the same dead-cart loop.
+FCGATE = _os.environ.get("DRFCGATE", "0") == "1"
 NAV_M4 = int(_os.environ.get("DRNAV_M4", "4"))    # title hooks (2,1) held before START (short: beat the advance)
 # DRNAV_HOLD (default ON with V4): reset waitFrames ($51)=0 each title hook so the attract demo NEVER trips
 # (labeled-disasm confirmed: base $98FE does inc $51 / cmp #$08 / beq @toDemo, and @toDemo forces
@@ -1434,7 +1440,17 @@ def build_main(level=11, speed=1):
         # FALSE-fires, injects START, and RTSs -- SKIPPING the autonav entirely -> the title advances to a
         # 1P game (nbPlayers never gets set to 2). Gate it to play/post (mode>=4) so it can never fire in the
         # menus. py65-confirmed: inherited MATCH_ACTIVE=1 -> nbPlayers stays 1 (1P); gated -> autonav runs -> VS.
-        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BCC", "fc_no")
+        # DRFCGATE (2026-08-09): mode>=4 is TOO WIDE -- mode 8 is the two-bottle INTRO, and 8>=4
+        # passes. During the intro the board is still being built, so VCOUNT reads 0 while VSEEN
+        # is inherited from the previous match -> fc_clear FALSE-FIRES on every hook and the intro
+        # can never hand off to play. Measured: once MATCH_ACTIVE survives a match, the cart loops
+        # 0->1->2->3->8->0 forever and never reaches mode 4 again -- dead until a power cycle.
+        # STAGE CLEAR, the state this gate exists to dismiss, is a blocking wait that holds
+        # $0046 == 4 throughout (RB24F_CHECK_WIN, per the disassembly), so mode==4 EXACTLY is the
+        # correct gate and loses no coverage. BCC->BNE is the same instruction width, so
+        # DRFCGATE=0 stays byte-identical to the pre-fix build.
+        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04)
+        a.br("BNE" if FCGATE else "BCC", "fc_no")
     a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BEQ", "fc_no")
     a.ins16("LDA_abs", VCOUNT_P1); a.br("BNE", "fc_chk2")
     a.ins16("LDA_abs", VSEEN1); a.br("BNE", "fc_clear")     # P1==0 counts only if it was ever >0
