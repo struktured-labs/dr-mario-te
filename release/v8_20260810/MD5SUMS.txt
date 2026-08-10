@@ -4,5 +4,5 @@ c0082cb34259007854120d3d4ab9fa27  release/v8_20260810/v8 REMATCH (hardened).nes
 a580f6384329113d7588431b54dc5b1c  release/v8_20260810/v6e.json
 7e1ef6481908e5be269ca72b2b799064  release/v8_20260810/install_boardhold.sh
 2cc8057a142383800c7ac26eaece9e7c  release/v8_20260810/install_to_pocket.sh
-432ab9ab7c11bc3f9de7399de94b5972  release/v8_20260810/SHIPPING_v8.md
+9ab3345b52dbdc4a54a81cdb74626eb8  release/v8_20260810/SHIPPING_v8.md
 a0fa56150841dc049e3619fd6584726b  release/v8_20260810/WHICH_CART.md
