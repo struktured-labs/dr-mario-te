@@ -773,7 +773,19 @@ emu.addEventCallback(function()
     if not AK.on then verdict = "OFF"
     elseif AK.dead or AK.err > 0 then verdict = "VOID_callback_or_register_unavailable"
     elseif AK.tried == 0 then verdict = "VOID_never_ran"
+    -- ⚠ The $8005 hook is a MEMORY callback that calls emu.getState(), which README_GATE warns can
+    -- silently kill a callback. If it dies mid-soak, `tried` freezes while NMIs keep happening and
+    -- the run would end reporting PASS on a handful of early samples. AK.frozen counts NMIs where
+    -- the witness did not advance, so a stalled witness becomes VOID rather than a thin PASS. The
+    -- healthy value is ~0: the shield's CMP #$40 tests a FIXED ROM byte, so the RTI path is taken
+    -- either always or never, and a cart that plays at all must be taking the JMP $8005 path.
+    -- ⚠ ORDER MATTERS: this guard sits AFTER the mismatch test, so it can only invalidate a PASS,
+    -- never a FAIL. An observed mismatch is affirmative evidence of corruption and stands whatever
+    -- the witness did; it is the ABSENCE of mismatches that needs proof the check was still alive.
+    -- Placed the other way round it would have turned the killed mutant's FAIL into a VOID and
+    -- switched the whole A-check off -- a detector inverted by its own liveness guard.
     elseif AK.mism > 0 then verdict = "FAIL_A_CORRUPTED"
+    elseif AK.nmiEvents > 0 and AK.frozen > (AK.nmiEvents * 0.2) then verdict = "VOID_witness_frozen"
     else verdict = "PASS" end
     log(string.format("ACHK tag=%s verdict=%s on=%s shield_CEEC=%d gameNmi_8005=%d nmi_events=%d " ..
         "frozen_witness=%d tried=%d ok=%d err=%d MISMATCH=%d dead=%s akey=%s",
