@@ -29,6 +29,22 @@ DEADLINE=${DEADLINE_EPOCH:?DEADLINE_EPOCH required}
 say() { echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
 left() { echo $(( DEADLINE - $(date +%s) )); }
 
+# The Mesen seat is shared with ~40 other lanes and two were already queued when this started.
+# run_soak.sh returns 4 = UNRUN when the seat never freed -- that is the POLITE failure, and it
+# must never be read as "the arm ran and found nothing". So retry rc=4 until the deadline instead
+# of falling through with a default, which is how a soak silently becomes a no-op.
+ARM_RC=0
+arm() {  # arm <tag> <cart> <frames> <timeout>
+  local tag="$1" cart="$2" fr="$3" tmo="$4"
+  while :; do
+    SEAT_WAIT_POLLS=180 bash "$R/run_soak.sh" "$tag" "$cart" "$fr" "$tmo" 2>&1 | tee -a "$LOG"
+    ARM_RC=${PIPESTATUS[0]}
+    [ "$ARM_RC" != 4 ] && return 0
+    if [ "$(left)" -lt 900 ]; then say "$tag: seat never freed and budget is gone -- UNRUN"; return 0; fi
+    say "$tag: seat held by another lane; $(left)s budget left, waiting again"
+  done
+}
+
 mkdir -p "$D/tmp/soak"
 say "=== drive_soak start; budget ends $(date -d @"$DEADLINE" +%H:%M:%S), $(left)s left ==="
 
@@ -40,8 +56,8 @@ if [ "${PIPESTATUS[0]}" != 0 ]; then say "FATAL: boot image is not the ship cart
 # ---------------- Phase 1: calibration ----------------
 say "--- phase 1: calibration (6000 frames, ship bytes) ---"
 t0=$(date +%s)
-PS_INJECT=0 bash "$R/run_soak.sh" s-cal "$BOOT" 6000 900 2>&1 | tee -a "$LOG"
-crc=${PIPESTATUS[0]}
+PS_INJECT=0 arm s-cal "$BOOT" 6000 900
+crc=$ARM_RC
 cal_wall=$(( $(date +%s) - t0 ))
 CAL=$D/tmp/soak/s-cal/probe_soak.log
 FPS=$(command grep -a '^SOAK ' "$CAL" 2>/dev/null | command sed -n 's/.*fps=\([0-9.]*\).*/\1/p' | command tail -1)
@@ -51,10 +67,10 @@ say "healthy maxima: $(command grep -a '^SOAK2 ' "$CAL" 2>/dev/null | command ta
 
 # ---------------- Phase 2: killed-mutant validation ----------------
 say "--- phase 2: killed-mutant validation of the NEW detectors ---"
-PS_INJECT=1 PS_INJA=1500 PS_INJB=2400 bash "$R/run_soak.sh" s-val-busy   "$BOOT"  3000 900 2>&1 | tee -a "$LOG"
-PS_INJECT=2 PS_INJA=1500 PS_INJB=2400 bash "$R/run_soak.sh" s-val-title  "$BOOT"  3000 900 2>&1 | tee -a "$LOG"
-PS_INJECT=0                            bash "$R/run_soak.sh" s-val-mech   "$NOFIX" 3000 900 2>&1 | tee -a "$LOG"
-PS_INJECT=0                            bash "$R/run_soak.sh" s-val-tuckwr "$TUCKC" 3000 900 2>&1 | tee -a "$LOG"
+PS_INJECT=1 PS_INJA=1500 PS_INJB=2400 arm s-val-busy   "$BOOT"  3000 900
+PS_INJECT=2 PS_INJA=1500 PS_INJB=2400 arm s-val-title  "$BOOT"  3000 900
+PS_INJECT=0                           arm s-val-mech   "$NOFIX" 3000 900
+PS_INJECT=0                           arm s-val-tuckwr "$TUCKC" 3000 900
 
 # ---------------- Phase 3: the soak ----------------
 REM=$(left)
@@ -65,8 +81,8 @@ FRAMES=$(python3 -c "print(int($BUDGET * $FPS * 0.92))")
 say "--- phase 3: SOAK $FRAMES frames (budget ${BUDGET}s at ${FPS} fps, 8% margin) ---"
 say "    ~$(python3 -c "print(round($FRAMES/60.0988/60,1))") minutes of emulated play"
 t0=$(date +%s)
-PS_INJECT=0 PS_CKPT=30000 bash "$R/run_soak.sh" s-soak "$BOOT" "$FRAMES" $(( BUDGET + 300 )) 2>&1 | tee -a "$LOG"
-src=${PIPESTATUS[0]}
+PS_INJECT=0 PS_CKPT=30000 arm s-soak "$BOOT" "$FRAMES" $(( BUDGET + 300 ))
+src=$ARM_RC
 say "soak rc=$src wall=$(( $(date +%s) - t0 ))s"
 
 # ---------------- Phase 4: continue if it died early ----------------
@@ -75,8 +91,8 @@ if [ "$src" = 2 ] || [ "$src" = 1 ]; then
   if [ "$BUDGET" -gt 900 ]; then
     FRAMES2=$(python3 -c "print(int($BUDGET * $FPS * 0.92))")
     say "--- phase 4: soak returned $src with ${REM}s left; continuing $FRAMES2 frames ---"
-    PS_INJECT=0 PS_CKPT=30000 bash "$R/run_soak.sh" s-soak2 "$BOOT" "$FRAMES2" $(( BUDGET + 240 )) 2>&1 | tee -a "$LOG"
-    say "soak2 rc=${PIPESTATUS[0]}"
+    PS_INJECT=0 PS_CKPT=30000 arm s-soak2 "$BOOT" "$FRAMES2" $(( BUDGET + 240 ))
+    say "soak2 rc=$ARM_RC"
   else
     say "phase 4 skipped: only ${REM}s left"
   fi
