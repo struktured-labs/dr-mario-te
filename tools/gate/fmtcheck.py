@@ -1,7 +1,15 @@
-import re, sys
-# Verify every string.format(...) in the probes has #specifiers == #args.
-# Motivation: the SUMMARY fires ONCE, at the very end of a 12k-frame run. A format/arg
-# mismatch there destroys the whole run's result and nothing earlier warns you.
+import re, sys, glob, os
+# fmtcheck.py -- PRE-FLIGHT for any instrument whose payload is a single end-of-run line.
+#
+# WHY THIS EXISTS. A SUMMARY line fires ONCE, at the very end of an 18,000-frame run. A
+# format/arg mismatch there costs the ENTIRE run and produces exactly the summary-less log
+# we treat as void -- the worst possible placement for a defect, because nothing earlier
+# warns you and the cost is only paid after all the compute is spent. Found live: probes
+# 5/6/7 had 30 specifiers against 27 args after an edit that touched the format string and
+# not the arg list. Invisible to reading; visible only to execution or to this check.
+#
+# Usage:  python3 tools/gate/fmtcheck.py [file.lua ...]      (default: all of tools/gate/*.lua)
+# Exit 1 on any mismatch, so it can gate a launch.
 def split_top(s):
     out, depth, cur, i, instr = [], 0, '', 0, None
     while i < len(s):
@@ -18,10 +26,12 @@ def split_top(s):
     if cur.strip(): out.append(cur.strip())
     return out
 
+targets = sys.argv[1:] or sorted(glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), '*.lua')))
 bad = 0
-for n in (5, 6, 7, 8):
-    p = f'/home/struktured/projects/dr-mario-v8-wt/tools/gate/probe{n}.lua'
-    src = open(p).read()
+checked = 0
+for p in targets:
+    src = open(p, errors='replace').read()
+    checked += 1
     for m in re.finditer(r'string\.format\(', src):
         i = m.end(); depth = 1; j = i; instr = None
         while j < len(src) and depth:
@@ -44,9 +54,10 @@ for n in (5, 6, 7, 8):
         nspec = len(re.findall(r'%[-+ #0-9.]*[dsxXfg]', fmt))
         nargs = len(parts) - 1
         line = src[:m.start()].count('\n') + 1
+        name = os.path.basename(p)
         if nspec != nargs:
             bad += 1
-            print(f'  MISMATCH probe{n}.lua:{line}  specifiers={nspec} args={nargs}')
+            print(f'  MISMATCH {name}:{line}  specifiers={nspec} args={nargs}')
             print(f'    fmt head: {fmt[:70]!r}')
-print('FORMAT ARITY:', 'ALL OK' if not bad else f'{bad} MISMATCH(ES)')
+print(f'FORMAT ARITY over {checked} file(s):', 'ALL OK' if not bad else f'{bad} MISMATCH(ES)')
 sys.exit(1 if bad else 0)

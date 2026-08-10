@@ -51,6 +51,16 @@
 -- So: OUT and TAG are now REQUIRED, there is no "." fallback, and every run stamps the
 -- CART IDENTITY plus a per-run NONCE into both the header and the SUMMARY. An unattributable
 -- log can no longer be produced by this instrument.
+--
+-- ---- THE TRAP THAT MADE ME MISATTRIBUTE IT (name it, or the next person repeats it) -----
+-- Asked whether the orphan was mine, I checked how I LAUNCH these probes -- my runners always
+-- export OUT and TAG -- and answered "not mine". That reasoning was TRUE OF MY LAUNCH PATH and
+-- FALSE OF THE INSTRUMENT. The file is mine; anyone can hand it to run_mesen.sh directly, and
+-- the defaults did the rest. Owning a safe invocation is not the same as owning a safe tool.
+-- The general form: when a shared instrument misbehaves, the question is never "do I call it
+-- correctly?" but "can it be called incorrectly at all?" -- and the answer must be a guard in
+-- the tool, not a convention in the caller. That is why need() lives here and not in the
+-- runner: a convention protects only the people who know it.
 local function need(name)
   local v = os.getenv(name)
   if v == nil or v == "" then
