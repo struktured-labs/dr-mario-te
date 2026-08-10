@@ -46,7 +46,7 @@ local SEED  = tonumber(os.getenv("P5_SEED") or "114")
 local TAG   = os.getenv("P5_TAG") or "probe5"
 local PUBT  = tonumber(os.getenv("P5_TUCK") or "1")     -- 0 => always publish 0xFF (no tuck)
 local BOOTF = tonumber(os.getenv("P5_BOOTF") or "10")
-local DWELL = tonumber(os.getenv("P5_DWELL") or "8")    -- D2: frames on the approach column
+local DWELL = tonumber(os.getenv("P5_DWELL") or "2")    -- D2: frames on the approach column
 
 local NES = emu.memType.nesMemory
 local function rd(a) return emu.read(a, NES, false) end
@@ -135,19 +135,45 @@ local function filled(bd, r, c) local v = bd[r * 8 + c]; return v ~= 0xFF and v 
 local function find_tuck(bd)
   for f = 0, 7 do
     local seenFill = false
-    for r = 0, 15 do
+    for r = 0, 13 do
       if filled(bd, r, f) then
         seenFill = true
-      elseif seenFill then
-        -- (r,f) is an overhung empty cell. Need a clear neighbour column down to r.
+      elseif seenFill and not filled(bd, r + 1, f) and not filled(bd, r + 2, f) then
+        -- (r,f) is under a lip and the pocket is >= 2 deep, so a VERTICAL capsule fits.
         for _, a in ipairs({ f - 1, f + 1 }) do
           if a >= 0 and a <= 7 then
             local clear = true
-            for rr = 0, r do if filled(bd, rr, a) then clear = false; break end end
-            -- require at least one row of headroom so the capsule is "high" for a while
-            if clear and r >= 3 then return f, a, r end
+            for rr = 0, r + 2 do if filled(bd, rr, a) then clear = false; break end end
+            if clear and r >= 2 then return f, a, r + 1 end
           end
         end
+      end
+    end
+  end
+  return nil
+end
+
+-- topmost filled row of a column (16 = column empty)
+local function topfill(bd, c)
+  for r = 0, 15 do if filled(bd, r, c) then return r end end
+  return 16
+end
+
+-- SYNTHETIC EXECUTOR PROBE (P5_TUCK=2). Isolates the CART's capability from board luck: it
+-- asks for a late lateral switch between two columns that are BOTH open, with >= SLACK rows
+-- of fall left after the switch. A working executor lands on `final`; a driver that ignores
+-- the descriptor never visits `approach`; a driver that switches too late lands on
+-- `approach`. All three outcomes are distinguishable, on every pill, so this is the
+-- high-n instrument. It is NOT a play-quality measurement and is not reported as one.
+local SLACK = 3
+local function synth_tuck(bd, final)
+  for _, a in ipairs({ final - 1, final + 1 }) do
+    if a >= 0 and a <= 7 then
+      local ta, tf = topfill(bd, a), topfill(bd, final)
+      local lo = math.min(ta, tf)
+      if lo >= SLACK + 2 then
+        local rt = lo - SLACK
+        if rt >= 2 and rt <= 13 then return a, rt end
       end
     end
   end
@@ -172,7 +198,14 @@ end, emu.callbackType.write, W + 0x84)
 emu.addMemoryCallback(function()
   if S.done then return 1 end
   if S.pending and not S.need_snap and (curFrame - S.go_f) >= DLAT then
-    local f, a, rt = find_tuck(S.board)
+    local bc, bo = brain(S.board)
+    local f, a, rt
+    if PUBT == 1 then
+      f, a, rt = find_tuck(S.board)                       -- geometric (realistic) tucks
+    elseif PUBT == 2 then
+      f = bc; a, rt = synth_tuck(S.board, bc)             -- synthetic executor stress
+      if not a then f = nil end
+    end
     if f then S.opp = S.opp + 1 end
     if S.dones < 30 then
       local nf = 0
@@ -180,11 +213,10 @@ emu.addMemoryCallback(function()
       ev(string.format("SEARCH #%d f=%d fill=%d tuck=%s", S.dones + 1, curFrame, nf,
          f and string.format("final=%d appr=%d row=%d", f, a, rt) or "none"))
     end
-    if f and PUBT == 1 then
-      S.rcol = f; S.ror = 0; S.tcol = a; S.trow = rt; S.pub = S.pub + 1
+    if f then
+      S.rcol = f % 8; S.ror = 0; S.tcol = a; S.trow = rt; S.pub = S.pub + 1
     else
-      local c, o = brain(S.board)
-      S.rcol = c % 8; S.ror = o % 4; S.tcol = 0xFF; S.trow = 0xFF
+      S.rcol = bc % 8; S.ror = bo % 4; S.tcol = 0xFF; S.trow = 0xFF
     end
     S.done = true; S.pending = false; S.dones = S.dones + 1
     return 1
@@ -209,12 +241,17 @@ local TUCK_C2, TUCK_R2, EFF_C2, TGT_C2, EFF_DIST2 = 0x6179, 0x617A, 0x617B, 0x61
 local PX2, PY2 = 0x0385, 0x0386
 
 local P = nil            -- per-pill state
-local nPills, nDesc, nExec, nD2 = 0, 0, 0, 0
+local nPills, nDesc, nExec, nD2, nChanged = 0, 0, 0, 0, 0
 local fHi, fLo, fReach, fLand = 0, 0, 0, 0    -- which condition failed (first failing one)
 local execLog = {}
 
 local function close_pill()
   if not P or not P.desc then P = nil; return end
+  -- ⚠ DRPRESTART can publish the NEXT pill's result while this one is still falling, which
+  -- rewrites TUCK_C2/TGT_C2 mid-flight. Attributing that descriptor to THIS pill would score
+  -- a guaranteed failure that the executor never had a chance at, so those pills are
+  -- EXCLUDED and counted separately rather than folded into the failure buckets.
+  if P.changed then nChanged = nChanged + 1; P = nil; return end
   nDesc = nDesc + 1
   local land = P.lastPx
   local d1 = P.sawHi and P.sawLo and P.pxAppr and (land == P.final)
@@ -297,12 +334,14 @@ emu.addEventCallback(function()
       close_pill(); nPills = nPills + 1
     end
     if not P then
-      P = { desc = false, apprCol = -1, final = -1, trigY = -1, sawHi = false, sawLo = false,
-            pxAppr = false, dwellAppr = 0, lastPx = px, apprRun = 0, runCol = -1 }
+      P = { desc = false, changed = false, apprCol = -1, final = -1, trigY = -1,
+            sawHi = false, sawLo = false, pxAppr = false, dwellAppr = 0, lastPx = px }
     end
     local tc, tr, ec, gc = rd(TUCK_C2), rd(TUCK_R2), rd(EFF_C2), rd(TGT_C2)
     if (not P.desc) and tc ~= 0xFF and tc < 8 and gc < 8 and tc ~= gc then
       P.desc = true; P.apprCol = tc; P.trigY = tr; P.final = gc
+    elseif P.desc and tc < 8 and (tc ~= P.apprCol or gc ~= P.final) then
+      P.changed = true
     end
     if P.desc then
       if py > P.trigY then
@@ -326,11 +365,11 @@ emu.addEventCallback(function()
     log(string.format("SUMMARY tag=%s frames=%d goes=%d dones=%d sr_loads=%d sr_resets=%d " ..
         "MIXED_total=%d MIXED_boot=%d MIXED_PRG_nonboot=%d soft8036=%d wipes=%d brk_a02e=%d " ..
         "matches_started=%d matches_ended=%d clean_ends=%d ABORT_4to0=%d " ..
-        "pills=%d tuck_opp=%d tuck_pub=%d tuck_desc=%d TUCK_EXEC_D1=%d TUCK_EXEC_D2=%d " ..
-        "fail_hi=%d fail_lo=%d fail_reach=%d fail_land=%d",
+        "pills=%d tuck_opp=%d tuck_pub=%d tuck_desc=%d desc_changed=%d " ..
+        "TUCK_EXEC_D1=%d TUCK_EXEC_D2=%d fail_hi=%d fail_lo=%d fail_reach=%d fail_land=%d",
         TAG, frame, S.goes, S.dones, loads, resets, mixed_total, mixed_boot, mixed_prg,
         soft8036, wipes, brkhits, matchesStarted, matchesEnded, cleanEnds, aborts,
-        nPills, S.opp, S.pub, nDesc, nExec, nD2, fHi, fLo, fReach, fLand))
+        nPills, S.opp, S.pub, nDesc, nChanged, nExec, nD2, fHi, fLo, fReach, fLand))
     logf:close(); emu.stop(0)
   end
 end, emu.eventType.endFrame)
