@@ -193,14 +193,20 @@ they are mirrored into a local `NES_MiSTer` checkout for Quartus synthesis.
   empirically refuted (+7.11 pills *worse*) — cross-column reach scored at full depth is
   the only design that survives.
 - **Soak-rig display wedge (test harness only, not a play defect)** — continuous CPU-vs-CPU
-  autonav play wedges the MiSTer's display path within 6–30 minutes. Elimination chain:
-  our own capture traffic, an idle box, the strand20 brain, the MiSTer framework, and the
-  copro RTL are each exonerated by measurement; the same copro core running a plain
-  human-play cart survived 47+ minutes. The trigger is the CvC driver's own autonav loop —
-  software that only the test harness runs. An on-device watchdog captures the process
-  state at wedge time (it proved the framework is spinning in *userspace*, not blocked in
-  the kernel); its auto-reboot arm exists but is currently disabled, so recovery is
-  operator-driven. A pacing fix in the nav loop is the likely cure.
+  autonav play wedges the MiSTer's display path. ⚠ **RETRACTED: "within 6–30 minutes."** Both
+  endpoints came from the old `busy_frac/consec` watchdog, which is now proven to fire on
+  demonstrably healthy play; "30 min" is literally its `MIN_REBOOT_GAP=1800` rate limiter and
+  "6 min" is near its `CONSEC_NEEDED×INTERVAL=180 s` floor. The only screenshot-confirmed
+  recurrence interval on record is ~65 min (freeze #7 → #8). See
+  `experiments/freeze5_blackscreen/WEDGE_PROBE.md`, "RE-DERIVATION (2026-08-10)".
+  Elimination chain: our own capture traffic, the strand20 brain, the MiSTer framework, and
+  the copro RTL are each exonerated by *screenshot* ground truth; the same copro core running
+  a plain human-play cart survived 47+ minutes (3 screenshots + a motion check — that one
+  holds). ⚠ Two chain rows do **not** hold: "our own IPC exonerated" and "an idle box
+  exonerated" were both read off the retracted watchdog. The trigger is most likely the CvC
+  driver's own autonav loop — software that only the test harness runs. Recovery is
+  operator-driven (auto-reboot disabled, and it must stay disabled until the frame-progress
+  watchdog replaces the discriminator). A pacing fix in the nav loop is the likely cure.
 - **Cascade-resolve in the search: tested, rejected** — a full chained resolve halved solo
   clear-rate chasing combos into topouts; the capped resolve is the better player. (The
   *eval-side* chain credit is a different mechanism — that one ships in Combo Stomper.)

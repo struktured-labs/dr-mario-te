@@ -182,6 +182,14 @@ writes), the wedge recurred TWICE more — WEDGE_CONFIRMED at 12:59:24Z and
 this core+framework combination under continuous CvC play; our save-state/
 screenshot traffic is not the trigger.
 
+> ⚠ **RETRACTED 2026-08-10** (this whole verdict + the numbers below) — see "RE-DERIVATION
+> (2026-08-10)" §1/§2. It reads its result off `WEDGE_CONFIRMED` at 12:59:24Z / 13:02:26Z and
+> `AUTO_REBOOT` at 13:02:26Z, all discriminator-only and all inside the window where the
+> tracker was stopped, so there is no independent evidence of any kind. Worse, the "~30-minute"
+> figure is `MIN_REBOOT_GAP=1800` and the "~3 minutes" figure is `CONSEC_NEEDED×INTERVAL=180 s`
+> — both are constants in `wedge_probe.sh`, not measurements. ("a box booted 12:56" is also
+> wrong: the box booted at 12:29:49Z; 12:56:22Z was simply the previous `CONSEC=6` event.)
+
 ⚠ CONSEQUENCE FOR SEPT 12: this is a LAUNCH-BLOCKING risk, not a lab
 artifact. Human play at the booth exercises the same core in the same
 framework — a ~30-minute mean-time-to-wedge would be visible to a crowd.
@@ -200,7 +208,14 @@ Next diagnostic steps (in order):
    the MiSTer framework source; consider pinning a known-good framework
    build for the booth.
 
-## ★ IDLE CONTROL (accidental, 2026-08-05 13:02→22:22Z): 9h19m WEDGE-FREE
+## ~~★ IDLE CONTROL (accidental, 2026-08-05 13:02→22:22Z): 9h19m WEDGE-FREE~~ ⚠ VACUOUS
+
+> ⚠ **RETRACTED 2026-08-10 — see "RE-DERIVATION (2026-08-10)" §3/§5 at the end of this file.**
+> All 1,111 polls in this window read `fw_pid=none`/`fw_state=DEAD`/`busy_frac=?%`/`consec=0`.
+> `CONSEC` only increments when `FW_STATE_CHAR="R"` (`wedge_probe.sh:188`) and `AUTO_REBOOT` is
+> gated on `CONSEC≥6`, so the count **could not** have moved regardless of the box's state. The
+> correction below (which says the count "never depended on FW_PID resolving") is itself wrong.
+> This is not a weak control; it is no control.
 
 After the 13:02Z auto-reboot the box was left at MENU (the duel was never
 relaunched — the auto-relaunch feature was still being built). It sat idle
@@ -466,14 +481,20 @@ plus a 3-frame motion check. Same bitstream, same box, same observer as the
 CvC runs that died in 6-30 min.
 
 **FULL ELIMINATION CHAIN, COMPLETE:**
+> ⚠ **AMENDED 2026-08-10** — two rows are struck; see "RE-DERIVATION (2026-08-10)" §1/§2/§3.
+> Rows anchored on *screenshot* ground truth survive; rows anchored on `AUTO_REBOOT`/
+> `WEDGE_CONFIRMED` do not. The conclusion (CvC driver is the trigger) still rests on the
+> three surviving screenshot rows, but its two struck legs must be re-run before it is quoted
+> as a closed elimination.
+
 | variable | result |
 |---|---|
-| our PC-side IPC (tracker/screenshots) | exonerated — wedges without it |
-| idle box (core loaded, no play) | exonerated — 9h19m clean |
-| strand20 / CMD-8 brain | exonerated — pre-strand20 core died in 6m15s |
-| MiSTer framework/firmware | exonerated — vanilla core alive 17min+ (motion-verified) |
-| copro RTL / mapper 100 | **exonerated — s20b + human cart alive 47min+** |
-| **the CvC probe cart's DRIVER (autonav loop)** | **THE TRIGGER** |
+| ~~our PC-side IPC (tracker/screenshots)~~ | ⚠ **STRUCK** — read off `WEDGE_CONFIRMED`/`AUTO_REBOOT` only, inside the tracker-stopped blackout. Re-run needed. |
+| ~~idle box (core loaded, no play)~~ | ⚠ **STRUCK** — no core was loaded, and the trigger was disconnected (`fw_pid=none` for all 1,111 polls). Vacuous. |
+| strand20 / CMD-8 brain | exonerated — **holds on the 22:35Z screenshot TIMEOUT**; ⚠ the "6m15s" timing is retracted (a verified-healthy arm scored 3m01s) |
+| MiSTer framework/firmware | exonerated — vanilla core alive 17min+ (motion-verified) **← screenshot-anchored, holds** |
+| copro RTL / mapper 100 | **exonerated — s20b + human cart alive 47min+ (3 screenshots + motion) ← holds** (⚠ it also logged 96 ALERT_ONLYs in that same window — the clearest proof the trigger is non-specific) |
+| **the CvC probe cart's DRIVER (autonav loop)** | **THE TRIGGER** (now supported by 3 of 5 legs, not 5 of 5) |
 
 ⇒ It is our 6502 DRIVER's continuous autonav/CvC busy pattern that wedges
 the framework's display path — software we own, in the test harness, NOT in
@@ -684,3 +705,223 @@ frames are copied to `<frame-dir>/alerts/wedge_<seq>_<reason>/` as evidence.
 python3 experiments/freeze5_blackscreen/frame_watchdog.py --host MiSTer          # live
 python3 experiments/freeze5_blackscreen/frame_watchdog_mutants.py                # battery
 ```
+
+## ★★★ RE-DERIVATION (2026-08-10) — what the non-specific discriminator actually costs us
+
+Read-only forensics against `/media/fat/wedge_probe.log` (16,222 lines, 2026-08-05T11:37:47Z →
+2026-08-10T10:34:49Z, 14,124 poll rows), `/media/fat/wedge_probe_dmesg.log`,
+`/media/fat/wedge_probe_recovery.log`, the duel ledger, and the pre-probe freeze record. Nothing
+was written to the device; the θ400 soak (pid 525, `NES_theta400_20260809.rbf` +
+`theta400_tuck_demo.mgl`) and `wedge_probe.sh` (pid 671) were untouched throughout — re-verified
+after the fact (uptime continuous 4 d 12 h, same cmdline, single probe instance).
+Working copies of the three logs: `tmp/wedge_forensics/` (gitignored).
+
+### 0. The trigger's timing is set by two script constants, not by the machine
+
+`wedge_probe.sh`: `INTERVAL=30`, `CONSEC_NEEDED=6`, `BUSY_FRAC_PCT=85`, `MIN_REBOOT_GAP=1800`.
+`CONSEC` increments only when `FW_STATE_CHAR = "R"` **and** `busy_frac ≥ 85`, and resets to 0 on
+a reload, on any sub-85 sample, and after every fired event (`:230`, `:247`). Therefore:
+
+- **the earliest possible trigger after a core load is `CONSEC_NEEDED × INTERVAL` = 180 s**, and
+- **`AUTO_REBOOT` only fires when `now − last_AUTO_REBOOT ≥ MIN_REBOOT_GAP = 1800 s`**; every
+  earlier `CONSEC=6` event logs `ESCALATE` instead (`:227-230`).
+
+Both numbers quoted as findings are these constants read back. Measured gaps between the three
+AUTO_REBOOTs: **1820 s** and **1971 s** — the first two `CONSEC=6` events on the 182 s ESCALATE
+grid to clear 1800. The intervening ESCALATEs sat at gaps 1275 / 1456 / 1638 and 1062 / 1244 /
+1426 / 1607 / **1789** (that last one missed the bound by 11 s).
+
+### 1. The three 2026-08-05 AUTO_REBOOTs — verdicts
+
+Common to all three: `wedge_probe_dmesg.log` is **clean** at each reboot instant. The only new
+kernel line is `input: misterclaw as /devices/virtual/input/inputN`, then the boot banner. No
+OOM, no segfault, no hung-task, no driver reset, no `MiSTer_fb` error. The Aug-5 recovery-log
+snapshots have **rotated away** (earliest surviving event is now 2026-08-08T02:07:19Z); only
+`dr_mario_rl/tmp/film_review_20260804/recovery1.log` (AUTO_REBOOT #1's) survives.
+
+**#1 — 2026-08-05T11:59:15Z ⇒ CORROBORATED BUT UNINFORMATIVE (a real fault was in progress; the
+reboot is not evidence of it).**
+- The `busy_frac`/`consec` fields **did not exist before 2026-08-05T11:56:14Z** (log line 36, the
+  first carrying `busy_frac=?%`). `CONSEC` then ran 1,2,3,4,5,6 with no reset and AUTO_REBOOT
+  fired at 11:59:15Z — **3 m 01 s after the discriminator was first armed, the floor.** It fired
+  at the earliest instant it physically could. That timestamp carries no information about the
+  machine.
+- Independent evidence a real fault *was* present: `experiments/duel_ledger/ledger_20260805_0638_v3.csv`
+  shows the save-state capture path dead from **11:26:39Z (STALE_x1) through 11:59:47Z
+  (STALE_x11)** — last good capture 11:23:00Z. 33 minutes of dead save-states, and STALE_x4/x5
+  (11:37:39Z / 11:41:17Z) land inside CAPTURE #1's confirmed black-screen window. CAPTURE #1 is
+  real and independently corroborated.
+- But that same run of STALEs **starts 11 minutes before the probe existed and survives the
+  manual reboot at ~11:43:27Z**: captures at 11:47:27 / 11:50:32 / 11:53:37 / 11:56:42 were all
+  STALE on a box booted three minutes earlier. So the fault does not attach to the 11:59:15Z
+  moment.
+- No blank screenshot, no dmesg signature, no unrecoverable framework state at 11:59:15Z.
+
+**#2 — 2026-08-05T12:29:35Z ⇒ REFUTED. FALSE POSITIVE, with contemporaneous proof.**
+
+`ledger_20260805_0800_v3.csv`, in the window the probe was continuously in `CONSEC≥6`
+(ESCALATE 12:20:30 / 12:23:31 / 12:26:33):
+
+| capture (UTC) | mode | virus P1/P2 | file |
+|---|---|---|---|
+| 12:18:40Z | 4 | 44 / 21 | `…20260805-081838.ss` |
+| 12:21:44Z | 7 | 6 / 18 | `…20260805-082141.ss` |
+| 12:24:48Z | 4 | 43 / 26 | `…20260805-082445.ss` |
+| 12:27:51Z | 4 | **48 / 48** | `…20260805-082749.ss` |
+
+Four distinct capture files, three different in-play boards, and a mode **4 → 7 → 4** transition
+(match ended, a fresh match started at 48/48). The last of them is **1 m 44 s before the
+reboot**. The box was playing, saving and starting new matches while the watchdog called it
+wedged — and it was rebooted mid-match. This is the same class of evidence as the 2026-08-09
+paired screenshots, but recorded on 2026-08-05 itself, in a file that was already on disk.
+
+**#3 — 2026-08-05T13:02:26Z ⇒ UNEXPLAINED. Discriminator only.**
+- The duel tracker was stopped at ~12:45Z for the IPC experiment; `ledger_20260805_0800_v3.csv`
+  ends at 12:42:53Z. **Zero save-state coverage.**
+- No PC-side screenshot exists anywhere for the 11:30–14:00Z window (mtime sweep across
+  `dr_mario_rl/`, `dr-mario-qa-wt/`, `dr-mario-main-wt/`).
+- dmesg clean; recovery snapshot rotated away.
+- Its moment is fully explained by policy: five ESCALATEs, then AUTO_REBOOT at the first
+  `CONSEC=6` whose gap (1971 s) cleared `MIN_REBOOT_GAP`.
+
+⚠ **Collateral:** the "EXPERIMENT VERDICT (12:45Z): OUR IPC IS EXONERATED" section reads its
+result off `WEDGE_CONFIRMED` at 12:59:24Z / 13:02:26Z and `AUTO_REBOOT` at 13:02:26Z — all
+discriminator-only, all inside the tracker-stopped blackout. **That verdict does not survive
+either** and needs re-running against the frame watchdog.
+
+### 2. The arm-1 vs s20b A/B — **DIES** (not merely unrecoverable: positively refuted)
+
+Time from every `RELOAD_OR_RESTART` to that arm's first trigger, over all ~60 core loads in the
+5-day log:
+
+| arm | time to first trigger | independent ground truth |
+|---|---|---|
+| vanilla `NES_20240408` + Battletoads | **+7 m 37 s** | **ALIVE** (frame returned at 6 m 29 s; 3 distinct md5s 22:57–22:58) |
+| pre-strand20 `stomper180` + CvC (arm 1) | **+6 m 21 s** | screenshot **timeout** at 22:35Z |
+| s20b + CvC (12:17 load) | **+3 m 02 s** | **ALIVE** — ledger, table above |
+| s20b + CvC (12:44 load) | **+3 m 01 s** | none |
+| **s20b + HUMAN cart** (the "survived 47+ min" arm) | **+3 m 01 s** | **ALIVE** — screenshots 23:05 / 23:30 / 23:49:53 + motion check |
+| θ400 soak, 8 separate loads (Aug 9–10) | **+3 m 01 s … +3 m 03 s, 8/8** | **ALIVE** — paired screenshots + `frame_watchdog` 5/5 ALIVE |
+
+- The floor is 180 s. **The modal time-to-first-trigger across ~60 core loads is 3 m 01–03 s.**
+  The metric is saturated at its own floor.
+- The arm the elimination chain calls **healthiest** (s20b + human cart, 47 min verified alive)
+  **ties the arm it calls worst** (s20b CvC) at that floor — and racked up **96 ALERT_ONLYs
+  during the very 47 minutes it was being certified clean.** That number was in the log the
+  whole time.
+- The two arms with *independently verified live display* (vanilla, human cart) sit at the two
+  ends of the range (7 m 37 s and 3 m 01 s). The ordering is uncorrelated with wedging.
+- "~30 min" = `MIN_REBOOT_GAP`. "worst 3 min" = `CONSEC_NEEDED × INTERVAL`. Arm-1's "6m15s"
+  was an `ALERT_ONLY` — auto-reboot was already disabled, so **the A/B never had the
+  `AUTO_REBOOT` readout it was designed around at all.**
+- The inversion anticipated when this was flagged is confirmed, by a stronger route than
+  "stronger AI searches harder": *every* arm — copro CvC, copro human cart, and stock vanilla —
+  saturates an 85 %-of-one-core threshold. Anything that keeps the framework main thread busy
+  for 3 minutes scores the floor.
+
+**What survives from that night:** everything anchored on the METHOD RULE, not the trigger —
+arm 1's screenshot **timeout** at 22:35Z (so "the old core wedges too / s20b-CMD-8 exonerated"
+stands on its own evidence), the vanilla arm's returned frame + 3-distinct-md5 motion check, and
+the human-cart arm's three screenshots + motion check. The **timings** and the **rate
+comparison** do not survive.
+
+### 3. "Clean soak hours" figures defined as absence of AUTO_REBOOT — enumerated
+
+| # | where | claim | mark |
+|---|---|---|---|
+| 1 | `WEDGE_PROBE.md:203-222` | "IDLE CONTROL … 9h19m WEDGE-FREE (AUTO_REBOOT count stayed 3)" | **VACUOUS — the trigger was disconnected** (below) |
+| 2 | `WEDGE_PROBE.md:472` | elimination row "idle box (core loaded, no play) — exonerated, 9h19m clean" | **VACUOUS + factually wrong**: no core was loaded; `fw_cmdline=[DEAD]` for the entire span, core reloaded only at 22:22:40Z |
+| 3 | `experiments/eval47/MORNING_DIGEST_20260805.md:114` (and the identical copy in `dr-mario-main-wt/`) | "Idle exonerated — 9h19m at MENU, zero wedges. It needs active play." | **VACUOUS**, same figure |
+| 4 | `WEDGE_PROBE.md:157` | "AUTO_REBOOTs at 11:59 and 12:29 (~30 min apart) vs ~28h clean overnight" | **UNSUPPORTED** — 30 min is `MIN_REBOOT_GAP`; the "28 h clean" predates the trigger entirely |
+| 5 | `README.md:195` | "wedges the MiSTer's display path within **6–30 minutes**" | **UNSUPPORTED** — both endpoints are trigger artefacts. The only screenshot-confirmed recurrence interval on record is freeze #8 recurring **~65 min** after #7 |
+| 6 | `WEDGE_PROBE.md:484` / `README.md:199` | "the 47-min clean run IS the booth condition" | **SURVIVES** — anchored on 3 screenshots + a motion check, *not* on AUTO_REBOOT absence (which was in fact 96 alerts) |
+
+**Why #1–#3 are vacuous, mechanically.** The 9 h 19 m window is
+2026-08-05T13:03:24Z → 22:22:09Z: **1,111 consecutive polls with `fw_pid=none`, `fw_state=DEAD`,
+`busy_frac=?%`, `consec=0`.** With `fw_pid=none` the script sets `FW_STATE_CHAR=""` (`:120-122`)
+and skips the `/proc/<pid>/stat` read, so the `CONSEC` gate
+(`[ "$FW_STATE_CHAR" = "R" ] && [ "$BUSY_SPIN" -eq 1 ]`, `:188`) can never be true. `AUTO_REBOOT`
+is gated on `CONSEC ≥ 6`. **The count could not have moved off 3 no matter what the box did.**
+This corrects the existing note at `:213-222`, which says the AUTO_REBOOT count "never depended
+on `FW_PID` resolving" — it depends on it completely, through `CONSEC`.
+
+And the doc's own physical explanation ("at the menu the framework genuinely blocks, so the
+signature is absent by construction") is **also wrong**: on the 16 later polls where `menu.rbf`
+is loaded as a core and the framework *is* visible, `busy_frac` reads **100 %** and **99 %** on
+the two samples that had a baseline. The menu does not block. The control was silent because of
+the bare-argv **bug**, not because of framework physics.
+
+### 4. What is NOT in doubt — the ORIGINAL freeze-5 sighting stands. Verified, plainly.
+
+All three legs pre-date the discriminator and none of them touches `wchan`, `/proc/pid/stack`,
+`State=R`, context-switch ratios, `busy_frac` or `consec`.
+
+**Leg 1 — blank display.** Five black-screen captures, decoded pixel-by-pixel with
+`frame_watchdog.decode_png`:
+
+| capture | when | bytes | file md5 | `black_frac` | `pixhash` |
+|---|---|---|---|---|---|
+| `experiments/freeze5_20260802/blackscreen_1348.png` | 2026-08-02 13:48 | 1598 | `f43cc0e7124d…` | **1.000000** | `97a658c14a1859de` |
+| `experiments/freeze5_20260802/f5b_a_160947.png` | 2026-08-02 16:09 | 1598 | `f43cc0e7124d…` | **1.000000** | `97a658c14a1859de` |
+| `…/film_review_20260804/wedge2_0051.png` (freeze #4) | 2026-08-05 00:51 | 1598 | `f43cc0e7124d…` | **1.000000** | `97a658c14a1859de` |
+| `…/wedge3_0157.png` (freeze #5) | 2026-08-05 01:57 | 1598 | `f43cc0e7124d…` | **1.000000** | `97a658c14a1859de` |
+| `…/wedge7_0457.png` (freeze #7) | 2026-08-05 04:57 | 1598 | `f43cc0e7124d…` | **1.000000** | `97a658c14a1859de` |
+
+All five are byte-identical, 100 % black, 256×448. Healthy frames from the same rig —
+`post_recovery_2346`, `post_recovery2_0052`, `post_recovery3_0158`, `post_recovery5_0458`, and
+tonight's two soak frames — are 8,980–9,524 bytes at `black_frac` 0.532–0.550 with **all
+distinct** pixhashes. `wedge_s20b_freeze3_2345.png` (the *mid-play* family) is 8,980 bytes /
+0.5499 black, correctly not a black-screen event. Note these frames were **returned**, not timed
+out — so the black-screen family is proven by pixels, which is *stronger* than the standing
+METHOD RULE requires.
+
+**Leg 2 — dead save-states.** Contemporaneous tracker record `STALE x5` at freezes #4, #5 and #7
+(`experiments/rtl_chain/ship/stomper180s20-seed2/REBUILD.md:70-105`), plus an independent RTL
+derivation of *why* they come back 0 bytes: `savestates.vhd:158` (`SAVE_WAITSETTLE` requires
+`paused` high for `SETTLECOUNT=100` consecutive cycles, resetting on any drop) and `nes.v:343`
+(`corepause_active` additionally requires vblank and a CPU instruction boundary) —
+`experiments/title_garble/TITLE_AUDIT.md:93-125`. That is a source-level argument about the NES
+core, with no process forensics in it at all.
+
+**Leg 3 — core reload does not clear it, a full reboot does.** `REBUILD.md`, freeze #8
+(2026-08-05 ~06:0x–06:45 EDT): the black screen recurred **~65 min after freeze #7's menu-cycle
+recovery** — "menu cycles do NOT clear whatever accumulates; escalated to FULL MiSTer REBOOT",
+and the reboot moved the DHCP lease .226→.225, an independent side-effect that timestamps a real
+reboot. (The earlier `:106` theory that "the menu.rbf cycle resets whatever accumulates" was the
+reading as of #7 and was refuted by #8.)
+
+**Chronology proves independence.** `wedge_probe.sh` was committed at **2026-08-05 07:39:46 EDT**
+(commit `14bbf28`) and its log's first line is **2026-08-05T11:37:47Z** (= 07:37 EDT). Every one
+of the five black-screen captures and the freeze-#8 reboot escalation happened *before that*.
+The discriminator did not exist when the defect was characterised.
+
+**Cross-check with the replacement.** Feed the two 2026-08-02 frames to the new frame-progress
+watchdog: `black_frac = 1.0`, `changed_frac = 0.0`, `max_abs = 0` across captures **2 h 21 m
+apart** ⇒ `WEDGED frames_static_black`. The new discriminator independently agrees with the
+original sighting. **Do not over-correct: freeze-5 is a real defect.**
+
+### 5. `fw_state=DEAD` spans = "NOT OBSERVED", confirmed — boot/menu windows, every one
+
+1,175 DEAD polls of 14,124 (**8.3 %**), in exactly **four contiguous spans**, and *every span
+begins at uptime 45–46 s* — the first poll after a reboot:
+
+| span (UTC) | polls | duration | uptime @ start | ends at |
+|---|---|---|---|---|
+| 11:44:25 → 11:45:32 | 3 | 1.1 min | 46.2 s | `RELOAD_OR_RESTART prev=[DEAD]` @ 11:46:02 |
+| 12:00:15 → 12:16:58 | 34 | 16.7 min | 46.0 s | @ 12:17:28 |
+| 12:30:33 → 12:43:45 | 27 | 13.2 min | 45.2 s | @ 12:44:16 |
+| **13:03:24 → 22:22:09** | **1,111** | **558.8 min** | 46.0 s | @ 22:22:40 |
+
+Four corroborations that this is the bare-argv blind spot and not a dead framework:
+1. every span starts at the first post-reboot poll and ends exactly at the poll where a
+   core+mgl argv appears (`prev=[DEAD]`);
+2. 1,172 of the 1,175 rows carry `consec=0` **and** `busy_frac=?%` (the other 3 predate the
+   `busy_frac` field entirely) — i.e. `/proc/<pid>/stat` was never read, because there was no pid;
+3. after the fix landed (~22:32–22:38Z on 08-05) the *same* condition logs as **alive**: three
+   polls at 22:39:37 / 22:40:13 / 22:40:43Z read `fw_pid=525 fw_state=R … fw_cmdline=[/media/fat/MiSTer ]`;
+4. **there are zero DEAD rows anywhere after 2026-08-05T22:22:09Z** — 4.5 further days, including
+   eight menu transitions, all logged alive.
+
+Span 4 *is* the "9 h 19 m IDLE CONTROL" (558.8 min = 9 h 18.8 m). So the control that certified
+the discriminator's specificity is 1,111 consecutive polls in which the discriminator was
+electrically disconnected from its own input.
