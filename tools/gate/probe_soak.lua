@@ -226,7 +226,8 @@ local AK = { shieldHits = 0, gameNmi = 0, nmiEvents = 0, gameNmiAtLastNmi = 0, f
              -- statistical power than the check needs, for 1/16 of the cost. Default 1 = check
              -- every NMI; raise it only if phase 2b shows ACHK measurably slowing the arms.
              -- The liveness witness is NOT sampled -- it counts every NMI regardless.
-             every = math.max(1, tonumber(os.getenv("PS_ACHK_EVERY") or "1")) }
+             every = math.max(1, tonumber(os.getenv("PS_ACHK_EVERY") or "1")),
+             pendNmi = -1, stale = 0 }
 
 -- Resolve the accumulator out of emu.getState().
 --
@@ -278,11 +279,20 @@ emu.addEventCallback(function()
   if AK.nmiEvents > 0 and AK.gameNmi == AK.gameNmiAtLastNmi then AK.frozen = AK.frozen + 1 end
   AK.gameNmiAtLastNmi = AK.gameNmi
   AK.nmiEvents = AK.nmiEvents + 1
+  if AK.on and AK.pend then AK.stale = AK.stale + 1; AK.pend = false end
   if AK.on and not AK.dead and (AK.nmiEvents % AK.every == 0) then
     local ok, st = pcall(emu.getState)
     if ok then
       local a = AK.finda(st, 0)
-      if a then AK.apre = a; AK.pend = true else AK.dead = true end
+      -- ⚠ STAMP THE SAMPLE WITH ITS NMI INDEX. The $8005 hook consumes AK.apre, but the shield
+      -- can return via RTI without ever reaching $8005 (the CMP #$40 path). When that happens
+      -- the sample goes unconsumed, and a LATER $8005 would compare a fresh A against a STALE
+      -- apre from an earlier interrupt -- a mismatch that means nothing, i.e. a FALSE
+      -- FAIL_A_CORRUPTED on a clean cart. At every=1 this self-heals because the next NMI
+      -- overwrites apre before the next $8005; at every>1 it does NOT, so the sampling control
+      -- added above would have introduced a false-positive path into the one check that must
+      -- never cry wolf. Pairing by index makes the comparison same-interrupt at ANY rate.
+      if a then AK.apre = a; AK.pend = true; AK.pendNmi = AK.nmiEvents else AK.dead = true end
     else
       AK.dead = true
     end
@@ -291,7 +301,7 @@ end, emu.eventType.nmi)
 
 emu.addMemoryCallback(function()
   AK.gameNmi = AK.gameNmi + 1          -- witness FIRST, unconditionally
-  if AK.on and AK.pend and not AK.dead then
+  if AK.on and AK.pend and not AK.dead and AK.pendNmi == AK.nmiEvents then
     AK.tried = AK.tried + 1
     local ok, st = pcall(emu.getState)
     if ok then
@@ -798,9 +808,9 @@ emu.addEventCallback(function()
     elseif AK.nmiEvents > 0 and AK.frozen > (AK.nmiEvents * 0.2) then verdict = "VOID_witness_frozen"
     else verdict = "PASS" end
     log(string.format("ACHK tag=%s verdict=%s on=%s shield_CEEC=%d gameNmi_8005=%d nmi_events=%d " ..
-        "frozen_witness=%d tried=%d ok=%d err=%d MISMATCH=%d dead=%s akey=%s every=%d",
+        "frozen_witness=%d tried=%d ok=%d err=%d MISMATCH=%d stale=%d dead=%s akey=%s every=%d",
         TAG, verdict, tostring(AK.on), AK.shieldHits, AK.gameNmi, AK.nmiEvents,
-        AK.frozen, AK.tried, AK.ok, AK.err, AK.mism, tostring(AK.dead), AK.akey, AK.every))
+        AK.frozen, AK.tried, AK.ok, AK.err, AK.mism, AK.stale, tostring(AK.dead), AK.akey, AK.every))
     logf:close(); emu.stop(0)
   end
 end, emu.eventType.endFrame)
