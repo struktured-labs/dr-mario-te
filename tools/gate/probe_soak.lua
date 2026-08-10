@@ -216,7 +216,17 @@ end, emu.callbackType.write, 0x6179, 0x617B)
 local AK = { shieldHits = 0, gameNmi = 0, nmiEvents = 0, gameNmiAtLastNmi = 0, frozen = 0,
              on = (tonumber(os.getenv("PS_ACHK") or "0") == 1),
              apre = -1, pend = false, tried = 0, ok = 0, err = 0, mism = 0,
-             dead = false, akey = "<unresolved>", log = {} }
+             dead = false, akey = "<unresolved>", log = {},
+             -- ⚠ COST CONTROL. emu.getState() serializes the WHOLE console state into a map on
+             -- every call (Serializer reserves 500 entries), and this check calls it twice per
+             -- NMI at ~2 NMIs/frame. Over a multi-hour soak that is millions of full-state
+             -- serializations, and any fps it costs comes straight off the frame count -- which
+             -- IS the bound. PS_ACHK_EVERY samples every Nth NMI instead of all of them: at
+             -- N=16 a five-hour run still lands >100k paired comparisons, which is far more
+             -- statistical power than the check needs, for 1/16 of the cost. Default 1 = check
+             -- every NMI; raise it only if phase 2b shows ACHK measurably slowing the arms.
+             -- The liveness witness is NOT sampled -- it counts every NMI regardless.
+             every = math.max(1, tonumber(os.getenv("PS_ACHK_EVERY") or "1")) }
 
 -- Resolve the accumulator out of emu.getState().
 --
@@ -268,7 +278,7 @@ emu.addEventCallback(function()
   if AK.nmiEvents > 0 and AK.gameNmi == AK.gameNmiAtLastNmi then AK.frozen = AK.frozen + 1 end
   AK.gameNmiAtLastNmi = AK.gameNmi
   AK.nmiEvents = AK.nmiEvents + 1
-  if AK.on and not AK.dead then
+  if AK.on and not AK.dead and (AK.nmiEvents % AK.every == 0) then
     local ok, st = pcall(emu.getState)
     if ok then
       local a = AK.finda(st, 0)
@@ -788,9 +798,9 @@ emu.addEventCallback(function()
     elseif AK.nmiEvents > 0 and AK.frozen > (AK.nmiEvents * 0.2) then verdict = "VOID_witness_frozen"
     else verdict = "PASS" end
     log(string.format("ACHK tag=%s verdict=%s on=%s shield_CEEC=%d gameNmi_8005=%d nmi_events=%d " ..
-        "frozen_witness=%d tried=%d ok=%d err=%d MISMATCH=%d dead=%s akey=%s",
+        "frozen_witness=%d tried=%d ok=%d err=%d MISMATCH=%d dead=%s akey=%s every=%d",
         TAG, verdict, tostring(AK.on), AK.shieldHits, AK.gameNmi, AK.nmiEvents,
-        AK.frozen, AK.tried, AK.ok, AK.err, AK.mism, tostring(AK.dead), AK.akey))
+        AK.frozen, AK.tried, AK.ok, AK.err, AK.mism, tostring(AK.dead), AK.akey, AK.every))
     logf:close(); emu.stop(0)
   end
 end, emu.eventType.endFrame)
