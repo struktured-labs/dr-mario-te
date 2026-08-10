@@ -283,11 +283,22 @@ BUSYSKP = 0x6192                                   # consecutive-bail counter (a
 #   vector is the same stub: an unbreakable BRK loop on the first NMI after the first hook.
 # So the shield is BANK-DISCRIMINATING and lives in the SHARED high half (bank 1, therefore present
 # in index 1 AND index 3 identically):
-#     $CEEC  AD 2E A0   LDA $A02E     ; probe the currently-mapped LOW bank
-#     $CEEF  C9 40      CMP #$40      ; $40 only in the DRIVER bank (base bank 0 is $00 -- asserted)
-#     $CEF1  D0 01      BNE +1
-#     $CEF3  40         RTI           ; driver bank mapped => absorb the overrun NMI
-#     $CEF4  4C 05 80   JMP $8005     ; base bank mapped  => the game's own NMI, unchanged
+#     $CEEC  48         PHA           ; v6e: A MUST be preserved -- see below
+#     $CEED  AD 2E A0   LDA $A02E     ; probe the currently-mapped LOW bank
+#     $CEF0  C9 40      CMP #$40      ; $40 only in the DRIVER bank (base bank 0 is $00 -- asserted)
+#     $CEF2  D0 03      BNE $CEF7
+#     $CEF4  68         PLA           ; driver bank mapped => absorb the overrun NMI, A intact
+#     $CEF5  40         RTI
+#     $CEF6  40         RTI           ; <- IRQ vector target; IRQ pushes no A, so a bare RTI is right
+#     $CEF7  68         PLA
+#     $CEF8  4C 05 80   JMP $8005     ; base bank mapped => the game's own NMI, A intact
+# ⚠ THE PHA/PLA IS NOT COSMETIC (v6e, found after c-v8ship 087ff959 had already been gated): the
+# original shield probed with LDA and then JMP'd into the game's NMI handler, which opens PHA and
+# closes PLA -- so it dutifully saved and restored the value the shield had just destroyed, and the
+# interrupted main-loop code resumed with a wrong accumulator on EVERY NMI the shield handled. The
+# multi-match gate passed that cart with numbers identical to the unhardened build, because match
+# counts and abort counts cannot see a corrupted register. Guard registers you touch, and gate the
+# guard with a check that reads the register.
 # Only index 3's four vector bytes are repointed; index 1's are untouched, so with DRMMC1RST OFF the
 # game's NMI path is bit-for-bit today's (index 3 is only mapped while prg_bank=2, i.e. only inside
 # a driver invocation). With DRMMC1RST ON, mode 3 puts index 3 at $C000 permanently and the probe is
@@ -2959,14 +2970,36 @@ def main():
         # asserts the map's run rather than "it looked like padding".
         assert all(b in (0x00, 0xFF) for b in rom[_sh:_b1 + (0xCEFC - 0xC000) + 1]), (
             f"${NMI_SHIELD_CPU:04X}-$CEFC is not filler any more -- someone else allocated it")
-        shield = bytes([0xAD, RTIVEC_PROBE & 0xFF, RTIVEC_PROBE >> 8,   # LDA $A02E
+        # ⚠ v6e A-CLOBBER FIX. The first shield DESTROYED THE ACCUMULATOR: it opened with
+        # `LDA $A02E` and fell through to `JMP $8005`, so the game's NMI handler -- which opens
+        # PHA and closes PLA -- pushed and faithfully restored the ALREADY-CORRUPTED A, and the
+        # interrupted main-loop code resumed with a wrong accumulator, silently, on every NMI the
+        # shield handled. It only bites when DRMMC1RST is also on (mode 3 hard-fixes $C000-$FFFF
+        # to index 3, whose NMI vector IS the shield) -- i.e. exactly the shipping combination.
+        # Multi-match gates could not see it: match counts and abort counts are insensitive to a
+        # corrupted register. Save/restore A around the probe on BOTH exits. No flag save needed --
+        # NMI hardware pushes P and RTI restores it. 15 B, still inside the 17-byte free run.
+        #   $CEEC 48        PHA
+        #   $CEED AD 2E A0  LDA $A02E
+        #   $CEF0 C9 40     CMP #$40
+        #   $CEF2 D0 03     BNE $CEF7
+        #   $CEF4 68        PLA        ; driver bank mapped: absorb this NMI, A intact
+        #   $CEF5 40        RTI
+        #   $CEF6 40        RTI        ; <- IRQ vector target (IRQ pushes no A, so bare RTI)
+        #   $CEF7 68        PLA        ; base bank mapped: hand to the game, A intact
+        #   $CEF8 4C 05 80  JMP $8005
+        shield = bytes([0x48,                                          # PHA
+                        0xAD, RTIVEC_PROBE & 0xFF, RTIVEC_PROBE >> 8,  # LDA $A02E
                         0xC9, RTIVEC_MAGIC,                            # CMP #$40
-                        0xD0, 0x01,                                    # BNE +1
-                        0x40,                                          # RTI   <- IRQ vector target
+                        0xD0, 0x03,                                    # BNE -> the PLA/JMP tail
+                        0x68,                                          # PLA
+                        0x40,                                          # RTI (overrun absorbed)
+                        0x40,                                          # RTI <- IRQ vector target
+                        0x68,                                          # PLA
                         0x4C, _base_nmi & 0xFF, _base_nmi >> 8])       # JMP $8005
         assert NMI_SHIELD_CPU + len(shield) - 1 <= 0xCEFC, "shield overruns the $CEEC free run"
         rom[_sh:_sh + len(shield)] = shield
-        RTIVEC_RTI_CPU = NMI_SHIELD_CPU + 7            # the bare RTI inside the shield
+        RTIVEC_RTI_CPU = NMI_SHIELD_CPU + 10           # the IRQ-path RTI inside the shield
         print(f"DRRTIVEC: NMI shield {len(shield)} B at ${NMI_SHIELD_CPU:04X} (shared high half), "
               f"RTI at ${RTIVEC_RTI_CPU:04X}")
 
@@ -2991,7 +3024,7 @@ def main():
         # $FFFC/$FFFD (RESET) IS DELIBERATELY LEFT ALONE. MMC1 powers up in PRG mode 3, so at cold
         # boot $C000-$FFFF IS index 3 regardless of the PRG register -- expand_prg.py's docstring
         # depends on exactly that to boot. Repointing RESET bricks power-on.
-        _rti = NMI_SHIELD_CPU + 7
+        _rti = NMI_SHIELD_CPU + 10          # v6e: IRQ-path RTI moved by the PHA/PLA fix
         out[_i3 + 0x3FFA], out[_i3 + 0x3FFB] = NMI_SHIELD_CPU & 0xFF, NMI_SHIELD_CPU >> 8
         out[_i3 + 0x3FFE], out[_i3 + 0x3FFF] = _rti & 0xFF, _rti >> 8
         assert out[_i1:_i1 + 0x4000] != out[_i3:_i3 + 0x4000], "DRRTIVEC did not change index 3"
