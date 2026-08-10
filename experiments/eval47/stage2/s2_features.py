@@ -69,6 +69,11 @@ FREE_IN_COLWALK = {"MAXH", "HOLES", "TOPRISK", "SPAWN", "a_topout_dist",
                    "x_hvar", "e_escape_routes", "c_nlegal_probe", "c_d_nlegal"}
 OFF_BUDGET = {"c_das_reach", "c_d_das_reach", "e_escape_reach"}
 
+# The champion's scan order over the 32-slot cand_vals index. o4 = 0..3 maps
+# to var via fast_rtl_x._VAR_OF_O4 = [2,3,0,1] and the slot is var*8+cc, so the
+# order is 16..31 then 0..15. Ties keep the FIRST in this order (strict `>`).
+CHAMP_ORDER = np.array([v * 8 + c for v in (2, 3, 0, 1) for c in range(8)])
+
 
 # ------------------------------------------------------------------ kernels
 def build_expander():
@@ -148,11 +153,26 @@ def gate_a4(d, prefeats, prenvir, okflags, tag, part):
     checks["nlegal_probe_vs_stored"] = int(
         (FBAT.nlegal_probe(Hpre) != d["n_legal"]).sum())
     v = d["cand_vals"].astype(np.float64)
-    argmax = np.nanargmax(v, axis=1).astype(np.int8)
-    checks["action_vs_nanargmax"] = int((argmax != d["action"]).sum())
+    # The champion enumerates o4 = 0..3 and maps o4 -> var via
+    # fast_rtl_x._VAR_OF_O4 = [2,3,0,1], writing vals[var*8+cc]. So its scan
+    # order over the vals INDEX is 16..31 then 0..15, and on a TIE it keeps the
+    # first in THAT order (strict `>`), i.e. verticals beat horizontals.
+    # np.nanargmax breaks ties the opposite way. Using it naively disagrees with
+    # the champion on ~1.7% of decisions -- the SAME defect recon C found in its
+    # own fork probe (1.54% of plies). The check must reproduce the champion's
+    # order or it is measuring the wrong thing.
+    argmax = CHAMP_ORDER[np.nanargmax(v[:, CHAMP_ORDER], axis=1)].astype(np.int8)
+    checks["action_vs_champion_order_argmax"] = int((argmax != d["action"]).sum())
     checks["chosen_action_illegal"] = int((okflags == 0).sum())
     checks["n_legal_vs_isfinite_candvals"] = int(
         (np.isfinite(v).sum(axis=1) != d["n_legal"]).sum())
+    # corpus facts worth having (recon C measured 36.0% ties under drip):
+    top = np.nanmax(v, axis=1)
+    n_top = (v == top[:, None]).sum(axis=1)
+    naive = np.nanargmax(v, axis=1).astype(np.int8)
+    diag = {"tie_rate_top_value": round(float((n_top >= 2).mean()), 4),
+            "naive_nanargmax_disagreement_rate":
+                round(float((naive != d["action"]).mean()), 4)}
 
     # --- MUTANTS: each check must FAIL on a deliberately corrupted input.
     mut = {}
@@ -163,9 +183,14 @@ def gate_a4(d, prefeats, prenvir, okflags, tag, part):
     badv = v.copy()
     j = int(np.nanargmin(badv[0]))
     badv[0, j] = np.nanmax(badv[0]) + 1.0
-    mut["action_vs_nanargmax"] = int(
-        (np.nanargmax(badv, axis=1).astype(np.int8) != d["action"]).sum()) > \
-        checks["action_vs_nanargmax"]
+    mut["action_vs_champion_order_argmax"] = int(
+        (CHAMP_ORDER[np.nanargmax(badv[:, CHAMP_ORDER], axis=1)].astype(np.int8)
+         != d["action"]).sum()) > checks["action_vs_champion_order_argmax"]
+    # SECOND mutant on the same check: the NAIVE (raw-index) tie-break. It must
+    # disagree, which is what proves the check is sensitive to enumeration
+    # order -- the thing that actually decides a third of the champion's moves.
+    mut["tiebreak_order_matters"] = bool(
+        (naive != d["action"]).sum() > checks["action_vs_champion_order_argmax"])
     badH = Hpre.copy()
     badH[0, 0] = min(15, badH[0, 0] + 1)
     mut["nlegal_probe_vs_stored"] = int(
@@ -173,7 +198,7 @@ def gate_a4(d, prefeats, prenvir, okflags, tag, part):
         checks["nlegal_probe_vs_stored"]
     ok = all(vv == 0 for vv in checks.values()) and all(mut.values())
     return {"part": part, "n": int(d["seed"].shape[0]), "checks": checks,
-            "mutants_fire": mut, "pass": bool(ok)}
+            "diagnostics": diag, "mutants_fire": mut, "pass": bool(ok)}
 
 
 # ------------------------------------------------------------------- gate A3
@@ -211,6 +236,9 @@ def gate_a3(feat, names, y, y_shuf, f_leak, seed):
     res["features"] = real
     worst = max(abs(r["auc_vs_yshuf"] - 0.5) for r in real.values())
     res["max_abs_dev_from_floor"] = worst
+    res["n_eligible_games"] = int(np.unique(seed[y >= 0]).shape[0])
+    res["n_pos_games"] = int(np.unique(seed[y == 1]).shape[0])
+    res["n_neg_games"] = int(np.unique(seed[y == 0]).shape[0])
 
     # MUTANT (the demonstration that this floor check CAN fail): a LEAKY
     # shuffle. 20% of eligible GAMES keep their true label; the rest are
@@ -312,6 +340,7 @@ def main():
           f"{time.monotonic()-t0:.1f}s  leak_vs_y={g3['auc_leak_vs_y']:.4f} "
           f"leak_vs_yshuf={g3['auc_leak_vs_yshuf']:.4f} "
           f"max|dev| real-vs-shuffled={g3['max_abs_dev_from_floor']:.4f} "
+          f"(over {g3['n_eligible_games']} games: {g3['n_pos_games']}+/{g3['n_neg_games']}-) "
           f"(leaky-shuffle mutant max|dev|="
           f"{g3['mutant_leaky_shuffle_max_dev']:.4f} "
           f"fires={g3['mutant_fires']})", flush=True)
