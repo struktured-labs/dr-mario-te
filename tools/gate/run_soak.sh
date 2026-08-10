@@ -49,7 +49,7 @@ for try in 1 2 3; do
     export DISPLAY=":$disp"
     export PS_OUT="$out" PS_MAXF="$maxf" PS_TAG="$tag"
     export PS_DLAT="${PS_DLAT:-34}" PS_SEED="${PS_SEED:-114}" PS_TUCK="${PS_TUCK:-4}"
-    export PS_CKPT="${PS_CKPT:-30000}" PS_INJECT="${PS_INJECT:-0}"
+    export PS_CKPT="${PS_CKPT:-30000}" PS_INJECT="${PS_INJECT:-0}" PS_ACHK="${PS_ACHK:-0}"
     export PS_INJA="${PS_INJA:-1500}" PS_INJB="${PS_INJB:-2100}"
     timeout -k 15 "$tmo" /home/struktured/projects/dr-mario-mods/run_mesen.sh "$cart" \
       "$D/tools/gate/probe_soak.lua" ) >"$out/stdout.log" 2>&1

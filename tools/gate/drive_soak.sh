@@ -18,9 +18,18 @@
 set -u
 D=/home/struktured/projects/dr-mario-v8-wt
 R=$D/tools/gate
-SHIP_MD5=087ff959ac510c613bbbd2eb1ac5ecf3
-SHIP="$D/release/v8_20260810/v8 REMATCH (hardened).nes"
-BOOT=$D/tmp/soak/v8ship_soak_mmc1.nes
+# ⚠ TARGET = v6e, NOT 087ff959. The staged v8 candidate is ON HOLD: its DRRTIVEC shield does
+# `LDA $A02E` and falls into the game's NMI handler, so A is destroyed on every NMI the shield
+# handles (release/v8_20260810/HOLD_DO_NOT_INSTALL.md). Confirmed here at byte level: the
+# A-clobber sequence appears 2x in 087ff959 at file 0x4EFC/0xCEFC and 0x in v6e, which carries
+# the 15-byte A-preserving shield at the same offsets. v6e differs from the held cart in
+# EXACTLY 31 bytes -- the two shields plus the $FFFE IRQ vector low byte f3->f6 -- and its flag
+# snapshot is identical. Soaking the held cart would have produced a confident five-hour clean
+# headline for a build with a known register-corruption defect.
+SHIP_MD5=c0082cb34259007854120d3d4ab9fa27
+SHIP="$D/roms/v6e.nes"
+BOOT=$D/tmp/soak/v6e_mmc1.nes
+HELD=$D/tmp/soak/v8ship_soak_mmc1.nes      # the DEFECTIVE cart -- used ONLY as a killed mutant
 NOFIX=$D/tmp/soak/v8nofix_mmc1.nes
 TUCKC=$D/tmp/soak/v8tuck_soak_mmc1.nes
 LOG=$D/tmp/soak/drive.log
@@ -53,8 +62,34 @@ say "--- phase 0: boot image identity ---"
 python3 "$R/verify_soak_bytes.py" --src "$SHIP" --out "$BOOT" --md5 "$SHIP_MD5" 2>&1 | tee -a "$LOG"
 if [ "${PIPESTATUS[0]}" != 0 ]; then say "FATAL: boot image is not the ship cart"; exit 1; fi
 
+# ---------------- Phase 0b: instrument capability ----------------
+# Can Lua read the 6502 accumulator in THIS build, and under which key? README_GATE says
+# `emu.getState().cpu` is nil, which could mean "no registers" or "different key" -- opposite
+# consequences, so it is measured. Also counts $CEEC executions, which answers whether the
+# DRRTIVEC shield path is live at all, register-free.
+say "--- phase 0b: instrument capability (registers reachable? shield live?) ---"
+DGO=$D/tmp/soak/s-diag; mkdir -p "$DGO"
+for dtry in 1 2 3; do
+  while ps -eo args | command grep -a 'Release/Mesen' | command grep -av grep >/dev/null; do
+    [ "$(left)" -lt 900 ] && break; sleep 10
+  done
+  ddisp=$((200 + RANDOM % 60)); rm -f "/tmp/.X${ddisp}-lock" "/tmp/.X11-unix/X${ddisp}"
+  Xvfb ":$ddisp" -screen 0 1280x720x24 -ac -nolisten tcp >/dev/null 2>&1 & dx=$!
+  sleep 2
+  ( cd /home/struktured/projects/dr-mario-mods/mesen2/bin/linux-x64/Release
+    DISPLAY=":$ddisp" DG_OUT="$DGO" DG_MAXF=600 DG_TAG=s-diag \
+    timeout -k 10 300 /home/struktured/projects/dr-mario-mods/run_mesen.sh "$BOOT" \
+      "$R/diag_state.lua" ) >"$DGO/stdout.log" 2>&1
+  kill "$dx" 2>/dev/null
+  command grep -aq 'tag=s-diag' "$DGO/diag_state.log" 2>/dev/null && break
+  say "phase 0b try $dtry produced no tagged log; retrying"
+done
+say "capability: $(command grep -a '^SUMMARY ' "$DGO/diag_state.log" 2>/dev/null || echo '<no log>')"
+say "  Q2 in-callback getState: $(command grep -a '^Q2 inside' "$DGO/diag_state.log" 2>/dev/null || echo '<none>')"
+say "  accumulator candidates: $(command grep -a '^STATE .*\.a = \|^STATE a = ' "$DGO/diag_state.log" 2>/dev/null | command head -4 | tr '\n' ' ')"
+
 # ---------------- Phase 1: calibration ----------------
-say "--- phase 1: calibration (6000 frames, ship bytes) ---"
+say "--- phase 1: calibration (6000 frames, v6e ship bytes) ---"
 t0=$(date +%s)
 PS_INJECT=0 arm s-cal "$BOOT" 6000 900
 crc=$ARM_RC
@@ -72,6 +107,27 @@ PS_INJECT=2 PS_INJA=1500 PS_INJB=2400 arm s-val-title  "$BOOT"  3000 900
 PS_INJECT=0                           arm s-val-mech   "$NOFIX" 3000 900
 PS_INJECT=0                           arm s-val-tuckwr "$TUCKC" 3000 900
 
+# ---- Phase 2b: A-INTEGRITY, the check the previous 18k gate did not have ----
+# The coordinator's point: a gate that counts matches cannot see a corrupted accumulator. This
+# pair makes the soak SENSITIVE to it. The held cart is the killed mutant -- if s-val-aclob does
+# NOT report FAIL_A_CORRUPTED, the A-check is not working and the soak's ACHK=PASS means nothing,
+# so the driver says so loudly rather than proceeding on a check it has not seen fail.
+say "--- phase 2b: A-integrity killed-mutant pair ---"
+PS_ACHK=1 PS_INJECT=0 arm s-val-aclob "$HELD" 3000 900
+PS_ACHK=1 PS_INJECT=0 arm s-val-aok   "$BOOT" 3000 900
+AV_MUT=$(command grep -a '^ACHK ' "$D/tmp/soak/s-val-aclob/probe_soak.log" 2>/dev/null | command tail -1)
+AV_FIX=$(command grep -a '^ACHK ' "$D/tmp/soak/s-val-aok/probe_soak.log"   2>/dev/null | command tail -1)
+say "A-check on the HELD cart (must FAIL): ${AV_MUT:-<no log>}"
+say "A-check on v6e          (must PASS): ${AV_FIX:-<no log>}"
+ACHK_USABLE=0
+case "$AV_MUT" in *FAIL_A_CORRUPTED*) case "$AV_FIX" in *verdict=PASS*) ACHK_USABLE=1;; esac;; esac
+if [ "$ACHK_USABLE" = 1 ]; then
+  say "A-CHECK IS LIVE: it fired on the defect and stayed clean on the fix. Enabling for the soak."
+else
+  say "⚠ A-CHECK NOT USABLE (mutant did not fail, or fix did not pass, or registers unavailable)."
+  say "  The soak will still run, but its ACHK line must be read as VOID, not as evidence."
+fi
+
 # ---------------- Phase 3: the soak ----------------
 REM=$(left)
 # reserve 12 min for the final segment's teardown + reporting
@@ -81,7 +137,7 @@ FRAMES=$(python3 -c "print(int($BUDGET * $FPS * 0.92))")
 say "--- phase 3: SOAK $FRAMES frames (budget ${BUDGET}s at ${FPS} fps, 8% margin) ---"
 say "    ~$(python3 -c "print(round($FRAMES/60.0988/60,1))") minutes of emulated play"
 t0=$(date +%s)
-PS_INJECT=0 PS_CKPT=30000 arm s-soak "$BOOT" "$FRAMES" $(( BUDGET + 300 ))
+PS_ACHK=$ACHK_USABLE PS_INJECT=0 PS_CKPT=30000 arm s-soak "$BOOT" "$FRAMES" $(( BUDGET + 300 ))
 src=$ARM_RC
 say "soak rc=$src wall=$(( $(date +%s) - t0 ))s"
 
@@ -91,7 +147,7 @@ if [ "$src" = 2 ] || [ "$src" = 1 ]; then
   if [ "$BUDGET" -gt 900 ]; then
     FRAMES2=$(python3 -c "print(int($BUDGET * $FPS * 0.92))")
     say "--- phase 4: soak returned $src with ${REM}s left; continuing $FRAMES2 frames ---"
-    PS_INJECT=0 PS_CKPT=30000 arm s-soak2 "$BOOT" "$FRAMES2" $(( BUDGET + 240 ))
+    PS_ACHK=$ACHK_USABLE PS_INJECT=0 PS_CKPT=30000 arm s-soak2 "$BOOT" "$FRAMES2" $(( BUDGET + 240 ))
     say "soak2 rc=$ARM_RC"
   else
     say "phase 4 skipped: only ${REM}s left"

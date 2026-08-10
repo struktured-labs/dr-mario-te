@@ -194,6 +194,88 @@ emu.addMemoryCallback(function()
   tuckwrites = tuckwrites + 1
 end, emu.callbackType.write, 0x6179, 0x617B)
 
+-- (S8) DRRTIVEC NMI SHIELD: is it live, and does it preserve the ACCUMULATOR? ---------------
+-- The held v8 candidate 087ff959 clobbers A on every NMI the shield handles: `LDA $A02E` then
+-- fall into the game's NMI handler, whose PHA/PLA faithfully restores the ALREADY-corrupted
+-- value, so interrupted main-loop code resumes with a wrong A. v6e prepends PHA and pops before
+-- both exits. A gate that counts matches is blind to this -- which is precisely why an
+-- 18,000-frame multi-match gate passed the defective cart with numbers identical to the
+-- unhardened build. A soak that repeats that blindness for five hours is worse than no soak.
+--
+-- Three counters, in increasing order of what they assume:
+--   shieldHits ($CEEC exec) -- is the shield path even TAKEN? register-free, always valid.
+--   gameNmi    ($8005 exec) -- game NMI handler entry; also the LIVENESS WITNESS below.
+--   nmiEvents  (eventType.nmi) -- NMIs actually taken, from an event callback.
+--
+-- ⚠ SILENT-FAILURE GUARD. README_GATE: no emu.* call may run inside a memory callback, and the
+-- failure mode is that the callback STOPS FIRING, with no error. An A-check built naively that
+-- way would report "0 mismatches" forever = a check that cannot fail. So gameNmi is incremented
+-- BEFORE anything risky, and is compared at the end against nmiEvents: if gameNmi stalls while
+-- nmiEvents climbs, the callback died and the A verdict is reported VOID, never PASS.
+-- The killed mutant for this check is the held cart itself: it MUST report mismatches.
+local AK = { shieldHits = 0, gameNmi = 0, nmiEvents = 0, gameNmiAtLastNmi = 0, frozen = 0,
+             on = (tonumber(os.getenv("PS_ACHK") or "0") == 1),
+             apre = -1, pend = false, tried = 0, ok = 0, err = 0, mism = 0,
+             dead = false, log = {} }
+
+-- Resolve the accumulator out of emu.getState() without assuming a key path: the serializer
+-- names are console-specific and README_GATE reports `.cpu` is nil here. Searched once, cached.
+function AK.finda(st, depth)
+  if type(st) ~= "table" or depth > 3 then return nil end
+  for _, k in ipairs({ "a", "A" }) do
+    local v = rawget(st, k)
+    if type(v) == "number" and v >= 0 and v <= 255 then return v end
+  end
+  for k, v in pairs(st) do
+    local ks = tostring(k):lower()
+    if type(v) == "table" and (ks:find("cpu") or ks:find("nes") or depth < 2) then
+      local r = AK.finda(v, depth + 1)
+      if r then return r end
+    end
+  end
+  return nil
+end
+
+emu.addMemoryCallback(function() AK.shieldHits = AK.shieldHits + 1 end, emu.callbackType.exec, 0xCEEC)
+
+emu.addEventCallback(function()
+  -- liveness bookkeeping: did the $8005 callback advance since the previous NMI?
+  if AK.nmiEvents > 0 and AK.gameNmi == AK.gameNmiAtLastNmi then AK.frozen = AK.frozen + 1 end
+  AK.gameNmiAtLastNmi = AK.gameNmi
+  AK.nmiEvents = AK.nmiEvents + 1
+  if AK.on and not AK.dead then
+    local ok, st = pcall(emu.getState)
+    if ok then
+      local a = AK.finda(st, 0)
+      if a then AK.apre = a; AK.pend = true else AK.dead = true end
+    else
+      AK.dead = true
+    end
+  end
+end, emu.eventType.nmi)
+
+emu.addMemoryCallback(function()
+  AK.gameNmi = AK.gameNmi + 1          -- witness FIRST, unconditionally
+  if AK.on and AK.pend and not AK.dead then
+    AK.tried = AK.tried + 1
+    local ok, st = pcall(emu.getState)
+    if ok then
+      local a = AK.finda(st, 0)
+      if a then
+        AK.ok = AK.ok + 1
+        if a ~= AK.apre then
+          AK.mism = AK.mism + 1
+          if #AK.log < 25 then
+            AK.log[#AK.log + 1] = string.format("AMISM f=%d A_at_interrupt=%d A_at_gameNMI=%d",
+              curFrame, AK.apre, a)
+          end
+        end
+      else AK.err = AK.err + 1 end
+    else AK.err = AK.err + 1 end
+    AK.pend = false
+  end
+end, emu.callbackType.exec, 0x8005)
+
 -- ================= copro mailbox, tuck-aware =================
 local W = 0x5000            -- DRPOCKET=1 => P2 rides the $5000 window (W2_BASE=0x5000)
 local S = { board = {}, done = false, go_f = -1, rcol = 0, ror = 0xFF,
@@ -443,10 +525,11 @@ end
 function K.statline()
   return string.format("mixedPRG=%d mixedTot=%d wipes=%d soft8036=%d brk=%d tuckwr=%d " ..
     "busyMax=%d busyEp=%d busyskpMax=%d modeRunMax=%d modeStall=%d gapMax=%d gapStall=%d " ..
-    "srchGapMax=%d srchStall=%d title0=%d abort=%d",
+    "srchGapMax=%d srchStall=%d title0=%d abort=%d shield=%d gameNmi=%d nmi=%d amism=%d",
     mixed_prg, mixed_total, wipes, soft8036, brkhits, tuckwrites,
     K.busyRunMax, K.busyEpisodes, K.busyskpMax, K.modeRunMax, K.modeStalls, K.gapMax,
-    K.gapStalls, K.srchGapMax, K.srchStalls, K.titleReturns, aborts)
+    K.gapStalls, K.srchGapMax, K.srchStalls, K.titleReturns, aborts,
+    AK.shieldHits, AK.gameNmi, AK.nmiEvents, AK.mism)
 end
 
 emu.addEventCallback(function()
@@ -657,6 +740,20 @@ emu.addEventCallback(function()
       log(string.format("QUART tag=%s q=%d matches=%d mixedPRG=%d wipes=%d soft8036=%d abort=%d",
           TAG, i, K.qMatch[i], K.qMix[i], K.qWipe[i], K.qSoft[i], K.qAbort[i]))
     end
+    -- (S8) A-integrity verdict. VOID is a distinct outcome from PASS and is reported as such:
+    -- a dead callback or an unreadable accumulator means the check did not run, NOT that the
+    -- cart is clean. Only ACHK=PASS with tried>0 and ok==tried is evidence of anything.
+    for _, s in ipairs(AK.log) do log(s) end
+    local verdict
+    if not AK.on then verdict = "OFF"
+    elseif AK.dead or AK.err > 0 then verdict = "VOID_callback_or_register_unavailable"
+    elseif AK.tried == 0 then verdict = "VOID_never_ran"
+    elseif AK.mism > 0 then verdict = "FAIL_A_CORRUPTED"
+    else verdict = "PASS" end
+    log(string.format("ACHK tag=%s verdict=%s on=%s shield_CEEC=%d gameNmi_8005=%d nmi_events=%d " ..
+        "frozen_witness=%d tried=%d ok=%d err=%d MISMATCH=%d dead=%s",
+        TAG, verdict, tostring(AK.on), AK.shieldHits, AK.gameNmi, AK.nmiEvents,
+        AK.frozen, AK.tried, AK.ok, AK.err, AK.mism, tostring(AK.dead)))
     logf:close(); emu.stop(0)
   end
 end, emu.eventType.endFrame)
