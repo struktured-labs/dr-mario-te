@@ -45,7 +45,11 @@ def _init(level,tuck,nes,P):
     # perform is WORSE than publishing none -- the capsule would steer to the approach
     # column and then fail to reach the target, landing somewhere the search never scored.
     _C.update(level=level,tuck=tuck,nes=nes,P=P,gate=int(_o.environ.get("DRTUCK_GATE","0")),
-              execonly=_o.environ.get("DRTUCK_EXEC","0")=="1")
+              execonly=_o.environ.get("DRTUCK_EXEC","0")=="1",
+              guard=_o.environ.get("DRTUCK_GUARD","0")=="1")
+
+_STAT = {"vetoed": 0, "offered": 0}
+
 
 def _exec_reach_cells(fb):
     """Rest cells reachable under the executor's one-switch model (see DRTUCK_EXEC)."""
@@ -64,7 +68,17 @@ def _exec_reach_cells(fb):
             ra = topdrop(a)
             if ra is None or occ(ra, c): continue
             rf = rest(c, ra)
-            if rf > sdd: out.add((rf, c))
+            # DRTUCK_GUARD (task #102): the CART-SIDE fall-budget veto, modelled here so the
+            # paired A/B can PRICE it. The 6502 guard refuses an approach whose free rows
+            # strictly below the trigger, in the FINAL column, are < |approach-final| + 2.
+            # In this one-switch model |approach-final| is always 1, the trigger row is `ra`,
+            # and the capsule falls ra->rf in the final column, so free-rows-below-trigger is
+            # exactly rf - ra and the threshold is 3. A vetoed candidate is simply not offered,
+            # which is what the cart does: TUCK_C2 <- $FF, steer straight to the final column.
+            if _C.get("guard") and (rf - ra) < 3:
+                _STAT["vetoed"] += 1; continue
+            if rf > sdd:
+                _STAT["offered"] += 1; out.add((rf, c))
     return out
 
 
@@ -89,6 +103,7 @@ def play(seed):
     if _C["nes"]:
         from nes_pills import NesPillSource
         NesPillSource(seed=seed).attach(env); env.cur=env._rand_pill(); env.nxt=env._rand_pill()
+    _STAT["vetoed"] = 0; _STAT["offered"] = 0
     seg={"open":[0,0],"mid":[0,0],"end":[0,0]}; fired=0; res="stall"
     while True:
         a=dec.choose(env.board,env.cur,env.nxt)
@@ -164,7 +179,8 @@ def play(seed):
         seg[k][0]+=1; seg[k][1]+=vc-env.board.virus_count()
         if term: res="clear" if info["won"] else "topout"; break
         if trunc: break
-    return {"seed":seed,"won":int(res=="clear"),"pills":env.pills_placed,"fired":fired,"seg":seg}
+    return {"seed":seed,"won":int(res=="clear"),"pills":env.pills_placed,"fired":fired,
+            "seg":seg,"vetoed":_STAT["vetoed"],"offered":_STAT["offered"]}
 
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument("--seeds",type=int,default=120)

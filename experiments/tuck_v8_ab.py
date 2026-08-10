@@ -49,8 +49,9 @@ def seed_list(n):
     return [2 * (i + 1) for i in range(n)]
 
 
-def run_arm(name, tuck, execonly, seeds, level, workers, P):
+def run_arm(name, tuck, execonly, seeds, level, workers, P, guard=False):
     os.environ["DRTUCK_EXEC"] = "1" if execonly else "0"
+    os.environ["DRTUCK_GUARD"] = "1" if guard else "0"
     os.environ["DRTUCK_GATE"] = "0"
     os.environ["DRTUCK_V2"] = "0"
     import tuck_ab as TA          # imported AFTER env is set; workers inherit via fork
@@ -73,14 +74,22 @@ def main():
     ap.add_argument("--out", default="/home/struktured/projects/dr-mario-v8-wt/tmp/tuck_v8_ab.json")
     a = ap.parse_args()
 
-    arms = [("A_v8_notuck", 0, False), ("B_v8tuck_exec", 1, True), ("C_upper_full", 1, False)]
+    # D = the ship question for task #102: executor-reachable tucks, with the CART-SIDE
+    # fall-budget guard applied. A veto is not a different tuck, it is NO tuck -- the executor
+    # reads TUCK_C2=$FF and steers straight to the final column -- so D can only ever lose
+    # value relative to B, never gain it. That is exactly what we are pricing: how much of
+    # B's -4.16 pills survives the safety.
+    arms = [("A_v8_notuck", 0, False, False), ("B_v8tuck_exec", 1, True, False),
+            ("D_v8tuck_guard", 1, True, True), ("C_upper_full", 1, False, False)]
     R = {}
-    for name, tuck, execonly in arms:
-        _, rows = run_arm(name, tuck, execonly, a.seeds, a.level, a.workers, a.P)
+    for name, tuck, execonly, guard in arms:
+        _, rows = run_arm(name, tuck, execonly, a.seeds, a.level, a.workers, a.P, guard)
         R[name] = rows
         print(f"[done] {name}: n={len(rows)} clear={sum(r['won'] for r in rows)/len(rows):.1%} "
               f"medpills={st.median([r['pills'] for r in rows]):.1f} "
-              f"fires/game={st.mean([r['fired'] for r in rows]):.2f}", flush=True)
+              f"fires/game={st.mean([r['fired'] for r in rows]):.2f} "
+              f"vetoed/game={st.mean([r.get('vetoed',0) for r in rows]):.1f} "
+              f"offered/game={st.mean([r.get('offered',0) for r in rows]):.1f}", flush=True)
 
     print(f"\n=== v8 vs v8+tuck, REAL NES capsules, L{a.level}, paired n={a.seeds} ===")
     print(f"{'arm':>16} {'clear':>8} {'medpills':>9} {'meanpills':>10} {'fires/g':>8}")
