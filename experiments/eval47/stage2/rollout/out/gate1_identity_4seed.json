@@ -1,0 +1,54 @@
+{
+ "model": "S1br2_lut8_q64",
+ "seeds": [
+  2,
+  3,
+  4,
+  5
+ ],
+ "per_model": {
+  "lulu": {
+   "G1a_off_identity_pass": 4,
+   "G1a_n": 4,
+   "G1a_mismatches": [],
+   "G1a": true,
+   "G1a_action_sequence_identical": 4,
+   "G1a_strict": true,
+   "G1b_tiebreak_mutant_differs_on": 4,
+   "G1b": true,
+   "G1c_signflip_differs_on": 4,
+   "G1c_shuftable_differs_on": 4,
+   "G1c": true,
+   "G1d_treatment_differs_on": 4,
+   "G1d_flips": 29,
+   "G1d_plies": 864,
+   "G1d_flip_rate": 0.03356481481481482,
+   "G1d": true,
+   "G1e_prune_exact_on": 4,
+   "G1e": true,
+   "pass": true
+  },
+  "drip": {
+   "G1a_off_identity_pass": 4,
+   "G1a_n": 4,
+   "G1a_mismatches": [],
+   "G1a": true,
+   "G1a_action_sequence_identical": 4,
+   "G1a_strict": true,
+   "G1b_tiebreak_mutant_differs_on": 4,
+   "G1b": true,
+   "G1c_signflip_differs_on": 4,
+   "G1c_shuftable_differs_on": 4,
+   "G1c": true,
+   "G1d_treatment_differs_on": 4,
+   "G1d_flips": 13,
+   "G1d_plies": 470,
+   "G1d_flip_rate": 0.027659574468085105,
+   "G1d": true,
+   "G1e_prune_exact_on": 4,
+   "G1e": true,
+   "pass": true
+  }
+ },
+ "pass": true
+}

@@ -49,12 +49,19 @@ def _init(model):
     return PR, P
 
 
+_REF = {}
+
+
 def ref_row(PR, P, seed):
     """The champion, via the two independent existing entry points."""
+    key = (PR._C.get("model_kind"), seed)
+    if key in _REF:
+        return _REF[key]
     a = PR.play(seed)
     b = P.play_one(seed, forced=False)
     for k in ("seed", "won", "topout", "pills"):
         assert a[k] == b[k], ("rig disagreement", seed, k, a[k], b[k])
+    _REF[key] = b
     return b
 
 

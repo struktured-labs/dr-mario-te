@@ -1,0 +1,62 @@
+{
+ "model": "S1br2_lut8_q64",
+ "seeds": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  20000,
+  20001,
+  20002,
+  20003,
+  20004,
+  20005
+ ],
+ "per_model": {
+  "lulu": {
+   "G1a_off_identity_pass": 12,
+   "G1a_n": 12,
+   "G1a_mismatches": [],
+   "G1a": true,
+   "G1a_action_sequence_identical": 12,
+   "G1a_strict": true,
+   "G1b_tiebreak_mutant_differs_on": 12,
+   "G1b": true,
+   "G1c_signflip_differs_on": 12,
+   "G1c_shuftable_differs_on": 12,
+   "G1c": true,
+   "G1d_treatment_differs_on": 12,
+   "G1d_flips": 63,
+   "G1d_plies": 2438,
+   "G1d_flip_rate": 0.025840853158326498,
+   "G1d": true,
+   "G1e_prune_exact_on": 12,
+   "G1e": true,
+   "pass": true
+  },
+  "drip": {
+   "G1a_off_identity_pass": 12,
+   "G1a_n": 12,
+   "G1a_mismatches": [],
+   "G1a": true,
+   "G1a_action_sequence_identical": 12,
+   "G1a_strict": true,
+   "G1b_tiebreak_mutant_differs_on": 11,
+   "G1b": true,
+   "G1c_signflip_differs_on": 10,
+   "G1c_shuftable_differs_on": 12,
+   "G1c": true,
+   "G1d_treatment_differs_on": 11,
+   "G1d_flips": 34,
+   "G1d_plies": 1727,
+   "G1d_flip_rate": 0.019687319050376375,
+   "G1d": true,
+   "G1e_prune_exact_on": 12,
+   "G1e": true,
+   "pass": true
+  }
+ },
+ "pass": true
+}
