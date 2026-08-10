@@ -469,7 +469,7 @@ emu.addEventCallback(function()
         "pills=%d tuck_opp=%d tuck_pub=%d tuck_desc=%d desc_changed=%d " ..
         "TUCK_EXEC_D1=%d TUCK_EXEC_D2=%d MISLAND=%d MISLAND_APPR=%d " ..
         "fail_hi=%d fail_lo=%d fail_reach=%d fail_land=%d",
-        TAG, frame, S.goes, S.dones, loads, resets, mixed_total, mixed_boot, mixed_prg,
+        TAG, CART, CARTID, NONCE, frame, S.goes, S.dones, loads, resets, mixed_total, mixed_boot, mixed_prg,
         soft8036, wipes, brkhits, matchesStarted, matchesEnded, cleanEnds, aborts,
         nPills, S.opp, S.pub, nDesc, nChanged, nExec, nD2, nMis, nMisAppr,
         fHi, fLo, fReach, fLand))

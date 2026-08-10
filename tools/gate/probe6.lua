@@ -415,7 +415,7 @@ emu.addEventCallback(function()
         "matches_started=%d matches_ended=%d clean_ends=%d ABORT_4to0=%d " ..
         "pills=%d tuck_opp=%d tuck_pub=%d tuck_desc=%d desc_changed=%d " ..
         "TUCK_EXEC_D1=%d TUCK_EXEC_D2=%d fail_hi=%d fail_lo=%d fail_reach=%d fail_land=%d",
-        TAG, frame, S.goes, S.dones, loads, resets, mixed_total, mixed_boot, mixed_prg,
+        TAG, CART, CARTID, NONCE, frame, S.goes, S.dones, loads, resets, mixed_total, mixed_boot, mixed_prg,
         soft8036, wipes, brkhits, matchesStarted, matchesEnded, cleanEnds, aborts,
         nPills, S.opp, S.pub, nDesc, nChanged, nExec, nD2, fHi, fLo, fReach, fLand))
     logf:close(); emu.stop(0)
