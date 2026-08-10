@@ -668,10 +668,18 @@ emu.addEventCallback(function()
       K.modeRun = 0
     end
 
-    -- ---- (S4b) match-boundary gap: end of a match -> start of the next ----
+    -- ---- (S4b) match-boundary gap: time since the last match ENDED ----
     if K.lastEndF >= 0 and (frame - K.lastEndF) == K.GAPMAX then
       K.gapStalls = K.gapStalls + 1
-      log(string.format("!!! GAP-STALL f=%d no new match %d frames after end f=%d mode=%d (#%d) !!!",
+      -- ⚠ WORDING FIX, LOGIC UNTOUCHED. This condition measures frames since the last match
+      -- ENDED. It never checks whether a new match STARTED, so it cannot distinguish "no new
+      -- match began" from "a match began and is still running". The old text asserted the
+      -- former, which it does not test, and that cost real diagnostic minutes on the seed-30011
+      -- event: it sent me hunting for a missed match-start when the truth was a match that
+      -- started at f=37471 and never finished. The counter was correct throughout; only the
+      -- sentence lied. Logs from segments 1-3 and from seed 30011 carry the OLD wording.
+      log(string.format("!!! GAP-STALL f=%d no match has ENDED in %d frames (one may be in "
+          .. "progress) since end f=%d mode=%d (#%d) !!!",
           frame, K.GAPMAX, K.lastEndF, mode, K.gapStalls))
     end
 
