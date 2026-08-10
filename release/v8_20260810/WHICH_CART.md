@@ -7,7 +7,7 @@ Two carts here. They differ by **one flag**. Both carry the corrected NMI shield
 | md5 | `c0082cb34259007854120d3d4ab9fa27` | `c9364b2670a7a0e0292e56264d9f231b` |
 | board hold | off | **on** — end-of-match board stays visible |
 | install | `./install_to_pocket.sh` | `./install_boardhold.sh` |
-| evidence | 18,000-frame gate **+ a ~900k-frame, 4-seed soak** | 18,000-frame gate only |
+| evidence | 18,000-frame gate **+ a ~900k-frame, 4-seed soak** | **three** independent 18,000-frame gates |
 
 ## Recommendation: play the first one
 
@@ -45,3 +45,15 @@ exists, at the cost of a RAM byte and two code sites.
 - **Tucks.** Not deliverable to the Pocket: that core has no θ mechanism at all, and the
   descriptors it does publish stranded the capsule 4 times out of 4. See task #101/#102.
 - **A silicon bound.** Both are gated in emulation only.
+
+## Update: the board-hold evidence is stronger than "one gate"
+
+The latch pair completed, and both arms are identical:
+
+| arm | searches | matches | holdARM | holdREL | aborts | patho |
+|---|---|---|---|---|---|---|
+| no latch | 149/142 | 18 | 18 | 18 | 0 | 0 |
+| with latch | 150/143 | 18 | 18 | 18 | 0 | 0 |
+
+So board hold on v6e has three clean 18,000-frame runs behind it, and the latch is provably a
+no-op. The remaining gap versus the primary cart is the soak, not the gate.
