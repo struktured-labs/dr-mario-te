@@ -200,3 +200,41 @@ Among candidates that are IN CLASS and clear B1, B2 and B3:
   1e-4 for every candidate, which means the 12-bit format is not doing any work and the
   quantisation check would be VACUOUS without §5's 3-bit mutant. The mutant is therefore
   load-bearing, not decorative.
+
+- 2026-08-10, **AFTER the holdout was opened. Two entries, both reported as corrections
+  to this lane's own instruments, neither changing the verdict rule.**
+
+  6. **B1's floor was read against a BAD DRAW; measured as a null band instead.** The
+     corpus's single pre-registered `y_shuf` is a +2.5 sd unlucky permutation:
+     game-level concordance with `y` is 0.4957 / 0.4433 where a null gives 0.4679 for
+     both. Refitting each shape on that one draw gave floors of 0.58-0.62, which
+     failed B1 for 4 of 5 shapes. Refitting on **20 independent game-level
+     permutations** (`b1_null.py`) puts the null **mean at 0.4960-0.5005** for every
+     shape — unbiased, matching PREREG_STAGE2's own Q1 finding (max bias 0.00056).
+     B1 margins against the measured null mean: S0 +0.154, S1 +0.203, S1b +0.203,
+     S2 +0.204, S3 +0.202 — all clear the 0.10 bar. This is the SAME move
+     PREREG_STAGE2 section 10 already made for A3 ("read against the MEASURED null
+     band, not the single pre-registered draw"). Both readings ship.
+     LIMITATION, reported not hidden: the null is WIDE (p95 0.60-0.63), and the 20%
+     game-level leak positive control lands at 0.593-0.630 — i.e. **B1's 0.10 bar is
+     worth about a 20% label leak**, so B1 is a weak test and the real models sit ~2x
+     above it.
+
+  7. **ROUND 2: the eligible set in section 3 was WRONG, and correcting it is the
+     largest single result in this lane.** PREREG_STAGE2 section 8's
+     `FREE_IN_COLWALK` list omits SETUP, MATCHED, BURIED, RDYEXT, VRDY and POLL —
+     which are the champion's OWN COMBINE OPERANDS. Verified in
+     `fpga/copro/LeafEval.sv` S_DONE2: all ten are already-registered `*_p` values at
+     the instant the combine runs, so reading them as Delta inputs costs **0 new board
+     passes, 0 new cycles, 0 new accumulators**. Admitting them raises the best
+     in-class holdout AUC from **0.6983 to 0.7268** — past the 0.7232 measured for the
+     out-of-class 26-feature GBM ceiling. **CONTAMINATION FLAG: the decision to look at
+     that category was taken after a holdout-scored diagnostic ranked BURIED first, so
+     every round-2 number is optimistically biased and is reported as INDICATIVE.**
+     Mitigating fact, also measured: round 2's own TRAIN-ONLY GroupKFold selection
+     picks BURIED second unprompted (CV 0.6788 -> 0.7082), so the holdout only pointed
+     at the category, not at the feature. Round 1 remains the clean result. Round 2
+     must be re-established under a fresh pre-registration on the population-scale
+     corpus (Hetzner job 070) before it is used for a GO.
+     Also measured and NOT acted on: the three `OFF_BUDGET` features this lane
+     deliberately refused to use buy **+0.0008**. Honouring the tag cost nothing.

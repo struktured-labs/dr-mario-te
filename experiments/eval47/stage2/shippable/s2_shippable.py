@@ -575,5 +575,5 @@ if __name__ == "__main__":
     a = ap.parse_args()
     os.environ["OMP_NUM_THREADS"] = str(a.threads)
     t0 = time.time()
-    {"select": stage_select, "fit": stage_fit}[a.stage](a)
+    {"select": stage_select, "fit": stage_fit, "eval": stage_eval}[a.stage](a)
     print(f"[{a.stage}] {time.time()-t0:.1f}s")
