@@ -303,3 +303,109 @@ exists only for cost probes.
 
 *(empty at seal; every subsequent entry is dated and states whether it was
 written before or after the corresponding number was seen)*
+
+---
+
+### A1 — 2026-08-10. THE FORK IS CLAIRVOYANT ABOUT THE GARBAGE REALIZATION.
+
+**Status when written: AFTER a 38-pair partial pilot was seen, BEFORE any
+completed arm, BEFORE the identity gates landed, and BEFORE any verdict.** The
+partial pilot showed an implausibly clean effect (0 topouts, 0 stalls, 0
+dies-ahead, −57.8 pills at n=38); this amendment is the result of asking where
+an inflated ceiling would come from, and finding a real answer in the code.
+
+**THE FACT, established from the source and demonstrated empirically.**
+
+`bursty_model.BurstyPressureModel.sample()` is:
+
+    def sample(self, seed, pills_placed):
+        rng = random.Random(seed * 1000 + pills_placed)
+        n_cells = rng.choice(self.volley_sizes)
+        n_cols  = max(1, min(NCOLS, round(n_cells / 2)))
+        cols    = rng.sample(range(NCOLS), n_cols)
+
+and `inject_bursty_garbage()` draws its fire coin from `random.Random(seed *
+1000 + pills_placed)` as well. **The volley's SIZE and TARGET COLUMNS are a pure
+function of `(seed, pills_placed)` — they do not depend on the board at all.**
+Measured, seed 30000:
+
+    pills_placed=33 -> (3, [0, 6])   called 3x, all identical
+    pills_placed=37 -> (2, [1])      called 3x, all identical
+
+**CONSEQUENCE.** A fork that advances to `pills_placed = p` reads *the same
+volley, in the same columns, that the live game will deliver at p*. Over a
+15-pill horizon the oracle therefore knows, in advance and exactly: whether a
+volley fires (given its own clear size), how big it is, and **which columns it
+lands in**. It can pre-clear the columns that are about to be attacked.
+
+**WHY THIS MATTERS AND WHY IT IS NOT A BUG.** The rig's `(seed, pills_placed)`
+keying is *correct and necessary* — it is what makes the paired A/B a
+common-random-numbers design, and it is why base and treatment see the same
+pressure. Nothing about the endpoint measurement is wrong. But it means the arm
+as sealed measures **an oracle that is clairvoyant about the opponent**, not
+"the best any root re-ranker could do":
+
+* Seeing the true future **capsules** is fine and stays. It is the ceiling's
+  definition, and a real re-ranker approximates it with expectimax over a known
+  generator — the capsule buffer is generated up front and is in principle
+  knowable.
+* Seeing the true future **attack realization** is **not** recoverable by any
+  shippable policy. dr. lulu's volleys are not a function the cart can evaluate.
+  **A GO driven by that channel would be unactionable.**
+
+The flip provenance is consistent with this being a live channel rather than a
+theoretical worry: only **3.2%** of flips fall in the last 10 plies, i.e. the
+oracle is acting ~34 plies from the end, which is where column-level
+foreknowledge of an incoming volley would pay.
+
+**THE AMENDMENT.**
+
+1. **The arm as sealed is RENAMED `ORACLE-CLAIR`** and is **DEMOTED from the
+   headline.** It is retained and reported, because it is a meaningful quantity —
+   an **upper bound on the upper bound** — but it no longer answers the
+   programme's question on its own.
+
+2. **A new sub-arm `ORACLE-DIST` is REGISTERED HERE AS THE HEADLINE CEILING.**
+   Identical in every respect — same gate, same TOPK=4, same HORIZON=15, same
+   selection rule, same seeds, same endpoint, same verdict rule — except that
+   **inside a fork the garbage is drawn from the pressure DISTRIBUTION rather
+   than from the realization.** Implementation, fixed now: injection inside a
+   fork is called with a synthetic key
+
+       seed_eff = seed + 7919 * (ply + 1)
+
+   passed in place of `seed`, so the draw runs through **the identical rig code
+   path** (`inject_bursty_garbage` / `_inject_garbage`, no physics is
+   re-implemented) but on a stream decorrelated from the true one. `seed_eff`
+   depends on the ply but **NOT on the candidate**, so all four candidates at a
+   ply are compared against the SAME sampled future — common random numbers
+   across candidates, which is what keeps the comparison from being pure noise.
+
+3. **Single sample, and the direction of its bias is stated now.** `ORACLE-DIST`
+   evaluates **one** sampled future per ply (K=1), not an expectation. That is
+   noisier than a true expectimax oracle and therefore **understates** the
+   distributional ceiling. Understating is the conservative direction for the
+   headline, so K=1 is registered as primary; `--fork-samples K` exists for a
+   sensitivity probe with no verdict authority.
+
+4. **READ-OUT RULE, fixed before the numbers exist.** Report `ORACLE-DIST` and
+   `ORACLE-CLAIR` side by side on the same seeds. **The gap between them is the
+   part of the ceiling that is pure opponent-clairvoyance and is not available
+   to any shippable policy.** The programme's decision — whether to keep funding
+   root re-rankers for dies-ahead — is taken on **`ORACLE-DIST` only**.
+   * `ORACLE-DIST` NO_GO ⇒ root re-ranking is structurally dead for this
+     endpoint, *even given a perfect within-horizon rollout*, and the lane
+     closes. `ORACLE-CLAIR` being GO in that case does not re-open it; it would
+     only show that the remaining headroom lives in opponent modelling, which is
+     a different lane.
+   * `ORACLE-DIST` GO ⇒ the AUC-to-endpoint conversion is real and priceable.
+
+5. **The killed mutant applies to BOTH sub-arms.** A shuffled survival label must
+   fail `ORACLE-DIST` exactly as it must fail `ORACLE-CLAIR`.
+
+6. **Not yet implemented at the time of writing.** `ORACLE-DIST` is registered
+   but the code change is deferred until the in-flight pilots complete, because
+   editing `oracle_arm.py` mid-run would let the chained mutant arm spawn workers
+   that re-import different code from the arm it is paired against. **Any pilot
+   number reported before that change lands is `ORACLE-CLAIR`, and is labelled as
+   such.**
