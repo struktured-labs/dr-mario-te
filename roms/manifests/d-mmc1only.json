@@ -6,7 +6,7 @@
   "determinism": "verified: two builds byte-identical + identical flag snapshot",
   "emitter": {
     "file": "patch_cartridge_copro.py",
-    "md5": "546790ca14d6b09f4687bbf668b09846"
+    "md5": "0bdf5653523fdad835f6f451bf38fc99"
   },
   "flag_snapshot": {
     "DRBUILDID": "0",
@@ -18,12 +18,13 @@
     "DRDIST_DASEDGE": "12",
     "DRDIST_FLOORREL": "0",
     "DRDIST_GRAVROW": "30",
-    "DRFCGATE": "1",
-    "DRHOLDBOARD": "0",
+    "DRFCGATE": "0",
+    "DRHOLDBOARD": "1",
     "DRHOLDBOARD_F": "600",
     "DRHUMAN": "1",
     "DRLEVEL": "11",
     "DRMINTHINK": "12",
+    "DRMMC1RST": "1",
     "DRNAVDWELL": "0",
     "DRNAVDWELL_F": "180",
     "DRNAVESC": "0",
@@ -38,13 +39,14 @@
     "DRP1WIGGLE": "0",
     "DRPENDBOUND": "1",
     "DRPOCKET": "1",
-    "DRPRESTART": "1",
+    "DRPRESTART": "0",
     "DRPROBE": "0",
     "DRRECOMMIT": "1",
     "DRRECOMMIT_NOFREEZE": "1",
     "DRREENTRY": "1",
     "DRRELATCH": "1",
     "DRROTFIX": "1",
+    "DRRTIVEC": "0",
     "DRSEED": "1",
     "DRSLAM": "1",
     "DRSLAM_KCROSS": "8",
@@ -75,12 +77,12 @@
     "DRDIST_DASEDGE": "12",
     "DRDIST_FLOORREL": "0",
     "DRDIST_GRAVROW": "30",
-    "DRFCGATE": "1",
-    "DRHOLDBOARD": "0",
+    "DRHOLDBOARD": "1",
     "DRHOLDBOARD_F": "600",
     "DRHUMAN": "1",
     "DRLEVEL": "11",
     "DRMINTHINK": "12",
+    "DRMMC1RST": "1",
     "DRNAVDWELL": "0",
     "DRNAVDWELL_F": "180",
     "DRNAVESC": "0",
@@ -95,7 +97,7 @@
     "DRP1WIGGLE": "0",
     "DRPENDBOUND": "1",
     "DRPOCKET": "1",
-    "DRPRESTART": "1",
+    "DRPRESTART": "0",
     "DRPROBE": "0",
     "DRRECOMMIT": "1",
     "DRRECOMMIT_NOFREEZE": "1",
@@ -124,13 +126,13 @@
   },
   "git": {
     "branch": "v8-rematch",
-    "commit": "6f032127a089118bb0153f1ae5eece5c6f8343ed",
-    "dirty": false
+    "commit": "243cc0c0bd35444fb076489c9291373bc28ab045",
+    "dirty": true
   },
   "output": {
-    "md5": "c16271c6f093b518404d5d17e31616fb",
-    "name": "v8-fcgate.nes",
+    "md5": "6c7fcdf2176331ae7e3b33f7db44a4a0",
+    "name": "d-mmc1only.nes",
     "size": 98320
   },
-  "tag": "v8-fcgate"
+  "tag": "d-mmc1only"
 }

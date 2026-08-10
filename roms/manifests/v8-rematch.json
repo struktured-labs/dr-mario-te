@@ -6,7 +6,7 @@
   "determinism": "verified: two builds byte-identical + identical flag snapshot",
   "emitter": {
     "file": "patch_cartridge_copro.py",
-    "md5": "1166bb03563e931bc7b1e9bc7e02a8fd"
+    "md5": "546790ca14d6b09f4687bbf668b09846"
   },
   "flag_snapshot": {
     "DRBUILDID": "0",
@@ -18,6 +18,7 @@
     "DRDIST_DASEDGE": "12",
     "DRDIST_FLOORREL": "0",
     "DRDIST_GRAVROW": "30",
+    "DRFCGATE": "0",
     "DRHOLDBOARD": "0",
     "DRHOLDBOARD_F": "600",
     "DRHUMAN": "1",
@@ -122,8 +123,8 @@
   },
   "git": {
     "branch": "v8-rematch",
-    "commit": "b75f8399a7754c7a738029cc464e91d5d51e049e",
-    "dirty": true
+    "commit": "6f032127a089118bb0153f1ae5eece5c6f8343ed",
+    "dirty": false
   },
   "output": {
     "md5": "d838ee103ad1c2319d65d3803dd72b76",
