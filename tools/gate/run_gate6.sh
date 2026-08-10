@@ -53,8 +53,10 @@ for try in 1 2 3; do
       command grep -aq "SUMMARY tag=$tag" "$out/$LOGNAME" 2>/dev/null && ok=1; break; }
     sleep 2
   done
-  # reap OUR instance only, identified by the cart path we launched -- never a name-pattern sweep
-  pkill -9 -f "$mmc1" 2>/dev/null
+  # ⚠ SELF-MATCH: `pkill -f "$mmc1"` also matches THIS script, whose own command line contains the
+  # cart path as an argument -- it killed the runner right after the poll succeeded but before it
+  # could print the SUMMARY, turning two COMPLETED arms into "Killed" with no report. run_mesen.sh
+  # execs Mesen in place, so $runpid IS the emulator: kill exactly that, by PID, and nothing else.
   kill -9 "$runpid" 2>/dev/null
   kill "$xpid" 2>/dev/null
   sleep 2
