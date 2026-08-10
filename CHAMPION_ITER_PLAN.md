@@ -55,7 +55,12 @@ the **maximum dies-ahead reduction reachable by any root re-ranker**, in endpoin
 **Required before it runs:** pre-registered gate-set **and a killed mutant** — an oracle fed a
 *shuffled* survival label must **fail**. Without that the arm can only confirm itself.
 
-**Cost:** ~18,000 game-equivalents, ~8.6 h Hetzner behind the running jobs.
+**Cost — CORRECTED 2026-08-10 by the oracle lane's measurement.** The ~8.6 h Hetzner figure in the
+first draft was **wrong by ~12x**. Measured: base game 5.45 s, oracle game 57–93 s (10.4–17.0x),
+~66 core-seconds per pair at 5 workers, because the gate fires on **18–63% of plies**
+(`viruses <= 8` covers the whole endgame tail). Tier A ≈ **331 core-hours**. Hetzner CCX23
+(2 physical cores + SMT) is the **wrong machine** — ~100 h there. Run it on the local 16-core box
+overnight or on a larger instance.
 
 ---
 
@@ -73,13 +78,22 @@ a null result and a null result you can learn from.
 
 ---
 
-## P0 — POWER FLOOR: N ≳ 4,500 PAIRED SEEDS
+## P0 — POWER FLOOR: N ≈ 7,826 PAIRED SEEDS (**corrected upward**)
 
 With 611 discordant clears the paired CI half-width on clear rate is **±1.58pp**. The
 pre-registered **+1.0pp non-inferiority margin was unreachable at N=3,000 by construction** —
 the arm could not have passed its own gate even if the model were perfect.
 
-**Rule: any arm at this flip rate is sized ≥4,500 paired seeds, or it is not run.**
+⚠ **CORRECTION, 2026-08-10: the ≥4,500 figure in the first draft was itself too low.** Paired-binary
+SE is set by discordance, `SE = sqrt(d/N)`. Back-validated against stage-2's own published CIs
+(clear `d=0.2037` → 1.615pp vs published ±1.58; dies-ahead `d=0.1507` → 1.389pp vs published
+±1.40). Inverting so a **+1.0pp** clear margin is *reachable at all*:
+`N >= 0.2037*(1.96/0.01)^2 =` **7,826**. At N=4,500 the half-width is 1.319pp and the gate is
+**again unpassable by construction** — the same defect, one order down.
+
+**Rule: any arm at this flip rate is sized ≥7,826 paired seeds (register 9,000), or its clear-rate
+co-primary is declared NOT DECIDABLE in advance — never reported as a pass.** Adequacy must be
+computed and printed *before* the verdict, every run.
 
 ⚠ Related: **19 of the 28 topouts avoided reappeared as 300-pill stalls (68%).** Net bad-ends fell
 so the stall condition did not fire — but that is exactly the mechanism the condition exists to
