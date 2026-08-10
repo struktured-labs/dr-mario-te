@@ -1,2 +1,4 @@
+c9364b2670a7a0e0292e56264d9f231b  v8 REMATCH + board hold (optional).nes
 c0082cb34259007854120d3d4ab9fa27  v8 REMATCH (hardened).nes
+284b5a986e89810e25cb0ad205474e3a  hb1-nolatch.json
 a580f6384329113d7588431b54dc5b1c  v6e.json
