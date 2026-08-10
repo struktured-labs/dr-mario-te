@@ -925,3 +925,141 @@ Four corroborations that this is the bare-argv blind spot and not a dead framewo
 Span 4 *is* the "9 h 19 m IDLE CONTROL" (558.8 min = 9 h 18.8 m). So the control that certified
 the discriminator's specificity is 1,111 consecutive polls in which the discriminator was
 electrically disconnected from its own input.
+
+## ★★★ LIVE VALIDATION OF THE FRAME WATCHDOG (2026-08-10, 59.6 min against the running θ400 soak)
+
+The frame-progress watchdog was run against the live soak for a **59.6-minute window,
+2026-08-10T10:37:04Z → 11:36:41Z**, 180 polls at N = 20 s, while the OLD probe (pid 671) kept
+polling the same box every 30 s. This is the rare test bed the previous section created: **a
+known-good system that the old discriminator calls wedged.**
+
+**Soak integrity (checked before AND after).** Still `NES_theta400_20260809.rbf` +
+`theta400_tuck_demo.mgl`; probe pid 671 unchanged; `/media/fat/Scripts/wedge_probe.sh` md5
+`88f1a92f6cbae1f7c02faf894a1711e8` with mtime 2026-08-05 — byte-identical before and after, not
+hot-edited; `ENABLE_AUTO_REBOOT=0` still at line 72 and its branch still gated on `-eq 1`;
+`AUTO_REBOOT` count in the window = **0**. Nothing was written to the device, no core reloaded,
+no input sent. Device reads were `misterclaw-send shell` with read-only commands only.
+
+### Head-to-head — 19 / 19 contradictions, zero agreements
+
+| | old `/proc` discriminator | new frame watchdog |
+|---|---|---|
+| polls in window | 120 (30 s) | 180 (20 s) |
+| `fw_state=R` | **120 / 120** | n/a — never reads /proc |
+| `busy_frac ≥ 100%` | 70 / 120 | n/a |
+| max `consec` | 6 (its trigger point) | n/a |
+| **verdict** | **19 × `ALERT_ONLY`** | **179 ALIVE + 1 INIT, 0 SUSPECT, 0 WEDGED** |
+
+**Every one of the 19 `ALERT_ONLY` firings landed on an interval the new watchdog called ALIVE**
+(`contradictions_old_alert_new_alive = 19`, `agreements_old_alert_new_wedged = 0`). The margin at
+those 19 instants was 18×–107× the `min_changed_frac` floor:
+
+| # | old `ALERT_ONLY` (UTC) | old busy/consec/state | new verdict | changed_frac | × floor |
+|---|---|---|---|---|---|
+| 1 | 10:39:05Z | 99% / 5 / R | **ALIVE** | 0.048061 | 48× |
+| 4 | 10:48:12Z | 100% / 5 / R | **ALIVE** | 0.017944 | **18× (narrowest)** |
+| 5 | 10:51:14Z | 100% / 5 / R | **ALIVE** | 0.106515 | 107× |
+| … | (19 rows, full table in `results_live_validation/h2h.json`) | | all ALIVE | | |
+| 19 | 11:33:45Z | 99% / 5 / R | **ALIVE** | 0.038914 | 39× |
+
+The old probe fired on a metronome — every ~182 s, `consec` climbing 1→6, resetting, climbing
+again — through a window in which the game completed roughly **41 matches**.
+
+### Ground truth was established SEMANTICALLY, not just from pixel deltas
+
+"Frames differ" alone could in principle be a blinking animation over a stalled game. So the
+in-game VIRUS counters were decoded independently: the two 2-digit counter regions were cropped
+from all 180 frames and clustered into distinct bitmaps (**15 distinct P1 values, 38 distinct
+P2 values**), and each cluster was labelled by eye from a montage
+(`results_live_validation/frames/p1_values.png`, `p2_values.png`).
+
+* P1 ranged 48 → 29; P2 ranged 48 → 6.
+* **39 joint counter resets** (both counters increase = a new board) plus 2 P1-only increases
+  ⇒ **~41 matches in 59.6 min, one per ~87 s**. P2 is by far the faster clearer.
+* Example verified by eye: frames 35→36 = VIRUS `48|46` → `47|43` (the *narrowest* interval in
+  the window, changed_frac 0.0179) — real clears in both bottles, not noise.
+
+### The legitimately-static screens — the hardest case — were caught and handled
+
+Five polls landed on non-play screens, and **none produced even a single SUSPECT**:
+
+| seq | time | what it actually is (verified by eye) | screen_class | changed_frac | verdict |
+|---|---|---|---|---|---|
+| 48 | 06:52:41 | match-end: bottles emptying, Dr. Mario sprite, `44|27` | **other** (chrome 0.548) | 0.2847 | ALIVE |
+| 64 | 06:58:21 | board generation: pill-free board, counters equal `34|34` | in_match | 0.0315 | ALIVE |
+| 118 | 07:16:21 | **both bottles completely empty**, counters `29|29` | in_match | 0.0548 | ALIVE |
+| 150 | 07:27:01 | board generation, `38|38` | in_match | 0.0432 | ALIVE |
+| 162 | 07:31:01 | board generation, `43|43` | in_match | 0.0234 | ALIVE |
+
+The equal-counter + pill-free signature is the new-board generation animation (viruses are placed
+in lockstep and the counter counts UP). Each such screen was captured by at most ONE poll — i.e.
+they are all far shorter than N = 20 s, exactly as the DRHOLDBOARD timing argument predicts. **The
+N > 9.98 s choice was load-bearing and held on real data.**
+
+**This retires limitation #2 in part.** Frame 48 is a REAL non-play capture, and it scored
+chrome 0.5479 — well below the 0.90 threshold — so the `in_match` fingerprint's negative side is
+no longer synthetic-only. It has still not seen a real title / level-select screen.
+
+### Independent reimplementation cross-check (the watchdog does not grade its own homework)
+
+`independent_verify.py` recomputes `changed_frac`, `pixhash` and `black_frac` from the same 180
+saved frames with a **different decoder (Pillow/libpng) and a different differ (numpy)**:
+
+```
+frames=180 unique_pixhashes=180 changed_frac range [0.017944, 0.284651]
+below_floor=0 field_mismatches=0 verdict_mismatches=0 AGREEMENT=True
+```
+
+**All 180 frames are pixel-distinct** — the display never repeated a single frame in 60 minutes.
+The verifier's own self-test is mutation-killed in both directions (`--selftest`): a
+"always-static" mutant, an "always-alive" mutant and an inverted-black-detector mutant each exit
+1; the unmutated file exits 0.
+
+### The capture channel was tested for REAL, not just injected
+
+Mutant C2 injected capture failures through `--offline-frames MISSING`, bypassing the actual
+subprocess and network code. Both real paths were exercised here with a `PATH` shim (zero device
+contact):
+
+| shim | path exercised | result |
+|---|---|---|
+| exits non-zero | `subprocess.run` rc≠0 branch | `SUSPECT, SUSPECT, WEDGED capture_dead`, exit 2 |
+| never answers | `subprocess.TimeoutExpired` branch | same, **capture_ms = 20 020 each, capture_dead in 61 s** |
+
+⇒ **Real freeze-5 detection latency is 61 s** (3 × (capture_timeout 12 s + 8 s grace)), not
+3 × 20 s of wall-clock interval. Worth knowing before anyone tunes K_cap.
+
+### Cost and politeness, measured over 180 real captures
+
+`capture_ms` mean **3004 ms**, max 6077 ms (first call only, the LAN discovery scan), all 180
+captures succeeded (`capture_ok` 180/180). At N = 20 s that is a **15.0 % duty cycle**, 3
+captures/min. Resolution was a constant 256×448 across all 180 polls, so the
+`size_mismatch ⇒ changed_frac 1.0 ⇒ ALIVE` branch never engaged.
+
+### NEW limitations found by this validation
+
+5. **`misterclaw-send` silently falls back to LAN auto-discovery.** Given an unreachable host it
+   scans the network and uses whatever MiSTer it finds: `-H 10.42.0.99` returned the real board's
+   screen in 5.1 s, rc=0. Today that is harmless (`discover` finds exactly ONE board, the soak
+   box) but it is a genuine **false-negative vector**: with a second MiSTer on the LAN the
+   watchdog could report a healthy board's frames while the soak box is wedged, and nothing in
+   the log would reveal it.
+6. **The log does not record WHICH host each frame came from.** There is no `host`/`ip` field in
+   the `framewd/1` record, so frame provenance cannot be audited after the fact. Combined with
+   limitation 5 this is the weakest point in the architecture. Cheap fix: log the resolved IP per
+   poll and alarm on it changing. NOT applied here — the file is validated as-is and changing it
+   would invalidate the run above.
+7. **Zero real WEDGED events were observed.** The frames channel's positive side is still
+   evidenced only by mutants A/C/D/E/H, never by a real wedge on real hardware, because the soak
+   stayed healthy for the whole window. This validation bounds the FALSE-POSITIVE rate (0 in 180
+   polls / 59.6 min spanning ~41 matches and 5 non-play screens); it does not measure the
+   false-negative rate on a real freeze-5.
+
+### Verdict
+
+Over 59.6 min the old discriminator raised 19 alarms and the new one raised none, on a system
+proven healthy by decoded in-game state (~41 completed matches). **The 2026-08-09 finding stands
+and is now quantified: the old signature's false-positive rate on healthy CvC play is ~100 %
+of its firings (19/19), while the frame watchdog's is 0/180 polls.** Evidence:
+`results_live_validation/` (watch.jsonl, wedge_probe_slice.txt, h2h.json,
+independent_verify.json, capture_*_test.jsonl, 9 frames + 2 counter montages).
