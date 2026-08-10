@@ -119,6 +119,10 @@ NAV_STABLE, NAV_1P = 0x6174, 0x6175
 # silicon, so div2 froze identically; SEI can't help -- NMI is non-maskable). A BUSY latch in free PRG-RAM
 # ($6176-$6185) makes the trampoline bail on re-entry BEFORE the bank switch (a re-entrant _sel would corrupt
 # the interrupted invocation's bank). Byte-exact for the build_main goldens -- the guard is in the trampoline.
+#   ⚠ THE BUSY GUARD DOES NOT COVER THE OVERRUN NMI. It is reached only through the $FF54
+#   trampoline; the 6502 takes an NMI by loading PC straight from $FFFA, executing NOT ONE BYTE
+#   of $FF54. See DRRTIVEC below -- this comment used to claim the overrun case "is exactly the
+#   re-entrancy below", which is FALSE and is hazard 1.
 BUSY = 0x6176
 DWELL_CNT, DWELL_LAST = 0x6177, 0x6178
 # ---- TUCK EXECUTOR (DRTUCK=1, default OFF -> every existing cart stays byte-identical) ----
@@ -231,6 +235,88 @@ REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
 # resets the count. Unbrick without this flag: cycle menu.rbf then load_core (BRAM re-init).
 BUSYESC = _os.environ.get("DRBUSYESC", "0") == "1"
 BUSYSKP = 0x6192                                   # consecutive-bail counter (after DRSTALLWD's $6191)
+# ==================== NMI-OVERRUN SILICON HAZARDS (both trace-proven 2026-08-09) ====================
+# Two INDEPENDENT ways a long NMI hook kills the cart. Mapper 100 routes PRG banking to upstream
+# MMC1.sv, so both are identical on MiSTer and Pocket silicon. Ship them TOGETHER (see the
+# CO-DEPENDENCE note under DRMMC1RST) -- either one alone leaves a live crash path.
+#
+# HAZARD 1 -- UNGUARDED VECTOR RE-ENTRY (DRRTIVEC).  An invocation that overruns the whole frame is
+# still running when the next vblank NMI fires. The 6502 loads PC straight from $FFFA; with the
+# DRIVER bank mapped, $C000-$FFFF is PRG index 3, whose vector bytes are expand_prg.py's verbatim
+# copy of the base game's ($8005/$8035). $8005 in the DRIVER bank is not the game's NMI handler --
+# it is main's DRDISTGATE dist_table, seven 2-byte non-branching zero-page ALU ops that fall through
+# into main at $8013 with NO control flow to escape. So the NMI re-enters driver main with the BUSY
+# guard bypassed (the guard is three instructions inside the $FF54 trampoline, and the vector does
+# not execute one byte of it), and act_done's terminal RTS pops the NMI frame as an address:
+# PC = ((pushed PCL) << 8 | pushed P) + 1, an effectively uniform 64K jump. Trace witness:
+# prestart_gate/pilot/probe7.log froze at f=231 with the PC ring ending ... 8B26 (act_done RTS) 0BA6
+# (RAM). Measured rate during live play: 2 events in ~299 frames = 0.67%, ~1 per 2.5 s.
+#
+# HAZARD 2 -- MMC1 SHIFT-REGISTER INTERLEAVE (DRMMC1RST).  MMC1 has ONE 5-bit shift register shared
+# by all four registers; the register a sequence lands in is chosen by A14/A13 of its FIFTH write.
+# The base game clocks a 5-write $DFFF (CHR1) sequence from the MAIN loop every frame
+# ($89C9 -> $B8F4, the virus blink); the trampoline clocks two 5-write $FFF0 (PRG) sequences per
+# hook, 2 hooks/frame, all inside the NMI. An NMI landing mid-$DFFF leaves k bits already shifted
+# in, so _sel(2) completes with mixed bits: k=1,2,3,4 -> prg_bank 5,9,17,1, and every one of those
+# resolves (32KB mode prgsel = {prg_bank[3:1], A14}, masked &3 for a 4-bank ROM) to PRG index 0 =
+# THE BASE GAME at $8000. The trampoline's very next instruction is JSR $8000, base $8000 is
+# `LDX #$00; JMP $8036`, and $8036 runs the RAM-clear loop = full wipe of $0000-$06FF. BUSY lives at
+# $6176 in PRG-RAM, which that loop does not touch, so BUSY stays latched and every later hook bails
+# forever: title screen + dead driver + surviving nametable fragments. Trace witness:
+# prestart_gate/dbg7/interleave.log f=517 `C01 C00 C00 C00 | NMI | P02 P01 P00 P00 P00`, and the
+# 2026-08-09 Pocket field event at t=85.60s (COMMENTARY_TRANSCRIPT.md) is exactly this end-state.
+#
+# DRRTIVEC (default OFF -> every existing cart rebuilds byte-identical): give the DRIVER UNIT its
+# own NMI/IRQ vectors so an overrun NMI is absorbed instead of re-entering main. Cost: one skipped
+# GAME NMI per overrun (stale OAM for a frame, one missed $43 tick, one dropped sound tick) -- at
+# the measured 0.67% that is well inside the tempo noise the driver already tolerates, and a skipped
+# frame beats a KIL. RTI also pops exactly the 3 bytes the NMI pushed, so shielded overruns are
+# stack-NEUTRAL; today's path leaks one byte per event and walks S downward.
+#
+# ⚠ WHY THIS IS NOT THE OBVIOUS "point $FFFA at an RTI in the driver bank".  That design is a BRICK
+# the moment DRMMC1RST also ships, and the two fixes are meant to ship together:
+#   MMC1.sv:110 `control <= control | 5'b0_11_00` -- a bit-7 (reset) write FORCES PRG mode 3, which
+#   HARD-FIXES $C000-$FFFF to the LAST bank = index 3, permanently, for the base game too. Today
+#   that is inert only because expand_prg.py makes index 3 a byte-exact duplicate of index 1. The
+#   instant index 3's vectors differ, every ordinary game NMI vectors into the driver's stub while
+#   the BASE bank is mapped low -- and driver-bank $A02E is $00 in base bank 0, i.e. BRK, whose IRQ
+#   vector is the same stub: an unbreakable BRK loop on the first NMI after the first hook.
+# So the shield is BANK-DISCRIMINATING and lives in the SHARED high half (bank 1, therefore present
+# in index 1 AND index 3 identically):
+#     $CEEC  AD 2E A0   LDA $A02E     ; probe the currently-mapped LOW bank
+#     $CEEF  C9 40      CMP #$40      ; $40 only in the DRIVER bank (base bank 0 is $00 -- asserted)
+#     $CEF1  D0 01      BNE +1
+#     $CEF3  40         RTI           ; driver bank mapped => absorb the overrun NMI
+#     $CEF4  4C 05 80   JMP $8005     ; base bank mapped  => the game's own NMI, unchanged
+# Only index 3's four vector bytes are repointed; index 1's are untouched, so with DRMMC1RST OFF the
+# game's NMI path is bit-for-bit today's (index 3 is only mapped while prg_bank=2, i.e. only inside
+# a driver invocation). With DRMMC1RST ON, mode 3 puts index 3 at $C000 permanently and the probe is
+# what keeps the game alive -- it costs the game NMI 11 cycles and a JMP.
+# $CEEC-$CEFC is FREE_SPACE_MAP.md's 17-byte SHARED-FREE run; re-derived here with a fresh
+# RB6C2_PRINT walker (tmp/hazfix/print_walk.py): all 21 tables terminate at or before $CEBA, the
+# walker's positive controls ($BC26, $C0A9, $C0EF) come back TOUCHED, and $CEEC-$CEFC has zero
+# absolute/indexed operand references anywhere in the 32KB.
+RTIVEC = _os.environ.get("DRRTIVEC", "0") == "1"
+RTIVEC_PROBE = 0xA02E        # FREE_SPACE_MAP SHARED-FREE run $A02E-$A03D; $00 in base bank 0
+RTIVEC_MAGIC = 0x40          # value written there in the DRIVER bank -- doubles as a bare RTI
+NMI_SHIELD_CPU = 0xCEEC      # bank 1 (shared high half) -- in unit 0 AND unit 1
+# DRMMC1RST (default OFF -> every existing cart rebuilds byte-identical): write the MMC1 reset bit
+# ($80, bit 7) before EVERY emitter-side 5-write serial sequence, making each sequence SELF-ALIGNING
+# regardless of a half-finished main-thread sequence. +5 B / +6 cy per sequence, 4 sequences per
+# frame = +24 cy = 0.081% of a 29,780-cycle frame.
+# RESIDUAL, stated honestly: when a hook does land mid-$DFFF the main loop's remaining writes now
+# complete against a re-zeroed counter, so THAT frame's CHR1 select is lost -- one frame of frozen
+# virus blink. It self-heals on the next hook. Graphics-only and bounded to a frame, versus a RAM
+# wipe. Do NOT "optimise" this into `INC $FFF0`: the reset only fires if the written byte has bit 7
+# SET, and an RMW writes back what it read -- the ROM byte at $FFF0 is $1C, so `INC $FFF0` would
+# shift a ZERO into the register and make the corruption worse, silently.
+# ⚠ CO-DEPENDENCE (do not land these independently): the reset permanently forces PRG mode 3, so
+# $C000-$FFFF becomes index 3 for the base game too. That is safe ONLY because DRRTIVEC's shield is
+# bank-discriminating; a plain-RTI index-3 vector plus this flag is an instant brick. Conversely
+# DRRTIVEC alone leaves hazard 2 live -- dbg7 logged TITLEFALL f=518 WITH the emulator NMI shield
+# armed. A green ram_exec=false does not mean the field bug is fixed.
+MMC1RST = _os.environ.get("DRMMC1RST", "0") == "1"
+# ====================================================================================================
 # DRDISTGATE (REVIEW #6.2 / task #49 follow-on -- see CART_FIX_REPORT.md; REVIEW-driven change,
 # authorized explicitly, not a flag toggle): $6193 is the next free PRG-RAM byte (past BUSYSKP).
 # DG_BUDGET = scratch (max DAS-reachable columns this hook); EFF_DIST2 = the distance-clamped
@@ -420,8 +506,13 @@ assert not (P1WIGGLE and HUMAN_P1), (
 # over-long invocation eats the main loop's share of the 29780-cycle frame rather than
 # corrupting the display; vblank is NOT the budget. Measured: the driver is ~400 cyc/hook
 # (p95 460), and one d1 search is 16-23k cyc ONCE PER PILL. So this costs about one hitched
-# frame per P1 pill (~1 in 200 at L11), and the only dangerous case -- overrunning a WHOLE
-# frame, so the next NMI re-enters -- is already caught by the BUSY guard.
+# frame per P1 pill (~1 in 200 at L11), and the only dangerous case is overrunning a WHOLE
+# frame, so the next NMI re-enters.
+#   ⚠ CORRECTION 2026-08-09: this line used to end "-- is already caught by the BUSY guard."
+#   That is FALSE and was hazard 1. An overrun NMI loads PC from $FFFA and executes NOT ONE
+#   BYTE of the $FF54 trampoline where the guard lives, so it re-enters main UNGUARDED. Only
+#   DRRTIVEC closes it; on a cart built without that flag this cost paragraph understates the
+#   risk. See the NMI-OVERRUN SILICON HAZARDS block near DRBUSYESC.
 #
 # ★ THE TWO-PASS AND, which is the one real trap. getInputs calls the hook twice and ANDs the
 # two $F5 values, so BOTH passes of a frame must leave the SAME byte or the input vanishes
@@ -2720,6 +2811,15 @@ def build_p1_native():
 
 
 def _sel(w, value):
+    if MMC1RST:
+        # HAZARD 2 (see the DRMMC1RST flag block): MMC1 has ONE shift register shared by all four
+        # registers and the base game clocks a 5-write $DFFF sequence from the MAIN loop every
+        # frame. An NMI landing mid-sequence makes this PRG sequence complete with mixed bits ->
+        # unit 0 maps -> the JSR $8000 below hits the base soft-entry -> full RAM wipe with BUSY
+        # latched. A bit-7 write re-zeros the shift counter, so the sequence below is self-aligning
+        # no matter how many bits the interrupted main-thread sequence had already shifted in.
+        w.ins("LDA_imm", 0x80)
+        w.ins("STA_abs", PRG_REG & 0xFF, (PRG_REG >> 8) & 0xFF)
     w.ins("LDA_imm", value)
     for i in range(5):
         w.ins("STA_abs", PRG_REG & 0xFF, (PRG_REG >> 8) & 0xFF)
@@ -2790,6 +2890,24 @@ def main():
               f"(search_entry ${p1lab['search_entry']:04X}), swap_eval {len(p1swap)} B at "
               f"${P1SWAP_CPU:04X}; handle(1) dropped, soft-drop stripped")
 
+    if RTIVEC:
+        # DRRTIVEC part 1 of 3 -- the DRIVER-BANK PROBE BYTE. The shield in the shared high half
+        # decides "is the driver bank mapped low?" by reading this address: $40 here, $00 in base
+        # bank 0. Value $40 is itself an RTI, so even a stray vector straight to $A02E is inert.
+        _probe = RTIVEC_PROBE - UNIT1_CPU
+        assert UNIT1_CPU + len(unit1) <= RTIVEC_PROBE, (
+            f"driver body reaches ${UNIT1_CPU + len(unit1):04X}, colliding with the DRRTIVEC probe "
+            f"byte at ${RTIVEC_PROBE:04X}")
+        if P1NATIVE:
+            assert P1SWAP_CPU + len(p1swap) <= RTIVEC_PROBE, (
+                f"P1 swap_eval reaches ${P1SWAP_CPU + len(p1swap):04X}, colliding with the DRRTIVEC "
+                f"probe byte at ${RTIVEC_PROBE:04X}")
+        assert bank[_probe] == 0, (
+            f"DRRTIVEC probe site ${RTIVEC_PROBE:04X} is not free in the driver bank "
+            f"(holds {bank[_probe]:#04x})")
+        bank[_probe] = RTIVEC_MAGIC
+        print(f"DRRTIVEC: driver-bank probe ${RTIVEC_PROBE:04X} <- {RTIVEC_MAGIC:#04x}")
+
     wrap = build_wrapper(main_cpu)
     print(f"trampoline: {len(wrap)} B at ${WRAP_CPU:04X}")
     assert WRAP_CPU + len(wrap) <= 0xFFD2, "wrapper overflows the dead-v17 window"
@@ -2817,6 +2935,41 @@ def main():
             rom[o:o + len(orig)] = orig
         print(f"DRSTUDY v8.2 EVAC: part1-only ($D2CC RTS); tail $9FF8/$A371/$BE56/$BC26 -> base; {n} edit(s)")
 
+    if RTIVEC:
+        # DRRTIVEC part 2 of 3 -- the BANK-DISCRIMINATING NMI SHIELD, emitted into BANK 1, i.e. the
+        # high half, which expand_prg.py duplicates into PRG index 1 AND index 3. Putting it in the
+        # SHARED half (rather than index 3 only) is what makes the fix survive DRMMC1RST forcing PRG
+        # mode 3: in mode 3 the base game itself runs with index 3 at $C000, so the shield must give
+        # the RIGHT answer for both banks, not just ours. See the DRRTIVEC flag block.
+        _b1 = 0x4010                                   # file offset of CPU $C000 in the 2-bank image
+        _sh = _b1 + (NMI_SHIELD_CPU - 0xC000)
+        _base_nmi = rom[_b1 + 0x3FFA] | (rom[_b1 + 0x3FFB] << 8)
+        _base_irq = rom[_b1 + 0x3FFE] | (rom[_b1 + 0x3FFF] << 8)
+        assert _base_nmi == 0x8005 and _base_irq == 0x8035, (
+            f"base vectors moved (NMI ${_base_nmi:04X} IRQ ${_base_irq:04X}); the shield hard-codes "
+            "the game's NMI entry and assumes its IRQ handler is a bare RTI")
+        assert rom[0x10 + (0x8035 - 0x8000)] == 0x40, (
+            "base IRQ handler $8035 is not a bare RTI, so pointing the driver unit's IRQ vector at "
+            "the shield's RTI byte is no longer semantics-preserving")
+        assert rom[0x10 + (RTIVEC_PROBE - 0x8000)] != RTIVEC_MAGIC, (
+            f"base bank 0 holds {RTIVEC_MAGIC:#04x} at ${RTIVEC_PROBE:04X} -- the probe cannot tell "
+            "the two banks apart any more")
+        # FREE_SPACE_MAP.md SHARED-FREE run $CEEC-$CEFC (17 B, 0 refs, past every RB6C2_PRINT
+        # table -- all 21 terminate at or before $CEBA). Filler is NOT proof of free, so this
+        # asserts the map's run rather than "it looked like padding".
+        assert all(b in (0x00, 0xFF) for b in rom[_sh:_b1 + (0xCEFC - 0xC000) + 1]), (
+            f"${NMI_SHIELD_CPU:04X}-$CEFC is not filler any more -- someone else allocated it")
+        shield = bytes([0xAD, RTIVEC_PROBE & 0xFF, RTIVEC_PROBE >> 8,   # LDA $A02E
+                        0xC9, RTIVEC_MAGIC,                            # CMP #$40
+                        0xD0, 0x01,                                    # BNE +1
+                        0x40,                                          # RTI   <- IRQ vector target
+                        0x4C, _base_nmi & 0xFF, _base_nmi >> 8])       # JMP $8005
+        assert NMI_SHIELD_CPU + len(shield) - 1 <= 0xCEFC, "shield overruns the $CEEC free run"
+        rom[_sh:_sh + len(shield)] = shield
+        RTIVEC_RTI_CPU = NMI_SHIELD_CPU + 7            # the bare RTI inside the shield
+        print(f"DRRTIVEC: NMI shield {len(shield)} B at ${NMI_SHIELD_CPU:04X} (shared high half), "
+              f"RTI at ${RTIVEC_RTI_CPU:04X}")
+
     tmp = OUT + ".2bank"
     open(tmp, "wb").write(rom)
     expand(tmp, OUT, new_bank_bytes=bytes(bank))
@@ -2825,6 +2978,27 @@ def main():
     out = bytearray(open(OUT, "rb").read())
     out[6] = (out[6] & 0x0F) | 0x40      # mapper 100 = 0x64
     out[7] = (out[7] & 0x0F) | 0x60
+    if RTIVEC:
+        # DRRTIVEC part 3 of 3 -- repoint the DRIVER UNIT's vectors. Index 3 is unit 1's high half
+        # (expand_prg.py's second copy of orig bank 1); index 1 is unit 0's and is LEFT ALONE, so a
+        # DRMMC1RST=0 cart's ordinary game NMI is bit-for-bit unchanged -- index 3 is only mapped
+        # while prg_bank=2, i.e. only inside a driver invocation.
+        _i3 = 0x10 + 3 * 0x4000
+        _i1 = 0x10 + 1 * 0x4000
+        assert out[_i3 + 0x3FFA:_i3 + 0x3FFC] == bytes([0x05, 0x80]), "unit-1 NMI vector is not $8005"
+        assert out[_i3 + 0x3FFE:_i3 + 0x4000] == bytes([0x35, 0x80]), "unit-1 IRQ vector is not $8035"
+        assert out[_i3 + 0x3FFC:_i3 + 0x3FFE] == bytes([0x00, 0xFF]), "unit-1 RESET vector is not $FF00"
+        # $FFFC/$FFFD (RESET) IS DELIBERATELY LEFT ALONE. MMC1 powers up in PRG mode 3, so at cold
+        # boot $C000-$FFFF IS index 3 regardless of the PRG register -- expand_prg.py's docstring
+        # depends on exactly that to boot. Repointing RESET bricks power-on.
+        _rti = NMI_SHIELD_CPU + 7
+        out[_i3 + 0x3FFA], out[_i3 + 0x3FFB] = NMI_SHIELD_CPU & 0xFF, NMI_SHIELD_CPU >> 8
+        out[_i3 + 0x3FFE], out[_i3 + 0x3FFF] = _rti & 0xFF, _rti >> 8
+        assert out[_i1:_i1 + 0x4000] != out[_i3:_i3 + 0x4000], "DRRTIVEC did not change index 3"
+        _delta = sum(1 for a, b in zip(out[_i1:_i1 + 0x4000], out[_i3:_i3 + 0x4000]) if a != b)
+        assert _delta == 4, f"index 1 and index 3 differ in {_delta} bytes, expected exactly the 4 vector bytes"
+        print(f"DRRTIVEC: unit-1 vectors NMI->${NMI_SHIELD_CPU:04X} IRQ->${_rti:04X} "
+              f"(RESET untouched; unit-0 vectors untouched; idx1 vs idx3 delta = {_delta} B)")
     open(OUT, "wb").write(out)
     print(f"wrote {OUT} (mapper 100, AUTO-NAV VS-CPU L11, FPGA coprocessor)")
 
