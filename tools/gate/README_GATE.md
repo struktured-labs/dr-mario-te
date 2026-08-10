@@ -58,6 +58,19 @@ for an 8-bit index walking in from a lower base, which a naive operand scan miss
 ## Gotchas
 
 - Mesen needs the sandbox disabled and a DISPLAY; `launch_fp.sh` handles Xvfb.
-- `emu.getState().cpu` is nil in this build — do not read the PC from Lua.
-- No `emu.*` call may run inside a memory callback; it silently kills the callback.
+- ⚠ **CORRECTED**: `emu.getState().cpu` is nil, but that does **not** mean registers are
+  unreadable — I concluded that and it nearly cost us a live A-integrity assertion.
+  `getState()` returns a **flat map with dotted string keys**: there is no `cpu` *table* to
+  index, but **`cpu.a` is a valid key**, and likewise `cpu.pc`, `cpu.sp`, `cpu.ps`, `cpu.x`,
+  `cpu.y`. Derived from `NesCpu.cpp` / `Serializer.cpp`'s `NormalizeName`, confirmed empirically
+  by the soak lane. **One failed access is not proof an API is absent — check its shape first.**
+- No `emu.*` call may run inside a memory callback; it silently kills the callback for the rest
+  of the run — which reads as "the check never fired", i.e. indistinguishable from a PASS. Sample
+  registers from an event callback (`endFrame`), or prove the exec-callback path survives.
+- A low `goes`/matches count is NOT a cart property — this rig has faked "reached mode 4 then did
+  nothing" three times on carts that were fine (v6e: `goes=2` → re-run 155). Re-run it AND pair it
+  with a known-good cart on the same runner before believing it. A tag-verified, SUMMARY-bearing
+  log does not rule it out.
+- Reap Mesen by the **PID you launched**, never `pkill -f <cartpath>` — the runner's own command
+  line contains that path, so the pattern matches the runner and kills it mid-report.
 - `emu.write` takes three args `(addr, value, type)`; a four-arg call dies inside the callback.
