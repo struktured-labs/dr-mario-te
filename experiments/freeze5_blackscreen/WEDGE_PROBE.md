@@ -547,3 +547,140 @@ anyone cares about, needs no `/proc` forensics, and is immune to the busy-vs-blo
 Its killed-mutant is free: point it at a paused/static screen and it must fire. Do NOT hot-edit
 `/media/fat/Scripts/wedge_probe.sh` while a soak is running (pid 671) — stage and swap between
 runs.
+
+## ★★★ FRAME-PROGRESS WATCHDOG (2026-08-10) — the replacement discriminator, with killed mutants
+
+`experiments/freeze5_blackscreen/frame_watchdog.py` (PC-side) + `frame_watchdog_mutants.py`
+(its killed-mutant battery). Replaces the *discriminator* the section above disqualified. It
+never reads `/proc`, so the busy-vs-blocked confound cannot reach it.
+
+**Architecture: PC-side, zero device mutation.** Its only device interaction is
+`misterclaw-send -H MiSTer screenshot`. Nothing was written to the SD card, no core was
+reloaded, no input was sent, and `/media/fat/Scripts/wedge_probe.sh` (pid 671) was NOT
+touched — the θ400 soak ran undisturbed throughout (verified still on
+`NES_theta400_20260809` + `theta400_tuck_demo.mgl` after the live test). There is no
+reboot/reload/kill code path in the file at all; alarming is log + stderr + exit code 2.
+`ENABLE_AUTO_REBOOT` remains 0 and this workflow never touches it.
+
+### Two channels, never conflated
+
+| channel | fires on | reason string | diagnosis |
+|---|---|---|---|
+| capture | K_cap consecutive screenshot failures/timeouts | `capture_dead` | freeze-5 proper — the standing METHOD RULE's ground truth |
+| frames | K consecutive identical frames, service still answering | `frames_static`, or `frames_static_black` when the frame is ~all black | frozen picture: display wedge **or** driver/nav stall — a different fault |
+
+### N = 20 s, K = 3 (K_cap = 3) — the justification
+
+**N is bounded from BELOW by the longest legitimate static screen.** On the CvC/autonav soak
+cart every static screen is bounded, and the longest is the final-board hold: for a
+non-`HUMAN_P1` cart a `$43`-clock-edge 16-bit counter FORCE-releases after `DRHOLDBOARD_F`
+frames, default **600 = 9.98 s** NTSC (`FINAL_BOARD_HOLD_REPORT.md`, "Restore/release" +
+scenario C, "the nav cart cannot wedge"). With N = 20 s > 9.98 s, **two consecutive captures
+can never both land inside one hold**, so the hold cannot produce even a single SUSPECT.
+Vanilla STAGE CLEAR / GAME OVER waits are released by autonav's START; title/level-select are
+walked through in seconds.
+
+**N is also bounded below by capture cost and politeness.** Measured live tonight: first
+capture 5980 ms (includes the LAN discovery scan), steady-state **2904 / 2929 / 2964 / 2967
+ms** once the discovered IP is cached. N = 20 s ⇒ **14.7 % duty cycle**, 3 captures/min. The
+IP cache is what makes it gentle: without it every poll re-scans the LAN (+3.0 s each).
+
+**Sensitivity is not a constraint — measured, not assumed.** At L11 the pill falls one row
+per ~13 frames (0.217 s), so the screen changes several times a second. Measured
+`changed_frac`:
+
+| pair | span | changed_frac | px | × the 1e-3 floor |
+|---|---|---|---|---|
+| live watchdog run, 4 intervals | 20 s | 0.0247 / 0.0285 / 0.0502 / 0.1120 | 2.8k–12.8k | **25×–112×** |
+| live burst (22:06:19 / 22:06:23) | ~4 s | 0.0105 | 1204 | 10.5× |
+| soak 21:45:01 vs 21:45:52 | 51 s | 0.0894 | 10248 | 89× |
+| a frame vs itself | — | 0.0 | 0 | 0 |
+
+**K = 3** ⇒ a WEDGED verdict needs 4 successful captures spanning **60 s of proven zero
+change**, 6× the 9.98 s hold cap. A single transient static interval stays SUSPECT. This is
+also the generalisation of this file's own established tiebreaker ("take 3 screenshots ~8 s
+apart and compare hashes"). K_cap = 3 means one dropped capture (LAN blip) is SUSPECT, never
+WEDGED.
+
+**⇒ On an autonav soak, any screen static for 60 s IS a failure.** The watchdog does not have
+to tell "legitimately static" from "wedged" — on this cart, past 60 s there is no legitimate
+static. What it must do is say WHICH failure, which the channel + `screen_class` fields do.
+
+**Scope limit, stated plainly:** on a HUMAN cart this argument does **not** hold — pause and
+hold-until-START are unbounded. Use `--profile human`, which keeps the capture channel and
+DISABLES the frames channel (mutant I). Do not run the soak profile at the booth.
+
+### Comparison method: decoded pixels, with a change floor
+
+`changed_frac` = fraction of pixels whose max per-channel |Δ| exceeds `tol` (8), thresholded
+at `min_changed_frac` = **1.0e-3** (114.7 px ≈ 1.8 NES tiles of 114 688). Both failure
+directions were argued and tested, not assumed:
+
+- **falsely ALIVE (the dangerous one).** A raw byte/file-hash compare is disqualified: two
+  encodings of ONE frozen framebuffer differ in filter choice and zlib framing. Mutant D
+  proves it — same pixels, `file_md5` `fe89e517…` vs `abb4588f…`, 5041 vs 10385 bytes,
+  identical `pixhash 444467276a70030b`. A byte-compare calls that dead screen ALIVE; this one
+  calls it WEDGED. The `min_changed_frac` floor is the anti-blinking-cursor defence: "some
+  pixels moved" is not proof of life (mutant E).
+- **falsely WEDGED.** Would need capture noise. Measured: `tol=0` and `tol=8` return the
+  **identical** `changed_frac` on both real pairs ⇒ the capture path is pixel-exact and
+  carries zero noise; `tol` is kept only as a guard for a future noisy path. The live margin
+  above (25×–112×) is the real evidence.
+
+`screen_class` (black / in_match / other) is **diagnostic only and can never suppress a
+WEDGED verdict**, so a misclassification cannot hide a wedge. The in_match fingerprint is 146
+32×16 blocks that are pixel-identical across both real frames AND carry structure (σ ≥ 40);
+all four real in-match captures from three different match states score **1.00**, synthetic
+non-match frames score 0.00–0.014.
+
+### Killed mutants — all 12 run, verbatim output in the battery
+
+| mutant | feed | expected | got |
+|---|---|---|---|
+| **A** static screen (mandatory a) | real frame ×4 | WEDGED | `INIT,SUSPECT,SUSPECT,WEDGED` `frames_static`, exit 2 |
+| **B** live pair (mandatory b) | 21:45:01 + 21:45:52 | ALIVE | `INIT,ALIVE` `frames_differ` changed=0.089355, exit 0 |
+| **B2** four real live frames | +h1,i1 | ALIVE | 3×ALIVE, changed 0.089/0.073/0.010 |
+| **B3** alternating live | A,B ×3 | ALIVE | 5×ALIVE |
+| **C** black feed (mandatory c) | synth all-black ×4 | WEDGED | `WEDGED frames_static_black`, exit 2 |
+| **C2** capture dead | 3 × injected failure | WEDGED | `SUSPECT,SUSPECT,WEDGED capture_dead`, exit 2 |
+| **D** re-encoded, same pixels | different PNG bytes | WEDGED | `WEDGED frames_static` — byte-compare would say ALIVE |
+| **E** 64 px blink on frozen screen | below floor | WEDGED | `WEDGED frames_static` changed=0.000558 |
+| **F** 256 px blink | **documented limit** | ALIVE | `ALIVE` changed=0.002232 — see limits |
+| **G** one static interval only | A,A,B | ALIVE, never WEDGED | `INIT,SUSPECT,ALIVE` |
+| **H** dropped capture mid-freeze | A,A,MISS,A,A | WEDGED | static streak SURVIVES the gap → `WEDGED frames_static` |
+| **I** human profile static | A ×6 | never WEDGED | 5×`SUSPECT frames_static`, exit 0 |
+
+Live end-to-end against the running θ400 soak, 5 polls at 20 s: **5/5 ALIVE**, all
+`class=in_match` — i.e. the new discriminator returns the correct answer on exactly the
+condition that made the old one fire.
+
+### Limits, stated rather than discovered later
+
+1. **Mutant F is a real boundary.** A blink larger than ~115 px (≈2 tiles) on an otherwise
+   frozen screen reads ALIVE. Irrelevant to a display wedge (nothing animates), but a *nav
+   stall at a blinking-cursor menu* could hide there. Partly covered by the
+   `roi_static_streak` / `playfield_static_while_screen_moves` annotation, which flags a
+   frozen playfield under a moving UI without alarming.
+2. **The in_match label's negative side is synthetic only.** It has not been checked against a
+   real title/level-select capture, because getting one means disturbing a live soak. That is
+   precisely why it is diagnostic and never gates the alarm.
+3. **Head-to-head not obtained.** Reading `/media/fat/wedge_probe.log` to timestamp-align the
+   old probe's ALERT_ONLY firings against tonight's 5/5 ALIVE was declined by the permission
+   classifier. Not retried, per this file's own post-mortem lesson. It is a nice-to-have.
+4. **No device-side version was staged.** The watchdog is PC-side by design and needs none. If
+   a device-side twin is ever wanted, it must be a NEW file with the swap left for a
+   between-runs window — `wedge_probe.sh` was not edited.
+
+### Machine-readable log
+
+One JSON object per poll, `schema: "framewd/1"`, appended to `--log` (default
+`tmp/framewd/frame_watchdog.jsonl`): `ts seq verdict reason capture_ok capture_ms
+changed_frac mad max_abs gap_s roi_changed_frac roi_static_streak pixhash black_frac
+screen_class chrome_match_frac consec_static consec_capfail png_bytes w h profile k k_capfail
+min_changed_frac tolerance interval_s [error] [note]`. On the WEDGED transition both framing
+frames are copied to `<frame-dir>/alerts/wedge_<seq>_<reason>/` as evidence.
+
+```
+python3 experiments/freeze5_blackscreen/frame_watchdog.py --host MiSTer          # live
+python3 experiments/freeze5_blackscreen/frame_watchdog_mutants.py                # battery
+```
