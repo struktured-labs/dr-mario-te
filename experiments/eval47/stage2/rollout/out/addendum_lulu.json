@@ -1,0 +1,73 @@
+{
+ "n_pairs": 3000,
+ "harness_consistency_vs_census": {
+  "clear": {
+   "census_2..12001": 0.798,
+   "base_20000..22999": 0.8066666666666666,
+   "base_ci95": [
+    0.7923333333333333,
+    0.8203333333333334
+   ],
+   "census_inside_base_ci": true
+  },
+  "topout": {
+   "census_2..12001": 0.1405,
+   "base_20000..22999": 0.138,
+   "base_ci95": [
+    0.12566666666666668,
+    0.15033333333333335
+   ],
+   "census_inside_base_ci": true
+  },
+  "stall": {
+   "census_2..12001": 0.0615,
+   "base_20000..22999": 0.05533333333333333,
+   "base_ci95": [
+    0.047,
+    0.064
+   ],
+   "census_inside_base_ci": true
+  },
+  "dies_ahead": {
+   "census_2..12001": 0.12508333333333332,
+   "base_20000..22999": 0.12133333333333333,
+   "base_ci95": [
+    0.11,
+    0.133
+   ],
+   "census_inside_base_ci": true
+  }
+ },
+ "census_n": 12000,
+ "churn": {
+  "ply_flip_rate": 0.017784558312478885,
+  "games_with_>=1_flip": 2473,
+  "games_identical_outcome_and_pills": 760,
+  "discordant_clear_pairs": 611,
+  "discordant_da_pairs": 452,
+  "clear_outcome_churn_per_ply_flip": 0.07392619479733817,
+  "note": "a 1.8% per-ply flip rate reshuffles ~20% of GAME outcomes; the rig is chaotic in the action sequence, so ANY perturbation of this size carries this much variance"
+ },
+ "power": {
+  "da_discordant": 452,
+  "da_net": 24,
+  "n_for_da_mcnemar_p05_at_this_effect": 9044,
+  "clear_discordant": 611,
+  "clear_ci_halfwidth_pp": 1.58375,
+  "n_for_clear_noninferiority_at_this_point_estimate": 4453,
+  "note": "power arithmetic at the OBSERVED point estimates. It says what N the pre-registered gates would have needed; it does NOT say the effect is real. The verdict is NO_GO and is not re-opened."
+ },
+ "da_among_touched_games": {
+  "n": 2473,
+  "base": 0.1293974929235746,
+  "trt": 0.1196926809543065,
+  "diff": -0.009704811969268095
+ },
+ "da_among_untouched_games": {
+  "n": 527,
+  "base": 0.08349146110056926,
+  "trt": 0.08349146110056926,
+  "diff": 0.0,
+  "must_be_zero": true
+ }
+}
