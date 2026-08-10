@@ -26,8 +26,21 @@ FPS = 60.0988
 # canary name -> (regex key in the SUMMARY/SOAK line, human description)
 CANARIES = [
     ("MIXED_PRG_nonboot", "mixed shift-register load into the PRG register (the catastrophic MMC1 interleave)"),
-    ("wipes", "RAM wipe (virus counter latched to 0 outside the end-of-match path)"),
-    ("soft8036", "bank-0 soft entry at $8036"),
+    # ⚠ RAW `wipes` IS NOT AN EVENT COUNT. The detector fires on any $0324 (virus counter)
+    # transition >0 -> 0, and the END OF EVERY MATCH legitimately does exactly that. The tuck-phase
+    # gate saw 19 zeroings against 19 match-ends and they were all the normal path. So the healthy
+    # baseline is ~1 per match-end, NOT zero, and printing the raw number in a table of canaries
+    # would read as hundreds of RAM wipes on a clean cart -- a false alarm loud enough to discredit
+    # every other row. The anomalous count is what matters: wipes - match_ends, floored at 0, and
+    # cross-checked against the per-MATCH d_wipes distribution (any match with d_wipes >= 2 is a
+    # real candidate). Both numbers are printed.
+    ("wipes", "$0324 zeroings -- RAW, includes the legitimate one per match end"),
+    ("wipes_anom", "RAM wipes IN EXCESS of one per match end (the real canary)"),
+    # ⚠ Same trap as `wipes`: $8036 is executed ONCE legitimately at power-on, so the healthy
+    # baseline is 1 PER BOOT, not 0 -- the tuck-phase gate recorded exactly "1 bank-0 entry (the
+    # boot one)". Each seed segment is its own boot, so the pooled baseline is one per segment.
+    ("soft8036", "bank-0 entries at $8036 -- RAW, includes the power-on one"),
+    ("soft8036_anom", "bank-0 soft entries BEYOND the power-on one (the real canary)"),
     ("brk_a02e", "BRK-loop hit at $A02E"),
     ("ABORT_4to0", "catastrophic mid-match abort to title (the v6c signature)"),
     ("title0", "unrequested return to title from a live state"),
@@ -35,7 +48,11 @@ CANARIES = [
     ("modeStall", "hard hang (one mode held past threshold)"),
     ("gapStall", "failure to progress across a match boundary"),
     ("srchStall", "search stall (mode 4 with the AI no longer asking)"),
-    ("amism", "accumulator corrupted across the NMI (the v8 DRRTIVEC defect)"),
+    # ⚠ key is MISMATCH, which is what the ACHK line actually emits. It was "amism" here,
+    # which appears in no log, so `if key not in vals: continue` skipped the single most
+    # important new canary SILENTLY -- the A-check would have been absent from the bound
+    # table while everything else looked complete.
+    ("MISMATCH", "accumulator corrupted across the NMI (the v8 DRRTIVEC defect)"),
     ("tuckwr", "write to the tuck executor's cart state (must be 0 on a DRTUCK=0 cart)"),
 ]
 
@@ -97,6 +114,7 @@ def main() -> int:
     if len(sys.argv) < 2:
         print(__doc__)
         return 1
+    pool = {"frames": 0, "play4": 0, "ends": 0, "logs": 0, "achk": [], "k": {}}
     for path in sys.argv[1:]:
         vals, meta = parse(path)
         if not vals:
@@ -130,7 +148,7 @@ def main() -> int:
         # Faults that fire inside the per-frame driver hook get LIVE-PLAY frames, not wall frames.
         # play4 <= frames always, so this is the conservative choice, and it is also the unit the
         # owner actually means by "how long can I play".
-        PLAY = {"MIXED_PRG_nonboot", "wipes", "soft8036", "brk_a02e", "amism", "busyEp", "srchStall"}
+        PLAY = {"MIXED_PRG_nonboot", "wipes_anom", "soft8036_anom", "brk_a02e", "MISMATCH", "busyEp", "srchStall"}
         try:
             m = int(vals.get("matches_ended", "0"))
         except ValueError:
@@ -142,6 +160,15 @@ def main() -> int:
         if p4:
             print(f"  live-play frames    {p4:,}   = {fmt_time(p4)} in mode 4 "
                   f"({100.0 * p4 / n:.0f}% of the run)")
+        # derived: zeroings beyond the one-per-match-end the normal path produces
+        try:
+            vals["wipes_anom"] = str(max(0, int(vals.get("wipes", 0)) - m))
+        except ValueError:
+            pass
+        try:
+            vals["soft8036_anom"] = str(max(0, int(vals.get("soft8036", 0)) - 1))
+        except ValueError:
+            pass
         print(f"  {'canary':<22} {'k':>5}  {'95% upper bound on the rate':<32} description")
         for key, desc in CANARIES:
             if key not in vals:
@@ -151,7 +178,11 @@ def main() -> int:
             except ValueError:
                 continue
             lam_hi = upper_limit(k)                 # events per whole run
-            flag = "   <<< FIRED" if k > 0 else ""
+            RAW_BASELINED = {"wipes": "expected ~1 per match end",
+                             "soft8036": "expected 1 per boot (power-on)"}
+            flag = "   <<< FIRED" if (k > 0 and key not in RAW_BASELINED) else ""
+            if key in RAW_BASELINED and k > 0:
+                flag = f"   ({RAW_BASELINED[key]})"
             if key in BOUNDARY and m > 0:
                 bound = f"<= 1 per {m / lam_hi:,.0f} match-ends"
             elif key in PLAY and p4 > 0:
@@ -164,6 +195,65 @@ def main() -> int:
             print("   idle seat, so match-ends accrue MUCH faster than in real play. Total frames")
             print("   therefore overstate real-match exposure -- which is why the crash class is")
             print("   bounded per match-end and the per-hook class per live-play minute.]")
+        # accumulate for the pooled bound
+        pool["logs"] += 1
+        pool["frames"] += n
+        pool["play4"] += p4
+        pool["ends"] += m
+        pool["achk"].append(vals.get("verdict", "<absent>"))
+        for key, _ in CANARIES:
+            if key in vals:
+                try:
+                    pool["k"][key] = pool["k"].get(key, 0) + int(vals[key])
+                except ValueError:
+                    pass
+
+    # ---------------- POOLED ----------------
+    # ⚠ THE HEADLINE IS THE POOLED BOUND, NOT THE PER-SEGMENT ONE. The soak is split into seed
+    # segments so that a crash costs one segment instead of the run, and so that four independent
+    # capsule streams are covered rather than one. But each segment reporting "1 per N/3 frames"
+    # UNDERSTATES the evidence by the number of segments: the segments are independent observations
+    # of the same cart, so their exposure ADDS. Four clean segments of N frames bound the rate at
+    # 1 per 4N/3, not 1 per N/3. Printing only the per-segment numbers would have thrown away 75%
+    # of a five-hour run.
+    if pool["logs"] > 1:
+        n, p4, m = pool["frames"], pool["play4"], pool["ends"]
+        print("\n" + "=" * 78)
+        print(f"POOLED OVER {pool['logs']} SEGMENTS  (independent seeds, same cart -- exposure adds)")
+        print("=" * 78)
+        print(f"  frames              {n:,}   = {fmt_time(n)} of emulated play")
+        print(f"  live-play frames    {p4:,}   = {fmt_time(p4)} in mode 4"
+              + (f" ({100.0 * p4 / n:.0f}% of the run)" if n else ""))
+        print(f"  match-ends          {m}")
+        print(f"  A-integrity         {', '.join(pool['achk'])}")
+        BOUNDARY = {"ABORT_4to0", "title0", "gapStall"}
+        PLAY = {"MIXED_PRG_nonboot", "wipes_anom", "soft8036_anom", "brk_a02e", "MISMATCH", "busyEp", "srchStall"}
+        pool["k"]["wipes_anom"] = max(0, pool["k"].get("wipes", 0) - m)
+        # soft8036_anom is already summed per-log (one boot allowance PER SEGMENT);
+        # do NOT recompute it as pooled-minus-one, which would allow only one boot
+        # across four segments and manufacture three phantom events.
+        print(f"  {'canary':<22} {'k':>5}  {'95% upper bound on the rate':<34} description")
+        for key, desc in CANARIES:
+            if key not in pool["k"]:
+                continue
+            k = pool["k"][key]
+            lam_hi = upper_limit(k)
+            RAW_BASELINED = {"wipes": "expected ~1 per match end",
+                             "soft8036": "expected 1 per boot (power-on)"}
+            flag = "   <<< FIRED" if (k > 0 and key not in RAW_BASELINED) else ""
+            if key in RAW_BASELINED and k > 0:
+                flag = f"   ({RAW_BASELINED[key]})"
+            if key in BOUNDARY and m > 0:
+                bound = f"<= 1 per {m / lam_hi:,.0f} match-ends"
+            elif key in PLAY and p4 > 0:
+                bound = f"<= 1 per {fmt_time(p4 / lam_hi)} of live play"
+            else:
+                bound = f"<= 1 per {fmt_time(n / lam_hi)}"
+            print(f"  {key:<22} {k:>5}  {bound:<34} {desc}{flag}")
+        if p4:
+            print(f"\n  HEADLINE, conservative unit: with zero events, 95% upper bound is")
+            print(f"    1 catastrophic event per {fmt_time(p4 / upper_limit(0))} OF LIVE PLAY")
+            print(f"    (per wall-clock emulated time, {fmt_time(n / upper_limit(0))})")
     print()
     return 0
 
