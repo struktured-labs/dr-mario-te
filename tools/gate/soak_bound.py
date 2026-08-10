@@ -142,6 +142,11 @@ def parse(path: str):
     vals, meta = {}, {}
     txt = open(path, "r", errors="replace").read()
     for line in txt.splitlines():
+        if line.startswith("probe_soak start"):
+            # Provenance. maxf identifies WHICH DRIVER produced this segment (two drivers ran today
+            # with budgets 224829 and 220965), and seed identifies WHICH capsule stream it covers.
+            for m in re.finditer(r"(maxf|seed|tag)=([-\w.]+)", line):
+                meta["start_" + m.group(1)] = m.group(2)
         if line.startswith(("SUMMARY ", "SOAK ", "SOAK2 ", "ACHK ")):
             for m in re.finditer(r"(\w+)=([-\w.]+)", line):
                 vals[m.group(1)] = m.group(2)
@@ -165,7 +170,8 @@ def main() -> int:
     if len(sys.argv) < 2:
         print(__doc__)
         return 1
-    pool = {"frames": 0, "play4": 0, "ends": 0, "logs": 0, "achk": [], "k": {}}
+    pool = {"frames": 0, "play4": 0, "ends": 0, "logs": 0, "achk": [], "k": {},
+            "seeds": {}, "maxf": {}}
     for path in sys.argv[1:]:
         vals, meta = parse(path)
         if not vals:
@@ -253,6 +259,23 @@ def main() -> int:
             print("   idle seat, so match-ends accrue MUCH faster than in real play. Total frames")
             print("   therefore overstate real-match exposure -- which is why the crash class is")
             print("   bounded per match-end and the per-hook class per live-play minute.]")
+        # ⚠ PROVENANCE GATE ON THE DENOMINATOR. Two soak drivers ran today against the same tags,
+        # so a segment directory could in principle hold another driver's run, and the same SEED
+        # could appear twice. Either would inflate the pooled exposure -- claiming more evidence
+        # than exists, in the one number this whole rig produces. A segment therefore carries its
+        # origin into the pool, and mixed origins or a repeated seed are reported and EXCLUDED
+        # rather than quietly summed.
+        seed = meta.get("start_seed")
+        maxf = meta.get("start_maxf")
+        if seed is not None and seed in pool["seeds"]:
+            print(f"  ⚠ SEED {seed} ALREADY POOLED from {pool['seeds'][seed]} -- EXCLUDED from the")
+            print("    pooled denominator. The same capsule stream counted twice would inflate the")
+            print("    bound; a seed contributes once no matter how many drivers ran it.")
+            continue
+        if seed is not None:
+            pool["seeds"][seed] = path
+        if maxf is not None:
+            pool["maxf"].setdefault(maxf, []).append(path)
         # accumulate for the pooled bound
         pool["logs"] += 1
         pool["frames"] += n
@@ -283,6 +306,14 @@ def main() -> int:
         print(f"  live-play frames    {p4:,}   = {fmt_time(p4)} in mode 4"
               + (f" ({100.0 * p4 / n:.0f}% of the run)" if n else ""))
         print(f"  match-ends          {m}")
+        print(f"  seeds pooled        {', '.join(sorted(pool['seeds'])) or '<unknown>'}")
+        if len(pool["maxf"]) > 1:
+            print("  ⚠ MIXED SEGMENT ORIGINS -- these logs were not all produced by the same driver:")
+            for mf, paths in sorted(pool["maxf"].items()):
+                print(f"      maxf={mf}: {len(paths)} segment(s)")
+            print("    Frame budgets differ, so the segments are not interchangeable evidence about")
+            print("    one configuration. Pool them only if you have confirmed the CART and FLAGS")
+            print("    were identical and only the length differed.")
         print(f"  A-integrity         {', '.join(pool['achk'])}")
         BOUNDARY = {"ABORT_4to0", "title0", "gapStall"}
         PLAY = {"MIXED_PRG_nonboot", "wipes_anom", "soft8036_anom", "brk_a02e", "MISMATCH", "busyEp", "srchStall"}
