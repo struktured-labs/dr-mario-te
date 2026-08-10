@@ -215,7 +215,7 @@ end, emu.callbackType.write, 0x6179, 0x617B)
 -- The killed mutant for this check is the held cart itself: it MUST report mismatches.
 local AK = { shieldHits = 0, gameNmi = 0, nmiEvents = 0, gameNmiAtLastNmi = 0, frozen = 0,
              on = (tonumber(os.getenv("PS_ACHK") or "0") == 1),
-             apre = -1, pend = false, tried = 0, ok = 0, err = 0, mism = 0,
+             apre = -1, anmi = -1, pend = false, tried = 0, ok = 0, err = 0, mism = 0,
              dead = false, akey = "<unresolved>", log = {},
              -- ⚠ COST CONTROL. emu.getState() serializes the WHOLE console state into a map on
              -- every call (Serializer reserves 500 entries), and this check calls it twice per
@@ -272,15 +272,55 @@ function AK.finda(st, depth)
   return nil
 end
 
-emu.addMemoryCallback(function() AK.shieldHits = AK.shieldHits + 1 end, emu.callbackType.exec, 0xCEEC)
+-- ⚠ REDESIGNED AFTER THE KILLED MUTANT PASSED. The first version sampled A at the `nmi` EVENT and
+-- compared it against A at $8005. On the HELD cart -- which provably destroys A on every NMI -- it
+-- reported MISMATCH=0 with akey=cpu.a, 2996/2996 successful reads, frozen_witness=0 and
+-- shield_CEEC=2995. So the accessor, the witness and the plumbing were all fine: the SAMPLE POINT
+-- was wrong. Whatever instant eventType.nmi hands to Lua, it already reads the same value $8005
+-- does, on both carts -- so the comparison was A against itself and could not fail.
+--
+-- The fix drops all dependence on event-dispatch timing by sampling at TWO FIXED INSTRUCTION
+-- ADDRESSES, both exec callbacks, which fire before their instruction runs:
+--
+--   $CEEC = the shield's FIRST instruction. No handler code has executed yet, so A here is the
+--           interrupted main-loop accumulator on BOTH carts.
+--             held: LDA $A02E  (about to destroy A)
+--             v6e : PHA        (about to save A)
+--   $8005 = the game's NMI handler entry, reached by the shield's JMP on both carts.
+--             held: A = [$A02E]         -> DIFFERS from $CEEC whenever the interrupted A did
+--             v6e : A = the restored value -> always EQUAL to $CEEC
+--
+-- The invariant is now exactly the hold document's: "is the shield transparent to A?", expressed
+-- between two points that both lie on the shield's own execution path. The nmi-event sample is
+-- kept ONLY as a diagnostic column so the log shows why the first version could not fail.
+--
+-- Pairing is stamped with the SHIELD-HIT index for the same reason the NMI index was used before:
+-- the shield can exit via RTI without reaching $8005 (the CMP #$40 path), and an unconsumed
+-- sample compared against a later $8005 would be a mismatch that means nothing -- a false
+-- FAIL_A_CORRUPTED on a clean cart, in the one check that must never cry wolf.
+emu.addMemoryCallback(function()
+  AK.shieldHits = AK.shieldHits + 1
+  if AK.on and AK.pend then AK.stale = AK.stale + 1; AK.pend = false end
+  if AK.on and not AK.dead and (AK.shieldHits % AK.every == 0) then
+    local ok, st = pcall(emu.getState)
+    if ok then
+      local a = AK.finda(st, 0)
+      if a then AK.apre = a; AK.pend = true; AK.pendNmi = AK.shieldHits else AK.dead = true end
+    else
+      AK.dead = true
+    end
+  end
+end, emu.callbackType.exec, 0xCEEC)
 
 emu.addEventCallback(function()
   -- liveness bookkeeping: did the $8005 callback advance since the previous NMI?
   if AK.nmiEvents > 0 and AK.gameNmi == AK.gameNmiAtLastNmi then AK.frozen = AK.frozen + 1 end
   AK.gameNmiAtLastNmi = AK.gameNmi
   AK.nmiEvents = AK.nmiEvents + 1
-  if AK.on and AK.pend then AK.stale = AK.stale + 1; AK.pend = false end
-  if AK.on and not AK.dead and (AK.nmiEvents % AK.every == 0) then
+  -- DIAGNOSTIC ONLY from here down: this is the sample the broken first version used for the
+  -- verdict. It is retained at a low rate so the ADIAG lines show it side by side with the two
+  -- real sample points, and it takes NO part in the verdict.
+  if AK.on and not AK.dead and (AK.nmiEvents % 512 == 0) then
     local ok, st = pcall(emu.getState)
     if ok then
       local a = AK.finda(st, 0)
@@ -292,26 +332,29 @@ emu.addEventCallback(function()
       -- overwrites apre before the next $8005; at every>1 it does NOT, so the sampling control
       -- added above would have introduced a false-positive path into the one check that must
       -- never cry wolf. Pairing by index makes the comparison same-interrupt at ANY rate.
-      if a then AK.apre = a; AK.pend = true; AK.pendNmi = AK.nmiEvents else AK.dead = true end
-    else
-      AK.dead = true
+      if a then AK.anmi = a end
     end
   end
 end, emu.eventType.nmi)
 
 emu.addMemoryCallback(function()
   AK.gameNmi = AK.gameNmi + 1          -- witness FIRST, unconditionally
-  if AK.on and AK.pend and not AK.dead and AK.pendNmi == AK.nmiEvents then
+  if AK.on and AK.pend and not AK.dead and AK.pendNmi == AK.shieldHits then
     AK.tried = AK.tried + 1
     local ok, st = pcall(emu.getState)
     if ok then
       local a = AK.finda(st, 0)
       if a then
         AK.ok = AK.ok + 1
+        if #AK.log < 10 then
+          AK.log[#AK.log + 1] = string.format(
+            "ADIAG f=%d A_at_CEEC=%d A_at_8005=%d A_at_nmievent=%d -> %s",
+            curFrame, AK.apre, a, AK.anmi, (a ~= AK.apre) and "DIFFER" or "same")
+        end
         if a ~= AK.apre then
           AK.mism = AK.mism + 1
           if #AK.log < 25 then
-            AK.log[#AK.log + 1] = string.format("AMISM f=%d A_at_interrupt=%d A_at_gameNMI=%d",
+            AK.log[#AK.log + 1] = string.format("AMISM f=%d A_at_CEEC=%d A_at_8005=%d",
               curFrame, AK.apre, a)
           end
         end
