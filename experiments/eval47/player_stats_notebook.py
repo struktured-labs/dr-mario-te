@@ -1881,7 +1881,7 @@ def _(mo):
         |---|---|---|
         | **M** mechanical | rotation reversal / overshoot / late flurry | reproduces the film review's **hand-adjudicated** per-match counts exactly |
         | **D** wrong phase | a horizontal capsule locked colour-swapped, where the 180 flip strictly dominates on every contact | engine-free; tempo and seeding gates |
-        | **D2** hard burial | mismatched material dropped over a virus that can no longer be dug vertically | drop model controlled against the tracker's own landings; forced positions excluded |
+        | **D2** hard burial &mdash; **NOT QUOTABLE** | mismatched material dropped over a virus that can no longer be dug vertically | drop model controlled against the tracker's own landings; forced positions excluded &mdash; **but 77.5% / 92.1% of the flagged burials were dug back out, so the rate is a count of a recoverable state, not a blunder rate.** A matched-reopen gate ported from F2 and a last-straw rule were both tried: they move volume, not precision. dr. lulu full-cleared her m3 (39 of 39 virus sites), so every D2 flag there is false by construction. |
         | **F2** last-access seal | a self-placement takes a virus's **route count** from >0 to 0, with no matched reopen | validated against the m4 seal ledger; volley seals structurally unflaggable |
         | **O** evaporated opportunity | a top-decile clear declined, then destroyed uncashed within 3 pills | reproduces the adjudicated 47.9% decline figure exactly before flagging anything |
 
@@ -1901,7 +1901,7 @@ def _(RESULTS, VIZ_CSS, load_json, mo):
     B_TIERS = (
         ("tier_M", "M mechanical", "per 100 pills"),
         ("tier_D", "D wrong phase", "per 100 dual-colour H locks"),
-        ("tier_D2", "D2 hard burial", "per 100 placements"),
+        ("tier_D2", "D2 hard burial", "per 100 placements &mdash; NOT QUOTABLE"),
         ("tier_F2", "F2 last-access seal", "per 100 endgame placements"),
         ("tier_O", "O evaporated", "per 100 placements"),
     )
@@ -1909,6 +1909,7 @@ def _(RESULTS, VIZ_CSS, load_json, mo):
         "adjudicated": ("adjudicated", "var(--tier-fitted)"),
         "controlled": ("controlled", "var(--tier-low)"),
         "bracketed": ("bracketed", "var(--tier-uninf)"),
+        "not quotable": ("count only, not a rate", "#d03b3b"),
     }
 
     def b_cell(d):
@@ -1917,9 +1918,16 @@ def _(RESULTS, VIZ_CSS, load_json, mo):
         label, colour = B_EVIDENCE[d["evidence"]]
         fp = d.get("fp_estimate")
         extra = f"<br><span class='n'>FP est {fp:.0f}%</span>" if fp is not None else ""
-        return (f"<td class='num'><b>{d['per100']:.2f}</b><br>"
+        # A tier the cache marks unquotable carries the marker HERE, next to its own
+        # figure -- struck through so the number cannot be lifted out of the table.
+        unq = d.get("quotable") is False
+        val = (f"<b style='opacity:.55;text-decoration:line-through'>{d['per100']:.2f}</b>"
+               if unq else f"<b>{d['per100']:.2f}</b>")
+        warn = ("<br><span style='color:#d03b3b;font-weight:700'>NOT QUOTABLE</span>"
+                if unq else "")
+        return (f"<td class='num'>{val}<br>"
                 f"<span class='n'>{d.get('flagged', d.get('any', 0))} of {d['n']}</span>"
-                f"{extra}<br><span style='color:{colour}'>{label}</span></td>")
+                f"{extra}{warn}<br><span style='color:{colour}'>{label}</span></td>")
 
     def b_ai_cell(key):
         ai = BATTERY.get("ai")
@@ -1964,7 +1972,12 @@ def _(RESULTS, VIZ_CSS, load_json, mo):
         + "endgame (virus count &le; 6, the same threshold the AI-side seal probe uses). "
         + "<b>FP est</b> is the tier's own false-positive estimate &mdash; the share of "
         + "flagged burials whose virus was later dug back out, i.e. survivable after all. "
-        + "The AI row is solo play and does not face volleys; the human rows do."
+        + "<b style='color:#d03b3b'>Tier D2 is NOT QUOTABLE as a blunder rate</b>: at an FP "
+        + "estimate of 77.5% (struktured) and 92.1% (dr. lulu) it counts a state players "
+        + "routinely recover from. A matched-reopen gate ported from F2 and a last-straw "
+        + "rule were both measured and neither improves precision &mdash; see "
+        + "<code>blunder_tier_d2.py</code>'s TIGHTENING ATTEMPTED block. Quote F2 for "
+        + "sealing. The AI row is solo play and does not face volleys; the human rows do."
         + "</caption></table></div></div>"
     )
     return (BATTERY, path_battery)

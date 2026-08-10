@@ -79,18 +79,29 @@ def collect():
             whole_match_n=ug["scored"], whole_match_flagged=ug["gated"],
             evidence="controlled")
 
-    # ---- tier D2 (hard burial)
+    # ---- tier D2 (hard burial) -- NOT QUOTABLE, see blunder_tier_d2.py's limitation block.
+    # The cache carries the marker so the number cannot outlive the caveat: `quotable` is
+    # False, `fp_estimate` sits next to every figure, and `tightening` records what the
+    # matched-reopen gate and the last-straw rule actually achieved (volume, not precision).
+    def d2_variant(ms, **kw):
+        agg, evs = D2.run(ms, **kw)
+        nb, reop, clr = D2.survival(ms, evs)
+        return agg, dict(flagged=agg["gated"], viruses_buried=nb, later_reopened=reop,
+                         later_cleared=clr,
+                         fp_estimate=100 * reop / nb if nb else None,
+                         per100=100 * agg["gated"] / agg["scored"] if agg["scored"] else None)
+
     for p, ms in data.items():
-        agg, evs = D2.run(ms)
-        reop = sum(D2.later_reopened(m, [e for e in evs if e["match"] == m.name]) for m in ms)
+        agg, head = d2_variant(ms)
+        _a1, v_reopen = d2_variant(ms, reopen_gate=True)
+        _a2, v_straw = d2_variant(ms, last_straw=True)
         out["players"][p]["tier_D2"] = dict(
             n=agg["scored"], ungated=agg["ungated"], forced=agg["excl_forced"],
-            flagged=agg["gated"], viruses_buried=len(evs), later_reopened=reop,
-            fp_estimate=100 * reop / len(evs) if evs else None,
             bins={b: agg["bin_" + b] for b, _lo, _hi in D2.BINS},
-            per100=100 * agg["gated"] / agg["scored"] if agg["scored"] else None,
             control_pass=100 * agg["scored"] / (agg["scored"] + agg["control_fail_landing"]),
-            evidence="controlled")
+            quotable=False, not_quotable=D2.NOT_QUOTABLE,
+            tightening=dict(matched_reopen_gate=v_reopen, last_straw=v_straw),
+            evidence="not quotable", **head)
 
     # ---- tier O (evaporated opportunity) + metric 4 (cascade share)
     corpus, _dropped = O.load_corpus()

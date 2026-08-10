@@ -2331,13 +2331,34 @@
      ">20": 14
     },
     "control_pass": 95.83333333333333,
-    "evidence": "controlled",
+    "evidence": "not quotable",
     "flagged": 32,
     "forced": 13,
     "fp_estimate": 92.10526315789474,
+    "later_cleared": 76,
     "later_reopened": 70,
     "n": 69,
+    "not_quotable": "hard vertical burial is recoverable: 77.5% / 92.1% of flagged burials were dug back out. Count only; not a blunder rate.",
     "per100": 46.3768115942029,
+    "quotable": false,
+    "tightening": {
+     "last_straw": {
+      "flagged": 3,
+      "fp_estimate": 100.0,
+      "later_cleared": 4,
+      "later_reopened": 4,
+      "per100": 4.3478260869565215,
+      "viruses_buried": 4
+     },
+     "matched_reopen_gate": {
+      "flagged": 31,
+      "fp_estimate": 97.36842105263158,
+      "later_cleared": 76,
+      "later_reopened": 74,
+      "per100": 44.927536231884055,
+      "viruses_buried": 76
+     }
+    },
     "ungated": 45,
     "viruses_buried": 76
    },
@@ -2402,13 +2423,34 @@
      ">20": 34
     },
     "control_pass": 90.8256880733945,
-    "evidence": "controlled",
+    "evidence": "not quotable",
     "flagged": 98,
     "forced": 116,
     "fp_estimate": 77.47252747252747,
+    "later_cleared": 127,
     "later_reopened": 141,
     "n": 297,
+    "not_quotable": "hard vertical burial is recoverable: 77.5% / 92.1% of flagged burials were dug back out. Count only; not a blunder rate.",
     "per100": 32.996632996633,
+    "quotable": false,
+    "tightening": {
+     "last_straw": {
+      "flagged": 29,
+      "fp_estimate": 78.37837837837837,
+      "later_cleared": 25,
+      "later_reopened": 29,
+      "per100": 9.764309764309765,
+      "viruses_buried": 37
+     },
+     "matched_reopen_gate": {
+      "flagged": 119,
+      "fp_estimate": 72.76422764227642,
+      "later_cleared": 147,
+      "later_reopened": 179,
+      "per100": 40.06734006734007,
+      "viruses_buried": 246
+     }
+    },
     "ungated": 214,
     "viruses_buried": 182
    },
