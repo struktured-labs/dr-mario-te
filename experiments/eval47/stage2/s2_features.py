@@ -295,7 +295,16 @@ def main():
     ch = np.concatenate([packs["fail"][2], packs["ctrl"][2]]).astype(np.float64)
     t0 = time.monotonic()
     sd = np.concatenate([d_f["seed"], d_c["seed"]])
+    # HOLDOUT STAYS SEALED. The prereg (B2) requires the arm to be declared
+    # before the holdout is opened, so every label-associated statistic this
+    # corpus stage produces is computed on TRAIN ROWS ONLY. Nothing in the
+    # holdout has been looked at. (A4's integrity cross-checks are label-free
+    # and do run over every row.)
+    tr = np.concatenate([d_f["hold"], d_c["hold"]]) == 0
+    F, y, ysh, leak, ch, sd = (F[tr], y[tr], ysh[tr], leak[tr], ch[tr], sd[tr])
     g3 = gate_a3(F, FEAT_NAMES, y, ysh, leak, sd)
+    g3["scope"] = "TRAIN ONLY (holdout sealed)"
+    g3["n_train_rows"] = int(tr.sum())
     g3["auc_CHAMP_EVAL_vs_y"] = _auc(-ch, y)     # low champion value = risky
     g3["auc_CHAMP_EVAL_vs_yshuf"] = _auc(-ch, ysh)
     gates["A3"] = g3
