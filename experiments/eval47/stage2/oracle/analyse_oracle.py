@@ -80,6 +80,40 @@ def power_adequacy(s):
             "n_achieved": n}
 
 
+def hazard_rate(rows):
+    """PREREG_ORACLE A4 -- dies-ahead per 100 pills, ALONGSIDE the raw endpoint.
+
+    The oracle finishes games faster, so it is exposed to fewer injection events
+    and fewer chances to die.  Part of any dies-ahead reduction is therefore
+    REDUCED EXPOSURE rather than better decisions, and the raw per-game endpoint
+    cannot separate the two.
+
+    THE TEMPO GAIN IS NOT NETTED OUT, DELIBERATELY.  The north star is beating a
+    human and speed is how the champion loses; finishing sooner is a win
+    condition in this programme, not merely a nuisance variable.  Both views are
+    reported and the write-up must state which of the two the ceiling is made
+    of -- i.e. how much of the movement survives this normalisation.
+    """
+    db = np.array([r["base"]["dies_ahead"] for r in rows], float)
+    dt = np.array([r["trt"]["dies_ahead"] for r in rows], float)
+    pb = np.array([r["base"]["pills"] for r in rows], float)
+    pt = np.array([r["trt"]["pills"] for r in rows], float)
+    hb = 100.0 * db / np.maximum(pb, 1.0)      # per-seed hazard
+    ht = 100.0 * dt / np.maximum(pt, 1.0)
+    lo, hi, fneg, fpos = boot_paired(ht - hb)
+    return {"base_per_game_pp": float(db.mean() * 100),
+            "trt_per_game_pp": float(dt.mean() * 100),
+            "base_per_100_pills": float(100.0 * db.sum() / max(pb.sum(), 1.0)),
+            "trt_per_100_pills": float(100.0 * dt.sum() / max(pt.sum(), 1.0)),
+            "paired_hazard_diff": float((ht - hb).mean()),
+            "paired_hazard_ci95": [lo, hi],
+            "frac_boot_neg": fneg, "frac_boot_pos": fpos,
+            "mean_pills_base": float(pb.mean()),
+            "mean_pills_trt": float(pt.mean()),
+            "exposure_ratio_trt_over_base":
+                float(pt.sum() / max(pb.sum(), 1.0))}
+
+
 def stall_parity(s):
     """N3' -- stalls scored at parity with topouts.
 
@@ -187,6 +221,13 @@ def report(s, tag, primary):
     print(f"STALL PARITY topout {sp['topout_diff_pp']:+.2f}pp  stall "
           f"{sp['stall_diff_pp']:+.2f}pp  bad-ends {sp['bad_ends_diff_pp']:+.2f}pp"
           f"  topouts->stalls conversion: {sp['topouts_converted_to_stalls']}")
+    hz = s["hazard_rate"]
+    print(f"HAZARD (A4)  dies-ahead/game {hz['base_per_game_pp']:.2f}pp -> "
+          f"{hz['trt_per_game_pp']:.2f}pp   |   per 100 pills "
+          f"{hz['base_per_100_pills']:.3f} -> {hz['trt_per_100_pills']:.3f}   "
+          f"paired {hz['paired_hazard_diff']:+.3f} "
+          f"[{hz['paired_hazard_ci95'][0]:+.3f},{hz['paired_hazard_ci95'][1]:+.3f}]"
+          f"   exposure x{hz['exposure_ratio_trt_over_base']:.3f}")
     fp = s["flip_provenance"]
     if fp.get("n_flips_logged"):
         print(f"FLIP PROVENANCE n={fp['n_flips_logged']}  t_to_end median "
@@ -217,6 +258,7 @@ def main():
     s = summarise(rt, a.label)
     s["power_adequacy"] = power_adequacy(s)
     s["stall_parity"] = stall_parity(s)
+    s["hazard_rate"] = hazard_rate(rt)
     s["flip_provenance"] = flip_provenance(rt)
     s["verdict"] = verdict(s, primary=True)
     res["arms"]["true"] = s
@@ -227,6 +269,7 @@ def main():
         sm = summarise(rm, a.label + "_shuffled")
         sm["power_adequacy"] = power_adequacy(sm)
         sm["stall_parity"] = stall_parity(sm)
+        sm["hazard_rate"] = hazard_rate(rm)
         sm["flip_provenance"] = flip_provenance(rm)
         sm["verdict"] = verdict(sm, primary=True)
         res["arms"]["shuffled_mutant"] = sm

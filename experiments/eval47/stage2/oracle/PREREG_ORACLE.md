@@ -409,3 +409,118 @@ foreknowledge of an incoming volley would pay.
    that re-import different code from the arm it is paired against. **Any pilot
    number reported before that change lands is `ORACLE-CLAIR`, and is labelled as
    such.**
+
+---
+
+### A2 — 2026-08-10. BUDGET SPLIT ACROSS THE THREE LABELS.
+
+**Status when written: BEFORE any label runs at Tier A N; BEFORE the gates
+landed; BEFORE any verdict.** Approved by the programme lead on the reasoning
+recorded below.
+
+Amendment A1 turned a two-label run into a three-label one (`dist`, `clair`,
+`shuffle`). At the registered Tier A N = 9,000 paired seeds that is ~507
+core-hours instead of ~338. This entry fixes the split **now**, before any of it
+is spent.
+
+**REGISTERED SPLIT**
+
+| label | N (paired seeds) | seeds | authority |
+|---|---|---|---|
+| `ORACLE-DIST` | **9,000** | 30000..38999 | **PRIMARY — the verdict is taken here** |
+| `shuffle` (killed mutant, DIST forks) | **9,000** | 30000..38999 | gate: must NOT read GO |
+| `ORACLE-CLAIR` | **2,000** | 30000..31999 | sizes the clairvoyance gap only |
+
+**RATIONALE, recorded because it is the kind of choice that gets rewritten
+later.** The CLAIR−DIST gap needs **a magnitude and a sign**, not 1 pp
+resolution. Spending the ~169 extra core-hours to resolve to 1 pp a channel we
+have *already ruled unactionable* is paying for precision we cannot spend. At
+N = 2,000 the dies-ahead half-width is `1.96·√(d/2000)` ≈ **1.70 pp** at
+stage-2 churn — ample to establish whether the gap is ~0, ~5 pp, or ~25 pp,
+which is the only question asked of it.
+
+**TWO CONSTRAINTS THAT SURVIVE INTO THE WRITE-UP, FIXED HERE:**
+
+1. **THE PROGRAMME DECIDES ON `ORACLE-DIST` ALONE.** If `ORACLE-DIST` is NO_GO,
+   **the lane closes even if `ORACLE-CLAIR` is GO.** A large CLAIR number **must
+   not** be used to soften a DIST null anywhere in the report. A CLAIR GO beside
+   a DIST NO_GO means only that the residual headroom is in *opponent
+   modelling* — a different lane, which must be funded on its own evidence and
+   its own prereg, not on this arm's.
+
+2. **K=1's BIAS DIRECTION IS QUOTED IN THE HEADLINE, NOT A FOOTNOTE.** One
+   sampled future per ply understates the distributional ceiling. Therefore:
+   * beside a **NO_GO** it is the **CONSERVATIVE** direction — the true ceiling
+     is at least this bad, so the NO_GO is if anything understated, and the
+     conclusion is safe;
+   * beside a **GO** it is the **DANGEROUS** direction — a K=1 GO could be a
+     lucky-sample artifact, and a GO therefore requires the `--fork-samples`
+     sensitivity probe before it is acted on.
+   Every quotation of a K=1 number states which of these two applies.
+
+---
+
+### A3 — 2026-08-10. G1g: FORK LEAKAGE WAS NOT COVERED BY THE SEALED GATE-SET.
+
+**Status when written: BEFORE the 12-seed gate completed, BEFORE any verdict.**
+Found while ranking the candidate artifacts behind the 38-pair partial.
+
+**THE HOLE.** The sealed prereg's OFF-identity gate G1a runs
+`label_mode="const"`, which short-circuits **before `_fork_label` is ever
+called**:
+
+    if self.label_mode == "const":
+        labels.append((1, 0))          # no fork is run
+    else:
+        labels.append(_fork_label(...))
+
+So G1a proves *the selection rule is a no-op when labels tie* and proves
+**nothing** about whether running the forks perturbs the live game. G1c proves
+the capsule cursors are independent — necessary, but it does not cover the
+board or `pills_placed`. **A fork that mutated the parent would have granted the
+oracle free practice moves, inflated every headline number, and passed the
+entire sealed gate-set.**
+
+**THE ADDED GATE — G1g, `gate_forkleak.py`.** `ForkedConstArm` runs the **real**
+forks (same gate, same top-4, same 15-pill rollouts, same cost) and then
+**discards the labels** and plays the champion anyway. If forks are side-effect
+free this must reproduce the base arm exactly — result, pill count, dies-ahead,
+**and the per-ply action sequence**.
+
+**ITS OWN KILLED MUTANT.** `LeakyConstArm` forks on the **live** env instead of a
+clone (`copy.deepcopy(env)` → `env`, one line). That is precisely the defect
+being screened for and it **MUST** break the gate.
+
+**PROMOTED TO THE MANDATORY SET.** G1g joins §2 with the same standing as
+G1a–G1f: **a G1g failure VOIDS the arm.** No claim that any pilot or full-run
+number is artifact-free may be made until G1g reads PASS **with its mutant
+breaking**, and both directions are reported.
+
+**GENERALISABLE, and the reason it is worth writing down:** the sealed gate-set
+tested the *decision rule* and never tested the *machinery that produces the
+inputs to the decision rule*. Any future arm that does work in a cloned state
+needs a gate that runs that work and then throws its output away.
+
+---
+
+### A4 — 2026-08-10. TEMPO IS REPORTED TWO WAYS, AND IT IS NOT ONLY A CONFOUND.
+
+**Status when written: BEFORE any completed arm.**
+
+The oracle finishes games markedly faster (−57.8 pills at n=38). That shortens
+exposure: fewer injection events, fewer chances to die. Part of any dies-ahead
+reduction is therefore **reduced exposure** rather than better decisions, and the
+raw endpoint alone cannot separate them.
+
+**ADDED, REQUIRED IN EVERY REPORT:** `dies_ahead per 100 pills` (hazard-rate
+view) alongside the raw per-game endpoint, for base and each treatment arm, with
+paired CIs.
+
+**BUT THE TEMPO GAIN IS NOT NETTED OUT, AND THIS IS DELIBERATE.** The north star
+is **beating a human**, and speed is how the champion loses. Finishing 58 pills
+sooner is a win condition in this programme, not merely a nuisance variable.
+Reporting the hazard rate *instead of* the raw endpoint would silently discard a
+real gain; reporting only the raw endpoint would overstate the decision quality.
+**Both are reported, and the write-up states explicitly which of the two the
+ceiling is made of** — i.e. how much of the dies-ahead movement survives the
+per-100-pills normalisation.
