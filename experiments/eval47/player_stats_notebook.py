@@ -1860,11 +1860,161 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
+def _(mo):
+    mo.md(
+        r"""
+        ## The blunder battery
+
+        Five detectors over the same footage, kept as **separate rows that are never
+        pooled**, because they are not equally trustworthy and averaging them would hide
+        exactly that. Each one carries its own control, its own killed mutants, and its own
+        false-positive estimate; a tier whose gate fails publishes nothing.
+
+        The design constraint throughout is **precision, not recall**. A single
+        "blunder rate" from engine disagreement is known-poisoned here — the vocabulary wall
+        says the engine is least trustworthy near death, joint-dig closed as REFUTED, and
+        struktured's 47.9% clear-decline rate was adjudicated as *style*, not error. So every
+        tier is tuned to miss rather than to over-fire, and the direction of each residual
+        error is stated rather than assumed.
+
+        | tier | what fires | how it is trusted |
+        |---|---|---|
+        | **M** mechanical | rotation reversal / overshoot / late flurry | reproduces the film review's **hand-adjudicated** per-match counts exactly |
+        | **D** wrong phase | a horizontal capsule locked colour-swapped, where the 180 flip strictly dominates on every contact | engine-free; tempo and seeding gates |
+        | **D2** hard burial | mismatched material dropped over a virus that can no longer be dug vertically | drop model controlled against the tracker's own landings; forced positions excluded |
+        | **F2** last-access seal | a self-placement takes a virus's **route count** from >0 to 0, with no matched reopen | validated against the m4 seal ledger; volley seals structurally unflaggable |
+        | **O** evaporated opportunity | a top-decile clear declined, then destroyed uncashed within 3 pills | reproduces the adjudicated 47.9% decline figure exactly before flagging anything |
+
+        The AI row is the shipped champion (`wt=0, ws=20`) over 250 solo games on a seed
+        block disjoint from every earlier probe. **It is not a like-for-like opponent
+        comparison**: the humans are playing versus, under incoming volleys, and the AI
+        corpus is solo. Read it as a reference scale for each detector, not as a scoreboard.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(RESULTS, VIZ_CSS, load_json, mo):
+    BATTERY, path_battery = load_json(RESULTS, "blunder_battery.json")
+
+    B_TIERS = (
+        ("tier_M", "M mechanical", "per 100 pills"),
+        ("tier_D", "D wrong phase", "per 100 dual-colour H locks"),
+        ("tier_D2", "D2 hard burial", "per 100 placements"),
+        ("tier_F2", "F2 last-access seal", "per 100 endgame placements"),
+        ("tier_O", "O evaporated", "per 100 placements"),
+    )
+    B_EVIDENCE = {
+        "adjudicated": ("adjudicated", "var(--tier-fitted)"),
+        "controlled": ("controlled", "var(--tier-low)"),
+        "bracketed": ("bracketed", "var(--tier-uninf)"),
+    }
+
+    def b_cell(d):
+        if not d or d.get("per100") is None:
+            return "<td class='n'>&mdash;</td>"
+        label, colour = B_EVIDENCE[d["evidence"]]
+        fp = d.get("fp_estimate")
+        extra = f"<br><span class='n'>FP est {fp:.0f}%</span>" if fp is not None else ""
+        return (f"<td class='num'><b>{d['per100']:.2f}</b><br>"
+                f"<span class='n'>{d.get('flagged', d.get('any', 0))} of {d['n']}</span>"
+                f"{extra}<br><span style='color:{colour}'>{label}</span></td>")
+
+    def b_ai_cell(key):
+        ai = BATTERY.get("ai")
+        if not ai:
+            return "<td class='n'>&mdash;</td>"
+        n = ai["corpus"]["n_placements"]
+        match key:
+            case "tier_D2":
+                return "<td class='n'>not run<br>(human-corpus tier)</td>"
+            case "tier_F2":
+                r = ai["row3_selfseal"]["route_gated"]
+                games = ai["corpus"]["n_games"]
+                return (f"<td class='num'><b>{r['seals'] / games:.2f}</b>/game<br>"
+                        f"<span class='n'>{r['seals']} seals, {games} games<br>"
+                        f"reopened {100 * r['reopens'] / r['seals']:.0f}%</span><br>"
+                        f"<span style='color:var(--tier-low)'>controlled</span></td>")
+            case "tier_O":
+                t = ai["row4_tier_o"]["topdecile"]
+                return (f"<td class='num'><b>{t['per_100_placements']:.2f}</b><br>"
+                        f"<span class='n'>{t['n_evaporated']} of {n}</span><br>"
+                        f"<span style='color:var(--tier-low)'>controlled</span></td>")
+            case _:
+                return ("<td class='n'>not computable<br>"
+                        "(no rotation sequence<br>on the AI side)</td>")
+
+    b_rows = []
+    for player in ("struktured", "dr. lulu"):
+        d = BATTERY["players"][player]
+        b_rows.append(f"<tr><td class='handle'>{player}</td>"
+                    + "".join(b_cell(d.get(k)) for k, _t, _u in B_TIERS) + "</tr>")
+    b_rows.append("<tr><td class='handle'>AI champion<br><span class='n'>solo, n=250</span></td>"
+                + "".join(b_ai_cell(k) for k, _t, _u in B_TIERS) + "</tr>")
+
+    mo.Html(
+        VIZ_CSS
+        + "<div class='pstat'><div class='scroll'><table style='min-width:1000px'><thead><tr>"
+        + "<th>player</th>"
+        + "".join(f"<th>{t}<br><span class='n'>{u}</span></th>" for _k, t, u in B_TIERS)
+        + "</tr></thead><tbody>" + "".join(b_rows) + "</tbody><caption>"
+        + "Every cell carries its own n, because the denominators are deliberately "
+        + "different: tier D only sees dual-colour horizontal locks, tier F2 only the "
+        + "endgame (virus count &le; 6, the same threshold the AI-side seal probe uses). "
+        + "<b>FP est</b> is the tier's own false-positive estimate &mdash; the share of "
+        + "flagged burials whose virus was later dug back out, i.e. survivable after all. "
+        + "The AI row is solo play and does not face volleys; the human rows do."
+        + "</caption></table></div></div>"
+    )
+    return (BATTERY, path_battery)
+
+
+@app.cell(hide_code=True)
+def _(BATTERY, mo):
+    def m4_pct(d, k):
+        return "&mdash;" if d.get(k) is None else f"{d[k]:.1f}%"
+
+    b_m4 = {p: BATTERY["players"][p]["metric4"] for p in BATTERY["players"]}
+    b_ai = BATTERY.get("ai", {}).get("row2_cascade")
+    b_lines = [
+        f"| {p} | {d['frame_cascade']} of {d['frame_events']} = "
+        f"**{m4_pct(d, 'frame_cascade_pct')}** | {d['engine_cascade']} of {d['engine_clears']} = "
+        f"**{m4_pct(d, 'engine_cascade_pct')}** |"
+        for p, d in b_m4.items()
+    ]
+    if b_ai:
+        b_lines.append(f"| AI champion (solo) | &mdash; | {b_ai['n_cascade']} of "
+                     f"{b_ai['n_clear_events']} = **{b_ai['cascade_pct']:.1f}%** |")
+
+    mo.md(
+        "### Metric 4 — cascade share of clear events\n\n"
+        "The fourth metric of the owner's battery, and the one place two instruments "
+        "**disagree and neither is promoted to the answer**. The frame instrument watches "
+        "occupied-cell count in the quiet window between a lock and the next spawn and calls "
+        "a clear a cascade when a second drop follows within 96 frames (6 rows at the "
+        "measured 16 frames/row settle gravity). The engine instrument asks whether the "
+        "cascade fixpoint removes more cells than the first step.\n\n"
+        "| player | frame instrument | engine instrument |\n|---|---|---|\n"
+        + "\n".join(b_lines)
+        + "\n\nThe frame number is a **lower bound** — it cannot separate two removals "
+        "landing within a few frames of each other under blink noise. The engine number is "
+        "biased the other way: `cascade_x`'s own docstring says its pass-2+ compact gravity "
+        "over-estimates chaining, because a linked half whose partner is supported falls "
+        "there and does not fall in the real game. Adjudicating between them needs a "
+        "frame-accurate ROM-side trace of `comboCounter`, not a vision read of a capture. "
+        "Until then the honest statement is the bracket, not a point."
+    )
+    return
+
+
+@app.cell(hide_code=True)
 def _(
     EVAL47,
     STYLES,
     mo,
     os,
+    path_battery,
     path_bidwell,
     path_dss,
     path_jarsdad,
@@ -1901,6 +2051,16 @@ def _(
         ("P1 crop-geometry check", "eval47/film_20260808/verify_p1_crop.py"),
         ("confidence rule + per-player table", "eval47/STYLE_ENSEMBLE_V1.md §5-7"),
         ("struktured metric battery", "player_styles/FILM_REVIEW_20260804_SCORECARD.md"),
+        ("blunder battery cache", rel(path_battery)),
+        ("blunder battery: exporter (runs every tier gate)", "eval47/blunder_battery_export.py"),
+        ("blunder tier M: rotation corrections", "eval47/blunder_tiers.py"),
+        ("blunder tier D: wrong colour phase", "eval47/blunder_tier_d.py"),
+        ("blunder tier D2: hard burial", "eval47/blunder_tier_d2.py"),
+        ("blunder tier F2: last-access seal", "eval47/blunder_tier_f2.py"),
+        ("blunder tier O: evaporated opportunity", "eval47/blunder_tier_o.py"),
+        ("blunder metric 4: cascade share", "eval47/battery4_metric4.py"),
+        ("blunder shared board + virus map", "eval47/blunder_boards.py"),
+        ("blunder AI rows (champion, n=250 solo)", "eval47/blunder_ai_rows.py"),
         ("dossiers", f"{os.path.relpath(STYLES, os.path.dirname(os.path.dirname(EVAL47)))}/*.md"),
     ]
 

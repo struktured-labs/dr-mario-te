@@ -1,0 +1,2452 @@
+{
+ "ai": {
+  "arm": {
+   "level": 11,
+   "loop": "eval47/ab47.py::_choose_base via portfolio/endgame-policy/seal_probe.py",
+   "search": "root-only base, fast_rtl_x.variant('winner') + terms47.g_stranded",
+   "ws": 20,
+   "wt": 0
+  },
+  "corpus": {
+   "mean_pills": 95.076,
+   "n_games": 250,
+   "n_placements": 23769,
+   "referee_agree": 23769,
+   "referee_total": 23769,
+   "stall": 0,
+   "topout": 0,
+   "won": 250
+  },
+  "not_computable": [
+   "champion-arm drop speed / per-pill timing (no champion-driven Mesen census exists; fast sim is turn-based, no frames)",
+   "rotation-direction split (no rotation sequence in either source)",
+   "decision latency (census res_f/done_f are synthetic harness constants)"
+  ],
+  "per_game": [
+   {
+    "final_virus_count": 0,
+    "pills": 106,
+    "seed": 2000,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 105,
+    "seed": 2002,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 79,
+    "seed": 2004,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 81,
+    "seed": 2006,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 67,
+    "seed": 2008,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 95,
+    "seed": 2010,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 114,
+    "seed": 2012,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 98,
+    "seed": 2014,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 81,
+    "seed": 2016,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 104,
+    "seed": 2018,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 109,
+    "seed": 2020,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 90,
+    "seed": 2022,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 81,
+    "seed": 2024,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 100,
+    "seed": 2026,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 94,
+    "seed": 2028,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 100,
+    "seed": 2030,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 80,
+    "seed": 2032,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 105,
+    "seed": 2034,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 76,
+    "seed": 2036,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 162,
+    "seed": 2038,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 97,
+    "seed": 2040,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 80,
+    "seed": 2042,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 81,
+    "seed": 2044,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 105,
+    "seed": 2046,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 91,
+    "seed": 2048,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 79,
+    "seed": 2050,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 89,
+    "seed": 2052,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 82,
+    "seed": 2054,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 114,
+    "seed": 2056,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 74,
+    "seed": 2058,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 95,
+    "seed": 2060,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 89,
+    "seed": 2062,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 86,
+    "seed": 2064,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 135,
+    "seed": 2066,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 123,
+    "seed": 2068,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 75,
+    "seed": 2070,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 81,
+    "seed": 2072,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 164,
+    "seed": 2074,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 88,
+    "seed": 2076,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 59,
+    "seed": 2078,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 81,
+    "seed": 2080,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 149,
+    "seed": 2082,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 72,
+    "seed": 2084,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 97,
+    "seed": 2086,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 92,
+    "seed": 2088,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 95,
+    "seed": 2090,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 66,
+    "seed": 2092,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 91,
+    "seed": 2094,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 79,
+    "seed": 2096,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 113,
+    "seed": 2098,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 79,
+    "seed": 2100,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 93,
+    "seed": 2102,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 113,
+    "seed": 2104,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 116,
+    "seed": 2106,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 78,
+    "seed": 2108,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 80,
+    "seed": 2110,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 85,
+    "seed": 2112,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 72,
+    "seed": 2114,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 162,
+    "seed": 2116,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 86,
+    "seed": 2118,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 88,
+    "seed": 2120,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 92,
+    "seed": 2122,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 106,
+    "seed": 2124,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 92,
+    "seed": 2126,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 88,
+    "seed": 2128,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 84,
+    "seed": 2130,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 98,
+    "seed": 2132,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 80,
+    "seed": 2134,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 112,
+    "seed": 2136,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 88,
+    "seed": 2138,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 94,
+    "seed": 2140,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 127,
+    "seed": 2142,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 73,
+    "seed": 2144,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 97,
+    "seed": 2146,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 79,
+    "seed": 2148,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 91,
+    "seed": 2150,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 110,
+    "seed": 2152,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 82,
+    "seed": 2154,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 70,
+    "seed": 2156,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 95,
+    "seed": 2158,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 102,
+    "seed": 2160,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 102,
+    "seed": 2162,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 99,
+    "seed": 2164,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 96,
+    "seed": 2166,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 96,
+    "seed": 2168,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 95,
+    "seed": 2170,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 67,
+    "seed": 2172,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 101,
+    "seed": 2174,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 82,
+    "seed": 2176,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 105,
+    "seed": 2178,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 89,
+    "seed": 2180,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 129,
+    "seed": 2182,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 81,
+    "seed": 2184,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 65,
+    "seed": 2186,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 87,
+    "seed": 2188,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 65,
+    "seed": 2190,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 98,
+    "seed": 2192,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 83,
+    "seed": 2194,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 84,
+    "seed": 2196,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 89,
+    "seed": 2198,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 77,
+    "seed": 2200,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 86,
+    "seed": 2202,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 84,
+    "seed": 2204,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 88,
+    "seed": 2206,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 123,
+    "seed": 2208,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 75,
+    "seed": 2210,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 99,
+    "seed": 2212,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 129,
+    "seed": 2214,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 90,
+    "seed": 2216,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 100,
+    "seed": 2218,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 56,
+    "seed": 2220,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 76,
+    "seed": 2222,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 87,
+    "seed": 2224,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 86,
+    "seed": 2226,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 65,
+    "seed": 2228,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 101,
+    "seed": 2230,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 114,
+    "seed": 2232,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 78,
+    "seed": 2234,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 91,
+    "seed": 2236,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 106,
+    "seed": 2238,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 79,
+    "seed": 2240,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 75,
+    "seed": 2242,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 115,
+    "seed": 2244,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 92,
+    "seed": 2246,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 65,
+    "seed": 2248,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 105,
+    "seed": 2250,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 69,
+    "seed": 2252,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 83,
+    "seed": 2254,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 83,
+    "seed": 2256,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 67,
+    "seed": 2258,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 96,
+    "seed": 2260,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 87,
+    "seed": 2262,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 85,
+    "seed": 2264,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 76,
+    "seed": 2266,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 93,
+    "seed": 2268,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 100,
+    "seed": 2270,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 87,
+    "seed": 2272,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 185,
+    "seed": 2274,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 135,
+    "seed": 2276,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 91,
+    "seed": 2278,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 84,
+    "seed": 2280,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 88,
+    "seed": 2282,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 106,
+    "seed": 2284,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 86,
+    "seed": 2286,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 95,
+    "seed": 2288,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 90,
+    "seed": 2290,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 61,
+    "seed": 2292,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 126,
+    "seed": 2294,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 172,
+    "seed": 2296,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 68,
+    "seed": 2298,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 80,
+    "seed": 2300,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 95,
+    "seed": 2302,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 93,
+    "seed": 2304,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 75,
+    "seed": 2306,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 77,
+    "seed": 2308,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 71,
+    "seed": 2310,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 106,
+    "seed": 2312,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 82,
+    "seed": 2314,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 157,
+    "seed": 2316,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 74,
+    "seed": 2318,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 113,
+    "seed": 2320,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 78,
+    "seed": 2322,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 81,
+    "seed": 2324,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 84,
+    "seed": 2326,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 104,
+    "seed": 2328,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 105,
+    "seed": 2330,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 96,
+    "seed": 2332,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 129,
+    "seed": 2334,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 77,
+    "seed": 2336,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 95,
+    "seed": 2338,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 103,
+    "seed": 2340,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 118,
+    "seed": 2342,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 72,
+    "seed": 2344,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 104,
+    "seed": 2346,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 90,
+    "seed": 2348,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 125,
+    "seed": 2350,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 71,
+    "seed": 2352,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 69,
+    "seed": 2354,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 127,
+    "seed": 2356,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 85,
+    "seed": 2358,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 74,
+    "seed": 2360,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 112,
+    "seed": 2362,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 82,
+    "seed": 2364,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 113,
+    "seed": 2366,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 68,
+    "seed": 2368,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 117,
+    "seed": 2370,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 88,
+    "seed": 2372,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 90,
+    "seed": 2374,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 82,
+    "seed": 2376,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 106,
+    "seed": 2378,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 139,
+    "seed": 2380,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 114,
+    "seed": 2382,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 77,
+    "seed": 2384,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 89,
+    "seed": 2386,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 79,
+    "seed": 2388,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 117,
+    "seed": 2390,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 91,
+    "seed": 2392,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 98,
+    "seed": 2394,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 88,
+    "seed": 2396,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 113,
+    "seed": 2398,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 102,
+    "seed": 2400,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 91,
+    "seed": 2402,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 83,
+    "seed": 2404,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 84,
+    "seed": 2406,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 78,
+    "seed": 2408,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 96,
+    "seed": 2410,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 108,
+    "seed": 2412,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 115,
+    "seed": 2414,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 101,
+    "seed": 2416,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 183,
+    "seed": 2418,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 89,
+    "seed": 2420,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 113,
+    "seed": 2422,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 62,
+    "seed": 2424,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 100,
+    "seed": 2426,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 121,
+    "seed": 2428,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 93,
+    "seed": 2430,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 104,
+    "seed": 2432,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 140,
+    "seed": 2434,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 114,
+    "seed": 2436,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 105,
+    "seed": 2438,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 99,
+    "seed": 2440,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 75,
+    "seed": 2442,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 81,
+    "seed": 2444,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 72,
+    "seed": 2446,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 101,
+    "seed": 2448,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 81,
+    "seed": 2450,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 83,
+    "seed": 2452,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 108,
+    "seed": 2454,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 91,
+    "seed": 2456,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 81,
+    "seed": 2458,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 73,
+    "seed": 2460,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 84,
+    "seed": 2462,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 111,
+    "seed": 2464,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 85,
+    "seed": 2466,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 93,
+    "seed": 2468,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 80,
+    "seed": 2470,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 89,
+    "seed": 2472,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 109,
+    "seed": 2474,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 68,
+    "seed": 2476,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 160,
+    "seed": 2478,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 123,
+    "seed": 2480,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 114,
+    "seed": 2482,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 65,
+    "seed": 2484,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 87,
+    "seed": 2486,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 92,
+    "seed": 2488,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 138,
+    "seed": 2490,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 123,
+    "seed": 2492,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 110,
+    "seed": 2494,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 82,
+    "seed": 2496,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   },
+   {
+    "final_virus_count": 0,
+    "pills": 127,
+    "seed": 2498,
+    "stall": 0,
+    "topout": 0,
+    "won": 1
+   }
+  ],
+  "row1_orientation_virus_clearing": {
+   "horiz": 3129,
+   "horiz_pct": 37.612693833393436,
+   "n": 8319,
+   "vert": 5190
+  },
+  "row2_cascade": {
+   "cascade_pct": 14.625642813562276,
+   "chain_hist": {
+    "1": 9795,
+    "2": 1641,
+    "3": 34,
+    "4": 3
+   },
+   "mean_cells_all": 4.797873267671926,
+   "mean_cells_cascade": 8.51430274135876,
+   "mean_cells_single": 4.161204696273609,
+   "n_cascade": 1678,
+   "n_clear_events": 11473,
+   "n_virus_clear_cascade": 1544
+  },
+  "row3_selfseal": {
+   "M_narrow_nocolour_gated": {
+    "cleared_while_sealed": 878,
+    "games_with_seal": 250,
+    "reopen_rate": 6.124161073825503,
+    "reopens": 73,
+    "seals": 1192,
+    "seals_per_game": 4.768,
+    "still_sealed_at_end": 241
+   },
+   "M_route_nocolour_gated": {
+    "cleared_while_sealed": 56,
+    "games_with_seal": 218,
+    "reopen_rate": 90.15256588072123,
+    "reopens": 650,
+    "seals": 721,
+    "seals_per_game": 2.884,
+    "still_sealed_at_end": 15
+   },
+   "M_route_noreach_gated": {
+    "cleared_while_sealed": 7,
+    "games_with_seal": 165,
+    "reopen_rate": 96.95121951219512,
+    "reopens": 318,
+    "seals": 328,
+    "seals_per_game": 1.312,
+    "still_sealed_at_end": 3
+   },
+   "narrow_all": {
+    "cleared_while_sealed": 373,
+    "games_with_seal": 247,
+    "reopen_rate": 73.97069085833915,
+    "reopens": 1060,
+    "seals": 1433,
+    "seals_per_game": 5.732,
+    "still_sealed_at_end": 0
+   },
+   "narrow_gated": {
+    "cleared_while_sealed": 50,
+    "games_with_seal": 129,
+    "reopen_rate": 66.5,
+    "reopens": 133,
+    "seals": 200,
+    "seals_per_game": 0.8,
+    "still_sealed_at_end": 17
+   },
+   "route_all": {
+    "cleared_while_sealed": 1021,
+    "games_with_seal": 250,
+    "reopen_rate": 92.96104791451224,
+    "reopens": 13484,
+    "seals": 14505,
+    "seals_per_game": 58.02,
+    "still_sealed_at_end": 0
+   },
+   "route_gated": {
+    "cleared_while_sealed": 85,
+    "games_with_seal": 242,
+    "reopen_rate": 87.97687861271676,
+    "reopens": 761,
+    "seals": 865,
+    "seals_per_game": 3.46,
+    "still_sealed_at_end": 19
+   }
+  },
+  "row4_tier_o": {
+   "any_size": {
+    "cashed_alt": 4893,
+    "cashed_window": 1457,
+    "destroyed": 796,
+    "destroyed_k_hist": {
+     "0": 260,
+     "1": 190,
+     "2": 178,
+     "3": 168
+    },
+    "n_declines": 6332,
+    "n_evaporated": 288,
+    "per_100_placements": 1.21166224914805,
+    "survived_horizon": 5536
+   },
+   "avail_size_hist": {
+    "10": 90,
+    "11": 34,
+    "12": 80,
+    "13": 30,
+    "14": 12,
+    "15": 2,
+    "16": 6,
+    "17": 12,
+    "18": 1,
+    "20": 3,
+    "21": 5,
+    "23": 6,
+    "24": 1,
+    "25": 2,
+    "27": 1,
+    "4": 11748,
+    "5": 3049,
+    "6": 52,
+    "7": 114,
+    "8": 2162,
+    "9": 395
+   },
+   "d9": 8,
+   "n_avail_decisions": 17805,
+   "n_declines": 6332,
+   "topdecile": {
+    "cashed_alt": 171,
+    "cashed_window": 103,
+    "destroyed": 71,
+    "destroyed_k_hist": {
+     "0": 23,
+     "1": 15,
+     "2": 16,
+     "3": 17
+    },
+    "n_declines": 449,
+    "n_evaporated": 54,
+    "per_100_placements": 0.22718667171525936,
+    "survived_horizon": 378
+   }
+  },
+  "row5_drop_speed_mesen": {
+   "columns": [
+    "acol",
+    "ao4",
+    "board128",
+    "cA",
+    "cB",
+    "capor_lock",
+    "capor_prev",
+    "capx_lock",
+    "capx_prev",
+    "capy_lock",
+    "capy_prev",
+    "ccol",
+    "co4",
+    "dgclamp",
+    "done_f",
+    "effc",
+    "flag",
+    "flipf",
+    "go_count",
+    "go_f",
+    "h_go",
+    "lock_f",
+    "newcells",
+    "res_f",
+    "rotdone",
+    "round",
+    "seed17",
+    "seed18",
+    "seq",
+    "tgtC",
+    "tgtO",
+    "vc_go"
+   ],
+   "empty_files": 1,
+   "files": 106,
+   "first_pill_virus_count": {
+    "48": 145
+   },
+   "flags": {
+    "nolock_modeexit": 10,
+    "ok": 13644
+   },
+   "header_variants": 4,
+   "lock_to_next_go": {
+    "mean": 37.7119786650863,
+    "median": 26,
+    "min": 19,
+    "n": 13499
+   },
+   "max": 90,
+   "mean": 36.92285587975243,
+   "median": 36.0,
+   "min": 15,
+   "n": 13572,
+   "ok": 13644,
+   "orient_clearing": {
+    "horiz": 635,
+    "horiz_pct": 32.51408090117768,
+    "unknown": 0,
+    "vert": 1318
+   },
+   "p25": 30,
+   "p75": 43,
+   "per_corpus": {
+    "board1": {
+     "max": 59,
+     "median": 33.0,
+     "min": 19,
+     "n": 438
+    },
+    "flip1": {
+     "max": 90,
+     "median": 38.0,
+     "min": 15,
+     "n": 548
+    },
+    "flipshot1": {
+     "max": 83,
+     "median": 45,
+     "min": 23,
+     "n": 367
+    },
+    "gate1": {
+     "max": 53,
+     "median": 32.0,
+     "min": 19,
+     "n": 92
+    },
+    "main1": {
+     "max": 59,
+     "median": 33.0,
+     "min": 15,
+     "n": 2110
+    },
+    "smoke2": {
+     "max": 43,
+     "median": 27,
+     "min": 18,
+     "n": 37
+    },
+    "v6c_acc": {
+     "max": 90,
+     "median": 37,
+     "min": 15,
+     "n": 5731
+    },
+    "v6c_acc_b07ee07": {
+     "max": 79,
+     "median": 35,
+     "min": 15,
+     "n": 3999
+    },
+    "v6c_smoke": {
+     "max": 57,
+     "median": 36.0,
+     "min": 24,
+     "n": 250
+    }
+   },
+   "rows": 13654,
+   "spawn_row_excluded": 72,
+   "unparsable": 0
+  },
+  "seed_block": {
+   "disjoint_from": [
+    "seal_probe 1000-1199",
+    "seal_probe oos 0-199",
+    "p0_corpus 2-123"
+   ],
+   "last": 2498,
+   "n": 250,
+   "seed0": 2000,
+   "step": 2
+  }
+ },
+ "players": {
+  "dr. lulu": {
+   "metric4": {
+    "engine_cascade": 2,
+    "engine_cascade_pct": 6.25,
+    "engine_clears": 32,
+    "evidence": "bracketed",
+    "frame_cascade": 3,
+    "frame_cascade_pct": 9.375,
+    "frame_events": 32
+   },
+   "tier_D": {
+    "evidence": "controlled",
+    "flagged": 0,
+    "n": 33,
+    "per100": 0.0,
+    "ungated": 0
+   },
+   "tier_D2": {
+    "bins": {
+     "10-6": 1,
+     "20-11": 12,
+     "<=5": 5,
+     ">20": 14
+    },
+    "control_pass": 95.83333333333333,
+    "evidence": "controlled",
+    "flagged": 32,
+    "forced": 13,
+    "fp_estimate": 92.10526315789474,
+    "later_reopened": 70,
+    "n": 69,
+    "per100": 46.3768115942029,
+    "ungated": 45,
+    "viruses_buried": 76
+   },
+   "tier_F2": {
+    "evidence": "controlled",
+    "flagged": 0,
+    "later_reopened": 0,
+    "n": 25,
+    "narrow": 0,
+    "per100": 0.0,
+    "reopen_suppressed": 0,
+    "ungated": 0,
+    "whole_match_flagged": 17,
+    "whole_match_n": 71
+   },
+   "tier_M": {
+    "any": 10,
+    "evidence": "adjudicated",
+    "late": 2,
+    "n": 74,
+    "overshoot": 10,
+    "per100": 13.513513513513514,
+    "reversal": 0
+   },
+   "tier_O": {
+    "any_declined": 12,
+    "any_flagged": 0,
+    "any_opportunity": 44,
+    "any_per100": 0.0,
+    "declined": 1,
+    "destroyed_uncashed": 0,
+    "evidence": "controlled",
+    "flagged": 0,
+    "n": 69,
+    "opportunity": 6,
+    "per100": 0.0,
+    "threshold_cells": 8.0
+   }
+  },
+  "struktured": {
+   "metric4": {
+    "engine_cascade": 37,
+    "engine_cascade_pct": 33.333333333333336,
+    "engine_clears": 111,
+    "evidence": "bracketed",
+    "frame_cascade": 16,
+    "frame_cascade_pct": 13.559322033898304,
+    "frame_events": 118
+   },
+   "tier_D": {
+    "evidence": "controlled",
+    "flagged": 1,
+    "n": 158,
+    "per100": 0.6329113924050633,
+    "ungated": 5
+   },
+   "tier_D2": {
+    "bins": {
+     "10-6": 21,
+     "20-11": 33,
+     "<=5": 10,
+     ">20": 34
+    },
+    "control_pass": 90.8256880733945,
+    "evidence": "controlled",
+    "flagged": 98,
+    "forced": 116,
+    "fp_estimate": 77.47252747252747,
+    "later_reopened": 141,
+    "n": 297,
+    "per100": 32.996632996633,
+    "ungated": 214,
+    "viruses_buried": 182
+   },
+   "tier_F2": {
+    "evidence": "controlled",
+    "flagged": 2,
+    "later_reopened": 1,
+    "n": 73,
+    "narrow": 0,
+    "per100": 2.73972602739726,
+    "reopen_suppressed": 4,
+    "ungated": 6,
+    "whole_match_flagged": 51,
+    "whole_match_n": 323
+   },
+   "tier_M": {
+    "any": 24,
+    "evidence": "adjudicated",
+    "late": 16,
+    "n": 331,
+    "overshoot": 10,
+    "per100": 7.2507552870090635,
+    "reversal": 2
+   },
+   "tier_O": {
+    "any_declined": 102,
+    "any_flagged": 3,
+    "any_opportunity": 213,
+    "any_per100": 1.0101010101010102,
+    "declined": 23,
+    "destroyed_uncashed": 1,
+    "evidence": "controlled",
+    "flagged": 1,
+    "n": 297,
+    "opportunity": 70,
+    "per100": 0.3367003367003367,
+    "threshold_cells": 8.0
+   }
+  }
+ }
+}
