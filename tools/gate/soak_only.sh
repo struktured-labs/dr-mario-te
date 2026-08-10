@@ -24,6 +24,25 @@ DEADLINE=${DEADLINE_EPOCH:?DEADLINE_EPOCH required}
 say() { echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
 left() { echo $(( DEADLINE - $(date +%s) )); }
 
+# ⚠ REFUSE TO BE THE SECOND DRIVER. Twice today two soak drivers ran for one deliverable. The
+# damage is not a crash -- Mesen is single-instance so they politely serialise -- it is that they
+# share TAGS. Both write tmp/soak/s-soak-s<seed>/probe_soak.log, so the second silently OVERWRITES
+# the first's segment, and both append to drive.log so the narrative interleaves and stops
+# attributing. Worst case a seed is counted twice in the pooled denominator, which INFLATES the
+# bound: the run would claim more evidence than it has, in the single number this rig exists to
+# produce. Detection is BY UNIT, never `pgrep -f`, which has twice today reported a dead driver as
+# alive by matching a sibling's command line -- and reapers are excluded because a reaper is not a
+# driver: it owns no tag and writes no segment.
+SELF_UNIT="${SOAK_UNIT:-}"
+OTHERS=$(systemctl --user list-units --state=active --no-legend 'drmario-soak-*' 2>/dev/null \
+         | command awk '{print $1}' | command grep -v 'reap' | command grep -v "^${SELF_UNIT}$" || true)
+if [ -n "${OTHERS//[[:space:]]/}" ]; then
+  say "REFUSING TO START: another soak DRIVER unit is already active:"
+  for u in $OTHERS; do say "    $u"; done
+  say "  Stop it by unit (systemctl --user stop <unit>), or pass SOAK_UNIT=<own unit name>."
+  exit 2
+fi
+
 ARM_RC=0
 arm() {
   local tag="$1" cart="$2" fr="$3" tmo="$4"
