@@ -491,3 +491,59 @@ anything a human ever runs.
    (it is the one thing CvC does continuously that human play never does).
    A pacing/backoff in the nav loop is the likely cheap cure; the wedge
    watchdog + auto-reboot already keeps the rig productive meanwhile.
+
+## DISCRIMINATOR IS NOT SPECIFIC — measured against a live game, 2026-08-09 21:45 EDT
+
+The AUTO-RECOVERY POST-MORTEM above certifies a four-part signature as separating "a genuine
+non-blocking userspace spin from ordinary busy work": `wchan=0`, empty `/proc/pid/stack`,
+`State=R`, and nonvoluntary ≫ voluntary context switches, alongside `busy_frac=100% consec>=6`.
+
+**That entire signature was read off a game that was demonstrably playing.** Evidence, taken
+during a live `ALERT_ONLY` window on the θ400 soak (`NES_theta400_20260809.rbf` +
+`theta400_tuck_demo.mgl`, framework pid 525, uptime 99 h; alerts firing every ~3 min since
+01:31Z):
+
+| when | what |
+|---|---|
+| 21:45:01 EDT | screenshot: live VS match, L11/11 MED/MED, **VIRUS 47 / 26** |
+| 21:45:52 EDT | screenshot: **VIRUS 45 / 32** — P1 cleared two, P2 took a six-virus volley |
+| same window | `/proc/525/wchan` = **0**; `/proc/525/stack` **empty**; `fw_state=R` |
+| same window | `voluntary_ctxt_switches` **61512 → 61512 → 61512** (frozen over 20 s) |
+| same window | `nonvoluntary_ctxt_switches` 9,621,591 → 9,621,794 (climbing; ratio **156:1**) |
+
+Screenshots: `dr_mario_rl/tmp/mister_screenshots/soak_20260809_214501.png`, `soak2_214552.png`.
+
+The signature therefore **cannot discriminate**. It may well also fire on a real wedge — this
+does not show it never does — but firing on healthy play is disqualifying for the one job it
+has. Note this is a stronger class of evidence than the comparison the post-mortem correctly
+rejected: not two log windows that look alike, but paired frames 51 s apart showing the game
+advancing while the alarm sounds.
+
+**Why the earlier validation could not have caught this.** The control was 9 h 19 m *idle at the
+menu with no core loaded*, and logged zero triggers — which was read as specificity. But at the
+menu the framework genuinely blocks, so voluntary switches accrue and the signature is absent by
+construction. The failure mode is **busy-and-healthy**: the framework main thread busy-polls
+while a core runs, never yields voluntarily, and is preempted constantly. **An idle control
+cannot fail in the direction that matters.** This is the same shape of error as the acceptance
+harness that kept P1 alive and so could never exercise DRHOLDBOARD — both are controls that were
+structurally incapable of failing on the input that counted.
+
+**What this puts in doubt** (re-derive before quoting):
+- the three 2026-08-05 AUTO_REBOOTs read as "genuine wedges, not false positives";
+- the arm-1 vs s20b A/B, which reads its result off AUTO_REBOOT firing — "time-to-first-wedge
+  ~30 min, worst 3 min" is a measurement of a signal that fires on healthy copro-heavy play;
+- any "clean soak hours" figure defined as *absence of AUTO_REBOOT*.
+
+**What it does NOT touch**: the original freeze-5 sighting stands. That is anchored on a blank
+display + 0-byte save-states + core-reload-does-not-clear-but-reboot-does, which is ARM-side and
+independent of this discriminator.
+
+`ENABLE_AUTO_REBOOT=0` is currently set on the device, so nothing is being killed. **Do not
+re-enable it until the discriminator is replaced.**
+
+**Replacement that is already validated by this very measurement**: compare two *frames* N
+seconds apart — identical screen ⇒ wedged, changed screen ⇒ alive. It observes the only thing
+anyone cares about, needs no `/proc` forensics, and is immune to the busy-vs-blocked confound.
+Its killed-mutant is free: point it at a paused/static screen and it must fire. Do NOT hot-edit
+`/media/fat/Scripts/wedge_probe.sh` while a soak is running (pid 671) — stage and swap between
+runs.
