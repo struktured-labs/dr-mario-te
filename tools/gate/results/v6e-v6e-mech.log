@@ -1,0 +1,27 @@
+probe3 start tag=v6e-mech maxf=3000 bootf=10
+MODE f=1 -1->0 match=0 hold=0 vc1=0 vc2=0 mixed=0 mixedPRG=0 soft=0
+*** BANK0 SOFT-ENTRY exec $8036 f=1 (#1) ***
+*** BANK0 SOFT-ENTRY exec $8036 f=2 (#2) ***
+MODE f=31 0->1 match=0 hold=0 vc1=0 vc2=0 mixed=0 mixedPRG=0 soft=2
+MODE f=37 1->2 match=0 hold=0 vc1=0 vc2=0 mixed=0 mixedPRG=0 soft=2
+MODE f=40 2->3 match=0 hold=0 vc1=0 vc2=0 mixed=0 mixedPRG=0 soft=2
+MODE f=41 3->8 match=0 hold=0 vc1=0 vc2=0 mixed=0 mixedPRG=0 soft=2
+MODE f=219 8->4 match=0 hold=0 vc1=72 vc2=72 mixed=0 mixedPRG=0 soft=2
+MODE f=721 4->5 match=1 hold=0 vc1=72 vc2=72 mixed=0 mixedPRG=0 soft=2
+MODE f=722 5->7 match=0 hold=0 vc1=72 vc2=72 mixed=0 mixedPRG=0 soft=2
+MODE f=827 7->3 match=0 hold=0 vc1=72 vc2=72 mixed=0 mixedPRG=0 soft=2
+MODE f=828 3->8 match=0 hold=0 vc1=72 vc2=72 mixed=0 mixedPRG=0 soft=2
+!!! VC1 WIPE f=829  72 -> 0 (#1) !!!
+MODE f=1006 8->4 match=0 hold=0 vc1=72 vc2=72 mixed=0 mixedPRG=0 soft=2
+MODE f=1967 4->5 match=1 hold=0 vc1=70 vc2=72 mixed=0 mixedPRG=0 soft=2
+MODE f=1968 5->7 match=0 hold=0 vc1=70 vc2=72 mixed=0 mixedPRG=0 soft=2
+MODE f=2087 7->3 match=0 hold=0 vc1=70 vc2=72 mixed=0 mixedPRG=0 soft=2
+MODE f=2088 3->8 match=0 hold=0 vc1=72 vc2=72 mixed=0 mixedPRG=0 soft=2
+!!! VC1 WIPE f=2089  72 -> 0 (#2) !!!
+MODE f=2266 8->4 match=0 hold=0 vc1=72 vc2=72 mixed=0 mixedPRG=0 soft=2
+MODE f=2768 4->5 match=1 hold=0 vc1=72 vc2=72 mixed=0 mixedPRG=0 soft=2
+MODE f=2769 5->7 match=0 hold=0 vc1=72 vc2=72 mixed=0 mixedPRG=0 soft=2
+MODE f=2867 7->3 match=0 hold=0 vc1=72 vc2=72 mixed=0 mixedPRG=0 soft=2
+MODE f=2868 3->8 match=0 hold=0 vc1=72 vc2=72 mixed=0 mixedPRG=0 soft=2
+!!! VC1 WIPE f=2869  72 -> 0 (#3) !!!
+SUMMARY tag=v6e-mech frames=3000 goes=26 dones=25 sr_loads=14975 sr_resets=11986 MIXED_total=0 MIXED_boot=0 MIXED_PRG_nonboot=0 soft8036=2 wipes=3 brk_a02e=0

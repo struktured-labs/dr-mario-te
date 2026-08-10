@@ -1,0 +1,133 @@
+fieldplay start tag=v6e-gate2 maxf=18000 dlat=34 seed=114 warm=0
+MODE f=1 -1->0 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=31 0->1 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+SEEDPOKE f=31 round=1 s17=4F s18=44
+MODE f=37 1->2 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=40 2->3 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=41 3->8 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=219 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=0 dones=0
+MODE f=721 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=60 fill2=62 goes=7 dones=7
+MODE f=722 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=21 fill2=62 goes=7 dones=7
+MODE f=827 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=7 dones=7
+SEEDPOKE f=827 round=2 s17=02 s18=49
+MODE f=828 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=7 dones=7
+MODE f=1006 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=7 dones=7
+MODE f=1967 4->5 hold=0 match=1 vc1=70 vc2=72 fill1=52 fill2=70 goes=19 dones=19
+MODE f=1968 5->7 hold=0 match=0 vc1=70 vc2=72 fill1=52 fill2=29 goes=19 dones=19
+MODE f=2087 7->3 hold=0 match=0 vc1=70 vc2=72 fill1=0 fill2=0 goes=19 dones=19
+SEEDPOKE f=2087 round=3 s17=7C s18=3E
+MODE f=2088 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=19 dones=19
+MODE f=2266 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=19 dones=19
+MODE f=2768 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=60 fill2=60 goes=26 dones=25
+MODE f=2769 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=21 fill2=60 goes=26 dones=25
+MODE f=2867 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=26 dones=25
+SEEDPOKE f=2867 round=4 s17=6C s18=EB
+MODE f=2868 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=26 dones=25
+MODE f=3046 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=26 dones=25
+MODE f=3548 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=60 fill2=60 goes=33 dones=31
+MODE f=3549 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=22 fill2=60 goes=33 dones=31
+MODE f=3751 7->1 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=33 dones=31
+SEEDPOKE f=3751 round=5 s17=B5 s18=7C
+MODE f=3757 1->2 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=33 dones=31
+MODE f=3760 2->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=33 dones=31
+MODE f=3761 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=33 dones=31
+MODE f=3940 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=33 dones=31
+MODE f=4442 4->5 hold=0 match=1 vc1=72 vc2=70 fill1=60 fill2=56 goes=39 dones=37
+MODE f=4443 5->7 hold=0 match=0 vc1=72 vc2=70 fill1=18 fill2=56 goes=39 dones=37
+MODE f=4547 7->3 hold=0 match=0 vc1=72 vc2=70 fill1=0 fill2=0 goes=39 dones=37
+SEEDPOKE f=4547 round=6 s17=14 s18=78
+MODE f=4548 3->8 hold=0 match=0 vc1=70 vc2=70 fill1=0 fill2=0 goes=39 dones=37
+MODE f=4726 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=39 dones=37
+MODE f=5384 4->5 hold=0 match=1 vc1=72 vc2=70 fill1=62 fill2=60 goes=47 dones=45
+MODE f=5385 5->7 hold=0 match=0 vc1=72 vc2=70 fill1=23 fill2=60 goes=47 dones=45
+MODE f=5507 7->3 hold=0 match=0 vc1=72 vc2=70 fill1=0 fill2=0 goes=47 dones=45
+SEEDPOKE f=5507 round=7 s17=0E s18=56
+MODE f=5508 3->8 hold=0 match=0 vc1=70 vc2=70 fill1=0 fill2=0 goes=47 dones=45
+MODE f=5686 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=47 dones=45
+MODE f=6208 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=57 fill2=60 goes=54 dones=52
+MODE f=6209 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=17 fill2=60 goes=54 dones=52
+MODE f=6421 7->1 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=54 dones=52
+SEEDPOKE f=6421 round=8 s17=49 s18=F5
+MODE f=6433 1->2 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=54 dones=52
+MODE f=6436 2->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=54 dones=52
+MODE f=6437 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=54 dones=52
+MODE f=6617 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=54 dones=52
+MODE f=7315 4->5 hold=0 match=1 vc1=70 vc2=71 fill1=55 fill2=60 goes=62 dones=60
+MODE f=7316 5->7 hold=0 match=0 vc1=70 vc2=71 fill1=15 fill2=60 goes=62 dones=60
+MODE f=7427 7->3 hold=0 match=0 vc1=70 vc2=71 fill1=0 fill2=0 goes=62 dones=60
+SEEDPOKE f=7427 round=9 s17=20 s18=E1
+MODE f=7428 3->8 hold=0 match=0 vc1=71 vc2=71 fill1=0 fill2=0 goes=62 dones=60
+MODE f=7608 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=62 dones=60
+MODE f=8111 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=60 fill2=60 goes=69 dones=66
+MODE f=8112 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=21 fill2=60 goes=69 dones=66
+MODE f=8237 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=69 dones=66
+SEEDPOKE f=8237 round=10 s17=13 s18=24
+MODE f=8238 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=69 dones=66
+MODE f=8416 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=69 dones=66
+MODE f=9074 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=62 fill2=64 goes=78 dones=74
+MODE f=9075 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=23 fill2=64 goes=78 dones=74
+MODE f=9271 7->1 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=78 dones=74
+SEEDPOKE f=9271 round=11 s17=60 s18=1C
+MODE f=9277 1->2 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=78 dones=74
+MODE f=9280 2->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=78 dones=74
+MODE f=9281 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=78 dones=74
+MODE f=9459 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=78 dones=74
+MODE f=9961 4->5 hold=0 match=1 vc1=72 vc2=71 fill1=60 fill2=54 goes=83 dones=79
+MODE f=9962 5->7 hold=0 match=0 vc1=72 vc2=71 fill1=22 fill2=54 goes=83 dones=79
+MODE f=10067 7->3 hold=0 match=0 vc1=72 vc2=71 fill1=0 fill2=0 goes=83 dones=79
+SEEDPOKE f=10067 round=12 s17=EB s18=8E
+MODE f=10068 3->8 hold=0 match=0 vc1=71 vc2=71 fill1=0 fill2=0 goes=83 dones=79
+MODE f=10246 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=83 dones=79
+MODE f=10768 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=56 fill2=60 goes=90 dones=86
+MODE f=10769 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=16 fill2=60 goes=90 dones=86
+MODE f=10877 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=90 dones=86
+SEEDPOKE f=10877 round=13 s17=3D s18=E0
+MODE f=10878 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=90 dones=86
+MODE f=11057 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=90 dones=86
+MODE f=11715 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=62 fill2=66 goes=100 dones=95
+MODE f=11716 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=23 fill2=66 goes=100 dones=95
+MODE f=11911 7->1 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=100 dones=95
+SEEDPOKE f=11911 round=14 s17=3D s18=52
+MODE f=11917 1->2 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=100 dones=95
+MODE f=11920 2->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=100 dones=95
+MODE f=11921 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=100 dones=95
+MODE f=12099 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=100 dones=95
+MODE f=12750 4->5 hold=0 match=1 vc1=70 vc2=72 fill1=58 fill2=66 goes=109 dones=103
+MODE f=12751 5->7 hold=0 match=0 vc1=70 vc2=72 fill1=58 fill2=28 goes=109 dones=103
+MODE f=12857 7->3 hold=0 match=0 vc1=70 vc2=72 fill1=0 fill2=0 goes=109 dones=103
+SEEDPOKE f=12857 round=15 s17=FB s18=86
+MODE f=12858 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=109 dones=103
+MODE f=13036 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=109 dones=103
+MODE f=13669 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=56 fill2=67 goes=118 dones=112
+MODE f=13670 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=56 fill2=23 goes=118 dones=112
+MODE f=13787 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=118 dones=112
+SEEDPOKE f=13787 round=16 s17=9E s18=B0
+MODE f=13788 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=118 dones=112
+MODE f=13966 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=118 dones=112
+MODE f=14624 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=62 fill2=64 goes=127 dones=121
+MODE f=14625 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=24 fill2=64 goes=127 dones=121
+MODE f=14747 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=127 dones=121
+SEEDPOKE f=14747 round=17 s17=52 s18=55
+MODE f=14748 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=127 dones=121
+MODE f=14926 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=127 dones=121
+MODE f=15428 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=60 fill2=60 goes=134 dones=127
+MODE f=15429 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=17 fill2=60 goes=134 dones=127
+MODE f=15527 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=134 dones=127
+SEEDPOKE f=15527 round=18 s17=CD s18=54
+MODE f=15528 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=134 dones=127
+MODE f=15706 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=134 dones=127
+MODE f=16129 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=56 fill2=61 goes=140 dones=133
+MODE f=16130 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=56 fill2=22 goes=140 dones=133
+MODE f=16351 7->1 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=140 dones=133
+SEEDPOKE f=16351 round=19 s17=C5 s18=B2
+MODE f=16357 1->2 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=140 dones=133
+MODE f=16360 2->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=140 dones=133
+MODE f=16361 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=140 dones=133
+MODE f=16539 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=140 dones=133
+MODE f=17041 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=60 fill2=58 goes=146 dones=139
+MODE f=17042 5->7 hold=0 match=0 vc1=72 vc2=72 fill1=18 fill2=58 goes=146 dones=139
+MODE f=17147 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=146 dones=139
+SEEDPOKE f=17147 round=20 s17=6B s18=64
+MODE f=17148 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=146 dones=139
+MODE f=17327 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=146 dones=139
+SUMMARY tag=v6e-gate2 frames=18000 goes=155 dones=147 matches_ended=19 hold_episodes=0 patho_frames=0 patho_first=-1

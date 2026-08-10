@@ -1,0 +1,9 @@
+fieldplay start tag=v6e-gate maxf=18000 dlat=34 seed=114 warm=0
+MODE f=1 -1->0 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=26 0->1 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+SEEDPOKE f=26 round=1 s17=4F s18=44
+MODE f=32 1->2 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=35 2->3 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=36 3->8 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=214 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=0 dones=0
+SUMMARY tag=v6e-gate frames=18000 goes=2 dones=2 matches_ended=0 hold_episodes=0 patho_frames=0 patho_first=-1
