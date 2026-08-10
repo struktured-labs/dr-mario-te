@@ -185,11 +185,47 @@ class Arm:
     """Root re-rank arm.  lut=None  => pure champion (used only for smoke
     tests; the real base arm is pressure_rig/p0_ab untouched)."""
 
-    def __init__(self, lut=None, prune=True, tiebreak_flip=False):
+    def __init__(self, lut=None, prune=True, tiebreak_flip=False,
+                 provenance=True, tag="trt"):
         self.lut = lut
         self.prune = prune
         self.tiebreak_flip = tiebreak_flip     # MUTANT for the identity gate
+        self.provenance = bool(provenance)
+        self.tag = tag
+        self.flips_log = []
         self.stats = {"plies": 0, "flips": 0, "delta_evals": 0, "cands": 0}
+
+    # ---- per-flip provenance (CHAMPION_ITER_PLAN "PER-PLY FLIP PROVENANCE") -
+    def _flip_record(self, a, base_a, vals, order, col, vir):
+        """One row of mechanism for a single argmax flip.
+
+        Everything here is read off the state the decision was ACTUALLY made
+        on: `vals` are the champion's root values, `col`/`vir` the PRE-
+        placement board.  `rank` is the champion's own preference position of
+        the treatment-chosen action, using the champion's enumeration order as
+        the tiebreak -- so rank 0 is by construction `base_a`, which is
+        asserted below.  A flip at rank 1 among tied candidates is a different
+        animal from one that reaches down to rank 7 across a strict gap, and
+        the bare integer `flips` counter could not tell them apart.
+        """
+        fin = np.where(np.isfinite(vals[order]))[0]
+        o_slots = order[fin]
+        o_vals = vals[order][fin]
+        pref = o_slots[np.argsort(-o_vals, kind="stable")]
+        assert int(pref[0]) == base_a, "rank order disagrees with base argmax"
+        rank = int(np.where(pref == a)[0][0])
+        best = float(o_vals.max())
+        H = _heights(col)
+        return {"arm": self.tag,
+                "ply": int(self.stats["plies"]) - 1,
+                "t_to_end": -1,             # filled in by play_one at game end
+                "viruses": int(np.count_nonzero(vir)),
+                "maxh": int(H.max()),
+                "tie": int(int((o_vals == best).sum()) > 1),
+                "rank": rank,
+                "base_a": int(base_a),
+                "trt_a": int(a),
+                "val_gap": round(best - float(vals[a]), 3)}
 
     def choose(self, col, vir, ca, cb, na, nb, w, fl, wt, ws):
         import fast_rtl_x as FX
@@ -245,6 +281,9 @@ class Arm:
         a = int(order[np.nanargmax(adj[order])])
         if a != base_a:
             self.stats["flips"] += 1
+            if self.provenance:
+                self.flips_log.append(
+                    self._flip_record(a, base_a, vals, order, col, vir))
         return a, vals
 
 
@@ -265,6 +304,7 @@ def play_one(seed, arm):
     import root_search as RS
 
     C = PR._C
+    f0 = len(arm.flips_log)
     level, wt, ws, w, fl = C["level"], C["wt"], C["ws"], C["w"], C["fl"]
     model_kind = C.get("model_kind", "drip")
     bmodel = C.get("bursty_model_obj")
@@ -324,10 +364,38 @@ def play_one(seed, arm):
                 break
     dies_ahead = int(res == "topout" and v_at_topout is not None
                      and v_at_topout <= PR.DIES_AHEAD_VIRUS_THRESHOLD)
-    return {"seed": seed, "res": res, "won": int(res == "clear"),
-            "topout": int(res == "topout"), "stall": int(res == "stall"),
-            "pills": env.pills_placed, "garbage": garbage_injected,
-            "dies_ahead": dies_ahead,
-            "viruses_left": (int(v_at_topout) if v_at_topout is not None else -1),
-            "n_plies": len(actions), "flips": arm.stats["flips"],
-            "_actions": actions}
+    # t_to_end is only knowable once the game has ended, so it is stamped here
+    # rather than at the decision point.  ply 0 of an n-ply game has
+    # t_to_end = n-1; the LAST decision of a game has t_to_end = 0.
+    recs = arm.flips_log[f0:]
+    n_plies = len(actions)
+    for r in recs:
+        r["seed"] = int(seed)
+        r["t_to_end"] = n_plies - 1 - r["ply"]
+        r["res"] = res
+    out = {"seed": seed, "res": res, "won": int(res == "clear"),
+           "topout": int(res == "topout"), "stall": int(res == "stall"),
+           "pills": env.pills_placed, "garbage": garbage_injected,
+           "dies_ahead": dies_ahead,
+           "viruses_left": (int(v_at_topout) if v_at_topout is not None else -1),
+           "n_plies": len(actions), "flips": arm.stats["flips"],
+           "_actions": actions}
+    # `_flips` appears ONLY when provenance is armed, so the existing
+    # byte-equality checks (run_ctrl --verify, gate1_identity) keep comparing
+    # the same key set they always did.
+    if arm.provenance:
+        out["_flips"] = recs
+    return out
+
+
+# ------------------------------------------------------- provenance CSV sink
+FLIP_COLS = ["seed", "arm", "ply", "t_to_end", "viruses", "maxh", "tie",
+             "rank", "base_a", "trt_a", "val_gap", "res"]
+
+
+def flip_csv_header():
+    return ",".join(FLIP_COLS) + "\n"
+
+
+def flip_csv_row(r):
+    return ",".join(str(r[c]) for c in FLIP_COLS) + "\n"
