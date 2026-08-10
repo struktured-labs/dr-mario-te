@@ -102,7 +102,17 @@ say "ERR lines in calibration (must be none): $(command grep -ac '^ERR ' "$CAL" 
 # ---------------- Phase 2: killed-mutant validation ----------------
 say "--- phase 2: killed-mutant validation of the NEW detectors ---"
 PS_INJECT=1 PS_INJA=1500 PS_INJB=2400 arm s-val-busy   "$BOOT"  3000 900
-PS_INJECT=2 PS_INJA=1500 PS_INJB=2400 arm s-val-title  "$BOOT"  3000 900
+# ⚠ THRESHOLDS LOWERED FOR THIS ARM ONLY. A 3000-frame arm with a 900-frame injection window
+# cannot cross PS_GAPMAX=3600 or PS_STALL=7200, so as originally written mode_stall and gap_stall
+# were structurally incapable of firing in the very run meant to prove they can -- the same defect
+# shape as an acceptance harness that keeps P1 alive. The FAULT is unchanged and genuine (mode
+# really is frozen at 0 for 900 frames); only the THRESHOLD moves, to something the arm can cross.
+# The soak arms keep their wide 7200/3600 margins.
+# ⚠ search_stall is NOT validated by any arm and is reported UNVALIDATED: it keys on the cart
+# having stopped issuing GO while still in mode 4, and no instrument-side injection produces that
+# without forging the detector's own input. Honest route is a cart-side fault build.
+PS_INJECT=2 PS_INJA=1500 PS_INJB=2400 PS_STALL=600 PS_GAPMAX=600 \
+                                      arm s-val-title  "$BOOT"  3000 900
 PS_INJECT=0                           arm s-val-mech   "$NOFIX" 3000 900
 PS_INJECT=0                           arm s-val-tuckwr "$TUCKC" 3000 900
 
