@@ -381,3 +381,39 @@ keeps ALL decisions of a game rather than the last ten.
 numbers are marked. An empty log is the expected case.)
 
 - 2026-08-10: none at time of commit.
+
+- 2026-08-10, during corpus build (no model has seen any data; the verdict rule
+  in §6 is unchanged). Three entries, all TIGHTENINGS or corrections to this
+  lane's own instruments, none to the corpus or the endpoint:
+
+  1. **STRICTER THAN PRE-REGISTERED: the holdout is SEALED at corpus stage.**
+     §6.1 A3 (shuffled-label floor) and every per-feature AUC produced by
+     `s2_features.py` are computed on **TRAIN ROWS ONLY**. §6.2 B2 requires the
+     arm to be declared before the holdout is opened; computing even a
+     descriptive per-feature AUC on holdout rows would erode that. No statistic
+     from a holdout row has been computed by this lane.
+
+  2. **CORRECTION TO GATE A4's ARGMAX CHECK (the check was wrong, not the
+     corpus).** A4 originally cross-checked `stored action ==
+     nanargmax(cand_vals)`. That failed on 1.6-1.8% of decisions in all three
+     parts. Cause: the champion enumerates `o4 = 0..3` and maps `o4 -> var` via
+     `fast_rtl_x._VAR_OF_O4 = [2,3,0,1]`, storing `vals[var*8+cc]`, so its scan
+     order over the 32-slot index is **16..31 then 0..15** and a tie keeps the
+     first in THAT order (strict `>`) — verticals beat horizontals.
+     `np.nanargmax` keeps the lowest RAW index, the opposite. This is the same
+     defect recon C found in its own fork probe (1.54% of plies). The check now
+     reproduces the champion's order, and a second mutant asserts the naive
+     order still disagrees, so the check is demonstrably sensitive to
+     enumeration order. The stored `action` came from the champion's own loop
+     and was correct throughout; no corpus row changed.
+
+  3. **A third killed mutant added to the fidelity gate**: `tiebreak_flip`
+     (columns enumerated in reverse). It is not required by §6.1 A2, which
+     names only `ws=0` and a garbage-rng offset. It was added because recon C
+     measured 36.0% of plies with a TIED top value, so a gate blind to
+     enumeration order would miss a third of the decision surface. It is killed
+     4/4, as are the two pre-registered mutants.
+
+  Also recorded, as a corpus fact rather than a deviation: the naive-tie-break
+  disagreement rate and the top-value tie rate are now measured per part and
+  written into `s2feat_gates_<tag>.json`.
