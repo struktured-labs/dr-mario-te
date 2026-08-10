@@ -215,6 +215,8 @@ CONFIGS = {
                       DRBUILDID=0),
     "no-prestart": dict(DRPRESTART=0, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1, DRBUILDID=0),
     "trace": dict(DRTRACE=1, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1, DRBUILDID=0),
+    "tuck-guard": dict(DRTUCK=1, DRTUCKGUARD=1, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1,
+                       DRBUILDID=0),
 }
 
 

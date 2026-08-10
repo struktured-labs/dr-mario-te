@@ -219,6 +219,15 @@ SWD_S0, SWD_S1, SWD_S2 = 0x618D, 0x618E, 0x618F      # snapshot: $0385 / $0386 /
                                                       # DRPROBE/DRTRACE ring header at $6186-$618C)
 SWD_CTL, SWD_CTH = 0x6190, 0x6191                    # 16-bit stuck-hook counter
 TUCK = _os.environ.get("DRTUCK", "0") == "1"   # tuck executor (see TUCK_C2 above)
+# DRTUCKGUARD (task #102, default OFF -> byte-inert; requires DRTUCK). Cart-side fall-budget veto
+# on the tuck descriptor: refuse an approach column whose remaining fall cannot pay for the
+# lateral trip to the final column. See the adoption site for the mechanism and the numbers.
+# ⚠ $61B9/$61BA are the first two bytes of the $61B9-$61FF free run in PRG_RAM_MAP.md. Reach
+# checked: the guard's only indexed access is `LDA $0500,X`, a READ of the playfield -- it adds
+# no indexed WRITER, so it cannot widen anyone else's reachable span.
+TUCKGUARD = TUCK and _os.environ.get("DRTUCKGUARD", "0") == "1"
+TG_NEED = 0x61B9   # |approach - final| + 2, the fall this tuck must be able to pay for
+TG_OFF  = 0x61BA   # walking board offset while counting free rows below the trigger
 REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
 # DRBUSYESC (default OFF -- ship classes opt in): stale-BUSY escape for the re-entrancy guard.
 # SILICON BRICK 2026-08-02: BUSY lives in sticky PRG-RAM (FPGA BRAM survives load_core). The
@@ -2073,6 +2082,51 @@ def build_main(level=11, speed=1):
             # or fires at the wrong point in the fall (dr-mario-tuck-executor-gap D1).
             a.ins("LDA_imm", 15); a.ins("SEC"); a.ins16("SBC_abs", W_TROW)
             a.ins16("STA_abs", TUCK_R2)
+            if TUCKGUARD:
+                # ---- DRTUCKGUARD (task #102): CART-SIDE FALL-BUDGET VETO --------------------
+                # The executor is blameless -- 23/23 tucks completed whenever the descriptor left
+                # room to move. The harm is entirely in the DESCRIPTOR: tuck-v1 (what the Pocket
+                # core publishes) scans r = fc..ra with ra = first_occ(approach)-1, so it can put
+                # the trigger at EXACTLY the approach column's resting row -> zero remaining fall
+                # -> DRDISTGATE clamps the lateral move to nothing -> the capsule STRANDS in the
+                # approach column. Measured 4/4 on engaged pills.
+                #
+                # Refuse an approach whose remaining fall cannot pay for the lateral trip:
+                #     free rows strictly below the trigger, in the FINAL column
+                #         >=  |approach - final| + 2
+                # One row per column of travel is the DAS-free lower bound; +2 is the margin every
+                # one of the 23 completions had. A veto sets TUCK_C2 <- $FF, which the executor
+                # already reads as "no tuck" and steers straight to the final column -- i.e. the
+                # exact pre-tuck behaviour, so a veto can never be worse than not tucking.
+                #
+                # Makes ANY descriptor stream safe (v1, v3, or a future firmware whose selection
+                # we do not control) -- strictly more robust than fixing selection in firmware.
+                # Straight-line, ZERO _sel calls (the executor adds no bank traffic and that
+                # property must survive), one bounded 16-row loop, one indexed READ.
+                a.ins16("LDA_abs", TUCK_C2); a.ins("CMP_imm", 0xFF); a.br("BEQ", "tg_ok")
+                a.ins16("LDA_abs", TUCK_C2); a.ins("SEC"); a.ins16("SBC_abs", tgt_c)
+                a.br("BCS", "tg_abs")
+                a.ins("EOR_imm", 0xFF); a.ins("CLC"); a.ins("ADC_imm", 1)
+                a.label("tg_abs")
+                a.ins("CLC"); a.ins("ADC_imm", 2); a.ins16("STA_abs", TG_NEED)
+                a.ins("LDA_imm", 15); a.ins("SEC"); a.ins16("SBC_abs", TUCK_R2)
+                a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+                a.ins("CLC"); a.ins16("ADC_abs", tgt_c); a.ins16("STA_abs", TG_OFF)
+                a.ins("LDY_imm", 0)
+                a.label("tg_lp")
+                a.ins16("LDA_abs", TG_OFF); a.ins("CLC"); a.ins("ADC_imm", 8)
+                a.ins16("STA_abs", TG_OFF)
+                a.ins("CMP_imm", 128); a.br("BCS", "tg_done")      # past the floor
+                a.ins("TAX"); a.ins16("LDA_absX", 0x0500)
+                a.br("BEQ", "tg_free")                             # $00 = empty
+                a.ins("CMP_imm", 0xFF); a.br("BNE", "tg_done")     # occupied -> stop
+                a.label("tg_free")
+                a.ins("INY"); a.jmp("tg_lp")
+                a.label("tg_done")
+                # no CPY_abs in this assembler's table -- move the count into A and CMP.
+                a.ins("TYA"); a.ins16("CMP_abs", TG_NEED); a.br("BCS", "tg_ok")
+                a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", TUCK_C2)   # VETO -> straight to final
+                a.label("tg_ok")
         a.ins16("LDA_abs", wor); a.ins("CMP_imm", 0xFF); a.br("BNE", f"{L}_map")
         a.ins("LDA_imm", 3); a.jmp(f"{L}_pst")
         a.label(f"{L}_map")
