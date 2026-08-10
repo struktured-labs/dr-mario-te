@@ -320,13 +320,13 @@ def main() -> int:
         pool["k"]["wipes_anom"] = max(0, pool["k"].get("wipes", 0) - m)
         # soft8036_anom is summed per-log from the event frames; no subtraction anywhere.
         print(f"  {'canary':<22} {'k':>5}  {'95% upper bound on the rate':<34} description")
+        RAW_BASELINED = {"wipes": "expected ~1 per match end",
+                         "soft8036": "expected 1 per boot (power-on)"}
         for key, desc in CANARIES:
             if key not in pool["k"]:
                 continue
             k = pool["k"][key]
             lam_hi = upper_limit(k)
-            RAW_BASELINED = {"wipes": "expected ~1 per match end",
-                             "soft8036": "expected 1 per boot (power-on)"}
             flag = "   <<< FIRED" if (k > 0 and key not in RAW_BASELINED) else ""
             if key in RAW_BASELINED and k > 0:
                 flag = f"   ({RAW_BASELINED[key]})"
@@ -337,7 +337,32 @@ def main() -> int:
             else:
                 bound = f"<= 1 per {fmt_time(n / lam_hi)}"
             print(f"  {key:<22} {k:>5}  {bound:<34} {desc}{flag}")
-        if p4:
+        # ⚠ THE HEADLINE MUST NOT CLAIM "zero events" WHEN A CANARY FIRED. This line previously
+        # hardcoded upper_limit(0), so it printed "with zero events" unconditionally -- and on the
+        # first run that ever found something (seed 30011: modeStall=1, gapStall=1) it produced a
+        # clean-sounding headline sitting directly beneath two rows flagged <<< FIRED. The table
+        # was honest and the summary of the table was not, which is the worst arrangement: the
+        # sentence people quote is the one that was wrong. The headline is now DERIVED from what
+        # actually fired, so a future event cannot be summarised away.
+        fired = sorted(key for key, _ in CANARIES
+                       if pool["k"].get(key, 0) > 0 and key not in RAW_BASELINED)
+        if fired:
+            print(f"\n  ⚠ HEADLINE: NOT CLEAN. {len(fired)} canary class(es) fired: {', '.join(fired)}")
+            print(f"    This run does NOT support a zero-event claim. The bound below is the rate")
+            print(f"    bound GIVEN the events observed, not evidence of their absence:")
+            for key in fired:
+                k = pool["k"][key]
+                if key in BOUNDARY and m > 0:
+                    print(f"      {key}: {k} in {m} match-ends  <= 1 per {m / upper_limit(k):,.0f} match-ends")
+                else:
+                    print(f"      {key}: {k} in {fmt_time(n)}  <= 1 per {fmt_time(n / upper_limit(k))}")
+            clean = [key for key, _ in CANARIES
+                     if key in pool["k"] and pool["k"].get(key, 0) == 0 and key not in RAW_BASELINED]
+            if clean and p4:
+                print(f"    The remaining {len(clean)} classes were clean; for THOSE the 95% upper")
+                print(f"    bound is 1 per {fmt_time(p4 / upper_limit(0))} of live play. That is a")
+                print(f"    statement about those classes ONLY -- it is not the run's verdict.")
+        elif p4:
             print(f"\n  HEADLINE, conservative unit: with zero events, 95% upper bound is")
             print(f"    1 catastrophic event per {fmt_time(p4 / upper_limit(0))} OF LIVE PLAY")
             print(f"    (per wall-clock emulated time, {fmt_time(n / upper_limit(0))})")
