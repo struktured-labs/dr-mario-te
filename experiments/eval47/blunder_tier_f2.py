@@ -46,6 +46,20 @@ half the board at once.
 VALIDATION is against the m4 ledger in player_styles/FILM_REVIEW_20260804_SCORECARD.md and
 player_styles/struktured.md: a single self-placement sealing three viruses at once, 13
 volley-caused seals that must not flag, and most seals re-opening.
+
+WHAT THE VALIDATION FOUND, INCLUDING WHERE IT DISAGREES. The ledger's decisive moment is
+real and lands where it says: the route census puts a seal at pill 83, t=1346.8s, closing
+the last route (column 2) to the (14,2) YELLOW virus -- one of the three cells the ledger
+names, at the timestamp it names. Two of its three coordinates, (14,2) and (13,3), are
+live viruses on the tape at that moment. The THIRD, (13,2), is NOT: it reads empty in all
+40 samples across pills 83-87, last read red at pill 82, and the tracker's own virus count
+falls 4->3 back at pill 78. So the tape supports a SINGLE-virus seal there, not a triple,
+and the ledger's third coordinate is not supported. Recorded here rather than quietly
+reconciled, per the no-silent-rewrites rule the dossiers already run on.
+
+The seal was also SURVIVABLE, which the matched-reopen gate gets right without being told:
+(14,2)'s column-2 route returns at pill 88 once the red line above it clears, and the virus
+is gone by pill 90. The gate suppresses it, and the census shows why.
 """
 import collections
 import os
