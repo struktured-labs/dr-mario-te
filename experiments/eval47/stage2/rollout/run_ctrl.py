@@ -39,8 +39,9 @@ sys.path.insert(0, HERE)
 _W = {}
 
 
-def _winit(model):
+def _winit(model, k=1.0):
     import arm_lut as AL
+    import numpy as np
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(HERE)),
                                     "jointdig"))
     import p0_ab as P
@@ -49,7 +50,14 @@ def _winit(model):
     PR._init(11, 0, 20, model_kind=("bursty" if model == "lulu" else "drip"),
              bursty_model_obj=obj)
     _W["AL"] = AL
-    _W["lut"] = AL.load_recommended().shuffled_tables(20260810)
+    sh = AL.load_recommended().shuffled_tables(20260810)
+    if k != 1.0:
+        # DOSE-MATCHED null: tables scaled so the holdout target-class
+        # argmax-flip matches the fitted arm's 2.12% (calib_null.py).
+        sh = AL.LutDelta(sh.feats, sh.scales,
+                         [np.rint(np.asarray(t) * k).astype(np.int64)
+                          for t in sh.tables], name=f"shuf_k{k}")
+    _W["lut"] = sh
     _W["model"] = model
 
 
@@ -79,6 +87,7 @@ def main():
     ap.add_argument("--pairs", required=True, help="ab_*.jsonl to pair against")
     ap.add_argument("--workers", type=int, default=5)
     ap.add_argument("--verify", type=int, default=25)
+    ap.add_argument("--k", type=float, default=1.0)
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     assert a.workers <= 6
@@ -104,7 +113,7 @@ def main():
     from concurrent.futures import ProcessPoolExecutor, as_completed
     t0 = time.monotonic()
     with ProcessPoolExecutor(max_workers=a.workers, initializer=_winit,
-                             initargs=(a.model,)) as ex, open(a.out, "a") as fh:
+                             initargs=(a.model, a.k)) as ex, open(a.out, "a") as fh:
         futs = {ex.submit(_work, j): j for j in todo}
         n = 0
         for f in as_completed(futs):

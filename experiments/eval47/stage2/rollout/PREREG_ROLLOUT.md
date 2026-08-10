@@ -181,3 +181,19 @@ the report states the net in both units and does not let a dies-ahead win stand 
      scale-matched random perturbation and the offline AUC edge did not transfer.*
      **NO VERDICT AUTHORITY** — the primary verdict is already fixed at NO_GO and this
      control can only explain it, never overturn it.
+
+  3. **THE FIRST NULL WAS NOT DOSE-MATCHED, AND A DOSE-MATCHED ONE WAS ADDED.**
+     Reported as a defect in my own control, not buried. The row-permuted LUT preserves
+     the |Delta| value multiset but flips **7.28%** of rollout plies against the fitted
+     arm's **1.78%** — a 4.1× more aggressive intervention. A bigger perturbation does
+     more damage, so that control's difference-in-differences is **biased IN FAVOUR of
+     the fitted arm** and is an UPPER bound on its advantage.
+     **ADDED ARM**: the same row-permuted tables scaled by `k`, with `k` chosen on the
+     SEALED HOLDOUT's 32-sibling layer so that the target-class argmax-flip matches the
+     fitted arm's 2.12% — the identical instrument and statistic that set the fitted
+     model's own ship dose. `k = 0.2` → 2.01% (fitted 2.12%). The calibration used **no
+     rollout outcome whatsoever**, only the offline flip statistic, so it cannot have
+     been tuned to a result. The chosen `k` is very slightly UNDER-dosed, which flatters
+     the null and is therefore the conservative direction for the fitted arm.
+     Same pairing against the same stored base rows; same 25-seed base re-derivation
+     drift check. Still **NO VERDICT AUTHORITY**.

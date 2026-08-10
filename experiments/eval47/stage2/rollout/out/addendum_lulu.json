@@ -69,5 +69,50 @@
   "trt": 0.08349146110056926,
   "diff": 0.0,
   "must_be_zero": true
+ },
+ "null_controls": {
+  "value_matched_k1": {
+   "n_common": 3000,
+   "base_recheck_n": 25,
+   "base_recheck_mismatch": 0,
+   "null_ply_flip_rate": 0.07281779197526013,
+   "fitted_ply_flip_rate": 0.017784558312478885,
+   "flip_ratio_null_over_fitted": 4.094439158726034,
+   "da_base": 0.12133333333333333,
+   "da_fitted": 0.11333333333333333,
+   "da_fitted_diff": -0.008,
+   "da_fitted_ci": [
+    -0.022,
+    0.006
+   ],
+   "da_null": 0.13266666666666665,
+   "da_null_diff": 0.011333333333333334,
+   "da_null_ci": [
+    -0.004,
+    0.027666666666666666
+   ],
+   "did_fitted_minus_null": -0.019333333333333334,
+   "did_ci95": [
+    -0.035333333333333335,
+    -0.0033333333333333335
+   ],
+   "did_frac_boot_neg": 0.9905,
+   "clear_base": 0.8066666666666666,
+   "clear_fitted_diff": 0.003,
+   "clear_fitted_ci": [
+    -0.013008333333333332,
+    0.018666666666666668
+   ],
+   "clear_null_diff": -0.02,
+   "clear_null_ci": [
+    -0.03866666666666667,
+    -0.000991666666666712
+   ],
+   "clear_discordant_null": 854,
+   "clear_discordant_fitted": 611,
+   "dose_matched": false,
+   "bias_note": "NOT DOSE-MATCHED: the null flips 7.28% of plies vs the fitted arm's 1.78% (4.1x). A more aggressive perturbation does more damage, so the difference-in-differences is BIASED IN FAVOUR OF THE FITTED ARM and is an UPPER bound on its advantage over a null.",
+   "readout": "SEPARATED: the fitted arm's dies-ahead movement is better than the label-blind null's by 1.93pp [0.33,3.53] - the term carries directional signal in rollout, though NOT enough to clear the pre-registered gates against the champion. The verdict remains NO_GO."
+  }
  }
 }
