@@ -174,6 +174,12 @@ emu.addMemoryCallback(function()
   if S.pending and not S.need_snap and (curFrame - S.go_f) >= DLAT then
     local f, a, rt = find_tuck(S.board)
     if f then S.opp = S.opp + 1 end
+    if S.dones < 30 then
+      local nf = 0
+      for i = 0, 127 do if S.board[i] ~= 0xFF and S.board[i] ~= 0x00 then nf = nf + 1 end end
+      ev(string.format("SEARCH #%d f=%d fill=%d tuck=%s", S.dones + 1, curFrame, nf,
+         f and string.format("final=%d appr=%d row=%d", f, a, rt) or "none"))
+    end
     if f and PUBT == 1 then
       S.rcol = f; S.ror = 0; S.tcol = a; S.trow = rt; S.pub = S.pub + 1
     else

@@ -10,7 +10,25 @@ set -u
 D=/home/struktured/projects/dr-mario-v8-wt
 tag="${1:?tag}"; cart="${2:?cart}"; maxf="${3:-3000}"
 out="$D/tmp/clean/$tag"; mkdir -p "$out"
+# ⚠⚠ HARD SEAT WAIT -- not optional, and NOT the same thing as the stale-artifact clear.
+# Mesen is single-instance: launching while ANOTHER lane's instance is alive does not fail
+# politely -- it FORWARDS this ROM+lua INTO their running emulator and corrupts THEIR run. So
+# block until the seat is genuinely empty, never clear the mutex while a Mesen is alive (that
+# would be clearing someone else's lock), and give up honestly rather than contend.
+wait_seat() {
+  for _ in $(seq 1 "${SEAT_WAIT_POLLS:-90}"); do
+    ps -eo args | command grep -a 'Release/Mesen' | command grep -av grep >/dev/null || return 0
+    sleep 10
+  done
+  return 1
+}
+
 for try in 1 2 3 4 5; do
+  if ! wait_seat; then
+    echo "[one] $tag: Mesen seat held by another lane for the whole wait -- NOT LAUNCHING"
+    echo "      (a launch would forward into their instance). Reporting UNRUN, not zero."
+    exit 4
+  fi
   disp=$((200 + RANDOM % 60))
   rm -f "/tmp/.X${disp}-lock" "/tmp/.X11-unix/X${disp}"
   Xvfb ":$disp" -screen 0 1280x720x24 -ac -nolisten tcp >/dev/null 2>&1 &
