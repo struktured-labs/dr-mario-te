@@ -556,6 +556,8 @@ def main():
                     help="cleared games to extract; 0 = ALL (the Hetzner job)")
     ap.add_argument("--census", default=CENSUS)
     ap.add_argument("--tag", default="local")
+    ap.add_argument("--stall-sample", type=int, default=0,
+                    help="stall games to extract; 0 = ALL")
     ap.add_argument("--limit", type=int, default=0,
                     help="smoke test: cap games per class (0 = no cap)")
     ap.add_argument("--skip-gate", action="store_true",
@@ -599,6 +601,8 @@ def main():
     rng = random.Random(SAMPLE_RNG)
     ctrl_pick = sorted(clears) if a.ctrl_sample == 0 else \
         sorted(rng.sample(clears, min(a.ctrl_sample, len(clears))))
+    if a.stall_sample:
+        stalls = sorted(rng.sample(stalls, min(a.stall_sample, len(stalls))))
 
     if a.limit:
         tops, stalls, ctrl_pick = (tops[:a.limit], stalls[:a.limit],
@@ -610,25 +614,74 @@ def main():
           f"{len(ctrl_pick)} clear = {len(jobs)} games, ALL decisions, "
           f"{workers} workers", flush=True)
 
-    fail_sh, stall_sh, ctrl_sh = [], [], []
-    rows = {}
+    # ---- SHARDED + RESUMABLE. Scar tissue: a first attempt held all 4,124
+    # games in the parent and was killed at 3,200 with nothing on disk. Shards
+    # flush every SHARD_EVERY games and completed seeds are skipped on restart,
+    # so a kill costs at most one chunk.
+    SHARD_EVERY = 300
+    shard_dir = os.path.join(RESULTS, f"shards_{a.tag}")
+    os.makedirs(shard_dir, exist_ok=True)
+    done_seeds, rows = set(), {}
+    for fn in sorted(os.listdir(shard_dir)):
+        if fn.startswith("rows_") and fn.endswith(".json"):
+            for s, r in json.load(open(os.path.join(shard_dir, fn))).items():
+                rows[int(s)] = r
+                done_seeds.add(int(s))
+    if done_seeds:
+        jobs = [j for j in jobs if j[0] not in done_seeds]
+        print(f"[extract] RESUME: {len(done_seeds)} games already sharded, "
+              f"{len(jobs)} to go", flush=True)
+
+    buf = {"fail": [], "stall": [], "ctrl": []}
+    buf_rows = {}
     mism = []
+    shard_id = len([f for f in os.listdir(shard_dir) if f.startswith("rows_")])
     t0, done = time.monotonic(), 0
+
+    def flush():
+        nonlocal shard_id
+        if not buf_rows:
+            return
+        for nm, sh in buf.items():
+            if sh:
+                np.savez(os.path.join(shard_dir, f"{nm}_{shard_id:04d}.npz"),
+                         **merge(sh))
+                sh.clear()
+        with open(os.path.join(shard_dir, f"rows_{shard_id:04d}.json"), "w") as fh:
+            json.dump(buf_rows, fh)
+        buf_rows.clear()
+        shard_id += 1
+
     with ProcessPoolExecutor(max_workers=workers, initializer=_winit) as ex:
         futs = [ex.submit(_worker, j) for j in jobs]
         for f in as_completed(futs):
             d, row, errs = f.result()
             rows[row["seed"]] = row
+            buf_rows[row["seed"]] = row
             if errs:
                 mism.append({"seed": row["seed"], "errors": errs})
             if d is not None:
-                (ctrl_sh if row["res"] == "clear"
-                 else stall_sh if row["res"] == "stall" else fail_sh).append(d)
+                buf["ctrl" if row["res"] == "clear"
+                    else "stall" if row["res"] == "stall" else "fail"].append(d)
             done += 1
+            if done % SHARD_EVERY == 0:
+                flush()
             if done % 200 == 0 or done == len(jobs):
                 dt = time.monotonic() - t0
                 print(f"[extract] {done}/{len(jobs)} {dt:.0f}s {done/dt:.2f} g/s "
-                      f"mismatches={len(mism)}", flush=True)
+                      f"mismatches={len(mism)} shards={shard_id}", flush=True)
+    flush()
+
+    fail_sh, stall_sh, ctrl_sh = [], [], []
+    for fn in sorted(os.listdir(shard_dir)):
+        if not fn.endswith(".npz"):
+            continue
+        z = np.load(os.path.join(shard_dir, fn))
+        dd = {k: z[k] for k in z.files}
+        (fail_sh if fn.startswith("fail") else
+         stall_sh if fn.startswith("stall") else ctrl_sh).append(dd)
+    print(f"[extract] merged {len(fail_sh)}+{len(stall_sh)}+{len(ctrl_sh)} "
+          f"shards from {shard_dir}", flush=True)
 
     if mism:
         with open(os.path.join(RESULTS, f"MISMATCHES_{a.tag}.json"), "w") as f:
