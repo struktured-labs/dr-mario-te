@@ -8,7 +8,7 @@
 # Phase 2  killed-mutant validation of the NEW detectors. A check that cannot fail is not a
 #          check, so each one is driven with the fault it exists to catch BEFORE the soak runs:
 #            s-val-busy   inject BUSY=1        -> STUCK-BUSY must fire
-#            s-val-title  inject mode 0        -> TITLE-RETURN and GAP-STALL must fire
+#            s-val-title  inject mode 0        -> TITLE-RETURN + MODE-STALL + GAP-STALL
 #            s-val-mech   hardening OFF cart   -> MIXED_PRG / wipes / bank0 must fire
 #            s-val-tuckwr DRTUCK=1 cart        -> tuckwr must go positive (it is 0 on the ship
 #                                                 cart, which is what makes it an identity proof)
@@ -103,7 +103,17 @@ say "healthy maxima: $(command grep -a '^SOAK2 ' "$CAL" 2>/dev/null | command ta
 # ---------------- Phase 2: killed-mutant validation ----------------
 say "--- phase 2: killed-mutant validation of the NEW detectors ---"
 PS_INJECT=1 PS_INJA=1500 PS_INJB=2400 arm s-val-busy   "$BOOT"  3000 900
-PS_INJECT=2 PS_INJA=1500 PS_INJB=2400 arm s-val-title  "$BOOT"  3000 900
+# ⚠ THRESHOLDS LOWERED FOR THIS ARM ONLY. The soak keeps PS_STALL=7200 / PS_GAPMAX=3600, but a
+# 3000-frame arm with a 900-frame injection window CANNOT reach either, so as originally written
+# mode_stall and gap_stall were structurally incapable of firing in the very run meant to prove
+# they can -- the same defect shape as an acceptance harness that keeps P1 alive. The FAULT is
+# unchanged and genuine (mode really is frozen at 0 for 900 frames); only the THRESHOLD moves, to
+# something the arm can cross. The soak arm's wide margins are untouched.
+# ⚠ search_stall is NOT validated by this or any arm and is reported UNVALIDATED: it keys on the
+# cart having stopped issuing GO while still in mode 4, and no instrument-side injection produces
+# that without forging the detector's own input. The honest route is a cart-side fault build.
+PS_INJECT=2 PS_INJA=1500 PS_INJB=2400 PS_STALL=600 PS_GAPMAX=600 \
+                                      arm s-val-title  "$BOOT"  3000 900
 PS_INJECT=0                           arm s-val-mech   "$NOFIX" 3000 900
 PS_INJECT=0                           arm s-val-tuckwr "$TUCKC" 3000 900
 

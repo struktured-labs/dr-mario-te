@@ -125,12 +125,24 @@ def main() -> int:
         # faster than real play does, because P1 is an idle seat that tops out in ~500 frames.
         # Reporting only the frame bound would understate boundary coverage by more than an order
         # of magnitude; reporting only the match bound would overstate per-frame coverage. Both.
+        # Faults that can only fire when a match ENDS get match-ends as their denominator.
         BOUNDARY = {"ABORT_4to0", "title0", "gapStall"}
+        # Faults that fire inside the per-frame driver hook get LIVE-PLAY frames, not wall frames.
+        # play4 <= frames always, so this is the conservative choice, and it is also the unit the
+        # owner actually means by "how long can I play".
+        PLAY = {"MIXED_PRG_nonboot", "wipes", "soft8036", "brk_a02e", "amism", "busyEp", "srchStall"}
         try:
             m = int(vals.get("matches_ended", "0"))
         except ValueError:
             m = 0
-        print(f"  {'canary':<22} {'k':>5}  {'95% upper bound on the rate':<30} description")
+        try:
+            p4 = int(vals.get("play4_frames", "0"))
+        except ValueError:
+            p4 = 0
+        if p4:
+            print(f"  live-play frames    {p4:,}   = {fmt_time(p4)} in mode 4 "
+                  f"({100.0 * p4 / n:.0f}% of the run)")
+        print(f"  {'canary':<22} {'k':>5}  {'95% upper bound on the rate':<32} description")
         for key, desc in CANARIES:
             if key not in vals:
                 continue
@@ -141,15 +153,17 @@ def main() -> int:
             lam_hi = upper_limit(k)                 # events per whole run
             flag = "   <<< FIRED" if k > 0 else ""
             if key in BOUNDARY and m > 0:
-                per = lam_hi / m
-                bound = f"<= 1 per {1.0 / per:,.0f} match-ends"
+                bound = f"<= 1 per {m / lam_hi:,.0f} match-ends"
+            elif key in PLAY and p4 > 0:
+                bound = f"<= 1 per {fmt_time(p4 / lam_hi)} of live play"
             else:
-                per_frame = lam_hi / n
-                bound = f"<= 1 per {fmt_time(1.0 / per_frame)}"
-            print(f"  {key:<22} {k:>5}  {bound:<30} {desc}{flag}")
+                bound = f"<= 1 per {fmt_time(n / lam_hi)}"
+            print(f"  {key:<22} {k:>5}  {bound:<32} {desc}{flag}")
         if m > 0:
             print(f"  [{m} match-ends observed; a match here is ~{n / m:.0f} frames because P1 is an")
-            print("   idle seat, so match-ends accrue much faster than in real play]")
+            print("   idle seat, so match-ends accrue MUCH faster than in real play. Total frames")
+            print("   therefore overstate real-match exposure -- which is why the crash class is")
+            print("   bounded per match-end and the per-hook class per live-play minute.]")
     print()
     return 0
 

@@ -168,6 +168,10 @@ def do_soak(paths, tags):
             print(f"  against LIVE-PLAY frames only: 1 per {play0:.1f} minutes of live play")
     if worst:
         print(f"WORST canary bound: {worst[0]} at 1 per {worst[1]:.1f} min")
+    print()
+    print("UNVALIDATED DETECTORS -- their zeros are NOT evidence:")
+    for k, why in UNVALIDATED.items():
+        print(f"  {k}: {why}")
     return 0
 
 
@@ -177,11 +181,35 @@ def _ck(key):
             "brk_a02e": "brk", "busyEp": "busyEp"}.get(key, key)
 
 
+# Each entry is the fault the arm injects and the counter that MUST move because of it. An arm
+# that does not fire means the DETECTOR is void, not that the cart is clean.
 VAL_EXPECT = {
     "s-val-busy":   [("busyEp", ">", 0)],
-    "s-val-title":  [("title0", ">", 0)],
+    # thresholds are lowered to 600 for this arm only so the 900-frame frozen-title injection can
+    # actually cross them; the soak keeps 7200/3600
+    "s-val-title":  [("title0", ">", 0), ("modeStall", ">", 0), ("gapStall", ">", 0)],
     "s-val-mech":   [("MIXED_PRG_nonboot", ">", 0), ("wipes", ">", 0), ("soft8036", ">", 0)],
     "s-val-tuckwr": [("tuckwr", ">", 0)],
+}
+
+# The A-integrity pair is checked on the ACHK verdict string, not a counter. VOID is a THIRD
+# outcome, distinct from PASS -- a dead callback or an unreadable accumulator means the check did
+# not run, and must never be read as a clean cart.
+ACHK_EXPECT = {
+    "s-val-aclob": "FAIL_A_CORRUPTED",   # the HELD cart 087ff959 -- must be caught
+    "s-val-aok":   "PASS",               # v6e -- must come back clean
+}
+
+# Detectors with no killed-mutant test. Reported as UNVALIDATED so the reader can tell which of
+# the soak's zeros carry weight. search_stall keys on the cart having stopped issuing GO while
+# still in mode 4; no instrument-side injection produces that without forging the detector's own
+# input, and a detector validated against a forged version of its own input is validated against
+# nothing. The honest route is a cart-side fault build that deliberately stops issuing GO.
+UNVALIDATED = {
+    "srchStall": "no injection can produce 'stopped issuing GO while in mode 4' without forging "
+                 "the detector's own input; needs a cart-side fault build",
+    "brk_a02e":  "no BRK-loop mutant was run in this soak; the detector is inherited from the "
+                 "M3-era gate where it did fire",
 }
 
 
@@ -198,9 +226,20 @@ def do_val(paths):
             continue
         merged = {**s, **k}
         exp = VAL_EXPECT.get(tag)
-        if not exp:
+        if not exp and tag not in ACHK_EXPECT:
             print(f"{tag:<14} (no expectation registered)")
             continue
+        exp = exp or []
+        av = None
+        for ln in d["lines"]:
+            if ln.startswith("ACHK "):
+                av = kv(ln).get("verdict")
+        if tag in ACHK_EXPECT:
+            want = ACHK_EXPECT[tag]
+            good = (av == want)
+            print(f"{tag:<14} {'ACHK verdict':<22} = {str(av):<26} expected {want:<20} "
+                  f"{'OK' if good else 'MISMATCH -- A-CHECK IS NOT USABLE'}")
+            ok = ok and good
         for key, op, want in exp:
             got = int(merged.get(key, merged.get(_ck(key), 0)) or 0)
             good = got > want if op == ">" else got == want

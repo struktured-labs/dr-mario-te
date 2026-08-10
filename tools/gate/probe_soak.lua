@@ -216,21 +216,46 @@ end, emu.callbackType.write, 0x6179, 0x617B)
 local AK = { shieldHits = 0, gameNmi = 0, nmiEvents = 0, gameNmiAtLastNmi = 0, frozen = 0,
              on = (tonumber(os.getenv("PS_ACHK") or "0") == 1),
              apre = -1, pend = false, tried = 0, ok = 0, err = 0, mism = 0,
-             dead = false, log = {} }
+             dead = false, akey = "<unresolved>", log = {} }
 
--- Resolve the accumulator out of emu.getState() without assuming a key path: the serializer
--- names are console-specific and README_GATE reports `.cpu` is nil here. Searched once, cached.
+-- Resolve the accumulator out of emu.getState().
+--
+-- ⚠ emu.getState() returns a FLAT map whose keys are DOTTED STRINGS -- there are no nested
+-- tables to walk. The previous version of this function looked for a key "a"/"A" and otherwise
+-- recursed into sub-tables, so on this build it found nothing, set AK.dead, and made ACHK report
+-- VOID on EVERY arm INCLUDING the killed mutant. A check that cannot pass is exactly as useless
+-- as one that cannot fail, and "A-CHECK NOT USABLE" reads like an environment limit rather than
+-- a bug, which is how it would have shipped.
+--
+-- The key is "cpu.a", derived from source rather than guessed:
+--   Core/NES/NesCpu.cpp:600       SV(_state.A)
+--   Core/NES/NesConsole.cpp:98    SV(_cpu)
+--   Utilities/Serializer.cpp:237  NormalizeName() strips a leading '_', strips a leading
+--                                 "state.", then lowercases the leading uppercase run.
+--   "_state.A" -> "state.A" -> "A" -> "a", under prefix "_cpu" -> "cpu"  ==>  "cpu.a"
+-- The same rule gives cpu.pc, cpu.sp, cpu.ps, cpu.x, cpu.y. This is also why README_GATE saw
+-- emu.getState().cpu == nil: there is no `cpu` TABLE to index -- the opposite of "no registers".
+-- The resolved key is recorded in AK.akey and printed on the ACHK line so the check is auditable
+-- after the fact instead of taken on trust.
 function AK.finda(st, depth)
-  if type(st) ~= "table" or depth > 3 then return nil end
-  for _, k in ipairs({ "a", "A" }) do
+  if type(st) ~= "table" then return nil end
+  for _, k in ipairs({ "cpu.a", "a", "A", "cpu.A" }) do
     local v = rawget(st, k)
-    if type(v) == "number" and v >= 0 and v <= 255 then return v end
+    if type(v) == "number" and v >= 0 and v <= 255 then AK.akey = k; return v end
   end
+  -- fallback: any flat dotted key ending in ".a" holding a byte (kept narrow on purpose)
   for k, v in pairs(st) do
-    local ks = tostring(k):lower()
-    if type(v) == "table" and (ks:find("cpu") or ks:find("nes") or depth < 2) then
-      local r = AK.finda(v, depth + 1)
-      if r then return r end
+    if type(k) == "string" and type(v) == "number" and v >= 0 and v <= 255
+       and (k:sub(-2) == ".a" or k == "a") then AK.akey = k; return v end
+  end
+  -- last resort: the original nested-table walk, in case a future build nests the map
+  if depth and depth <= 3 then
+    for k, v in pairs(st) do
+      local ks = tostring(k):lower()
+      if type(v) == "table" and (ks:find("cpu") or ks:find("nes")) then
+        local r = AK.finda(v, (depth or 0) + 1)
+        if r then return r end
+      end
     end
   end
   return nil
@@ -751,9 +776,9 @@ emu.addEventCallback(function()
     elseif AK.mism > 0 then verdict = "FAIL_A_CORRUPTED"
     else verdict = "PASS" end
     log(string.format("ACHK tag=%s verdict=%s on=%s shield_CEEC=%d gameNmi_8005=%d nmi_events=%d " ..
-        "frozen_witness=%d tried=%d ok=%d err=%d MISMATCH=%d dead=%s",
+        "frozen_witness=%d tried=%d ok=%d err=%d MISMATCH=%d dead=%s akey=%s",
         TAG, verdict, tostring(AK.on), AK.shieldHits, AK.gameNmi, AK.nmiEvents,
-        AK.frozen, AK.tried, AK.ok, AK.err, AK.mism, tostring(AK.dead)))
+        AK.frozen, AK.tried, AK.ok, AK.err, AK.mism, tostring(AK.dead), AK.akey))
     logf:close(); emu.stop(0)
   end
 end, emu.eventType.endFrame)

@@ -39,11 +39,43 @@
 --
 -- Env: P8_OUT P8_MAXF P8_DLAT P8_SEED P8_TAG P8_TUCK (1=publish descriptors, 0=never)
 -- ============================================================================
-local OUT   = os.getenv("P8_OUT")  or "."
+-- ---- REQUIRED IDENTITY (added after an ORPHAN LOG incident) ----------------------------
+-- This probe family used to default OUT to "." and TAG to "probe5". Consequence, observed
+-- in the wild: probe7.lua was launched with NO P7_* environment and silently wrote a
+-- complete, healthy-looking 18,000-frame SUMMARY -- 0 mixed-PRG, 21 matches, 20 clean ends
+-- -- into Mesen's own Release directory, tagged "probe5", attributable to NO cart, NO flag
+-- set and NO lane. It was a pass-shaped result that meant nothing, sitting where any reader
+-- could quote it. Two house rules collided in that one file: "zero defects with zero
+-- activity is a void arm" (pubtuck defaulted to a mode that published nothing) and "a tag
+-- identifies an ARM, not a run" (the tag was not even an arm -- it was a default).
+-- So: OUT and TAG are now REQUIRED, there is no "." fallback, and every run stamps the
+-- CART IDENTITY plus a per-run NONCE into both the header and the SUMMARY. An unattributable
+-- log can no longer be produced by this instrument.
+local function need(name)
+  local v = os.getenv(name)
+  if v == nil or v == "" then
+    error("\n*** " .. name .. " IS REQUIRED. Refusing to run: an unattributable log is worse\n"
+       .. "*** than no log. Launch via tools/gate/run_one8.sh, never by handing this file\n"
+       .. "*** straight to run_mesen.sh.\n", 0)
+  end
+  return v
+end
+local OUT   = need("P8_OUT")
+local TAG   = need("P8_TAG")
+-- cart identity + nonce: the log must say WHAT it measured, not just that it ran
+local CART, CARTID = "?", "?"
+pcall(function()
+  local ri = emu.getRomInfo()
+  CART   = tostring(ri.name or ri.path or "?"):gsub("%s", "_")   -- coerce: a non-string here must not crash the header
+  CARTID = tostring(ri.fileSha1 or ri.sha1 or "?"):sub(1, 8)
+end)
+-- nonce must be UNIQUE PER PROCESS: math.random unseeded returns the same sequence every
+-- run, so four probes started in the same second produced the SAME "nonce" (observed).
+-- A table address is process-unique and costs nothing.
+local NONCE = string.format("%x", os.time() % 0x1000000) .. "-" .. tostring({}):sub(-6)
 local MAXF  = tonumber(os.getenv("P8_MAXF") or "18000")
 local DLAT  = tonumber(os.getenv("P8_DLAT") or "34")
 local SEED  = tonumber(os.getenv("P8_SEED") or "114")
-local TAG   = os.getenv("P8_TAG") or "probe5"
 local PUBT  = tonumber(os.getenv("P8_TUCK") or "1")     -- 0 => always publish 0xFF (no tuck)
 local BOOTF = tonumber(os.getenv("P8_BOOTF") or "10")
 local DWELL = tonumber(os.getenv("P8_DWELL") or "2")    -- D2: frames on the approach column
@@ -447,13 +479,13 @@ emu.addEventCallback(function()
     close_pill()
     for _, s in ipairs(mixedLog) do log(s) end
     for _, s in ipairs(execLog) do log(s) end
-    log(string.format("SUMMARY tag=%s frames=%d goes=%d dones=%d sr_loads=%d sr_resets=%d " ..
+    log(string.format("SUMMARY tag=%s cart=%s cartid=%s nonce=%s slack=%d frames=%d goes=%d dones=%d sr_loads=%d sr_resets=%d " ..
         "MIXED_total=%d MIXED_boot=%d MIXED_PRG_nonboot=%d soft8036=%d wipes=%d brk_a02e=%d " ..
         "matches_started=%d matches_ended=%d clean_ends=%d ABORT_4to0=%d " ..
         "pills=%d tuck_opp=%d tuck_pub=%d tuck_desc=%d desc_changed=%d " ..
         "TUCK_EXEC_D1=%d TUCK_EXEC_D2=%d MISLAND=%d MISLAND_APPR=%d " ..
         "fail_hi=%d fail_lo=%d fail_reach=%d fail_land=%d",
-        TAG, frame, S.goes, S.dones, loads, resets, mixed_total, mixed_boot, mixed_prg,
+        TAG, CART, CARTID, NONCE, SLACK, frame, S.goes, S.dones, loads, resets, mixed_total, mixed_boot, mixed_prg,
         soft8036, wipes, brkhits, matchesStarted, matchesEnded, cleanEnds, aborts,
         nPills, S.opp, S.pub, nDesc, nChanged, nExec, nD2, nMis, nMisAppr,
         fHi, fLo, fReach, fLand))
@@ -461,5 +493,5 @@ emu.addEventCallback(function()
   end
 end, emu.eventType.endFrame)
 
-log(string.format("probe8 start tag=%s maxf=%d dlat=%d seed=%d pubtuck=%d dwell=%d",
-    TAG, MAXF, DLAT, SEED, PUBT, DWELL))
+log(string.format("probe8 start tag=%s cart=%s cartid=%s nonce=%s out=%s\nprobe8 params maxf=%d dlat=%d seed=%d pubtuck=%d dwell=%d SLACK=%d",
+    TAG, CART, CARTID, NONCE, OUT, MAXF, DLAT, SEED, PUBT, DWELL, SLACK))

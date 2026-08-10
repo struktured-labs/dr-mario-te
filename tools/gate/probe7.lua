@@ -39,11 +39,35 @@
 --
 -- Env: P7_OUT P7_MAXF P7_DLAT P7_SEED P7_TAG P7_TUCK (1=publish descriptors, 0=never)
 -- ============================================================================
-local OUT   = os.getenv("P7_OUT")  or "."
+-- ---- REQUIRED IDENTITY (added after an ORPHAN LOG incident; see probe8.lua) ------------
+-- OUT and TAG used to default to "." and "probe5". A launch with no P7_* environment then
+-- wrote a complete, healthy-looking SUMMARY into Mesen's own Release directory, attributable
+-- to no cart, no flag set and no lane. Reproduced byte-for-byte from this very file. Both are
+-- now REQUIRED and every run stamps cart identity + a per-run nonce.
+local function need(name)
+  local v = os.getenv(name)
+  if v == nil or v == "" then
+    error("\n*** " .. name .. " IS REQUIRED. Refusing to run: an unattributable log is worse\n"
+       .. "*** than no log. Launch via the run_one*.sh runner, never by handing this file\n"
+       .. "*** straight to run_mesen.sh.\n", 0)
+  end
+  return v
+end
+local OUT   = need("P7_OUT")
+local TAG   = need("P7_TAG")
+local CART, CARTID = "?", "?"
+pcall(function()
+  local ri = emu.getRomInfo()
+  CART   = tostring(ri.name or ri.path or "?"):gsub("%s", "_")   -- coerce: a non-string here must not crash the header
+  CARTID = tostring(ri.fileSha1 or ri.sha1 or "?"):sub(1, 8)
+end)
+-- nonce must be UNIQUE PER PROCESS: math.random unseeded returns the same sequence every
+-- run, so four probes started in the same second produced the SAME "nonce" (observed).
+-- A table address is process-unique and costs nothing.
+local NONCE = string.format("%x", os.time() % 0x1000000) .. "-" .. tostring({}):sub(-6)
 local MAXF  = tonumber(os.getenv("P7_MAXF") or "18000")
 local DLAT  = tonumber(os.getenv("P7_DLAT") or "34")
 local SEED  = tonumber(os.getenv("P7_SEED") or "114")
-local TAG   = os.getenv("P7_TAG") or "probe5"
 local PUBT  = tonumber(os.getenv("P7_TUCK") or "1")     -- 0 => always publish 0xFF (no tuck)
 local BOOTF = tonumber(os.getenv("P7_BOOTF") or "10")
 local DWELL = tonumber(os.getenv("P7_DWELL") or "2")    -- D2: frames on the approach column
@@ -439,7 +463,7 @@ emu.addEventCallback(function()
     close_pill()
     for _, s in ipairs(mixedLog) do log(s) end
     for _, s in ipairs(execLog) do log(s) end
-    log(string.format("SUMMARY tag=%s frames=%d goes=%d dones=%d sr_loads=%d sr_resets=%d " ..
+    log(string.format("SUMMARY tag=%s cart=%s cartid=%s nonce=%s frames=%d goes=%d dones=%d sr_loads=%d sr_resets=%d " ..
         "MIXED_total=%d MIXED_boot=%d MIXED_PRG_nonboot=%d soft8036=%d wipes=%d brk_a02e=%d " ..
         "matches_started=%d matches_ended=%d clean_ends=%d ABORT_4to0=%d " ..
         "pills=%d tuck_opp=%d tuck_pub=%d tuck_desc=%d desc_changed=%d " ..
@@ -453,5 +477,5 @@ emu.addEventCallback(function()
   end
 end, emu.eventType.endFrame)
 
-log(string.format("probe7 start tag=%s maxf=%d dlat=%d seed=%d pubtuck=%d dwell=%d",
-    TAG, MAXF, DLAT, SEED, PUBT, DWELL))
+log(string.format("probe7 start cart=%s cartid=%s nonce=%s out=%s tag=%s maxf=%d dlat=%d seed=%d pubtuck=%d dwell=%d",
+    CART, CARTID, NONCE, OUT, TAG, MAXF, DLAT, SEED, PUBT, DWELL))
