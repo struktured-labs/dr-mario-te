@@ -8,7 +8,7 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CART="$HERE/v8 REMATCH (hardened).nes"
-WANT_MD5="087ff959ac510c613bbbd2eb1ac5ecf3"
+WANT_MD5="c0082cb34259007854120d3d4ab9fa27"
 
 echo "== verifying the artifact before touching the card =="
 have="$(md5sum "$CART" | cut -d' ' -f1)"

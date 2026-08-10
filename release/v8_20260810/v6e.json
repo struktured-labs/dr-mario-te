@@ -6,7 +6,7 @@
   "determinism": "verified: two builds byte-identical + identical flag snapshot",
   "emitter": {
     "file": "patch_cartridge_copro.py",
-    "md5": "0bdf5653523fdad835f6f451bf38fc99"
+    "md5": "22360d986715ce3161fd3bead8eed6ff"
   },
   "flag_snapshot": {
     "DRBUILDID": "0",
@@ -128,13 +128,13 @@
   },
   "git": {
     "branch": "v8-rematch",
-    "commit": "07533cdad596fbeca63ee72a92585b1db68739c5",
-    "dirty": false
+    "commit": "9c2d018d00f95e170f06b3b70f05aa84239aa408",
+    "dirty": true
   },
   "output": {
-    "md5": "087ff959ac510c613bbbd2eb1ac5ecf3",
-    "name": "c-v8ship.nes",
+    "md5": "c0082cb34259007854120d3d4ab9fa27",
+    "name": "v6e.nes",
     "size": 98320
   },
-  "tag": "c-v8ship"
+  "tag": "v6e"
 }
