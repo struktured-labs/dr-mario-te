@@ -216,6 +216,19 @@ emu.addMemoryCallback(function()
       f, a, rt = find_tuck(S.board)                       -- geometric (realistic) tucks
     elseif PUBT == 2 then
       f, a, rt = synth_tuck(S.board, bc)                  -- synthetic executor stress
+    elseif PUBT == 3 then
+      -- ⚠ BOARD-INDEPENDENT descriptor, for the MECHANISM arms ONLY.
+      -- MEASURED: with DRHOLDBOARD=1 (the interleave trigger) the driver's restore loop
+      -- stamps HOLD_BUF over the LIVE playfield $0500 every hook, so any board-derived
+      -- descriptor evaluates on garbage and never fires -- t-mech-on published 0 tucks in
+      -- 12 searches. That makes a board-derived probe STRUCTURALLY unable to test the one
+      -- composition this gate exists for (long hook + tuck path). Mode 3 publishes a valid
+      -- descriptor unconditionally, so the tuck branch runs on EVERY hook while the trigger
+      -- is present. The PLACEMENTS are meaningless here and no play metric is read from
+      -- these arms -- only MMC1 / canary counts, which do not depend on placement quality.
+      f = bc % 8
+      a = (f < 7) and (f + 1) or (f - 1)
+      rt = 8
     end
     if f then S.opp = S.opp + 1 end
     if S.dones < 30 then

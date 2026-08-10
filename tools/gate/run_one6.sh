@@ -17,7 +17,14 @@ MESEN=/home/struktured/projects/dr-mario-mods/mesen2/bin/linux-x64/Release/Mesen
 tag="${1:?tag}"; cart="${2:?cart}"; maxf="${3:-18000}"; pubt="${4:-1}"
 out="$D/tmp/clean/$tag"; mkdir -p "$out"
 mmc1="$out/${tag}_mmc1.nes"
-$PY "$D/tools/gate/remap_mapper.py" "$cart" "$mmc1" >"$out/remap.log" 2>&1 || { echo "[one5] remap failed"; exit 2; }
+$PY "$D/tools/gate/remap_mapper.py" "$cart" "$mmc1" >"$out/remap.log" 2>&1 || { echo "[one6] remap failed"; exit 2; }
+# ⚠ DELETE THE OLD LOG BEFORE THE SEAT WAIT, NOT AFTER IT. run_one5.sh cleared it only once it
+# had the seat, so while an arm sat in the seat queue a log from a PREVIOUS run of the SAME arm
+# tag stayed on disk -- and a tag check cannot tell two runs of one arm apart. That handed me a
+# "t-mech-on PASSED" summary actually produced 11 minutes earlier by a different (killed) queue
+# running a different probe version. Tag verification is necessary and NOT sufficient: the log
+# must also be known-fresh.
+rm -f "$out/probe6.log"
 # generous ceiling: ~1 wall-second per 25 emulated frames, floor 240s
 deadline=$(( maxf / 25 + 240 ))
 
