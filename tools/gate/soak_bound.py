@@ -98,6 +98,24 @@ def fmt_time(frames: float) -> str:
     return f"{secs / 3600:.2f} h"
 
 
+BOOT_FRAMES = 10          # matches the probe's own BOOTF: frames <= this are power-on
+
+
+def count_late_bank0(path: str, boot_frames: int) -> int:
+    """Bank-0 entries at $8036 AFTER the boot window, counted from the probe's own event lines.
+
+    The calibration arm on the clean cart logged exactly two, both at f=1 and f=2, so the healthy
+    count by this definition is 0 -- which is what makes it usable as a canary at all.
+    """
+    n = 0
+    for line in open(path, "r", errors="replace"):
+        if "BANK0 SOFT-ENTRY" in line:
+            m = re.search(r"f=(\d+)", line)
+            if m and int(m.group(1)) > boot_frames:
+                n += 1
+    return n
+
+
 def parse(path: str) -> dict:
     vals, meta = {}, {}
     txt = open(path, "r", errors="replace").read()
@@ -165,10 +183,12 @@ def main() -> int:
             vals["wipes_anom"] = str(max(0, int(vals.get("wipes", 0)) - m))
         except ValueError:
             pass
-        try:
-            vals["soft8036_anom"] = str(max(0, int(vals.get("soft8036", 0)) - 1))
-        except ValueError:
-            pass
+        # ⚠ DO NOT subtract a guessed allowance here. The calibration arm showed TWO power-on
+        # entries, at frames 1 and 2 -- so "soft8036 - 1" would have manufactured one phantom
+        # event per segment, four across the run, in the very table built to avoid false alarms.
+        # The probe logs every entry with its frame, so the anomaly is counted exactly: entries
+        # after the boot window. Nothing is assumed about how many boot entries there are.
+        vals["soft8036_anom"] = str(count_late_bank0(path, BOOT_FRAMES))
         print(f"  {'canary':<22} {'k':>5}  {'95% upper bound on the rate':<32} description")
         for key, desc in CANARIES:
             if key not in vals:
@@ -229,9 +249,7 @@ def main() -> int:
         BOUNDARY = {"ABORT_4to0", "title0", "gapStall"}
         PLAY = {"MIXED_PRG_nonboot", "wipes_anom", "soft8036_anom", "brk_a02e", "MISMATCH", "busyEp", "srchStall"}
         pool["k"]["wipes_anom"] = max(0, pool["k"].get("wipes", 0) - m)
-        # soft8036_anom is already summed per-log (one boot allowance PER SEGMENT);
-        # do NOT recompute it as pooled-minus-one, which would allow only one boot
-        # across four segments and manufacture three phantom events.
+        # soft8036_anom is summed per-log from the event frames; no subtraction anywhere.
         print(f"  {'canary':<22} {'k':>5}  {'95% upper bound on the rate':<34} description")
         for key, desc in CANARIES:
             if key not in pool["k"]:
