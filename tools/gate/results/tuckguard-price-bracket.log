@@ -1,0 +1,15 @@
+Aug 10 10:18:35 blackmage systemd[8181]: Started guardbracket-2379110.service - [systemd-run] /home/struktured/projects/dr_mario_rl/tmp/venv/bin/python /home/struktured/projects/dr-mario-v8-wt/tmp/guard_price.py 24.
+[A_notuck] n=24 clear=95.8% medpills=105.0 fires/g=0.00 VETOED/g=0 OFFERED/g=0
+[B_tuck_exec] n=24 clear=100.0% medpills=92.5 fires/g=1.92 VETOED/g=0 OFFERED/g=129
+[D_guard_min1] n=24 clear=91.7% medpills=105.0 fires/g=0.54 VETOED/g=438 OFFERED/g=54
+[D_guard_min2] n=24 clear=95.8% medpills=106.0 fires/g=0.33 VETOED/g=607 OFFERED/g=28
+[D_guard_min3] n=24 clear=95.8% medpills=105.0 fires/g=0.04 VETOED/g=745 OFFERED/g=13
+=== paired vs A (both-clear only) ===
+  B tuck        : paired n=23 mean=-4.48 pills [95% CI -18.35, +7.61] median=+0.0
+  D min1 vs A   : paired n=22 mean=+4.32 pills [95% CI -0.36, +9.91] median=+0.0
+  D min2 vs A   : paired n=23 mean=+2.83 pills [95% CI -0.65, +7.57] median=+0.0
+  D min3 vs A   : paired n=23 mean=+1.70 pills [95% CI +0.00, +5.09] median=+0.0
+  min1 cost vs B: paired n=22 mean=+7.50 pills [95% CI -4.36, +21.09] median=+0.0
+  min2 cost vs B: paired n=23 mean=+7.30 pills [95% CI -4.96, +21.00] median=+0.0
+  min3 cost vs B: paired n=23 mean=+6.17 pills [95% CI -6.78, +19.83] median=+0.0
+Aug 10 10:32:42 blackmage systemd[8181]: guardbracket-2379110.service: Consumed 14min 8.878s CPU time, 93.4M memory peak.

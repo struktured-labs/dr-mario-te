@@ -46,7 +46,8 @@ def _init(level,tuck,nes,P):
     # column and then fail to reach the target, landing somewhere the search never scored.
     _C.update(level=level,tuck=tuck,nes=nes,P=P,gate=int(_o.environ.get("DRTUCK_GATE","0")),
               execonly=_o.environ.get("DRTUCK_EXEC","0")=="1",
-              guard=_o.environ.get("DRTUCK_GUARD","0")=="1")
+              guard=_o.environ.get("DRTUCK_GUARD","0")=="1",
+              guard_min=int(_o.environ.get("DRTUCK_GUARD_MIN","3")))
 
 _STAT = {"vetoed": 0, "offered": 0}
 
@@ -75,7 +76,7 @@ def _exec_reach_cells(fb):
             # and the capsule falls ra->rf in the final column, so free-rows-below-trigger is
             # exactly rf - ra and the threshold is 3. A vetoed candidate is simply not offered,
             # which is what the cart does: TUCK_C2 <- $FF, steer straight to the final column.
-            if _C.get("guard") and (rf - ra) < 3:
+            if _C.get("guard") and (rf - ra) < _C.get("guard_min", 3):
                 _STAT["vetoed"] += 1; continue
             if rf > sdd:
                 _STAT["offered"] += 1; out.add((rf, c))
