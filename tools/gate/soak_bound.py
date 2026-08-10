@@ -118,7 +118,19 @@ def main() -> int:
         if n <= 0:
             print("  frames=0 -- no bound computable")
             continue
-        print(f"  {'canary':<22} {'k':>5}  {'95% upper bound on the rate':<34} description")
+        # ⚠ CHOOSING THE DENOMINATOR. Frames are the right exposure unit for a per-hook fault
+        # (the MMC1 interleave fires inside the driver hook, which runs every frame). They are the
+        # WRONG unit for the DRHOLDBOARD/v6c class, which can only fire when a match ENDS: for
+        # those the exposure is match boundaries, and this rig deliberately produces them far
+        # faster than real play does, because P1 is an idle seat that tops out in ~500 frames.
+        # Reporting only the frame bound would understate boundary coverage by more than an order
+        # of magnitude; reporting only the match bound would overstate per-frame coverage. Both.
+        BOUNDARY = {"ABORT_4to0", "title0", "gapStall"}
+        try:
+            m = int(vals.get("matches_ended", "0"))
+        except ValueError:
+            m = 0
+        print(f"  {'canary':<22} {'k':>5}  {'95% upper bound on the rate':<30} description")
         for key, desc in CANARIES:
             if key not in vals:
                 continue
@@ -126,11 +138,18 @@ def main() -> int:
                 k = int(vals[key])
             except ValueError:
                 continue
-            lam_hi = upper_limit(k)                 # events per N frames
-            per_frame = lam_hi / n
-            mtbf = (1.0 / per_frame) if per_frame > 0 else float("inf")
-            flag = "  <<<" if k > 0 else ""
-            print(f"  {key:<22} {k:>5}  <= 1 per {fmt_time(mtbf):<22} {desc}{flag}")
+            lam_hi = upper_limit(k)                 # events per whole run
+            flag = "   <<< FIRED" if k > 0 else ""
+            if key in BOUNDARY and m > 0:
+                per = lam_hi / m
+                bound = f"<= 1 per {1.0 / per:,.0f} match-ends"
+            else:
+                per_frame = lam_hi / n
+                bound = f"<= 1 per {fmt_time(1.0 / per_frame)}"
+            print(f"  {key:<22} {k:>5}  {bound:<30} {desc}{flag}")
+        if m > 0:
+            print(f"  [{m} match-ends observed; a match here is ~{n / m:.0f} frames because P1 is an")
+            print("   idle seat, so match-ends accrue much faster than in real play]")
     print()
     return 0
 
