@@ -148,3 +148,36 @@ the report states the net in both units and does not let a dies-ahead win stand 
 - 2026-08-10: at time of commit — one, declared above in §1: the term is applied at the
   ROOT re-rank, not at every leaf, because the root re-rank is the form every offline
   gate scored and the form whose dose is calibrated.
+
+- 2026-08-10, **AFTER the lulu primary read out. Two entries. The verdict rule and the
+  primary verdict are UNCHANGED and are not re-opened.**
+
+  1. **SECONDARY (drip) MECHANISM SPLIT NOT CAPTURED.** `PREREG_STAGE2` §6.3 lists
+     "dies-ahead split by mechanism" as a SECONDARY with no verdict authority. The
+     rollout row records `res` and `viruses_left` but not which of the two `res =
+     "topout"` sites fired (`env.step` terminal = T_PLACE vs post-injection
+     `spawn_blocked()` = T_GARB), so the split is **not reported**. Recorded as a
+     shortfall rather than reconstructed post hoc from a proxy.
+
+  2. **ADDED: a SCALE-MATCHED NULL CONTROL ARM, declared here before it was run.**
+     The primary read NO_GO with a favourable-but-not-significant dies-ahead point
+     estimate and enormous outcome churn (1.78% of plies flipped → 611 of 3,000 paired
+     seeds ended with a DIFFERENT clear/not-clear outcome; only 760 pairs identical).
+     That leaves exactly the question memory law `dr-mario-av-reach-refuted` names —
+     *is this the TERM or is it the PERTURBATION?* — and that memory says a
+     scale-matched control IS the test.
+     **ARM**: the identical LUT with each feature's table row-permuted (rng 20260810).
+     Same 288 entries, same value multiset per feature, same |Delta| scale, same
+     silicon cost; no fitted board→penalty mapping. Gate 0 already measured it at
+     holdout AUC **0.4746** (fitted model 0.7220), so it is certified label-blind.
+     **PAIRING**: against the base rows already computed for seeds 20000..22999; the
+     base arm is deterministic in the seed, and 25 seeds are re-derived and asserted
+     byte-equal as a drift check.
+     **READ-OUT RULE, fixed now**: report `DA_shuf − DA_base` and the churn
+     statistics next to the fitted arm's, plus the difference-in-differences
+     (fitted − shuffled) on dies-ahead with a 95% paired seed bootstrap on the common
+     seed set. *If the shuffled arm produces a comparable dies-ahead movement and
+     comparable churn, the fitted term's rollout effect is NOT distinguishable from a
+     scale-matched random perturbation and the offline AUC edge did not transfer.*
+     **NO VERDICT AUTHORITY** — the primary verdict is already fixed at NO_GO and this
+     control can only explain it, never overturn it.
