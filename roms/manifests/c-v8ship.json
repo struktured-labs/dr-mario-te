@@ -128,8 +128,8 @@
   },
   "git": {
     "branch": "v8-rematch",
-    "commit": "243cc0c0bd35444fb076489c9291373bc28ab045",
-    "dirty": true
+    "commit": "07533cdad596fbeca63ee72a92585b1db68739c5",
+    "dirty": false
   },
   "output": {
     "md5": "087ff959ac510c613bbbd2eb1ac5ecf3",
