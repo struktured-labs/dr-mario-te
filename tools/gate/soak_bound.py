@@ -116,7 +116,29 @@ def count_late_bank0(path: str, boot_frames: int) -> int:
     return n
 
 
-def parse(path: str) -> dict:
+# CKPT uses SHORT key names; the SUMMARY/SOAK lines use long ones. Recovering a truncated segment
+# means translating, not just re-parsing -- a straight key copy would silently drop every canary
+# whose name differs, which is most of them, and the segment would then look CLEAN because all its
+# counters were absent rather than zero.
+CKPT_TO_SUMMARY = {
+    "f": "frames",
+    "ended": "matches_ended",
+    "clean": "clean_ends",
+    "mixedPRG": "MIXED_PRG_nonboot",
+    "abort": "ABORT_4to0",
+    "brk": "brk_a02e",
+    "amism": "MISMATCH",
+}
+
+
+def parse(path: str):
+    """Parse a soak log. Falls back to the last CHECKPOINT if the segment never wrote a SUMMARY.
+
+    ⚠ WHY THE FALLBACK EXISTS. A segment killed by the deadline has CKPT lines but no SUMMARY, and
+    the original code discarded such a log wholesale ("not a result"). The LAST segment is exactly
+    the one most likely to be truncated, so a clean run could have thrown away a quarter of its own
+    evidence -- the same mistake the pooled-bound note warns about, arriving by a different door.
+    """
     vals, meta = {}, {}
     txt = open(path, "r", errors="replace").read()
     for line in txt.splitlines():
@@ -125,6 +147,17 @@ def parse(path: str) -> dict:
                 vals[m.group(1)] = m.group(2)
         if line.startswith("CKPT "):
             meta["last_ckpt"] = line
+    if not vals and "last_ckpt" in meta:
+        for m in re.finditer(r"(\w+)=([-\w.]+)", meta["last_ckpt"]):
+            key, val = m.group(1), m.group(2)
+            vals[CKPT_TO_SUMMARY.get(key, key)] = val
+        meta["recovered"] = True
+        # ⚠ play4_frames is NOT in a checkpoint, so a recovered segment contributes its frames and
+        # its match-ends but NOTHING to the live-play denominator. That is deliberate: estimating
+        # it from the other segments' ratio would put an assumption inside a confidence bound. The
+        # effect is to UNDERSTATE live-play exposure, which makes the PLAY-class bounds
+        # conservative rather than optimistic -- the correct direction for a safety claim.
+        vals.pop("play4_frames", None)
     return vals, meta
 
 
@@ -144,6 +177,11 @@ def main() -> int:
         except ValueError:
             n = 0
         print(f"\n=== {path}")
+        if meta.get("recovered"):
+            print("  ⚠ RECOVERED FROM CHECKPOINT -- this segment was cut off before it wrote a")
+            print("    SUMMARY. Frames, match-ends and canary counts are the last checkpoint's, so")
+            print("    any play AFTER that checkpoint is discarded, and live-play frames are")
+            print("    counted as zero. Both make this segment's contribution an UNDERSTATEMENT.")
         print(f"  tag                 {vals.get('tag')}")
         print(f"  frames              {n:,}   = {fmt_time(n)} of emulated play")
         print(f"  matches started     {vals.get('matches_started')}")
