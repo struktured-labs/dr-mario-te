@@ -99,6 +99,11 @@ local K = {
   modeRun = 0, modeRunMax = 0, modeStalls = 0,
   lastEndF = -1, gapMax = 0, gapStalls = 0,
   lastGoF = 0, srchGapMax = 0, srchStalls = 0, prevGoes = 0,
+  -- frames spent in LIVE PLAY (mode 4). The rig's matches are short because the idle-human P1
+  -- tops out fast, so TOTAL frames overstate how much live play a soak contains. Every driver
+  -- hook -- and therefore every MMC1 bank switch, which is the hazard's actual exposure --
+  -- happens during mode 4, so the bound is quoted against this as well as against wall frames.
+  play4 = 0,
   titleReturns = 0,
   mStartF = -1, mSnap = nil,
   durMin = 1e9, durMax = 0, durSum = 0,
@@ -502,6 +507,7 @@ emu.addEventCallback(function()
     -- ---- (S4c) search stall: mode 4 but the AI has stopped asking ----
     if S.goes ~= K.prevGoes then K.prevGoes = S.goes; K.lastGoF = frame end
     if mode == 4 then
+      K.play4 = K.play4 + 1
       local sg = frame - K.lastGoF
       if sg > K.srchGapMax then K.srchGapMax = sg end
       if sg == K.SRCHSTALL then
@@ -640,8 +646,8 @@ emu.addEventCallback(function()
         nPills, S.opp, S.pub, nDesc, nChanged, nExec, nD2, nMis, nMisAppr,
         fHi, fLo, fReach, fLand))
     local el = os.time() - K.wallStart
-    log(string.format("SOAK tag=%s frames=%d wall=%ds fps=%.1f %s", TAG, frame, el,
-        (el > 0) and (frame / el) or 0, K.statline()))
+    log(string.format("SOAK tag=%s frames=%d play4_frames=%d sr_loads=%d wall=%ds fps=%.1f %s",
+        TAG, frame, K.play4, loads, el, (el > 0) and (frame / el) or 0, K.statline()))
     log(string.format("SOAK2 tag=%s match_dur_min=%d match_dur_max=%d match_dur_mean=%.1f " ..
         "BUSYRUN_thr=%d STALL_thr=%d GAPMAX_thr=%d SRCHSTALL_thr=%d",
         TAG, (matchesEnded > 0) and K.durMin or -1, K.durMax,
