@@ -187,6 +187,14 @@ def report(s, tag, primary):
     print(f"STALL PARITY topout {sp['topout_diff_pp']:+.2f}pp  stall "
           f"{sp['stall_diff_pp']:+.2f}pp  bad-ends {sp['bad_ends_diff_pp']:+.2f}pp"
           f"  topouts->stalls conversion: {sp['topouts_converted_to_stalls']}")
+    fp = s["flip_provenance"]
+    if fp.get("n_flips_logged"):
+        print(f"FLIP PROVENANCE n={fp['n_flips_logged']}  t_to_end median "
+              f"{fp['t_to_end']['median']:.0f} (p10 {fp['t_to_end']['p10']:.0f}, "
+              f"p90 {fp['t_to_end']['p90']:.0f})  viruses@flip median "
+              f"{fp['viruses_at_flip_median']:.0f}  maxh {fp['maxh_at_flip_median']:.0f}"
+              f"  rank chosen {fp['champ_rank_chosen_hist']}"
+              f"  frac in last 10 plies {fp['frac_flips_in_last_10_plies']*100:.1f}%")
     print(f"VERDICT ({tag}, {'PRIMARY' if primary else 'no authority'}): "
           f"{s['verdict']['verdict']}")
     for r in s["verdict"]["reasons"]:
