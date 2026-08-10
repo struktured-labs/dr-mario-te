@@ -819,6 +819,18 @@ B_SEL, B_START, B_LEFT, B_RIGHT = 0x20, 0x10, 0x02, 0x01
 # existing BUSY-guard (DRBUSYESC) already covers the rare case this pushes a hook past budget.
 HOLDBOARD = _os.environ.get("DRHOLDBOARD", "0") == "1"
 HOLDBOARD_F = int(_os.environ.get("DRHOLDBOARD_F", "600"))   # CvC safety cap: ~10s at 60fps
+# DRHOLDONCE (default OFF -> every existing cart rebuilds byte-identical): arm the final-board
+# hold ONCE per match-end instead of once per hook while (virus==0 && VSEEN) stays true. See the
+# fc_clear arm site for the measured thrash this removes. $61B8 is the first byte past the
+# DRDISTGATE scratch ($61B1-$61B7) and below the DRTRACE/DRPROBE ring at $6200.
+# ⚠ "No absolute store lands there" is NOT sufficient -- a byte-level reach census found ONE
+# indexed writer that could in principle cover it: DRPRESTART's `STA PRE_LND,X` (base $61A1, so
+# X>=0x17 would hit $61B8). VERIFIED BOUNDED rather than assumed: X is loaded from PRE_N, PRE_N is
+# zeroed before the settle scan and INC'd at most once per column, and the scan terminates on
+# `PRE_COL == 8` -- so X is 0..7 at the store and it reaches at most $61A8, 15 bytes clear of the
+# latch. Filler is not proof of free, and neither is the absence of an ABSOLUTE store.
+HOLDONCE = _os.environ.get("DRHOLDONCE", "0") == "1"
+HOLD_ONCE = 0x61B8                         # !=0: this match-end's hold has already been armed
 HOLD_ACTIVE = 0x6195                       # PRG-RAM: !=0 while the final board is held
 HOLD_LASTCLK = 0x6196                      # last-seen $43 clock byte (edge-detect real frames)
 HOLD_CNT = 0x6197                          # 16-bit ($6197 lo, $6198 hi): frames held so far
@@ -1567,8 +1579,22 @@ def build_main(level=11, speed=1):
         # below. Idempotent: only the FIRST such hook actually arms. Does NOT touch MATCH_ACTIVE
         # (fc_clear's own gate depends on it staying set for the whole wait -- clearing it here
         # would make the NEXT hook fall through to go_ai's match-START init mid-STAGE-CLEAR).
+        # ⚠ DRHOLDONCE (default OFF -> byte-inert): the HOLD_ACTIVE guard below is idempotent only
+        # WHILE THE HOLD IS UP. The moment the human's START releases it, HOLD_ACTIVE goes 0 while
+        # (virus==0 && VSEEN) is still true, so the very next hook re-arms -- and because STAGE
+        # CLEAR is a blocking wait that keeps $0046 == 4, all of that happens INSIDE LIVE PLAY.
+        # Measured on v8plain-hb1 with the release press supplied: 23 of 25 arms in mode 4,
+        # thrashing (arm f2635 rel f2641, arm f2643 rel f2644, arm f2646 rel f2651, ...), costing
+        # 3 completed matches and 23 searches per 18,000 frames against 20 and 155 at HOLDBOARD=0.
+        # HOLD_ONCE latches "this match-end has already been served". It is cleared only on the
+        # go_ai play path, which cannot run during the clear (fc_clear owns the frame and RTSs),
+        # so it survives the whole STAGE CLEAR wait and resets when real play resumes.
+        if HOLDONCE:
+            a.ins16("LDA_abs", HOLD_ONCE); a.br("BNE", "hb_fc_armed")
         a.ins16("LDA_abs", HOLD_ACTIVE); a.br("BNE", "hb_fc_armed")
         a.ins("LDA_imm", 1); a.ins16("STA_abs", HOLD_ACTIVE)
+        if HOLDONCE:
+            a.ins16("STA_abs", HOLD_ONCE)          # A still 1: one arm per match-end
         a.ins("LDA_imm", 0); a.ins16("STA_abs", HOLD_CNT); a.ins16("STA_abs", HOLD_CNT + 1)
         a.ins("LDA_zp", 0x43); a.ins16("STA_abs", HOLD_LASTCLK)
         a.label("hb_fc_armed")
@@ -1651,6 +1677,12 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", NAV_T); a.ins("ORA_imm", 0x01); a.ins16("STA_abs", SEED1)   # root seed
         a.ins("EOR_imm", 0xA4); a.ins16("STA_abs", SEED2)       # bit0 kept -> both odd, distinct
         a.label("ga_on")
+    if HOLDONCE:
+        # DRHOLDONCE reset. This runs on the go_ai play path, which fc_clear pre-empts (it owns the
+        # frame and RTSs), so it CANNOT run during the STAGE CLEAR wait -- the latch survives the
+        # whole clear and only resets once real play is actually running again. That is what makes
+        # the arm fire once per match-END rather than once per hook.
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", HOLD_ONCE)
     a.ins("LDA_imm", 1); a.ins16("STA_abs", MATCH_ACTIVE)   # play started -> arm full-clear detect
     a.ins16("LDA_abs", VCOUNT_P1); a.br("BEQ", "ga_v2"); a.ins("LDA_imm", 1); a.ins16("STA_abs", VSEEN1)
     a.label("ga_v2")
