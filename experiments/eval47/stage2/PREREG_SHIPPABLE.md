@@ -148,3 +148,55 @@ Among candidates that are IN CLASS and clear B1, B2 and B3:
 ## 8. DEVIATION LOG
 
 - 2026-08-10: none at time of commit.
+
+- 2026-08-10, **after selection and fitting, BEFORE the holdout was opened.** All five
+  entries are additions or specifications of things §1-§7 left open. Nothing in the
+  verdict rule, the eligible feature set, the candidate shapes or the quantisation
+  format changed.
+
+  1. **THE 8 FEATURES, frozen** (§3's procedure, run on TRAIN ROWS ONLY, 255,893 rows /
+     1,598 games, 5-fold GroupKFold by seed):
+     `e_escape_routes, MAXH, x_hvar, HOLES, SPAWN, x_jagged, d_gvuln_mass, d_spawn_h`.
+     Out-of-fold CV AUC by step: .6858 -> .6975 -> .7012 -> .7044 -> .7058 -> .7064 ->
+     .7065 -> .7066. **The last four features buy 0.0008 of CV AUC between them** —
+     recorded here because it is the strongest single piece of evidence that the
+     feature vector, not the model shape, is where this lane is saturating.
+
+  2. **S1b ADDED to the candidate list** (an addition, declared before the holdout was
+     opened): an **additive per-level LUT**, `Delta = sum_j LUT_j[x_j]`. Reason: every
+     selected feature is a small integer, so the additive family is *exactly*
+     representable as 8 small tables — 261 entries, 3,132 bits, ONE M10K, 8 BRAM reads
+     + 8 adds. It is **strictly cheaper in silicon than the declared S1** (no hinge
+     arithmetic at all) and strictly more expressive (S1 is its monotone 4-segment
+     compression). Refusing to report it would mean shipping a worse and more expensive
+     model to protect a naming decision. S1 is still fitted and reported exactly as
+     declared, so the cost of the monotone-hinge constraint is visible.
+
+  3. **`x_hvar` quantisation scale = 2^0**, i.e. rounded to the nearest integer, max
+     abs representation error **0.5**. Declared under §5's "a fixed power of two". Two
+     reasons it is the right choice rather than a concession: variance would be computed
+     in silicon as an integer expression over the column heights anyway, and the corpus's
+     own `all32` sibling layer already stores features as `int16`, so the integer grid is
+     the grid on which the within-decision endpoint (B3) is actually computable. **The
+     other seven features are exactly representable in `uint8` — asserted, max error
+     0.0.**
+
+  4. **SHIP-DOSE RULE, fixed now**: `Delta` is re-quantised at the ship dose so the BRAM
+     holds the final integers in champion score units. The dose is swept over the fixed
+     grid `Delta_sd in {1,2,5,10,20,40,80,160,320}` score points and the **SMALLEST dose
+     that reaches the pre-registered 2% target-class argmax-flip bar** is the one
+     reported. Smallest, not best: the structural law makes clear-game contact the
+     expensive thing, so the dose must be the minimum that makes the arm testable at
+     all. Flip rate is reported on target-class decisions AND, separately, on
+     cleared-game decisions — the latter is the breakage proxy and has no pre-registered
+     bar, it is reported for the rollout lane to price.
+
+  5. **`CEIL8` diagnostic added**: an unconstrained 500-tree depth-6 GBM restricted to
+     the 8 in-class features. It separates "the shippable SHAPE is the constraint" from
+     "the FREE_IN_COLWALK feature set is the constraint", which is what turns a STOP into
+     an actionable one. It is a diagnostic, not a candidate.
+
+  Also recorded, and NOT acted on: quantising to 12-bit changed train AUC by less than
+  1e-4 for every candidate, which means the 12-bit format is not doing any work and the
+  quantisation check would be VACUOUS without §5's 3-bit mutant. The mutant is therefore
+  load-bearing, not decorative.
