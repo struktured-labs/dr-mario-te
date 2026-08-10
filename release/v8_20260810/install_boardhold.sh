@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
-# Copy the gated v8 rematch cart onto the Analogue Pocket SD card.
+# Copy the OPTIONAL board-hold v8 cart onto the Analogue Pocket SD card.
 #
-# Safe by construction: it only ever ADDS a file. It never deletes or overwrites
-# anything already on the card, and it refuses to run if the card is not mounted.
-# Run it once the SD card is back in the reader.
+# Safe by construction: it only ever ADDS a file, never deletes or overwrites, and refuses to
+# run if the card is not mounted.
+#
+# The copy is staged through a ".part" file and only moved into place AFTER its md5 is verified
+# on the card. A failed or truncated write therefore leaves no file at the real name — it leaves
+# a self-evidently incomplete ".part". This matters: an earlier version copied directly to the
+# final name, and `set -e` aborted before the verify could run, so a truncated cart could be left
+# on the card undetected — and the refuse-to-overwrite guard then reported it as "already
+# installed" on the next run, concealing the damage.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -34,25 +40,49 @@ if [ ! -d "$DEST" ]; then
 fi
 
 TARGET="$DEST/v8 REMATCH + board hold (optional).nes"
+PART="$TARGET.part"
+
 if [ -e "$TARGET" ]; then
   echo "A file of that name is already on the card:"
   ls -la "$TARGET"
+  echo "Its md5: $(md5sum "$TARGET" | cut -d' ' -f1)   (expected $WANT_MD5)"
   echo "Refusing to overwrite. Remove or rename it first if you want a fresh copy."
   exit 1
 fi
+if [ -e "$PART" ]; then
+  echo "ABORT: a leftover $PART exists — a previous copy did not complete." >&2
+  echo "       Delete it and re-run." >&2
+  exit 1
+fi
 
-echo "== copying =="
-cp "$CART" "$TARGET"
+# Any failure from here leaves only the .part, never a file at the real name.
+cleanup() { rm -f "$PART" 2>/dev/null || true; }
+trap cleanup EXIT
+
+echo "== copying (staged) =="
+cp "$CART" "$PART"
 sync
-echo "== verifying the copy ON THE CARD =="
-oncard="$(md5sum "$TARGET" | cut -d' ' -f1)"
+
+echo "== verifying the staged copy ON THE CARD =="
+oncard="$(md5sum "$PART" | cut -d' ' -f1)"
 if [ "$oncard" != "$WANT_MD5" ]; then
-  echo "ABORT: copy on card reads $oncard — the write did not land cleanly." >&2
+  echo "ABORT: staged copy reads $oncard, expected $WANT_MD5 — the write did not land cleanly." >&2
+  echo "       Nothing was installed; the incomplete file is being removed." >&2
+  exit 1
+fi
+
+mv "$PART" "$TARGET"
+sync
+trap - EXIT
+
+final="$(md5sum "$TARGET" | cut -d' ' -f1)"
+if [ "$final" != "$WANT_MD5" ]; then
+  echo "ABORT: after move, $TARGET reads $final. Remove it before playing." >&2
   exit 1
 fi
 
 echo
 echo "DONE. On the card and verified: $TARGET"
-echo "md5 $oncard"
+echo "md5 $final"
 echo
 echo "Note: v4 and every other cart already on the card are untouched."

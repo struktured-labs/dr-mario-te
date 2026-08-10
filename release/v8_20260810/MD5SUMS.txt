@@ -1,4 +1,8 @@
-c9364b2670a7a0e0292e56264d9f231b  v8 REMATCH + board hold (optional).nes
-c0082cb34259007854120d3d4ab9fa27  v8 REMATCH (hardened).nes
-284b5a986e89810e25cb0ad205474e3a  hb1-nolatch.json
-a580f6384329113d7588431b54dc5b1c  v6e.json
+c9364b2670a7a0e0292e56264d9f231b  release/v8_20260810/v8 REMATCH + board hold (optional).nes
+c0082cb34259007854120d3d4ab9fa27  release/v8_20260810/v8 REMATCH (hardened).nes
+284b5a986e89810e25cb0ad205474e3a  release/v8_20260810/hb1-nolatch.json
+a580f6384329113d7588431b54dc5b1c  release/v8_20260810/v6e.json
+392c8558cf2c7e4fac9be710f911da6f  release/v8_20260810/install_boardhold.sh
+8f01ed184dbc11f7443b5823460c9c01  release/v8_20260810/install_to_pocket.sh
+432ab9ab7c11bc3f9de7399de94b5972  release/v8_20260810/SHIPPING_v8.md
+a0fa56150841dc049e3619fd6584726b  release/v8_20260810/WHICH_CART.md
