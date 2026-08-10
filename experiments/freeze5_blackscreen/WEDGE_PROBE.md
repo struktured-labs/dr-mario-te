@@ -1063,3 +1063,357 @@ and is now quantified: the old signature's false-positive rate on healthy CvC pl
 of its firings (19/19), while the frame watchdog's is 0/180 polls.** Evidence:
 `results_live_validation/` (watch.jsonl, wedge_probe_slice.txt, h2h.json,
 independent_verify.json, capture_*_test.jsonl, 9 frames + 2 counter montages).
+
+## ★★★ MORNING BRIEFING (2026-08-10) — the replacement watchdog, its hole, and what the old probe cost us
+
+*Written overnight for the owner. Nothing below is quoted from memory: both batteries were re-run
+from a clean tree immediately before this section was written — `frame_watchdog_mutants.py` →
+`RESULT: ALL 12 MUTANTS KILLED`, exit 0; `adversarial/adversarial_battery.py` → `attacks that
+LANDED: 8/12`, exit 0. Soak integrity re-checked read-only at 2026-08-10T12:15:30Z: pid 525 still
+`/media/fat/MiSTer /media/fat/_Console/NES_theta400_20260809.rbf /media/fat/theta400_tuck_demo.mgl`,
+uptime continuous at 4 d 13:36, `ENABLE_AUTO_REBOOT=0` at line 72,
+`/media/fat/Scripts/wedge_probe.sh` md5 `88f1a92f6cbae1f7c02faf894a1711e8` — unchanged, not
+hot-edited, no device-side twin staged.*
+
+### ⚠ LEAD WITH THE HOLE
+
+**The new watchdog is not fit to certify a soak, and the reason is the same shape as the bug it
+replaces.** The old discriminator was validated against a control that could not fire, so its
+false-POSITIVE side was never tested. The new one was validated against 59.6 minutes of a
+demonstrably healthy soak, so its false-NEGATIVE side has never been tested. An adversarial pass
+found the gap is not hypothetical:
+
+* **Half the screen dead reads ALIVE.** Freeze P1's entire half of a real soak sequence and let
+  P2 play: **7/7 ALIVE**, zero SUSPECT, 14×–44× the change floor, and 4 of 7 samples land inside
+  the healthy 60-minute range.
+* **One blinking NES tile keeps a dead screen ALIVE forever.** The capture is 256×224
+  **pixel-doubled vertically** (measured: 224/224 row pairs byte-identical), so one 8×8 tile is
+  128 image px against a 114.7 px floor. The floor is **0.90 tiles, not the ~1.8 tiles claimed
+  above** — a 2× error from assuming square pixels. There is effectively no anti-blink margin.
+* **Dr. Mario's attract demo reads ALIVE.** Real ROM, idle, sampled at the watchdog's own 20 s
+  cadence: **5/5 ALIVE**, 22×–902× the floor, overlapping the healthy distribution. A box with no
+  cart loaded, no AI and no soak running is certified healthy indefinitely.
+
+Left running overnight in its current form, this watchdog would report a clean 8-hour soak on a
+box sitting in attract mode with a comfortable margin. **Do not quote it as the authority for "N
+clean hours" yet.** What it *is* ready for today is the capture channel and the wedge-detector
+role — see §8 and §9.
+
+### 1. What shipped (files, all committed, not pushed, not tagged)
+
+| file | what it is |
+|---|---|
+| `experiments/freeze5_blackscreen/frame_watchdog.py` | the watchdog itself, PC-side, stdlib-only (own PNG decoder) |
+| `experiments/freeze5_blackscreen/frame_watchdog_mutants.py` | 12-mutant killed-mutant battery |
+| `experiments/freeze5_blackscreen/independent_verify.py` | reimplementation cross-check (Pillow + numpy), itself mutation-killed 3/3 |
+| `experiments/freeze5_blackscreen/adversarial/adversarial_battery.py` | 12 attacks, 8 of which land |
+| `experiments/freeze5_blackscreen/results_live_validation/` | the 59.6-min live run: `watch.jsonl`, `h2h.json`, `wedge_probe_slice.txt`, `independent_verify.json`, frames |
+
+Commits: `36065a0` (re-derivation) → `5955b1e` (live validation) → `6e22b26` (adversarial) → this
+section.
+
+**What it measures.** Frame progress, and nothing else. It never reads `/proc`, so the
+busy-vs-blocked confound that killed the old discriminator cannot reach it. Its only device
+interaction is `misterclaw-send -H MiSTer screenshot`. There is **no reboot, reload, kill, ssh or
+input code path anywhere in the file** — audited: the sole `subprocess.run` is the screenshot
+call. Alarming is log + stderr + exit code 2.
+
+**N = 20 s, K = 3, K_cap = 3.** N is bounded *from below* by the longest legitimate static screen
+on the autonav cart — the final-board hold, force-released after `DRHOLDBOARD_F` = 600 frames =
+**9.98 s** (`FINAL_BOARD_HOLD_REPORT.md:100-103`, scenario C `:149`). N = 20 s > 9.98 s ⇒ two
+consecutive captures can never both land inside one hold. K = 3 then demands **60 s of proven zero
+change**, 6× the hold cap. Measured cost over 180 real captures: `capture_ms` mean 3004 / max 6077
+(first call only, LAN discovery) ⇒ **15.0 % duty cycle, 3 captures/min**.
+
+**Comparison method.** Decoded **pixels**, never file bytes. `changed_frac` = fraction of pixels
+whose max per-channel |Δ| exceeds `tol` = 8, thresholded at `min_changed_frac` = 1.0e-3. A
+byte-compare is disqualified because two encodings of one frozen framebuffer differ in filter
+choice and zlib framing — mutant D proves it on real data (5041 vs 10385 bytes, identical
+`pixhash 444467276a70030b`). `screen_class` is diagnostic only and can never suppress a WEDGED
+verdict.
+
+### 2. The three mandatory killed mutants — verbatim, from the re-run
+
+```
+--- A_static_same_frame  [KILLED]   expected: final=WEDGED reason=frames_static
+    exit=2  verdicts=['INIT', 'SUSPECT', 'SUSPECT', 'WEDGED']
+    reasons =['first_frame', 'frames_static', 'frames_static', 'frames_static']
+    | [2026-08-10T08:14:56-04:00] seq=1 INIT    first_frame         class=in_match changed=n/a static=0 capfail=0
+    | [2026-08-10T08:14:56-04:00] seq=2 SUSPECT frames_static       class=in_match changed=0.0 static=1 capfail=0
+    | [2026-08-10T08:14:56-04:00] seq=3 SUSPECT frames_static       class=in_match changed=0.0 static=2 capfail=0
+    | [2026-08-10T08:14:56-04:00] seq=4 WEDGED  frames_static       class=in_match changed=0.0 static=3 capfail=0  <== ALERT
+    | ALERT wedge_confirmed reason=frames_static evidence=.../A_static_same_frame/frames/alerts/wedge_000004_frames_static (NOTHING has been rebooted, reloaded, or killed)
+
+--- B_live_real_pair  [KILLED]   expected: final=ALIVE reason=frames_differ
+    exit=0  verdicts=['INIT', 'ALIVE']
+    reasons =['first_frame', 'frames_differ']
+    | [2026-08-10T08:14:56-04:00] seq=1 INIT    first_frame         class=in_match changed=n/a static=0 capfail=0
+    | [2026-08-10T08:14:57-04:00] seq=2 ALIVE   frames_differ       class=in_match changed=0.089355 static=0 capfail=0
+
+--- C_black_frozen  [KILLED]   expected: final=WEDGED reason=frames_static_black
+    exit=2  verdicts=['INIT', 'SUSPECT', 'SUSPECT', 'WEDGED']
+    reasons =['first_frame', 'frames_static_black', 'frames_static_black', 'frames_static_black']
+    | [2026-08-10T08:14:58-04:00] seq=1 INIT    first_frame         class=black    changed=n/a static=0 capfail=0
+    | [2026-08-10T08:14:58-04:00] seq=2 SUSPECT frames_static_black class=black    changed=0.0 static=1 capfail=0
+    | [2026-08-10T08:14:58-04:00] seq=3 SUSPECT frames_static_black class=black    changed=0.0 static=2 capfail=0
+    | [2026-08-10T08:14:58-04:00] seq=4 WEDGED  frames_static_black class=black    changed=0.0 static=3 capfail=0  <== ALERT
+
+--- C2_capture_dead  [KILLED]   expected: final=WEDGED reason=capture_dead
+    exit=2  verdicts=['SUSPECT', 'SUSPECT', 'WEDGED']
+    reasons =['capture_fail', 'capture_fail', 'capture_dead']
+    | [2026-08-10T08:14:58-04:00] seq=1 SUSPECT capture_fail        class=none     changed=n/a static=0 capfail=1
+    | [2026-08-10T08:14:58-04:00] seq=2 SUSPECT capture_fail        class=none     changed=n/a static=0 capfail=2
+    | [2026-08-10T08:14:58-04:00] seq=3 WEDGED  capture_dead        class=none     changed=n/a static=0 capfail=3  <== ALERT
+```
+
+B is the important one: **those are the exact two frames (21:45:01 → 21:45:52, VIRUS 47/26 →
+45/32) over which the OLD discriminator was firing `ALERT_ONLY`.** C2 is the truer freeze-5
+signature under the standing METHOD RULE — the screenshot service stops answering at all.
+
+### 3. Live head-to-head against the running soak — 19/19 contradictions
+
+59.62 min, 2026-08-10T10:37:04Z → 11:36:41Z, 180 polls at N = 20 s, while the old probe kept
+polling the same box every 30 s.
+
+| | old `/proc` discriminator | new frame watchdog |
+|---|---|---|
+| polls in window | 120 (30 s) | 180 (20 s) |
+| `fw_state=R` | 120/120 | n/a — never reads /proc |
+| `busy_frac ≥ 100 %` | 70/120 | n/a |
+| **verdict** | **19 × `ALERT_ONLY`** | **179 ALIVE + 1 INIT, 0 SUSPECT, 0 WEDGED, 0 capture failures** |
+
+`contradictions_old_alert_new_alive = 19`, `agreements_old_alert_new_wedged = 0`. Margin at those
+19 instants: **18×–107×** the floor. Ground truth was established *semantically*, not from pixel
+deltas alone — the in-game VIRUS counters were decoded from all 180 frames (15 distinct P1 values,
+38 distinct P2 values, labelled by eye from montages), giving **~41 completed matches in 59.6 min**,
+one per ~87 s. Five polls landed on non-play screens and none produced even a single SUSPECT.
+
+**Two honest caveats on this head-to-head.** (a) Because 179/179 new polls were ALIVE, *any*
+alignment yields 19/19 contradictions — this refutes the old probe, it does **not** test the new
+one. (b) A real documentation defect: the per-alert table in the section above lists the alert
+instants 30 s early (`10:39:05Z` etc.). Those are the *preceding* poll, at `consec=5`; the actual
+`ALERT_ONLY` lines are at `10:39:35Z` etc., which is what `h2h.json` correctly used. Immaterial to
+the result, corrected here for the record.
+
+### 4. The adversarial pass — 12 attacks, 8 land. Verbatim.
+
+Every attack was reproduced by running the real `frame_watchdog.py` against committed real inputs
+(live-soak captures + real ROM captures taken off-device in fceux). **Zero device contact.**
+
+```
+--- GEOM floor is ~1 NES tile, not ~1.8
+    ATTACK LANDS: 224/224 row pairs identical => 2x vdouble; floor 114.7 px = 0.90 NES tiles (writeup claims ~1.8, which assumes SQUARE px)
+--- PARTIAL WEDGE: P1 bottle frozen
+    ATTACK LANDS: 7/7 ALIVE, no SUSPECT; changed_frac 0.015459-0.044102 = 15x-44x the floor; roi note never fires (ROI spans BOTH bottles)
+--- PARTIAL WEDGE: P1 ENTIRE HALF frozen
+    ATTACK LANDS: 7/7 ALIVE, no SUSPECT; changed_frac 0.014474-0.043719 = 14x-44x the floor; roi note never fires (ROI spans BOTH bottles)
+--- BLINK FLOOR: half a tile (8x8 img px)
+    watchdog survives: changed_frac 0.000558 (0.56x floor) -> correctly WEDGED
+--- BLINK FLOOR: ONE 8x8 NES tile
+    ATTACK LANDS: changed_frac 0.001116 (1.12x floor) -> ALIVE forever on a dead screen
+--- BLINK FLOOR: two tiles
+    ATTACK LANDS: changed_frac 0.002232 (2.23x floor) -> ALIVE forever on a dead screen
+--- SIZE FLAP fails OPEN
+    ATTACK LANDS: identical FROZEN content, alternating height -> 7 x ALIVE with changed_frac=1.0 (compare() maps size_mismatch to MAXIMUM motion)
+--- ATTRACT DEMO reads ALIVE
+    ATTACK LANDS: 5/5 ALIVE at 20 s cadence; changed_frac 0.022147-0.901873 = 22x-902x floor -- overlaps the healthy soak range [0.017944, 0.284651]
+--- real idle LEVEL-SELECT -> WEDGED
+    watchdog survives: ['INIT', 'SUSPECT', 'SUSPECT', 'WEDGED', 'WEDGED'] (pixel-exactly static; alarm is correct for a soak, but reason='frames_static' names the display path, not the nav stall)
+--- DEAD SENSOR reported ALIVE (stale frame-dir)
+    ATTACK LANDS: ['INIT', 'ALIVE', 'ALIVE', 'ALIVE'] -- capture wrote NOTHING; watchdog re-read the PREVIOUS run's frames. No mtime/freshness check: existence+size only. Default --frame-dir is a FIXED path and seq always restarts at 1, so a restart re-enters used sequence numbers
+--- CAPTURE rc!=0 (empty frame-dir)
+    watchdog survives: ['SUSPECT', 'SUSPECT', 'WEDGED', 'WEDGED'] -> capture_dead
+--- CAPTURE rc=0 but no file (empty frame-dir)
+    watchdog survives: ['SUSPECT', 'SUSPECT', 'WEDGED', 'WEDGED'] -> capture_dead
+
+==============================================================================
+attacks that LANDED (watchdog defect reproduced): 8/12
+  * GEOM floor is ~1 NES tile, not ~1.8
+  * PARTIAL WEDGE: P1 bottle frozen
+  * PARTIAL WEDGE: P1 ENTIRE HALF frozen
+  * BLINK FLOOR: ONE 8x8 NES tile
+  * BLINK FLOOR: two tiles
+  * SIZE FLAP fails OPEN
+  * ATTRACT DEMO reads ALIVE
+  * DEAD SENSOR reported ALIVE (stale frame-dir)
+```
+
+Graded, including everything that only **WEAKENS** (these are not dismissals — they are defects
+whose *trigger* is not demonstrated on this hardware, while the *mechanism* is fully demonstrated):
+
+| # | attack | grade | note |
+|---|---|---|---|
+| 1 | legitimately-static screens (title / level-select / final-board hold / between-match / menu / screensaver) | **CLEARED** | real ROM captures: idle title *animates*; idle level-select is pixel-exactly static → WEDGED at 60 s, which is a **true** alarm on a soak (a nav stall is a failure) but the reason string blames the display path. `MiSTer.ini` on the box has **no** `video_off` and **no** screensaver key — one .ini line away from a `frames_static_black` false positive indistinguishable from freeze-5 |
+| 2 | partial wedge — one player's side dead | **REFUTES** | 7/7 ALIVE at 14×–44× floor; `DEFAULT_ROI=(28,84,227,402)` spans BOTH bottles (measured P1 x[32,95), P2 x[160,223)) so `roi_static_streak` can never fire. Audio-dead and input-dead wedges are invisible by construction — no such channels exist |
+| 2b | attract demo | **REFUTES** | the strongest result; see the hole above |
+| 2c | floor mis-calibrated 2× | **REFUTES** | vertical pixel-doubling measured, not assumed |
+| 2d | `size_mismatch` fails **OPEN** | **WEAKENS** | `compare()` maps "I cannot compare these" to changed_frac = **1.0**, i.e. maximum motion. A single resolution flap during a real wedge buys one free ALIVE that resets `consec_static`. Untested branch — the live run was 256×448 on all 180 polls. Correct behaviour is SUSPECT |
+| 3 | capture-path failure (hang / rc≠0 / truncated PNG / stale cached image) | **CLEARED** | all four fail **safe** → `capture_dead` or `frames_static`. Real-binary probe: `--output` into a nonexistent dir returns rc=1 "Error: writing file" |
+| 3b | dead sensor reported ALIVE by replaying the previous run's frames | **WEAKENS** | reproduced end-to-end: restart into the same frame-dir with a sensor that returns rc=0 and writes nothing ⇒ INIT/ALIVE/ALIVE/ALIVE with changed_frac **byte-identical** to the healthy run, while the device could be powered off. `capture()` checks existence + size, never mtime or inode; `--frame-dir` defaults to a fixed path and `seq` restarts at 1 |
+| 3c | the watchdog does not know which board it is watching | **WEAKENS** | confirmed again by me at 12:15Z: the default host `MiSTer` is **not reachable**, every capture comes from a LAN auto-discovery scan, and the `framewd/1` record has **no host/ip field** — frame provenance cannot be audited after the fact. Harmless while exactly one board answers; a silent false-negative vector the moment there are two. Also: `misterclaw-send screenshot --help` does not print help, it **takes a screenshot** |
+| 3d | documented hang latency measured on the wrong path | **WEAKENS** | in production the IP **is** cached, so `capture()` tries `[cached_ip, host]` = two full timeouts. Measured `capture_dead` at **81 s** after the last good frame, not the reported 61 s (+33 %). Detection still happens; K_cap is denominated in capture-timeouts, not intervals |
+| 4 | is the head-to-head genuinely over the same window? | **CLEARED** | old slice `10:37:04Z–11:38:18Z` is a **superset** of the new window; 142 slice lines = 122 polls + 20 alerts; all 180 h2h rows carry an `old_ts`. Plus the 30 s label defect noted in §3 |
+
+**The fix for the three REFUTES is already in the file and merely disabled.** `screen_class`
+correctly labels attract/title frames `other` (chrome 0.0) — it is just forbidden from acting on
+it; and the ROI machinery exists but spans both bottles. See §8.
+
+### 5. Re-derivation verdicts — every claim, marked
+
+| claim | mark | why |
+|---|---|---|
+| **AUTO_REBOOT #1**, 2026-08-05T11:59:15Z, as a *timestamped wedge* | **UNRECOVERABLE** | `busy_frac`/`consec` did not exist before 11:56:14Z; CONSEC ran 1→6 with no reset and fired at **exactly** `CONSEC_NEEDED × INTERVAL` = 3m01s after the discriminator was first armed. It fired at the earliest instant it physically could. The timestamp carries zero information |
+| the *underlying fault* around #1 | **SURVIVES** | independent: `duel_ledger/ledger_20260805_0638_v3.csv` shows the save-state path dead 11:26:39Z → 11:59:47Z (STALE_x1…x11), and STALE_x4/x5 sit inside CAPTURE #1's confirmed black-screen window. But that run *starts 11 min before the probe existed* and *survives the manual 11:43 reboot* — so the fault does not attach to the 11:59:15Z moment |
+| **AUTO_REBOOT #2**, 12:29:35Z | **DIES — proven false positive** | `ledger_20260805_0800_v3.csv`, inside the continuous CONSEC≥6 window: `12:18:40 mode=4 virus 44/21` · `12:21:44 mode=7 virus 6/18` · `12:24:48 mode=4 virus 43/26` · `12:27:51 mode=4 virus 48/48`. Four distinct captures, three different boards, a mode 4→7→4 transition (match ended, fresh match at 48/48), the last **1m44s before the reboot**. The box was playing and was rebooted mid-match. This was on disk the whole time |
+| **AUTO_REBOOT #3**, 13:02:26Z | **UNRECOVERABLE — unexplained** | discriminator only. Tracker stopped ~12:45Z, no PC-side screenshot exists for the 11:30–14:00Z window, dmesg clean, recovery snapshot rotated out. Its timing is fully explained by policy: five ESCALATEs, then AUTO_REBOOT at the first CONSEC=6 whose gap (1971 s) cleared `MIN_REBOOT_GAP=1800` |
+| **"OUR IPC IS EXONERATED" (12:45Z)** | **DIES** | read entirely off `WEDGE_CONFIRMED` + `AUTO_REBOOT` inside the tracker-stopped blackout. Its "~30-minute mean-time-to-wedge" is `MIN_REBOOT_GAP`; its "3 minutes of a fresh boot" is `CONSEC_NEEDED × INTERVAL`, and the box booted at 12:29:49Z, not 12:56. Needs re-running against the frame watchdog |
+| **arm-1 vs s20b A/B (timing + rate comparison)** | **DIES — positively refuted, not merely unrecoverable** | (a) saturated at its own floor: modal time-to-first-trigger across ~60 core loads is 3m01–3m03s = `6 × 30 s`. (b) it ranks a **verified-healthy** arm as worst: s20b + human cart, display alive by 3 screenshots + a motion check over 47 min, scores 3m01s and logged **96 ALERT_ONLYs during those same "clean" 47 minutes**. (c) it ranks the other verified-healthy arm as best: stock vanilla NES core + Battletoads, no copro at all, scores 7m37s. Both verified-alive arms sit at opposite ends of the range. (d) the A/B's intended readout — AUTO_REBOOT count — was never taken: `ENABLE_AUTO_REBOOT` was already 0, the quoted "6m15s" is an `ALERT_ONLY` |
+| arm-1's **screenshot TIMEOUT at 22:35Z** ("the old shipped core wedges too ⇒ s20b/CMD-8 exonerated") | **SURVIVES** | anchored on the METHOD RULE, not on the trigger |
+| the **vanilla-core** exoneration | **SURVIVES** | returned frame + 3 distinct md5s = a real motion check |
+| **isolation verdict "the CvC driver is the trigger"** | **SURVIVES, DEGRADED** | both anchors are screenshot-based and stand, but what remains is *one* confirmed CvC wedge vs *one* confirmed 47-min human-cart clean run. The **rate** framing is gone |
+| clean-hours #1 `WEDGE_PROBE.md:203-222` — "9h19m WEDGE-FREE" | **DIES — VACUOUS** | 1,111 consecutive polls with `fw_pid=none`/`fw_state=DEAD`/`busy_frac=?%`/`consec=0`. The CONSEC gate `[ "$FW_STATE_CHAR" = "R" ] && [ "$BUSY_SPIN" -eq 1 ]` (`:188`) could never be true, and AUTO_REBOOT is gated on CONSEC≥6. The count could not have moved off 3 no matter what the box did |
+| clean-hours #2 `WEDGE_PROBE.md:472` — "idle box (core loaded)" | **DIES** | vacuous *and* factually wrong: **no core was loaded**; `fw_cmdline=[DEAD]` for the whole span |
+| clean-hours #3 `eval47/MORNING_DIGEST_20260805.md:114` | **DIES** | same figure, same mechanism. ⚠ an identical copy exists in `dr-mario-main-wt/` and still needs the same mark |
+| clean-hours #4 `WEDGE_PROBE.md:157` — "~30 min apart vs ~28h clean overnight" | **DIES / UNRECOVERABLE** | the 30 min is `MIN_REBOOT_GAP`; the "~28 h clean" predates the trigger's existence entirely, so it is not an absence-of-AUTO_REBOOT figure — it is an absence of anything |
+| clean-hours #5 `README.md:195` — "wedges within 6–30 minutes" | **DIES** | both endpoints are trigger artefacts. The only screenshot-confirmed recurrence interval on record is **~65 min** (freeze #7 → #8) |
+| clean-hours #6 — "the 47-min clean run IS the booth condition" | **SURVIVES** | the one figure never defined by AUTO_REBOOT absence: 3 screenshots (23:05 / 23:30 / 23:49:53Z) + a motion check |
+| `fw_state=DEAD` spans = "dead framework" | **DIES** | 1,175 DEAD polls in exactly four contiguous spans, **every one starting at uptime 45–46 s** (first poll after a reboot) and ending exactly where a core+mgl argv appears. 1,172/1,175 carry `consec=0` AND `busy_frac=?%` — the fields were never populated. After the bare-argv fix the same condition logs `fw_pid=525, fw_state=R`. Zero DEAD rows in the 4.5 days since |
+| "at the menu the framework genuinely blocks, so the signature is absent by construction" | **DIES** | on the 16 later polls where `menu.rbf` is loaded and the framework *is* visible, `busy_frac` reads **100 %** and **99 %**. The menu does not block. The 9h19m control was silent because of the `FW_PID` bare-argv **bug** — a sharper and more transferable lesson than the physics story |
+
+**The strongest single sentence in the whole re-derivation:** the control that certified the old
+discriminator's specificity was 1,111 consecutive polls in which the discriminator was
+*electrically disconnected from its own input*. It is not a weak control. **It is no control.**
+
+### 6. The ORIGINAL freeze-5 sighting is INTACT
+
+Stated plainly because the correction above is large and it would be easy to over-correct: **the
+discriminator was non-specific, not fabricated. The thing it was pointed at is real.** All three
+legs were re-verified, and none of them touches `wchan`, `/proc/pid/stack`, `State=R`,
+context-switch ratios, `busy_frac` or `consec`.
+
+* **Leg 1 — blank display.** Five black-screen captures decoded pixel-by-pixel: `blackscreen_1348.png`,
+  `f5b_a_160947.png`, `wedge2_0051.png` (#4), `wedge3_0157.png` (#5), `wedge7_0457.png` (#7). All
+  five: 1598 bytes, md5 `f43cc0e7124d…`, **`black_frac = 1.000000`**, pixhash `97a658c14a1859de` —
+  byte-identical across three days. Contrast set from the same rig (`post_recovery_*`, tonight's
+  soak frames) is 8,980–9,524 bytes at `black_frac` 0.532–0.550 with all-distinct pixhashes. The
+  mid-play freeze family (`wedge_s20b_freeze3_2345.png`, 0.5499 black) is correctly **not** a
+  black-screen event, so the classification separates the two freeze families rather than pooling
+  them.
+* **Leg 2 — dead save-states.** Contemporaneous "STALE ×5" at freezes #4/#5/#7, plus a
+  source-level derivation of *why* they return 0 bytes: `savestates.vhd:158` (SAVE_WAITSETTLE
+  needs `paused` high for 100 consecutive cycles, resetting on any drop) and `nes.v:343`
+  (`corepause_active` additionally requires vblank + a CPU instruction boundary). Hardware
+  argument, zero process forensics.
+* **Leg 3 — core reload does not clear it, a full reboot does.** Freeze #8 recurred ~65 min after
+  #7's menu-cycle recovery; the escalation to a full reboot moved the DHCP lease .226 → .225, an
+  independent physical side effect.
+
+**Chronology proves independence decisively.** `wedge_probe.sh` was committed 2026-08-05 07:39:46
+EDT (`14bbf28`) and its log's first line is 11:37:47Z (= 07:37 EDT). Every black-screen capture,
+both STALE-×5 failures and the freeze-#8 escalation happened **before that**. The discriminator did
+not exist when the defect was characterised.
+
+**And the replacement independently agrees.** Feeding the two 2026-08-02 frames to the new
+watchdog — built without reference to them — gives `black_frac = 1.0`, `changed_frac = 0.0`,
+`max_abs = 0` across captures 2h21m apart ⇒ **WEDGED / `frames_static_black`**.
+
+**What we lost** is the ability to say *when* a wedge started, *how often* it recurs, and *which
+arm* is worse. **What we did not lose is the defect itself.**
+
+### 7. Corrections to claims made earlier in this file
+
+History is left in place on purpose; these are the corrections, not edits.
+
+1. §"Comparison method" says the floor is "114.7 px ≈ **1.8 NES tiles**". **Wrong by 2×** — the
+   capture is vertically pixel-doubled, so it is **0.90 tiles**.
+2. §"Limits" #1 records mutant F as a ">115 px (≈2 tile)" boundary. **The true boundary is ONE
+   tile.**
+3. §"Limits" #2 ("in_match negative side is synthetic only") is now **retired**: real title and
+   level-select captures score chrome 0.0, and real frame 48 scored 0.5479.
+4. §"Limits" #3 ("head-to-head not obtained") is **superseded** — it was obtained, read-only, 19/19.
+5. §"Live validation" per-alert table lists the 19 alert instants **30 s early**; the true times
+   are `10:39:35Z`… as in `h2h.json`.
+6. §"Live validation" reports hang detection at **61 s**; on the production path (IP cached) it is
+   **81 s**.
+
+### 8. What must happen before this drives ANY automatic action
+
+`ENABLE_AUTO_REBOOT` is 0 and **stays 0**. Nothing in this workflow reboots the board.
+
+**Hard gate — non-negotiable: this must survive a REAL wedge before it drives anything.** The
+frames channel's positive side is currently evidenced only by mutants A/C/D/E/H and by the five
+committed 2026-08-02/05 black-screen captures. No real freeze-5 has occurred while it was
+watching. Arming an action on an instrument whose alarm side has never fired in anger is exactly
+the mistake this file already records twice.
+
+Before it may even be *quoted* as a health certificate:
+
+1. **Gate ALIVE on `screen_class == "in_match"`.** Kills attract-mode and title-screen false
+   ALIVEs outright. The label already exists and is already correct; it is just forbidden from
+   acting.
+2. **Split `DEFAULT_ROI` into per-bottle P1/P2 regions and require BOTH to clear the floor.**
+   Kills the partial wedge.
+3. **Raise `min_changed_frac` to ~5e-3** — still 3.6× below the lowest healthy observation
+   (0.017944) — restoring a real anti-blink margin and correcting the pixel-geometry error.
+4. **`size_mismatch` → SUSPECT, never ALIVE.**
+5. **Capture to a unique per-poll path and require the output file's mtime to postdate the poll
+   start.** Kills the stale-frame-dir replay.
+6. **Log the resolved host IP every poll and alarm when it changes**; stop relying on LAN
+   auto-discovery.
+7. **Runtime check that N exceeds the soaked cart's `DRHOLDBOARD_F`.** The whole timing argument
+   is coupled to a build-time constant of a *different* artifact with no check that they still
+   agree.
+
+Then, and only then: **two-instrument agreement** (capture channel + frames channel, or frame
+watchdog + a semantic ground truth) before any action, and the first action should be *notify*,
+not reboot. The action path itself needs its own killed-mutant gate — an action that fires on a
+wrong input is the failure mode we are already paying for.
+
+### 9. Can soak results be trusted from here on?
+
+**Not on this watchdog's ALIVE alone. Yes for the narrow claim it actually supports.**
+
+* **What it can honestly certify today:** *"the screenshot service answered at every 20 s poll for
+  N hours, and the picture was never static for 60 s."* That rules out freeze-5 — black screen,
+  dead capture, frozen display — and it is a genuine, tested improvement on nothing. Its
+  sensor-failure behaviour is safe in 4 of 5 tested modes.
+* **What it cannot certify:** that the AI was playing. Half the machine can be dead, or the box
+  can be in attract mode with no cart loaded, and it reads ALIVE with margin.
+* **Therefore, until items 1–3 of §8 land:** every soak claim must be paired with a semantic
+  ground truth. The tooling for this already exists and already worked on 180 frames — the VIRUS
+  counter decode in `results_live_validation/` gave ~41 matches/hour. A save-state ledger
+  (`duel_ledger/`) is the other acceptable anchor. **A soak with no semantic anchor is a soak with
+  no result**, regardless of what the watchdog logged.
+* **Run the capture channel now.** It is anchored on the standing METHOD RULE, it fails safe, and
+  it correctly reclassifies all five committed black-screen captures. On the human cart use
+  `--profile human`, which keeps the capture channel and disables the frames channel.
+
+### 10. What to do about the historical soak results
+
+**Retract, do not reinterpret.** Every "clean hours" figure defined as absence of `AUTO_REBOOT` is
+void — not "uncertain", not "probably fine": the counter that defined it was, for the entire
+9h19m control, disconnected from its own input, and elsewhere fires ~100 % false on healthy play
+(19/19 tonight, 96 alerts during a verified-clean 47-minute human-cart run).
+
+* **Void:** the 9h19m idle control (all three copies, including the one still unmarked in
+  `dr-mario-main-wt/`), the "~28 h clean overnight", the README "6–30 minutes" wedge cadence, the
+  "~30-minute mean-time-to-wedge", the arm-1 vs s20b timing/rate A/B, and the 12:45Z IPC
+  exoneration.
+* **Keep:** anything anchored on screenshots or save-states — the five black-screen captures, the
+  STALE-×5 runs, arm 1's 22:35Z screenshot timeout, the vanilla-core motion check, the 47-min
+  human-cart clean run (which is still the booth condition), and freeze #8's ~65-min recurrence.
+* **Re-run, don't re-read:** the IPC-induction experiment and the arm-1/s20b comparison. Both are
+  answerable with the frame watchdog's **capture channel** plus a save-state ledger, and neither
+  needs the old discriminator at all.
+* **No "N clean hours" figure has ever been computed for the current θ400 soak,** and none should
+  be quoted until §8 items 1–3 land. The recovery log holds 1,111 `WEDGE_CONFIRMED` and 1,112
+  `ALERT_ONLY` events firing every ~3 min continuously from 2026-08-08T02:04:17Z to
+  2026-08-10T10:33:18Z on a box that is demonstrably playing. That is the number to distrust, not
+  to average.
+
+**Bottom line for the morning:** the old watchdog is disqualified and its damage is bounded and
+enumerated; the original freeze-5 defect is intact and independently re-confirmed by the new
+instrument; the new instrument is a real improvement with a real hole on the ALIVE side, that hole
+is measured rather than suspected, and four of the seven fixes use machinery already sitting in
+the file. Nothing was rebooted, reloaded, killed, or written to the device at any point, and the
+θ400 soak is still running.
