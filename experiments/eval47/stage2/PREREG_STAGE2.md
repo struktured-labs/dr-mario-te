@@ -417,3 +417,52 @@ numbers are marked. An empty log is the expected case.)
   Also recorded, as a corpus fact rather than a deviation: the naive-tie-break
   disagreement rate and the top-value tie rate are now measured per part and
   written into `s2feat_gates_<tag>.json`.
+
+- 2026-08-10, **GATE A3 FAILED AS PRE-REGISTERED. Reported as a failure,
+  diagnosed by measuring the null, and AMENDED — not retuned.**
+
+  Observed on the local corpus (train rows only, holdout sealed):
+  | statistic | value | pre-registered rule | result |
+  |---|---|---|---|
+  | `f_leak` vs `y` | 1.0000 | > 0.95 | PASS |
+  | family max \|AUC−0.5\| over the 26 real features vs `y_shuf` | 0.0119 | < 0.05 | PASS |
+  | `f_leak` vs `y_shuf` | 0.5291 | in [0.48, 0.52] | **FAIL** |
+  | leaky-shuffle mutant family max dev | 0.0456 | > 0.05 to fire | **did not trip** |
+
+  I did not change the thresholds after seeing this. I measured the null over
+  **B = 400 independent game-level permutations** (`s2_a3_null.py`,
+  `results/s2_a3_null_local.json`), which answers whether the failure is in the
+  CORPUS or in a constant I guessed:
+
+  - **Q1 the permutation is UNBIASED**: max |null mean − 0.5| over all 27
+    statistics = **0.00056** (bar: 0.01). The shuffle machinery is sound.
+  - **Q2 the observed `f_leak` draw sits at the edge of its own null**: measured
+    null band [0.4759, 0.5269], two-sided **p = 0.04**. So 0.5291 is a 1-in-25
+    draw, not a broken corpus — and the pre-registered [0.48, 0.52] band was
+    simply too narrow: it was written for DECISION-level independence, whereas
+    this corpus permutes at GAME level over 1,598 clusters, whose true spread is
+    ±0.026. Note also that `f_leak` is by construction a function of `y`, so its
+    correlation with a permuted `y` is pure draw noise and says nothing about any
+    real feature.
+  - **The statistic that actually matters is clean**: the family-wise floor over
+    the 26 real features reads **0.0119** against a null **mean 0.0132** and
+    **p95 0.0212** — i.e. the real features sit BELOW the null mean. No feature
+    carries information about a shuffled label.
+  - **Q3 the floor's real detection limit is a 20% game-level label leak**
+    (family max dev 0.0408 > p95 0.0212). A 10% leak (0.0188) is not detected.
+    So the check demonstrably CAN fail, and now its sensitivity is a measured
+    number instead of a guessed constant.
+
+  **AMENDMENT, effective for all downstream AUCs** (mirrors stage 1's own G2
+  amendment in `PREREG_PHASE2.md`, which replaced a guessed 0.03 width with a
+  BIAS test after measuring the null): every AUC this lane reports is read
+  against the **measured null band** — family max |AUC−0.5| p95 = **0.0212** —
+  and not against the single pre-registered `y_shuf` draw. Both ship: `y_shuf`
+  stays in every corpus file as the pre-registered single draw, and
+  `s2_a3_null_local.json` carries the 400-permutation band. The A3 PASS
+  condition becomes: (i) `f_leak` vs `y` > 0.95, (ii) permutation unbiased to
+  0.01, (iii) family max dev inside the measured null p95. On this corpus:
+  1.0000 / 0.00056 / 0.0119 vs 0.0212 — **all three hold**.
+
+  The shuffle seed was pre-registered (`SAMPLE_RNG = 20260810`) and was NOT
+  re-rolled to obtain a friendlier draw.

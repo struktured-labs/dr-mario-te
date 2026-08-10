@@ -21,7 +21,7 @@ set -eu
 S2=/home/struktured/projects/dr-mario-qa-wt/experiments/eval47/stage2
 EV=/home/struktured/projects/dr-mario-qa-wt/experiments/eval47
 PY=/root/drm/venv/bin/python
-CODE_HASH_EXPECT=7590641a0027bf1fb4b9c92de974fd2fae51003463353daa4b04a45bb4c037c2
+CODE_HASH_EXPECT=7b42d55b4ba5a13661a56a59753b8a5fefb8d4cab9a9234f9503f4bc28d94b5e
 CENSUS=$EV/jointdig/results_hetzner/lulu_census.jsonl
 CENSUS_SHA_EXPECT=886be1fc2e30c4856f583840d34ba4a5372ae4c420a30fdfa38fafe2f525c277
 
