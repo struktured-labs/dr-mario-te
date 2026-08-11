@@ -329,6 +329,18 @@ different garbage-reactive mechanism, not another tie resolver.  It remains
 design-only until a shuffled exact-penalty null is calibrated on canonical
 distinct successor states and passes timing/value-gap/Hamming/duty matching.
 
+`champion-source:c54bfeb` implements that exact candidate and an
+association-blind shuffled-penalty null.  The K4 pulse, K+1 mutant, penalty
+multiset/association mutant, exact alias comparator, and four real exact-v8
+base trajectories all pass.  Mechanism-only seeds 70400..70639 retained no
+endpoint or tempo fields: actual-landed duty was 45.08%, treatment made 233
+distinct-state flips, and the null offered 466.  A frozen uint64 cutoff selected
+exactly 233 (zero aggregate mismatch); endpoint-leak, duplicate-seed, and
+wrong-cutoff mutants all fail.  **Endpoint remains blocked:** first timing and
+medians were close, but selected-null successor-Hamming p10/p90 was 2/12.8
+versus treatment 7/19.  A new disjoint calibration must validate a stratified
+null without sacrificing timing before an endpoint preregistration is frozen.
+
 ### `d_spawn_h` is already partly priced
 
 The exact shippable S0 experiment (`d_spawn_h` alone, four-segment monotone
@@ -377,8 +389,9 @@ for this prior negative and a dose-matched null.
    vocabulary or a genuinely small rollout rather than another leaf reweight.
 4. Do not ship the exact-tie `d_spawn_h` resolver.  If the separately nominated
    exact-v8 K4/wq60 post-garbage mechanism advances, first build and kill a
-   canonical-distinct-state shuffled null; no endpoint seeds open before that
-   calibration passes.
+   stratified canonical-distinct-state shuffled null that matches the disclosed
+   timing/value-gap/Hamming/duty diagnostics; no endpoint seeds open before a
+   fresh disjoint calibration passes.
 5. Preserve the completed theta400 image and tuck NO_GO.  The freeze
    discriminator's prior prereg is `VOID_CONTROLS`; any retry needs freshly
    proven pause and CPU-loop fixtures before seed 30011 is inspected.
@@ -511,5 +524,7 @@ The project does not yet claim to know the perfect weighting of those signals.
   `champion-source:experiments/eval47/stage2/dspawn_tie/RESULT_DSPAWN_TIE_V8.md`
 - Next exact-v8 post-garbage design (not an endpoint prereg):
   `champion-source:experiments/eval47/stage2/dspawn_tie/NEXT_EXACT_REGIME_DESIGN.md`
+- Post-garbage structural calibration and remaining null blocker:
+  `champion-source:experiments/eval47/stage2/dspawn_tie/POST_GARBAGE_CALIBRATION_RESULT.md`
 - Required untracked lulu fit:
   `experiments/eval47/results/dr_lulu_20260808_fit.json`
