@@ -377,7 +377,9 @@ its Numba cache.  Repeated 12-pair disclosed-seed benchmarks project ~5.25h at
 four workers and **~3.78h at six** (22.7 core-hours); prefer six when the local
 box is free and budget 4.5--6h.  No seed in the endpoint range has been
 opened; launch requires explicit owner action.  Exact identity and commands
-are in `POST_GARBAGE_ENDPOINT_READINESS.md` (`131a11d`).
+are in `POST_GARBAGE_ENDPOINT_READINESS.md` (`efd7c4f`).  The same commit adds
+a read-only local monitor for row/segment counts,
+META hash, latest summary, process state, and disk; it does not restart the job.
 
 ### `d_spawn_h` is already partly priced
 
