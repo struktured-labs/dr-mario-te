@@ -305,6 +305,7 @@ def shuffled_teacher(recs):
 def structured_crossval(Xd, Xcand, groups_dec, flip, teacher_rank, kind):
     """Predict flip location, then the winning non-base rank."""
     from sklearn.ensemble import HistGradientBoostingClassifier
+    from sklearn.tree import DecisionTreeClassifier
     from sklearn.linear_model import LogisticRegression
     from sklearn.metrics import average_precision_score, roc_auc_score
     from sklearn.model_selection import GroupKFold
@@ -317,6 +318,11 @@ def structured_crossval(Xd, Xcand, groups_dec, flip, teacher_rank, kind):
                 StandardScaler(),
                 LogisticRegression(C=0.1, max_iter=1500,
                                    class_weight="balanced"))
+        if kind.startswith("dt"):
+            depth = int(kind.removeprefix("dt"))
+            return DecisionTreeClassifier(
+                max_depth=depth, min_samples_leaf=20,
+                class_weight="balanced", random_state=20260811)
         depth = int(kind.removeprefix("hgb"))
         return HistGradientBoostingClassifier(
             max_depth=depth, max_iter=180, learning_rate=0.06,
@@ -423,12 +429,14 @@ def main():
           == np.repeat(nrank, O.TOPK)).astype(np.int8)
     null_models = {k: crossval(X, yn, did, groups, nrank, flip, k)
                    for k in ("linear", "hgb2", "hgb3", "hgb4")}
+    structured_kinds = ("linear", "dt2", "dt3", "dt4", "dt5",
+                        "hgb2", "hgb3", "hgb4")
     structured = {k: structured_crossval(Xd, X, groups_dec, flip, trank, k)
-                  for k in ("linear", "hgb2", "hgb3", "hgb4")}
+                  for k in structured_kinds}
     null_flip, null_rank = shuffled_teacher(recs)
     structured_null = {
         k: structured_crossval(Xd, X, groups_dec, null_flip, null_rank, k)
-        for k in ("linear", "hgb2", "hgb3", "hgb4")}
+        for k in structured_kinds}
 
     # Full-fit random forest only for a readable feature-importance hypothesis;
     # cross-validated metrics above own every predictive number.
