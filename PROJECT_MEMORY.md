@@ -42,11 +42,14 @@ single proxy gets to silently redefine the objective.
 - Per-flip provenance began on `flip-provenance` at `5312267`. The shared
   evaluator/oracle schema convergence, including `d_spawn_h`, is completed,
   mutation-gated, and landed in this writable clone.
-- Oracle work is on `oracle-ceiling` at `48cd4f6`. Identity, liveness, capsule
-  independence, and fork-leak gates passed. `ORACLE-CLAIR` intentionally sees
-  the realized future: it is the unfair ideal-ceiling arm, not a candidate
-  implementation. `ORACLE-DIST`, the distribution-aware comparison arm, is
-  preregistered but not yet implemented.
+- Oracle work is sealed on `oracle-ceiling` at `29fc72c`. `ORACLE-CLAIR`
+  intentionally sees the realized future: it is the unfair ideal-ceiling arm,
+  not a candidate implementation. The shuffled-label null is dose-matched by a
+  frozen endpoint-blind hash schedule (`q=0.169464`); reserved-seed accepted
+  flip-rate ratio was 0.9271. DIST is implemented with collision-free,
+  candidate-common pressure keys. Verdict, provenance, fork-leak, keying,
+  thinning, and ordered-banking mutants pass. No current Tier-A endpoint run
+  has started.
 
 ## Non-negotiable laws
 
@@ -68,19 +71,19 @@ single proxy gets to silently redefine the objective.
 
 1. **DONE locally:** shared per-flip schema, clean gate, eight killed mutants,
    and a real 24-seed multiprocessing emission.
-2. Resolve the oracle design gaps below **before** spending Tier-A compute.
-3. Preserve `ORACLE-CLAIR` as the deliberately unfair ideal ceiling; implement
-   and gate `ORACLE-DIST` to show how much of that ceiling survives without
-   realized-garbage knowledge.
+2. **DONE at `oracle-ceiling:29fc72c`:** seal the ideal arm, dose-matched null,
+   executable verdict, DIST implementation, provenance, and durable runner.
+3. Launch Tier-A CLAIR plus its null. The paid CCX23 launch helper is ready;
+   this sandbox cannot open SSH sockets. Full gates run before endpoint seeds.
 4. Branch on valid calibration evidence. Independently continue the theta-400
    Pocket refit and tuck fall-budget guard rewrite.
 5. Use seed 30011 opportunistically to build a real freeze discriminator.
 
 ## Adversarial gap audit — resolve before an oracle Tier-A run
 
-These are findings from comparing the plan, preregistration, code, and final
-oracle handoff. They are not after-the-fact endpoint interpretations; the
-headline `ORACLE-DIST` data do not exist yet.
+These are findings from comparing the plan, preregistration, code, and original
+oracle handoff. Resolved findings are marked below. They are not after-the-fact
+Tier-A endpoint interpretations; current Tier-A data do not exist yet.
 
 ### Structural-closure claim is currently too strong
 
@@ -105,38 +108,46 @@ total headroom, not a directly shippable policy. Keep the foresight and label it
 plainly; the follow-on work is to determine which fraction of that headroom can
 be recovered with information available to the target.
 
-### The oracle null violates the plan's dose law
+### RESOLVED — the oracle null violated the plan's dose law
 
-The shuffled-label oracle is explicitly expected to flip more often than the
-true arm. Calling the resulting DiD an upper bound does not make it
-dose-matched. Before Tier A, calibrate a deterministic thinning/scale rule on
-reserved, outcome-blind gate seeds and freeze it so the shuffled arm matches
-the true arm's flip opportunity dose without using endpoint labels.
+The raw shuffled arm flipped 16.40% of plies versus CLAIR's 2.96%. Reserved
+seeds 42000..42059 calibrated and validated deterministic SplitMix64 thinning;
+the first passing fraction was q=0.169464 and produced 2.747% versus 2.963%
+(ratio 0.9271). The full-N ratio must remain in [0.90,1.10] or the comparison is
+VOID. No endpoint label enters the keep decision.
 
-### Registered prose and executable verdict currently disagree
+### RESOLVED — registered prose and executable verdict disagreed
 
-- `run_full.sh` runs `gate_identity.py` but not mandatory fork-leak gate G1g.
-- `run_full.sh` still launches `true` (clairvoyant) plus `shuffle`; it does not
+The pre-fix defects were:
+
+- `run_full.sh` ran `gate_identity.py` but not mandatory fork-leak gate G1g.
+- `run_full.sh` launched `true` (clairvoyant) plus `shuffle`; it did not
   implement the A2 split (`DIST 9000`, DIST-shuffle 9000, CLAIR 2000).
-- `stall_parity.topouts_converted_to_stalls` is a boolean based on aggregate
+- `stall_parity.topouts_converted_to_stalls` was a boolean based on aggregate
   signs, not the named paired transition count.
-- Imported `verdict()` declares N3 only when the bad-end point estimate is
-  nonnegative. The oracle prereg says N3 also fires when the bad-end CI includes
-  zero.
-- Power adequacy is printed but does not control the returned verdict. A
-  NOT-DECIDABLE clear co-primary can still flow through the ordinary GO/NO_GO
-  function.
+- Imported `verdict()` declared N3 only when the bad-end point estimate was
+  nonnegative rather than when the bad-end CI included zero.
+- Power adequacy was printed but did not control the returned verdict.
 
-The verdict implementation and its killed-mutant tests must be extended before
-the long run; prose alone is not a gate.
+`29fc72c` enforces all of these in executable code, counts paired
+topout→stall transitions, includes G1g in the launch path, and has a mutation
+test in every verdict direction. A5 supersedes A2's authority split after the
+programme lead clarified that the unfair CLAIR ideal is the requested primary
+measurement.
 
-### `ORACLE-DIST` keying needs a collision audit
+### RESOLVED — `ORACLE-DIST` keying collided
 
-The registered key `seed + 7919*(ply+1)` collides across the 9,000 contiguous
-seeds (for example seeds separated by 7,919 at adjacent plies). That creates
-cross-seed dependence while the bootstrap treats seeds as independent. Use a
-documented collision-resistant mix of `(seed, ply)` and prove candidate-common
-random numbers plus cross-seed uniqueness on the registered block.
+The replacement packs `(seed, ply, sample)` injectively. G1h exhaustively
+round-trips all 2.7 million registered seed/ply tuples, preserves
+candidate-common randomness, and demonstrates an explicit collision in the old
+formula.
+
+### RESOLVED — interrupted segments were length-biased
+
+The runner used `as_completed()`, so a kill banked quick games rather than the
+registered ascending seed prefix; resumed summaries also described only newly
+finished rows. A9 switches to ordered concurrent mapping and rebuilds summaries
+from the full de-duplicated segment. The old scheduling mutant fails.
 
 ### Provenance durability still has two edges
 
@@ -165,9 +176,6 @@ The project does not yet claim to know the perfect weighting of those signals.
    the fixed top-4/H15/gated probe is allowed to close the broader root
    re-ranking lane? This question is about whether the probe reaches the ideal,
    not about making the ideal fair.
-2. For dose-matching the shuffled oracle, is deterministic thinning calibrated
-   on reserved gate seeds acceptable, or should both arms be matched online by
-   a label-blind hash schedule fixed before endpoint runs?
 
 ## Resume map
 
