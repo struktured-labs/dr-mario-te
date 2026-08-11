@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -25,6 +27,7 @@ N = 9000
 B = 5000
 RNG = 20260812
 START = 80000
+TABLE_SHA = "c64ce845e3e7d19242a359f868012bd04623c1bbee21d139202722f686e9c82d"
 FLIP_FIELDS = {
     "seed", "arm", "kind", "ply", "t_to_end", "gate_offset", "viruses",
     "maxh", "d_spawn_h", "base_action", "chosen_action", "base_raw_value",
@@ -49,6 +52,23 @@ def load_rows(root):
             else:
                 rows[seed] = row
     return [rows[s] for s in sorted(rows)], errors
+
+
+def meta_errors(meta, expected_manifest, expected_gate_sha):
+    """Fail closed when rows are detached from the registered runtime."""
+    expected = {
+        "version": "post-garbage-v8-endpoint-v1",
+        "prereg_commit": "85d7898",
+        "table_sha256": TABLE_SHA,
+        "gate_sha256": expected_gate_sha,
+        "policy_semantics": "firmware_v8/p2_surrogate",
+        "pressure": "exo_lulu",
+        "seeds": [START, START + N - 1],
+        "n_seeds": N,
+        "runtime_manifest": expected_manifest,
+    }
+    return [f"META mismatch: {key}" for key, value in expected.items()
+            if meta.get(key) != value]
 
 
 def binary(left, right, rng):
@@ -231,6 +251,19 @@ def diagnostic_mutants():
         "no_flip_identity_rejected": bool(no_flip_errors([identity])),
         "zero_flip_distribution_rejected": tv([0, 0], [0, 0]) == 1.0,
     })
+    manifest = {"rolled": "right", "files": {}, "python": "3.test"}
+    valid_meta = {
+        "version": "post-garbage-v8-endpoint-v1",
+        "prereg_commit": "85d7898", "table_sha256": TABLE_SHA,
+        "gate_sha256": "gate", "policy_semantics": "firmware_v8/p2_surrogate",
+        "pressure": "exo_lulu", "seeds": [START, START + N - 1],
+        "n_seeds": N, "segment": 250, "runtime_manifest": manifest,
+    }
+    wrong_meta = copy.deepcopy(valid_meta)
+    wrong_meta["runtime_manifest"]["rolled"] = "wrong"
+    verdict["meta_runtime_rejected"] = (
+        not meta_errors(valid_meta, manifest, "gate")
+        and bool(meta_errors(wrong_meta, manifest, "gate")))
     return verdict
 
 
@@ -245,6 +278,22 @@ def main():
         raise SystemExit("verdict mutant gate failed")
     if args.selftest:
         print(json.dumps({"pass": True, "killed_mutants": mutants}, indent=1)); return
+    # Import only for real analysis, avoiding runner initialization in the
+    # lightweight mutant self-test. The runner manifest covers all executable
+    # policy dependencies and the fitted opponent artifact.
+    import run_post_garbage_v8_endpoint as R
+    os.environ["DR_LULU_FIT"] = R.FIT
+    meta_path = Path(args.root) / "META.json"
+    if not meta_path.exists():
+        raise SystemExit("integrity gate failed: missing META.json")
+    try:
+        meta = json.loads(meta_path.read_text())
+    except Exception as exc:
+        raise SystemExit(f"integrity gate failed: malformed META.json: {exc}")
+    expected_gate_sha = hashlib.sha256(R.GATE.read_bytes()).hexdigest()
+    meta_bad = meta_errors(meta, R.manifest(), expected_gate_sha)
+    if meta_bad:
+        raise SystemExit("integrity gate failed: " + json.dumps(meta_bad))
     rows, errors = load_rows(args.root)
     if len(rows) != N and not args.allow_partial:
         raise SystemExit(f"refusing verdict: have {len(rows)}/{N}")
