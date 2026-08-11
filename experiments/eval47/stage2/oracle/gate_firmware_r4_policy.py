@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import subprocess
@@ -98,6 +99,15 @@ def git_head(path):
     return subprocess.check_output(["git", "-C", path, "rev-parse", "HEAD"], text=True).strip()
 
 
+def local_firmware_decider():
+    """Load this worktree's decider by path; oracle imports reorder sys.path."""
+    path = os.path.join(REPO, "experiments", "tuck_v3", "firmware_decider.py")
+    spec = importlib.util.spec_from_file_location("firmware_decider_r4_gate", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.FirmwareDecider
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--fit", default=os.environ.get("DR_LULU_FIT", DEFAULT_FIT))
@@ -111,7 +121,7 @@ def main():
     selected = [case for kind in ("flat_sensitive", "strand_sensitive", "control")
                 for case in strata[kind]]
 
-    from firmware_decider import FirmwareDecider
+    FirmwareDecider = local_firmware_decider()
     fd = FirmwareDecider(tuck=0, strand=20)
     probe = bytes([0xFF] * 128)
     image, _, _ = fd.B.build_image(probe, 0, 1, 1, 0)
@@ -172,4 +182,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
