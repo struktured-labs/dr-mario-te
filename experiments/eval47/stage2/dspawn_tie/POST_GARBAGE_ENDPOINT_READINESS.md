@@ -8,12 +8,12 @@ opened.** Owner launch is required by the sealed preregistration.
 - preregistration: `85d7898`
 - null table: `a749aa2`, SHA-256
   `c64ce845e3e7d19242a359f868012bd04623c1bbee21d139202722f686e9c82d`
-- runner/selector gate: `095774a`, final live-pipeline binding `56fe541`
+- runner/selector gate: `095774a`, final telemetry/source binding `5d23afd`
 - analyzer/provenance verdict gates: `2b6b62d`
 - current prospective gate: PASS, SHA-256
-  `ccf705e00e9fb38c01749451f641bf132b14f445215b37662f5fc2e0578e4801`
+  `ed2e3b3eb56b4264d92ebf5cf68883edf51837f7b2e006b47496221e89dc8044`
 - current runtime manifest (before any endpoint META exists):
-  `3d794dbc958cf59ee60856c3947faac76a211cab14d669570b3605f7557738c8`
+  `534657613d67ea6c4fa856c2d64f3f555106b6ffe46f7752a767f0e432653662`
 
 The launch gate is bound to the exact policy module, endpoint runner, gate, and
 analyzer source bytes. Any edit makes `require_gate()` fail until the complete current
@@ -21,7 +21,8 @@ engineering/selector gate is rerun. The gate includes exact-v8 base identity,
 K4/K+1, association, alias, table/bin/cutoff mutants, and exact reproduction of
 all 616 frozen validation selections. Four live three-arm rows pass the
 analyzer pipeline, and its self-test kills all 11 registered verdict and
-provenance directions.
+provenance directions. A killed predecessor check also proves base active-duty
+telemetry is nonzero under landed pressure.
 
 ## Measured cost
 
