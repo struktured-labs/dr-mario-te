@@ -372,11 +372,12 @@ all 616 validation selections and live zero-table/bin mutants.  `2b6b62d` adds
 the fail-closed analyzer; all 12 verdict/provenance/zero-dose mutants pass in both
 directions.  `7b5fa36` binds the launch gate to exact policy/runner/gate/analyzer
 source hashes, includes a live four-row three-arm analyzer pass, gates base
-active-duty telemetry, and makes stale gates fail.  The runner self-configures its Numba cache.  A
-12-pair disclosed-seed benchmark projects ~5.25 wall-hours / ~21 core-hours at
-four local workers; budget 6--8 hours.  No seed in the endpoint range has been
+active-duty telemetry, and makes stale gates fail.  The runner self-configures
+its Numba cache.  Repeated 12-pair disclosed-seed benchmarks project ~5.25h at
+four workers and **~3.78h at six** (22.7 core-hours); prefer six when the local
+box is free and budget 4.5--6h.  No seed in the endpoint range has been
 opened; launch requires explicit owner action.  Exact identity and commands
-are in `POST_GARBAGE_ENDPOINT_READINESS.md` (`05f9093`).
+are in `POST_GARBAGE_ENDPOINT_READINESS.md` (`131a11d`).
 
 ### `d_spawn_h` is already partly priced
 
