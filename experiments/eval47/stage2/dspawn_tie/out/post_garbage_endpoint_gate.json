@@ -5,6 +5,11 @@
  "validation_null_records": 1154,
  "validation_selected": 616,
  "live_smoke_flips": 9,
+ "source_sha256": {
+  "post_garbage_dspawn_v8": "d55509ef7a98925e0fefd9e113e3636195460335a5c17ab4375d5732eba1c203",
+  "endpoint_runner": "00660ea6fdb050dcc1ad648332d96a8424736552ba69ccec44f8ba5f63853bf3",
+  "endpoint_gate": "c12f8a009199ffd4dc846fa8eb62191cf188979506ed8b665a8a8ae7f9ee7f29"
+ },
  "boundary_checks": {
   "h4": true,
   "h5": true,
@@ -14,6 +19,115 @@
   "gap11": true,
   "gap31": true,
   "gap61": true
+ },
+ "engineering_checks": {
+  "pulse_starts_next_decision": {
+   "pass": true
+  },
+  "exactly_four_decisions": {
+   "pass": true,
+   "sequence": [
+    true,
+    true,
+    true,
+    true,
+    false
+   ]
+  },
+  "kplus1_mutant_killed": {
+   "pass": true,
+   "mutant_sequence": [
+    true,
+    true,
+    true,
+    true,
+    true
+   ]
+  },
+  "wq60_arithmetic_changes_strict_choice": {
+   "pass": true,
+   "base": 16,
+   "treatment": 17
+  },
+  "null_preserves_penalty_multiset": {
+   "pass": true
+  },
+  "null_sensor_association_invariant": {
+   "pass": true
+  },
+  "association_reading_mutant_killed": {
+   "pass": true
+  },
+  "action_alias_normalized": {
+   "pass": true,
+   "raw_alternative": 17
+  },
+  "distinct_state_retained": {
+   "pass": true
+  },
+  "color_byte_mutant_rejected": {
+   "pass": true
+  },
+  "thinning_deterministic": {
+   "pass": true
+  },
+  "base_trajectory_identity": {
+   "pass": true,
+   "games": [
+    {
+     "seed": 70300,
+     "same": true,
+     "res": "clear",
+     "pills": 124,
+     "landed": 40,
+     "active_plies": 55,
+     "treatment_distinct": 5,
+     "null_distinct": 6
+    },
+    {
+     "seed": 70301,
+     "same": true,
+     "res": "clear",
+     "pills": 84,
+     "landed": 14,
+     "active_plies": 22,
+     "treatment_distinct": 0,
+     "null_distinct": 0
+    },
+    {
+     "seed": 70302,
+     "same": true,
+     "res": "clear",
+     "pills": 140,
+     "landed": 54,
+     "active_plies": 70,
+     "treatment_distinct": 0,
+     "null_distinct": 0
+    },
+    {
+     "seed": 70303,
+     "same": true,
+     "res": "clear",
+     "pills": 164,
+     "landed": 58,
+     "active_plies": 73,
+     "treatment_distinct": 6,
+     "null_distinct": 4
+    }
+   ]
+  },
+  "actual_landed_gate_exercised": {
+   "pass": true,
+   "active_plies": 220
+  },
+  "treatment_distinct_path_exercised": {
+   "pass": true,
+   "distinct_flips": 11
+  },
+  "null_distinct_path_exercised": {
+   "pass": true,
+   "distinct_opportunities": 10
+  }
  },
  "checks": {
   "table_hash": true,
@@ -28,7 +142,8 @@
   "short_table_rejected": true,
   "zero_cutoff_rejects": true,
   "full_cutoff_accepts": true,
-  "table_byte_mutant_killed": true
+  "table_byte_mutant_killed": true,
+  "current_engineering_gate": true
  },
  "pass": true
 }

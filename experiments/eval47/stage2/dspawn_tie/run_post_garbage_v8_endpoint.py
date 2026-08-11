@@ -97,6 +97,13 @@ def require_gate():
         raise RuntimeError("sealed endpoint gate did not pass")
     if gate.get("table_sha256") != TABLE_SHA:
         raise RuntimeError("endpoint gate used a different table")
+    expected_sources = {
+        "post_garbage_dspawn_v8": sha256(P.__file__),
+        "endpoint_runner": sha256(__file__),
+        "endpoint_gate": sha256(HERE / "gate_post_garbage_endpoint.py"),
+    }
+    if gate.get("source_sha256") != expected_sources:
+        raise RuntimeError("endpoint gate is stale for current runtime sources")
     return sha256(GATE)
 
 

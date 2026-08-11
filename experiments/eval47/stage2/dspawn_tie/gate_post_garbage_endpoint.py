@@ -15,6 +15,7 @@ for path in (str(HERE), str(ORACLE)):
         sys.path.insert(0, path)
 
 import fit_stratified_post_garbage_null as F  # noqa: E402
+import gate_post_garbage_dspawn_v8 as G  # noqa: E402
 import oracle_arm as O  # noqa: E402
 import post_garbage_dspawn_v8 as P  # noqa: E402
 import validate_stratified_post_garbage_null as V  # noqa: E402
@@ -32,6 +33,7 @@ def main():
     table = json.loads(TABLE.read_text())
     cells = table["cells"]
     cutoffs = [int(row["cutoff_u64"]) for row in cells]
+    engineering = {**G.synthetic_gates(), **G.real_gates()}
     validation = json.loads(VALIDATION.read_text())
     records = [z for row in validation["per_seed_mechanism"]
                for z in row["records"] if z["kind"] == "null"]
@@ -96,13 +98,23 @@ def main():
         "full_cutoff_accepts": P.cutoff_accepts(1, 2, 1 << 64),
         "table_byte_mutant_killed": (
             hashlib.sha256(TABLE.read_bytes() + b"x").hexdigest() != TABLE_SHA),
+        "current_engineering_gate": all(row["pass"] for row in engineering.values()),
     }
+    source_paths = {
+        "post_garbage_dspawn_v8": Path(P.__file__).resolve(),
+        "endpoint_runner": HERE / "run_post_garbage_v8_endpoint.py",
+        "endpoint_gate": Path(__file__).resolve(),
+    }
+    source_sha256 = {name: hashlib.sha256(path.read_bytes()).hexdigest()
+                     for name, path in source_paths.items()}
     report = {
         "version": "post-garbage-endpoint-gate-v1",
         "prereg_commit": "85d7898", "table_sha256": table_sha,
         "validation_null_records": len(records),
         "validation_selected": len(selected), "live_smoke_flips": live_flips,
-        "boundary_checks": boundary_checks, "checks": checks,
+        "source_sha256": source_sha256,
+        "boundary_checks": boundary_checks, "engineering_checks": engineering,
+        "checks": checks,
         "pass": all(checks.values()),
     }
     OUTPUT.write_text(json.dumps(report, indent=1) + "\n")
