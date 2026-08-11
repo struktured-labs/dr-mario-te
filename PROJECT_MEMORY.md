@@ -1,6 +1,6 @@
 # Project memory — next champion iteration
 
-**As of 2026-08-10.** This is a compact resume point for humans and agents.
+**As of 2026-08-11.** This is a compact resume point for humans and agents.
 The full plan of record is `CHAMPION_ITER_PLAN.md` on the `v8-rematch` branch.
 When this note and that plan differ, the plan wins except where this note marks
 a subsequently discovered defect.
@@ -41,7 +41,7 @@ single proxy gets to silently redefine the objective.
   -0.27 pp. No directed endpoint transfer was established.
 - Per-flip provenance began on `flip-provenance` at `5312267`. The shared
   evaluator/oracle schema convergence, including `d_spawn_h`, is completed,
-  mutation-gated, and landed in this writable clone.
+  mutation-gated, and landed in this writable clone at `200ab36`.
 - Oracle work is sealed on `oracle-ceiling` at `29fc72c`. `ORACLE-CLAIR`
   intentionally sees the realized future: it is the unfair ideal-ceiling arm,
   not a candidate implementation. The shuffled-label null is dose-matched by a
@@ -49,7 +49,96 @@ single proxy gets to silently redefine the objective.
   flip-rate ratio was 0.9271. DIST is implemented with collision-free,
   candidate-common pressure keys. Verdict, provenance, fork-leak, keying,
   thinning, and ordered-banking mutants pass. No current Tier-A endpoint run
-  has started.
+  has started locally.
+
+## 2026-08-11 progress and corrections
+
+### Remote oracle
+
+The project owner manually launched the 9,000-pair ORACLE-CLAIR Tier-A job on
+Hetzner at `root@178.104.197.190` from `oracle-source` commit `29fc72c`, four
+workers.  Projected wall time was roughly 82 hours.  This sandbox cannot open
+SSH sockets, so the launch is **user-reported and currently unobservable** from
+here; do not claim a completion or endpoint result without the remote files.
+The shuffled-label null has not been reported as launched.
+
+### The historical Lulu pressure rig is policy-coupled
+
+The old `lulu` solo proxy does **not** give candidates a fixed opponent attack
+schedule.  Its fire probability is keyed to the receiver AI's **own clear
+size**, then its RNG is keyed by `(seed, pills_placed)`.  A policy can therefore
+change or suppress its own incoming pressure.  The fitted probabilities are
+0.407643 for clear sizes 4--6 (`n=157`), 0.5625 for 7--10 (`n=16`), and 0 for
+11+ (`n=2`).  This was documented in old bursty results but contradicted later
+oracle prose claiming pressure was purely `(seed,pill)`.
+
+Consequences:
+
+- the running oracle still measures ideal headroom inside the historical proxy;
+- a NO_GO there cannot close root re-ranking for real head-to-head play;
+- after first treatment divergence, later self-coupled pressure is not a shared
+  counterfactual schedule.
+
+`champion-source:champion-next` now contains `exo_lulu_v1`, a complete pressure
+offer frozen by `(version, seed, pills_placed)` before seeing the receiver board.
+Its registered 60-seed E1--E5 gate passed: landed-dose ratio to coupled Lulu
+0.982806, offer rate 0.181221, and all killed mutants passed.  Commits:
+`5f0b431`, `c3bea64`, `a26ae00`, `ace203e`.  Use `exo_lulu` for future
+candidate-sensitive science; keep legacy `lulu` only for continuity.
+
+### What the historical oracle actually chooses
+
+The available 125-pair ORACLE-CLAIR pilot was replayed exactly: 125/125
+endpoints, all 489 logged flips and all top-4 sets reproduced.  Of 489 flips,
+**478 selected greater 15-pill virus progress** and only 11 changed the binary
+survival component.  Progress deltas were +1 on 325 flips, +2 on 96, +3 on 29,
++4 on 16, +5 on 5, +6 on 3, +8 on 5, and zero on 10.  Among bad-end→clear
+rescues, 130/131 flips were progress choices and only one was survival-driven.
+The missing faculty is therefore long-horizon clearing efficiency / sequential
+myopia much more than a final-height veto.
+
+A naïve candidate classifier stayed champion on every fold because 92.13% of
+gated decisions are no-flips.  The correct structured question—first predict
+*whether* to leave champion, then select ranks 2--4—does contain exploratory
+signal: grouped-CV HGB trigger AUC/AP 0.7758/0.2336 versus shuffled-label
+0.4846/0.0750; alternative accuracy 0.4949 versus 0.3333.  A depth-2 version
+retained AUC 0.7563 and alternative accuracy 0.5399 versus null 0.4945/0.3088.
+
+That compact policy then **failed to transfer** under candidate-independent
+pressure.  Registered E0 seeds 51300..51359 passed every implementation/dose
+gate (399 true flips, 401 null; flip-rate ratio 0.908; pressure ratio 1.016),
+but true worsened bad ends +5.00 pp and clear -5.00 pp while the shuffled null
+improved them -6.67/+6.67 pp.  Bad-end DiD was +11.67 pp, wrong direction; all
+three nomination checks failed.  Verdict: **NO_NOMINATE this compact policy**,
+not a lane closure.  Future teacher work needs temporal/trajectory vocabulary
+or a real small rollout, not a more confident one-ply classifier.  Durable
+record: `champion-source:263f23a`, `DISTILLED_TEACHER_E0.md`.
+
+### Execution-fidelity lanes
+
+- **Theta-400 Pocket:** `pocket-source:2f593ed` stages the theta-400 firmware,
+  clean build/proof scripts, and the Pocket/MiSTer RTL-body identity proof.
+  A full Quartus refit and value A/B remain unrun.  The refit is mandatory at
+  98.8% ALM occupancy; the cart-level value anchor is -4.16 pills, not -11.
+- **Tuck fall-budget guard:** `v8-source:tuckguard-approach` at `526a939`
+  changes the predicate from final to approach column, includes the exact
+  final-column killed mutant and one-byte ROM manifests, and fixes a causal
+  analysis error: after first divergence later trajectory events are not
+  paired without saved-state counterfactuals.  All static/py65/analyser gates
+  pass.  The Mesen A/B has **not started** as of the last local check.
+- Never run the Mesen tuck A/B and the Quartus theta-400 fit concurrently on
+  the local box.
+
+### `d_spawn_h` is already partly priced
+
+The exact shippable S0 experiment (`d_spawn_h` alone, four-segment monotone
+hinge) already exists: holdout float AUC 0.654299 versus champion 0.664504;
+combined AUC 0.666965 (only +0.00246); B2 delta -0.0102 with CI spanning zero,
+FAIL.  It was never rolled out at endpoints, so “never tested alone” is true
+only for rollout, not for feature/value evidence.  SPAWN is primarily a dead-
+zone sensor (zero for heights <=12 on 98.13% of cleared decisions), not merely
+clipped at the top.  Do not fund a broad `d_spawn_h` sweep without accounting
+for this prior negative and a dose-matched null.
 
 ## Non-negotiable laws
 
@@ -66,6 +155,9 @@ single proxy gets to silently redefine the objective.
    The `N>=4,500` line in the plan's GO branch is stale and must not be used.
 7. Per-flip mechanism data is mandatory and cheap: ply, time to end, viruses,
    height, spawn height, champion tie/rank/gap, and both actions.
+8. After the first action divergence, later treatment events are not paired
+   counterfactuals against the baseline trajectory.  A causal later-event
+   comparison requires saved-state replay from the common predecessor.
 
 ## Immediate sequence
 
@@ -73,11 +165,13 @@ single proxy gets to silently redefine the objective.
    and a real 24-seed multiprocessing emission.
 2. **DONE at `oracle-ceiling:29fc72c`:** seal the ideal arm, dose-matched null,
    executable verdict, DIST implementation, provenance, and durable runner.
-3. Launch Tier-A CLAIR plus its null. The paid CCX23 launch helper is ready;
-   this sandbox cannot open SSH sockets. Full gates run before endpoint seeds.
-4. Branch on valid calibration evidence. Independently continue the theta-400
-   Pocket refit and tuck fall-budget guard rewrite.
-5. Use seed 30011 opportunistically to build a real freeze discriminator.
+3. **RUNNING, user-reported:** Tier-A CLAIR on Hetzner. Its null still needs a
+   reported launch. This sandbox cannot monitor either over SSH.
+4. Branch on valid calibration evidence. Do not promote the compact DT2
+   distillation (`263f23a`); it failed its E0 nomination screen.
+5. Finish the Mesen tuck-guard A/B, then run the theta-400 Pocket refit/proof.
+   These execution-fidelity lanes are independent of oracle endpoint results.
+6. Use seed 30011 opportunistically to build a real freeze discriminator.
 
 ## Adversarial gap audit — resolve before an oracle Tier-A run
 
