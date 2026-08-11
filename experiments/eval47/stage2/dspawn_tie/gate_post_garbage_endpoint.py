@@ -16,6 +16,7 @@ for path in (str(HERE), str(ORACLE)):
 
 import fit_stratified_post_garbage_null as F  # noqa: E402
 import gate_post_garbage_dspawn_v8 as G  # noqa: E402
+import analyze_post_garbage_v8_endpoint as A  # noqa: E402
 import oracle_arm as O  # noqa: E402
 import post_garbage_dspawn_v8 as P  # noqa: E402
 import validate_stratified_post_garbage_null as V  # noqa: E402
@@ -53,6 +54,7 @@ def main():
     live_flips = 0
     live_valid = True
     zero_mutant_flips = 0
+    pipeline_rows = []
     for seed in range(70300, 70304):
         arm = P.PostGarbageArm("null", provenance=True, cell_cutoffs=cutoffs)
         got = P.play_one(seed, arm, C, model)
@@ -65,6 +67,13 @@ def main():
         mutant = P.PostGarbageArm("null", provenance=True, cell_cutoffs=[0] * 40)
         wrong = P.play_one(seed, mutant, C, model)
         zero_mutant_flips += wrong["null_distinct_flips"]
+        base = P.play_one(seed, P.PostGarbageArm("base", provenance=True), C, model)
+        treatment = P.play_one(
+            seed, P.PostGarbageArm("treatment", provenance=True), C, model)
+        pipeline_rows.append({"seed": seed, "base": base,
+                              "treatment": treatment, "null": got})
+    pipeline_errors = A.flip_errors(pipeline_rows) + A.no_flip_errors(pipeline_rows)
+    analyzer_mutants = A.diagnostic_mutants()
 
     boundary_checks = {
         "h4": P.matching_cell_from_metrics(4, 70, 10) == 0,
@@ -99,11 +108,14 @@ def main():
         "table_byte_mutant_killed": (
             hashlib.sha256(TABLE.read_bytes() + b"x").hexdigest() != TABLE_SHA),
         "current_engineering_gate": all(row["pass"] for row in engineering.values()),
+        "live_analyzer_pipeline": not pipeline_errors,
+        "analyzer_mutants": all(analyzer_mutants.values()),
     }
     source_paths = {
         "post_garbage_dspawn_v8": Path(P.__file__).resolve(),
         "endpoint_runner": HERE / "run_post_garbage_v8_endpoint.py",
         "endpoint_gate": Path(__file__).resolve(),
+        "endpoint_analyzer": HERE / "analyze_post_garbage_v8_endpoint.py",
     }
     source_sha256 = {name: hashlib.sha256(path.read_bytes()).hexdigest()
                      for name, path in source_paths.items()}
@@ -113,6 +125,7 @@ def main():
         "validation_null_records": len(records),
         "validation_selected": len(selected), "live_smoke_flips": live_flips,
         "source_sha256": source_sha256,
+        "pipeline_errors": pipeline_errors, "analyzer_mutants": analyzer_mutants,
         "boundary_checks": boundary_checks, "engineering_checks": engineering,
         "checks": checks,
         "pass": all(checks.values()),

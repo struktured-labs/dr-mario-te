@@ -7,8 +7,23 @@
  "live_smoke_flips": 9,
  "source_sha256": {
   "post_garbage_dspawn_v8": "d55509ef7a98925e0fefd9e113e3636195460335a5c17ab4375d5732eba1c203",
-  "endpoint_runner": "00660ea6fdb050dcc1ad648332d96a8424736552ba69ccec44f8ba5f63853bf3",
-  "endpoint_gate": "c12f8a009199ffd4dc846fa8eb62191cf188979506ed8b665a8a8ae7f9ee7f29"
+  "endpoint_runner": "26be76db763b836f082be3c22e2ab34ad653c701d4d6b103cc9e5a8d100c3b00",
+  "endpoint_gate": "dbabbdd65fe45c44f42d5cb3e691369daa670cf53543b38d29f43f00a8f8c26e",
+  "endpoint_analyzer": "9d682d1b541381defd9dd91d9d68ef068a01030ce6a223c010ee7024b1ec9333"
+ },
+ "pipeline_errors": [],
+ "analyzer_mutants": {
+  "go_fixture": true,
+  "dies_base_harm_rejected": true,
+  "dies_null_harm_rejected": true,
+  "bad_base_harm_rejected": true,
+  "bad_null_harm_rejected": true,
+  "null_invalid_rejected": true,
+  "adequacy_rejected": true,
+  "missing_provenance_rejected": true,
+  "semantic_alias_rejected": true,
+  "wrong_matching_cell_rejected": true,
+  "no_flip_identity_rejected": true
  },
  "boundary_checks": {
   "h4": true,
@@ -143,7 +158,9 @@
   "zero_cutoff_rejects": true,
   "full_cutoff_accepts": true,
   "table_byte_mutant_killed": true,
-  "current_engineering_gate": true
+  "current_engineering_gate": true,
+  "live_analyzer_pipeline": true,
+  "analyzer_mutants": true
  },
  "pass": true
 }
