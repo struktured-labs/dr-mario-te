@@ -7,16 +7,27 @@ a subsequently discovered defect.
 
 ## Strategic frame
 
-North star: **beat dr. lulu.** The champion is already an excellent Dr. Mario
-player. It is strong over most of the state distribution and conspicuously
-myopic in a smaller set of regimes. The programme is therefore not searching
-for a generally different player. It is finding those myopias, proving an
-instrument can represent each one, and adding narrow directed behaviour while
-preserving clean-game decisions.
+North star: **build the best Dr. Mario player in the world on original NES
+hardware.** Beating dr. lulu is an important near-term comparator, but dr. lulu
+is itself a proxy rather than the final objective. There is not yet one trusted
+scalar evaluation metric for world-best play.
+
+The champion is already an excellent Dr. Mario player. It is strong over most
+of the state distribution and occasionally makes conspicuously dumb decisions;
+those tail failures currently appear to be what prevent it from beating lulu
+or stronger opponents. The programme is therefore not searching for a
+generally different player. It is finding those myopias, proving an instrument
+can represent each one, and adding narrow directed behaviour while preserving
+clean-game decisions.
 
 This framing matters because churn is expensive: stage 2 changed only 1.8% of
 plies but reshuffled roughly 20% of outcomes. An undirected always-on change can
 erase a lot of already-good play.
+
+Until a better scalar metric is established, evaluation is necessarily a
+portfolio: opponent outcomes, rare-decision/blunder diagnosis, clean-play
+non-regression, and behaviour on an OG-NES-representative execution path. No
+single proxy gets to silently redefine the objective.
 
 ## Verified state
 
@@ -142,8 +153,11 @@ random numbers plus cross-seed uniqueness on the registered block.
 
 The fitted lulu-pressure rig has about 80% base clear rate, below the 96.9%
 label-quality screen, and dies-ahead is a proxy rather than an actual match win.
-Use it to discover and price myopias, but any promoted change still needs a
-direct head-to-head or hardware-representative validation against dr. lulu.
+Dr. lulu is also a proxy for the real objective: best-in-world play on original
+NES hardware. Use these endpoints to discover and price myopias, but promote on
+converging evidence: fewer identifiable blunders, no broad clean-play
+regression, stronger opponent results, and hardware-representative execution.
+The project does not yet claim to know the perfect weighting of those signals.
 
 ## Questions whose answers change the experiment
 
