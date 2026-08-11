@@ -13,7 +13,7 @@ fi
 
 segments=$(find "$OUT" -maxdepth 1 -type f -name 'seg_*.jsonl' | wc -l)
 rows=$(find "$OUT" -maxdepth 1 -type f -name 'seg_*.jsonl' -exec wc -l {} + \
-  | awk '{n+=$1} END {print n+0}')
+  | awk '$2 != "total" {n+=$1} END {print n+0}')
 summaries=$(find "$OUT" -maxdepth 1 -type f -name 'seg_*.summary.json' | wc -l)
 printf 'progress rows=%s/9000 segments=%s summaries=%s\n' "$rows" "$segments" "$summaries"
 
@@ -36,4 +36,3 @@ pgrep -af '[r]un_post_garbage_v8_endpoint.py' || true
 printf 'storage\n'
 du -sh "$OUT"
 df -h "$OUT" | sed -n '1,2p'
-

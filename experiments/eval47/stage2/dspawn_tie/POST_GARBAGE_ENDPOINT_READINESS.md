@@ -64,3 +64,8 @@ Read-only local status (does not restart or edit the job):
 ```bash
 bash experiments/eval47/stage2/dspawn_tie/monitor_post_garbage_endpoint.sh
 ```
+
+The initial monitor implementation summed `wc`'s per-file rows and its
+synthetic `total` row, doubling progress once multiple segments existed. The
+monitor now excludes that summary row; this operational fix does not touch the
+runner, policy, META, gate, or endpoint data.
