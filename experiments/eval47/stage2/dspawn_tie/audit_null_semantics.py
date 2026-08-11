@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import collections
 import hashlib
+import importlib
 import json
 import os
 import sys
@@ -35,8 +36,13 @@ def sha256(path):
 
 
 def load_rows(root):
+    root = Path(root)
+    meta_path = root / "META.json"
+    if not meta_path.exists():
+        raise RuntimeError("input META.json is missing")
+    meta = json.loads(meta_path.read_text())
     rows, paths = {}, []
-    for path in sorted(Path(root).glob("seg_*.jsonl")):
+    for path in sorted(root.glob("seg_*.jsonl")):
         paths.append(path)
         for lineno, line in enumerate(path.open(), 1):
             try:
@@ -54,7 +60,24 @@ def load_rows(root):
     for path in paths:
         digest.update(path.name.encode() + b"\0")
         digest.update(path.read_bytes())
-    return ordered, paths, digest.hexdigest()
+    return ordered, paths, digest.hexdigest(), meta_path, meta
+
+
+def runtime_manifest():
+    names = ("dspawn_tie_v8", "firmware_v8_policy", "oracle_arm",
+             "pressure_rig", "p0_ab", "bursty_model", "exogenous_pressure",
+             "cascade_chain_x", "cascade_link_x", "cascade_stranded_x",
+             "fast_rtl_x", "fast_sim_x", "nes_pills", "drmario.faithful_env",
+             "drmario.faithful_game")
+    files = {"audit": str(Path(__file__).resolve()), "fit": FIT}
+    for name in names:
+        files[name] = str(Path(importlib.import_module(name).__file__).resolve())
+    docs = {name: {"path": path, "sha256": sha256(path)}
+            for name, path in files.items()}
+    rolled = hashlib.sha256("".join(
+        f"{name}:{doc['sha256']}" for name, doc in sorted(docs.items()))
+        .encode()).hexdigest()
+    return {"rolled": rolled, "files": docs, "python": sys.version.split()[0]}
 
 
 def first_targets(row):
@@ -224,7 +247,7 @@ def main():
                     help="implementation smoke only: first N rows with a flip")
     ap.add_argument("--out", default=str(HERE / "out" / "null_semantic_audit.json"))
     args = ap.parse_args()
-    rows, paths, input_hash = load_rows(args.root)
+    rows, paths, input_hash, meta_path, meta = load_rows(args.root)
     if len(rows) != N_FINAL and not args.allow_partial:
         raise SystemExit(f"refusing final audit: have {len(rows)}/{N_FINAL} rows")
     work = [(int(r["seed"]), first_targets(r)) for r in rows if first_targets(r)]
@@ -246,6 +269,14 @@ def main():
     summary = {arm: summarize(by_arm[arm]) for arm in by_arm}
     dt, dn = (summary[a]["distinct_boards"] for a in ("treatment", "null"))
     complete = len(rows) == N_FINAL and not args.limit
+    if complete:
+        if len(paths) != 36:
+            raise SystemExit(f"final audit requires 36 raw segments, found {len(paths)}")
+        if (meta.get("n_seeds") != N_FINAL
+                or meta.get("seeds") != [61000, 69999]
+                or meta.get("policy_semantics") != "firmware_v8/p2_surrogate"
+                or meta.get("pressure") != "exo_lulu"):
+            raise SystemExit("final input META contract mismatch")
     result = {
         "version": "dspawn-null-semantic-audit-v1",
         "authority": "FINAL_9000" if complete else "PARTIAL_IMPLEMENTATION_SMOKE",
@@ -254,9 +285,11 @@ def main():
         "complete": complete,
         "input": {"root": str(Path(args.root).resolve()),
                   "combined_sha256": input_hash,
-                  "files": [p.name for p in paths]},
-        "source": {"audit_sha256": sha256(__file__),
-                   "fit_sha256": sha256(FIT)},
+                  "files": [p.name for p in paths],
+                  "meta_path": str(meta_path.resolve()),
+                  "meta_sha256": sha256(meta_path),
+                  "eval_runtime_rolled": meta.get("runtime_manifest", {}).get("rolled")},
+        "runtime_manifest": runtime_manifest(),
         "replay_gate": {"pass": True, "errors": [],
                         "killed_mutants": mutants},
         "arms": summary,
