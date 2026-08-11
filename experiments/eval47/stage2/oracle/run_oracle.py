@@ -62,6 +62,8 @@ def runtime_manifest(model):
     names = ("oracle_arm", "pressure_rig", "p0_ab", "bursty_model",
              "fast_rtl_x", "fast_sim_x", "root_search", "terms47", "fb",
              "nes_pills", "drmario.faithful_env", "drmario.faithful_game")
+    if model == "exo_lulu":
+        names += ("exogenous_pressure",)
     files = {"run_oracle": os.path.abspath(__file__)}
     for name in names:
         module = importlib.import_module(name)
@@ -189,7 +191,8 @@ def _segment_summary(rows):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", choices=["lulu", "drip"], default="lulu")
+    ap.add_argument("--model", choices=["lulu", "exo_lulu", "drip"],
+                    default="lulu")
     ap.add_argument("--label", choices=["true", "shuffle", "const"],
                     default="true",
                     help="'true' = the oracle; 'shuffle' = the KILLED MUTANT; "

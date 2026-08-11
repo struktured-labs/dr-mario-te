@@ -37,9 +37,11 @@ At every other ply the champion's action is played unchanged, byte for byte.
 FORK.  On an oracle ply the TOP-4 candidates by champion value (ties broken by
 the champion's own enumeration order) are each forked HORIZON=15 pills forward:
 the candidate action is applied, then the UNMODIFIED champion policy plays on,
-with the real dr. lulu bursty injection running exactly as in the live game.
-Garbage is a pure function of (seed, pills_placed), so a fork sees precisely the
-volleys the real game would have delivered on that line.
+with the selected pressure environment running exactly as in the live game.
+The historical `lulu` mode is self-coupled: firing also depends on that line's
+own clear size.  The separately pre-registered `exo_lulu` sensitivity offers a
+complete volley from `(seed, pills_placed)` only, so candidates share an actual
+external schedule.  See `PREREG_EXOGENOUS_PRESSURE.md`.
 
 LABEL.  Each fork yields `(survived, progress)`:
     survived = 0 if the fork topped out or was spawn-blocked inside the horizon
@@ -203,6 +205,9 @@ def make_env(seed, level, max_pills=300):
     env._rand_pill = PillDraw(NesPillSource(seed=seed))
     env.cur = env._rand_pill()
     env.nxt = env._rand_pill()
+    env._oracle_garbage = 0
+    env._oracle_pressure_offers = 0
+    env._oracle_offered_cells = 0
     return env
 
 
@@ -247,11 +252,13 @@ def _advance(env, action, C, seed, bmodel):
     """
     import pressure_rig as PR
     model_kind = C.get("model_kind", "drip")
+    pressure_mode = C.get("pressure_mode", "coupled")
     drip_period = C.get("drip_period") or PR.GARBAGE_PERIOD
     drip_k = C.get("drip_k") or PR.GARBAGE_K
 
     occ_before = (int(np.count_nonzero(env.board.color))
-                  if model_kind == "bursty" else 0)
+                  if model_kind == "bursty" and pressure_mode == "coupled"
+                  else 0)
     _, _, term, trunc, info = env.step(int(action))
     if term:
         if info["won"]:
@@ -260,16 +267,25 @@ def _advance(env, action, C, seed, bmodel):
     if trunc:
         return "stall", None
     if env.pills_placed >= PR.GARBAGE_MIN_PILLS:
+        landed = 0
         if model_kind == "drip":
             if env.pills_placed % drip_period == 0:
-                PR._inject_garbage(env.board, seed, env.pills_placed, k=drip_k)
-        else:
+                landed = PR._inject_garbage(
+                    env.board, seed, env.pills_placed, k=drip_k)
+        elif pressure_mode == "exogenous":
+            from exogenous_pressure import inject_exogenous_garbage
+            landed, offer = inject_exogenous_garbage(
+                env.board, bmodel, seed, env.pills_placed)
+            env._oracle_pressure_offers += int(offer.fires)
+            env._oracle_offered_cells += len(offer.cells)
+        else:  # historical solo proxy: receiver's own clear drives pressure
             from bursty_model import inject_bursty_garbage
             occ_after = int(np.count_nonzero(env.board.color))
             clear_size = max(0, occ_before + 2 - occ_after)
             if clear_size > 0:
-                inject_bursty_garbage(env.board, bmodel, seed,
-                                      env.pills_placed, clear_size)
+                landed = inject_bursty_garbage(
+                    env.board, bmodel, seed, env.pills_placed, clear_size)
+        env._oracle_garbage += int(landed)
         if env.board.virus_count() == 0:
             return "clear", None
         if env.board.spawn_blocked():
@@ -464,6 +480,9 @@ def play_one(seed, arm, C, bmodel):
             "viruses_left": (int(v_at_topout) if v_at_topout is not None
                              else -1),
             "n_plies": n_plies,
+            "garbage": int(env._oracle_garbage),
+            "pressure_offers": int(env._oracle_pressure_offers),
+            "offered_cells": int(env._oracle_offered_cells),
             "flips": arm.stats["flips"],
             "raw_flips": arm.stats["raw_flips"],
             "null_rejected_flips": arm.stats["null_rejected_flips"],
@@ -477,10 +496,15 @@ def init_rig(model="lulu", level=11, wt=0, ws=20):
     """Bring up pressure_rig exactly as the stage-2 rollout does."""
     import p0_ab as P
     import pressure_rig as PR
-    obj = P.load_lulu() if model == "lulu" else None
-    PR._init(level, wt, ws, model_kind=("bursty" if model == "lulu" else "drip"),
+    if os.environ.get("DR_LULU_FIT"):
+        P.LULU_FIT = os.environ["DR_LULU_FIT"]
+    obj = P.load_lulu() if model in ("lulu", "exo_lulu") else None
+    PR._init(level, wt, ws,
+             model_kind=("bursty" if model in ("lulu", "exo_lulu") else "drip"),
              bursty_model_obj=obj)
-    return dict(PR._C), obj
+    C = dict(PR._C)
+    C["pressure_mode"] = "exogenous" if model == "exo_lulu" else "coupled"
+    return C, obj
 
 
 # ------------------------------------------------------------------ selftest
