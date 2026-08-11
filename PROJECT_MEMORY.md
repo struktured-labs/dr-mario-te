@@ -369,14 +369,14 @@ both base and null, +1pp bad-end safety, null dose/shape/timing gates, stalls at
 parity, and full provenance.  `095774a` wires the frozen table into an ordered,
 resumable runner and passes 13 selector/table gates, including exact replay of
 all 616 validation selections and live zero-table/bin mutants.  `2b6b62d` adds
-the fail-closed analyzer; all 11 verdict/provenance mutants pass in both
-directions.  `5d23afd` binds the launch gate to exact policy/runner/gate/analyzer
+the fail-closed analyzer; all 12 verdict/provenance/zero-dose mutants pass in both
+directions.  `7b5fa36` binds the launch gate to exact policy/runner/gate/analyzer
 source hashes, includes a live four-row three-arm analyzer pass, gates base
 active-duty telemetry, and makes stale gates fail.  The runner self-configures its Numba cache.  A
 12-pair disclosed-seed benchmark projects ~5.25 wall-hours / ~21 core-hours at
 four local workers; budget 6--8 hours.  No seed in the endpoint range has been
 opened; launch requires explicit owner action.  Exact identity and commands
-are in `POST_GARBAGE_ENDPOINT_READINESS.md` (`886fe15`).
+are in `POST_GARBAGE_ENDPOINT_READINESS.md` (`05f9093`).
 
 ### `d_spawn_h` is already partly priced
 
