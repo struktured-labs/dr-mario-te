@@ -71,3 +71,4 @@ fpga/copro/strand_cases.txt
 # above, but the whole dir is scratch and shouldn't be scanned/committed as source)
 tmp_carts/
 experiments/eval47/stage2/results/
+experiments/eval47/film_20260808/out/
