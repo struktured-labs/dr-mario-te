@@ -141,11 +141,19 @@ def diagnostic_mutants():
     template = {
         "seed": 1,
         "base": {"seed": 1, "res": "clear", "n_plies": 10,
-                 "flips": 0, "flip_log": []},
+                 "flips": 0, "flip_log": [], "won": 1, "topout": 0,
+                 "stall": 0, "pills": 10, "dies_ahead": 0,
+                 "viruses_left": -1, "garbage": 2},
         "null": {"seed": 1, "res": "clear", "n_plies": 10,
-                 "flips": 0, "flip_log": []},
+                 "flips": 0, "flip_log": [], "won": 1, "topout": 0,
+                 "stall": 0, "pills": 10, "dies_ahead": 0,
+                 "viruses_left": -1, "garbage": 2},
         "treatment": {"seed": 1, "res": "clear", "n_plies": 10,
-                      "flips": 1, "flip_log": [{
+                      "flips": 1, "flip_log": [], "won": 1, "topout": 0,
+                      "stall": 0, "pills": 10, "dies_ahead": 0,
+                      "viruses_left": -1, "garbage": 2},
+    }
+    template["treatment"]["flip_log"] = [{
                           "seed": 1, "arm": "treatment", "ply": 3,
                           "t_to_end": 6, "viruses": 8, "maxh": 10,
                           "d_spawn_h": 8, "raw_tie_size": 2,
@@ -153,8 +161,7 @@ def diagnostic_mutants():
                           "base_post_d_spawn_h": 9,
                           "chosen_post_d_spawn_h": 8,
                           "champ_rank_chosen": 2, "res": "clear",
-                      }]},
-    }
+                      }]
     if provenance_errors([template]):
         raise RuntimeError("valid diagnostic fixture rejected")
     missing = copy.deepcopy(template)
@@ -163,10 +170,58 @@ def diagnostic_mutants():
     inverted["treatment"]["flip_log"][0]["chosen_post_d_spawn_h"] = 10
     count = copy.deepcopy(template)
     count["treatment"]["flips"] = 2
+    identity = copy.deepcopy(template)
+    identity["null"]["pills"] = 11
     return {
         "missing_field_rejected": bool(provenance_errors([missing])),
         "non_improving_treatment_rejected": bool(provenance_errors([inverted])),
         "flip_count_mismatch_rejected": bool(provenance_errors([count])),
+        "no_flip_identity_mismatch_rejected": bool(no_flip_identity_errors([identity])),
+    }
+
+
+def no_flip_identity_errors(rows):
+    """A deterministic arm that never intervened must equal base exactly."""
+    errors = []
+    fields = ("res", "won", "topout", "stall", "pills", "dies_ahead",
+              "viruses_left", "n_plies", "garbage")
+    for row in rows:
+        for arm in ("treatment", "null"):
+            if int(row[arm]["flips"]) != 0:
+                continue
+            bad = [key for key in fields if row[arm][key] != row["base"][key]]
+            if bad:
+                errors.append(f"seed {row['seed']} {arm}: no-flip mismatch {bad}")
+    return errors
+
+
+def first_divergence(rows, arm):
+    """Derive the first-divergence marker omitted from the raw v1 schema."""
+    first = []
+    transitions = {}
+    for row in rows:
+        logs = row[arm].get("flip_log", [])
+        if not logs:
+            continue
+        f = min(logs, key=lambda x: int(x["ply"]))
+        first.append(f)
+        key = f"{row['base']['res']}_to_{row[arm]['res']}"
+        transitions[key] = transitions.get(key, 0) + 1
+    if not first:
+        return {"n": 0}
+    drop = np.array([int(f["base_post_d_spawn_h"])
+                     - int(f["chosen_post_d_spawn_h"]) for f in first])
+    return {
+        "n": len(first),
+        "derived_marker": "minimum logged ply within each arm trajectory",
+        "median_ply": float(np.median([f["ply"] for f in first])),
+        "median_t_to_end": float(np.median([f["t_to_end"] for f in first])),
+        "median_sensor_drop": float(np.median(drop)),
+        "sensor_drop": {str(k): int((drop == k).sum()) for k in sorted(set(drop))},
+        "champion_rank_chosen": {
+            str(k): int(sum(int(f["champ_rank_chosen"]) == k for f in first))
+            for k in sorted(set(int(f["champ_rank_chosen"]) for f in first))},
+        "base_to_arm_outcomes": transitions,
     }
 
 
@@ -195,12 +250,14 @@ def main():
     if not prefix_exact:
         raise SystemExit("rows are not the registered ascending seed prefix")
     prov_errors = provenance_errors(rows)
+    identity_errors = no_flip_identity_errors(rows)
     mutants = diagnostic_mutants()
     if not all(mutants.values()):
         raise SystemExit("diagnostic killed-mutant gate failed")
-    if load_errors or prov_errors:
+    if load_errors or prov_errors or identity_errors:
         raise SystemExit("provenance gate failed: " + json.dumps(
-            {"load_errors": load_errors[:10], "provenance_errors": prov_errors[:10]}))
+            {"load_errors": load_errors[:10], "provenance_errors": prov_errors[:10],
+             "no_flip_identity_errors": identity_errors[:10]}))
 
     arms = ("base", "treatment", "null")
     bad = {a: np.array([int(r[a]["topout"] or r[a]["stall"]) for r in rows])
@@ -266,6 +323,10 @@ def main():
         "pills": pills,
         "provenance": {"treatment": provenance(rows, "treatment"),
                        "null": provenance(rows, "null"),
+                       "first_divergence": {
+                           "treatment": first_divergence(rows, "treatment"),
+                           "null": first_divergence(rows, "null")},
+                       "no_flip_identity_pass": True,
                        "integrity_pass": True,
                        "killed_mutants": mutants},
         "note": ("topout and 300-pill stall both score as bad ends; exogenous Lulu "
