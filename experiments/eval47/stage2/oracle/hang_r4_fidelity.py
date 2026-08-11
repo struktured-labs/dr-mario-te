@@ -19,8 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(HERE))))
-if os.path.join(REPO, "tests") not in sys.path:
-    sys.path.insert(0, os.path.join(REPO, "tests"))
+COPRO_TESTS = "/home/struktured/projects/dr-mario-mods/tests"
 
 import oracle_arm as O  # noqa: E402
 
@@ -87,6 +86,10 @@ def _to_nes(col, vir):
 def mirror_gate():
     """Cross-check the mirror and prove three relevant wrong versions are rejected."""
     import random
+    # Use the copro source tree that actually contains/emits R4. This clone's local
+    # nes_d3_golden is explicitly weekend-era and has no R4 flags at all.
+    if COPRO_TESTS not in sys.path:
+        sys.path.insert(0, COPRO_TESTS)
     import nes_d3_golden as G
 
     old = (G.W_HANG, G.HANG_DEPTH_PROP, G.W_HANG_GAP, G.HANG_VIRUS_COL_ONLY)
