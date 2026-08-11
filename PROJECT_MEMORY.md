@@ -213,36 +213,61 @@ The result commit is `champion-source:361a7ca` (V2 prereg `9468a84`).
 
 ### Execution-fidelity lanes
 
-- **Theta-400 Pocket:** `pocket-source:2f593ed` stages the theta-400 firmware,
-  clean build/proof scripts, and the Pocket/MiSTer RTL-body identity proof.
-  A full Quartus refit and value A/B remain unrun.  The refit is mandatory at
-  98.8% ALM occupancy; the cart-level value anchor is -4.16 pills, not -11.
-- **Tuck fall-budget guard:** `v8-source:tuckguard-approach` at `526a939`
-  changes the predicate from final to approach column, includes the exact
-  final-column killed mutant and one-byte ROM manifests, and fixes a causal
-  analysis error: after first divergence later trajectory events are not
-  paired without saved-state counterfactuals.  All static/py65/analyser gates
-  pass.  The Mesen A/B has **not started** as of the last local check.
+- **Theta-400 Pocket: FIT/IMAGE-PROOF PASS.** `pocket-source:d30b52c` banks
+  `NES_theta400_pocket_20260811.rbf` (SHA256
+  `68d0d41f9a987c64742b7d625bf45c2ba0826db3f7469494da9c84fa30026b4b`).
+  Quartus 23.1std.1 seed 8 used 18,262/18,480 ALMs, leaving 218 free against
+  the frozen 200-ALM floor; worst and copro setup slack were both +1.682 ns.
+  The post-fit ROM extractor found one valid half ordering and matched theta400
+  16,384/16,384 bytes; wrong ordering differed 12,062 bytes and theta150/theta4000
+  controls were each rejected by the expected two bytes.  This proves fit and
+  image content, not Pocket runtime behavior or Pocket-specific value.  The
+  cart-level value anchor remains -4.16 pills, not -11.
+- **Tuck fall-budget guard: mechanism NO_GO.** `v8-source:e414e72` banks the
+  six-arm 108,000-frame Mesen replay.  The unguarded controls reproduced 23
+  completable synthetic tucks and four Pocket-v1 approach mislands.  Both the
+  rewritten approach guard and the exact old/final-column mutant suppressed
+  all four mislands.  Every control event had equal free-row readings in the
+  two columns (`0/0` or `1/1`), so the stream contained zero
+  predicate-discriminating faults and the killed mutant survived.  Do not run
+  Gate 4 or claim the approach sensor caused the rescue.  Mesen's upstream
+  built-in test runner was used because the sandbox denies Xvfb socket binds;
+  it executes the real native core and Lua without Avalonia/X11.
 - **Freeze discriminator:** `freeze-source:freeze-pause-discriminator` at
   `1000d6d` adds a pause-loop discriminator for deterministic seed 30011.  The
   old `srchGapMax=1199` signal alone cannot distinguish a pause from a wedge.
   The Mesen freeze run has not started.
-- Never run the Mesen tuck A/B and the Quartus theta-400 fit concurrently on
-  the local box.
+- The theta fit and tuck replay are complete; do not rerun them merely to seek
+  a friendlier result.
 
-Owner-runnable queued jobs, in this order:
+Remaining owner-runnable Mesen job:
 
 ```
-cd /home/struktured/projects/dr-mario-te/v8-source
-setsid nohup bash tools/gate/run_tuckguard_approach.sh > tmp/tuckguard_launcher.log 2>&1 </dev/null &
-
 cd /home/struktured/projects/dr-mario-te/freeze-source
 setsid nohup bash tools/gate/run_freeze_pause.sh > tmp/freeze_pause_launcher.log 2>&1 </dev/null &
 ```
 
-Run the freeze job after the tuck Mesen job, not concurrently.  The theta-400
-Pocket refit remains a separate Quartus job and needs its own clean refit,
-bijection proof and value A/B.
+The theta-400 Pocket image still needs actual Pocket runtime verification and a
+Pocket-specific value A/B before promotion.
+
+### Exact-v8 `d_spawn_h` tie-only arm is running
+
+`champion-source:32bff12` preregistered a narrower resolution test than the
+closed always-on penalty family: linked-fixpoint `d_spawn_h` may replace the
+enumeration/jitter choice only inside an exact unjittered evaluator tie, and
+never changes a strict decision.  The dose-matched null chooses another tied
+action from `(seed,ply,T,base)` hashes without reading the board or sensor.
+
+Implementation/gates are `25c9edc` / `ee3cfba`: 160/160 real legal masks
+matched, four exogenous-Lulu base games were action/outcome exact, and clipped
+sensor, gap-one, sensor-reading-null, legality and seed-zero mutants were all
+killed.  Disjoint calibration seeds 60000..60239 found 200 flips / 33,409 plies
+(0.599%), passing the 100-flip / 0.25% floors; null keep was frozen at
+16,767/1,000,000 (`ae3019f`).  The 9,000 paired evaluation seeds 61000..69999
+are running under candidate-independent `exo_lulu`, three arms per seed.  Do
+not treat a partial prefix as a verdict; final dose must match within 10% and
+both bad-end CIs (treatment-base and treatment-null) must exclude zero in the
+beneficial direction for GO.
 
 ### `d_spawn_h` is already partly priced
 
@@ -287,8 +312,8 @@ for this prior negative and a dose-matched null.
    greater virus progress, short horizons fail to reproduce them, and the
    compact one-ply teacher failed transfer.  Seek a shippable temporal/tempo
    vocabulary or a genuinely small rollout rather than another leaf reweight.
-4. Finish the tuck-guard Mesen A/B, then the freeze discriminator Mesen run.
-   Run the theta-400 Pocket refit/proof separately.  None has been executed.
+4. Preserve the completed theta400 image and tuck NO_GO.  The remaining Mesen
+   execution lane is the freeze discriminator.
 5. Do not promote film telemetry or compact DT2; both failed their registered
    screens.  `d_spawn_h` alone also has prior negative feature/value evidence.
 
