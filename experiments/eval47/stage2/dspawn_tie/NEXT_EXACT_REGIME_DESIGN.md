@@ -13,6 +13,14 @@ timing and medians were close, but its successor-Hamming tails were not
 blocked pending a newly calibrated stratified null. See
 `POST_GARBAGE_CALIBRATION_RESULT.md`.
 
+Second update: a 40-cell Hamming/timing/value-gap table was frozen before fresh
+seeds 70700..70939. It generalized every registered distribution and first-flip
+timing gate, but selected only 258 distinct flips against treatment's 327
+(21.10% dose mismatch, limit 10%). Registered result:
+`NOT_TESTABLE_STRATIFIED_NULL`. Per contract it may not be refit on that block;
+endpoint play remains unauthorized. See
+`STRATIFIED_NULL_VALIDATION_RESULT.md`.
+
 ## Why this candidate remains alive
 
 The old compact/drip screen's literal verdict is no-graduate under its frozen
