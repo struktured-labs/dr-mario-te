@@ -233,19 +233,21 @@ The result commit is `champion-source:361a7ca` (V2 prereg `9468a84`).
   Gate 4 or claim the approach sensor caused the rescue.  Mesen's upstream
   built-in test runner was used because the sandbox denies Xvfb socket binds;
   it executes the real native core and Lua without Avalonia/X11.
-- **Freeze discriminator:** `freeze-source:freeze-pause-discriminator` at
-  `1000d6d` adds a pause-loop discriminator for deterministic seed 30011.  The
-  old `srchGapMax=1199` signal alone cannot distinguish a pause from a wedge.
-  The Mesen freeze run has not started.
+- **Freeze discriminator: controls VOID the preregistration.**
+  `freeze-source:0a0ac0e` banks the headless-Mesen control record and
+  `freeze-source:9148bf5` makes the target runner stop after a failed control.
+  The intended pause-positive control was classified `UNPAUSED_WEDGE`, while
+  the intended healthy/unpaused control was classified `PAUSE_LOOP`; therefore
+  seed 30011 was deliberately not inspected under this gate.  The runner used
+  `probe_soak_fixed.lua`, which has no implementation for injection mode 3,
+  and a natural mode-4 hold can exceed the frozen 600-frame threshold.  A
+  fresh preregistration needs a proven START/pause fixture (the separate
+  `probe_startpause.lua` does implement mode 3) and an independently proven
+  CPU-loop fixture.  Do not reinterpret or rerun this prereg to obtain a
+  target label.
 - The theta fit and tuck replay are complete; do not rerun them merely to seek
-  a friendlier result.
-
-Remaining owner-runnable Mesen job:
-
-```
-cd /home/struktured/projects/dr-mario-te/freeze-source
-setsid nohup bash tools/gate/run_freeze_pause.sh > tmp/freeze_pause_launcher.log 2>&1 </dev/null &
-```
+  a friendlier result.  The freeze prereg is closed as `VOID_CONTROLS`; do not
+  run its seed-30011 target stage.
 
 The theta-400 Pocket image still needs actual Pocket runtime verification and a
 Pocket-specific value A/B before promotion.
