@@ -637,3 +637,8 @@ The read-only monitor also summed each `wc -l` file row plus GNU `wc`'s
 synthetic `total` row, nearly doubling reported progress. `champion-source:e0299d8`
 excludes the summary row and matches an independent JSONL count exactly. Neither
 operational fix changed policy, runner source, endpoint META, or banked data.
+
+The monitor also used to print the latest segment's outcome summary while the
+endpoint was incomplete, contradicting the explicit partial-outcome blinding
+rule. `champion-source:d91d702` now exposes only progress, identity, and storage
+until all 9,000 rows exist; a negative test rejects leaked outcome field names.
