@@ -9,20 +9,22 @@ opened.** Owner launch is required by the sealed preregistration.
 - null table: `a749aa2`, SHA-256
   `c64ce845e3e7d19242a359f868012bd04623c1bbee21d139202722f686e9c82d`
 - runner/selector gate: `095774a`, final fail-closed binding `7b5fa36`
-- analyzer/provenance verdict gates: `2b6b62d`
+- analyzer/provenance verdict gates: `2b6b62d`, final META binding `bb87b67`
 - current prospective gate: PASS, SHA-256
-  `2ef793fa597210ecec4e0218d067e5a556c884133ec7e8823c6edaa1ef2fca61`
+  `31b404c6ad027911ecb17709ef04903f47e238c036942682f84e61076c48e89a`
 - current runtime manifest (before any endpoint META exists):
-  `bb823823dac20cbf07235b19fd79ad7c328ad451d9571000f5ae1a2c646b5b5c`
+  `c0a059e69f1e55bb8991d31a62219bd7e94bbb926604cbcd9cf61eb1fff48c26`
 
 The launch gate is bound to the exact policy module, endpoint runner, gate, and
 analyzer source bytes. Any edit makes `require_gate()` fail until the complete current
 engineering/selector gate is rerun. The gate includes exact-v8 base identity,
 K4/K+1, association, alias, table/bin/cutoff mutants, and exact reproduction of
 all 616 frozen validation selections. Four live three-arm rows pass the
-analyzer pipeline, and its self-test kills all 12 verdict/provenance/zero-dose
-directions. A killed predecessor check also proves base active-duty telemetry
-is nonzero under landed pressure; out-of-range resume rows fail immediately.
+analyzer pipeline, and its self-test kills all 13 verdict/provenance/zero-dose/
+META directions. The analyzer independently requires the registered META and
+current full runtime manifest before reading outcomes. A killed predecessor
+check also proves base active-duty telemetry is nonzero under landed pressure;
+out-of-range resume rows fail immediately.
 
 ## Measured cost
 
