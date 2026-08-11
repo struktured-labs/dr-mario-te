@@ -66,9 +66,53 @@ def hang_credit_r4(col, vir):
     return total
 
 
+@njit(cache=True, fastmath=False)
+def _soft_cap1_child(pcol, pvir, variant, column, pa, pb, ccol, cvir, mask):
+    """Replay one root through the 6502 EH helper's deliberately old mechanics.
+
+    Clears are cap-one.  Its `gravity` primitive treats every non-virus byte as an independent
+    cell; link/body identity is not consulted.  Parents presented to the policy are stable, so a
+    global first-clear mask equals the helper's targeted placed-row/column scan.
+    """
+    ok, r0, c0, r1, c1 = CL._resting(pcol, variant, column)
+    if ok == 0:
+        return 0
+    for i in range(NCELL):
+        ccol[i] = pcol[i]
+        cvir[i] = pvir[i]
+    if variant == 0 or variant == 2:
+        col0 = pa; col1 = pb
+    else:
+        col0 = pb; col1 = pa
+    i0 = r0 * 8 + c0; i1 = r1 * 8 + c1
+    ccol[i0] = col0; ccol[i1] = col1
+    cvir[i0] = 0; cvir[i1] = 0
+    nclear = CL._find_clears_mask(ccol, mask)
+    if nclear:
+        for i in range(NCELL):
+            if mask[i]:
+                ccol[i] = 0; cvir[i] = 0
+        for c in range(8):
+            dest = 15
+            for read in range(15, -1, -1):
+                i = read * 8 + c
+                if ccol[i] == 0:
+                    continue
+                if cvir[i]:
+                    dest = read - 1
+                else:
+                    di = dest * 8 + c
+                    if di != i:
+                        ccol[di] = ccol[i]; cvir[di] = 0
+                        ccol[i] = 0; cvir[i] = 0
+                    dest -= 1
+    return 1
+
+
 @njit(float64[:](int8[:], int8[:], int8[:], int64, int64, int64, int64,
-                  float64[:], int32[:], int64), cache=True, fastmath=False)
-def _candidate_values(pcol, pvir, plnk, ca, cb, na, nb, w, fl, hang_mode):
+                  float64[:], int32[:], int64, int64, int64), cache=True, fastmath=False)
+def _candidate_values(pcol, pvir, plnk, ca, cb, na, nb, w, fl, hang_mode,
+                      eh_mode, eh_on_no_ply2):
     """Mechanical candidate-valued form of cascade_stranded_x's shipped search.
 
     hang_mode=0 preserves that module's legacy flat hang; hang_mode=1 swaps only the
@@ -104,6 +148,28 @@ def _candidate_values(pcol, pvir, plnk, ca, cb, na, nb, w, fl, hang_mode):
             if _virus_count(v1) == 0:
                 val = imm1 + int64(FX._WIN_SHIP)
             else:
+                if eh_mode == 0:
+                    _soft_cap1_child(pcol, pvir, var, cl, ca, cb, e2c, e2v, mask)
+                    eh_excav = FX._g_excav_ship(e2c, e2v)
+                    if hang_mode == 1:
+                        eh_hang = hang_credit_r4(e2c, e2v)
+                    else:
+                        eh_hang = W_HANG * FX._g_hang_ship(e2c, e2v)
+                elif eh_mode == 2:
+                    CL._expand_linked(pcol, pvir, plnk, var, cl, ca, cb,
+                                      e2c, e2v, e2l, mask, 1)
+                    eh_excav = FX._g_excav_ship(e2c, e2v)
+                    if hang_mode == 1:
+                        eh_hang = hang_credit_r4(e2c, e2v)
+                    else:
+                        eh_hang = W_HANG * FX._g_hang_ship(e2c, e2v)
+                else:
+                    eh_excav = FX._g_excav_ship(c1, v1)
+                    if hang_mode == 1:
+                        eh_hang = hang_credit_r4(c1, v1)
+                    else:
+                        eh_hang = W_HANG * FX._g_hang_ship(c1, v1)
+                eh_value = W_EXCAV * eh_excav + eh_hang
                 CH._base_scan(c1, v1, fl, base2)
                 m2 = 0
                 for o42 in range(4):
@@ -124,6 +190,8 @@ def _candidate_values(pcol, pvir, plnk, ca, cb, na, nb, w, fl, hang_mode):
                         m2 += 1
                 if m2 == 0:
                     val = imm1 + leaf1
+                    if eh_on_no_ply2 == 1:
+                        val += eh_value
                 else:
                     _stable_desc(keys2, m2, order2)
                     kk2 = m2 if TOPK2 > m2 else TOPK2
@@ -143,23 +211,23 @@ def _candidate_values(pcol, pvir, plnk, ca, cb, na, nb, w, fl, hang_mode):
                         if not have2 or v2 > best2:
                             best2 = v2; have2 = True
                     val = imm1 + leaf1 + ((best2 - leaf1) >> int64(1))
-                val += W_EXCAV * FX._g_excav_ship(c1, v1)
-                if hang_mode == 1:
-                    val += hang_credit_r4(c1, v1)
-                else:
-                    val += W_HANG * FX._g_hang_ship(c1, v1)
+                    val += eh_value
             val -= WS * CS._g_stranded47(c1, v1)
             vals[var * 8 + cl] = float64(val)
     return vals
 
 
-def candidate_values(col, vir, lnk, ca, cb, na, nb, w, fl, *, r4=True):
+def candidate_values(col, vir, lnk, ca, cb, na, nb, w, fl, *, r4=True,
+                     full_child_eh=False, linked_replay_eh=False, eh_on_no_ply2=False):
+    if full_child_eh and linked_replay_eh:
+        raise ValueError("select at most one deliberately-wrong EH board")
+    eh_mode = 1 if full_child_eh else (2 if linked_replay_eh else 0)
     return _candidate_values(np.ascontiguousarray(col, dtype=np.int8),
                              np.ascontiguousarray(vir, dtype=np.int8),
                              np.ascontiguousarray(lnk, dtype=np.int8),
                              int(ca), int(cb), int(na), int(nb),
                              np.asarray(w, dtype=np.float64), np.asarray(fl, dtype=np.int32),
-                             1 if r4 else 0)
+                             1 if r4 else 0, eh_mode, 1 if eh_on_no_ply2 else 0)
 
 
 def choose_from_values(vals, order=CHAMP_ORDER):
