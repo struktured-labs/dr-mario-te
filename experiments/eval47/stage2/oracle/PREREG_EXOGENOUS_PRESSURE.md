@@ -90,7 +90,9 @@ All must pass before any endpoint pilot is read.
    const-label oracle reproduces its own champion reference action-for-action
    and endpoint-for-endpoint.  A reversed tie-order mutant must fail, as in the
    sealed oracle gate.
-4. **E4 dose sanity.** On a frozen smoke block, print offered-event rate,
+4. **E4 dose sanity.** On the frozen block **seeds 50,000--50,059 (N=60),**
+   run the const-label champion once under coupled Lulu and once under
+   `exo_lulu_v1`; print offered-event rate,
    offered cells/eligible ply, landed cells/eligible ply, and the coupled
    reference.  This is descriptive.  If the exogenous landed dose is outside
    0.90--1.10x the coupled dose, endpoint comparison is `DOSE_INVALID` until the
