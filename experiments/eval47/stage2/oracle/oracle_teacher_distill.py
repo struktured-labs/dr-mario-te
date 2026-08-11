@@ -275,6 +275,100 @@ def crossval(X, y, did, groups, teacher_rank, flip, kind):
     return _metrics(scores, did, teacher_rank, flip)
 
 
+def decision_matrix(X, names):
+    """One row/decision: base candidate plus each alternative-minus-base."""
+    ndec = X.shape[0] // O.TOPK
+    z = X.reshape(ndec, O.TOPK, X.shape[1])
+    blocks = [z[:, 0]] + [z[:, r] - z[:, 0] for r in range(1, O.TOPK)]
+    out_names = (["base_" + n for n in names]
+                 + [f"rank{r+1}_minus_base_{n}" for r in range(1, O.TOPK)
+                    for n in names])
+    return np.concatenate(blocks, axis=1), out_names
+
+
+def shuffled_teacher(recs):
+    """Exact-dose null: permute flip locations, randomise non-base choices."""
+    n = len(recs)
+    nflip = sum(r["was_flip"] for r in recs)
+    order = list(range(n))
+    random.Random(20260811).shuffle(order)
+    flip = np.zeros(n, dtype=bool)
+    flip[order[:nflip]] = True
+    rank = np.zeros(n, dtype=np.int8)
+    for d in np.flatnonzero(flip):
+        r = recs[int(d)]
+        rank[d] = random.Random((int(r["seed"]) << 16) ^ int(r["ply"])
+                                ^ 0x51A7E).choice((1, 2, 3))
+    return flip, rank
+
+
+def structured_crossval(Xd, Xcand, groups_dec, flip, teacher_rank, kind):
+    """Predict flip location, then the winning non-base rank."""
+    from sklearn.ensemble import HistGradientBoostingClassifier
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import average_precision_score, roc_auc_score
+    from sklearn.model_selection import GroupKFold
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+
+    def model():
+        if kind == "linear":
+            return make_pipeline(
+                StandardScaler(),
+                LogisticRegression(C=0.1, max_iter=1500,
+                                   class_weight="balanced"))
+        depth = int(kind.removeprefix("hgb"))
+        return HistGradientBoostingClassifier(
+            max_depth=depth, max_iter=180, learning_rate=0.06,
+            min_samples_leaf=25, l2_regularization=3.0,
+            class_weight="balanced", random_state=20260811)
+
+    ndec = Xd.shape[0]
+    fp = np.zeros(ndec, dtype=np.float64)
+    flip_pred = np.zeros(ndec, dtype=bool)
+    alt_pred = np.zeros(ndec, dtype=np.int8)
+    cv = GroupKFold(n_splits=5)
+    for tr, te in cv.split(Xd, flip.astype(np.int8), groups_dec):
+        fm = model()
+        fm.fit(Xd[tr], flip[tr].astype(np.int8))
+        fp[te] = fm.predict_proba(Xd[te])[:, 1]
+        # Calibrate dose using only TRAIN prevalence; select that many highest
+        # scores in the held-out fold.  No test labels choose the threshold.
+        take = int(round(float(flip[tr].mean()) * len(te)))
+        if take:
+            pick = te[np.argsort(fp[te], kind="mergesort")[-take:]]
+            flip_pred[pick] = True
+
+        train_flip = tr[flip[tr]]
+        rows = np.concatenate(
+            [np.arange(d * O.TOPK + 1, d * O.TOPK + O.TOPK)
+             for d in train_flip])
+        ay = np.concatenate(
+            [np.arange(1, O.TOPK) == teacher_rank[d] for d in train_flip]
+        ).astype(np.int8)
+        am = model()
+        am.fit(Xcand[rows], ay)
+        for d in te:
+            ix = np.arange(d * O.TOPK + 1, d * O.TOPK + O.TOPK)
+            alt_pred[d] = 1 + int(np.argmax(am.predict_proba(Xcand[ix])[:, 1]))
+
+    policy = np.where(flip_pred, alt_pred, 0).astype(np.int8)
+    tp = int(np.sum(flip_pred & flip))
+    pp = int(flip_pred.sum())
+    return {
+        "flip_roc_auc": float(roc_auc_score(flip, fp)),
+        "flip_average_precision": float(average_precision_score(flip, fp)),
+        "flip_prevalence": float(flip.mean()),
+        "perturb_rate": float(flip_pred.mean()),
+        "flip_recall": tp / max(1, int(flip.sum())),
+        "flip_precision": tp / max(1, pp),
+        "alternative_accuracy_on_true_flips": float(
+            np.mean(alt_pred[flip] == teacher_rank[flip])),
+        "combined_action_accuracy": float(np.mean(policy == teacher_rank)),
+        "noflip_retention": float(np.mean(policy[~flip] == 0)),
+    }
+
+
 def univariate(recs, X, names):
     """At flip plies only, which single feature points toward the teacher?"""
     flip_ids = [i for i, r in enumerate(recs) if r["was_flip"]]
@@ -316,6 +410,8 @@ def main():
     if errors:
         raise SystemExit("REPLAY GATE FAILED: " + json.dumps(errors[:3]))
     X, names, y, did, groups, trank, flip = feature_matrix(recs)
+    Xd, decision_names = decision_matrix(X, names)
+    groups_dec = np.array([r["seed"] for r in recs])
     baseline = {"action_accuracy": float(np.mean(trank == 0)),
                 "flip_recall": 0.0, "noflip_retention": 1.0,
                 "perturb_rate": 0.0}
@@ -327,6 +423,12 @@ def main():
           == np.repeat(nrank, O.TOPK)).astype(np.int8)
     null_models = {k: crossval(X, yn, did, groups, nrank, flip, k)
                    for k in ("linear", "hgb2", "hgb3", "hgb4")}
+    structured = {k: structured_crossval(Xd, X, groups_dec, flip, trank, k)
+                  for k in ("linear", "hgb2", "hgb3", "hgb4")}
+    null_flip, null_rank = shuffled_teacher(recs)
+    structured_null = {
+        k: structured_crossval(Xd, X, groups_dec, null_flip, null_rank, k)
+        for k in ("linear", "hgb2", "hgb3", "hgb4")}
 
     # Full-fit random forest only for a readable feature-importance hypothesis;
     # cross-validated metrics above own every predictive number.
@@ -338,6 +440,15 @@ def main():
     importance = sorted(
         ({"feature": nm, "importance": float(v)}
          for nm, v in zip(names, rf.feature_importances_)),
+        key=lambda r: -r["importance"])
+    rf_flip = RandomForestClassifier(
+        n_estimators=300, max_depth=8, min_samples_leaf=20,
+        class_weight="balanced_subsample", random_state=20260811,
+        n_jobs=a.workers)
+    rf_flip.fit(Xd, flip.astype(np.int8))
+    flip_importance = sorted(
+        ({"feature": nm, "importance": float(v)}
+         for nm, v in zip(decision_names, rf_flip.feature_importances_)),
         key=lambda r: -r["importance"])
 
     progress = collections.Counter(
@@ -362,8 +473,11 @@ def main():
         "champion_baseline": baseline,
         "crossval_true_teacher": models,
         "crossval_dose_matched_label_blind_null": null_models,
+        "structured_crossval_true_teacher": structured,
+        "structured_crossval_exact_dose_shuffled_teacher": structured_null,
         "top_univariate_flip_directions": univariate(recs, X, names)[:20],
         "full_fit_rf_importance_hypothesis_only": importance[:25],
+        "full_fit_flip_rf_importance_hypothesis_only": flip_importance[:25],
         "seconds": round(time.monotonic() - t0, 1),
     }
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
@@ -373,7 +487,10 @@ def main():
                       "corpus": result["corpus"],
                       "champion": baseline, "true": models,
                       "null": null_models,
+                      "structured_true": structured,
+                      "structured_null": structured_null,
                       "top_features": importance[:10],
+                      "top_flip_features": flip_importance[:10],
                       "seconds": result["seconds"]}, indent=1))
     print(f"wrote {a.out}")
 
