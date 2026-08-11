@@ -1,0 +1,454 @@
+{
+ "version": "post-garbage-stratified-null-v1",
+ "authority": "FROZEN_BEFORE_SEEDS_70700_70939",
+ "training_input": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/dspawn_tie/out/post_garbage_calibration.json",
+ "training_n": 240,
+ "treatment_distinct": 233,
+ "null_opportunities": 466,
+ "null_selected": 233,
+ "objective_l1": 50.0,
+ "margins": {
+  "treatment": {
+   "hamming": [
+    3,
+    26,
+    155,
+    27,
+    22
+   ],
+   "timing": [
+    91,
+    142
+   ],
+   "value_gap": [
+    53,
+    82,
+    70,
+    28
+   ]
+  },
+  "selected_null": {
+   "hamming": [
+    3,
+    26,
+    155,
+    27,
+    22
+   ],
+   "timing": [
+    91,
+    142
+   ],
+   "value_gap": [
+    53,
+    82,
+    70,
+    28
+   ]
+  }
+ },
+ "cells": [
+  {
+   "cell": 0,
+   "hamming_bin": 0,
+   "timing_bin": 0,
+   "value_gap_bin": 0,
+   "target_joint": 0,
+   "capacity": 9,
+   "selected": 0,
+   "cutoff_u64": 0
+  },
+  {
+   "cell": 1,
+   "hamming_bin": 0,
+   "timing_bin": 0,
+   "value_gap_bin": 1,
+   "target_joint": 1,
+   "capacity": 7,
+   "selected": 1,
+   "cutoff_u64": 2685645779559618718
+  },
+  {
+   "cell": 2,
+   "hamming_bin": 0,
+   "timing_bin": 0,
+   "value_gap_bin": 2,
+   "target_joint": 0,
+   "capacity": 7,
+   "selected": 0,
+   "cutoff_u64": 0
+  },
+  {
+   "cell": 3,
+   "hamming_bin": 0,
+   "timing_bin": 0,
+   "value_gap_bin": 3,
+   "target_joint": 0,
+   "capacity": 6,
+   "selected": 0,
+   "cutoff_u64": 0
+  },
+  {
+   "cell": 4,
+   "hamming_bin": 0,
+   "timing_bin": 1,
+   "value_gap_bin": 0,
+   "target_joint": 1,
+   "capacity": 12,
+   "selected": 1,
+   "cutoff_u64": 371823999744241655
+  },
+  {
+   "cell": 5,
+   "hamming_bin": 0,
+   "timing_bin": 1,
+   "value_gap_bin": 1,
+   "target_joint": 0,
+   "capacity": 15,
+   "selected": 0,
+   "cutoff_u64": 0
+  },
+  {
+   "cell": 6,
+   "hamming_bin": 0,
+   "timing_bin": 1,
+   "value_gap_bin": 2,
+   "target_joint": 1,
+   "capacity": 12,
+   "selected": 1,
+   "cutoff_u64": 3199668510579665729
+  },
+  {
+   "cell": 7,
+   "hamming_bin": 0,
+   "timing_bin": 1,
+   "value_gap_bin": 3,
+   "target_joint": 0,
+   "capacity": 7,
+   "selected": 0,
+   "cutoff_u64": 0
+  },
+  {
+   "cell": 8,
+   "hamming_bin": 1,
+   "timing_bin": 0,
+   "value_gap_bin": 0,
+   "target_joint": 0,
+   "capacity": 3,
+   "selected": 0,
+   "cutoff_u64": 0
+  },
+  {
+   "cell": 9,
+   "hamming_bin": 1,
+   "timing_bin": 0,
+   "value_gap_bin": 1,
+   "target_joint": 3,
+   "capacity": 5,
+   "selected": 5,
+   "cutoff_u64": 18263972336260518794
+  },
+  {
+   "cell": 10,
+   "hamming_bin": 1,
+   "timing_bin": 0,
+   "value_gap_bin": 2,
+   "target_joint": 0,
+   "capacity": 6,
+   "selected": 0,
+   "cutoff_u64": 0
+  },
+  {
+   "cell": 11,
+   "hamming_bin": 1,
+   "timing_bin": 0,
+   "value_gap_bin": 3,
+   "target_joint": 4,
+   "capacity": 2,
+   "selected": 2,
+   "cutoff_u64": 7667822493062004915
+  },
+  {
+   "cell": 12,
+   "hamming_bin": 1,
+   "timing_bin": 1,
+   "value_gap_bin": 0,
+   "target_joint": 3,
+   "capacity": 4,
+   "selected": 3,
+   "cutoff_u64": 6945647664874306575
+  },
+  {
+   "cell": 13,
+   "hamming_bin": 1,
+   "timing_bin": 1,
+   "value_gap_bin": 1,
+   "target_joint": 4,
+   "capacity": 15,
+   "selected": 4,
+   "cutoff_u64": 6324919859472808716
+  },
+  {
+   "cell": 14,
+   "hamming_bin": 1,
+   "timing_bin": 1,
+   "value_gap_bin": 2,
+   "target_joint": 9,
+   "capacity": 13,
+   "selected": 9,
+   "cutoff_u64": 13240319101359493385
+  },
+  {
+   "cell": 15,
+   "hamming_bin": 1,
+   "timing_bin": 1,
+   "value_gap_bin": 3,
+   "target_joint": 3,
+   "capacity": 3,
+   "selected": 3,
+   "cutoff_u64": 8264709462577719978
+  },
+  {
+   "cell": 16,
+   "hamming_bin": 2,
+   "timing_bin": 0,
+   "value_gap_bin": 0,
+   "target_joint": 13,
+   "capacity": 19,
+   "selected": 13,
+   "cutoff_u64": 11048277970691240583
+  },
+  {
+   "cell": 17,
+   "hamming_bin": 2,
+   "timing_bin": 0,
+   "value_gap_bin": 1,
+   "target_joint": 27,
+   "capacity": 36,
+   "selected": 33,
+   "cutoff_u64": 17015884773107090251
+  },
+  {
+   "cell": 18,
+   "hamming_bin": 2,
+   "timing_bin": 0,
+   "value_gap_bin": 2,
+   "target_joint": 19,
+   "capacity": 37,
+   "selected": 19,
+   "cutoff_u64": 9972208617001821059
+  },
+  {
+   "cell": 19,
+   "hamming_bin": 2,
+   "timing_bin": 0,
+   "value_gap_bin": 3,
+   "target_joint": 9,
+   "capacity": 19,
+   "selected": 1,
+   "cutoff_u64": 954016960861384419
+  },
+  {
+   "cell": 20,
+   "hamming_bin": 2,
+   "timing_bin": 1,
+   "value_gap_bin": 0,
+   "target_joint": 26,
+   "capacity": 48,
+   "selected": 28,
+   "cutoff_u64": 10511365110899324442
+  },
+  {
+   "cell": 21,
+   "hamming_bin": 2,
+   "timing_bin": 1,
+   "value_gap_bin": 1,
+   "target_joint": 27,
+   "capacity": 48,
+   "selected": 27,
+   "cutoff_u64": 10748349489436637919
+  },
+  {
+   "cell": 22,
+   "hamming_bin": 2,
+   "timing_bin": 1,
+   "value_gap_bin": 2,
+   "target_joint": 26,
+   "capacity": 51,
+   "selected": 26,
+   "cutoff_u64": 9251127067217776370
+  },
+  {
+   "cell": 23,
+   "hamming_bin": 2,
+   "timing_bin": 1,
+   "value_gap_bin": 3,
+   "target_joint": 8,
+   "capacity": 14,
+   "selected": 8,
+   "cutoff_u64": 10789923360353209102
+  },
+  {
+   "cell": 24,
+   "hamming_bin": 3,
+   "timing_bin": 0,
+   "value_gap_bin": 0,
+   "target_joint": 0,
+   "capacity": 3,
+   "selected": 3,
+   "cutoff_u64": 11339833335465140902
+  },
+  {
+   "cell": 25,
+   "hamming_bin": 3,
+   "timing_bin": 0,
+   "value_gap_bin": 1,
+   "target_joint": 4,
+   "capacity": 2,
+   "selected": 2,
+   "cutoff_u64": 12481050096536354796
+  },
+  {
+   "cell": 26,
+   "hamming_bin": 3,
+   "timing_bin": 0,
+   "value_gap_bin": 2,
+   "target_joint": 2,
+   "capacity": 5,
+   "selected": 2,
+   "cutoff_u64": 9667566207758820795
+  },
+  {
+   "cell": 27,
+   "hamming_bin": 3,
+   "timing_bin": 0,
+   "value_gap_bin": 3,
+   "target_joint": 3,
+   "capacity": 6,
+   "selected": 4,
+   "cutoff_u64": 6630217984998502184
+  },
+  {
+   "cell": 28,
+   "hamming_bin": 3,
+   "timing_bin": 1,
+   "value_gap_bin": 0,
+   "target_joint": 4,
+   "capacity": 5,
+   "selected": 5,
+   "cutoff_u64": 16285664261600190910
+  },
+  {
+   "cell": 29,
+   "hamming_bin": 3,
+   "timing_bin": 1,
+   "value_gap_bin": 1,
+   "target_joint": 8,
+   "capacity": 4,
+   "selected": 4,
+   "cutoff_u64": 12562507620066761767
+  },
+  {
+   "cell": 30,
+   "hamming_bin": 3,
+   "timing_bin": 1,
+   "value_gap_bin": 2,
+   "target_joint": 6,
+   "capacity": 14,
+   "selected": 7,
+   "cutoff_u64": 5874629846538876386
+  },
+  {
+   "cell": 31,
+   "hamming_bin": 3,
+   "timing_bin": 1,
+   "value_gap_bin": 3,
+   "target_joint": 0,
+   "capacity": 6,
+   "selected": 0,
+   "cutoff_u64": 0
+  },
+  {
+   "cell": 32,
+   "hamming_bin": 4,
+   "timing_bin": 0,
+   "value_gap_bin": 0,
+   "target_joint": 1,
+   "capacity": 0,
+   "selected": 0,
+   "cutoff_u64": 0
+  },
+  {
+   "cell": 33,
+   "hamming_bin": 4,
+   "timing_bin": 0,
+   "value_gap_bin": 1,
+   "target_joint": 2,
+   "capacity": 2,
+   "selected": 2,
+   "cutoff_u64": 10420590996457362814
+  },
+  {
+   "cell": 34,
+   "hamming_bin": 4,
+   "timing_bin": 0,
+   "value_gap_bin": 2,
+   "target_joint": 2,
+   "capacity": 2,
+   "selected": 2,
+   "cutoff_u64": 16124512838818647242
+  },
+  {
+   "cell": 35,
+   "hamming_bin": 4,
+   "timing_bin": 0,
+   "value_gap_bin": 3,
+   "target_joint": 1,
+   "capacity": 2,
+   "selected": 2,
+   "cutoff_u64": 12304255318489668955
+  },
+  {
+   "cell": 36,
+   "hamming_bin": 4,
+   "timing_bin": 1,
+   "value_gap_bin": 0,
+   "target_joint": 5,
+   "capacity": 0,
+   "selected": 0,
+   "cutoff_u64": 0
+  },
+  {
+   "cell": 37,
+   "hamming_bin": 4,
+   "timing_bin": 1,
+   "value_gap_bin": 1,
+   "target_joint": 6,
+   "capacity": 4,
+   "selected": 4,
+   "cutoff_u64": 16452773098090115476
+  },
+  {
+   "cell": 38,
+   "hamming_bin": 4,
+   "timing_bin": 1,
+   "value_gap_bin": 2,
+   "target_joint": 5,
+   "capacity": 4,
+   "selected": 4,
+   "cutoff_u64": 16320621141650097440
+  },
+  {
+   "cell": 39,
+   "hamming_bin": 4,
+   "timing_bin": 1,
+   "value_gap_bin": 3,
+   "target_joint": 0,
+   "capacity": 9,
+   "selected": 8,
+   "cutoff_u64": 14237868646385988161
+  }
+ ],
+ "scipy": "1.18.0",
+ "outcome_fields_read": false
+}
