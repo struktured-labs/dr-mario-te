@@ -62,6 +62,86 @@ SSH sockets, so the launch is **user-reported and currently unobservable** from
 here; do not claim a completion or endpoint result without the remote files.
 The shuffled-label null has not been reported as launched.
 
+**Critical semantic label:** that remote job is
+`historical_compact_cap1_flat_seed0`, not the shipped-v8 policy.  Do not call
+its result a cartridge-v8 oracle ceiling, do not silently change its code or
+META, and do not use a historical NO_GO to close root re-ranking for the cart.
+
+### RESOLVED — exact shipped-v8 offline policy
+
+The old py65 comparator cannot validate shipped v8.  Its engine shim calls the
+stale cap-one golden, has no CMD-6/7 delta-engine semantics, omits link/fixpoint
+gravity and chain-180, and discards the parent link plane.  Two prospective
+py65 gates correctly banked NO_GO rather than blessing it.
+
+The actual cart base policy is an unusual hybrid:
+
+- main RTL search: parent links, link-aware fixpoint gravity, chain-180,
+  complete depth-3 mechanics, R4 hang, and strand-20;
+- root EH helper: the 6502 reconstructs the root child separately with its old
+  targeted cap-one resolver and **cellwise** gravity, then scores
+  `24*g_excav + R4_hang_credit`;
+- EH is skipped on winning roots and roots with zero legal second placements;
+- a nonzero per-match tie seed adds 0..3 before root argmax.  The offline
+  `p2_surrogate` seed schedule is reproducible but is not a claim that wall-
+  clock `NAV_T` is determined by game seed.
+
+A dedicated writable clone, `cosim-source:firmware-v8-cosim`, runs the real
+`CoproDrMario + LeafEval + 6502` under Verilator.  The first registered gate
+matched 15/15 winners but only 14/15 candidate rings and banked NO_GO.  It
+localized six losing actions exactly 100 points too high in the first mirror.
+The no-ply2 and link-aware-replay explanations each failed their own frozen
+localization.  The source-exact soft/cellwise EH replay fixed exactly those six
+values.
+
+Final registered result at `cosim-source:1cfb200`:
+
+- non-debug action/winner 19/19 exact;
+- debug action/winner 19/19 exact;
+- **542/542 legal candidate values exact**;
+- all full-child-EH, linked-replay-EH, no-ply-EH, compact-mechanics, flat-hang,
+  no-link, seed-zero, byte-swap, +1-value and +1-count mutants killed;
+- exact deployed firmware restored before/after:
+  `e970e9ab0208cdbce1d39ed33e2f51ee`.
+
+The fixed synthetic no-ply boundary board had only actions 19/27 legal;
+hardware reproduced raw values -7128/-7048 and selected 27/-7046 after jitter.
+Use `champion-source:firmware_v8_policy.py` at `3ad99ad` plus the no-ply helper
+at `07dd629` as the authorized offline **base-policy** mirror.  This does not
+validate the independent tuck extension.
+
+### The running oracle and the cart are far apart
+
+A frozen 40-game census on 5,081 actual-v8 trajectory states
+(`champion-source:c409b39`) quantified the semantic drift.  At the unchanged
+oracle gate (2,491 states):
+
+- historical vs actual action disagreement is **31.59%** with both at seed
+  zero and **44.64%** with the representative nonzero seed;
+- historical vs actual seed-zero top-4 sets differ **59.69%**;
+- representative-seed top-4 sets differ **64.35%** and orders differ 85.99%;
+- the actual action is outside the historical top four **11.64%** of gated
+  states.
+
+Largest isolated action drift is complete mechanics vs cap-one R4: 26.62% at
+the gate.  Flat hang adds 7.87%, links 3.85%, full-child EH 1.00%, and linked-
+replay EH 0.20%.  Tie jitter is also material: some nonzero seed changes the
+seed-zero action on 38.66% of gated states; a uniform nonzero draw changes it
+19.64% of the time.
+
+Future oracle infrastructure now has an explicit opt-in path:
+
+```
+--policy-semantics firmware_v8 --tie-seed-mode p2_surrogate
+```
+
+It controls root action, top-four ranking, and every fork ply.  The old path
+remains the default.  Direct replay 6/6, historical and seed-zero mutants 6/6,
+real root/fork routing, provenance, manifest hashing, resume locks, runner
+banking, verdict mutations and fork-leak regressions all pass.  Durable record:
+`champion-source:dbecb23`.  This is infrastructure GO only; a new outcome arm
+still needs a fresh prereg, adequate N, and a dose-matched shuffled-label null.
+
 ### The historical Lulu pressure rig is policy-coupled
 
 The old `lulu` solo proxy does **not** give candidates a fixed opponent attack
@@ -114,6 +194,23 @@ not a lane closure.  Future teacher work needs temporal/trajectory vocabulary
 or a real small rollout, not a more confident one-ply classifier.  Durable
 record: `champion-source:263f23a`, `DISTILLED_TEACHER_E0.md`.
 
+The historical oracle's own 489 flip states also show that short rollout
+horizons are not a substitute for H15.  Exact agreement with H15 is H1 4.7%,
+H2 7.6%, H3 9.8%, H5 14.9%, H8 23.9%, H12 48.9%, H15 100%; a random
+alternative null is 33.1%.  Horizons through eight are worse than random at
+reproducing the H15 choice.  Durable record: `champion-source:eb802d2` and
+`ORACLE_HORIZON_SENSITIVITY.md`.
+
+### Film telemetry did not expose a free opponent decoder
+
+The repaired field tracker and two independently frozen counter-decoder
+variants all returned registered **NO_GO** before any behavioural claim was
+authorized.  The held-out V2 counter lane did not validate a reliable Lulu
+attack-state signal.  Keep the reports
+`P2_TRACKER_CEILING_RESULT.md` and `COUNTER_DECODER_RESULT.md`; do not promote
+film-derived opponent state without a new measurement model and fresh holdout.
+The result commit is `champion-source:361a7ca` (V2 prereg `9468a84`).
+
 ### Execution-fidelity lanes
 
 - **Theta-400 Pocket:** `pocket-source:2f593ed` stages the theta-400 firmware,
@@ -126,8 +223,26 @@ record: `champion-source:263f23a`, `DISTILLED_TEACHER_E0.md`.
   analysis error: after first divergence later trajectory events are not
   paired without saved-state counterfactuals.  All static/py65/analyser gates
   pass.  The Mesen A/B has **not started** as of the last local check.
+- **Freeze discriminator:** `freeze-source:freeze-pause-discriminator` at
+  `1000d6d` adds a pause-loop discriminator for deterministic seed 30011.  The
+  old `srchGapMax=1199` signal alone cannot distinguish a pause from a wedge.
+  The Mesen freeze run has not started.
 - Never run the Mesen tuck A/B and the Quartus theta-400 fit concurrently on
   the local box.
+
+Owner-runnable queued jobs, in this order:
+
+```
+cd /home/struktured/projects/dr-mario-te/v8-source
+setsid nohup bash tools/gate/run_tuckguard_approach.sh > tmp/tuckguard_launcher.log 2>&1 </dev/null &
+
+cd /home/struktured/projects/dr-mario-te/freeze-source
+setsid nohup bash tools/gate/run_freeze_pause.sh > tmp/freeze_pause_launcher.log 2>&1 </dev/null &
+```
+
+Run the freeze job after the tuck Mesen job, not concurrently.  The theta-400
+Pocket refit remains a separate Quartus job and needs its own clean refit,
+bijection proof and value A/B.
 
 ### `d_spawn_h` is already partly priced
 
@@ -161,17 +276,21 @@ for this prior negative and a dose-matched null.
 
 ## Immediate sequence
 
-1. **DONE locally:** shared per-flip schema, clean gate, eight killed mutants,
-   and a real 24-seed multiprocessing emission.
-2. **DONE at `oracle-ceiling:29fc72c`:** seal the ideal arm, dose-matched null,
-   executable verdict, DIST implementation, provenance, and durable runner.
-3. **RUNNING, user-reported:** Tier-A CLAIR on Hetzner. Its null still needs a
-   reported launch. This sandbox cannot monitor either over SSH.
-4. Branch on valid calibration evidence. Do not promote the compact DT2
-   distillation (`263f23a`); it failed its E0 nomination screen.
-5. Finish the Mesen tuck-guard A/B, then run the theta-400 Pocket refit/proof.
-   These execution-fidelity lanes are independent of oracle endpoint results.
-6. Use seed 30011 opportunistically to build a real freeze discriminator.
+1. **RUNNING, user-reported:** historical Tier-A CLAIR on Hetzner. Preserve and
+   analyse it as `historical_compact_cap1_flat_seed0`; its shuffled null still
+   needs a reported launch. This sandbox cannot monitor SSH.
+2. Do **not** let that result close the cartridge root lane.  If a new oracle
+   arm is funded, preregister it separately with `firmware_v8`, explicit tie
+   semantics, candidate-independent pressure, a killed dose-matched null, and
+   N=9,000 or a declared undecidable clear co-primary.
+3. The strongest new policy gap is sequential myopia: H15 choices are mostly
+   greater virus progress, short horizons fail to reproduce them, and the
+   compact one-ply teacher failed transfer.  Seek a shippable temporal/tempo
+   vocabulary or a genuinely small rollout rather than another leaf reweight.
+4. Finish the tuck-guard Mesen A/B, then the freeze discriminator Mesen run.
+   Run the theta-400 Pocket refit/proof separately.  None has been executed.
+5. Do not promote film telemetry or compact DT2; both failed their registered
+   screens.  `d_spawn_h` alone also has prior negative feature/value evidence.
 
 ## Adversarial gap audit — resolve before an oracle Tier-A run
 
@@ -187,6 +306,12 @@ all root re-rankers. A finite-horizon probe can miss actions outside the top
 four, delayed benefits, tempo/attack benefits, and faults already irreversible
 when the gate fires. A NO_GO safely bounds this probe; it does not by itself
 prove every root re-ranker structurally dead.
+
+This is no longer only a theoretical caveat: on actual-v8 trajectories the
+cart's representative-seed top four differs from the running historical
+oracle's set on 64.35% of gated states, and the cart action is outside that
+historical top four on 11.64%.  The running arm therefore cannot be interpreted
+as the maximum over the deployed cart's candidate set or continuation policy.
 
 `ORACLE-DIST` with one sampled pressure future per ply is noisier than
 expectimax. The prereg says this makes a NO_GO conservative. That direction is
@@ -270,6 +395,12 @@ The project does not yet claim to know the perfect weighting of those signals.
    the fixed top-4/H15/gated probe is allowed to close the broader root
    re-ranking lane? This question is about whether the probe reaches the ideal,
    not about making the ideal fair.
+2. What is the empirical distribution and lifetime of the cart's `NAV_T`-based
+   P2 tie seed on actual match hardware?  Until measured, keep `seed0`,
+   `p2_surrogate`, and the all-seed envelope distinct.
+3. Was the remote dose-matched shuffled-label null actually launched, and what
+   output directories/META hashes identify the true and null jobs?  Do not
+   infer this from the true-arm launch alone.
 
 ## Resume map
 
@@ -277,5 +408,11 @@ The project does not yet claim to know the perfect weighting of those signals.
 - Flip provenance: `flip-provenance:experiments/eval47/stage2/rollout/`
 - Oracle handoff: `oracle-ceiling:experiments/eval47/stage2/oracle/HANDOFF.md`
 - Oracle prereg: `oracle-ceiling:experiments/eval47/stage2/oracle/PREREG_ORACLE.md`
+- Exact cart policy result:
+  `cosim-source:fpga/copro/FIRMWARE_V8_SOFT_EH_FINAL_RESULT.md`
+- Cart-vs-historical census:
+  `champion-source:experiments/eval47/stage2/oracle/POLICY_SEMANTICS_CENSUS_RESULT.md`
+- Future cart-oracle mode:
+  `champion-source:experiments/eval47/stage2/oracle/FIRMWARE_V8_ORACLE_MODE_RESULT.md`
 - Required untracked lulu fit:
   `experiments/eval47/results/dr_lulu_20260808_fit.json`
