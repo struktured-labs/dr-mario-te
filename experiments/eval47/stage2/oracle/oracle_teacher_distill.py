@@ -302,6 +302,112 @@ def shuffled_teacher(recs):
     return flip, rank
 
 
+def _tree_doc(model):
+    """JSON-native representation used by the simulator and firmware port."""
+    tree = model.tree_
+    nodes = []
+    for i in range(tree.node_count):
+        value = tree.value[i][0]
+        total = float(value.sum())
+        nodes.append({
+            "feature": int(tree.feature[i]),
+            "threshold": float(tree.threshold[i]),
+            "left": int(tree.children_left[i]),
+            "right": int(tree.children_right[i]),
+            "p1": float(value[1] / total) if total else 0.0,
+        })
+    return {"classes": [int(x) for x in model.classes_], "nodes": nodes}
+
+
+def _tree_scores(doc, X):
+    out = np.empty(len(X), dtype=np.float64)
+    nodes = doc["nodes"]
+    for i, row in enumerate(X):
+        node = 0
+        while nodes[node]["feature"] >= 0:
+            n = nodes[node]
+            node = n["left"] if row[n["feature"]] <= n["threshold"] else n["right"]
+        out[i] = nodes[node]["p1"]
+    return out
+
+
+def _dose_calibration(scores, recs, target, salt):
+    """Accept exactly target training rows, with stable hash tie-breaking."""
+    target = int(target)
+    if not 0 < target < len(scores):
+        raise ValueError("compact policy requires a nontrivial target dose")
+    boundary = float(np.sort(scores)[::-1][target - 1])
+    above = scores > boundary
+    tied = np.flatnonzero(scores == boundary)
+    need = target - int(above.sum())
+    hashes = np.array([
+        O._mix64((((int(recs[d]["seed"]) << 32) | int(recs[d]["ply"]))
+                  ^ int(salt))) for d in tied], dtype=np.uint64)
+    cutoff = int(np.sort(hashes)[need - 1]) if need else -1
+    accept = above.copy()
+    if need:
+        accept[tied] = hashes <= cutoff
+    if int(accept.sum()) != target:
+        raise RuntimeError("hash collision prevented exact dose calibration")
+    return accept, {"boundary_score": boundary, "hash_salt": int(salt),
+                    "hash_cutoff_u64": cutoff, "above": int(above.sum()),
+                    "boundary_rows": int(len(tied)), "boundary_take": need,
+                    "training_accept": int(accept.sum()),
+                    "training_total": int(len(scores))}
+
+
+def compact_dt2_policy(Xd, Xcand, names, decision_names, recs, flip,
+                       teacher_rank, salt):
+    """Fit and freeze the smallest teacher policy nominated by grouped CV."""
+    from sklearn.tree import DecisionTreeClassifier
+
+    def tree():
+        return DecisionTreeClassifier(
+            max_depth=2, min_samples_leaf=20, class_weight="balanced",
+            random_state=20260811)
+
+    fm = tree()
+    fm.fit(Xd, flip.astype(np.int8))
+    fdoc = _tree_doc(fm)
+    fs = _tree_scores(fdoc, Xd)
+    accepted, calibration = _dose_calibration(
+        fs, recs, int(flip.sum()), salt)
+
+    train_flip = np.flatnonzero(flip)
+    rows = np.concatenate([
+        np.arange(d * O.TOPK + 1, d * O.TOPK + O.TOPK) for d in train_flip])
+    ay = np.concatenate([
+        np.arange(1, O.TOPK) == teacher_rank[d] for d in train_flip
+    ]).astype(np.int8)
+    am = tree()
+    am.fit(Xcand[rows], ay)
+    adoc = _tree_doc(am)
+    alt = np.zeros(len(recs), dtype=np.int8)
+    for d in range(len(recs)):
+        ix = np.arange(d * O.TOPK + 1, d * O.TOPK + O.TOPK)
+        alt[d] = 1 + int(np.argmax(_tree_scores(adoc, Xcand[ix])))
+    policy = np.where(accepted, alt, 0)
+    return {
+        "version": "oracle-teacher-dt2-v1",
+        "authority": "EXPLORATORY_POLICY_REQUIRES_UNSEEN_ENDPOINT_GATE",
+        "topk": O.TOPK,
+        "gate": "d_spawn_h >= 12 OR viruses <= 8",
+        "candidate_feature_names": list(names),
+        "decision_feature_names": list(decision_names),
+        "flip_tree": fdoc,
+        "alternative_tree": adoc,
+        "dose_calibration": calibration,
+        "training_metrics": {
+            "perturb_rate": float(accepted.mean()),
+            "flip_recall": float(np.mean(policy[flip] == teacher_rank[flip])),
+            "alternative_accuracy_on_true_flips": float(
+                np.mean(alt[flip] == teacher_rank[flip])),
+            "combined_action_accuracy": float(np.mean(policy == teacher_rank)),
+            "noflip_retention": float(np.mean(policy[~flip] == 0)),
+        },
+    }
+
+
 def structured_crossval(Xd, Xcand, groups_dec, flip, teacher_rank, kind):
     """Predict flip location, then the winning non-base rank."""
     from sklearn.ensemble import HistGradientBoostingClassifier
@@ -403,6 +509,8 @@ def main():
                     help="implementation smoke: first N pilot rows; 0 = all")
     ap.add_argument("--out", default=os.path.join(HERE, "out",
                                                    "oracle_teacher_distill.json"))
+    ap.add_argument("--policy-out", default="",
+                    help="optional tracked JSON for the compact DT2 policy pair")
     a = ap.parse_args()
     if not a.fit:
         raise SystemExit("--fit or DR_LULU_FIT is required")
@@ -437,6 +545,10 @@ def main():
     structured_null = {
         k: structured_crossval(Xd, X, groups_dec, null_flip, null_rank, k)
         for k in structured_kinds}
+    policy_true = compact_dt2_policy(
+        Xd, X, names, decision_names, recs, flip, trank, 0x54525545)
+    policy_null = compact_dt2_policy(
+        Xd, X, names, decision_names, recs, null_flip, null_rank, 0x4E554C4C)
 
     # Full-fit random forest only for a readable feature-importance hypothesis;
     # cross-validated metrics above own every predictive number.
@@ -483,6 +595,8 @@ def main():
         "crossval_dose_matched_label_blind_null": null_models,
         "structured_crossval_true_teacher": structured,
         "structured_crossval_exact_dose_shuffled_teacher": structured_null,
+        "compact_dt2_full_fit_true_hypothesis_only": policy_true,
+        "compact_dt2_full_fit_null_hypothesis_only": policy_null,
         "top_univariate_flip_directions": univariate(recs, X, names)[:20],
         "full_fit_rf_importance_hypothesis_only": importance[:25],
         "full_fit_flip_rf_importance_hypothesis_only": flip_importance[:25],
@@ -491,6 +605,18 @@ def main():
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w") as f:
         json.dump(result, f, indent=1)
+    if a.policy_out:
+        policy_bundle = {
+            "version": "oracle-teacher-dt2-v1",
+            "source": result["pilot"], "fit": result["fit"],
+            "code": result["code"],
+            "crossval_true": structured["dt2"],
+            "crossval_exact_dose_shuffled": structured_null["dt2"],
+            "true": policy_true, "null": policy_null,
+        }
+        os.makedirs(os.path.dirname(os.path.abspath(a.policy_out)), exist_ok=True)
+        with open(a.policy_out, "w") as f:
+            json.dump(policy_bundle, f, indent=1)
     print(json.dumps({"replay_gate": result["replay_gate"],
                       "corpus": result["corpus"],
                       "champion": baseline, "true": models,
@@ -501,6 +627,8 @@ def main():
                       "top_flip_features": flip_importance[:10],
                       "seconds": result["seconds"]}, indent=1))
     print(f"wrote {a.out}")
+    if a.policy_out:
+        print(f"wrote {a.policy_out}")
 
 
 if __name__ == "__main__":
