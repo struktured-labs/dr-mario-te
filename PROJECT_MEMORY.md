@@ -580,3 +580,16 @@ The project does not yet claim to know the perfect weighting of those signals.
   `champion-source:experiments/eval47/stage2/dspawn_tie/POST_GARBAGE_ENDPOINT_READINESS.md`
 - Required untracked lulu fit:
   `experiments/eval47/results/dr_lulu_20260808_fit.json`
+
+### RESOLVED — endpoint analyzer accepted rows detached from META
+
+The runner already refused changed META on launch/resume, but the standalone
+analyzer did not read META. It could therefore issue a verdict for copied rows
+without proving their registered runtime, table, gate, pressure, or seed block.
+The analyzer now fails closed unless META matches the current complete runtime
+manifest and gate bytes, and its self-test kills a wrong-runtime META mutant.
+Implementation is `champion-source:bb87b67`; readiness is `332054c`. The
+regenerated prospective gate is
+`31b404c6ad027911ecb17709ef04903f47e238c036942682f84e61076c48e89a`
+and the pre-launch runtime manifest is
+`c0a059e69f1e55bb8991d31a62219bd7e94bbb926604cbcd9cf61eb1fff48c26`.
