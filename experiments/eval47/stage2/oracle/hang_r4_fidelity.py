@@ -10,6 +10,7 @@ import json
 import os
 import sys
 import time
+from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 from numba import njit, int8, int64
@@ -245,13 +246,31 @@ def replay(rows, fit):
                           f"{row['trt']['res']}/{row['trt']['n_plies']}")
         if set(logs) != consumed:
             errors.append(f"seed {seed}: unconsumed flips {sorted(set(logs) - consumed)}")
+    return {"stats": {k: dict(v) for k, v in stats.items()},
+            "flip_states": n_flips, "errors": errors,
+            "_candidate_value_abs_deltas": abs_deltas}
+
+
+def replay_chunk(job):
+    return replay(*job)
+
+
+def merge_replays(parts):
+    stats = {"all": blank_stats(), "gated": blank_stats(), "flips": blank_stats()}
+    errors, n_flips, deltas = [], 0, []
+    for part in parts:
+        for scope in stats:
+            stats[scope].update(part["stats"][scope])
+        errors.extend(part["errors"])
+        n_flips += int(part["flip_states"])
+        deltas.extend(part["_candidate_value_abs_deltas"])
     return {"stats": {k: finalize(v) for k, v in stats.items()},
             "flip_states": n_flips, "errors": errors,
             "candidate_value_abs_delta": {
-                "n": len(abs_deltas), "mean": float(np.mean(abs_deltas)),
-                "median": float(np.median(abs_deltas)),
-                "p95": float(np.percentile(abs_deltas, 95)),
-                "max": float(np.max(abs_deltas))}}
+                "n": len(deltas), "mean": float(np.mean(deltas)),
+                "median": float(np.median(deltas)),
+                "p95": float(np.percentile(deltas, 95)),
+                "max": float(np.max(deltas))}}
 
 
 def replay_mutants(rows):
@@ -267,6 +286,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pilot", default=DEFAULT_PILOT)
     ap.add_argument("--fit", default=os.environ.get("DR_LULU_FIT"))
+    ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--out", default=os.path.join(HERE, "out", "hang_r4_fidelity.json"))
     a = ap.parse_args()
     if not a.fit:
@@ -277,7 +297,14 @@ def main():
     mg = mirror_gate()
     if not mg["pass"]:
         raise SystemExit("R4 MIRROR/MUTANT GATE FAILED: " + json.dumps(mg))
-    rr = replay(rows, a.fit)
+    assert 1 <= a.workers <= 12
+    chunks = [rows[i::a.workers] for i in range(a.workers)]
+    if a.workers == 1:
+        parts = [replay(rows, a.fit)]
+    else:
+        with ProcessPoolExecutor(max_workers=a.workers) as ex:
+            parts = list(ex.map(replay_chunk, [(chunk, a.fit) for chunk in chunks]))
+    rr = merge_replays(parts)
     if rr["errors"] or rr["flip_states"] != 489:
         raise SystemExit("REPLAY GATE FAILED: " + json.dumps(
             {"errors": rr["errors"][:5], "flip_states": rr["flip_states"]}))
