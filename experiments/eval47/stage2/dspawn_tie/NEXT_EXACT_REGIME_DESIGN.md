@@ -21,6 +21,15 @@ timing gate, but selected only 258 distinct flips against treatment's 327
 endpoint play remains unauthorized. See
 `STRATIFIED_NULL_VALIDATION_RESULT.md`.
 
+Third update: the registered larger correction closed the estimator defect
+without using the failed validation block for refitting. N=1,200 fit seeds
+produced 1,140 treatment changes / 2,114 null opportunities; population-rate
+cutoffs were frozen before a one-shot N=600 validation. That validation passed
+all gates: 585 versus 616 distinct changes (5.30% mismatch), distribution TVs
+0.027--0.060, and first-flip median 59 versus 60. The null blocker is cleared
+for an endpoint preregistration **draft only**. See
+`LARGE_NULL_VALIDATION_RESULT.md`.
+
 ## Why this candidate remains alive
 
 The old compact/drip screen's literal verdict is no-graduate under its frozen
