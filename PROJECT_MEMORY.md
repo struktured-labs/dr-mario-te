@@ -351,6 +351,18 @@ aggregate distinct dose did not: treatment 327 versus selected null 258,
 has no endpoint evidence; its remaining blocker is robust dose calibration,
 not perturbation-shape matching.
 
+The independently registered larger correction resolved that blocker without
+refitting the failed block.  `champion-source:cb0ab4e` froze N=1,200 fit seeds
+71000..72199 and N=600 validation seeds 72200..72799.  The fit measured 1,140
+treatment changes / 2,114 null opportunities and used population cell rates,
+not hash order statistics; the table is `a749aa2`, SHA256
+`c64ce845e3e7d19242a359f868012bd04623c1bbee21d139202722f686e9c82d`.
+One-shot validation at `126b146` **passed every gate**: 585 treatment versus
+616 null distinct changes (5.30% mismatch), Hamming/timing/gap/K-offset TVs
+0.027/0.039/0.060/0.037, and first-flip median 59 versus 60.  No outcome or
+tempo fields were retained.  The null blocker is cleared for an endpoint
+preregistration draft only; K4/wq60 still has zero exact-v8 endpoint evidence.
+
 ### `d_spawn_h` is already partly priced
 
 The exact shippable S0 experiment (`d_spawn_h` alone, four-segment monotone
@@ -402,7 +414,9 @@ for this prior negative and a dose-matched null.
    stratified canonical-distinct-state shuffled null that matches the disclosed
    timing/value-gap/Hamming/duty diagnostics; no endpoint seeds open before a
    fresh disjoint calibration passes.  The first stratified attempt matched
-   shape but failed dose and is closed; do not refit its validation block.
+   shape but failed dose and is closed; do not refit its validation block.  The
+   separately preregistered large-fit population-rate null subsequently passed;
+   draft (but do not silently launch) the N=9,000 endpoint arm next.
 5. Preserve the completed theta400 image and tuck NO_GO.  The freeze
    discriminator's prior prereg is `VOID_CONTROLS`; any retry needs freshly
    proven pause and CPU-loop fixtures before seed 30011 is inspected.
@@ -539,5 +553,7 @@ The project does not yet claim to know the perfect weighting of those signals.
   `champion-source:experiments/eval47/stage2/dspawn_tie/POST_GARBAGE_CALIBRATION_RESULT.md`
 - Stratified-null one-shot validation failure:
   `champion-source:experiments/eval47/stage2/dspawn_tie/STRATIFIED_NULL_VALIDATION_RESULT.md`
+- Large-fit stratified-null validation PASS (mechanism only):
+  `champion-source:experiments/eval47/stage2/dspawn_tie/LARGE_NULL_VALIDATION_RESULT.md`
 - Required untracked lulu fit:
   `experiments/eval47/results/dr_lulu_20260808_fit.json`
