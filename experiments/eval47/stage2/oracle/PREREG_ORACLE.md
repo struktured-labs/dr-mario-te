@@ -714,3 +714,30 @@ Seeds 30000 onward therefore replay under the current sealed manifest. The old
 125-pair pilot remains visibly disclosed as already seen and has no verdict
 authority; its rows are not copied or mixed. This is a compute-cost deviation,
 not a seed, endpoint, arm, or verdict-rule change.
+
+---
+
+### A11 — 2026-08-11. REPAIR THE KILLED-MUTANT FIXTURE, NOT THE ORACLE.
+
+**Status when written: AFTER fourteen remote preflight failures; BEFORE any
+current Tier-A endpoint row.** Both registered endpoint directories remained
+absent. The service was stopped while its fifteenth preflight was running.
+
+G1c's real fork-independence check passed on every attempt. Its deliberately
+wrong control was obtained by calling the upstream `NesPillSource.attach`,
+assuming that method still installed the historical closure over a shared pill
+cursor. Upstream has since correctly replaced the lambda with a deepcopy-safe
+callable object. The gate's wrong input had therefore become right; the mutant
+survived even though the production fork remained independent.
+
+The gate now constructs the historical bad lambda inline. It requires both
+that deepcopy preserves the same function object and that interleaved sibling
+draws disagree, while the real callable-object fork must still agree. This
+changes no oracle action, candidate, horizon, pressure draw, label, null dose,
+seed, endpoint, or verdict rule. It only restores the preregistered killed
+mutant independently of mutable upstream implementation history.
+
+Operationally, `run_label.sh` maps a mandatory preflight failure to exit 125,
+and the transient unit sets `RestartPreventExitStatus=125`. Runtime failures
+remain resumable and restartable; a deterministic gate failure now stops once
+instead of consuming another ~48 CPU-minutes every 20 seconds.

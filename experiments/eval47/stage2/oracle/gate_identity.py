@@ -60,6 +60,21 @@ def provenance_valid(record, game):
             and record["val_gap"] >= 0)
 
 
+def attach_literal_lambda_mutant(env, seed):
+    """Reconstruct the historical deepcopy-unsafe pill attachment inline.
+
+    Do not obtain this mutant through ``NesPillSource.attach``: that upstream
+    method was correctly repaired and is no longer a deliberately wrong input.
+    A function object is atomic under deepcopy, so both cloned environments
+    retain this same closure and advance one shared source cursor.
+    """
+    from drmario.faithful_env import Pill
+    import nes_pills as NP
+    src = NP.NesPillSource(seed=seed)
+    env._rand_pill = lambda: Pill(*src.next_pill())
+    return env
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", type=int, default=12)
@@ -117,25 +132,28 @@ def main():
     g1c = (all((x.a, x.b) == (y.a, y.b) for x, y in zip(pa, pb))
            and (par.a, par.b) == (pa[0].a, pa[0].b))
 
-    # MUTANT: the lambda attach that pressure_rig's sys.path order selects
+    # MUTANT: reconstruct the historical lambda attachment directly.  The
+    # upstream attach() is now fixed and therefore cannot serve as a mutant.
     import nes_pills as NP
     env2 = O.make_env(seeds[0], C["level"])
-    NP.NesPillSource(seed=seeds[0]).attach(env2)      # installs the lambda
+    attach_literal_lambda_mutant(env2, seeds[0])
     for _ in range(6):
         r, _v = O._advance(env2, 10, C, seeds[0], bmodel)
         if r is not None:
             break
     A2, B2 = copy.deepcopy(env2), copy.deepcopy(env2)
+    lambda_callable_shared = A2._rand_pill is B2._rand_pill
     qa = [A2._rand_pill() for _ in range(6)]
     qb = [B2._rand_pill() for _ in range(6)]
     lambda_shares = not all((x.a, x.b) == (y.a, y.b) for x, y in zip(qa, qb))
     res["gates"]["G1c_fork_capsule_independence"] = bool(g1c)
-    res["gates"]["G1c_mutant_lambda_attach_MUST_share"] = bool(lambda_shares)
+    res["gates"]["G1c_mutant_lambda_callable_shared"] = bool(
+        lambda_callable_shared)
+    res["gates"]["G1c_mutant_lambda_cursor_interference"] = bool(
+        lambda_shares)
     res["gates"]["G1c_nes_pills_module"] = NP.__file__
-    res["gates"]["G1c_lambda_attach_present_upstream"] = (
-        "lambda" in open(NP.__file__).read().split("def attach")[1][:400])
     ok &= g1c
-    ok &= lambda_shares
+    ok &= lambda_callable_shared and lambda_shares
 
     # ---------------- G1d liveness / G1e gate coverage / G1f -------------
     live = 0

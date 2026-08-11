@@ -75,6 +75,7 @@ if [[ "$MODE" == launch || "$MODE" == launch-true ]]; then
   "${SSH[@]}" "$TARGET" "systemd-run --unit=drm-oracle-clair-a \
     --description='$DESCRIPTION' \
     --property=Restart=on-failure --property=RestartSec=20 \
+    --property=RestartPreventExitStatus=125 \
     /bin/bash $RUNNER"
   "${SSH[@]}" "$TARGET" 'systemctl --no-pager status drm-oracle-clair-a || true'
 else

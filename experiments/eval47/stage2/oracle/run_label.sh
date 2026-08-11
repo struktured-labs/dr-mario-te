@@ -27,7 +27,10 @@ case "$LABEL" in
 esac
 
 mkdir -p out logs
-bash run_gates.sh
+if ! bash run_gates.sh; then
+  echo "mandatory oracle preflight failed; refusing deterministic restart loop" >&2
+  exit 125
+fi
 "$PY" -u run_oracle.py --model lulu --future clair --label "$LABEL" \
   --seed-start 30000 --seed-count "$N" --segment 250 --workers "$W" \
   "${EXTRA[@]}" --outdir "$OUT" 2>&1 | tee -a "logs/full_A_clair_${LABEL}.log"

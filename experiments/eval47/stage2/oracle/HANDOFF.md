@@ -1,5 +1,15 @@
 # Oracle-ceiling arm — handoff
 
+## 2026-08-11 preflight repair (A11)
+
+The paid node produced zero endpoint rows because G1c's historical lambda
+mutant was sourced from an upstream `attach()` method that is now correctly
+deepcopy-safe. Fourteen deterministic preflight failures were followed by a
+manual stop during attempt fifteen. A11 reconstructs the wrong lambda inline;
+the production fork check and every endpoint contract remain unchanged.
+Preflight exit 125 is now restart-inhibited so this failure mode cannot burn
+the node in a loop. The repaired complete gate must pass once before launch.
+
 ## Resumed status — 2026-08-10
 
 The original handoff below is retained as history. Amendments A5–A8 and the
