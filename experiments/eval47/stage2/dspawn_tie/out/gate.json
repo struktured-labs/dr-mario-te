@@ -1,0 +1,82 @@
+{
+ "version": "dspawn-tie-v8-gate-v1",
+ "source_commit": "25c9edc9b2308522dca4a964c096e98f94a55a36",
+ "smoke_seeds": [
+  60300,
+  60301,
+  60302,
+  60303
+ ],
+ "checks": {
+  "equal_value_lower_height": {
+   "pass": true,
+   "got": 17,
+   "want": 17
+  },
+  "clipped_deadzone_mutant_killed": {
+   "pass": true,
+   "mutant_got": 16
+  },
+  "strict_decision_unchanged": {
+   "pass": true,
+   "got": 16
+  },
+  "gap1_mutant_killed": {
+   "pass": true,
+   "mutant_got": 17
+  },
+  "null_sensor_invariant": {
+   "pass": true,
+   "before": 17,
+   "after": 17
+  },
+  "sensor_reading_null_mutant_killed": {
+   "pass": true,
+   "before": 17,
+   "after": 14
+  },
+  "real_legal_masks": {
+   "pass": true,
+   "decisions": 160,
+   "mismatches": 0
+  },
+  "legal_mask_mutant_killed": {
+   "pass": true,
+   "mutation": "invert CHAMP_ORDER[0] legality"
+  },
+  "base_action_outcome_identity": {
+   "pass": true,
+   "games": [
+    {
+     "seed": 60300,
+     "same": true,
+     "res": "clear",
+     "pills": 166
+    },
+    {
+     "seed": 60301,
+     "same": true,
+     "res": "clear",
+     "pills": 168
+    },
+    {
+     "seed": 60302,
+     "same": true,
+     "res": "clear",
+     "pills": 122
+    },
+    {
+     "seed": 60303,
+     "same": true,
+     "res": "clear",
+     "pills": 249
+    }
+   ]
+  },
+  "seed0_tie_mutant_killed": {
+   "pass": true,
+   "action_differences": 21
+  }
+ },
+ "pass": true
+}
