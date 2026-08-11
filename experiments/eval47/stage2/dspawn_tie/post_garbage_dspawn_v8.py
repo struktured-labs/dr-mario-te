@@ -251,9 +251,10 @@ class PostGarbageArm:
             int(env.nxt.a), int(env.nxt.b), w, fl)
         tie_seed = O.policy_tie_seed(seed, "p2_surrogate")
         base = V8.choose_seeded(vals, tie_seed)
+        if active and base is not None:
+            self.stats["active_plies"] += 1
         if base is None or not active or self.mode == "base":
             return base
-        self.stats["active_plies"] += 1
 
         roots = all_roots(col, vir, lnk, int(env.cur.a), int(env.cur.b))
         if [r is not None for r in roots] != list(np.isfinite(vals)):

@@ -110,6 +110,8 @@ def main():
         "current_engineering_gate": all(row["pass"] for row in engineering.values()),
         "live_analyzer_pipeline": not pipeline_errors,
         "analyzer_mutants": all(analyzer_mutants.values()),
+        "base_active_telemetry": all(
+            row["base"]["active_plies"] > 0 for row in pipeline_rows),
     }
     source_paths = {
         "post_garbage_dspawn_v8": Path(P.__file__).resolve(),
