@@ -26,12 +26,15 @@ is nonzero under landed pressure; out-of-range resume rows fail immediately.
 
 ## Measured cost
 
-A four-worker run on 12 already-disclosed smoke seeds (three arms each) took
-25.18 seconds after cache warm-up: 1,716 paired seeds/hour. Linear projection:
+A repeated run on the same 12 already-disclosed smoke seeds (three arms each)
+measured both allowed local settings after cache warm-up:
 
-- **~5.25 wall-hours at four local workers**;
-- **~21 core-hours**;
-- budget 6--8 wall-hours for cold cache, tail variance, flushes, and analysis.
+- four workers: 25.18 s, 1,716 pairs/hour, **~5.25 wall-hours / 21.0 core-hours**;
+- six workers: 18.16 s, 2,379 pairs/hour, **~3.78 wall-hours / 22.7 core-hours**.
+
+Prefer six local workers when the box is otherwise free; budget 4.5--6
+wall-hours for cold cache, tail variance, flushes, and analysis. Use four when
+lower contention matters.
 
 This is a small smoke estimate, not a billing guarantee. It is nevertheless far
 below the remote H15 oracle's measured cost. Do not contend with or alter the
@@ -46,7 +49,7 @@ export NUMBA_CACHE_DIR=/tmp/dr-mario-te-numba-cache
 
 $PY experiments/eval47/stage2/dspawn_tie/gate_post_garbage_endpoint.py
 $PY experiments/eval47/stage2/dspawn_tie/analyze_post_garbage_v8_endpoint.py --selftest
-$PY experiments/eval47/stage2/dspawn_tie/run_post_garbage_v8_endpoint.py --workers 4
+$PY experiments/eval47/stage2/dspawn_tie/run_post_garbage_v8_endpoint.py --workers 6
 $PY experiments/eval47/stage2/dspawn_tie/analyze_post_garbage_v8_endpoint.py
 ```
 
