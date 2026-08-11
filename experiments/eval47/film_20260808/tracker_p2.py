@@ -22,6 +22,9 @@ from __future__ import annotations
 import os
 import sys
 import time
+import argparse
+import json
+import re
 
 import numpy as np
 from PIL import Image
@@ -39,6 +42,56 @@ CROP_DX, CROP_DY = 1088, 348
 P2_CROP = dict(P2, x0=P2["x0"] - CROP_DX, y0=P2["y0"] - CROP_DY)
 assert P2_CROP == dict(x0=48.0, y0=34.5, W=44.0, H=38.6), P2_CROP
 STALL_FALLBACK_FRAMES = 180
+
+
+def should_freeze_missing_half(last_row, consecutive_lost,
+                               threshold=T.LOST_FRAMES_FREEZE):
+    """A ceiling rotation can hide one half above row 0 for much longer than 12f.
+
+    The old tracker permanently stopped searching after 12 lost frames even when the last
+    confirmed anchor was at the ceiling. That rule was calibrated on a human controller;
+    the AI often deliberates/steers while vertical with one half above the bottle.
+    """
+    return consecutive_lost >= threshold and last_row > 1
+
+
+def search_capsule_p2(labels, isvirus, row, col, orient, color_a, color_b,
+                      anchor_labels, consecutive_lost):
+    """Normal local search, then a ceiling-only all-column reacquisition retry."""
+    found = T.search_capsule(labels, isvirus, row, col, orient, color_a, color_b,
+                             anchor_labels=anchor_labels)
+    if found[3] or row > 1 or consecutive_lost == 0:
+        return found
+    old_radii = T.SEARCH_RADII
+    try:
+        T.SEARCH_RADII = [(2, 7), (3, 7)]
+        return T.search_capsule(labels, isvirus, row, col, orient, color_a, color_b,
+                                anchor_labels=anchor_labels)
+    finally:
+        T.SEARCH_RADII = old_radii
+
+
+def predicate_selftest():
+    corrected = {
+        "ceiling_not_frozen": not should_freeze_missing_half(0, T.LOST_FRAMES_FREEZE),
+        "row1_not_frozen": not should_freeze_missing_half(1, T.LOST_FRAMES_FREEZE),
+        "below_ceiling_frozen": should_freeze_missing_half(2, T.LOST_FRAMES_FREEZE),
+        "short_loss_not_frozen": not should_freeze_missing_half(
+            8, T.LOST_FRAMES_FREEZE - 1),
+    }
+    def old_row_blind_mutant(_row, lost):
+        return lost >= T.LOST_FRAMES_FREEZE
+
+    mutant_checks = {
+        "ceiling_not_frozen": not old_row_blind_mutant(0, T.LOST_FRAMES_FREEZE),
+        "row1_not_frozen": not old_row_blind_mutant(1, T.LOST_FRAMES_FREEZE),
+        "below_ceiling_frozen": old_row_blind_mutant(2, T.LOST_FRAMES_FREEZE),
+        "short_loss_not_frozen": not old_row_blind_mutant(
+            8, T.LOST_FRAMES_FREEZE - 1),
+    }
+    return {"checks": corrected,
+            "old_row_blind_mutant_rejected": not all(mutant_checks.values()),
+            "pass": bool(all(corrected.values()) and not all(mutant_checks.values()))}
 
 
 def load_frames(frames_root, n_frames):
@@ -100,9 +153,10 @@ def track(frames_root, n_frames, window_start_abs, tag):
         if pill["half_cleared"]:
             found = False
         else:
-            nrow, ncol, norient, found = T.search_capsule(
+            nrow, ncol, norient, found = search_capsule_p2(
                 labels, isvirus, row, col, orient, pill["colorA"], pill["colorB"],
-                anchor_labels=pill["anchor_labels"])
+                anchor_labels=pill["anchor_labels"],
+                consecutive_lost=pill["consec_lost"])
 
         if found:
             pill["consec_lost"] = 0
@@ -130,7 +184,8 @@ def track(frames_root, n_frames, window_start_abs, tag):
         else:
             pill["lost_frames"] += 1
             pill["consec_lost"] += 1
-            if not pill["half_cleared"] and pill["consec_lost"] >= T.LOST_FRAMES_FREEZE:
+            if not pill["half_cleared"] and should_freeze_missing_half(
+                    pill["row"], pill["consec_lost"]):
                 pill["half_cleared"] = True
 
         prev_spawn_colored = spawn_colored
@@ -146,16 +201,56 @@ def track(frames_root, n_frames, window_start_abs, tag):
     return rows, paths
 
 
+def validate_m3(rows):
+    suspicious = []
+    for row in rows:
+        nums = [int(x) for x in re.findall(r"\d+", row["final_cells"])]
+        if min(nums[0], nums[2]) <= 1:
+            suspicious.append(int(row["pill_id"]))
+    snap = [r for r in rows if abs(float(r["spawn_t_abs"]) - 596.35) < 0.06]
+    snap_ok = bool(snap and snap[0]["final_cells"] == "(8,6)+(8,7)"
+                   and snap[0]["final_orient"] in ("H", "HF"))
+    gates = {
+        "pill_count_90_to_96": 90 <= len(rows) <= 96,
+        "false_locks_le_2": len(suspicious) <= 2,
+        "known_late_snap_preserved": snap_ok,
+    }
+    return {"pills": len(rows), "row0_or_row1_false_locks": len(suspicious),
+            "suspicious_pill_ids": suspicious, "gates": gates,
+            "pass": all(gates.values())}
+
+
 def main():
-    mid = sys.argv[1]
-    window_start_abs = float(sys.argv[2])
+    ap = argparse.ArgumentParser()
+    ap.add_argument("mid", nargs="?")
+    ap.add_argument("window_start_seconds", nargs="?", type=float)
+    ap.add_argument("--outdir", default=os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "out", "p2_tracker_ceiling"))
+    ap.add_argument("--selftest", action="store_true")
+    a = ap.parse_args()
+    st = predicate_selftest()
+    if not st["pass"]:
+        raise SystemExit("predicate selftest failed: " + json.dumps(st))
+    if a.selftest:
+        print(json.dumps(st, indent=1))
+        return
+    if not a.mid or a.window_start_seconds is None:
+        ap.error("mid and window_start_seconds are required unless --selftest")
+    mid = a.mid
+    window_start_abs = float(a.window_start_seconds)
     frames_root = os.path.join(FRAMES_60, mid)
     n = len([f for f in os.listdir(frames_root) if f.startswith("f") and f.endswith(".jpg")])
-    os.makedirs(EVENTS_ROOT, exist_ok=True)
+    os.makedirs(a.outdir, exist_ok=True)
     rows, paths = track(frames_root, n, window_start_abs, f"p2/{mid}")
-    T.write_csv(rows, os.path.join(EVENTS_ROOT, f"p2_{mid}.csv"))
-    T.write_paths_jsonl(paths, os.path.join(EVENTS_ROOT, f"p2_{mid}_paths.jsonl"))
-    print(f"[p2/{mid}] wrote {len(rows)} pills / {len(paths)} path rows to {EVENTS_ROOT}",
+    T.write_csv(rows, os.path.join(a.outdir, f"p2_{mid}.csv"))
+    T.write_paths_jsonl(paths, os.path.join(a.outdir, f"p2_{mid}_paths.jsonl"))
+    result = {"predicate_selftest": st}
+    if mid == "m3":
+        result["m3_validation"] = validate_m3(rows)
+    with open(os.path.join(a.outdir, f"p2_{mid}_validation.json"), "w") as f:
+        json.dump(result, f, indent=1)
+    print(json.dumps(result, indent=1))
+    print(f"[p2/{mid}] wrote {len(rows)} pills / {len(paths)} path rows to {a.outdir}",
           file=sys.stderr)
 
 
