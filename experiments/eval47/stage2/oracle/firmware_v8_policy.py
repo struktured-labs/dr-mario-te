@@ -217,6 +217,45 @@ def _candidate_values(pcol, pvir, plnk, ca, cb, na, nb, w, fl, hang_mode,
     return vals
 
 
+@njit(cache=True, fastmath=False)
+def _no_ply2_eh_deltas(pcol, pvir, plnk, ca, cb, na, nb, w, fl):
+    """Cheap exact delta of the deliberately-wrong `eh_on_no_ply2` mutant.
+
+    It resolves each real root once, but legality of the next pill needs only `_resting`; no
+    second/third-ply value is required.  Nonzero entries are exactly the candidates on which that
+    mutant differs from the shipped policy.
+    """
+    out = np.zeros(32, dtype=np.float64)
+    c1 = np.empty(NCELL, dtype=int8); v1 = np.empty(NCELL, dtype=int8)
+    l1 = np.empty(NCELL, dtype=int8); mask = np.empty(NCELL, dtype=int8)
+    ec = np.empty(NCELL, dtype=int8); ev = np.empty(NCELL, dtype=int8)
+    base1 = np.empty(CH.NBASE, dtype=int64); terms = np.empty(CH.NT, dtype=int64)
+    CH._base_scan(pcol, pvir, fl, base1)
+    for o4 in range(4):
+        var = FX._VAR_OF_O4[o4]
+        for cl in range(8):
+            ok, _nv, _cells, _leaf1, _ch1 = CH._leaf_chain(
+                pcol, pvir, plnk, base1, var, cl, ca, cb, w, fl,
+                c1, v1, l1, mask, terms, 0, True)
+            if ok == 0 or _virus_count(v1) == 0:
+                continue
+            have2 = False
+            for o42 in range(4):
+                var2 = FX._VAR_OF_O4[o42]
+                for cl2 in range(8):
+                    ok2, _r0, _c0, _r1, _c1 = CL._resting(c1, var2, cl2)
+                    if ok2:
+                        have2 = True
+                        break
+                if have2:
+                    break
+            if not have2:
+                _soft_cap1_child(pcol, pvir, var, cl, ca, cb, ec, ev, mask)
+                out[var * 8 + cl] = (W_EXCAV * FX._g_excav_ship(ec, ev)
+                                           + hang_credit_r4(ec, ev))
+    return out
+
+
 def candidate_values(col, vir, lnk, ca, cb, na, nb, w, fl, *, r4=True,
                      full_child_eh=False, linked_replay_eh=False, eh_on_no_ply2=False):
     if full_child_eh and linked_replay_eh:
@@ -228,6 +267,14 @@ def candidate_values(col, vir, lnk, ca, cb, na, nb, w, fl, *, r4=True,
                              int(ca), int(cb), int(na), int(nb),
                              np.asarray(w, dtype=np.float64), np.asarray(fl, dtype=np.int32),
                              1 if r4 else 0, eh_mode, 1 if eh_on_no_ply2 else 0)
+
+
+def no_ply2_eh_deltas(col, vir, lnk, ca, cb, na, nb, w, fl):
+    return _no_ply2_eh_deltas(np.ascontiguousarray(col, dtype=np.int8),
+                              np.ascontiguousarray(vir, dtype=np.int8),
+                              np.ascontiguousarray(lnk, dtype=np.int8),
+                              int(ca), int(cb), int(na), int(nb),
+                              np.asarray(w, dtype=np.float64), np.asarray(fl, dtype=np.int32))
 
 
 def choose_from_values(vals, order=CHAMP_ORDER):
