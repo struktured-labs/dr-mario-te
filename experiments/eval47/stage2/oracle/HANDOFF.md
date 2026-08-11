@@ -40,6 +40,19 @@ Historical pilot rows are intentionally not imported into the current output:
 they predate this manifest/provenance contract. A10 requires replaying the
 registered prefix and keeps the old n=125 result descriptive only.
 
+Read-only monitoring (added after launch; not imported by the sealed arm):
+
+```bash
+bash monitor_hetzner_oracle.sh root@HOST ~/.ssh/hetzner_rbm status
+# Optional non-authoritative live copy; re-fetch after ALLDONE before analysis:
+bash monitor_hetzner_oracle.sh root@HOST ~/.ssh/hetzner_rbm fetch
+```
+
+The status path reports systemd result/state, true and shuffle row/segment
+counts, META hashes, recent journal output, disk, and memory.  It never restarts
+or edits the paid-node run.  `fetch` uses no remote deletion and labels its
+output a live snapshot.
+
 Measured on the local 12-worker box, per 60 pairs:
 
 | label | wall | summed worker time | projected N=9,000 wall |
