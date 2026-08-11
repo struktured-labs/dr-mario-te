@@ -1,0 +1,14 @@
+{
+ "version": "post-garbage-calibration-audit-v1",
+ "pass": true,
+ "counts": {
+  "treatment": 233,
+  "null_opportunities": 466,
+  "null_selected": 233
+ },
+ "killed_mutants": {
+  "endpoint_leak_rejected": true,
+  "duplicate_seed_rejected": true,
+  "wrong_cutoff_rejected": true
+ }
+}

@@ -4,6 +4,15 @@ Status: **design record, not a preregistration and not authorized to run yet**.
 Freeze a separate prereg only after the null below passes a disjoint base-trajectory
 calibration and its killed mutants.
 
+Update 2026-08-11: the exact arm and association-blind null are implemented and
+passed their structural engineering gate. Mechanism-only seeds 70400..70639
+provided 233 treatment distinct-state flips and 466 null opportunities; a
+label-blind cutoff matched aggregate dose exactly. The selected null's first
+timing and medians were close, but its successor-Hamming tails were not
+(p10/p90 2/12.8 versus treatment 7/19). Therefore endpoint play remains
+blocked pending a newly calibrated stratified null. See
+`POST_GARBAGE_CALIBRATION_RESULT.md`.
+
 ## Why this candidate remains alive
 
 The old compact/drip screen's literal verdict is no-graduate under its frozen
