@@ -8,19 +8,20 @@ opened.** Owner launch is required by the sealed preregistration.
 - preregistration: `85d7898`
 - null table: `a749aa2`, SHA-256
   `c64ce845e3e7d19242a359f868012bd04623c1bbee21d139202722f686e9c82d`
-- runner/selector gate: `095774a`, final source binding `2c5a6d3`
+- runner/selector gate: `095774a`, final live-pipeline binding `56fe541`
 - analyzer/provenance verdict gates: `2b6b62d`
 - current prospective gate: PASS, SHA-256
-  `e3425f843b9f1d48898d9f8810a7ca36ffd3833ea5e43d02dd7504729b3de1e9`
+  `ccf705e00e9fb38c01749451f641bf132b14f445215b37662f5fc2e0578e4801`
 - current runtime manifest (before any endpoint META exists):
-  `4afd9b6cc53773f069ff08b1cd04c772c75e1af88c12c3c0de591fbb827fc925`
+  `3d794dbc958cf59ee60856c3947faac76a211cab14d669570b3605f7557738c8`
 
-The launch gate is bound to the exact policy module, endpoint runner, and gate
-source bytes. Any edit makes `require_gate()` fail until the complete current
+The launch gate is bound to the exact policy module, endpoint runner, gate, and
+analyzer source bytes. Any edit makes `require_gate()` fail until the complete current
 engineering/selector gate is rerun. The gate includes exact-v8 base identity,
 K4/K+1, association, alias, table/bin/cutoff mutants, and exact reproduction of
-all 616 frozen validation selections. The analyzer self-test kills all 11
-registered verdict and provenance directions.
+all 616 frozen validation selections. Four live three-arm rows pass the
+analyzer pipeline, and its self-test kills all 11 registered verdict and
+provenance directions.
 
 ## Measured cost
 
@@ -51,4 +52,3 @@ $PY experiments/eval47/stage2/dspawn_tie/analyze_post_garbage_v8_endpoint.py
 The runner banks ordered 250-seed segments and safely resumes only when META,
 gate, table, and all runtime hashes are identical. Do not inspect or interpret
 partial outcome summaries as a verdict.
-
