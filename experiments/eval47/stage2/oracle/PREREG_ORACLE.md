@@ -741,3 +741,38 @@ Operationally, `run_label.sh` maps a mandatory preflight failure to exit 125,
 and the transient unit sets `RestartPreventExitStatus=125`. Runtime failures
 remain resumable and restartable; a deterministic gate failure now stops once
 instead of consuming another ~48 CPU-minutes every 20 seconds.
+
+---
+
+### A12 — 2026-08-11. FAIL FAST ON THE SEALED RUNTIME MANIFEST.
+
+**Status when written: AFTER A11's full remote gate set passed and the stop was
+requested at 42 ordered true-label rows; BEFORE any result from those rows was
+interpreted or granted endpoint authority.** Thirteen in-flight ordered results
+flushed during shutdown, leaving 55 complete rows in the directory.
+
+The remote manifest was
+`75e36d0e4474b1571fad2dfd82d09a42502af78cc1af0993f62c7c2dd6a19234`,
+not the registered
+`a67f47f15d4f82c125956dc2b37cc3c1bc1a0c84877310d5dfd27b96345b3bd8`.
+Per-file comparison isolated one mismatch: `nes_pills.py`. On the deployment
+path, the existing `sys.path` insertion idiom left the mutable
+`dr_mario_rl/tmp/pillrng` copy ahead of the historical QA copy; from the local
+oracle worktree the same source happened to order those paths oppositely. The
+copies generate the same capsules but differ in `attach()`'s deepcopy safety.
+The oracle does not call that method for production forks, but the source
+manifest is a fail-closed contract: this plausible semantic argument does not
+license accepting the rows.
+
+The 55 rows are **QUARANTINED AND VOID**. Seeds 30000..30054 must replay under
+the registered manifest and may not be copied, merged, or counted. No endpoint
+summary from the quarantined directory has decision authority.
+
+A12 puts an oracle-scoped `sitecustomize.py` first in `PYTHONPATH` for every
+launcher. It preloads the QA `nes_pills.py` into `sys.modules` before the
+legacy decision tree can reorder paths. `gate_runtime_manifest.py` is the
+first, cheap gate before the long behavioral preflight; it requires the exact
+registered rolled hash and proves rejection of a deliberately
+one-nibble-wrong expected hash. This changes no oracle policy, candidate set,
+horizon, pressure draw, label, null dose, endpoint seed, endpoint definition,
+or verdict rule.

@@ -58,6 +58,8 @@ REMOTE_ORACLE=/home/struktured/projects/dr-mario-qa-wt/experiments/eval47/stage2
 echo "=== REMOTE FAST GATES ==="
 "${SSH[@]}" "$TARGET" "cd $REMOTE_ORACLE && \
   export NUMBA_CACHE_DIR=/tmp/dr-mario-te-numba-cache && mkdir -p \"\$NUMBA_CACHE_DIR\" && \
+  export PYTHONPATH=$REMOTE_ORACLE/bootstrap:/home/struktured/projects/dr-mario-qa-wt/experiments\${PYTHONPATH:+:\$PYTHONPATH} && \
+  /root/drm/venv/bin/python gate_runtime_manifest.py && \
   /root/drm/venv/bin/python gate_dist.py && \
   /root/drm/venv/bin/python gate_null_thinning.py && \
   /root/drm/venv/bin/python test_oracle_verdict.py && \

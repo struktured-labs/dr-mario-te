@@ -6,6 +6,10 @@ PY=${DRM_PY:-/home/struktured/projects/dr_mario_rl/tmp/venv/bin/python}
 [[ -x "$PY" ]] || PY=/root/drm/venv/bin/python
 export NUMBA_CACHE_DIR=${NUMBA_CACHE_DIR:-/tmp/dr-mario-te-numba-cache}
 mkdir -p "$NUMBA_CACHE_DIR"
+# Preload the sealed QA copy before mutable upstream worktrees can reorder
+# sys.path.  Without this, resolution depended on this checkout's host path.
+CANONICAL_QA=/home/struktured/projects/dr-mario-qa-wt/experiments
+export PYTHONPATH="$PWD/bootstrap:$CANONICAL_QA${PYTHONPATH:+:$PYTHONPATH}"
 LABEL=${1:?usage: run_label.sh true|shuffle WORKERS}
 W=${2:-4}
 N=9000

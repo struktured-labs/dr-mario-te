@@ -1,5 +1,22 @@
 # Oracle-ceiling arm — handoff
 
+## 2026-08-11 manifest-path repair (A12)
+
+The repaired A11 gates passed remotely, but the first true-label process
+printed runtime manifest `75e36d0e4474b1571fad2dfd82d09a42502af78cc1af0993f62c7c2dd6a19234`
+instead of sealed `a67f47f15d4f82c125956dc2b37cc3c1bc1a0c84877310d5dfd27b96345b3bd8`.
+The stop was requested at 42 ordered rows; 13 already-running results flushed
+during shutdown, leaving 55. All 55 are quarantined, have no endpoint
+authority, and seeds 30000..30054 must replay.
+
+The sole differing file was `nes_pills.py`: path ordering selected the newer
+deepcopy-safe upstream copy on the deployment path and the sealed historical
+QA copy locally. Capsule generation was unchanged, and the oracle installs its
+own safe draw object, but the manifest contract intentionally permits no
+semantic waiver. A12 uses an oracle-scoped Python startup bootstrap to preload
+the QA module before legacy path manipulation and adds a killed-mutant
+runtime-manifest gate as the first, cheap preflight.
+
 ## 2026-08-11 preflight repair (A11)
 
 The paid node produced zero endpoint rows because G1c's historical lambda

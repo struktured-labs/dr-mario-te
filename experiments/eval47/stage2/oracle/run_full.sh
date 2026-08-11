@@ -21,6 +21,8 @@ PY=${DRM_PY:-/home/struktured/projects/dr_mario_rl/tmp/venv/bin/python}
 [[ -x "$PY" ]] || PY=/root/drm/venv/bin/python
 export NUMBA_CACHE_DIR=${NUMBA_CACHE_DIR:-/tmp/dr-mario-te-numba-cache}
 mkdir -p "$NUMBA_CACHE_DIR"
+CANONICAL_QA=/home/struktured/projects/dr-mario-qa-wt/experiments
+export PYTHONPATH="$PWD/bootstrap:$CANONICAL_QA${PYTHONPATH:+:$PYTHONPATH}"
 TIER=${1:-A}
 W=${2:-5}
 case "$TIER" in
@@ -41,6 +43,8 @@ read -r KEEP_NUM KEEP_DEN < <(
 )
 
 echo "=== GATES (PREREG_ORACLE sec 2) — a failure here VOIDS the arm ==="
+$PY gate_runtime_manifest.py 2>&1 | tee logs/gate_runtime_manifest.log
+grep -q "RUNTIME MANIFEST GATE: PASS" logs/gate_runtime_manifest.log || { echo "MANIFEST GATE FAILED — ARM VOID"; exit 1; }
 $PY -u gate_identity.py --seeds 12 --seed-start 40000 \
     2>&1 | tee logs/gate_identity.log
 grep -q "GATES PASS" logs/gate_identity.log || { echo "GATES FAILED — ARM VOID"; exit 1; }

@@ -6,8 +6,11 @@ PY=${DRM_PY:-/home/struktured/projects/dr_mario_rl/tmp/venv/bin/python}
 [[ -x "$PY" ]] || PY=/root/drm/venv/bin/python
 export NUMBA_CACHE_DIR=${NUMBA_CACHE_DIR:-/tmp/dr-mario-te-numba-cache}
 mkdir -p "$NUMBA_CACHE_DIR"
+CANONICAL_QA=/home/struktured/projects/dr-mario-qa-wt/experiments
+export PYTHONPATH="$PWD/bootstrap:$CANONICAL_QA${PYTHONPATH:+:$PYTHONPATH}"
 mkdir -p out logs
 
+"$PY" gate_runtime_manifest.py 2>&1 | tee logs/gate_runtime_manifest.log
 "$PY" -u gate_identity.py --seeds 12 --seed-start 40000 \
   2>&1 | tee logs/gate_identity.log
 "$PY" -u gate_forkleak.py --seeds 4 --seed-start 41000 \
