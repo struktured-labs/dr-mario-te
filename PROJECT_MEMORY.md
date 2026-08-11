@@ -341,6 +341,16 @@ medians were close, but selected-null successor-Hamming p10/p90 was 2/12.8
 versus treatment 7/19.  A new disjoint calibration must validate a stratified
 null without sacrificing timing before an endpoint preregistration is frozen.
 
+That one-shot correction is now closed.  A 40-cell Hamming/early-late/value-gap
+table was preregistered at `champion-source:ef4c994`, frozen at `34b8cbd`, and
+validated once on fresh mechanism-only seeds 70700..70939 (`92557be`).  All
+four distribution-TV gates and all first-flip timing gates generalized, but
+aggregate distinct dose did not: treatment 327 versus selected null 258,
+**21.10% mismatch** against the 10% limit.  Verdict:
+`NOT_TESTABLE_STRATIFIED_NULL`.  Do not refit on 70700..70939.  The arm still
+has no endpoint evidence; its remaining blocker is robust dose calibration,
+not perturbation-shape matching.
+
 ### `d_spawn_h` is already partly priced
 
 The exact shippable S0 experiment (`d_spawn_h` alone, four-segment monotone
@@ -391,7 +401,8 @@ for this prior negative and a dose-matched null.
    exact-v8 K4/wq60 post-garbage mechanism advances, first build and kill a
    stratified canonical-distinct-state shuffled null that matches the disclosed
    timing/value-gap/Hamming/duty diagnostics; no endpoint seeds open before a
-   fresh disjoint calibration passes.
+   fresh disjoint calibration passes.  The first stratified attempt matched
+   shape but failed dose and is closed; do not refit its validation block.
 5. Preserve the completed theta400 image and tuck NO_GO.  The freeze
    discriminator's prior prereg is `VOID_CONTROLS`; any retry needs freshly
    proven pause and CPU-loop fixtures before seed 30011 is inspected.
@@ -526,5 +537,7 @@ The project does not yet claim to know the perfect weighting of those signals.
   `champion-source:experiments/eval47/stage2/dspawn_tie/NEXT_EXACT_REGIME_DESIGN.md`
 - Post-garbage structural calibration and remaining null blocker:
   `champion-source:experiments/eval47/stage2/dspawn_tie/POST_GARBAGE_CALIBRATION_RESULT.md`
+- Stratified-null one-shot validation failure:
+  `champion-source:experiments/eval47/stage2/dspawn_tie/STRATIFIED_NULL_VALIDATION_RESULT.md`
 - Required untracked lulu fit:
   `experiments/eval47/results/dr_lulu_20260808_fit.json`
