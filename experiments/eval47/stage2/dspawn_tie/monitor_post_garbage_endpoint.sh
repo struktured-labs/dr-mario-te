@@ -28,7 +28,11 @@ latest=$(find "$OUT" -maxdepth 1 -type f -name 'seg_*.summary.json' \
   -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)
 if [[ -n "$latest" ]]; then
   printf 'latest_summary %s\n' "$latest"
-  sed -n '1,120p' "$latest"
+  if [[ "$rows" -eq 9000 ]]; then
+    sed -n '1,120p' "$latest"
+  else
+    printf 'summary_contents SUPPRESSED_UNTIL_COMPLETE\n'
+  fi
 fi
 
 printf 'processes\n'

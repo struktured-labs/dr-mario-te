@@ -69,3 +69,7 @@ The initial monitor implementation summed `wc`'s per-file rows and its
 synthetic `total` row, doubling progress once multiple segments existed. The
 monitor now excludes that summary row; this operational fix does not touch the
 runner, policy, META, gate, or endpoint data.
+
+While fewer than 9,000 rows exist, the monitor also suppresses segment-summary
+contents and reports only progress/identity/storage. This enforces the
+preregistered ban on inspecting or interpreting partial outcomes.
