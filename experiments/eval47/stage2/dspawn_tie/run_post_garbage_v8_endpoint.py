@@ -161,6 +161,9 @@ def main():
         meta_path.write_text(json.dumps(meta, indent=1) + "\n")
     done = load_rows(outdir)
     seeds = list(range(START, START + COUNT)); todo = set(seeds) - set(done)
+    extras = sorted(set(done) - set(seeds))
+    if extras:
+        raise RuntimeError(f"resume directory contains out-of-range seeds: {extras[:10]}")
     print(f"endpoint pairs={COUNT} done={len(done)} todo={len(todo)} "
           f"workers={args.workers} manifest={meta['runtime_manifest']['rolled']}", flush=True)
     with ProcessPoolExecutor(max_workers=args.workers, initializer=init_worker,

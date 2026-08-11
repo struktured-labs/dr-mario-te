@@ -7,9 +7,9 @@
  "live_smoke_flips": 9,
  "source_sha256": {
   "post_garbage_dspawn_v8": "c17612ed4de8667e9ae2a0298ad31cd5fb7f8c8b662a8dd4971339d15189a014",
-  "endpoint_runner": "26be76db763b836f082be3c22e2ab34ad653c701d4d6b103cc9e5a8d100c3b00",
+  "endpoint_runner": "a217f7a7add50fe2b6cdfc19faaae74c527f65100232afd7b4aadb66e8bbae5b",
   "endpoint_gate": "73d1e1160ae664c83e52978db85849f85f984608dfd697ac6157e33cfa2502c9",
-  "endpoint_analyzer": "9d682d1b541381defd9dd91d9d68ef068a01030ce6a223c010ee7024b1ec9333"
+  "endpoint_analyzer": "05b94e33b02b0a2b9c91c9611491d7adec0812eee45b7bc79816215da21b43bd"
  },
  "pipeline_errors": [],
  "analyzer_mutants": {
@@ -23,7 +23,8 @@
   "missing_provenance_rejected": true,
   "semantic_alias_rejected": true,
   "wrong_matching_cell_rejected": true,
-  "no_flip_identity_rejected": true
+  "no_flip_identity_rejected": true,
+  "zero_flip_distribution_rejected": true
  },
  "boundary_checks": {
   "h4": true,

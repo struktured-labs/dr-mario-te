@@ -146,6 +146,8 @@ def churn(rows, arm):
 
 def tv(left, right):
     nl, nr = sum(left), sum(right)
+    if not nl or not nr:
+        return 1.0
     return .5 * sum(abs(a / nl - b / nr) for a, b in zip(left, right))
 
 
@@ -227,6 +229,7 @@ def diagnostic_mutants():
         "semantic_alias_rejected": bool(flip_errors([alias])),
         "wrong_matching_cell_rejected": bool(flip_errors([wrong_cell])),
         "no_flip_identity_rejected": bool(no_flip_errors([identity])),
+        "zero_flip_distribution_rejected": tv([0, 0], [0, 0]) == 1.0,
     })
     return verdict
 
@@ -268,8 +271,10 @@ def main():
                 sum(r["treatment"]["plies"] for r in rows), 1e-15)
     tvs = {key: tv(dist["treatment"][key], dist["null"][key])
            for key in ("hamming", "timing_bin", "value_gap", "gate_offset")}
-    timing_diff = [abs(a - b) for a, b in zip(
-        dist["treatment"]["first_flip_ply"], dist["null"]["first_flip_ply"])]
+    timing_diff = [
+        abs(a - b) if a is not None and b is not None else float("inf")
+        for a, b in zip(dist["treatment"]["first_flip_ply"],
+                        dist["null"]["first_flip_ply"])]
     null_valid = (len(logs["treatment"]) >= 100 and len(logs["null"]) >= 100
                   and dose <= .10 and all(value <= .10 for value in tvs.values())
                   and timing_diff[0] <= 20 and timing_diff[1] <= 15
