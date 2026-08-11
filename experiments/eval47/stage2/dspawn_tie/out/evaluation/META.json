@@ -1,0 +1,90 @@
+{
+ "version": "dspawn-tie-v8-eval-v1",
+ "prereg_commit": "32bff12",
+ "policy_semantics": "firmware_v8/p2_surrogate",
+ "pressure": "exo_lulu",
+ "seeds": [
+  61000,
+  69999
+ ],
+ "n_seeds": 9000,
+ "segment": 250,
+ "null_keep_num": 16767,
+ "null_keep_den": 1000000,
+ "calibration_sha256": "3840474671f7c391915cf83408d7a35fb45bf6f04fce6433214b14d98c94ca1d",
+ "gate_sha256": "62bcd7a46ac1ee2b60e322ee3b27a5fef32c72fd12ed39ca3eb26dead9f08020",
+ "runtime_manifest": {
+  "rolled": "fc106243390cc4b3637343fd8ebc93a8671f0d953d3107f9de840d62832357d7",
+  "files": {
+   "runner": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/dspawn_tie/run_dspawn_tie_v8.py",
+    "sha256": "a153815dbbd57d3a7373b505f28d0b91ee11b0d4973e4ae9163e396c357cc0db"
+   },
+   "fit": {
+    "path": "/home/struktured/projects/dr-mario-te/source/experiments/eval47/results/dr_lulu_20260808_fit.json",
+    "sha256": "7b4e564c2aae05d646d591682828dd7fc4e80c68b5aa20d45d413aee7a4e999b"
+   },
+   "dspawn_tie_v8": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/dspawn_tie/dspawn_tie_v8.py",
+    "sha256": "4a38416a73cbaab8a1821e3c70a8da533e3ec5307f115e1315d67bbc1b4eafc4"
+   },
+   "firmware_v8_policy": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/oracle/firmware_v8_policy.py",
+    "sha256": "f2af22eb9d03cd3a73d8c05cb7c04e7ce54be17c00bc2d9ff654bc54110e2c81"
+   },
+   "oracle_arm": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/oracle/oracle_arm.py",
+    "sha256": "248cc1e10cd1a39c7e3c9114e38adc03946a7cdc0cc9ed56f4b075091b350982"
+   },
+   "pressure_rig": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/pressure_rig.py",
+    "sha256": "4cf861b702fc32239ede0a4f3cb631c394183dbc734546e08c2fae6f2bf6c95a"
+   },
+   "p0_ab": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/jointdig/p0_ab.py",
+    "sha256": "ae88719d818bbb7f87fc1f3aecf72f78285080138b134241899e1007b8c9abfd"
+   },
+   "bursty_model": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/bursty_model.py",
+    "sha256": "0e5c105b9bda113fd431e2448685dfffc2c1cf59c041bb8f33a39988b32e1569"
+   },
+   "exogenous_pressure": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/oracle/exogenous_pressure.py",
+    "sha256": "ae8dabf2695ddb134e93b2fc51ecb464917b104eb3348a7ac54c5dcc80a034bf"
+   },
+   "cascade_chain_x": {
+    "path": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/cascade_chain_x.py",
+    "sha256": "520cf7de9b5f5247f01c488563d7f173a270eef84410c80d3b069313d3b7fdaa"
+   },
+   "cascade_link_x": {
+    "path": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/cascade_link_x.py",
+    "sha256": "90b9aea42f99b44ba1cac6142082b40b08c601f4e1360d446db9cebb465b18e7"
+   },
+   "cascade_stranded_x": {
+    "path": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/cascade_stranded_x.py",
+    "sha256": "2bfd177396cdcc27b8b9ecd1b0d516c61901955e228174535b5aeb8bba9a8265"
+   },
+   "fast_rtl_x": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/depth4/snap/fast_rtl_x.py",
+    "sha256": "93e22602b80868647a5e732f57c355875e4ccc1aa71a5415496a07beba709ac3"
+   },
+   "fast_sim_x": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/depth4/snap/fast_sim_x.py",
+    "sha256": "d51e43a4cbdfb192b2b966aac7ac65d75d7b084bd9a78a4e244ca07dd0182464"
+   },
+   "nes_pills": {
+    "path": "/home/struktured/projects/dr-mario-qa-wt/experiments/nes_pills.py",
+    "sha256": "9bca4013d4ea567f295db81111d463bf9ac40f401f00ce57fb411e091fde4c53"
+   },
+   "drmario.faithful_env": {
+    "path": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/faithful_env.py",
+    "sha256": "1bd9664cbe5536cb8c5c905a214948c2bbec0b2645f2e189eb9c196e1e3b21cb"
+   },
+   "drmario.faithful_game": {
+    "path": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/faithful_game.py",
+    "sha256": "9d6d8d0038c1ebc1830287b58e7f3eb1597e6e44a1988ae716b1537def118efa"
+   }
+  },
+  "python": "3.12.11"
+ }
+}

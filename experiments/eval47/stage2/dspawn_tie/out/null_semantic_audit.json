@@ -1,0 +1,442 @@
+{
+ "version": "dspawn-null-semantic-audit-v1",
+ "authority": "FINAL_9000",
+ "prereg": "PREREG_NULL_SEMANTIC_AUDIT.md",
+ "n_input_pairs": 9000,
+ "n_games_audited": 6379,
+ "complete": true,
+ "input": {
+  "root": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/dspawn_tie/out/evaluation",
+  "combined_sha256": "f31061989a6944eb827ce6d9313d7dc136184b3074cbade479ae6d2ccd5d87fc",
+  "files": [
+   "seg_061000.jsonl",
+   "seg_061250.jsonl",
+   "seg_061500.jsonl",
+   "seg_061750.jsonl",
+   "seg_062000.jsonl",
+   "seg_062250.jsonl",
+   "seg_062500.jsonl",
+   "seg_062750.jsonl",
+   "seg_063000.jsonl",
+   "seg_063250.jsonl",
+   "seg_063500.jsonl",
+   "seg_063750.jsonl",
+   "seg_064000.jsonl",
+   "seg_064250.jsonl",
+   "seg_064500.jsonl",
+   "seg_064750.jsonl",
+   "seg_065000.jsonl",
+   "seg_065250.jsonl",
+   "seg_065500.jsonl",
+   "seg_065750.jsonl",
+   "seg_066000.jsonl",
+   "seg_066250.jsonl",
+   "seg_066500.jsonl",
+   "seg_066750.jsonl",
+   "seg_067000.jsonl",
+   "seg_067250.jsonl",
+   "seg_067500.jsonl",
+   "seg_067750.jsonl",
+   "seg_068000.jsonl",
+   "seg_068250.jsonl",
+   "seg_068500.jsonl",
+   "seg_068750.jsonl",
+   "seg_069000.jsonl",
+   "seg_069250.jsonl",
+   "seg_069500.jsonl",
+   "seg_069750.jsonl"
+  ],
+  "meta_path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/dspawn_tie/out/evaluation/META.json",
+  "meta_sha256": "de7df2f4cd6814a578c59fd6d134ea5f6c023189cd426379bee37eb9cc3d33d3",
+  "eval_runtime_rolled": "fc106243390cc4b3637343fd8ebc93a8671f0d953d3107f9de840d62832357d7"
+ },
+ "runtime_manifest": {
+  "rolled": "b391398e7f01b63f383ac4a7fd1fe699d5e9abe007a54053587d8f996ddcfbe4",
+  "files": {
+   "audit": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/dspawn_tie/audit_null_semantics.py",
+    "sha256": "afc08bdca03e0a386e847b9480d0822363d9631f1eb66fd376100c52eb29e5ce"
+   },
+   "fit": {
+    "path": "/home/struktured/projects/dr-mario-te/source/experiments/eval47/results/dr_lulu_20260808_fit.json",
+    "sha256": "7b4e564c2aae05d646d591682828dd7fc4e80c68b5aa20d45d413aee7a4e999b"
+   },
+   "dspawn_tie_v8": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/dspawn_tie/dspawn_tie_v8.py",
+    "sha256": "4a38416a73cbaab8a1821e3c70a8da533e3ec5307f115e1315d67bbc1b4eafc4"
+   },
+   "firmware_v8_policy": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/oracle/firmware_v8_policy.py",
+    "sha256": "f2af22eb9d03cd3a73d8c05cb7c04e7ce54be17c00bc2d9ff654bc54110e2c81"
+   },
+   "oracle_arm": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/oracle/oracle_arm.py",
+    "sha256": "248cc1e10cd1a39c7e3c9114e38adc03946a7cdc0cc9ed56f4b075091b350982"
+   },
+   "pressure_rig": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/pressure_rig.py",
+    "sha256": "4cf861b702fc32239ede0a4f3cb631c394183dbc734546e08c2fae6f2bf6c95a"
+   },
+   "p0_ab": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/jointdig/p0_ab.py",
+    "sha256": "ae88719d818bbb7f87fc1f3aecf72f78285080138b134241899e1007b8c9abfd"
+   },
+   "bursty_model": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/bursty_model.py",
+    "sha256": "0e5c105b9bda113fd431e2448685dfffc2c1cf59c041bb8f33a39988b32e1569"
+   },
+   "exogenous_pressure": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/eval47/stage2/oracle/exogenous_pressure.py",
+    "sha256": "ae8dabf2695ddb134e93b2fc51ecb464917b104eb3348a7ac54c5dcc80a034bf"
+   },
+   "cascade_chain_x": {
+    "path": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/cascade_chain_x.py",
+    "sha256": "520cf7de9b5f5247f01c488563d7f173a270eef84410c80d3b069313d3b7fdaa"
+   },
+   "cascade_link_x": {
+    "path": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/cascade_link_x.py",
+    "sha256": "90b9aea42f99b44ba1cac6142082b40b08c601f4e1360d446db9cebb465b18e7"
+   },
+   "cascade_stranded_x": {
+    "path": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/cascade_stranded_x.py",
+    "sha256": "2bfd177396cdcc27b8b9ecd1b0d516c61901955e228174535b5aeb8bba9a8265"
+   },
+   "fast_rtl_x": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/depth4/snap/fast_rtl_x.py",
+    "sha256": "93e22602b80868647a5e732f57c355875e4ccc1aa71a5415496a07beba709ac3"
+   },
+   "fast_sim_x": {
+    "path": "/home/struktured/projects/dr-mario-te/champion-source/experiments/depth4/snap/fast_sim_x.py",
+    "sha256": "d51e43a4cbdfb192b2b966aac7ac65d75d7b084bd9a78a4e244ca07dd0182464"
+   },
+   "nes_pills": {
+    "path": "/home/struktured/projects/dr-mario-qa-wt/experiments/nes_pills.py",
+    "sha256": "9bca4013d4ea567f295db81111d463bf9ac40f401f00ce57fb411e091fde4c53"
+   },
+   "drmario.faithful_env": {
+    "path": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/faithful_env.py",
+    "sha256": "1bd9664cbe5536cb8c5c905a214948c2bbec0b2645f2e189eb9c196e1e3b21cb"
+   },
+   "drmario.faithful_game": {
+    "path": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/faithful_game.py",
+    "sha256": "9d6d8d0038c1ebc1830287b58e7f3eb1597e6e44a1988ae716b1537def118efa"
+   }
+  },
+  "python": "3.12.11"
+ },
+ "replay_gate": {
+  "pass": true,
+  "errors": [],
+  "killed_mutants": {
+   "self_board_alias_positive": true,
+   "one_color_byte_rejected": true,
+   "changed_logged_base_rejected": true,
+   "missing_target_rejected": true
+  }
+ },
+ "arms": {
+  "treatment": {
+   "n": 3939,
+   "aliases": 0,
+   "distinct_boards": 3939,
+   "alias_fraction": 0.0,
+   "color_hamming": {
+    "1": 9,
+    "2": 851,
+    "3": 82,
+    "4": 2569,
+    "5": 109,
+    "6": 129,
+    "7": 38,
+    "8": 47,
+    "9": 26,
+    "10": 27,
+    "11": 10,
+    "12": 9,
+    "13": 13,
+    "14": 6,
+    "15": 4,
+    "16": 1,
+    "17": 4,
+    "18": 2,
+    "19": 1,
+    "20": 1,
+    "21": 1
+   },
+   "virus_hamming": {
+    "0": 3794,
+    "1": 95,
+    "2": 38,
+    "3": 9,
+    "4": 3
+   },
+   "link_hamming": {
+    "0": 433,
+    "2": 187,
+    "3": 556,
+    "4": 2613,
+    "5": 14,
+    "6": 69,
+    "7": 19,
+    "8": 20,
+    "9": 4,
+    "10": 4,
+    "11": 7,
+    "12": 1,
+    "13": 3,
+    "14": 5,
+    "16": 1,
+    "17": 2,
+    "18": 1
+   },
+   "sensor_drop": {
+    "1": 2144,
+    "2": 1669,
+    "3": 89,
+    "4": 14,
+    "5": 8,
+    "6": 7,
+    "7": 6,
+    "8": 1,
+    "9": 1
+   },
+   "same_color_pill": 1313,
+   "variant_transition": {
+    "0->0": 67,
+    "0->1": 177,
+    "0->2": 177,
+    "0->3": 129,
+    "1->0": 94,
+    "1->1": 38,
+    "1->2": 180,
+    "1->3": 106,
+    "2->0": 287,
+    "2->1": 134,
+    "2->2": 1123,
+    "2->3": 287,
+    "3->0": 249,
+    "3->1": 107,
+    "3->2": 445,
+    "3->3": 339
+   },
+   "column_transition": {
+    "0->0": 2,
+    "0->1": 6,
+    "0->2": 7,
+    "0->3": 17,
+    "0->4": 24,
+    "0->6": 2,
+    "1->0": 2,
+    "1->1": 3,
+    "1->2": 13,
+    "1->3": 18,
+    "1->4": 18,
+    "1->5": 4,
+    "1->6": 2,
+    "2->0": 12,
+    "2->1": 88,
+    "2->2": 129,
+    "2->3": 37,
+    "2->4": 46,
+    "2->5": 24,
+    "2->6": 21,
+    "2->7": 7,
+    "3->0": 158,
+    "3->1": 269,
+    "3->2": 401,
+    "3->3": 208,
+    "3->4": 212,
+    "3->5": 245,
+    "3->6": 186,
+    "3->7": 108,
+    "4->0": 33,
+    "4->1": 135,
+    "4->2": 237,
+    "4->3": 301,
+    "4->4": 88,
+    "4->5": 459,
+    "4->6": 190,
+    "4->7": 77,
+    "5->1": 3,
+    "5->2": 17,
+    "5->3": 18,
+    "5->4": 24,
+    "5->5": 4,
+    "5->6": 3,
+    "5->7": 1,
+    "6->0": 2,
+    "6->1": 4,
+    "6->2": 4,
+    "6->3": 7,
+    "6->4": 25,
+    "6->5": 9,
+    "6->6": 4,
+    "7->0": 1,
+    "7->1": 2,
+    "7->2": 6,
+    "7->3": 1,
+    "7->4": 13,
+    "7->5": 2
+   },
+   "alias_split": {
+    "alias_same_color": 0,
+    "alias_sensor_drop": {},
+    "distinct_same_color": 1313,
+    "distinct_sensor_drop": {
+     "1": 2144,
+     "2": 1669,
+     "3": 89,
+     "4": 14,
+     "5": 8,
+     "6": 7,
+     "7": 6,
+     "8": 1,
+     "9": 1
+    }
+   }
+  },
+  "null": {
+   "n": 4831,
+   "aliases": 4467,
+   "distinct_boards": 364,
+   "alias_fraction": 0.9246532808942248,
+   "color_hamming": {
+    "0": 4467,
+    "2": 141,
+    "4": 190,
+    "5": 8,
+    "6": 16,
+    "7": 2,
+    "8": 5,
+    "9": 1,
+    "12": 1
+   },
+   "virus_hamming": {
+    "0": 4809,
+    "1": 13,
+    "2": 8,
+    "3": 1
+   },
+   "link_hamming": {
+    "0": 4562,
+    "2": 20,
+    "3": 49,
+    "4": 196,
+    "6": 3,
+    "8": 1
+   },
+   "sensor_drop": {
+    "-8": 1,
+    "-3": 2,
+    "-2": 22,
+    "-1": 31,
+    "0": 4727,
+    "1": 23,
+    "2": 23,
+    "3": 2
+   },
+   "same_color_pill": 4538,
+   "variant_transition": {
+    "0->0": 2,
+    "0->1": 434,
+    "0->2": 8,
+    "0->3": 14,
+    "1->0": 397,
+    "1->1": 3,
+    "1->2": 12,
+    "1->3": 16,
+    "2->0": 19,
+    "2->1": 22,
+    "2->2": 56,
+    "2->3": 1830,
+    "3->0": 16,
+    "3->1": 19,
+    "3->2": 1941,
+    "3->3": 42
+   },
+   "column_transition": {
+    "0->0": 537,
+    "0->1": 8,
+    "0->2": 7,
+    "0->3": 2,
+    "0->4": 6,
+    "0->5": 2,
+    "0->6": 3,
+    "0->7": 4,
+    "1->0": 8,
+    "1->1": 585,
+    "1->2": 6,
+    "1->3": 5,
+    "1->4": 5,
+    "1->5": 9,
+    "1->6": 2,
+    "1->7": 3,
+    "2->0": 6,
+    "2->1": 8,
+    "2->2": 612,
+    "2->3": 20,
+    "2->4": 7,
+    "2->5": 4,
+    "2->6": 8,
+    "3->0": 3,
+    "3->1": 6,
+    "3->2": 7,
+    "3->3": 627,
+    "3->4": 17,
+    "3->5": 6,
+    "3->6": 1,
+    "3->7": 3,
+    "4->0": 1,
+    "4->1": 5,
+    "4->2": 5,
+    "4->3": 15,
+    "4->4": 620,
+    "4->5": 10,
+    "4->6": 8,
+    "4->7": 1,
+    "5->0": 1,
+    "5->1": 1,
+    "5->2": 4,
+    "5->3": 2,
+    "5->4": 4,
+    "5->5": 579,
+    "5->6": 9,
+    "5->7": 2,
+    "6->0": 2,
+    "6->1": 2,
+    "6->2": 1,
+    "6->3": 3,
+    "6->4": 7,
+    "6->5": 6,
+    "6->6": 545,
+    "6->7": 4,
+    "7->1": 2,
+    "7->3": 1,
+    "7->4": 2,
+    "7->5": 5,
+    "7->6": 6,
+    "7->7": 451
+   },
+   "alias_split": {
+    "alias_same_color": 4465,
+    "alias_sensor_drop": {
+     "0": 4467
+    },
+    "distinct_same_color": 73,
+    "distinct_sensor_drop": {
+     "-8": 1,
+     "-3": 2,
+     "-2": 22,
+     "-1": 31,
+     "0": 260,
+     "1": 23,
+     "2": 23,
+     "3": 2
+    }
+   }
+  }
+ },
+ "distinct_first_flip_ratio_treatment_over_null": 10.821428571428571,
+ "seconds": 948.73,
+ "note": "first logged action flip only; common predecessor replay; exact color+virus+link+metadata equality"
+}

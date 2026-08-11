@@ -1,0 +1,28 @@
+{
+ "n_pairs": 250,
+ "base": {
+  "clear": 0.96,
+  "topout": 0.024,
+  "stall": 0.016,
+  "dies_ahead": 0.02,
+  "flips": 0,
+  "plies": 33037
+ },
+ "treatment": {
+  "clear": 0.96,
+  "topout": 0.024,
+  "stall": 0.016,
+  "dies_ahead": 0.02,
+  "flips": 197,
+  "plies": 32929
+ },
+ "null": {
+  "clear": 0.948,
+  "topout": 0.024,
+  "stall": 0.028,
+  "dies_ahead": 0.02,
+  "flips": 187,
+  "plies": 33268
+ },
+ "tag": "seg_066750"
+}

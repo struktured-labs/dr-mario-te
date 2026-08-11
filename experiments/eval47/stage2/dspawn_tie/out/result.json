@@ -1,0 +1,342 @@
+{
+ "version": "dspawn-tie-v8-result-v1",
+ "verdict": "NO_GO",
+ "n_pairs": 9000,
+ "seed_min": 61000,
+ "seed_max": 69999,
+ "complete": true,
+ "prefix_exact": true,
+ "counts": {
+  "base": {
+   "clear": 8433,
+   "topout": 245,
+   "stall": 322,
+   "bad_end": 567,
+   "dies_ahead": 151
+  },
+  "treatment": {
+   "clear": 8430,
+   "topout": 265,
+   "stall": 305,
+   "bad_end": 570,
+   "dies_ahead": 169
+  },
+  "null": {
+   "clear": 8431,
+   "topout": 242,
+   "stall": 327,
+   "bad_end": 569,
+   "dies_ahead": 148
+  }
+ },
+ "outcome_transitions": {
+  "base_to_treatment": {
+   "clear_to_clear": 8247,
+   "clear_to_topout": 39,
+   "clear_to_stall": 147,
+   "topout_to_clear": 23,
+   "topout_to_topout": 219,
+   "topout_to_stall": 3,
+   "stall_to_clear": 160,
+   "stall_to_topout": 7,
+   "stall_to_stall": 155
+  },
+  "base_to_null": {
+   "clear_to_clear": 8398,
+   "clear_to_topout": 5,
+   "clear_to_stall": 30,
+   "topout_to_clear": 5,
+   "topout_to_topout": 237,
+   "topout_to_stall": 3,
+   "stall_to_clear": 28,
+   "stall_to_topout": 0,
+   "stall_to_stall": 294
+  },
+  "null_to_treatment": {
+   "clear_to_clear": 8239,
+   "clear_to_topout": 43,
+   "clear_to_stall": 149,
+   "topout_to_clear": 25,
+   "topout_to_topout": 214,
+   "topout_to_stall": 3,
+   "stall_to_clear": 166,
+   "stall_to_topout": 8,
+   "stall_to_stall": 153
+  }
+ },
+ "churn_vs_base": {
+  "treatment": {
+   "games_with_flip": 3939,
+   "result_changed": 379,
+   "result_or_pills_changed": 3004,
+   "bad_end_changed": 369,
+   "dies_ahead_changed": 68
+  },
+  "null": {
+   "games_with_flip": 4831,
+   "result_changed": 71,
+   "result_or_pills_changed": 434,
+   "bad_end_changed": 68,
+   "dies_ahead_changed": 13
+  }
+ },
+ "dose": {
+  "treatment_flips": 7975,
+  "treatment_plies": 1228025,
+  "treatment_rate": 0.006494167464017426,
+  "null_flips": 7413,
+  "null_plies": 1230297,
+  "null_rate": 0.0060253743608250695,
+  "relative_mismatch": 0.07218679003734095,
+  "gate_le_10pct": true
+ },
+ "bad_end": {
+  "treatment_minus_base": {
+   "difference": 0.0003333333333333333,
+   "ci95": [
+    -0.0038888888888888888,
+    0.0044472222222221814
+   ],
+   "discordant": 369,
+   "left_better": 183,
+   "left_worse": 186,
+   "mcnemar_exact_p": 0.917095948819762,
+   "analytic_se": 0.0021343747458109495,
+   "analytic_halfwidth": 0.004183374501789461,
+   "one_pp_margin_reachable": true
+  },
+  "treatment_minus_null_DiD": {
+   "difference": 0.00011111111111111112,
+   "ci95": [
+    -0.004111111111111111,
+    0.0044444444444444444
+   ],
+   "discordant": 383,
+   "left_better": 191,
+   "left_worse": 192,
+   "mcnemar_exact_p": 1.0,
+   "analytic_se": 0.0021744873100867698,
+   "analytic_halfwidth": 0.004261995127770069,
+   "one_pp_margin_reachable": true
+  }
+ },
+ "dies_ahead": {
+  "treatment_minus_base": {
+   "difference": 0.002,
+   "ci95": [
+    0.00022222222222222223,
+    0.003777777777777778
+   ],
+   "discordant": 68,
+   "left_better": 25,
+   "left_worse": 43,
+   "mcnemar_exact_p": 0.038460053348927506,
+   "analytic_se": 0.0009162456945817024,
+   "analytic_halfwidth": 0.0017958415613801367,
+   "one_pp_margin_reachable": true
+  },
+  "treatment_minus_null_DiD": {
+   "difference": 0.0023333333333333335,
+   "ci95": [
+    0.00044444444444444447,
+    0.004222222222222222
+   ],
+   "discordant": 75,
+   "left_better": 27,
+   "left_worse": 48,
+   "mcnemar_exact_p": 0.02029840699010744,
+   "analytic_se": 0.0009622504486493763,
+   "analytic_halfwidth": 0.0018860108793527775,
+   "one_pp_margin_reachable": true
+  }
+ },
+ "pills": {
+  "n_common_clears": 8247,
+  "mean_treatment_minus_base": -0.0720261913423063,
+  "ci95": [
+   -0.5621559354916938,
+   0.4270825754819932
+  ]
+ },
+ "provenance": {
+  "treatment": {
+   "n": 7975,
+   "median_t_to_end": 45.0,
+   "within_last_5": 628,
+   "within_last_15": 1630,
+   "games_with_flip": 3939,
+   "median_first_flip_ply": 97.0,
+   "strict_lane_improvements": 7975,
+   "tie_sizes": {
+    "2": 3804,
+    "3": 874,
+    "4": 2007,
+    "5": 119,
+    "6": 561,
+    "7": 29,
+    "8": 212,
+    "9": 6,
+    "10": 130,
+    "12": 94,
+    "13": 1,
+    "14": 63,
+    "16": 35,
+    "18": 28,
+    "20": 7,
+    "22": 3,
+    "24": 2
+   },
+   "champion_rank_chosen": {
+    "2": 4541,
+    "3": 1774,
+    "4": 915,
+    "5": 336,
+    "6": 113,
+    "7": 108,
+    "8": 52,
+    "9": 57,
+    "10": 22,
+    "11": 33,
+    "12": 6,
+    "13": 7,
+    "14": 4,
+    "15": 4,
+    "17": 2,
+    "18": 1
+   }
+  },
+  "null": {
+   "n": 7413,
+   "median_t_to_end": 67.0,
+   "within_last_5": 330,
+   "within_last_15": 926,
+   "games_with_flip": 4831,
+   "median_first_flip_ply": 53.0,
+   "strict_lane_improvements": 99,
+   "tie_sizes": {
+    "2": 7089,
+    "3": 68,
+    "4": 184,
+    "5": 6,
+    "6": 33,
+    "7": 1,
+    "8": 14,
+    "9": 2,
+    "10": 7,
+    "12": 2,
+    "14": 2,
+    "16": 3,
+    "20": 1,
+    "22": 1
+   },
+   "champion_rank_chosen": {
+    "2": 7139,
+    "3": 158,
+    "4": 75,
+    "5": 9,
+    "6": 13,
+    "7": 6,
+    "8": 5,
+    "9": 1,
+    "10": 4,
+    "13": 1,
+    "16": 1,
+    "18": 1
+   }
+  },
+  "first_divergence": {
+   "treatment": {
+    "n": 3939,
+    "derived_marker": "minimum logged ply within each arm trajectory",
+    "median_ply": 97.0,
+    "median_t_to_end": 48.0,
+    "median_sensor_drop": 1.0,
+    "sensor_drop": {
+     "1": 2144,
+     "2": 1669,
+     "3": 89,
+     "4": 14,
+     "5": 8,
+     "6": 7,
+     "7": 6,
+     "8": 1,
+     "9": 1
+    },
+    "champion_rank_chosen": {
+     "2": 2378,
+     "3": 829,
+     "4": 448,
+     "5": 140,
+     "6": 49,
+     "7": 37,
+     "8": 17,
+     "9": 20,
+     "10": 5,
+     "11": 9,
+     "12": 2,
+     "13": 1,
+     "14": 2,
+     "15": 1,
+     "17": 1
+    },
+    "base_to_arm_outcomes": {
+     "clear_to_clear": 3407,
+     "clear_to_topout": 39,
+     "stall_to_stall": 142,
+     "clear_to_stall": 147,
+     "stall_to_clear": 160,
+     "topout_to_clear": 23,
+     "topout_to_topout": 11,
+     "topout_to_stall": 3,
+     "stall_to_topout": 7
+    }
+   },
+   "null": {
+    "n": 4831,
+    "derived_marker": "minimum logged ply within each arm trajectory",
+    "median_ply": 53.0,
+    "median_t_to_end": 77.0,
+    "median_sensor_drop": 0.0,
+    "sensor_drop": {
+     "-8": 1,
+     "-3": 2,
+     "-2": 22,
+     "-1": 31,
+     "0": 4727,
+     "1": 23,
+     "2": 23,
+     "3": 2
+    },
+    "champion_rank_chosen": {
+     "2": 4700,
+     "3": 77,
+     "4": 38,
+     "5": 3,
+     "6": 5,
+     "7": 3,
+     "8": 4,
+     "16": 1
+    },
+    "base_to_arm_outcomes": {
+     "clear_to_clear": 4391,
+     "stall_to_stall": 265,
+     "topout_to_topout": 104,
+     "clear_to_stall": 30,
+     "stall_to_clear": 28,
+     "topout_to_clear": 5,
+     "clear_to_topout": 5,
+     "topout_to_stall": 3
+    }
+   }
+  },
+  "no_flip_identity_pass": true,
+  "integrity_pass": true,
+  "killed_mutants": {
+   "missing_field_rejected": true,
+   "non_improving_treatment_rejected": true,
+   "flip_count_mismatch_rejected": true,
+   "no_flip_identity_mismatch_rejected": true
+  }
+ },
+ "note": "topout and 300-pill stall both score as bad ends; exogenous Lulu offers are policy-independent; p2_surrogate is not a live NAV_T claim"
+}
