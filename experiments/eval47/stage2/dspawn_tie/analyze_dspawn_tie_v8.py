@@ -234,6 +234,25 @@ def outcome_transitions(rows, left, right):
     }
 
 
+def churn(rows, arm):
+    """How much an arm reshuffles trajectories and registered endpoints."""
+    bad_changed = sum(
+        bool(r[arm]["topout"] or r[arm]["stall"])
+        != bool(r["base"]["topout"] or r["base"]["stall"])
+        for r in rows)
+    return {
+        "games_with_flip": int(sum(int(r[arm]["flips"]) > 0 for r in rows)),
+        "result_changed": int(sum(r[arm]["res"] != r["base"]["res"] for r in rows)),
+        "result_or_pills_changed": int(sum(
+            r[arm]["res"] != r["base"]["res"]
+            or int(r[arm]["pills"]) != int(r["base"]["pills"]) for r in rows)),
+        "bad_end_changed": int(bad_changed),
+        "dies_ahead_changed": int(sum(
+            int(r[arm]["dies_ahead"]) != int(r["base"]["dies_ahead"])
+            for r in rows)),
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=str(HERE / "out" / "evaluation"))
@@ -311,6 +330,10 @@ def main():
             "base_to_treatment": outcome_transitions(rows, "base", "treatment"),
             "base_to_null": outcome_transitions(rows, "base", "null"),
             "null_to_treatment": outcome_transitions(rows, "null", "treatment"),
+        },
+        "churn_vs_base": {
+            "treatment": churn(rows, "treatment"),
+            "null": churn(rows, "null"),
         },
         "dose": {"treatment_flips": flips_t, "treatment_plies": plies_t,
                  "treatment_rate": dose_t, "null_flips": flips_n,
