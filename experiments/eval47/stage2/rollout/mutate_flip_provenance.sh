@@ -60,14 +60,20 @@ run_case M1_log_every_ply fail || fails=$((fails+1))
 mutate '"ply": int(self.stats["plies"]) - 1,' '"ply": int(self.stats["plies"]),'
 run_case M2_ply_off_by_one fail || fails=$((fails+1))
 
-mutate '"base_a": int(base_a),
-                "trt_a": int(a),' \
-       '"base_a": int(a),
-                "trt_a": int(base_a),'
+mutate '"base_action": int(base_a),
+                "trt_action": int(a),' \
+       '"base_action": int(a),
+                "trt_action": int(base_a),'
 run_case M3_swap_base_trt fail || fails=$((fails+1))
 
 mutate '"maxh": int(H.max()),' '"maxh": int(H.min()),'
 run_case M4_maxh_wrong_stat fail || fails=$((fails+1))
+
+# d_spawn_h is the spawn-lane sensor. Cols 3/4 are the spawn columns; 0/1
+# are not. This mutant proves that the independent board scan catches drift.
+mutate '"d_spawn_h": max(int(H[3]), int(H[4])),' \
+       '"d_spawn_h": max(int(H[0]), int(H[1])),'
+run_case M8_d_spawn_h_wrong_cols fail || fails=$((fails+1))
 
 mutate '"viruses": int(np.count_nonzero(vir)),' '"viruses": int(np.count_nonzero(col)),'
 run_case M5_viruses_wrong_plane fail || fails=$((fails+1))
@@ -76,7 +82,7 @@ mutate '        r["t_to_end"] = n_plies - 1 - r["ply"]' \
        '        r["t_to_end"] = r["ply"]'
 run_case M6_t_to_end_not_remaining fail || fails=$((fails+1))
 
-mutate '"rank": rank,' '"rank": 0,'
+mutate '"champ_rank_chosen": rank,' '"champ_rank_chosen": 0,'
 run_case M7_rank_constant fail || fails=$((fails+1))
 
 restore

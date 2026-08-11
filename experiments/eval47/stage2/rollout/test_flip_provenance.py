@@ -6,13 +6,14 @@ directions of the instrument's job can go red:
 
   T1  NULL DIRECTION.  Treatment policy == base policy (Delta identically
       zero) over whole real games.  The log must contain ZERO flip records.
-      A logger that emits on every ply, or that mis-derives `base_a`, fails.
+      A logger that emits on every ply, or that mis-derives `base_action`,
+      fails.
 
   T2  POSITIVE DIRECTION.  A Delta that is zero everywhere EXCEPT one
       candidate at one INJECTED ply forces exactly one argmax flip, at a
       known ply, to a known action.  The log must contain exactly one record,
-      at exactly that ply, with base_a == the champion's own pick and
-      trt_a == the champion's rank-1 alternative.  A logger that drops
+      at exactly that ply, with base_action == the champion's own pick and
+      trt_action == the champion's rank-1 alternative.  A logger that drops
       records, or stamps the wrong ply, fails.
 
   T3  FIELD CORRECTNESS.  Every field of the injected record is re-derived by
@@ -57,6 +58,26 @@ def _init(model="lulu"):
     obj = P.load_lulu() if model == "lulu" else None
     PR._init(11, 0, 20, model_kind=("bursty" if model == "lulu" else "drip"),
              bursty_model_obj=obj)
+    _module_provenance()
+
+
+def _module_provenance():
+    """Print the module paths that define the fixture's policy and pill stream.
+
+    `pressure_rig` prepends a sibling worktree's `experiments` to sys.path, so
+    `import nes_pills` can resolve to a stale copy whose attach() installs an
+    `env._rand_pill = lambda ...` closure.  Deepcopy treats a function as
+    atomic, giving forked states one shared advancing capsule cursor.  These
+    fixtures do not fork, but printing provenance prevents a future forked
+    fixture from inheriting that defect silently.
+    """
+    import importlib
+    for name in ("nes_pills", "pressure_rig", "arm_lut", "root_search"):
+        try:
+            module = importlib.import_module(name)
+            print(f"  [module] {name:14s} {getattr(module, '__file__', '?')}")
+        except Exception as exc:                    # noqa: BLE001
+            print(f"  [module] {name:14s} IMPORT FAILED: {exc}")
 
 
 # --------------------------------------------------------------- the probe
@@ -75,6 +96,8 @@ class ChampionProbe:
         self.base_a = self.alt_a = None
         self.finite_slots = None
         self.viruses = self.maxh = self.tie = self.val_gap = None
+        self.d_spawn_h = None
+        self.nonspawn_pair_h = None
 
     def wrap(self, arm):
         orig = arm.choose
@@ -100,12 +123,16 @@ class ChampionProbe:
                 # plain-Python board scans
                 grid = [int(x) for x in np.asarray(col).reshape(-1)]
                 hmax = 0
+                hcol = [0] * 8
                 for c in range(8):
                     for r in range(16):
                         if grid[r * 8 + c] != 0:
+                            hcol[c] = 16 - r
                             hmax = max(hmax, 16 - r)
                             break
                 self.maxh = hmax
+                self.d_spawn_h = max(hcol[3], hcol[4])
+                self.nonspawn_pair_h = max(hcol[0], hcol[1])
                 self.viruses = sum(1 for x in np.asarray(vir).reshape(-1)
                                    if int(x) != 0)
             return a, vals
@@ -177,7 +204,11 @@ def run():
 
     # ---- T2 POSITIVE DIRECTION --------------------------------------------
     print("\nT2  a Delta injected at ONE ply must log exactly ONE record there")
-    seed, target = 20000, 7
+    # Ply 3 is intentionally discriminating for the spawn-lane sensor:
+    # max(H[3], H[4]) == 11 while max(H[0], H[1]) == 10.  Keeping that
+    # property explicit prevents the wrong-column mutant from passing merely
+    # because two unrelated column pairs happen to have the same height.
+    seed, target = 20000, 3
     probe = ChampionProbe(target)
     parm = AL.Arm(lut=None)
     parm.choose = probe.wrap(parm)
@@ -203,22 +234,31 @@ def run():
     rec = recs[0]
     check("T2 record is at the injected ply", rec["ply"] == target,
           f"ply={rec['ply']} expected={target}")
-    check("T2 base_a is the champion's own pick", rec["base_a"] == probe.base_a,
-          f"logged={rec['base_a']} champion={probe.base_a}")
-    check("T2 trt_a is the rank-1 alternative, and differs from base",
-          rec["trt_a"] == probe.alt_a and rec["trt_a"] != rec["base_a"],
-          f"logged={rec['trt_a']} expected={probe.alt_a}")
+    check("T2 base_action is the champion's own pick",
+          rec["base_action"] == probe.base_a,
+          f"logged={rec['base_action']} champion={probe.base_a}")
+    check("T2 trt_action is the rank-1 alternative, and differs from base",
+          rec["trt_action"] == probe.alt_a
+          and rec["trt_action"] != rec["base_action"],
+          f"logged={rec['trt_action']} expected={probe.alt_a}")
 
     # ---- T3 FIELD CORRECTNESS ---------------------------------------------
     print("\nT3  every field re-derived independently must match")
-    check("T3 rank == 1 (the penalty demotes base by exactly one place)",
-          rec["rank"] == 1, f"rank={rec['rank']}")
+    check("T3 champ_rank_chosen == 1 (the penalty demotes base one place)",
+          rec["champ_rank_chosen"] == 1,
+          f"rank={rec['champ_rank_chosen']}")
     check("T3 t_to_end", rec["t_to_end"] == rinj["n_plies"] - 1 - target,
           f"{rec['t_to_end']} vs {rinj['n_plies'] - 1 - target}")
     check("T3 viruses (plain-Python recount)", rec["viruses"] == probe.viruses,
           f"logged={rec['viruses']} probe={probe.viruses}")
     check("T3 maxh (plain-Python column scan)", rec["maxh"] == probe.maxh,
           f"logged={rec['maxh']} probe={probe.maxh}")
+    check("T3 fixture discriminates spawn from columns 0/1",
+          probe.d_spawn_h != probe.nonspawn_pair_h,
+          f"spawn={probe.d_spawn_h} cols01={probe.nonspawn_pair_h}")
+    check("T3 d_spawn_h (plain-Python, cols 3/4)",
+          rec["d_spawn_h"] == probe.d_spawn_h,
+          f"logged={rec['d_spawn_h']} probe={probe.d_spawn_h}")
     check("T3 tie flag", rec["tie"] == probe.tie,
           f"logged={rec['tie']} probe={probe.tie}")
     check("T3 val_gap", abs(rec["val_gap"] - probe.val_gap) < 1e-3,
@@ -235,8 +275,9 @@ def run():
     check("T4 column count", len(hdr) == len(row) == len(AL.FLIP_COLS))
     check("T4 values survive",
           int(back["ply"]) == rec["ply"]
-          and int(back["trt_a"]) == rec["trt_a"]
+          and int(back["trt_action"]) == rec["trt_action"]
           and int(back["t_to_end"]) == rec["t_to_end"]
+          and int(back["d_spawn_h"]) == rec["d_spawn_h"]
           and float(back["val_gap"]) == rec["val_gap"])
 
     print("\n" + ("ALL PASS" if not FAILS else f"FAILED: {FAILS}"))

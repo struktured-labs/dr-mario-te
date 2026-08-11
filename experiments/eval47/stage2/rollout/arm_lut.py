@@ -201,12 +201,19 @@ class Arm:
 
         Everything here is read off the state the decision was ACTUALLY made
         on: `vals` are the champion's root values, `col`/`vir` the PRE-
-        placement board.  `rank` is the champion's own preference position of
-        the treatment-chosen action, using the champion's enumeration order as
-        the tiebreak -- so rank 0 is by construction `base_a`, which is
-        asserted below.  A flip at rank 1 among tied candidates is a different
-        animal from one that reaches down to rank 7 across a strict gap, and
-        the bare integer `flips` counter could not tell them apart.
+        placement board.  `champ_rank_chosen` is the champion's own preference
+        position of the treatment-chosen action, using the champion's
+        enumeration order as the tiebreak -- so rank 0 is by construction
+        `base_action`, which is asserted below.  A flip at rank 1 among tied
+        candidates is a different animal from one that reaches down to rank 7
+        across a strict gap, and the bare `flips` counter could not tell them
+        apart.
+
+        SCHEMA is shared with the oracle lane (experiments/eval47/stage2/
+        oracle/oracle_arm.py) so records from different arms pool.  Field
+        names follow theirs; `t_to_end`, `tie` and `val_gap` follow the
+        definitions in PROVENANCE.md -- see the "schema convergence" section
+        for the two places the two lanes had genuinely different semantics.
         """
         fin = np.where(np.isfinite(vals[order]))[0]
         o_slots = order[fin]
@@ -221,10 +228,11 @@ class Arm:
                 "t_to_end": -1,             # filled in by play_one at game end
                 "viruses": int(np.count_nonzero(vir)),
                 "maxh": int(H.max()),
+                "d_spawn_h": max(int(H[3]), int(H[4])),
                 "tie": int(int((o_vals == best).sum()) > 1),
-                "rank": rank,
-                "base_a": int(base_a),
-                "trt_a": int(a),
+                "champ_rank_chosen": rank,
+                "base_action": int(base_a),
+                "trt_action": int(a),
                 "val_gap": round(best - float(vals[a]), 3)}
 
     def choose(self, col, vir, ca, cb, na, nb, w, fl, wt, ws):
@@ -389,8 +397,9 @@ def play_one(seed, arm):
 
 
 # ------------------------------------------------------- provenance CSV sink
-FLIP_COLS = ["seed", "arm", "ply", "t_to_end", "viruses", "maxh", "tie",
-             "rank", "base_a", "trt_a", "val_gap", "res"]
+FLIP_COLS = ["seed", "arm", "ply", "t_to_end", "viruses", "maxh", "d_spawn_h",
+             "tie", "champ_rank_chosen", "base_action", "trt_action",
+             "val_gap", "res"]
 
 
 def flip_csv_header():
