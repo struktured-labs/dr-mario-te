@@ -28,6 +28,14 @@ the new block. Conditional on selection, the correction did solve the original
 perturbation-shape problem: all four registered distribution distances passed.
 But directionality still cannot be interpreted with a 21% dose deficit.
 
+A disclosed post-result mechanism calculation localizes two causes. Applying
+the frozen order-statistic cutoff probabilities to the validation cell counts
+predicts 259.23 selected flips, essentially the observed 258. Thus the run did
+not suffer a hash anomaly: small training cells encoded noisy order statistics.
+Replacing them arithmetically with fitted `selected/capacity` rates would predict
+281.49, still 14% below treatment's 327, exposing additional seed-block rate
+heterogeneity. Neither calculation changes or rescues the registered verdict.
+
 ## Decision
 
 - Do not open or name endpoint seeds for K4/wq60 yet.
