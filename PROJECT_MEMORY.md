@@ -62,6 +62,13 @@ SSH sockets, so the launch is **user-reported and currently unobservable** from
 here; do not claim a completion or endpoint result without the remote files.
 The shuffled-label null has not been reported as launched.
 
+`oracle-source:b481681` adds a read-only owner helper,
+`monitor_hetzner_oracle.sh`, which reports systemd state, true/shuffle row and
+segment counts, META hashes, journal tail, disk, and memory; its optional
+`fetch` mode makes a non-authoritative live snapshot without deleting remote
+files.  The helper is not imported by the sealed arm and was added after
+launch, so it cannot change the in-flight runtime manifest.
+
 **Critical semantic label:** that remote job is
 `historical_compact_cap1_flat_seed0`, not the shipped-v8 policy.  Do not call
 its result a cartridge-v8 oracle ceiling, do not silently change its code or
@@ -270,6 +277,41 @@ are running under candidate-independent `exo_lulu`, three arms per seed.  Do
 not treat a partial prefix as a verdict; final dose must match within 10% and
 both bad-end CIs (treatment-base and treatment-null) must exclude zero in the
 beneficial direction for GO.
+
+Post-run diagnostics were strengthened without touching any module in the
+frozen runtime manifest (`champion-source:db274a1,d35811d`).  The analyser now
+fails on duplicate/malformed rows, missing flip fields, bad `t_to_end`, a
+non-lowering treatment flip, flip-count mismatch, or a no-flip endpoint that
+differs from base; it prints paired SEs, all clear/topout/stall transitions,
+and derives the first-divergence marker from each arm's minimum flip ply.  All
+four deliberately wrong fixtures fail.
+
+The first-divergence view exposes a limitation in the registered null.  It is
+dose-matched only in aggregate flip rate: by construction treatment fires only
+when it can strictly lower the linked spawn-lane height, while null thins all
+raw ties and can swap equal-sensor actions.  On the growing evaluation prefix,
+the null's first flips were much earlier and overwhelmingly equal-sensor.  The
+base contrast still answers whether this exact treatment works; the
+treatment-null contrast is a weak attribution of sensor direction versus
+churn.  If the lane is repeated, permute/shuffle the sensor over the same raw
+tie set and calibrate that null on disjoint seeds.
+
+### Historical regime-gated `d_spawn_h` penalties do not graduate
+
+`champion-source:b385a12` banks the complete preregistered 480-seed, five-arm
+historical compact/cap-one drip screen.  Base matched the census 480/480 and
+realised duty stayed at 20.3% (K2) / 40.2% (K4), below the 54% collapse line.
+The four arms rescued 105--148/240 selected topouts and cut dies-ahead from
+234 to 108/77/73/60, but broke 5--8/240 selected clears and changed 218--302
+of 480 games.  Registered population-net point estimates were all harmful:
++406, +768, +594, and +247 bad ends per 40k; every CI included zero.  Literal
+decision: `NO_GRADUATE_ALL_FOUR_POINT_WORSE`.
+
+This old 2026-08-09 prereg predates the required label-blind null and has none.
+It rejects those four exact historical candidates against base, not every
+sensor-directed shape and not exact cartridge-v8.  Its large rescue count plus
+small clear breakage is another direct measurement of the clean-play
+preservation problem.
 
 ### `d_spawn_h` is already partly priced
 
