@@ -15,18 +15,29 @@ HERE = Path(__file__).resolve().parent
 N_REQUIRED = 9000
 B = 5000
 RNG = 20260811
+FLIP_FIELDS = {
+    "seed", "arm", "ply", "t_to_end", "viruses", "maxh", "d_spawn_h",
+    "raw_tie_size", "base_action", "treatment_action",
+    "base_post_d_spawn_h", "chosen_post_d_spawn_h", "champ_rank_chosen", "res",
+}
 
 
 def load_rows(root):
     by_seed = {}
+    errors = []
     for path in sorted(Path(root).glob("seg_*.jsonl")):
-        for line in path.open():
+        for lineno, line in enumerate(path.open(), 1):
             try:
                 row = json.loads(line)
-                by_seed.setdefault(int(row["seed"]), row)
-            except Exception:
-                pass
-    return [by_seed[s] for s in sorted(by_seed)]
+            except Exception as exc:
+                errors.append(f"{path.name}:{lineno}: invalid JSON: {exc}")
+                continue
+            seed = int(row["seed"])
+            if seed in by_seed:
+                errors.append(f"duplicate seed {seed} at {path.name}:{lineno}")
+            else:
+                by_seed[seed] = row
+    return [by_seed[s] for s in sorted(by_seed)], errors
 
 
 def binary_contrast(left, right, rng):
@@ -47,6 +58,7 @@ def binary_contrast(left, right, rng):
         "discordant": discordant, "left_better": l_better, "left_worse": l_worse,
         "mcnemar_exact_p": float(binomtest(l_better, discordant, 0.5).pvalue)
         if discordant else 1.0,
+        "analytic_se": math.sqrt((discordant / n) / n),
         "analytic_halfwidth": halfwidth_floor,
         "one_pp_margin_reachable": bool(halfwidth_floor <= 0.01),
     }
@@ -64,13 +76,106 @@ def provenance(rows, arm):
     if not logs:
         return {"n": 0}
     t = np.array([f["t_to_end"] for f in logs])
+    first = [min((f["ply"] for f in r[arm].get("flip_log", [])), default=None)
+             for r in rows]
+    first = np.array([x for x in first if x is not None], dtype=int)
     return {
         "n": len(logs), "median_t_to_end": float(np.median(t)),
         "within_last_5": int((t <= 5).sum()), "within_last_15": int((t <= 15).sum()),
+        "games_with_flip": int(len(first)),
+        "median_first_flip_ply": float(np.median(first)) if len(first) else None,
         "strict_lane_improvements": int(sum(
             f["chosen_post_d_spawn_h"] < f["base_post_d_spawn_h"] for f in logs)),
         "tie_sizes": {str(k): int(sum(f["raw_tie_size"] == k for f in logs))
                       for k in sorted(set(f["raw_tie_size"] for f in logs))},
+        "champion_rank_chosen": {
+            str(k): int(sum(f["champ_rank_chosen"] == k for f in logs))
+            for k in sorted(set(f["champ_rank_chosen"] for f in logs))},
+    }
+
+
+def provenance_errors(rows):
+    """Validate the preregistered per-flip contract before any verdict."""
+    errors = []
+    for row in rows:
+        outer_seed = int(row["seed"])
+        for arm in ("base", "treatment", "null"):
+            rec = row.get(arm, {})
+            if int(rec.get("seed", -1)) != outer_seed:
+                errors.append(f"seed {outer_seed} {arm}: inner seed mismatch")
+            logs = rec.get("flip_log")
+            if not isinstance(logs, list):
+                errors.append(f"seed {outer_seed} {arm}: flip_log is not a list")
+                continue
+            if len(logs) != int(rec.get("flips", -1)):
+                errors.append(f"seed {outer_seed} {arm}: flips/log length mismatch")
+            if arm == "base" and logs:
+                errors.append(f"seed {outer_seed} base: unexpected flip provenance")
+            for i, flip in enumerate(logs):
+                missing = sorted(FLIP_FIELDS - set(flip))
+                if missing:
+                    errors.append(
+                        f"seed {outer_seed} {arm} flip {i}: missing {missing}")
+                    continue
+                if int(flip["seed"]) != outer_seed or flip["arm"] != arm:
+                    errors.append(f"seed {outer_seed} {arm} flip {i}: identity mismatch")
+                if int(flip["t_to_end"]) != int(rec["n_plies"]) - 1 - int(flip["ply"]):
+                    errors.append(f"seed {outer_seed} {arm} flip {i}: bad t_to_end")
+                if flip["res"] != rec["res"]:
+                    errors.append(f"seed {outer_seed} {arm} flip {i}: result mismatch")
+                if int(flip["raw_tie_size"]) < 2:
+                    errors.append(f"seed {outer_seed} {arm} flip {i}: not a raw tie")
+                if int(flip["base_action"]) == int(flip["treatment_action"]):
+                    errors.append(f"seed {outer_seed} {arm} flip {i}: unchanged action")
+                if arm == "treatment" and not (
+                    int(flip["chosen_post_d_spawn_h"])
+                    < int(flip["base_post_d_spawn_h"])
+                ):
+                    errors.append(f"seed {outer_seed} treatment flip {i}: sensor not lower")
+    return errors
+
+
+def diagnostic_mutants():
+    """Positive controls: each integrity direction rejects a wrong record."""
+    import copy
+    template = {
+        "seed": 1,
+        "base": {"seed": 1, "res": "clear", "n_plies": 10,
+                 "flips": 0, "flip_log": []},
+        "null": {"seed": 1, "res": "clear", "n_plies": 10,
+                 "flips": 0, "flip_log": []},
+        "treatment": {"seed": 1, "res": "clear", "n_plies": 10,
+                      "flips": 1, "flip_log": [{
+                          "seed": 1, "arm": "treatment", "ply": 3,
+                          "t_to_end": 6, "viruses": 8, "maxh": 10,
+                          "d_spawn_h": 8, "raw_tie_size": 2,
+                          "base_action": 1, "treatment_action": 2,
+                          "base_post_d_spawn_h": 9,
+                          "chosen_post_d_spawn_h": 8,
+                          "champ_rank_chosen": 2, "res": "clear",
+                      }]},
+    }
+    if provenance_errors([template]):
+        raise RuntimeError("valid diagnostic fixture rejected")
+    missing = copy.deepcopy(template)
+    del missing["treatment"]["flip_log"][0]["t_to_end"]
+    inverted = copy.deepcopy(template)
+    inverted["treatment"]["flip_log"][0]["chosen_post_d_spawn_h"] = 10
+    count = copy.deepcopy(template)
+    count["treatment"]["flips"] = 2
+    return {
+        "missing_field_rejected": bool(provenance_errors([missing])),
+        "non_improving_treatment_rejected": bool(provenance_errors([inverted])),
+        "flip_count_mismatch_rejected": bool(provenance_errors([count])),
+    }
+
+
+def outcome_transitions(rows, left, right):
+    states = ("clear", "topout", "stall")
+    return {
+        f"{a}_to_{b}": int(sum(r[left]["res"] == a and r[right]["res"] == b
+                               for r in rows))
+        for a in states for b in states
     }
 
 
@@ -79,7 +184,7 @@ def main():
     ap.add_argument("--root", default=str(HERE / "out" / "evaluation"))
     ap.add_argument("--allow-partial", action="store_true")
     args = ap.parse_args()
-    rows = load_rows(args.root)
+    rows, load_errors = load_rows(args.root)
     if len(rows) != N_REQUIRED and not args.allow_partial:
         raise SystemExit(f"refusing verdict: have {len(rows)}/{N_REQUIRED} paired seeds")
     if not rows:
@@ -89,6 +194,13 @@ def main():
     prefix_exact = seeds == expected
     if not prefix_exact:
         raise SystemExit("rows are not the registered ascending seed prefix")
+    prov_errors = provenance_errors(rows)
+    mutants = diagnostic_mutants()
+    if not all(mutants.values()):
+        raise SystemExit("diagnostic killed-mutant gate failed")
+    if load_errors or prov_errors:
+        raise SystemExit("provenance gate failed: " + json.dumps(
+            {"load_errors": load_errors[:10], "provenance_errors": prov_errors[:10]}))
 
     arms = ("base", "treatment", "null")
     bad = {a: np.array([int(r[a]["topout"] or r[a]["stall"]) for r in rows])
@@ -138,6 +250,11 @@ def main():
         "n_pairs": len(rows), "seed_min": min(seeds), "seed_max": max(seeds),
         "complete": complete, "prefix_exact": prefix_exact,
         "counts": {a: counts(rows, a) for a in arms},
+        "outcome_transitions": {
+            "base_to_treatment": outcome_transitions(rows, "base", "treatment"),
+            "base_to_null": outcome_transitions(rows, "base", "null"),
+            "null_to_treatment": outcome_transitions(rows, "null", "treatment"),
+        },
         "dose": {"treatment_flips": flips_t, "treatment_plies": plies_t,
                  "treatment_rate": dose_t, "null_flips": flips_n,
                  "null_plies": plies_n, "null_rate": dose_n,
@@ -148,7 +265,9 @@ def main():
                        "treatment_minus_null_DiD": da_tn},
         "pills": pills,
         "provenance": {"treatment": provenance(rows, "treatment"),
-                       "null": provenance(rows, "null")},
+                       "null": provenance(rows, "null"),
+                       "integrity_pass": True,
+                       "killed_mutants": mutants},
         "note": ("topout and 300-pill stall both score as bad ends; exogenous Lulu "
                  "offers are policy-independent; p2_surrogate is not a live NAV_T claim"),
     }
