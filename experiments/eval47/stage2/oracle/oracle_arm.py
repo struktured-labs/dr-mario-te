@@ -56,14 +56,21 @@ asserts fork independence in `selftest()` rather than assuming it.
 
 MUTANTS (a check that cannot fail is not a check)
 -------------------------------------------------
-`label_mode` selects what the oracle is fed:
+`future_mode` selects which future the forks see:
+  "clair"   the realized capsule and garbage future.  This is deliberately
+            unfair: it is the programme's IDEAL-HEADROOM measurement.
+  "dist"    the realized capsule stream but sampled garbage futures, with
+            common random numbers across candidates.  This decomposes how
+            much of CLAIR's headroom requires opponent clairvoyance.
+
+`label_mode` selects what the re-ranker is fed:
   "true"    the real forward-rollout label.
-  "shuffle" THE KILLED MUTANT.  The identical four forks are run (identical
-            cost, identical gate, identical candidate set) and their labels are
-            then PERMUTED among the candidates with an rng keyed on
-            (seed, ply).  The oracle is then re-ranking on a survival label that
-            carries no information about which candidate produced it.  This arm
-            MUST NOT clear the gate.
+  "shuffle" THE KILLED MUTANT.  The identical forks are run and their labels
+            are PERMUTED among candidates.  A pre-registered deterministic hash
+            thinning then matches its accepted flip dose to the true arm.  The
+            oracle is re-ranking on a survival label that carries no information
+            about which candidate produced it.  This arm MUST NOT clear the
+            endpoint gate.
   "const"   every label identical => the selection can never move => must
             reproduce the champion BYTE FOR BYTE.  This is the OFF-identity
             control.
@@ -98,10 +105,42 @@ GATE_DSPAWN_H = 12      # oracle fires when max(H[3],H[4]) >= this ...
 GATE_VIRUSES = 8        # ... OR virus count <= this
 TOPK = 4                # champion candidates forked
 HORIZON = 15            # pills played forward per fork
+DIST_KEY_VERSION = "pack-v1"
 
 # The champion's scan order over the 32-slot index (var*8+cc, var = [2,3,0,1]).
 CHAMP_ORDER = np.array([v * 8 + c for v in (2, 3, 0, 1) for c in range(8)],
                        dtype=np.int64)
+
+
+def dist_seed(seed, ply, sample=0):
+    """Collision-free synthetic pressure key for ORACLE-DIST.
+
+    The abandoned `seed + 7919*(ply+1)` proposal collided between adjacent
+    plies of seeds 7,919 apart inside the registered 9,000-seed block.  Packing
+    the tuple is injective for all non-negative values below 2**32/2**16 and is
+    easy for a gate to prove exhaustively.  It depends on seed/ply/sample but
+    never on candidate, preserving common random numbers across candidates.
+    """
+    seed, ply, sample = int(seed), int(ply), int(sample)
+    assert 0 <= seed < 2**32 and 0 <= ply < 2**16 - 1
+    assert 0 <= sample < 2**16
+    return (seed << 32) | ((ply + 1) << 16) | sample
+
+
+def _mix64(x):
+    """Stable SplitMix64 finalizer; unlike hash(), stable across processes."""
+    x = (int(x) + 0x9E3779B97F4A7C15) & 0xFFFFFFFFFFFFFFFF
+    x = ((x ^ (x >> 30)) * 0xBF58476D1CE4E5B9) & 0xFFFFFFFFFFFFFFFF
+    x = ((x ^ (x >> 27)) * 0x94D049BB133111EB) & 0xFFFFFFFFFFFFFFFF
+    return x ^ (x >> 31)
+
+
+def null_keeps_flip(seed, ply, numerator, denominator):
+    """Deterministic, endpoint-blind thinning for the shuffled-label null."""
+    numerator, denominator = int(numerator), int(denominator)
+    assert 0 <= numerator <= denominator and denominator > 0
+    key = (int(seed) << 32) | int(ply)
+    return (_mix64(key) % denominator) < numerator
 
 
 def heights(board_color):
@@ -277,14 +316,27 @@ class OracleArm:
     """Root re-ranker whose scores come from a forward rollout of the truth."""
 
     def __init__(self, label_mode="true", order_flip=False, topk=TOPK,
-                 horizon=HORIZON, provenance=False):
+                 horizon=HORIZON, provenance=False, future_mode="clair",
+                 fork_samples=1, null_keep_num=1, null_keep_den=1):
         assert label_mode in ("true", "shuffle", "const")
+        assert future_mode in ("clair", "dist")
+        assert int(fork_samples) >= 1
+        assert 0 <= int(null_keep_num) <= int(null_keep_den)
+        assert int(null_keep_den) > 0
+        if future_mode == "clair":
+            assert int(fork_samples) == 1, (
+                "repeating the same realized future is not a new sample")
         self.label_mode = label_mode
         self.order_flip = order_flip
         self.topk = topk
         self.horizon = horizon
         self.provenance = provenance
-        self.stats = {"plies": 0, "gated_plies": 0, "flips": 0, "forks": 0}
+        self.future_mode = future_mode
+        self.fork_samples = int(fork_samples)
+        self.null_keep_num = int(null_keep_num)
+        self.null_keep_den = int(null_keep_den)
+        self.stats = {"plies": 0, "gated_plies": 0, "flips": 0,
+                      "raw_flips": 0, "null_rejected_flips": 0, "forks": 0}
         self.flip_log = []
 
     @property
@@ -318,14 +370,19 @@ class OracleArm:
         if len(cands) <= 1:
             return base_a, base_a
 
-        labels = []
-        for a in cands:
-            if self.label_mode == "const":
-                labels.append((1, 0))
-            else:
-                labels.append(_fork_label(env, a, C, seed, bmodel, w, fl,
-                                          wt, ws, self.horizon))
-                self.stats["forks"] += 1
+        labels = [(1, 0) for _ in cands]
+        if self.label_mode != "const":
+            labels = [(0, 0) for _ in cands]
+            for sample in range(self.fork_samples):
+                fork_seed = (seed if self.future_mode == "clair"
+                             else dist_seed(seed, ply, sample))
+                for i, candidate in enumerate(cands):
+                    survived, progress = _fork_label(
+                        env, candidate, C, fork_seed, bmodel, w, fl, wt, ws,
+                        self.horizon)
+                    labels[i] = (labels[i][0] + survived,
+                                 labels[i][1] + progress)
+                    self.stats["forks"] += 1
         if self.label_mode == "shuffle":
             rng = random.Random(seed * 100003 + ply)
             rng.shuffle(labels)
@@ -335,18 +392,38 @@ class OracleArm:
             if labels[i] > labels[best_i]:
                 best_i = i
         a = cands[best_i]
+        raw_flip = a != base_a
+        if raw_flip:
+            self.stats["raw_flips"] += 1
+        if (raw_flip and self.label_mode == "shuffle"
+                and not null_keeps_flip(seed, ply, self.null_keep_num,
+                                        self.null_keep_den)):
+            a = base_a
+            self.stats["null_rejected_flips"] += 1
+
         if a != base_a:
             self.stats["flips"] += 1
             if self.provenance:
                 H = heights(env.board.color)
+                champion_best = float(vals[base_a])
+                chosen_score = labels[best_i]
                 self.flip_log.append({
+                    "seed": int(seed),
+                    "arm": (f"oracle_{self.future_mode}"
+                            if self.label_mode == "true"
+                            else f"{self.label_mode}_{self.future_mode}"),
                     "ply": ply, "viruses": viruses, "maxh": int(H.max()),
                     "d_spawn_h": d_spawn_h,
                     "base_action": int(base_a), "trt_action": int(a),
                     "champ_rank_chosen": int(best_i),
                     "labels": [list(map(int, l)) for l in labels],
                     "cands": [int(c) for c in cands],
-                    "tie": bool(labels[best_i] == labels[0])})
+                    "tie": bool(sum(float(vals[c]) == champion_best
+                                     for c in legal) > 1),
+                    "tie_score": bool(sum(l == chosen_score
+                                           for l in labels) > 1),
+                    "val_gap": round(champion_best - float(vals[a]), 3),
+                    "fork_samples": self.fork_samples})
         return a, base_a
 
 
@@ -379,7 +456,8 @@ def play_one(seed, arm, C, bmodel):
     n_plies = len(actions)
     if arm.provenance:
         for f in arm.flip_log:
-            f["t_to_end"] = n_plies - f["ply"]
+            f["t_to_end"] = n_plies - 1 - f["ply"]
+            f["res"] = res
     return {"seed": seed, "res": res, "won": int(res == "clear"),
             "topout": int(res == "topout"), "stall": int(res == "stall"),
             "pills": env.pills_placed, "dies_ahead": dies_ahead,
@@ -387,6 +465,8 @@ def play_one(seed, arm, C, bmodel):
                              else -1),
             "n_plies": n_plies,
             "flips": arm.stats["flips"],
+            "raw_flips": arm.stats["raw_flips"],
+            "null_rejected_flips": arm.stats["null_rejected_flips"],
             "gated_plies": arm.stats["gated_plies"],
             "plies_scored": arm.stats["plies"],
             "forks": arm.stats["forks"],

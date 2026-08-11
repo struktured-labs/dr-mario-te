@@ -40,6 +40,26 @@ def actions_of(seed, arm, C, bmodel):
     return r, r["_actions"]
 
 
+PROV_REQUIRED = {
+    "seed", "arm", "ply", "t_to_end", "viruses", "maxh", "d_spawn_h",
+    "tie", "champ_rank_chosen", "base_action", "trt_action", "val_gap",
+    "res", "tie_score", "labels", "cands", "fork_samples",
+}
+
+
+def provenance_valid(record, game):
+    """Independent structural check over one emitted real-game flip."""
+    return (PROV_REQUIRED <= set(record)
+            and record["seed"] == game["seed"]
+            and record["arm"] == "oracle_clair"
+            and record["res"] == game["res"]
+            and record["t_to_end"] == game["n_plies"] - 1 - record["ply"]
+            and 0 <= record["t_to_end"] < game["n_plies"]
+            and record["base_action"] != record["trt_action"]
+            and record["champ_rank_chosen"] >= 1
+            and record["val_gap"] >= 0)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", type=int, default=12)
@@ -121,8 +141,9 @@ def main():
     live = 0
     flips_tot = plies_tot = gated_tot = 0
     differ_from_true = 0
+    prov_clean = prov_time_mutant = prov_missing_mutant = prov_false_flip = False
     for s in seeds:
-        at = O.OracleArm(label_mode="true")
+        at = O.OracleArm(label_mode="true", provenance=(s == seeds[0]))
         rt, acts_t = actions_of(s, at, C, bmodel)
         flips_tot += rt["flips"]
         plies_tot += rt["plies_scored"]
@@ -133,14 +154,31 @@ def main():
         _rm, acts_m = actions_of(s, am, C, bmodel)
         if acts_m != acts_t:
             differ_from_true += 1
+        if s == seeds[0] and at.flip_log:
+            prov_clean = all(provenance_valid(f, rt) for f in at.flip_log)
+            rec = copy.deepcopy(at.flip_log[0])
+            rec["t_to_end"] += 1
+            prov_time_mutant = not provenance_valid(rec, rt)
+            rec = copy.deepcopy(at.flip_log[0])
+            rec.pop("val_gap")
+            prov_missing_mutant = not provenance_valid(rec, rt)
+            rec = copy.deepcopy(at.flip_log[0])
+            rec["trt_action"] = rec["base_action"]
+            prov_false_flip = not provenance_valid(rec, rt)
     res["gates"]["G1d_liveness_true_differs_from_base"] = f"{live}/{len(seeds)}"
     res["gates"]["G1d_flip_rate_of_plies"] = flips_tot / max(1, plies_tot)
     res["gates"]["G1e_gated_frac_of_plies"] = gated_tot / max(1, plies_tot)
     res["gates"]["G1f_shuffle_differs_from_true"] = \
         f"{differ_from_true}/{len(seeds)}"
+    res["gates"]["G1j_provenance_clean"] = bool(prov_clean)
+    res["gates"]["G1j_mutant_t_to_end_MUST_fail"] = bool(prov_time_mutant)
+    res["gates"]["G1j_mutant_missing_field_MUST_fail"] = bool(prov_missing_mutant)
+    res["gates"]["G1j_mutant_false_flip_MUST_fail"] = bool(prov_false_flip)
     ok &= live >= len(seeds) - 1
     ok &= 0.0 < (gated_tot / max(1, plies_tot)) < 1.0
     ok &= differ_from_true >= len(seeds) - 1
+    ok &= (prov_clean and prov_time_mutant and prov_missing_mutant
+           and prov_false_flip)
 
     res["ALL_GATES_PASS"] = bool(ok)
     os.makedirs(os.path.dirname(a.out), exist_ok=True)

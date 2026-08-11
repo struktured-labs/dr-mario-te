@@ -1,5 +1,69 @@
 # Oracle-ceiling arm — handoff
 
+## Resumed status — 2026-08-10
+
+The original handoff below is retained as history. Amendments A5–A8 and the
+current executable supersede its “DIST is the headline” next step after the
+programme lead clarified the question: **the deliberately unfair
+`ORACLE-CLAIR` arm is the desired ideal-headroom measurement.** DIST remains a
+useful opponent-clairvoyance decomposition, not a reason to suppress the ideal.
+
+The lane is now executable rather than prose-only:
+
+- Shared flip provenance uses `t_to_end = n_plies - 1 - ply`, champion `tie`,
+  oracle `tie_score`, and champion `val_gap`.
+- The shuffled-label null is hash-thinned with frozen q
+  **169464/1000000**. On reserved seeds its accepted flip-rate ratio was
+  **0.9271** versus CLAIR, inside the preregistered [0.90, 1.10] band. Two
+  earlier calibration values were rejected before endpoint use and remain in
+  `NULL_DOSE.json`/A6–A8.
+- The executable combined verdict now forbids GO when clear is undecidable,
+  fires N3 when the bad-end CI includes zero, and returns VOID if the mutant
+  also reads GO or its full-N dose is mismatched.
+- `run_full.sh` now runs G1g plus the DIST-key, null-thinning, real-game
+  provenance, and verdict mutation gates. `run_oracle.py` freezes a runtime source/fit manifest and
+  refuses to append under changed code or semantics.
+- Segment results are banked in ascending seed order. The former
+  `as_completed()` loop made an interrupted segment length-biased rather than
+  the preregistered balanced prefix; resume summaries also omitted old rows.
+  A9 fixes both before endpoint launch.
+- DIST exists with collision-free candidate-common pressure keys; the old A1
+  formula has an explicit killed collision inside the registered block.
+
+**No dose-matched endpoint-null seed from 30000..38999 had been run when A8 was
+sealed.** Reserved calibration used only 42000..42059.
+
+Expected current runtime manifest (decision modules, runner, and Lulu fit):
+`a67f47f15d4f82c125956dc2b37cc3c1bc1a0c84877310d5dfd27b96345b3bd8`.
+The remote run must print the same rolled hash; paths may differ, hashes may not.
+Historical pilot rows are intentionally not imported into the current output:
+they predate this manifest/provenance contract. A10 requires replaying the
+registered prefix and keeps the old n=125 result descriptive only.
+
+Measured on the local 12-worker box, per 60 pairs:
+
+| label | wall | summed worker time | projected N=9,000 wall |
+|---|---:|---:|---:|
+| true CLAIR | 7.4 min | 4,531 s | ~18.5 h |
+| dose-matched shuffle | 15.8 min | 10,288 s | ~39.5 h |
+
+The measured CCX23 supplies about 2.3 useful cores. Projected there: true
+CLAIR ~82 h and shuffled null ~186 h. The fastest use of owned compute is
+therefore **true CLAIR on Hetzner (4 workers) and the heavier null locally (12
+workers)**, then fetch the remote true directory and analyse them together.
+
+Launch helper (runs preflight, sync, fast remote gates, then a persistent
+systemd unit). `launch` keeps an otherwise-idle node busy through true+null;
+use `launch-true` for the faster two-box split described above:
+
+```bash
+bash deploy_hetzner_oracle.sh root@HOST ~/.ssh/hetzner_rbm launch
+```
+
+The environment running this resumption is network-sandboxed and cannot open
+SSH sockets, so it could prepare and validate the helper but could not launch
+the paid node itself.
+
 **2026-08-10 ~23:45 EDT.** Written because both agent lanes hit the account's weekly token limit
 (resets Aug 14, 8am ET). **Nothing failed.** The detached worker processes survived and kept
 running. This file is everything needed to resume, by a human or another tool.

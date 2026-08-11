@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Apply the PRE-REGISTERED verdict rule to the oracle-ceiling output.
 
-The statistics are NOT re-implemented here.  `summarise()` and `verdict()` are
-imported verbatim from `../rollout/analyse.py`, the code that produced the
-stage-2 rollout numbers and whose verdict function is itself mutant-tested
-(`../rollout/test_verdict.py`).  Reusing it is deliberate: the oracle arm and
-the stage-2 arm must be scored by the SAME instrument or their effect sizes are
-not comparable, and comparability is the entire point of a calibration arm.
+The paired summary statistics are NOT re-implemented here: `summarise()` is
+imported from `../rollout/analyse.py`, the code that produced the stage-2
+rollout numbers.  The final oracle verdict wraps those same statistics because
+the oracle amendments add requirements the older rollout verdict cannot
+express: a NOT-DECIDABLE clear co-primary cannot pass, bad-end N3 uses its CI,
+and the dose-matched killed mutant participates in the combined verdict.
 
 This file adds only what the oracle arm needs on top:
   * segment-aware loading (`out/<run>/seg_*.jsonl`),
@@ -29,7 +29,7 @@ ROLLOUT = os.path.join(os.path.dirname(HERE), "rollout")
 sys.path.insert(0, ROLLOUT)
 sys.path.insert(0, HERE)
 
-from analyse import summarise, verdict, boot_paired, mcnemar_exact  # noqa: E402
+from analyse import summarise, boot_paired, mcnemar_exact  # noqa: E402
 
 CLEAR_MARGIN_PP = 1.0          # pre-registered non-inferiority margin
 N_MIN_INCONCLUSIVE = 1500      # below this the primary reads INCONCLUSIVE
@@ -114,7 +114,7 @@ def hazard_rate(rows):
                 float(pt.sum() / max(pb.sum(), 1.0))}
 
 
-def stall_parity(s):
+def stall_parity(s, rows):
     """N3' -- stalls scored at parity with topouts.
 
     In stage 2, 19 of the 28 topouts avoided reappeared as 300-pill STALLS and
@@ -123,14 +123,106 @@ def stall_parity(s):
     """
     m = s["metrics"]
     be = m["bad_ends"]
+    converted = sum(int(r["base"]["topout"] == 1
+                        and r["trt"]["stall"] == 1) for r in rows)
+    avoided = sum(int(r["base"]["topout"] == 1
+                      and r["trt"]["topout"] == 0) for r in rows)
     return {"topout_diff_pp": m["topout"]["diff_trt_minus_base"] * 100,
             "stall_diff_pp": m["stall"]["diff_trt_minus_base"] * 100,
             "bad_ends_diff_pp": be["diff_trt_minus_base"] * 100,
             "bad_ends_ci95_pp": [be["diff_ci95"][0] * 100,
                                  be["diff_ci95"][1] * 100],
-            "topouts_converted_to_stalls":
-                (m["topout"]["diff_trt_minus_base"] < 0
-                 and m["stall"]["diff_trt_minus_base"] > 0)}
+            "topouts_avoided": avoided,
+            "topouts_converted_to_stalls": converted,
+            "conversion_frac_of_avoided":
+                (converted / avoided if avoided else 0.0)}
+
+
+def oracle_verdict(s, primary=True):
+    """Executable oracle verdict, including adequacy and N3 CI semantics.
+
+    The shared rollout verdict predates the oracle amendments.  Importing it
+    verbatim left two registered requirements unenforced: an undecidable clear
+    co-primary could still pass, and N3 fired only when the bad-end point
+    estimate was non-negative rather than when its CI included zero.
+    """
+    if not primary:
+        return {"verdict": "NO VERDICT AUTHORITY (secondary arm)",
+                "reasons": ["this arm is registered as descriptive only"]}
+    n = s["n_pairs"]
+    if n < N_MIN_INCONCLUSIVE:
+        return {"verdict": "INCONCLUSIVE",
+                "reasons": [f"achieved N={n} < {N_MIN_INCONCLUSIVE:,}"]}
+
+    m = s["metrics"]
+    da, clr, be = m["dies_ahead"], m["clear"], m["bad_ends"]
+    clear_loss_upper = -clr["diff_ci95"][0]
+    mcp = s["discordance"]["dies_ahead"]["mcnemar_exact_p"]
+    reasons = []
+    if clear_loss_upper >= CLEAR_MARGIN_PP / 100.0:
+        reasons.append(
+            f"N1 clear-rate loss upper 95% bound "
+            f"{clear_loss_upper*100:+.2f}pp >= +{CLEAR_MARGIN_PP:.2f}pp")
+    if da["diff_ci95"][1] >= 0:
+        reasons.append(
+            "N2 dies-ahead 95% CI includes/crosses zero: "
+            f"[{da['diff_ci95'][0]*100:+.3f},"
+            f"{da['diff_ci95'][1]*100:+.3f}]pp")
+    if mcp >= 0.05:
+        reasons.append(f"N2 McNemar exact two-sided p={mcp:.4f} >= 0.05")
+    if da["diff_trt_minus_base"] < 0 and be["diff_ci95"][1] >= 0:
+        reasons.append(
+            "N3 dies-ahead falls but bad-ends 95% CI includes/crosses zero: "
+            f"[{be['diff_ci95'][0]*100:+.3f},"
+            f"{be['diff_ci95'][1]*100:+.3f}]pp")
+    if reasons:
+        return {"verdict": "NO_GO", "reasons": reasons,
+                "clear_loss_upper_95_pp": clear_loss_upper * 100,
+                "mcnemar_p": mcp}
+    if not s["power_adequacy"]["decidable"]:
+        return {"verdict": "NOT_DECIDABLE",
+                "reasons": ["clear-rate co-primary is not decidable at the "
+                            "achieved discordance and N; GO is forbidden"],
+                "clear_loss_upper_95_pp": clear_loss_upper * 100,
+                "mcnemar_p": mcp}
+    return {"verdict": "GO", "reasons": ["all registered GO conditions met"],
+            "clear_loss_upper_95_pp": clear_loss_upper * 100,
+            "mcnemar_p": mcp}
+
+
+def dose_match(s_true, s_mutant, rel_tolerance=0.10):
+    """Check the preregistered ±10% relative accepted-flip dose gate."""
+    true_rate = s_true["realised_flip_rate"]
+    mutant_rate = s_mutant["realised_flip_rate"]
+    ratio = mutant_rate / true_rate if true_rate > 0 else float("inf")
+    return {"true_flip_rate": true_rate, "mutant_flip_rate": mutant_rate,
+            "mutant_over_true_ratio": ratio,
+            "relative_tolerance": rel_tolerance,
+            "matched": bool(true_rate > 0 and
+                            1.0 - rel_tolerance <= ratio <=
+                            1.0 + rel_tolerance)}
+
+
+def combined_verdict(true_verdict, mutant_verdict, dose):
+    """The ideal arm may read GO only if its killed mutant demonstrably fails."""
+    if true_verdict["verdict"] != "GO":
+        return {"verdict": true_verdict["verdict"],
+                "reasons": list(true_verdict["reasons"])}
+    if not dose["matched"]:
+        return {"verdict": "VOID",
+                "reasons": ["killed mutant is not dose-matched to the true "
+                            "arm within the registered tolerance"]}
+    if mutant_verdict["verdict"] == "GO":
+        return {"verdict": "VOID",
+                "reasons": ["dose-matched shuffled-label mutant also reads "
+                            "GO; direction is not established"]}
+    if mutant_verdict["verdict"] in ("INCONCLUSIVE", "NOT_DECIDABLE"):
+        return {"verdict": "INCONCLUSIVE",
+                "reasons": ["killed mutant has not completed a decisive "
+                            "failure test"]}
+    return {"verdict": "GO",
+            "reasons": ["true arm GO; dose-matched shuffled-label mutant "
+                        "fails as required"]}
 
 
 def flip_provenance(rows):
@@ -144,6 +236,8 @@ def flip_provenance(rows):
     ds = np.array([f["d_spawn_h"] for f in recs], float)
     rk = np.array([f["champ_rank_chosen"] for f in recs], float)
     tie = np.array([bool(f["tie"]) for f in recs])
+    tie_score = np.array([bool(f.get("tie_score", False)) for f in recs])
+    gap = np.array([float(f.get("val_gap", 0.0)) for f in recs])
     return {"n_flips_logged": len(recs),
             "t_to_end": {"mean": float(t.mean()),
                          "p10": float(np.percentile(t, 10)),
@@ -154,7 +248,9 @@ def flip_provenance(rows):
             "d_spawn_h_at_flip_median": float(np.median(ds)),
             "champ_rank_chosen_hist":
                 {str(k): int((rk == k).sum()) for k in (0, 1, 2, 3)},
-            "frac_flips_that_tied_champion_label": float(tie.mean()),
+            "frac_flips_on_champion_value_tie": float(tie.mean()),
+            "frac_flips_on_oracle_score_tie": float(tie_score.mean()),
+            "champion_val_gap_median": float(np.median(gap)),
             "frac_flips_in_last_10_plies": float((t <= 10).mean())}
 
 
@@ -220,7 +316,8 @@ def report(s, tag, primary):
     sp = s["stall_parity"]
     print(f"STALL PARITY topout {sp['topout_diff_pp']:+.2f}pp  stall "
           f"{sp['stall_diff_pp']:+.2f}pp  bad-ends {sp['bad_ends_diff_pp']:+.2f}pp"
-          f"  topouts->stalls conversion: {sp['topouts_converted_to_stalls']}")
+          f"  topout->stall {sp['topouts_converted_to_stalls']}/"
+          f"{sp['topouts_avoided']} avoided")
     hz = s["hazard_rate"]
     print(f"HAZARD (A4)  dies-ahead/game {hz['base_per_game_pp']:.2f}pp -> "
           f"{hz['trt_per_game_pp']:.2f}pp   |   per 100 pills "
@@ -257,10 +354,10 @@ def main():
     rt = load_run(a.true_run)
     s = summarise(rt, a.label)
     s["power_adequacy"] = power_adequacy(s)
-    s["stall_parity"] = stall_parity(s)
+    s["stall_parity"] = stall_parity(s, rt)
     s["hazard_rate"] = hazard_rate(rt)
     s["flip_provenance"] = flip_provenance(rt)
-    s["verdict"] = verdict(s, primary=True)
+    s["verdict"] = oracle_verdict(s, primary=True)
     res["arms"]["true"] = s
     report(s, "ORACLE (true label)", True)
 
@@ -268,13 +365,16 @@ def main():
         rm = load_run(a.mutant_run)
         sm = summarise(rm, a.label + "_shuffled")
         sm["power_adequacy"] = power_adequacy(sm)
-        sm["stall_parity"] = stall_parity(sm)
+        sm["stall_parity"] = stall_parity(sm, rm)
         sm["hazard_rate"] = hazard_rate(rm)
         sm["flip_provenance"] = flip_provenance(rm)
-        sm["verdict"] = verdict(sm, primary=True)
+        sm["verdict"] = oracle_verdict(sm, primary=True)
         res["arms"]["shuffled_mutant"] = sm
         report(sm, "KILLED MUTANT (shuffled survival label)", True)
         res["did"] = did(rt, rm)
+        res["dose_match"] = dose_match(s, sm)
+        res["combined_verdict"] = combined_verdict(
+            s["verdict"], sm["verdict"], res["dose_match"])
         d = res["did"]
         print(f"\nDIFFERENCE-IN-DIFFERENCES (dies-ahead), n_common="
               f"{d['n_common']}, base drift mismatches "
@@ -286,6 +386,15 @@ def main():
         print("\nKILLED-MUTANT GATE: the shuffled arm must NOT read GO.")
         print(f"  mutant verdict = {sm['verdict']['verdict']}  -> "
               f"{'RED (correct)' if sm['verdict']['verdict'] != 'GO' else 'GREEN (GATE IS BROKEN)'}")
+        dm = res["dose_match"]
+        print(f"  accepted flip dose true={dm['true_flip_rate']*100:.3f}% "
+              f"mutant={dm['mutant_flip_rate']*100:.3f}% ratio="
+              f"{dm['mutant_over_true_ratio']:.3f} -> "
+              f"{'MATCH' if dm['matched'] else 'MISMATCH'}")
+        cv = res["combined_verdict"]
+        print(f"\nCOMBINED EXPERIMENT VERDICT: {cv['verdict']}")
+        for reason in cv["reasons"]:
+            print("  - " + reason)
 
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     json.dump(res, open(a.out, "w"), indent=1, default=float)

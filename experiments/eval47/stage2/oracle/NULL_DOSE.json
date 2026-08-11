@@ -1,0 +1,43 @@
+{
+  "purpose": "dose-match shuffled-label null without endpoint labels",
+  "calibration_seeds": [
+    42000,
+    42059
+  ],
+  "fields_read": [
+    "seed",
+    "trt.flips",
+    "trt.raw_flips",
+    "trt.plies_scored"
+  ],
+  "true": {
+    "n": 60,
+    "flips": 194,
+    "raw_flips": 194,
+    "plies": 6547
+  },
+  "raw_mutant": {
+    "n": 60,
+    "flips": 1719,
+    "raw_flips": 1719,
+    "plies": 10479
+  },
+  "null_keep_num": 169464,
+  "null_keep_den": 1000000,
+  "raw_ratio_true_over_mutant": 0.1128563118091914,
+  "validation": {
+    "method": "A7 proportional updates; first passing fraction",
+    "attempts": [
+      {"num": 112856, "accepted_flips": 141, "plies": 9345,
+       "null_over_true_rate": 0.5091906471843921, "validated": false},
+      {"num": 221638, "accepted_flips": 381, "plies": 9831,
+       "null_over_true_rate": 1.3078799757132655, "validated": false},
+      {"num": 169464, "accepted_flips": 266, "plies": 9683,
+       "null_over_true_rate": 0.9270695479696055, "validated": true}
+    ],
+    "true_flips": 194,
+    "true_plies": 6547,
+    "accepted_ratio_band": [0.90, 1.10]
+  },
+  "validated": true
+}

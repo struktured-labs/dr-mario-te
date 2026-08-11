@@ -524,3 +524,193 @@ real gain; reporting only the raw endpoint would overstate the decision quality.
 **Both are reported, and the write-up states explicitly which of the two the
 ceiling is made of** — i.e. how much of the dies-ahead movement survives the
 per-100-pills normalisation.
+
+---
+
+### A5 — 2026-08-10. IDEAL MEANS IDEAL; NULL, VERDICT, AND DURABILITY REPAIRS.
+
+**Status when written: AFTER the 125-pair `ORACLE-CLAIR` pilot was visible;
+BEFORE any Tier-A label completed; BEFORE any dose-matched shuffled arm; BEFORE
+any `ORACLE-DIST` endpoint game.** This is an interpretive correction from the
+programme lead plus executable repairs found by reconciling the plan, prereg,
+handoff, and source. The timing is explicit: the already-visible CLAIR pilot is
+not presented as newly blinded evidence.
+
+**OBJECTIVE CLARIFICATION.** The programme wants the strongest ideal headroom
+measurement, even when it is deliberately unfair. Therefore `ORACLE-CLAIR` is
+restored as the primary **IDEAL-CEILING** arm. Its knowledge of realized future
+capsules and garbage is a feature of that question, not a defect. A CLAIR GO
+measures available decision headroom; it does not claim the policy is
+shippable. `ORACLE-DIST` remains implemented and valuable as a decomposition of
+how much headroom survives without realized-garbage knowledge, but it does not
+replace the ideal measurement.
+
+The strongest safe NO_GO claim remains exactly what §8 says: top-4 candidates,
+the registered gate, and a 15-pill horizon. That is a strong probe, not a proof
+over candidates outside top-4 or benefits beyond 15 pills. Broader lane closure
+requires K/action/horizon sensitivity in the NO_GO direction. This distinction
+is about whether the probe reaches the ideal, not about making the ideal fair.
+
+**PRIMARY RUN, unchanged seed block and endpoint:** `ORACLE-CLAIR` true label
+N=9,000 on seeds 30000..38999 plus its CLAIR shuffled-label null on the same
+9,000 seeds. The original pilot is the registered prefix and stays visibly
+labelled as already seen. `ORACLE-DIST` receives no endpoint authority or N in
+this amendment; a future DIST run carries its own dose-matched null and explicit
+authority declaration.
+
+**DOSE-MATCHED, LABEL-BLIND NULL.** The raw shuffled arm is over-dosed and can
+no longer serve as the required null by disclosure alone. Before endpoint
+execution:
+
+1. Run true CLAIR and unthinned shuffled CLAIR on reserved seeds 42000..42059.
+2. `calibrate_null.py` reads only seed, `trt.flips`, `trt.raw_flips`, and
+   `trt.plies_scored`—never any terminal endpoint—and freezes
+   `q = true_flips / raw_shuffle_flips` as an integer fraction over 1,000,000.
+3. The endpoint shuffled arm runs identical forks, permutes their labels, then
+   accepts a would-be flip iff a stable SplitMix64 hash of `(seed, ply)` falls
+   below q. Candidate labels and endpoint outcomes are absent from that test.
+4. Amendment A6 records q and calibration counts before the first new endpoint
+   mutant game. At full N, accepted shuffled/true flip-rate ratio must lie in
+   [0.90, 1.10]. Outside that range the combined comparison is **VOID**.
+
+**DIST RANDOMNESS REPAIR.** A1's `seed + 7919*(ply+1)` collides inside the
+registered block: `(seed=30000, ply=1)` and `(37919, 0)` both produce 45838.
+The replacement is injective tuple packing:
+
+    seed_eff = (seed << 32) | ((ply + 1) << 16) | sample
+
+It remains candidate-independent (common random numbers). G1h exhaustively
+round-trips all 2,700,000 registered `(seed, ply)` keys and demonstrates the old
+formula's named collision.
+
+**EXECUTABLE VERDICT REPAIRS.** `analyse_oracle.py` now owns the oracle wrapper
+around the unchanged shared paired summaries. It enforces, rather than merely
+prints: (a) undecidable clear co-primary forbids GO; (b) N3 fires when the
+bad-end CI includes zero; (c) shuffled GO voids true GO; and (d) a dose mismatch
+voids the comparison. `test_oracle_verdict.py` proves positive GO, every veto,
+both combined-mutant directions, and the named paired topout→stall count.
+
+**PROVENANCE AND RUN DURABILITY.** Shared fields use `t_to_end = n_plies - 1 -
+ply`, `tie` for champion-value tie, `tie_score` for oracle-score tie, and
+`val_gap` for champion points surrendered. The runner hashes the actually
+resolved decision-path modules plus the Lulu fit and refuses to append into an
+output directory when frozen settings or code hashes differ. G1g, G1h, G1i,
+G1j (real-game provenance plus three schema mutants), and the verdict mutation
+test are mandatory pre-run gates alongside G1a–G1f.
+
+---
+
+### A6 — 2026-08-10. SHUFFLED-NULL DOSE FROZEN.
+
+**Status when written: AFTER the reserved 42000..42059 calibration completed;
+BEFORE the first dose-matched shuffled endpoint game on 30000..38999.** The
+runner's ordinary segment summaries made the reserved seeds' terminal outcomes
+visible, but those seeds have no endpoint authority and the calibration code
+read only the four fields declared in A5.
+
+Runtime manifest for both calibration arms:
+`f15581243f7d298f21eb0e440523dbacbe0e6523225623f2a2b371fd46279037`.
+
+| reserved arm | flips | plies | raw flip rate |
+|---|---:|---:|---:|
+| true `ORACLE-CLAIR` | 194 | 6,547 | 2.9632% |
+| unthinned shuffled CLAIR | 1,719 | 10,479 | 16.4042% |
+
+The fixed endpoint-null acceptance fraction is therefore:
+
+    q = 194 / 1719 = 0.1128563118...
+    --null-keep-num 112856 --null-keep-den 1000000
+
+`NULL_DOSE.json` is the machine-readable frozen record. No recalibration on
+endpoint seeds is licensed. The full-N accepted flip-rate ratio gate remains
+[0.90, 1.10] as registered in A5; falling outside it makes the comparison VOID
+rather than triggering an after-the-fact rescale.
+
+---
+
+### A7 — 2026-08-10. A6 FAILED ITS RESERVED-SEED DOSE VALIDATION.
+
+**Status when written: AFTER applying A6's q once on reserved seeds
+42000..42059; BEFORE any dose-matched shuffled endpoint game.** A6's fraction
+was derived from raw flip counts, but thinning changes the trajectory and hence
+the number of later gate/flip opportunities. The required validation exposed
+that defect:
+
+| reserved arm | accepted flips | plies | accepted flip rate |
+|---|---:|---:|---:|
+| true `ORACLE-CLAIR` | 194 | 6,547 | 2.9632% |
+| shuffled at q=0.112856 | 141 | 9,345 | 1.5088% |
+
+Accepted dose ratio = **0.5092**, outside [0.90, 1.10]. Therefore A6's q is
+**REJECTED before endpoint use** and `run_full.sh` now refuses a dose file that
+does not carry `"validated": true`.
+
+The replacement calibration rule is fixed now and may read only accepted flip
+rate on the same reserved seeds:
+
+    q_next = round(1e6 * q_current * true_rate / observed_null_rate) / 1e6
+
+Run the next q on all 60 reserved seeds. Freeze the **first** q whose accepted
+flip-rate ratio lies in [0.90, 1.10]. If four proportional updates fail, the
+null design is blocked and no endpoint run is licensed. Terminal outcomes are
+neither an input to the update nor a stopping condition. No adjustment on
+30000..38999 is licensed; their full-N ratio remains an independent validity
+gate.
+
+---
+
+### A8 — 2026-08-10. FIRST PASSING NULL FRACTION FROZEN.
+
+**Status when written: AFTER A7's reserved-seed updates; BEFORE any
+dose-matched shuffled endpoint game.** The proportional sequence was:
+
+| q | accepted flips | plies | null/true flip-rate ratio | result |
+|---:|---:|---:|---:|---|
+| 0.112856 | 141 | 9,345 | 0.5092 | reject — under-dose |
+| 0.221638 | 381 | 9,831 | 1.3079 | reject — over-dose |
+| **0.169464** | **266** | **9,683** | **0.9271** | **PASS** |
+
+Per A7, the first passing fraction is frozen:
+
+    --null-keep-num 169464 --null-keep-den 1000000
+
+`NULL_DOSE.json` now carries `"validated": true`; `run_full.sh` refuses any
+file without it. No later reserved-seed result and no endpoint result may
+change this fraction. The independent full-N [0.90, 1.10] validity gate still
+applies.
+
+---
+
+### A9 — 2026-08-10. INTERRUPTED SEGMENTS WERE NOT BALANCED PREFIXES.
+
+**Status when written: BEFORE any dose-matched shuffled endpoint game and
+before any new Tier-A launch.** `run_oracle.py` submitted each ascending segment
+but banked rows with `as_completed()`. A kill mid-segment therefore retained
+the shortest-finishing games, not an ascending seed prefix, contradicting §6
+and potentially biasing any early-stop analysis by game length. Resuming also
+overwrote the segment summary with only newly completed rows, although the final
+analyser correctly loaded the full JSONL.
+
+The runner now uses `Executor.map`: workers still compute concurrently, but
+rows are yielded and flushed in registered seed order. A partial segment is an
+actual prefix. Segment summaries are rebuilt from the entire de-duplicated,
+seed-sorted JSONL after resume. The semantic/code manifest remains fail-closed.
+
+This edit changes only scheduling and banking, not a game, label, hash-thinning
+decision, or endpoint. It necessarily changes the runner's manifest hash; A8's
+q remains applicable because `oracle_arm.py` and every decision-path dependency
+are unchanged.
+
+---
+
+### A10 — 2026-08-10. HISTORICAL PILOT ROWS ARE NOT REUSED ACROSS MANIFESTS.
+
+**Status when written: BEFORE the current Tier-A launch.** §6 registered the
+pilot prefix for reuse, but the historical rows were produced before shared
+provenance, dose matching, ordered banking, and the fail-closed runtime
+manifest. They cannot be proven homogeneous with a current output directory.
+
+Seeds 30000 onward therefore replay under the current sealed manifest. The old
+125-pair pilot remains visibly disclosed as already seen and has no verdict
+authority; its rows are not copied or mixed. This is a compute-cost deviation,
+not a seed, endpoint, arm, or verdict-rule change.
