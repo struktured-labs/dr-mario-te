@@ -623,3 +623,17 @@ GitHub `main` commit `5ddc320` adds a dated champion-status table, states that
 v8 added fidelity rather than strength, records both evaluator NO_GOs, updates
 the completed Pocket theta400 fit, and retracts the invalid 6--30 minute freeze
 claim. It separates proved build/runtime identity from unproved playing value.
+
+### RESOLVED — local endpoint stdout backpressure and doubled monitor count
+
+The first managed runner session wrote progress to an undrained execution
+pipe. After roughly five segments the pipe filled and back-pressured the
+otherwise healthy runner. It was interrupted at a flushed row boundary with
+1,412 contiguous rows, all JSON/META/gate/runtime checks passed, and the exact
+manifest resumed with six workers in session 38479. Stdout now appends to
+`out/post_garbage_endpoint/runner.log`, so unattended progress cannot block.
+
+The read-only monitor also summed each `wc -l` file row plus GNU `wc`'s
+synthetic `total` row, nearly doubling reported progress. `champion-source:e0299d8`
+excludes the summary row and matches an independent JSONL count exactly. Neither
+operational fix changed policy, runner source, endpoint META, or banked data.
