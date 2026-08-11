@@ -360,7 +360,8 @@ def play_one(seed, arm, C, bmodel):
         "dies_ahead": int(result == "topout" and v_at_topout is not None
                           and int(v_at_topout) <= PR.DIES_AHEAD_VIRUS_THRESHOLD),
         "viruses_left": int(v_at_topout) if v_at_topout is not None else -1,
-        "garbage": int(env._oracle_garbage), "_actions": actions,
+        "n_plies": len(actions), "garbage": int(env._oracle_garbage),
+        "_actions": actions,
         "calibration_log": arm.calibration_log, "flip_log": arm.flip_log,
         **{key: int(value) for key, value in arm.stats.items()},
     }
