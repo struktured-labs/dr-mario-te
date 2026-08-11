@@ -129,6 +129,31 @@ def state_distance(left, right):
     }
 
 
+def matching_cell_from_metrics(total_hamming, ply, base_value_gap):
+    """Frozen 5 x 2 x 4 null-matching cell from the validated contracts."""
+    h = int(total_hamming)
+    h_bin = 0 if h <= 4 else 1 if h <= 7 else 2 if h <= 11 else 3 if h <= 19 else 4
+    time_bin = int(int(ply) > 70)
+    gap = float(base_value_gap)
+    gap_bin = 0 if gap <= 10 else 1 if gap <= 30 else 2 if gap <= 60 else 3
+    return (h_bin * 2 + time_bin) * 4 + gap_bin
+
+
+def matching_cell(base, chosen, vals, roots, ply):
+    distance = state_distance(roots[int(base)], roots[int(chosen)])
+    total = distance["color"] + distance["virus"] + distance["link"]
+    gap = float(vals[int(base)] - vals[int(chosen)])
+    return matching_cell_from_metrics(total, ply, gap)
+
+
+def cutoff_accepts(seed, ply, cutoff_u64):
+    cutoff = int(cutoff_u64)
+    if not 0 <= cutoff <= 1 << 64:
+        raise ValueError("invalid uint64 cutoff")
+    key = D.mix64((int(seed) << 32) ^ int(ply) ^ THIN_SALT)
+    return key < cutoff
+
+
 class LandedPulseGate:
     """Exactly K subsequent decisions after a placement lands garbage."""
 
@@ -160,11 +185,19 @@ def thin_accepts(seed, ply, keep_num, keep_den):
 class PostGarbageArm:
     """Base, treatment, null, or base-trajectory calibration policy."""
 
-    def __init__(self, mode, keep_num=1, keep_den=1, provenance=False):
+    def __init__(self, mode, keep_num=1, keep_den=1, provenance=False,
+                 cell_cutoffs=None):
         if mode not in ("base", "treatment", "null", "calibration"):
             raise ValueError(mode)
         self.mode = mode
         self.keep_num, self.keep_den = int(keep_num), int(keep_den)
+        self.cell_cutoffs = (None if cell_cutoffs is None
+                             else tuple(int(v) for v in cell_cutoffs))
+        if self.cell_cutoffs is not None:
+            if len(self.cell_cutoffs) != 40:
+                raise ValueError("cell_cutoffs must contain all 40 cells")
+            if any(not 0 <= v <= 1 << 64 for v in self.cell_cutoffs):
+                raise ValueError("cell cutoff outside uint64 probability range")
         self.provenance = bool(provenance)
         self.gate = LandedPulseGate()
         self.stats = {
@@ -185,19 +218,23 @@ class PostGarbageArm:
     @staticmethod
     def _record(seed, ply, gate_offset, base, chosen, vals, sensor, roots, kind):
         distance = state_distance(roots[int(base)], roots[int(chosen)])
+        total_hamming = distance["color"] + distance["virus"] + distance["link"]
+        value_gap = float(vals[int(base)] - vals[int(chosen)])
         return {
             "seed": int(seed), "ply": int(ply), "gate_offset": int(gate_offset),
             "kind": kind,
             "base_action": int(base), "chosen_action": int(chosen),
             "base_raw_value": float(vals[int(base)]),
             "chosen_raw_value": float(vals[int(chosen)]),
-            "base_value_gap": float(vals[int(base)] - vals[int(chosen)]),
+            "base_value_gap": value_gap,
             "base_sensor": int(sensor[int(base)]),
             "chosen_sensor": int(sensor[int(chosen)]),
             "color_hamming": distance["color"],
             "virus_hamming": distance["virus"],
             "link_hamming": distance["link"],
             "metadata_equal": distance["metadata_equal"],
+            "matching_cell": matching_cell_from_metrics(
+                total_hamming, ply, value_gap),
             "thin_hash": int(D.mix64((int(seed) << 32) ^ int(ply) ^ THIN_SALT)),
         }
 
@@ -250,18 +287,43 @@ class PostGarbageArm:
         if self.mode == "treatment":
             chosen = treatment
         else:
-            chosen = (null_candidate if null_candidate != base
-                      and thin_accepts(seed, ply, self.keep_num, self.keep_den)
-                      else base)
+            accept = False
+            if null_candidate != base:
+                if self.cell_cutoffs is None:
+                    accept = thin_accepts(
+                        seed, ply, self.keep_num, self.keep_den)
+                else:
+                    match_cell = matching_cell(
+                        base, null_candidate, vals, roots, ply)
+                    accept = cutoff_accepts(
+                        seed, ply, self.cell_cutoffs[match_cell])
+            chosen = null_candidate if accept else base
             if chosen != base:
                 self.stats["null_distinct_flips"] += 1
         if chosen != base:
             self.stats["raw_action_flips"] += 1
             if self.provenance:
                 kind = "treatment" if self.mode == "treatment" else "null"
-                self.flip_log.append(self._record(
+                record = self._record(
                     seed, ply, gate_offset, base, chosen, vals, sensor, roots,
-                    kind))
+                    kind)
+                heights = O.heights(env.board.color)
+                jittered = V8.jittered_values(vals, tie_seed)
+                legal_rank = sorted(
+                    legal_actions(vals),
+                    key=lambda action: (
+                        -float(jittered[action]),
+                        list(V8.CHAMP_ORDER).index(action)))
+                record.update({
+                    "arm": self.mode,
+                    "viruses": int(env.board.virus_count()),
+                    "maxh": int(heights.max()),
+                    "d_spawn_h": int(max(heights[3], heights[4])),
+                    "base_post_d_spawn_h": int(sensor[int(base)]),
+                    "chosen_post_d_spawn_h": int(sensor[int(chosen)]),
+                    "champ_rank_chosen": legal_rank.index(int(chosen)) + 1,
+                })
+                self.flip_log.append(record)
         return chosen
 
 

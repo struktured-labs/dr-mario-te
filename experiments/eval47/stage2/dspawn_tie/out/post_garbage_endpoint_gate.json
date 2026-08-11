@@ -1,0 +1,34 @@
+{
+ "version": "post-garbage-endpoint-gate-v1",
+ "prereg_commit": "85d7898",
+ "table_sha256": "c64ce845e3e7d19242a359f868012bd04623c1bbee21d139202722f686e9c82d",
+ "validation_null_records": 1154,
+ "validation_selected": 616,
+ "live_smoke_flips": 9,
+ "boundary_checks": {
+  "h4": true,
+  "h5": true,
+  "h11": true,
+  "h12": true,
+  "ply71": true,
+  "gap11": true,
+  "gap31": true,
+  "gap61": true
+ },
+ "checks": {
+  "table_hash": true,
+  "table_cells_complete": true,
+  "validation_cell_replay": true,
+  "validation_selected_replay": true,
+  "live_selector_path": true,
+  "zero_table_mutant_killed": true,
+  "all_bin_boundaries": true,
+  "hamming_le5_mutant_killed": true,
+  "hamming_le12_mutant_killed": true,
+  "short_table_rejected": true,
+  "zero_cutoff_rejects": true,
+  "full_cutoff_accepts": true,
+  "table_byte_mutant_killed": true
+ },
+ "pass": true
+}
