@@ -111,7 +111,7 @@ class FirmwareDecider:
         from py65_harness import Cpu
         self.Cpu = Cpu
 
-    def decide(self, col, vir, ca, cb, na, nb, max_steps=5_000_000_000):
+    def decide(self, col, vir, ca, cb, na, nb, max_steps=5_000_000_000, lnk=None):
         """col/vir: int8[128] arrays (root_search.py/FaithfulBoard convention: col 0=empty,
         1..3=colour; vir 0/1). ca/cb/na/nb: colours in the SAME 1..3 convention (matching
         root_search.py's own `int(cur.a)`, which is what FaithfulBoard/NesPillSource
@@ -129,7 +129,28 @@ class FirmwareDecider:
         D_BVL/D_BVH firmware readback landing far from root_search._root_value's prediction
         for the SAME reconstructed action, and via a topout-by-pill-23 game trace on a
         seed that clears in 94 pills through the (correctly-1-indexed) python decider."""
-        board = arrays_to_nes(col, vir)
+        if lnk is None:
+            # Historical diagnostics supplied the compact colour/virus planes only.
+            # Keep that behavior for replay compatibility, but it is not sufficient for
+            # a fixpoint-policy fidelity proof because real parent pills carry links.
+            board = arrays_to_nes(col, vir)
+        else:
+            # faithful_game/cascade_link_x link code -> NES playfield high nibble.
+            # 0x8 is the canonical unlinked spelling; 0x4/5 vertical and 0x6/7
+            # horizontal.  Viruses always use 0xD regardless of the link plane.
+            hi = (0x8, 0x5, 0x4, 0x7, 0x6)
+            assert len(lnk) == len(col) == len(vir) == 128
+            board = []
+            for i in range(128):
+                color = int(col[i])
+                if color == 0:
+                    board.append(0xFF)
+                elif int(vir[i]):
+                    board.append(0xD0 | (color - 1))
+                else:
+                    link = int(lnk[i])
+                    assert 0 <= link < len(hi), link
+                    board.append((hi[link] << 4) | (color - 1))
         img, _clen, _slen = self.B.build_image(board, ca - 1, cb - 1, na - 1, nb - 1)
         cpu = self.Cpu()
         for a, v in enumerate(img):
