@@ -18,6 +18,9 @@ from numba import njit, int8, int64
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(HERE))))
+if os.path.join(REPO, "tests") not in sys.path:
+    sys.path.insert(0, os.path.join(REPO, "tests"))
 
 import oracle_arm as O  # noqa: E402
 
