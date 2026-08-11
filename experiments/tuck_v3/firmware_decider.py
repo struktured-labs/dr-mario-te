@@ -79,7 +79,7 @@ class FirmwareDecider:
     """One instance per WORKER (not per decision -- the D3/build_copro_d3 module load is
     the expensive one-time setup; each decision only re-runs build_image + a py65 call)."""
 
-    def __init__(self, drchain=180, drfix=1, arm=1, tuck=1, theta=150):
+    def __init__(self, drchain=180, drfix=1, arm=1, tuck=1, theta=150, strand=0):
         # ROOT-CAUSE BUG FIXED HERE (team-lead's sanity-8-v3 diagnostic: paired-pills
         # delta exactly 0.00 on every pair yet fires/game=3.12 -- the signature of both
         # A/B arms executing the SAME decider). This used to hardcode "1" unconditionally,
@@ -95,6 +95,10 @@ class FirmwareDecider:
         os.environ["DRCOPRO_ARM"] = "1" if arm else "0"
         os.environ["DRFIX"] = "1" if drfix else "0"
         os.environ["DRCHAIN"] = str(drchain)
+        # Root-only stranded-half cost.  The shipped champion uses 20; historical tuck
+        # gates used the byte-identical default 0.  Make the choice explicit so a py65
+        # cross-check cannot accidentally compare strand20 Python to strand0 firmware.
+        os.environ["DRSTRAND"] = str(strand)
         # theta mini-sweep build knob (task #17 stage 3, team-lead directive): tuck_v3.THETA
         # reads this once at import time, same hazard/pattern as DRCOPRO_TUCKV3 above -- set
         # BEFORE any firmware module import in this process. Default "150" preserves every
@@ -144,6 +148,8 @@ class FirmwareDecider:
 
         d_bc = cpu.mem[self.D3.D_BC]
         d_bo = cpu.mem[self.D3.D_BO]
+        raw_value = cpu.mem[self.D3.D_BVL] | (cpu.mem[self.D3.D_BVH] << 8)
+        best_value = raw_value if raw_value < 0x8000 else raw_value - 0x10000
 
         # SECOND ROOT-CAUSE BUG FOUND (exposed only once the tuck-arg-clobber fix above
         # let the off arm genuinely build with EMIT_TUCK_V3=False): build_copro_d3.py
@@ -172,7 +178,8 @@ class FirmwareDecider:
 
         if tuck_col == 0xFF:
             action = int(FX._VAR_OF_O4[d_bo]) * 8 + int(d_bc)
-            return {"kind": "base", "action": action, "steps": steps}
+            return {"kind": "base", "action": action, "value": best_value,
+                    "steps": steps}
 
         cands, _dropped = ref_tuck_scan_v3(board)
         match = [c for c in cands if c["target"] == d_bc and c["approach"] == tuck_col
@@ -194,4 +201,4 @@ class FirmwareDecider:
         col0, col1 = (ca, cb) if flip == 0 else (cb, ca)
         placement = {"cells": (r0, c0, r1, c1)}
         return {"kind": "tuck", "placement": placement, "ca": col0, "cb": col1,
-                "steps": steps}
+                "value": best_value, "steps": steps}
