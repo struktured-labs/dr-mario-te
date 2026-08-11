@@ -370,8 +370,12 @@ parity, and full provenance.  `095774a` wires the frozen table into an ordered,
 resumable runner and passes 13 selector/table gates, including exact replay of
 all 616 validation selections and live zero-table/bin mutants.  `2b6b62d` adds
 the fail-closed analyzer; all 11 verdict/provenance mutants pass in both
-directions.  The runner self-configures its Numba cache.  No seed in the
-endpoint range has been opened; launch requires explicit owner action.
+directions.  `2c5a6d3` binds the launch gate to exact policy/runner/gate source
+hashes, so stale gates fail.  The runner self-configures its Numba cache.  A
+12-pair disclosed-seed benchmark projects ~5.25 wall-hours / ~21 core-hours at
+four local workers; budget 6--8 hours.  No seed in the endpoint range has been
+opened; launch requires explicit owner action.  Exact identity and commands
+are in `POST_GARBAGE_ENDPOINT_READINESS.md` (`abd2d40`).
 
 ### `d_spawn_h` is already partly priced
 
@@ -568,5 +572,7 @@ The project does not yet claim to know the perfect weighting of those signals.
   `champion-source:experiments/eval47/stage2/dspawn_tie/LARGE_NULL_VALIDATION_RESULT.md`
 - Sealed, unlaunched post-garbage endpoint:
   `champion-source:experiments/eval47/stage2/dspawn_tie/PREREG_POST_GARBAGE_V8_ENDPOINT.md`
+- Endpoint launch identity, cost, and owner commands:
+  `champion-source:experiments/eval47/stage2/dspawn_tie/POST_GARBAGE_ENDPOINT_READINESS.md`
 - Required untracked lulu fit:
   `experiments/eval47/results/dr_lulu_20260808_fit.json`
