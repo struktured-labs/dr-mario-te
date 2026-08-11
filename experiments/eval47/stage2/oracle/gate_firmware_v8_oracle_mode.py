@@ -13,6 +13,8 @@ import oracle_arm as O
 import run_oracle as R
 
 SEEDS = range(43000, 43006)
+FIT = ("/home/struktured/projects/dr-mario-te/source/experiments/eval47/results/"
+       "dr_lulu_20260808_fit.json")
 PROV_FIELDS = {"policy_semantics", "tie_seed_mode", "tie_seed", "base_action",
                "trt_action", "cands", "labels", "ply"}
 
@@ -66,6 +68,7 @@ def find_gated(seed, C, model):
 
 
 def main():
+    os.environ["DR_LULU_FIT"] = FIT
     C, model = O.init_rig("lulu")
     gates = {}
 
