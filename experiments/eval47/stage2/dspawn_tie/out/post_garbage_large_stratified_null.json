@@ -1,0 +1,494 @@
+{
+ "version": "post-garbage-large-stratified-null-v2",
+ "authority": "FROZEN_BEFORE_SEEDS_72200_72799",
+ "cutoff_estimator": "round(2^64 * selected_count / null_capacity)",
+ "training_n": 1200,
+ "treatment_distinct": 1140,
+ "null_opportunities": 2114,
+ "expected_null_selected": 1140,
+ "objective_l1": 66.0,
+ "margins": {
+  "treatment": {
+   "hamming": [
+    24,
+    150,
+    739,
+    136,
+    91
+   ],
+   "timing": [
+    428,
+    712
+   ],
+   "value_gap": [
+    254,
+    386,
+    371,
+    129
+   ]
+  },
+  "expected_null": {
+   "hamming": [
+    24,
+    150,
+    739,
+    136,
+    91
+   ],
+   "timing": [
+    428,
+    712
+   ],
+   "value_gap": [
+    254,
+    386,
+    371,
+    129
+   ]
+  }
+ },
+ "cells": [
+  {
+   "cell": 0,
+   "hamming_bin": 0,
+   "timing_bin": 0,
+   "value_gap_bin": 0,
+   "target_joint": 1,
+   "capacity": 35,
+   "selected": 1,
+   "cutoff_u64": 527049830677415744,
+   "acceptance_rate": 0.02857142857142857
+  },
+  {
+   "cell": 1,
+   "hamming_bin": 0,
+   "timing_bin": 0,
+   "value_gap_bin": 1,
+   "target_joint": 4,
+   "capacity": 41,
+   "selected": 4,
+   "cutoff_u64": 1799682348654590464,
+   "acceptance_rate": 0.0975609756097561
+  },
+  {
+   "cell": 2,
+   "hamming_bin": 0,
+   "timing_bin": 0,
+   "value_gap_bin": 2,
+   "target_joint": 2,
+   "capacity": 59,
+   "selected": 2,
+   "cutoff_u64": 625313358430832256,
+   "acceptance_rate": 0.03389830508474576
+  },
+  {
+   "cell": 3,
+   "hamming_bin": 0,
+   "timing_bin": 0,
+   "value_gap_bin": 3,
+   "target_joint": 0,
+   "capacity": 26,
+   "selected": 0,
+   "cutoff_u64": 0,
+   "acceptance_rate": 0.0
+  },
+  {
+   "cell": 4,
+   "hamming_bin": 0,
+   "timing_bin": 1,
+   "value_gap_bin": 0,
+   "target_joint": 3,
+   "capacity": 61,
+   "selected": 3,
+   "cutoff_u64": 907216921657846784,
+   "acceptance_rate": 0.04918032786885246
+  },
+  {
+   "cell": 5,
+   "hamming_bin": 0,
+   "timing_bin": 1,
+   "value_gap_bin": 1,
+   "target_joint": 9,
+   "capacity": 63,
+   "selected": 9,
+   "cutoff_u64": 2635249153387078656,
+   "acceptance_rate": 0.14285714285714285
+  },
+  {
+   "cell": 6,
+   "hamming_bin": 0,
+   "timing_bin": 1,
+   "value_gap_bin": 2,
+   "target_joint": 5,
+   "capacity": 48,
+   "selected": 5,
+   "cutoff_u64": 1921535841011411712,
+   "acceptance_rate": 0.10416666666666667
+  },
+  {
+   "cell": 7,
+   "hamming_bin": 0,
+   "timing_bin": 1,
+   "value_gap_bin": 3,
+   "target_joint": 0,
+   "capacity": 20,
+   "selected": 0,
+   "cutoff_u64": 0,
+   "acceptance_rate": 0.0
+  },
+  {
+   "cell": 8,
+   "hamming_bin": 1,
+   "timing_bin": 0,
+   "value_gap_bin": 0,
+   "target_joint": 9,
+   "capacity": 22,
+   "selected": 9,
+   "cutoff_u64": 7546395302881180672,
+   "acceptance_rate": 0.4090909090909091
+  },
+  {
+   "cell": 9,
+   "hamming_bin": 1,
+   "timing_bin": 0,
+   "value_gap_bin": 1,
+   "target_joint": 16,
+   "capacity": 32,
+   "selected": 23,
+   "cutoff_u64": 13258597302978740224,
+   "acceptance_rate": 0.71875
+  },
+  {
+   "cell": 10,
+   "hamming_bin": 1,
+   "timing_bin": 0,
+   "value_gap_bin": 2,
+   "target_joint": 21,
+   "capacity": 34,
+   "selected": 21,
+   "cutoff_u64": 11393577221997076480,
+   "acceptance_rate": 0.6176470588235294
+  },
+  {
+   "cell": 11,
+   "hamming_bin": 1,
+   "timing_bin": 0,
+   "value_gap_bin": 3,
+   "target_joint": 10,
+   "capacity": 22,
+   "selected": 7,
+   "cutoff_u64": 5869418568907584512,
+   "acceptance_rate": 0.3181818181818182
+  },
+  {
+   "cell": 12,
+   "hamming_bin": 1,
+   "timing_bin": 1,
+   "value_gap_bin": 0,
+   "target_joint": 20,
+   "capacity": 33,
+   "selected": 20,
+   "cutoff_u64": 11179844893157304320,
+   "acceptance_rate": 0.6060606060606061
+  },
+  {
+   "cell": 13,
+   "hamming_bin": 1,
+   "timing_bin": 1,
+   "value_gap_bin": 1,
+   "target_joint": 36,
+   "capacity": 61,
+   "selected": 36,
+   "cutoff_u64": 10886603059894161408,
+   "acceptance_rate": 0.5901639344262295
+  },
+  {
+   "cell": 14,
+   "hamming_bin": 1,
+   "timing_bin": 1,
+   "value_gap_bin": 2,
+   "target_joint": 32,
+   "capacity": 65,
+   "selected": 28,
+   "cutoff_u64": 7946289754828730368,
+   "acceptance_rate": 0.4307692307692308
+  },
+  {
+   "cell": 15,
+   "hamming_bin": 1,
+   "timing_bin": 1,
+   "value_gap_bin": 3,
+   "target_joint": 6,
+   "capacity": 22,
+   "selected": 6,
+   "cutoff_u64": 5030930201920786432,
+   "acceptance_rate": 0.2727272727272727
+  },
+  {
+   "cell": 16,
+   "hamming_bin": 2,
+   "timing_bin": 0,
+   "value_gap_bin": 0,
+   "target_joint": 61,
+   "capacity": 120,
+   "selected": 61,
+   "cutoff_u64": 9377094904135688192,
+   "acceptance_rate": 0.5083333333333333
+  },
+  {
+   "cell": 17,
+   "hamming_bin": 2,
+   "timing_bin": 0,
+   "value_gap_bin": 1,
+   "target_joint": 86,
+   "capacity": 136,
+   "selected": 87,
+   "cutoff_u64": 11800490694211256320,
+   "acceptance_rate": 0.6397058823529411
+  },
+  {
+   "cell": 18,
+   "hamming_bin": 2,
+   "timing_bin": 0,
+   "value_gap_bin": 2,
+   "target_joint": 97,
+   "capacity": 142,
+   "selected": 97,
+   "cutoff_u64": 12600944895421313024,
+   "acceptance_rate": 0.6830985915492958
+  },
+  {
+   "cell": 19,
+   "hamming_bin": 2,
+   "timing_bin": 0,
+   "value_gap_bin": 3,
+   "target_joint": 42,
+   "capacity": 78,
+   "selected": 42,
+   "cutoff_u64": 9932862193535911936,
+   "acceptance_rate": 0.5384615384615384
+  },
+  {
+   "cell": 20,
+   "hamming_bin": 2,
+   "timing_bin": 1,
+   "value_gap_bin": 0,
+   "target_joint": 127,
+   "capacity": 196,
+   "selected": 127,
+   "cutoff_u64": 11952737231434250240,
+   "acceptance_rate": 0.6479591836734694
+  },
+  {
+   "cell": 21,
+   "hamming_bin": 2,
+   "timing_bin": 1,
+   "value_gap_bin": 1,
+   "target_joint": 162,
+   "capacity": 245,
+   "selected": 162,
+   "cutoff_u64": 12197438938534479872,
+   "acceptance_rate": 0.6612244897959184
+  },
+  {
+   "cell": 22,
+   "hamming_bin": 2,
+   "timing_bin": 1,
+   "value_gap_bin": 2,
+   "target_joint": 132,
+   "capacity": 192,
+   "selected": 132,
+   "cutoff_u64": 12682136550675316736,
+   "acceptance_rate": 0.6875
+  },
+  {
+   "cell": 23,
+   "hamming_bin": 2,
+   "timing_bin": 1,
+   "value_gap_bin": 3,
+   "target_joint": 32,
+   "capacity": 85,
+   "selected": 31,
+   "cutoff_u64": 6727636073941130240,
+   "acceptance_rate": 0.36470588235294116
+  },
+  {
+   "cell": 24,
+   "hamming_bin": 3,
+   "timing_bin": 0,
+   "value_gap_bin": 0,
+   "target_joint": 6,
+   "capacity": 9,
+   "selected": 6,
+   "cutoff_u64": 12297829382473033728,
+   "acceptance_rate": 0.6666666666666666
+  },
+  {
+   "cell": 25,
+   "hamming_bin": 3,
+   "timing_bin": 0,
+   "value_gap_bin": 1,
+   "target_joint": 19,
+   "capacity": 17,
+   "selected": 17,
+   "cutoff_u64": 18446744073709551616,
+   "acceptance_rate": 1.0
+  },
+  {
+   "cell": 26,
+   "hamming_bin": 3,
+   "timing_bin": 0,
+   "value_gap_bin": 2,
+   "target_joint": 16,
+   "capacity": 38,
+   "selected": 16,
+   "cutoff_u64": 7767050136298758144,
+   "acceptance_rate": 0.42105263157894735
+  },
+  {
+   "cell": 27,
+   "hamming_bin": 3,
+   "timing_bin": 0,
+   "value_gap_bin": 3,
+   "target_joint": 15,
+   "capacity": 24,
+   "selected": 15,
+   "cutoff_u64": 11529215046068469760,
+   "acceptance_rate": 0.625
+  },
+  {
+   "cell": 28,
+   "hamming_bin": 3,
+   "timing_bin": 1,
+   "value_gap_bin": 0,
+   "target_joint": 15,
+   "capacity": 11,
+   "selected": 11,
+   "cutoff_u64": 18446744073709551616,
+   "acceptance_rate": 1.0
+  },
+  {
+   "cell": 29,
+   "hamming_bin": 3,
+   "timing_bin": 1,
+   "value_gap_bin": 1,
+   "target_joint": 21,
+   "capacity": 30,
+   "selected": 30,
+   "cutoff_u64": 18446744073709551616,
+   "acceptance_rate": 1.0
+  },
+  {
+   "cell": 30,
+   "hamming_bin": 3,
+   "timing_bin": 1,
+   "value_gap_bin": 2,
+   "target_joint": 36,
+   "capacity": 34,
+   "selected": 34,
+   "cutoff_u64": 18446744073709551616,
+   "acceptance_rate": 1.0
+  },
+  {
+   "cell": 31,
+   "hamming_bin": 3,
+   "timing_bin": 1,
+   "value_gap_bin": 3,
+   "target_joint": 8,
+   "capacity": 21,
+   "selected": 7,
+   "cutoff_u64": 6148914691236516864,
+   "acceptance_rate": 0.3333333333333333
+  },
+  {
+   "cell": 32,
+   "hamming_bin": 4,
+   "timing_bin": 0,
+   "value_gap_bin": 0,
+   "target_joint": 1,
+   "capacity": 2,
+   "selected": 2,
+   "cutoff_u64": 18446744073709551616,
+   "acceptance_rate": 1.0
+  },
+  {
+   "cell": 33,
+   "hamming_bin": 4,
+   "timing_bin": 0,
+   "value_gap_bin": 1,
+   "target_joint": 8,
+   "capacity": 4,
+   "selected": 4,
+   "cutoff_u64": 18446744073709551616,
+   "acceptance_rate": 1.0
+  },
+  {
+   "cell": 34,
+   "hamming_bin": 4,
+   "timing_bin": 0,
+   "value_gap_bin": 2,
+   "target_joint": 8,
+   "capacity": 9,
+   "selected": 9,
+   "cutoff_u64": 18446744073709551616,
+   "acceptance_rate": 1.0
+  },
+  {
+   "cell": 35,
+   "hamming_bin": 4,
+   "timing_bin": 0,
+   "value_gap_bin": 3,
+   "target_joint": 6,
+   "capacity": 5,
+   "selected": 5,
+   "cutoff_u64": 18446744073709551616,
+   "acceptance_rate": 1.0
+  },
+  {
+   "cell": 36,
+   "hamming_bin": 4,
+   "timing_bin": 1,
+   "value_gap_bin": 0,
+   "target_joint": 11,
+   "capacity": 14,
+   "selected": 14,
+   "cutoff_u64": 18446744073709551616,
+   "acceptance_rate": 1.0
+  },
+  {
+   "cell": 37,
+   "hamming_bin": 4,
+   "timing_bin": 1,
+   "value_gap_bin": 1,
+   "target_joint": 25,
+   "capacity": 14,
+   "selected": 14,
+   "cutoff_u64": 18446744073709551616,
+   "acceptance_rate": 1.0
+  },
+  {
+   "cell": 38,
+   "hamming_bin": 4,
+   "timing_bin": 1,
+   "value_gap_bin": 2,
+   "target_joint": 22,
+   "capacity": 27,
+   "selected": 27,
+   "cutoff_u64": 18446744073709551616,
+   "acceptance_rate": 1.0
+  },
+  {
+   "cell": 39,
+   "hamming_bin": 4,
+   "timing_bin": 1,
+   "value_gap_bin": 3,
+   "target_joint": 10,
+   "capacity": 17,
+   "selected": 16,
+   "cutoff_u64": 17361641481138401280,
+   "acceptance_rate": 0.9411764705882353
+  }
+ ],
+ "scipy": "1.18.0",
+ "outcome_fields_read": false
+}
