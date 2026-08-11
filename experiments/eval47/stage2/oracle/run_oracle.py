@@ -53,7 +53,7 @@ def _sha256(path):
         return hashlib.sha256(fh.read()).hexdigest()
 
 
-def runtime_manifest(model):
+def runtime_manifest(model, policy_semantics="historical_compact"):
     """Hash the modules ACTUALLY imported by the decision path.
 
     Long jobs outlive edits and remote syncs.  A result without the exact code
@@ -67,6 +67,9 @@ def runtime_manifest(model):
              "nes_pills", "drmario.faithful_env", "drmario.faithful_game")
     if model == "exo_lulu":
         names += ("exogenous_pressure",)
+    if policy_semantics == "firmware_v8":
+        names += ("firmware_v8_policy", "cascade_chain_x", "cascade_link_x",
+                  "cascade_stranded_x")
     files = {"run_oracle": os.path.abspath(__file__)}
     for name in names:
         module = importlib.import_module(name)
@@ -105,27 +108,32 @@ def freeze_meta(outdir, meta, manifest):
 
 
 def _winit(model, label, future, topk, horizon, fork_samples, provenance,
-           null_keep_num, null_keep_den):
+           null_keep_num, null_keep_den, policy_semantics, tie_seed_mode):
     import oracle_arm as O
     C, bmodel = O.init_rig(model)
     _W.update(O=O, C=C, bmodel=bmodel, model=model, label=label,
               future=future, topk=topk, horizon=horizon,
               fork_samples=fork_samples, provenance=provenance,
-              null_keep_num=null_keep_num, null_keep_den=null_keep_den)
+              null_keep_num=null_keep_num, null_keep_den=null_keep_den,
+              policy_semantics=policy_semantics, tie_seed_mode=tie_seed_mode)
 
 
 def _work(seed):
     O = _W["O"]
     t0 = time.monotonic()
     ab = O.OracleArm(label_mode="const", topk=_W["topk"],
-                     horizon=_W["horizon"])
+                     horizon=_W["horizon"],
+                     policy_semantics=_W["policy_semantics"],
+                     tie_seed_mode=_W["tie_seed_mode"])
     rb = O.play_one(seed, ab, _W["C"], _W["bmodel"])
     at = O.OracleArm(label_mode=_W["label"], topk=_W["topk"],
                      horizon=_W["horizon"], provenance=_W["provenance"],
                      future_mode=_W["future"],
                      fork_samples=_W["fork_samples"],
                      null_keep_num=_W["null_keep_num"],
-                     null_keep_den=_W["null_keep_den"])
+                     null_keep_den=_W["null_keep_den"],
+                     policy_semantics=_W["policy_semantics"],
+                     tie_seed_mode=_W["tie_seed_mode"])
     rt = O.play_one(seed, at, _W["C"], _W["bmodel"])
     for r in (rb, rt):
         r.pop("_actions", None)
@@ -134,6 +142,8 @@ def _work(seed):
         rt["flip_log"] = at.flip_log[:MAX_FLIPLOG]
     return {"seed": seed, "model": _W["model"], "label": _W["label"],
             "future": _W["future"],
+            "policy_semantics": _W["policy_semantics"],
+            "tie_seed_mode": _W["tie_seed_mode"],
             "base": rb, "trt": rt,
             "secs": round(time.monotonic() - t0, 2)}
 
@@ -205,6 +215,11 @@ def main():
     ap.add_argument("--future", choices=["clair", "dist"], default="clair",
                     help="clair = realized future (ideal ceiling); dist = "
                          "sampled garbage future")
+    ap.add_argument("--policy-semantics",
+                    choices=["historical_compact", "firmware_v8"],
+                    default="historical_compact")
+    ap.add_argument("--tie-seed-mode", choices=["seed0", "p2_surrogate"],
+                    default="seed0")
     ap.add_argument("--seed-start", type=int, required=True)
     ap.add_argument("--seed-count", type=int, required=True)
     ap.add_argument("--segment", type=int, default=250)
@@ -231,6 +246,8 @@ def main():
     if a.label != "shuffle":
         assert (a.null_keep_num, a.null_keep_den) == (1, 1), (
             "null thinning is valid only for the shuffled-label arm")
+    if a.policy_semantics == "historical_compact" and a.tie_seed_mode != "seed0":
+        raise ValueError("historical_compact supports only --tie-seed-mode seed0")
     if not a.allow_corpus_seeds:
         assert a.seed_start >= 30000, (
             "PREREG_ORACLE sec 3: oracle seeds start at 30000 -- disjoint from "
@@ -242,12 +259,15 @@ def main():
     done = _done_seeds(a.outdir)
     todo = [s for s in seeds if s not in done]
     print(f"model={a.model} label={a.label} future={a.future} topk={a.topk} "
+          f"policy_semantics={a.policy_semantics} tie_seed_mode={a.tie_seed_mode} "
           f"horizon={a.horizon} fork_samples={a.fork_samples} "
           f"seeds={len(seeds)} already_done={len(done)} todo={len(todo)} "
           f"segment={a.segment} workers={a.workers} null_keep="
           f"{a.null_keep_num}/{a.null_keep_den}", flush=True)
 
     meta = {"model": a.model, "label": a.label, "future": a.future,
+            "policy_semantics": a.policy_semantics,
+            "tie_seed_mode": a.tie_seed_mode,
             "topk": a.topk,
             "horizon": a.horizon, "seed_start": a.seed_start,
             "seed_count": a.seed_count, "segment": a.segment,
@@ -263,7 +283,7 @@ def main():
                 "gameplay-independent periodic drip"),
             "gate": "d_spawn_h >= 12 OR viruses <= 8",
             "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
-    manifest = runtime_manifest(a.model)
+    manifest = runtime_manifest(a.model, a.policy_semantics)
     freeze_meta(a.outdir, meta, manifest)
     print(f"runtime_manifest={manifest['rolled']}", flush=True)
 
@@ -275,7 +295,8 @@ def main():
             max_workers=a.workers, initializer=_winit,
             initargs=(a.model, a.label, a.future, a.topk, a.horizon,
                       a.fork_samples, prov, a.null_keep_num,
-                      a.null_keep_den)) as ex:
+                      a.null_keep_den, a.policy_semantics,
+                      a.tie_seed_mode)) as ex:
         for s0 in range(0, len(seeds), a.segment):
             block = [s for s in seeds[s0:s0 + a.segment] if s in todo_set]
             tag = f"seg_{a.seed_start + s0:06d}"

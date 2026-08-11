@@ -108,6 +108,8 @@ GATE_VIRUSES = 8        # ... OR virus count <= this
 TOPK = 4                # champion candidates forked
 HORIZON = 15            # pills played forward per fork
 DIST_KEY_VERSION = "pack-v1"
+POLICY_SEMANTICS = ("historical_compact", "firmware_v8")
+TIE_SEED_MODES = ("seed0", "p2_surrogate")
 
 # The champion's scan order over the 32-slot index (var*8+cc, var = [2,3,0,1]).
 CHAMP_ORDER = np.array([v * 8 + c for v in (2, 3, 0, 1) for c in range(8)],
@@ -244,6 +246,37 @@ def _champ_action(vals, order):
     return int(order[np.nanargmax(vals[order])])
 
 
+def policy_tie_seed(seed, mode):
+    """Explicit tie model; `p2_surrogate` is reproducible, not a NAV_T claim."""
+    assert mode in TIE_SEED_MODES
+    if mode == "seed0":
+        return 0
+    nav = ((73 * int(seed) + 41) & 255) | 1
+    return nav ^ 0xA4
+
+
+def _policy_values(col, vir, lnk, ca, cb, na, nb, w, fl, wt, ws, semantics):
+    """Candidate values for one explicitly named base-policy semantics."""
+    assert semantics in POLICY_SEMANTICS
+    if semantics == "historical_compact":
+        return _champ_values(col, vir, ca, cb, na, nb, w, fl, wt, ws)
+    if wt != 0 or ws != 20:
+        raise ValueError("hardware-validated firmware_v8 mode requires wt=0, ws=20")
+    if lnk is None:
+        raise ValueError("firmware_v8 policy requires the parent link plane")
+    import firmware_v8_policy as V8
+    return V8.candidate_values(col, vir, lnk, ca, cb, na, nb, w, fl)
+
+
+def _policy_rank_values(vals, semantics, tie_seed):
+    if semantics == "historical_compact":
+        if int(tie_seed) != 0:
+            raise ValueError("historical_compact has only registered seed-zero tie behavior")
+        return vals
+    import firmware_v8_policy as V8
+    return V8.jittered_values(vals, tie_seed)
+
+
 def _advance(env, action, C, seed, bmodel):
     """ONE placement + the rig's injection step.  Returns (res, v_at_topout).
 
@@ -294,7 +327,8 @@ def _advance(env, action, C, seed, bmodel):
 
 
 # --------------------------------------------------------------------- forks
-def _fork_label(env, action, C, seed, bmodel, w, fl, wt, ws, horizon):
+def _fork_label(env, action, C, seed, bmodel, w, fl, wt, ws, horizon,
+                policy_semantics="historical_compact", tie_seed=0):
     """Play `action` then `horizon-1` champion pills on a CLONE of `env`.
 
     Returns (survived, progress) where progress = viruses cleared during the
@@ -313,9 +347,13 @@ def _fork_label(env, action, C, seed, bmodel, w, fl, wt, ws, horizon):
             break
         fb = FB.from_board(e.board)
         col, vir = RS.board_flat_from_fb(fb)
-        vals = _champ_values(col, vir, int(e.cur.a), int(e.cur.b),
-                             int(e.nxt.a), int(e.nxt.b), w, fl, wt, ws)
-        a = _champ_action(vals, CHAMP_ORDER)
+        lnk = (np.ascontiguousarray(e.board.link, dtype=np.int8).reshape(-1)
+               if policy_semantics == "firmware_v8" else None)
+        vals = _policy_values(col, vir, lnk, int(e.cur.a), int(e.cur.b),
+                              int(e.nxt.a), int(e.nxt.b), w, fl, wt, ws,
+                              policy_semantics)
+        ranked_vals = _policy_rank_values(vals, policy_semantics, tie_seed)
+        a = _champ_action(ranked_vals, CHAMP_ORDER)
         if a is None:
             break
         res, v_end = _advance(e, a, C, seed, bmodel)
@@ -333,12 +371,17 @@ class OracleArm:
 
     def __init__(self, label_mode="true", order_flip=False, topk=TOPK,
                  horizon=HORIZON, provenance=False, future_mode="clair",
-                 fork_samples=1, null_keep_num=1, null_keep_den=1):
+                 fork_samples=1, null_keep_num=1, null_keep_den=1,
+                 policy_semantics="historical_compact", tie_seed_mode="seed0"):
         assert label_mode in ("true", "shuffle", "const")
         assert future_mode in ("clair", "dist")
         assert int(fork_samples) >= 1
         assert 0 <= int(null_keep_num) <= int(null_keep_den)
         assert int(null_keep_den) > 0
+        assert policy_semantics in POLICY_SEMANTICS
+        assert tie_seed_mode in TIE_SEED_MODES
+        if policy_semantics == "historical_compact" and tie_seed_mode != "seed0":
+            raise ValueError("historical_compact supports only tie_seed_mode=seed0")
         if future_mode == "clair":
             assert int(fork_samples) == 1, (
                 "repeating the same realized future is not a new sample")
@@ -351,6 +394,8 @@ class OracleArm:
         self.fork_samples = int(fork_samples)
         self.null_keep_num = int(null_keep_num)
         self.null_keep_den = int(null_keep_den)
+        self.policy_semantics = policy_semantics
+        self.tie_seed_mode = tie_seed_mode
         self.stats = {"plies": 0, "gated_plies": 0, "flips": 0,
                       "raw_flips": 0, "null_rejected_flips": 0, "forks": 0}
         self.flip_log = []
@@ -365,10 +410,15 @@ class OracleArm:
 
         fb = FB.from_board(env.board)
         col, vir = RS.board_flat_from_fb(fb)
-        vals = _champ_values(col, vir, int(env.cur.a), int(env.cur.b),
-                             int(env.nxt.a), int(env.nxt.b), w, fl, wt, ws)
+        lnk = (np.ascontiguousarray(env.board.link, dtype=np.int8).reshape(-1)
+               if self.policy_semantics == "firmware_v8" else None)
+        vals = _policy_values(col, vir, lnk, int(env.cur.a), int(env.cur.b),
+                              int(env.nxt.a), int(env.nxt.b), w, fl, wt, ws,
+                              self.policy_semantics)
+        tie_seed = policy_tie_seed(seed, self.tie_seed_mode)
+        ranked_vals = _policy_rank_values(vals, self.policy_semantics, tie_seed)
         order = CHAMP_ORDER[::-1] if self.order_flip else CHAMP_ORDER
-        base_a = _champ_action(vals, order)
+        base_a = _champ_action(ranked_vals, order)
         if base_a is None:
             return None, None
         self.stats["plies"] += 1
@@ -379,9 +429,9 @@ class OracleArm:
         self.stats["gated_plies"] += 1
 
         # top-k by champion value, ties broken by the champion's scan order
-        legal = [int(s) for s in order if np.isfinite(vals[int(s)])]
+        legal = [int(s) for s in order if np.isfinite(ranked_vals[int(s)])]
         ranked = sorted(range(len(legal)),
-                        key=lambda i: (-vals[legal[i]], i))[:self.topk]
+                        key=lambda i: (-ranked_vals[legal[i]], i))[:self.topk]
         cands = [legal[i] for i in ranked]
         if len(cands) <= 1:
             return base_a, base_a
@@ -395,7 +445,7 @@ class OracleArm:
                 for i, candidate in enumerate(cands):
                     survived, progress = _fork_label(
                         env, candidate, C, fork_seed, bmodel, w, fl, wt, ws,
-                        self.horizon)
+                        self.horizon, self.policy_semantics, tie_seed)
                     labels[i] = (labels[i][0] + survived,
                                  labels[i][1] + progress)
                     self.stats["forks"] += 1
@@ -421,7 +471,7 @@ class OracleArm:
             self.stats["flips"] += 1
             if self.provenance:
                 H = heights(env.board.color)
-                champion_best = float(vals[base_a])
+                champion_best = float(ranked_vals[base_a])
                 chosen_score = labels[best_i]
                 self.flip_log.append({
                     "seed": int(seed),
@@ -433,13 +483,16 @@ class OracleArm:
                     "d_spawn_h": d_spawn_h,
                     "base_action": int(base_a), "trt_action": int(a),
                     "champ_rank_chosen": int(best_i),
+                    "policy_semantics": self.policy_semantics,
+                    "tie_seed_mode": self.tie_seed_mode,
+                    "tie_seed": int(tie_seed),
                     "labels": [list(map(int, l)) for l in labels],
                     "cands": [int(c) for c in cands],
-                    "tie": bool(sum(float(vals[c]) == champion_best
+                    "tie": bool(sum(float(ranked_vals[c]) == champion_best
                                      for c in legal) > 1),
                     "tie_score": bool(sum(l == chosen_score
                                            for l in labels) > 1),
-                    "val_gap": round(champion_best - float(vals[a]), 3),
+                    "val_gap": round(champion_best - float(ranked_vals[a]), 3),
                     "fork_samples": self.fork_samples})
         return a, base_a
 
