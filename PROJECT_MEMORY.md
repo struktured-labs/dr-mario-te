@@ -363,6 +363,16 @@ One-shot validation at `126b146` **passed every gate**: 585 treatment versus
 tempo fields were retained.  The null blocker is cleared for an endpoint
 preregistration draft only; K4/wq60 still has zero exact-v8 endpoint evidence.
 
+The endpoint is now sealed but **unlaunched**.  `champion-source:85d7898`
+preregisters N=9,000 paired seeds 80000..88999, dies-ahead efficacy against
+both base and null, +1pp bad-end safety, null dose/shape/timing gates, stalls at
+parity, and full provenance.  `095774a` wires the frozen table into an ordered,
+resumable runner and passes 13 selector/table gates, including exact replay of
+all 616 validation selections and live zero-table/bin mutants.  `2b6b62d` adds
+the fail-closed analyzer; all 11 verdict/provenance mutants pass in both
+directions.  The runner self-configures its Numba cache.  No seed in the
+endpoint range has been opened; launch requires explicit owner action.
+
 ### `d_spawn_h` is already partly priced
 
 The exact shippable S0 experiment (`d_spawn_h` alone, four-segment monotone
@@ -416,7 +426,8 @@ for this prior negative and a dose-matched null.
    fresh disjoint calibration passes.  The first stratified attempt matched
    shape but failed dose and is closed; do not refit its validation block.  The
    separately preregistered large-fit population-rate null subsequently passed;
-   draft (but do not silently launch) the N=9,000 endpoint arm next.
+   the N=9,000 endpoint is now preregistered, implemented, and fully gated but
+   explicitly unlaunched.
 5. Preserve the completed theta400 image and tuck NO_GO.  The freeze
    discriminator's prior prereg is `VOID_CONTROLS`; any retry needs freshly
    proven pause and CPU-loop fixtures before seed 30011 is inspected.
@@ -555,5 +566,7 @@ The project does not yet claim to know the perfect weighting of those signals.
   `champion-source:experiments/eval47/stage2/dspawn_tie/STRATIFIED_NULL_VALIDATION_RESULT.md`
 - Large-fit stratified-null validation PASS (mechanism only):
   `champion-source:experiments/eval47/stage2/dspawn_tie/LARGE_NULL_VALIDATION_RESULT.md`
+- Sealed, unlaunched post-garbage endpoint:
+  `champion-source:experiments/eval47/stage2/dspawn_tie/PREREG_POST_GARBAGE_V8_ENDPOINT.md`
 - Required untracked lulu fit:
   `experiments/eval47/results/dr_lulu_20260808_fit.json`
