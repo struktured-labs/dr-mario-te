@@ -56,3 +56,9 @@ $PY experiments/eval47/stage2/dspawn_tie/analyze_post_garbage_v8_endpoint.py
 The runner banks ordered 250-seed segments and safely resumes only when META,
 gate, table, and all runtime hashes are identical. Do not inspect or interpret
 partial outcome summaries as a verdict.
+
+Read-only local status (does not restart or edit the job):
+
+```bash
+bash experiments/eval47/stage2/dspawn_tie/monitor_post_garbage_endpoint.sh
+```
