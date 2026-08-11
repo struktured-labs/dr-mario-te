@@ -168,6 +168,28 @@ def choose_from_values(vals, order=CHAMP_ORDER):
     return int(order[np.nanargmax(vals[order])])
 
 
+def tie_jitter(action, tie_seed):
+    """The deployed 6502's 0..3 root jitter for one action and match seed."""
+    action = int(action)
+    var, col = action // 8, action % 8
+    o4 = int(FX._VAR_OF_O4[var])
+    t = (int(tie_seed) & 0xFF) ^ ((o4 << 3) | col)
+    return (t ^ (t >> 3)) & 3
+
+
+def jittered_values(vals, tie_seed):
+    out = np.asarray(vals, dtype=np.float64).copy()
+    if int(tie_seed) & 0xFF:
+        for action in range(32):
+            if np.isfinite(out[action]):
+                out[action] += tie_jitter(action, tie_seed)
+    return out
+
+
+def choose_seeded(vals, tie_seed, order=CHAMP_ORDER):
+    return choose_from_values(jittered_values(vals, tie_seed), order)
+
+
 def board_planes(board):
     col, vir = CL.board_flat(board)
     lnk = np.ascontiguousarray(board.link, dtype=np.int8).reshape(-1)
@@ -188,4 +210,3 @@ class FirmwareV8Decider:
 
     def choose(self, board, cur, nxt):
         return choose_from_values(self.values(board, cur, nxt))
-
