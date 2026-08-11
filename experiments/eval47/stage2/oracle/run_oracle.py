@@ -4,8 +4,11 @@
 PRE-REGISTERED: `PREREG_ORACLE.md` (committed before any A/B game was played).
 
 MATCHED-INDEX CONTROL: one work item = ONE SEED = BOTH ARMS.  The arms share the
-seed, the capsule stream, the virus board and the garbage schedule; the only
-difference is the label the root re-ranker is fed.  A completed item is a
+seed, capsule stream, and virus board.  `exo_lulu` also gives every arm/fork the
+same complete pressure offer at a pill index.  Historical `lulu` shares only
+the random key: its firing probability depends on each arm's own clear size,
+so its garbage schedule is policy-coupled (see PREREG_EXOGENOUS_PRESSURE.md).
+A completed item is a
 COMPLETE PAIR, so an early stop yields a balanced prefix of the seed block, not
 a lopsided one.  Seeds are consumed in ascending order.
 
@@ -183,6 +186,8 @@ def _segment_summary(rows):
         "clear_base": rate("base", "won"), "clear_trt": rate("trt", "won"),
         "topout_base": rate("base", "topout"), "topout_trt": rate("trt", "topout"),
         "stall_base": rate("base", "stall"), "stall_trt": rate("trt", "stall"),
+        "garbage_base": sum(r["base"].get("garbage", 0) for r in rows) / n,
+        "garbage_trt": sum(r["trt"].get("garbage", 0) for r in rows) / n,
         "flip_rate_of_plies": fl / max(1, pl),
         "gated_frac_of_plies": gp / max(1, pl),
         "forks_total": sum(r["trt"]["forks"] for r in rows),
@@ -250,6 +255,12 @@ def main():
             "fork_samples": a.fork_samples,
             "null_keep_num": a.null_keep_num,
             "null_keep_den": a.null_keep_den,
+            "pressure_pairing": (
+                "candidate-independent complete offers by (seed,pill)"
+                if a.model == "exo_lulu" else
+                "legacy self-coupled receiver-clear proxy"
+                if a.model == "lulu" else
+                "gameplay-independent periodic drip"),
             "gate": "d_spawn_h >= 12 OR viruses <= 8",
             "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     manifest = runtime_manifest(a.model)

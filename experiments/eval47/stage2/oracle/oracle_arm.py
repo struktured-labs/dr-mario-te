@@ -428,6 +428,7 @@ class OracleArm:
                     "arm": (f"oracle_{self.future_mode}"
                             if self.label_mode == "true"
                             else f"{self.label_mode}_{self.future_mode}"),
+                    "pressure_mode": C.get("pressure_mode", "coupled"),
                     "ply": ply, "viruses": viruses, "maxh": int(H.max()),
                     "d_spawn_h": d_spawn_h,
                     "base_action": int(base_a), "trt_action": int(a),
@@ -535,17 +536,29 @@ def selftest(n=3, model="lulu"):
           f"{(shared.a, shared.b) == (pa[0].a, pa[0].b)}")
     ok &= (shared.a, shared.b) == (pa[0].a, pa[0].b)
 
-    # 2. const-label arm == champion, outcome for outcome
+    # 2. const-label arm == its champion reference, outcome for outcome.
+    # pressure_rig.play is a valid independent reference for legacy lulu/drip;
+    # exo_lulu deliberately uses a different pressure hook, so repeat it and
+    # require action-for-action identity instead.
     for s in range(500, 500 + n):
         arm = OracleArm(label_mode="const")
         r = play_one(s, arm, C, bmodel)
-        ref = PR.play(s)
-        same = (r["won"] == ref["won"] and r["topout"] == ref["topout"]
-                and r["stall"] == ref["stall"] and r["pills"] == ref["pills"]
-                and r["dies_ahead"] == ref["dies_ahead"])
-        print(f"  seed {s}: const-arm == pressure_rig.play : {same} "
-              f"({r['res']}/{r['pills']} vs won={ref['won']}"
-              f"/{ref['pills']}) gated={r['gated_plies']}/{r['plies_scored']}")
+        if model == "exo_lulu":
+            ref = play_one(s, OracleArm(label_mode="const"), C, bmodel)
+            same = (r["_actions"] == ref["_actions"] and r["res"] == ref["res"]
+                    and r["pills"] == ref["pills"]
+                    and r["garbage"] == ref["garbage"])
+            ref_desc = f"repeat={ref['res']}/{ref['pills']}"
+        else:
+            ref = PR.play(s)
+            same = (r["won"] == ref["won"] and r["topout"] == ref["topout"]
+                    and r["stall"] == ref["stall"]
+                    and r["pills"] == ref["pills"]
+                    and r["dies_ahead"] == ref["dies_ahead"])
+            ref_desc = f"pressure_rig won={ref['won']}/{ref['pills']}"
+        print(f"  seed {s}: const-arm identity : {same} "
+              f"({r['res']}/{r['pills']} vs {ref_desc}) "
+              f"gated={r['gated_plies']}/{r['plies_scored']}")
         ok &= same
     print("SELFTEST", "PASS" if ok else "FAIL")
     return ok
