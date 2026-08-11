@@ -48,26 +48,26 @@ single proxy gets to silently redefine the objective.
   frozen endpoint-blind hash schedule (`q=0.169464`); reserved-seed accepted
   flip-rate ratio was 0.9271. DIST is implemented with collision-free,
   candidate-common pressure keys. Verdict, provenance, fork-leak, keying,
-  thinning, and ordered-banking mutants pass. No current Tier-A endpoint run
-  has started locally.
+  thinning, and ordered-banking mutants pass. The current true-label Tier-A
+  service is in its mandatory preflight; no endpoint row exists until it
+  passes.
 
 ## 2026-08-11 progress and corrections
 
 ### Remote oracle
 
-The project owner manually launched the 9,000-pair ORACLE-CLAIR Tier-A job on
-Hetzner at `root@178.104.197.190` from `oracle-source` commit `29fc72c`, four
-workers.  Projected wall time was roughly 82 hours.  This sandbox cannot open
-SSH sockets, so the launch is **user-reported and currently unobservable** from
-here; do not claim a completion or endpoint result without the remote files.
-The shuffled-label null has not been reported as launched.
+The 9,000-pair ORACLE-CLAIR true arm runs on Hetzner at
+`root@178.104.197.190`, four workers. Projected endpoint wall time after gates
+is roughly 82 hours. Codex SSH is now explicitly authorized and working; use
+the monitor rather than treating service state as user-reported. The
+dose-matched shuffled-label endpoint null has **not** launched.
 
 `oracle-source:b481681` adds a read-only owner helper,
 `monitor_hetzner_oracle.sh`, which reports systemd state, true/shuffle row and
 segment counts, META hashes, journal tail, disk, and memory; its optional
 `fetch` mode makes a non-authoritative live snapshot without deleting remote
-files.  The helper is not imported by the sealed arm and was added after
-launch, so it cannot change the in-flight runtime manifest.
+files. The helper is not imported by the sealed arm and was added after launch,
+so it cannot change the endpoint runtime manifest.
 
 **Critical semantic label:** that remote job is
 `historical_compact_cap1_flat_seed0`, not the shipped-v8 policy.  Do not call
@@ -360,24 +360,27 @@ not hash order statistics; the table is `a749aa2`, SHA256
 One-shot validation at `126b146` **passed every gate**: 585 treatment versus
 616 null distinct changes (5.30% mismatch), Hamming/timing/gap/K-offset TVs
 0.027/0.039/0.060/0.037, and first-flip median 59 versus 60.  No outcome or
-tempo fields were retained.  The null blocker is cleared for an endpoint
-preregistration draft only; K4/wq60 still has zero exact-v8 endpoint evidence.
+tempo fields were retained. The null blocker was cleared for endpoint
+preregistration; K4/wq60 still has no completed exact-v8 endpoint result while
+its registered arm is running.
 
-The endpoint is now sealed but **unlaunched**.  `champion-source:85d7898`
+The endpoint was sealed at `champion-source:85d7898` and
 preregisters N=9,000 paired seeds 80000..88999, dies-ahead efficacy against
 both base and null, +1pp bad-end safety, null dose/shape/timing gates, stalls at
 parity, and full provenance.  `095774a` wires the frozen table into an ordered,
 resumable runner and passes 13 selector/table gates, including exact replay of
-all 616 validation selections and live zero-table/bin mutants.  `2b6b62d` adds
-the fail-closed analyzer; all 12 verdict/provenance/zero-dose mutants pass in both
-directions.  `7b5fa36` binds the launch gate to exact policy/runner/gate/analyzer
-source hashes, includes a live four-row three-arm analyzer pass, gates base
-active-duty telemetry, and makes stale gates fail.  The runner self-configures
+all 616 validation selections and live zero-table/bin mutants. `2b6b62d` adds
+the fail-closed analyzer. `7b5fa36` binds the launch gate to exact
+policy/runner/gate/analyzer source hashes, includes a live four-row three-arm
+analyzer pass, gates base active-duty telemetry, and makes stale gates fail.
+`bb87b67` additionally binds standalone verdict analysis to the registered
+META/runtime bytes and kills a thirteenth mutant. The runner self-configures
 its Numba cache.  Repeated 12-pair disclosed-seed benchmarks project ~5.25h at
 four workers and **~3.78h at six** (22.7 core-hours); prefer six when the local
-box is free and budget 4.5--6h.  No seed in the endpoint range has been
-opened; launch requires explicit owner action.  Exact identity and commands
-are in `POST_GARBAGE_ENDPOINT_READINESS.md` (`efd7c4f`).  The same commit adds
+box is free and budget 4.5--6h. The owner authorized launch on 2026-08-11;
+the six-worker run opened seed 80000 under gate SHA `31b404c6...`, META SHA
+`9d870f20...`, and runtime manifest `c0a059e6...`. Exact identity and commands
+are in `POST_GARBAGE_ENDPOINT_READINESS.md` (`332054c`). `efd7c4f` adds
 a read-only local monitor for row/segment counts,
 META hash, latest summary, process state, and disk; it does not restart the job.
 
@@ -416,9 +419,10 @@ for this prior negative and a dose-matched null.
 
 ## Immediate sequence
 
-1. **RUNNING, user-reported:** historical Tier-A CLAIR on Hetzner. Preserve and
-   analyse it as `historical_compact_cap1_flat_seed0`; its shuffled null still
-   needs a reported launch. This sandbox cannot monitor SSH.
+1. **RUNNING:** historical-policy Tier-A CLAIR true arm on Hetzner. Preserve
+   and analyse it as `historical_compact_cap1_flat_seed0`; its shuffled null
+   is not launched. A11 repaired only its stale killed-mutant fixture and left
+   the decision runtime manifest unchanged.
 2. Do **not** let that result close the cartridge root lane.  If a new oracle
    arm is funded, preregister it separately with `firmware_v8`, explicit tie
    semantics, candidate-independent pressure, a killed dose-matched null, and
@@ -434,8 +438,8 @@ for this prior negative and a dose-matched null.
    fresh disjoint calibration passes.  The first stratified attempt matched
    shape but failed dose and is closed; do not refit its validation block.  The
    separately preregistered large-fit population-rate null subsequently passed;
-   the N=9,000 endpoint is now preregistered, implemented, and fully gated but
-   explicitly unlaunched.
+   the N=9,000 endpoint is preregistered, fully gated, and now running with six
+   local workers. Do not inspect partial outcomes or issue a partial verdict.
 5. Preserve the completed theta400 image and tuck NO_GO.  The freeze
    discriminator's prior prereg is `VOID_CONTROLS`; any retry needs freshly
    proven pause and CPU-loop fixtures before seed 30011 is inspected.
@@ -548,9 +552,10 @@ The project does not yet claim to know the perfect weighting of those signals.
 2. What is the empirical distribution and lifetime of the cart's `NAV_T`-based
    P2 tie seed on actual match hardware?  Until measured, keep `seed0`,
    `p2_surrogate`, and the all-seed envelope distinct.
-3. Was the remote dose-matched shuffled-label null actually launched, and what
-   output directories/META hashes identify the true and null jobs?  Do not
-   infer this from the true-arm launch alone.
+3. Where should the heavier dose-matched shuffled-label null run after the true
+   arm? It is not launched. The measured fastest split is true on Hetzner and
+   null on the 12-worker local box after the current local endpoint releases
+   capacity.
 
 ## Resume map
 
@@ -574,7 +579,7 @@ The project does not yet claim to know the perfect weighting of those signals.
   `champion-source:experiments/eval47/stage2/dspawn_tie/STRATIFIED_NULL_VALIDATION_RESULT.md`
 - Large-fit stratified-null validation PASS (mechanism only):
   `champion-source:experiments/eval47/stage2/dspawn_tie/LARGE_NULL_VALIDATION_RESULT.md`
-- Sealed, unlaunched post-garbage endpoint:
+- Sealed, running post-garbage endpoint:
   `champion-source:experiments/eval47/stage2/dspawn_tie/PREREG_POST_GARBAGE_V8_ENDPOINT.md`
 - Endpoint launch identity, cost, and owner commands:
   `champion-source:experiments/eval47/stage2/dspawn_tie/POST_GARBAGE_ENDPOINT_READINESS.md`
@@ -591,5 +596,30 @@ manifest and gate bytes, and its self-test kills a wrong-runtime META mutant.
 Implementation is `champion-source:bb87b67`; readiness is `332054c`. The
 regenerated prospective gate is
 `31b404c6ad027911ecb17709ef04903f47e238c036942682f84e61076c48e89a`
-and the pre-launch runtime manifest is
+and the registered runtime manifest is
 `c0a059e69f1e55bb8991d31a62219bd7e94bbb926604cbcd9cf61eb1fff48c26`.
+
+### RESOLVED — Hetzner burned deterministic preflight loops
+
+The original transient service used `Restart=on-failure`. Fourteen attempts
+each spent about 48 CPU-minutes in `gate_identity.py`, produced zero endpoint
+rows, and failed because G1c obtained its deliberately bad lambda through an
+upstream `NesPillSource.attach()` that had since been fixed. The real fork
+independence check passed; the supposed mutant was no longer wrong.
+
+The service was stopped during attempt fifteen. A11 (`oracle-source:420b707`)
+constructs the historical deepcopy-unsafe lambda inline and proves both shared
+callable identity and sibling cursor interference. The real fork still passes,
+and the endpoint decision manifest remains
+`a67f47f15d4f82c125956dc2b37cc3c1bc1a0c84877310d5dfd27b96345b3bd8`.
+Preflight failure now exits 125 and the systemd unit has
+`RestartPreventExitStatus=125`; runtime failures remain restartable. All fast
+remote gates passed and the repaired full gate launched under invocation
+`9853336c1eeb45eb84bc5e31d71a4224` with zero restarts.
+
+### Public README refreshed
+
+GitHub `main` commit `5ddc320` adds a dated champion-status table, states that
+v8 added fidelity rather than strength, records both evaluator NO_GOs, updates
+the completed Pocket theta400 fit, and retracts the invalid 6--30 minute freeze
+claim. It separates proved build/runtime identity from unproved playing value.
