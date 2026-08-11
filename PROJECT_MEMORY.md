@@ -42,15 +42,17 @@ single proxy gets to silently redefine the objective.
 - Per-flip provenance began on `flip-provenance` at `5312267`. The shared
   evaluator/oracle schema convergence, including `d_spawn_h`, is completed,
   mutation-gated, and landed in this writable clone at `200ab36`.
-- Oracle work is sealed on `oracle-ceiling` at `29fc72c`. `ORACLE-CLAIR`
+- Oracle work is sealed on `oracle-ceiling`; the current operational repair is
+  `e306177`. `ORACLE-CLAIR`
   intentionally sees the realized future: it is the unfair ideal-ceiling arm,
   not a candidate implementation. The shuffled-label null is dose-matched by a
   frozen endpoint-blind hash schedule (`q=0.169464`); reserved-seed accepted
   flip-rate ratio was 0.9271. DIST is implemented with collision-free,
   candidate-common pressure keys. Verdict, provenance, fork-leak, keying,
-  thinning, and ordered-banking mutants pass. The current true-label Tier-A
-  service is in its mandatory preflight; no endpoint row exists until it
-  passes.
+  thinning, ordered-banking, and exact-runtime-manifest mutants pass. The
+  current true-label Tier-A service is re-running its mandatory preflight under
+  the exact sealed manifest; no endpoint row from the restarted arm has
+  authority until it passes.
 
 ## 2026-08-11 progress and corrections
 
@@ -617,6 +619,30 @@ Preflight failure now exits 125 and the systemd unit has
 remote gates passed and the repaired full gate launched under invocation
 `9853336c1eeb45eb84bc5e31d71a4224` with zero restarts.
 
+### RESOLVED — deployment path selected the wrong manifest copy
+
+The A11 full behavioral gate eventually passed, but the endpoint interpreter
+printed runtime manifest `75e36d0e...` instead of sealed `a67f47f...`. The
+sole per-file difference was `nes_pills.py`: legacy import-path insertion
+selected the newer deepcopy-safe upstream file on the remote checkout path and
+the sealed historical QA file locally. Capsule generation was unchanged and
+the oracle installs its own safe capsule-draw object, but the manifest contract
+correctly forbids accepting that semantic waiver.
+
+The stop was requested at 42 ordered rows; 13 in-flight results flushed during
+shutdown, leaving 55. No partial outcome was interpreted. All 55 are void and
+preserved at
+`/mnt/data/dr-mario-te/hetzner/quarantine_wrong_manifest_75e36d0e_20260811/`
+and in a named remote quarantine; seeds 30000..30054 must replay.
+
+A12 (`oracle-source:e306177`) uses an oracle-scoped Python startup bootstrap to
+preload the sealed QA module before legacy path manipulation. A new fast gate
+accepts exact manifest `a67f47f...` and rejects a one-nibble mutant before the
+hour-long behavioral gates. The remote fast gate passed on Python 3.12.3 and
+the true arm relaunched under invocation `24bc4c4abc4c4d1e889145c2c80435f0`.
+At this checkpoint it is in behavioral preflight; the registered endpoint path
+is clean.
+
 ### Public README refreshed
 
 GitHub `main` commit `5ddc320` adds a dated champion-status table, states that
@@ -642,3 +668,5 @@ The monitor also used to print the latest segment's outcome summary while the
 endpoint was incomplete, contradicting the explicit partial-outcome blinding
 rule. `champion-source:d91d702` now exposes only progress, identity, and storage
 until all 9,000 rows exist; a negative test rejects leaked outcome field names.
+The safe progress-only count was 5,157/9,000 at the A12 checkpoint; no partial
+endpoint metric was used.
