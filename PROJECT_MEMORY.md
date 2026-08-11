@@ -259,7 +259,7 @@ The result commit is `champion-source:361a7ca` (V2 prereg `9468a84`).
 The theta-400 Pocket image still needs actual Pocket runtime verification and a
 Pocket-specific value A/B before promotion.
 
-### Exact-v8 `d_spawn_h` tie-only arm is running
+### Exact-v8 `d_spawn_h` tie-only arm is NO_GO
 
 `champion-source:32bff12` preregistered a narrower resolution test than the
 closed always-on penalty family: linked-fixpoint `d_spawn_h` may replace the
@@ -272,11 +272,7 @@ matched, four exogenous-Lulu base games were action/outcome exact, and clipped
 sensor, gap-one, sensor-reading-null, legality and seed-zero mutants were all
 killed.  Disjoint calibration seeds 60000..60239 found 200 flips / 33,409 plies
 (0.599%), passing the 100-flip / 0.25% floors; null keep was frozen at
-16,767/1,000,000 (`ae3019f`).  The 9,000 paired evaluation seeds 61000..69999
-are running under candidate-independent `exo_lulu`, three arms per seed.  Do
-not treat a partial prefix as a verdict; final dose must match within 10% and
-both bad-end CIs (treatment-base and treatment-null) must exclude zero in the
-beneficial direction for GO.
+16,767/1,000,000 (`ae3019f`).
 
 Post-run diagnostics were strengthened without touching any module in the
 frozen runtime manifest (`champion-source:db274a1,d35811d`).  The analyser now
@@ -286,15 +282,27 @@ differs from base; it prints paired SEs, all clear/topout/stall transitions,
 and derives the first-divergence marker from each arm's minimum flip ply.  All
 four deliberately wrong fixtures fail.
 
-The first-divergence view exposes a limitation in the registered null.  It is
-dose-matched only in aggregate flip rate: by construction treatment fires only
-when it can strictly lower the linked spawn-lane height, while null thins all
-raw ties and can swap equal-sensor actions.  On the growing evaluation prefix,
-the null's first flips were much earlier and overwhelmingly equal-sensor.  The
-base contrast still answers whether this exact treatment works; the
-treatment-null contrast is a weak attribution of sensor direction versus
-churn.  If the lane is repeated, permute/shuffle the sensor over the same raw
-tie set and calibrate that null on disjoint seeds.
+The final 9,000-pair run is banked at `champion-source:27e9ae0`.  Treatment
+versus base moved bad ends +0.033 pp (95% paired bootstrap CI
+[-0.389,+0.445], p=0.9171) and made dies-ahead **worse by +0.200 pp**
+([+0.022,+0.378], p=0.03846).  Counts were base 245 topouts / 322 stalls / 151
+dies-ahead versus treatment 265 / 305 / 169.  Among 8,247 common clears, pills
+moved -0.072 [-0.562,+0.427].  All 7,975 treatment flips strictly lowered the
+linked sensor, so this is a direct negative result for using that sensor to
+resolve exact-v8 value ties.  Close this functional form; do not sweep tie
+sizes, reverse the sensor, or tune on these endpoint seeds.
+
+The registered action-ID dose gate passed (0.6494% treatment versus 0.6025%
+null, 7.22% mismatch), but the separately preregistered exact replay audit
+found that **4,467/4,831 (92.47%)** of the null's first action flips produced
+the identical linked successor board.  Treatment had 0 aliases in 3,939 first
+flips, hence 3,939 distinct first states versus only 364 for null: a **10.82x**
+dose difference.  The treatment-null DiD is therefore not a valid estimate of
+direction versus matched random state churn.  This does not weaken the
+treatment-base NO_GO or its significant dies-ahead harm.  Durable law: policy
+dose means a canonical exact successor-state change, not a different action
+integer; future nulls must also match timing, base value gap, state distance,
+and gate duty.
 
 ### Historical regime-gated `d_spawn_h` penalties do not graduate
 
@@ -313,6 +321,14 @@ sensor-directed shape and not exact cartridge-v8.  Its large rescue count plus
 small clear breakage is another direct measurement of the clean-play
 preservation problem.
 
+At the later Lulu 6.4 clear:dies-ahead exchange rate, arithmetic sensitivity
+repricing (not a transferred endpoint result) favors K4/wq60 at -888.7 bad-end
+equivalents per 40k.  `champion-source:84338b7` therefore records one
+externally nominated **exact-v8 post-landed-garbage K4/wq60** design.  It is a
+different garbage-reactive mechanism, not another tie resolver.  It remains
+design-only until a shuffled exact-penalty null is calibrated on canonical
+distinct successor states and passes timing/value-gap/Hamming/duty matching.
+
 ### `d_spawn_h` is already partly priced
 
 The exact shippable S0 experiment (`d_spawn_h` alone, four-segment monotone
@@ -326,7 +342,10 @@ for this prior negative and a dose-matched null.
 
 ## Non-negotiable laws
 
-1. Every arm has a **dose-matched, label-blind null**.
+1. Every arm has a **dose-matched, label-blind null**.  For policy changes,
+   count canonical exact successor-state changes, not action-ID changes; match
+   first-flip timing, champion value gap, state distance, and gate duty as well
+   as aggregate rate.
 2. Every important check is demonstrated red on a deliberately wrong input;
    positive and null directions are both exercised.
 3. Verdict rules, features, quantisation, seeds, and sample size are registered
@@ -356,10 +375,15 @@ for this prior negative and a dose-matched null.
    greater virus progress, short horizons fail to reproduce them, and the
    compact one-ply teacher failed transfer.  Seek a shippable temporal/tempo
    vocabulary or a genuinely small rollout rather than another leaf reweight.
-4. Preserve the completed theta400 image and tuck NO_GO.  The remaining Mesen
-   execution lane is the freeze discriminator.
-5. Do not promote film telemetry or compact DT2; both failed their registered
-   screens.  `d_spawn_h` alone also has prior negative feature/value evidence.
+4. Do not ship the exact-tie `d_spawn_h` resolver.  If the separately nominated
+   exact-v8 K4/wq60 post-garbage mechanism advances, first build and kill a
+   canonical-distinct-state shuffled null; no endpoint seeds open before that
+   calibration passes.
+5. Preserve the completed theta400 image and tuck NO_GO.  The freeze
+   discriminator's prior prereg is `VOID_CONTROLS`; any retry needs freshly
+   proven pause and CPU-loop fixtures before seed 30011 is inspected.
+6. Do not promote film telemetry or compact DT2; both failed their registered
+   screens.
 
 ## Adversarial gap audit — resolve before an oracle Tier-A run
 
@@ -483,5 +507,9 @@ The project does not yet claim to know the perfect weighting of those signals.
   `champion-source:experiments/eval47/stage2/oracle/POLICY_SEMANTICS_CENSUS_RESULT.md`
 - Future cart-oracle mode:
   `champion-source:experiments/eval47/stage2/oracle/FIRMWARE_V8_ORACLE_MODE_RESULT.md`
+- Exact-v8 tie result and successor-alias audit:
+  `champion-source:experiments/eval47/stage2/dspawn_tie/RESULT_DSPAWN_TIE_V8.md`
+- Next exact-v8 post-garbage design (not an endpoint prereg):
+  `champion-source:experiments/eval47/stage2/dspawn_tie/NEXT_EXACT_REGIME_DESIGN.md`
 - Required untracked lulu fit:
   `experiments/eval47/results/dr_lulu_20260808_fit.json`
