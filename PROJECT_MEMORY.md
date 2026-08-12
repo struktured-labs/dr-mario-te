@@ -50,9 +50,8 @@ single proxy gets to silently redefine the objective.
   flip-rate ratio was 0.9271. DIST is implemented with collision-free,
   candidate-common pressure keys. Verdict, provenance, fork-leak, keying,
   thinning, ordered-banking, and exact-runtime-manifest mutants pass. The
-  current true-label Tier-A service is re-running its mandatory preflight under
-  the exact sealed manifest; no endpoint row from the restarted arm has
-  authority until it passes.
+  restarted true-label Tier-A service passed its complete preflight under the
+  sealed manifest and is banking ordered endpoint rows.
 
 ## 2026-08-11 progress and corrections
 
@@ -363,8 +362,7 @@ One-shot validation at `126b146` **passed every gate**: 585 treatment versus
 616 null distinct changes (5.30% mismatch), Hamming/timing/gap/K-offset TVs
 0.027/0.039/0.060/0.037, and first-flip median 59 versus 60.  No outcome or
 tempo fields were retained. The null blocker was cleared for endpoint
-preregistration; K4/wq60 still has no completed exact-v8 endpoint result while
-its registered arm is running.
+preregistration; the completed endpoint result is recorded below.
 
 The endpoint was sealed at `champion-source:85d7898` and
 preregisters N=9,000 paired seeds 80000..88999, dies-ahead efficacy against
@@ -385,6 +383,17 @@ the six-worker run opened seed 80000 under gate SHA `31b404c6...`, META SHA
 are in `POST_GARBAGE_ENDPOINT_READINESS.md` (`332054c`). `efd7c4f` adds
 a read-only local monitor for row/segment counts,
 META hash, latest summary, process state, and disk; it does not restart the job.
+
+The N=9,000 run completed on 2026-08-12 and the fail-closed registered verdict
+is **NO_GO** (`champion-source:3268774`). Null validity and adequacy both passed:
+9,667 treatment versus 9,795 null canonical flips, 1.046% dose mismatch, all
+shape/timing TVs within limits, and first-flip differences 0/2/4 plies.
+Treatment versus base moved dies-ahead **+0.1667 pp**
+[-0.1222,+0.4556] and bad ends **+0.3444 pp** [-0.1222,+0.8000]; both point
+estimates were worse and dies-ahead efficacy failed against base and null.
+Close exact post-landed-garbage K4/weight60/hinge10; do not tune it on seeds
+80000..88999. The machine-readable result SHA-256 is
+`4a14c0c162c98c75f5164878c722e8b4a9ae2052695678de07fd1398b76e62b0`.
 
 ### `d_spawn_h` is already partly priced
 
@@ -433,15 +442,10 @@ for this prior negative and a dose-matched null.
    greater virus progress, short horizons fail to reproduce them, and the
    compact one-ply teacher failed transfer.  Seek a shippable temporal/tempo
    vocabulary or a genuinely small rollout rather than another leaf reweight.
-4. Do not ship the exact-tie `d_spawn_h` resolver.  If the separately nominated
-   exact-v8 K4/wq60 post-garbage mechanism advances, first build and kill a
-   stratified canonical-distinct-state shuffled null that matches the disclosed
-   timing/value-gap/Hamming/duty diagnostics; no endpoint seeds open before a
-   fresh disjoint calibration passes.  The first stratified attempt matched
-   shape but failed dose and is closed; do not refit its validation block.  The
-   separately preregistered large-fit population-rate null subsequently passed;
-   the N=9,000 endpoint is preregistered, fully gated, and now running with six
-   local workers. Do not inspect partial outcomes or issue a partial verdict.
+4. Do not ship the exact-tie `d_spawn_h` resolver or the exact-v8 K4/wq60
+   post-garbage mechanism. The latter completed N=9,000 with a valid matched
+   null and returned NO_GO; close that exact K/weight/hinge form and do not tune
+   on its endpoint seeds.
 5. Preserve the completed theta400 image and tuck NO_GO.  The freeze
    discriminator's prior prereg is `VOID_CONTROLS`; any retry needs freshly
    proven pause and CPU-loop fixtures before seed 30011 is inspected.
@@ -581,10 +585,14 @@ The project does not yet claim to know the perfect weighting of those signals.
   `champion-source:experiments/eval47/stage2/dspawn_tie/STRATIFIED_NULL_VALIDATION_RESULT.md`
 - Large-fit stratified-null validation PASS (mechanism only):
   `champion-source:experiments/eval47/stage2/dspawn_tie/LARGE_NULL_VALIDATION_RESULT.md`
-- Sealed, running post-garbage endpoint:
+- Sealed post-garbage endpoint preregistration:
   `champion-source:experiments/eval47/stage2/dspawn_tie/PREREG_POST_GARBAGE_V8_ENDPOINT.md`
 - Endpoint launch identity, cost, and owner commands:
   `champion-source:experiments/eval47/stage2/dspawn_tie/POST_GARBAGE_ENDPOINT_READINESS.md`
+- Completed exact-v8 post-garbage NO_GO:
+  `champion-source:experiments/eval47/stage2/dspawn_tie/RESULT_POST_GARBAGE_V8_ENDPOINT.md`
+- Cross-lane Fable resumption checkpoint:
+  `flip-provenance:FABLE_HANDOFF_20260812.md`
 - Required untracked lulu fit:
   `experiments/eval47/results/dr_lulu_20260808_fit.json`
 
@@ -640,8 +648,9 @@ preload the sealed QA module before legacy path manipulation. A new fast gate
 accepts exact manifest `a67f47f...` and rejects a one-nibble mutant before the
 hour-long behavioral gates. The remote fast gate passed on Python 3.12.3 and
 the true arm relaunched under invocation `24bc4c4abc4c4d1e889145c2c80435f0`.
-At this checkpoint it is in behavioral preflight; the registered endpoint path
-is clean.
+At the A12 repair checkpoint it was in behavioral preflight; that preflight
+subsequently passed. At 2026-08-12 06:57 EDT the registered path contained
+1,148/9,000 ordered true-label pairs under manifest `a67f47f...`.
 
 ### Public README refreshed
 
@@ -669,4 +678,5 @@ endpoint was incomplete, contradicting the explicit partial-outcome blinding
 rule. `champion-source:d91d702` now exposes only progress, identity, and storage
 until all 9,000 rows exist; a negative test rejects leaked outcome field names.
 The safe progress-only count was 5,157/9,000 at the A12 checkpoint; no partial
-endpoint metric was used.
+endpoint metric was used. The arm later completed and its registered NO_GO is
+recorded above and in `champion-next:3268774`.
