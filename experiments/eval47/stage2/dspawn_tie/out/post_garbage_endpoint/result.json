@@ -1,0 +1,207 @@
+{
+ "version": "post-garbage-v8-endpoint-result-v1",
+ "verdict": "NO_GO",
+ "n_pairs": 9000,
+ "complete": true,
+ "seeds": [
+  80000,
+  88999
+ ],
+ "counts": {
+  "base": {
+   "won": 8433,
+   "topout": 261,
+   "stall": 306,
+   "dies_ahead": 165
+  },
+  "treatment": {
+   "won": 8402,
+   "topout": 271,
+   "stall": 327,
+   "dies_ahead": 180
+  },
+  "null": {
+   "won": 8353,
+   "topout": 302,
+   "stall": 345,
+   "dies_ahead": 194
+  }
+ },
+ "null_validity": {
+  "pass": true,
+  "dose_mismatch": 0.010458655129175699,
+  "tv": {
+   "hamming": 0.06870631751463606,
+   "timing_bin": 0.005665812970593542,
+   "value_gap": 0.031974986551923816,
+   "gate_offset": 0.013245083749290357
+  },
+  "first_flip_ply_difference": [
+   0.0,
+   2.0,
+   4.0
+  ],
+  "treatment_flips": 9667,
+  "null_flips": 9795
+ },
+ "bad_end": {
+  "treatment_minus_base": {
+   "difference": 0.0034444444444444444,
+   "ci95": [
+    -0.0012222222222222222,
+    0.008
+   ],
+   "discordant": 437,
+   "left_better": 203,
+   "left_worse": 234,
+   "mcnemar_exact_p": 0.15117761104335578,
+   "analytic_se": 0.0023227272178185415,
+   "analytic_halfwidth": 0.0045525453469243415,
+   "one_pp_margin_reachable": true
+  },
+  "treatment_minus_null": {
+   "difference": -0.0054444444444444445,
+   "ci95": [
+    -0.010777777777777778,
+    -0.0003333333333333333
+   ],
+   "discordant": 583,
+   "left_better": 316,
+   "left_worse": 267,
+   "mcnemar_exact_p": 0.04672358223568519,
+   "analytic_se": 0.0026828214372554746,
+   "analytic_halfwidth": 0.00525833001702073,
+   "one_pp_margin_reachable": true
+  }
+ },
+ "dies_ahead": {
+  "treatment_minus_base": {
+   "difference": 0.0016666666666666668,
+   "ci95": [
+    -0.0012222222222222222,
+    0.004555555555555556
+   ],
+   "discordant": 171,
+   "left_better": 78,
+   "left_worse": 93,
+   "mcnemar_exact_p": 0.2843136579753455,
+   "analytic_se": 0.0014529663145135578,
+   "analytic_halfwidth": 0.002847813976446573,
+   "one_pp_margin_reachable": true
+  },
+  "treatment_minus_null": {
+   "difference": -0.0015555555555555555,
+   "ci95": [
+    -0.005002777777777777,
+    0.001888888888888889
+   ],
+   "discordant": 244,
+   "left_better": 129,
+   "left_worse": 115,
+   "mcnemar_exact_p": 0.4053238859067225,
+   "analytic_se": 0.0017356110390903676,
+   "analytic_halfwidth": 0.0034017976366171204,
+   "one_pp_margin_reachable": true
+  }
+ },
+ "outcome_transitions": {
+  "base_to_treatment": {
+   "clear_to_clear": 8199,
+   "clear_to_topout": 96,
+   "clear_to_stall": 138,
+   "topout_to_clear": 87,
+   "topout_to_topout": 165,
+   "topout_to_stall": 9,
+   "stall_to_clear": 116,
+   "stall_to_topout": 10,
+   "stall_to_stall": 180
+  },
+  "base_to_null": {
+   "clear_to_clear": 8167,
+   "clear_to_topout": 129,
+   "clear_to_stall": 137,
+   "topout_to_clear": 96,
+   "topout_to_topout": 157,
+   "topout_to_stall": 8,
+   "stall_to_clear": 90,
+   "stall_to_topout": 16,
+   "stall_to_stall": 200
+  },
+  "null_to_treatment": {
+   "clear_to_clear": 8086,
+   "clear_to_topout": 119,
+   "clear_to_stall": 148,
+   "topout_to_clear": 146,
+   "topout_to_topout": 141,
+   "topout_to_stall": 15,
+   "stall_to_clear": 170,
+   "stall_to_topout": 11,
+   "stall_to_stall": 164
+  }
+ },
+ "churn_vs_base": {
+  "treatment": {
+   "games_with_flip": 3593,
+   "result_changed": 456,
+   "result_or_pills_changed": 3256,
+   "bad_end_changed": 437,
+   "dies_ahead_changed": 171
+  },
+  "null": {
+   "games_with_flip": 3951,
+   "result_changed": 476,
+   "result_or_pills_changed": 3483,
+   "bad_end_changed": 452,
+   "dies_ahead_changed": 209
+  }
+ },
+ "pills": {
+  "n_common_clears": 8199,
+  "mean_treatment_minus_base": -0.2782046591047689,
+  "ci95": [
+   -0.8552902793023539,
+   0.3055586047078907
+  ]
+ },
+ "mechanism": {
+  "base": {
+   "landed_cells": 415304,
+   "active_plies": 557211,
+   "plies": 1232517,
+   "active_duty": 0.45209193869131215
+  },
+  "treatment": {
+   "landed_cells": 415339,
+   "active_plies": 557171,
+   "plies": 1233716,
+   "active_duty": 0.451620145965522
+  },
+  "null": {
+   "landed_cells": 417392,
+   "active_plies": 559932,
+   "plies": 1237113,
+   "active_duty": 0.45261184709885033
+  }
+ },
+ "adequacy": {
+  "pass": true
+ },
+ "provenance": {
+  "integrity_pass": true,
+  "killed_mutants": {
+   "go_fixture": true,
+   "dies_base_harm_rejected": true,
+   "dies_null_harm_rejected": true,
+   "bad_base_harm_rejected": true,
+   "bad_null_harm_rejected": true,
+   "null_invalid_rejected": true,
+   "adequacy_rejected": true,
+   "missing_provenance_rejected": true,
+   "semantic_alias_rejected": true,
+   "wrong_matching_cell_rejected": true,
+   "no_flip_identity_rejected": true,
+   "zero_flip_distribution_rejected": true,
+   "meta_runtime_rejected": true
+  }
+ }
+}
