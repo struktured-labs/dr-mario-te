@@ -776,3 +776,28 @@ registered rolled hash and proves rejection of a deliberately
 one-nibble-wrong expected hash. This changes no oracle policy, candidate set,
 horizon, pressure draw, label, null dose, endpoint seed, endpoint definition,
 or verdict rule.
+
+## A13 — 2026-08-13: full-N re-anchored null dose (post-VOID repair)
+
+**Trigger:** the combined Tier-A verdict returned **VOID**: realized accepted-flip dose ratio
+null/true = 0.746 at full N, outside the registered [0.90, 1.10] band. The A7 fraction
+(q=169464/1e6) validated at 0.927 on reserved seeds 42000..42059 but did not transfer to the
+endpoint block — in part because the null's games run ~45% more plies than the true arm's
+(1.456M vs 1.004M), diluting its per-ply accepted rate.
+
+**Amendment, endpoint-blind (reads ONLY the whitelisted flip counters, no outcomes):**
+proportional update anchored on the FULL-N realized doses:
+q' = 169464 × (36616/1004413) / (39609/1455531) = **227020 / 1,000,000**.
+
+**Validation:** the reserved-seed pass is explicitly NOT used — A7→full-N non-transfer is the
+defect being repaired, and q' tuned to full-N is expected to read over-dosed on reserved seeds.
+The binding validation is the analyzer's own verdict-time dose gate on the rerun (band
+unchanged [0.90, 1.10]); if the rerun lands outside the band again, the experiment stays VOID.
+
+**Scope:** the shuffle arm ONLY is rerun at q' on the same seeds under the same sealed manifest;
+the true arm and all its banked rows are untouched. The VOID shuffle run is preserved at
+`out/full_A_clair_shuffle_VOID_A7dose/`. Bias direction of the voided configuration is recorded:
+an under-dosed random null UNDERSTATES null harm, so the DiD of the voided run was biased
+AGAINST the true arm; this amendment can only make the comparison fairer or keep the VOID.
+
+Recorded before any rerun data existed. — team lead session
