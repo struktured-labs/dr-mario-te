@@ -25,8 +25,14 @@ be shaped by the answer.
   CALIBRATION seeds only, targeting a 1–3% ply-flip rate; frozen before endpoint).
 - **Action**: roll the champion's top-2 candidates forward **H=12** pills with the real policy
   and **candidate-independent pressure (`exo_lulu_v1`)** — never the legacy coupled model, and
-  never the realized schedule (CLAIR discipline: the fork's observation set is capsules-true,
-  garbage-distributional, per [[dr-mario-ceiling-arm-clairvoyance]]).
+  never the realized schedule.
+  ⚠ **CAPSULE OBSERVATION SET (corrected 2026-08-13 after the fairness screen):** the fork sees
+  TRUE capsules only through the preview window (cur + next — what the copro actually has);
+  beyond that, capsules are SAMPLED from the stream distribution, candidate-common per depth.
+  The earlier "capsules-true" wording repeated the CEILING arm's convention, which is wrong for
+  a SHIPPABLE re-ranker: the capsule-refork screen showed 7/10 single-flip advantages were
+  selection-level seed-peeking ([[dr-mario-flip-fairness-screen]]); a policy rolled on true
+  capsules selects on information the cart cannot have.
 - **Selection**: survivor-with-virus-progress, exactly the oracle's rule, K=1 sample (bias
   direction stated in every quote: understates).
 - **Comparator set**: base champion; treatment; **dose-matched label-blind null** (same gate,
