@@ -173,3 +173,19 @@ before any fix can be gated. Honest per-evening freeze risk today: **~2.5% (95% 
 - **Churn is not free.** A 4x-overdosed random term *raises* dies-ahead 1.13pp and costs 2.00pp of
   clear rate. Any always-on change that perturbs clean-game behaviour loses at population scale
   unless breakage is essentially zero.
+
+## ADDENDUM 2026-08-14 — the fairness-screen results govern the next iteration
+
+1. **Only 4% of large single-flip oracle advantages are structural** (5/114 survived the
+   capsule-refork screen at n=17; 4/6 published exhibits failed and their artifacts carry
+   corrections). The Tier-A aggregate ceiling stands, but the REACHABLE per-ply prize is far
+   smaller than CLAIR flips imply. Consequence: the H12 rollout gets a mandatory FAIR-PRIZE
+   SIZING GATE before any endpoint spend, and is not run if the fair projection is <1pp.
+2. **Every structural gap sat at champion rank #2–#4** — the right move is always in the
+   champion's hand, mis-ordered among near-ties. H12 draft amended top-2 → top-4. The action
+   space needs nothing; the ORDERING at gated near-ties is the entire target.
+3. **Five survivor fixtures** committed at `tools/fairness/survivor_fixtures.json` with the
+   screen tool. Any eval/re-ranker candidate must flip ≥4/5 before endpoint spend.
+4. **Two oracle modes are standing policy** (seed-picking CLAIR for ceilings/lead-generation;
+   capsule-fair refork for validation) and every depiction uses the FIVE-LENS format
+   (robot / seed oracle / fair oracle / struktured-guess / lulu-guess). Style spinoff: #13.

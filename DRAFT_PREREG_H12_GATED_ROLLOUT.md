@@ -21,9 +21,9 @@ be shaped by the answer.
 
 - **Gate** (unchanged from the oracle prereg): `d_spawn_h >= 12 OR viruses <= 8`, evaluated on
   the current board.
-- **Trigger thinning**: additionally require the champion's top-2 value gap ≤ G (G chosen on
+- **Trigger thinning**: additionally require the champion's top-4 value spread ≤ G (G chosen on
   CALIBRATION seeds only, targeting a 1–3% ply-flip rate; frozen before endpoint).
-- **Action**: roll the champion's top-2 candidates forward **H=12** pills with the real policy
+- **Action**: roll the champion's top-4 candidates forward **H=12** pills with the real policy
   and **candidate-independent pressure (`exo_lulu_v1`)** — never the legacy coupled model, and
   never the realized schedule.
   ⚠ **CAPSULE OBSERVATION SET (corrected 2026-08-13 after the fairness screen):** the fork sees
@@ -36,8 +36,7 @@ be shaped by the answer.
 - **Selection**: survivor-with-virus-progress, exactly the oracle's rule, K=1 sample (bias
   direction stated in every quote: understates).
 - **Comparator set**: base champion; treatment; **dose-matched label-blind null** (same gate,
-  same thinning, coin-flip between the same top-2 — the natural null for a 2-candidate
-  re-ranker); shuffled-label mutant must fail the verdict gate.
+  same thinning, uniform draw among the same top-4 — the natural null for a k-candidate re-ranker); shuffled-label mutant must fail the verdict gate.
 - **Endpoints**: dies-ahead primary; bad-ends co-primary with stalls counted at parity with
   topouts; clear-rate non-inferiority sized honestly: **N = 9,000 paired seeds registered**
   (floor 7,826 at the stage-2 discordance; recompute from pilot discordance before sealing).
@@ -61,3 +60,17 @@ the pill fall time at the fastest gravity the gate can fire under, or define the
 - DIST NO_GO ⇒ archive unrun.
 - Calibration flip-rate outside [1%, 5%] after G sweep on calibration seeds ⇒ not testable, stop.
 - Cycle-budget memo shows >30% degrade rate at any gravity ⇒ not shippable as specified, stop.
+
+## Amendments from the fairness-screen results (2026-08-14, pre-seal)
+
+- **TOP-4, not top-2** (changed above): all five screened-structural gaps sat at champion rank
+  #2–#4; one was #4. A top-2 rollout misses it. K=2 vs K=4 cost is priced in calibration.
+- **FAIR-PRIZE SIZING GATE (new, mandatory before endpoint):** only 5/114 (4%) of big CLAIR
+  flip advantages survive the capsule-fair screen — the CLAIR ceiling badly overstates the
+  reachable per-ply prize. Calibration must therefore re-estimate the prize in FAIR mode
+  (sampled capsules beyond preview, exo_lulu pressure) on ≥500 gated plies. **If the fair
+  per-gated-ply expected gain × realistic trigger rate projects <1pp dies-ahead at endpoint
+  power, the arm is NOT RUN** — the same not-testable discipline as the seal-penalty lane.
+- **Regression fixtures:** the five screened survivors (tools/fairness/survivor_fixtures.json)
+  are mandatory checks for any candidate: the rollout must flip all five states to the
+  screened-better move; a candidate that misses ≥2 is rejected before any endpoint spend.
