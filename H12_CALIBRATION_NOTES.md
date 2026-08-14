@@ -30,3 +30,21 @@ holdout-certified fixtures (pending owner sign-off) are the acceptance test.
 ## 4. Context from the overnight arc
 Certified core = CASCADE + ROUTE/DIG families; one-step static features CANNOT
 express either (proto_cvd 1/7) — the rollout is the only known instrument.
+
+## 5. PROVISIONAL pre-freeze staging results (2026-08-14 evening, blackmage)
+
+- **Mechanism acceptance: 7/7.** Top-4 fork, H=15, K=5 sampled streams (true cur+next only)
+  re-ranks ALL seven holdout-certified fixtures correctly (3 outright, 4 tied-first).
+  `h12_proto.py`, provisional pending design freeze.
+- **Fair-prize sizing, 510 fresh gated-tie plies (seeds 30300+):** trigger rate 16.5% of
+  plies; rollout overrides champion at 96% of triggers **but median fair gain = 0.00** —
+  the naive intervene-at-every-tie arm is stage-2 churn at 9x the dose. DO NOT RUN undosed.
+- **The dose curve (the design consequence — H12 gains a margin knob θ_margin):**
+  | θ_margin | % of triggers | % of ALL plies | mean fair gain |
+  |---|---|---|---|
+  | ≥0.5 | 12.2% | 2.01% | +1.07 |
+  | **≥1.0** | **5.5%** | **0.91%** | **+1.56** |
+  | ≥1.5 | 2.5% | 0.42% | +2.00 |
+  | ≥2.0 | 1.6% | 0.26% | +2.20 |
+  Anchor θ_margin=1.0: half stage-2's ply dose with DIRECTED signal where stage-2's null
+  proved its signal was random. Conversion to projected dies-ahead awaits the Tier-A factor.
