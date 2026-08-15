@@ -1,1 +1,16 @@
-[{"seed": 30020, "ply": 38, "gap": 3, "mean17": 1.3529411764705883, "W": 11, "T": 3, "L": 3, "rank": 3}, {"seed": 30020, "ply": 39, "gap": 4, "mean17": 1.411764705882353, "W": 12, "T": 3, "L": 2, "rank": 3}, {"seed": 30089, "ply": 50, "gap": 3, "mean17": 1.1764705882352942, "W": 10, "T": 4, "L": 3, "rank": 2}, {"seed": 30234, "ply": 54, "gap": 5, "mean17": 1.411764705882353, "W": 11, "T": 2, "L": 4, "rank": 4}, {"seed": 30038, "ply": 33, "gap": 8, "mean17": 3.235294117647059, "W": 14, "T": 1, "L": 2, "rank": 3}]
+{
+  "version": 2,
+  "date": "2026-08-14",
+  "provenance": "952-state multi-metric ladder -> n17/H15 confirm -> H30/H45 min-regret -> POOLED 48 fresh holdout streams (3 independent batches; count stable at n=32 and n=48). Owner-approved 2026-08-14 (typed). v1 ALT17 5-state set archived at survivor_fixtures_v1_alt17.json; note 30089/50 from v1 FAILED fresh-stream holdout (-0.50) = stream-set selection-overfit.",
+  "acceptance_rule": "any eval/re-ranker candidate must flip >=5/7 to the certified move before endpoint spend",
+  "metric": "mean virus progress over the holdout streams, H=45 fork, min-regret constraints (no topout increase, no worst-stream decrease)",
+  "fixtures": [
+    {"seed": 30079, "ply": 81,  "family": "route/dig", "pooled48_dprog": 3.21, "wins": "35/48", "topouts": "1->0"},
+    {"seed": 30133, "ply": 42,  "family": "route/dig", "pooled48_dprog": 2.38, "wins": "33/48", "topouts": "1->0"},
+    {"seed": 30020, "ply": 39,  "family": "cascade",   "pooled48_dprog": 2.23, "wins": "29/48", "topouts": "0->0"},
+    {"seed": 30051, "ply": 27,  "family": "route/dig", "pooled48_dprog": 2.08, "wins": "29/48", "topouts": "4->0"},
+    {"seed": 30156, "ply": 20,  "family": "misc",      "pooled48_dprog": 2.04, "wins": "33/48", "topouts": "0->0"},
+    {"seed": 30120, "ply": 59,  "family": "cascade",   "pooled48_dprog": 1.73, "wins": "33/48", "topouts": "0->0"},
+    {"seed": 30038, "ply": 33,  "family": "cascade",   "pooled48_dprog": 1.29, "wins": "27/48", "topouts": "15->11", "note": "the monster; cascade-hoarding mechanism (m38 filmstrip)"}
+  ]
+}
