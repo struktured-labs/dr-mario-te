@@ -801,3 +801,29 @@ an under-dosed random null UNDERSTATES null harm, so the DiD of the voided run w
 AGAINST the true arm; this amendment can only make the comparison fairer or keep the VOID.
 
 Recorded before any rerun data existed. — team lead session
+
+## H12 ENDPOINT ADDENDUM (2026-08-15, frozen BEFORE launch, after Tier-A GO)
+
+ARM: H12Arm (h12_arm.py) — the shippable gated rollout. Deltas from OracleArm,
+all fixed by the 2026-08-15 calibration (H12_CALIBRATION_NOTES.md, v8-rematch):
+tie-only trigger (gate AND exact top-2 champion-value tie); theta_margin=0.5
+dose gate (flip accepted only if fork progress SUM exceeds champion action's by
+>=3 over 5 samples); future_mode=dist ONLY (sampled capsules — on-cart
+observation set). topk=4, horizon=15.
+
+DESIGN: N=9,000 paired seeds 41100-50099 (disjoint from corpus 2-12001,
+stage-2 20000-29999, oracle 30000-36000, gate seeds 41000-41031). Runner
+run_h12.py = sealed copy of run_oracle.py (harness verbatim). Provenance ON.
+
+ENDPOINTS & VERDICT RULES: identical to the oracle prereg (primary dies-ahead;
+clear-rate co-primary declared NOT DECIDABLE at N=9,000 per the power-floor
+analysis — reported, never passed). Stalls scored at parity with topouts.
+
+NULL (phase 2): H12Arm label_mode=shuffle, dose-anchored on phase-1 accepted
+flip counters per the A13 procedure. Combined verdict via analyse_oracle.py:
+GO requires true-arm GO AND mutant NO_GO at dose ratio within tolerance.
+
+PRE-LAUNCH GATES (h12_gates.py, PASSED locally 2026-08-15 11:28, re-run
+required on the burst node before launch): G1 identity margin=inf == const
+(10 seeds); G2 determinism; G3 dosed smoke — dose 2.14% of plies, 137.1s/pair,
+~343 core-h projected. Acceptance context: mechanism 7/7 on fixtures v2.
