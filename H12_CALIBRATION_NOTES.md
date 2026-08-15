@@ -48,3 +48,31 @@ express either (proto_cvd 1/7) — the rollout is the only known instrument.
   | ≥2.0 | 1.6% | 0.26% | +2.20 |
   Anchor θ_margin=1.0: half stage-2's ply dose with DIRECTED signal where stage-2's null
   proved its signal was random. Conversion to projected dies-ahead awaits the Tier-A factor.
+
+## 6. CALIBRATION RESULT (2026-08-15, post-GO, 1500 fresh gated-tie plies, seeds 32000+)
+
+Tier-A conversion factor now exists: oracle = 3.65% ply dose of oracle-quality flips
+→ −11.57pp dies-ahead. H12 projection = dose% × mean_dfair × 11.57/(3.65 × G), where G =
+oracle per-flip realized gain (unknown; bracketed 2.5–4.5 virus-equivalents from the CLAIR
+mine's gap≥3 distribution).
+
+| θ_margin | % of ALL plies | mean dfair | projection @G=2.5/3.5/4.5 | vs ≥1pp bar |
+|---|---|---|---|---|
+| ≥0.5 | 2.28% | +0.88 | **2.55 / 1.82 / 1.42 pp** | CLEARS at all G |
+| ≥1.0 | 0.69% | +1.39 | 1.22 / 0.87 / 0.68 pp | borderline |
+| ≥1.5 | 0.24% | +1.84 | 0.57 / 0.40 / 0.31 pp | fails |
+| ≥2.0 | 0.05% | +2.55 | 0.16 / 0.11 / 0.09 pp | fails |
+
+Trigger rate replicated at 18.2% of plies (vs 16.5% first measurement). Median dfair at the
+raw tie is still 0.00 — the undosed arm remains DO-NOT-RUN.
+
+**FREEZE RECOMMENDATION: θ_margin = 0.5.** It is the only rung that clears the prereg bar
+under every plausible conversion. Churn context: 2.28% ply dose ≈ stage-2's 1.8% — but
+stage-2's perturbation was PROVABLY undirected (its null matched it), while every θ0.5 flip
+carries measured fair gain ≥ +0.5 (mean +0.88). Direction is the thing stage-2 lacked.
+θ=1.0 is the documented sensitivity arm if the endpoint wants a lower-churn second dose.
+
+**Next step (owner authorization required — decisive spend):** endpoint A/B, N=9,000 paired
+seeds per the power floor, H12(θ0.5) vs champion, with per-ply flip provenance and a
+dose-matched null. Estimated cost: one cpx62 burst, ~15–20h, ~$5. Acceptance pre-check
+already passed (fixtures v2: 7/7).
