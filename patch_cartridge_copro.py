@@ -139,7 +139,15 @@ DWELL_CNT, DWELL_LAST = 0x6177, 0x6178
 TUCK_C2 = 0x6179   # approach column for the in-flight P2 capsule; 0xFF = no tuck this pill
 TUCK_R2 = 0x617A   # steer to the FINAL column once pill Y <= this ($0386 counts UP from the floor)
 EFF_C2  = 0x617B   # effective target column this hook (approach or final)
-W_TCOL, W_TROW = 0x5087, 0x5088   # copro publishes the tuck descriptor here (0xFF = none)   # TITLE DWELL: frames dwelt at the title + last frameCounter($43) seen
+# W_TCOL/W_TROW -- the copro publishes the tuck descriptor at offsets $87/$88 of P2'S OWN
+# window, so the cart address depends on where P2's window sits: DRPOCKET=1 single-window
+# carts read $5087/$5088 (byte-identical to the historical hardcode every prior DRTUCK
+# validation ran under), but MiSTer dual-window carts talk to P2 at $5200 -- and the winner
+# single-copro core STRIPS the $5000-$51FF decode entirely, so a hardcoded $5087 read there
+# is OPEN BUS = $50, the same undecoded-address failure the published-column sanity guard
+# below documents. Derived from W2_BASE after it is set (it depends on DRPOCKET); the
+# executor is only emitted behind DRTUCK=1, so DRTUCK=0 carts are byte-identical either way.
+# TITLE DWELL: frames dwelt at the title + last frameCounter($43) seen
 # DRP1WIGGLE (see below): per-pill alternating direction latch for the P1 spectator wiggle.
 # 0 = hold LEFT this pill, 1 = hold RIGHT. Toggled on the P1 new-pill edge. $617C is the next
 # free PRG-RAM byte (BUSY..$6185 is the free window; $6186+ is the DRPROBE ring header).
@@ -800,6 +808,10 @@ W2_BASE = 0x5200
 if _os.environ.get("DRPOCKET", "0") == "1":
     assert _os.environ.get("DRHUMAN", "0") == "1", "DRPOCKET requires DRHUMAN=1 (single window)"
     W2_BASE = 0x5000
+# TUCK descriptor lives at offsets $87/$88 of P2's OWN copro window (see the W_TCOL comment
+# at the TUCK EXECUTOR block above): $5087/$5088 on DRPOCKET single-window carts (unchanged
+# vs the historical hardcode), $5287/$5288 on dual-window MiSTer carts.
+W_TCOL, W_TROW = W2_BASE + 0x87, W2_BASE + 0x88
 # if a pill sits still this many frames (while not search-frozen), force DOWN to unstick
 STUCK_LIM = 60        # 1s -- continuous holds again; if truly stuck kick fast to unpark
 # copro window (mapper 100)
