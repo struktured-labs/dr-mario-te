@@ -277,6 +277,7 @@ def rollout(env, decider, horizon, forced_action=None, record=True, after_lock=N
     res = "ran"
     v_at_end = None
     forced_ok = True
+    n_placed = 0   # counted here, NOT as len(traj): traj is empty when record=False
 
     for i in range(horizon):
         if env.board.virus_count() == 0:
@@ -295,6 +296,7 @@ def rollout(env, decider, horizon, forced_action=None, record=True, after_lock=N
             break
         pill = (int(env.cur.a), int(env.cur.b))
         _, _, term, trunc, info = env.step(int(a))
+        n_placed += 1
         if record:
             traj.append({"i": i, "action": int(a), "pill": pill,
                          "key": board_key(env.board),
@@ -321,7 +323,7 @@ def rollout(env, decider, horizon, forced_action=None, record=True, after_lock=N
     return {
         "result": res,
         "forced_ok": forced_ok,
-        "pills": len(traj),
+        "pills": n_placed,
         "topout": int(res == "topout"),
         "clear": int(res == "clear"),
         "survived": int(res in ("ran", "truncated", "clear")),
