@@ -35,10 +35,10 @@ import forced_board as FBM   # noqa: E402
 _W = {}
 
 
-def _init(wt, ws, level, spec, cur, nxt, horizon, drip_period, drip_k):
+def _init(wt, ws, level, spec, cur, nxt, horizon, drip_period, drip_k, arms):
     _W["dec"] = FBM.Decider(wt=wt, ws=ws, level=level)
     _W.update(level=level, spec=spec, cur=cur, nxt=nxt, horizon=horizon,
-              drip_period=drip_period, drip_k=drip_k)
+              drip_period=drip_period, drip_k=drip_k, arms=arms)
 
 
 def _make_hook(stream_seed):
@@ -61,16 +61,21 @@ def _make_hook(stream_seed):
 
 
 def _one(job):
-    action, stream_seed = job
+    arm_id, stream_seed = job
+    arm = _W["arms"][arm_id]
     planes = FBM.planes_from_spec(_W["spec"])
     env, src, meta = FBM.make_env(planes, stream_seed=stream_seed,
                                   cur=_W["cur"], nxt=_W["nxt"], level=_W["level"])
     if meta["settle_moved"]:
         raise FBM.BoardSpecError("board is not settled on import -- refusing to price it")
-    r = FBM.rollout(env, _W["dec"], _W["horizon"], forced_action=action,
-                    record=False, after_lock=_make_hook(stream_seed))
+    # A tuck has no action int, so it is forced by CELLS; everything after move 1
+    # still comes from the straight-drop decider either way.
+    kw = ({"forced_cells": (arm["cells"], arm["colors"])} if arm["kind"] == "cells"
+          else {"forced_action": arm["action"]})
+    r = FBM.rollout(env, _W["dec"], _W["horizon"], record=False,
+                    after_lock=_make_hook(stream_seed), **kw)
     r.pop("traj", None)
-    r["action"] = action
+    r["arm"] = arm_id
     r["stream"] = stream_seed
     return r
 
@@ -89,8 +94,12 @@ def main():
     ap.add_argument("--board", required=True, help="JSON with col/vir[/lnk]")
     ap.add_argument("--cur", type=int, nargs=2, required=True, help="current capsule colours a b")
     ap.add_argument("--nxt", type=int, nargs=2, default=None)
-    ap.add_argument("--ref", type=int, default=None,
-                    help="reference action int (the placement actually played)")
+    ap.add_argument("--ref", type=str, default=None,
+                    help="arm id of the placement actually played (default: first)")
+    ap.add_argument("--cell-arm", type=str, action="append", default=[],
+                    help="an arm given as CELLS -- the only way to name a TUCK. "
+                         "Format name:r0,c0,r1,c1,colour0,colour1 with cell0 the "
+                         "LEFT half (horizontal) or TOP half (vertical). Repeatable.")
     ap.add_argument("--streams", type=int, default=48)
     ap.add_argument("--stream-base", type=int, default=900000)
     ap.add_argument("--horizon", type=int, default=30)
@@ -115,31 +124,68 @@ def main():
     print(f"\nviruses={meta0['viruses']}  cur={meta0['cur']}  nxt={meta0['nxt']}  "
           f"H={a.horizon}  streams={a.streams}  drip={a.drip or 'off'}")
 
-    # distinct arms: with a==b the two horizontal variants place identical cells,
-    # as do the two verticals, so dedupe on the CELLS actually occupied.
-    seen, arms = set(), []
+    # STRAIGHT-DROP SWEEP. With a == b the two horizontal variants place identical
+    # cells, as do the two verticals, so dedupe on the cells AND colours actually
+    # placed rather than on the action int.
+    seen, arms = set(), {}
     for p in FBM.legal_placements(env0):
         key = tuple(sorted(tuple(map(int, c)) for c in p["cells"]))
         if key in seen:
             continue
         seen.add(key)
-        arms.append(p)
-    print(f"distinct legal placements: {len(arms)}")
+        arm_id = f"{p['orient']}@col{p['col']}r{p['top_row']}"
+        arms[arm_id] = {"kind": "action", "action": p["action"], "cells": p["cells"]}
+    n_drop = len(arms)
+
+    # CELL ARMS (tucks). Reachability is NOT assumed: each is checked against
+    # tuck_enum in both modes and the verdict is printed, because "the owner named
+    # a placement the pill cannot physically reach" is a real answer.
+    reach = {}
+    for mode in ("free", "gravity"):
+        try:
+            ps = FBM.tuck_placements(env0, mode=mode)
+            reach[mode] = {tuple(sorted(((q["cells"][0], q["cells"][1]),
+                                         (q["cells"][2], q["cells"][3]))))
+                           for q in ps if q.get("reachable", True)}
+        except Exception as e:                                   # noqa: BLE001
+            print(f"  ⚠ tuck_enum {mode} unavailable: {e}")
+            reach[mode] = None
+    for spec_s in a.cell_arm:
+        name, nums = spec_s.split(":", 1)
+        r0, c0, r1, c1, k0, k1 = (int(x) for x in nums.split(","))
+        cells = ((r0, c0), (r1, c1))
+        key = tuple(sorted(cells))
+        occupied = [c for c in cells if env0.board.color[c[0], c[1]] != 0]
+        verdict = {m: (None if reach[m] is None else key in reach[m]) for m in reach}
+        print(f"  cell arm {name}: cells={cells} occupied={occupied} "
+              f"reachable free={verdict.get('free')} gravity={verdict.get('gravity')}")
+        if occupied:
+            print(f"  ⚠ SKIPPING {name}: those cells are occupied, the placement is "
+                  f"geometrically impossible on this board")
+            continue
+        if verdict.get("free") is False:
+            print(f"  ⚠ SKIPPING {name}: unreachable even in the gravity-off upper "
+                  f"bound -- no executor could play it")
+            continue
+        arms[name] = {"kind": "cells", "cells": cells, "colors": (k0, k1)}
+    print(f"arms: {n_drop} straight-drop + {len(arms) - n_drop} cell/tuck")
 
     streams = [a.stream_base + i for i in range(a.streams)]
-    jobs = [(p["action"], s) for p in arms for s in streams]
+    jobs = [(k, s) for k in arms for s in streams]
     rows = []
     with ProcessPoolExecutor(max_workers=a.workers, initializer=_init,
                              initargs=(a.wt, a.ws, a.level, spec, tuple(a.cur),
                                        tuple(a.nxt) if a.nxt else None, a.horizon,
-                                       a.drip, a.drip_k)) as ex:
+                                       a.drip, a.drip_k, arms)) as ex:
         for r in ex.map(_one, jobs, chunksize=4):
             rows.append(r)
 
     by = {}
     for r in rows:
-        by.setdefault(r["action"], {})[r["stream"]] = r
-    ref = a.ref if a.ref is not None else arms[0]["action"]
+        by.setdefault(r["arm"], {})[r["stream"]] = r
+    ref = a.ref if a.ref is not None else next(iter(arms))
+    if ref not in by:
+        raise SystemExit(f"--ref {ref!r} is not an arm; arms are {sorted(arms)}")
 
     def summ(d):
         ss = sorted(d)
@@ -150,22 +196,22 @@ def main():
                 "spawn_h": st.mean([d[s]["spawn_height"] for s in ss]),
                 "max_h": st.mean([d[s]["max_height"] for s in ss])}
 
-    print(f"\n{'arm':>22s} {'topout':>8s} {'diesAhd':>8s} {'pills':>7s} {'vClr':>6s} "
+    print(f"\n{'arm':>24s} {'topout':>8s} {'diesAhd':>8s} {'pills':>7s} {'vClr':>6s} "
           f"{'spawnH':>7s}  {'d(topout) vs ref [95% CI]':>30s}")
     out = []
     refd = by[ref]
-    for p in sorted(arms, key=lambda q: q["action"]):
-        d = by[p["action"]]
+    for arm_id in sorted(arms):
+        d = by[arm_id]
         s = summ(d)
         common = sorted(set(d) & set(refd))
         diff = [d[k]["topout"] - refd[k]["topout"] for k in common]
         lo, hi = boot_ci(diff)
-        tag = f"{p['orient']}@col{p['col']}r{p['top_row']}" + (" *REF" if p["action"] == ref else "")
-        print(f"{tag:>22s} {s['topout_rate']:8.1%} {s['dies_ahead']:8.1%} {s['pills']:7.2f} "
+        tag = arm_id + (" *REF" if arm_id == ref else "")
+        print(f"{tag:>24s} {s['topout_rate']:8.1%} {s['dies_ahead']:8.1%} {s['pills']:7.2f} "
               f"{s['cleared']:6.2f} {s['spawn_h']:7.2f}  "
               f"{st.mean(diff):+8.3f} [{lo:+.3f},{hi:+.3f}]"
               f"{'  REAL' if (hi < 0 or lo > 0) else '  wash'}")
-        out.append({"action": p["action"], "tag": tag, **s,
+        out.append({"arm": arm_id, "tag": tag, "kind": arms[arm_id]["kind"], **s,
                     "d_topout": st.mean(diff), "ci": [lo, hi]})
 
     if a.out:

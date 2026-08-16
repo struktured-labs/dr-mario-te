@@ -224,6 +224,85 @@ def resolve_forced(env, want):
     return cands[0]["action"]
 
 
+# ---------------------------------------------------------------------- tucks
+
+def place_at_cells(board, cells, colors):
+    """Lock a capsule directly at `cells`, bypassing the straight-drop action space.
+
+    A TUCK lands a capsule under an overhang, at cells no straight drop reaches,
+    so it CANNOT be expressed as one of the env's 32 actions -- which is exactly
+    why the soak cart, with no tuck executor, could not play one. This writes the
+    two halves and their link the way `FaithfulBoard.place_pill` would.
+
+    `cells` = ((r0,c0),(r1,c1)) with cell0 the LEFT half when horizontal and the
+    TOP half when vertical -- `tuck_enum`'s own ordering. `colors` = (col0, col1).
+    """
+    from drmario.faithful_game import (EMPTY, LINK_DOWN, LINK_LEFT, LINK_RIGHT,
+                                       LINK_UP)
+    (r0, c0), (r1, c1) = cells
+    for r, c in cells:
+        if not (0 <= r < ROWS and 0 <= c < COLS):
+            raise BoardSpecError(f"tuck cell ({r},{c}) is off the board")
+        if board.color[r, c] != EMPTY:
+            raise BoardSpecError(f"tuck cell ({r},{c}) is occupied")
+    if r0 == r1 and c1 == c0 + 1:
+        lk0, lk1 = LINK_RIGHT, LINK_LEFT
+    elif c0 == c1 and r1 == r0 + 1:
+        lk0, lk1 = LINK_DOWN, LINK_UP
+    else:
+        raise BoardSpecError(f"tuck cells {cells} are not an adjacent left/right "
+                             "or top/bottom pair in place_at order")
+    board.color[r0, c0], board.color[r1, c1] = colors
+    board.is_virus[r0, c0] = board.is_virus[r1, c1] = False
+    board.link[r0, c0], board.link[r1, c1] = lk0, lk1
+
+
+def step_cells(env, cells, colors):
+    """`env.step`, for a placement given as CELLS rather than an action.
+
+    Mirrors FaithfulDrMarioEnv.step from the lock onward: same pills_placed
+    increment, same resolve, same win/topout/truncate ORDER, same cur/nxt advance,
+    same no-legal-move check. Returns (terminated, truncated, won).
+
+    `gate_tuck_equivalence.py` checks this against env.step on every
+    straight-drop-reachable placement, because a divergence would silently make
+    every tuck arm incomparable to every non-tuck arm -- and the comparison
+    between those two families is the entire deliverable.
+    """
+    place_at_cells(env.board, cells, colors)
+    env.pills_placed += 1
+    env.board.resolve()
+    if env.board.virus_count() == 0:
+        return True, False, True
+    if env.board.spawn_blocked():
+        return True, False, False
+    if env.pills_placed >= env.max_pills:
+        return False, True, False
+    env.cur = env.nxt
+    env.nxt = env._rand_pill()
+    if not env.action_masks().any():
+        return True, False, False
+    return False, False, False
+
+
+def tuck_placements(env, mode="gravity", frames_per_row=None):
+    """Every placement of env.cur reachable INCLUDING tucks, via tuck_enum.
+
+    mode='free' is meatfighter's gravity-off UPPER BOUND; mode='gravity' is the
+    set actually executable inside the ROM's frame budget. These are different
+    questions -- a tuck can be in the first and not the second -- so anything
+    claiming a tuck was AVAILABLE has to say which one it means.
+    """
+    import tuck_enum
+    from fb import FB
+    fb = FB.from_board(env.board)
+    kw = {}
+    if mode == "gravity":
+        kw["frames_per_row"] = (frames_per_row if frames_per_row is not None
+                                else tuck_enum.frames_per_row("MED", 0))
+    return tuck_enum.enumerate(fb, int(env.cur.a), int(env.cur.b), mode=mode, **kw)
+
+
 # ------------------------------------------------------------------- rollouts
 
 def board_key(board):
@@ -256,9 +335,16 @@ class Decider:
 DIES_AHEAD_VIRUS_THRESHOLD = 12   # same threshold as pressure_rig
 
 
-def rollout(env, decider, horizon, forced_action=None, record=True, after_lock=None):
+def rollout(env, decider, horizon, forced_action=None, record=True, after_lock=None,
+            forced_cells=None):
     """Play `horizon` pills from the current env state; move 1 is `forced_action`
     if given, every later move comes from `decider`.
+
+    `forced_cells` = (((r0,c0),(r1,c1)), (col0, col1)) forces move 1 to a
+    placement given as CELLS instead, which is the only way to express a TUCK --
+    no action int names a cell a straight drop cannot reach. Moves 2..H still come
+    from `decider`, i.e. from the ordinary straight-drop action space, so a tuck
+    arm prices "one tuck now, champion afterwards", not "tucks forever".
 
     `after_lock(env, i)` runs once per fully-resolved placement and may return
     'topout' or 'clear' to end the rollout -- the hook the garbage injector uses,
@@ -283,26 +369,38 @@ def rollout(env, decider, horizon, forced_action=None, record=True, after_lock=N
         if env.board.virus_count() == 0:
             res = "clear"
             break
-        if i == 0 and forced_action is not None:
-            a = forced_action
-            if not any(p["action"] == a for p in legal_placements(env)):
+        pill = (int(env.cur.a), int(env.cur.b))
+        if i == 0 and forced_cells is not None:
+            cells, colors = forced_cells
+            try:
+                term, trunc, won = step_cells(env, cells, colors)
+            except BoardSpecError:
                 forced_ok = False
                 res = "forced_illegal"
                 break
+            a = -1                       # a tuck has no action int, by construction
+            n_placed += 1
         else:
-            a = decider(env)
-        if a is None:
-            res = "no_move"
-            break
-        pill = (int(env.cur.a), int(env.cur.b))
-        _, _, term, trunc, info = env.step(int(a))
-        n_placed += 1
+            if i == 0 and forced_action is not None:
+                a = forced_action
+                if not any(p["action"] == a for p in legal_placements(env)):
+                    forced_ok = False
+                    res = "forced_illegal"
+                    break
+            else:
+                a = decider(env)
+            if a is None:
+                res = "no_move"
+                break
+            _, _, term, trunc, info = env.step(int(a))
+            won = info["won"]
+            n_placed += 1
         if record:
             traj.append({"i": i, "action": int(a), "pill": pill,
                          "key": board_key(env.board),
                          "viruses": env.board.virus_count()})
         if term:
-            res = "clear" if info["won"] else "topout"
+            res = "clear" if won else "topout"
             if res == "topout":
                 v_at_end = env.board.virus_count()
             break

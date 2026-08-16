@@ -32,10 +32,10 @@ def main():
     for f in a.files:
         d = json.load(open(f))
         ref = d["ref"]
-        tag = {x["action"]: x["tag"] for x in d["arms"]}
+        tag = {x.get("arm", x.get("action")): x["tag"] for x in d["arms"]}
         by = {}
         for r in d["rows"]:
-            by.setdefault(r["action"], {})[r["stream"]] = r
+            by.setdefault(r.get("arm", r.get("action")), {})[r["stream"]] = r
         refd = by[ref]
         print(f"\n=== {f}  (ref = {tag[ref]}, n={len(refd)} streams) ===")
         print(f"{'arm':>22s} {'vClr':>6s} {'d vs ref [95% CI]':>26s}   "
