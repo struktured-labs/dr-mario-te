@@ -10,15 +10,15 @@
   },
   "flag_snapshot": {
     "DRBUILDID": "0",
-    "DRBUILDID_TAG": "TCVC",
+    "DRBUILDID_TAG": "MIST",
     "DRBUSYESC": "1",
     "DRCOLDINIT": "1",
     "DRCOLGATE": "1",
-    "DRDISTGATE": "1",
+    "DRDISTGATE": "0",
     "DRDIST_DASEDGE": "12",
     "DRDIST_FLOORREL": "0",
     "DRDIST_GRAVROW": "30",
-    "DRFCGATE": "1",
+    "DRFCGATE": "0",
     "DRHOLDBOARD": "0",
     "DRHOLDBOARD_F": "600",
     "DRHOLDONCE": "0",
@@ -71,14 +71,13 @@
   },
   "flags": {
     "DRBUILDID": "0",
-    "DRBUILDID_TAG": "TCVC",
+    "DRBUILDID_TAG": "MIST",
     "DRBUSYESC": "1",
     "DRCOLDINIT": "1",
     "DRCOLGATE": "1",
-    "DRDISTGATE": "1",
+    "DRDISTGATE": "0",
     "DRDIST_DASEDGE": "12",
     "DRDIST_GRAVROW": "30",
-    "DRFCGATE": "1",
     "DRHOLDBOARD": "0",
     "DRHOLDBOARD_F": "600",
     "DRHUMAN": "0",
@@ -132,9 +131,9 @@
     "dirty": false
   },
   "output": {
-    "md5": "9fefaedba9a27ba10f058ac239eeb77d",
-    "name": "drmario_tuck_cvc_mister.nes",
+    "md5": "d6fea661bbd8541b81d7592dc6d51ce0",
+    "name": "relatch_tuck.nes",
     "size": 98320
   },
-  "tag": "tuck-cvc-mister"
+  "tag": "relatch-tuck"
 }
