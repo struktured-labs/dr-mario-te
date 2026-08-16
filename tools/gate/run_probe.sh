@@ -44,6 +44,7 @@ for try in 1 2 3; do
     export DOTNET_GCHeapHardLimit=40000000
     export "${prefix}_OUT=$out" "${prefix}_MAXF=$maxf" "${prefix}_TAG=$tag"
     export "${prefix}_DLAT=34" "${prefix}_SEED=114" "${prefix}_TUCK=$pubt"
+    export "${prefix}_W=${PROBE_W:-0x5000}"
     exec "$RUN_MESEN" "$mmc1" "$D/tools/gate/${probe}.lua" -testrunner "-timeout=$deadline"
   ) >"$out/stdout.log" 2>&1 &
   runpid=$!
