@@ -59,6 +59,8 @@ import numpy as np
 from h12_arm import H12Arm
 from oracle_arm import (CHAMP_ORDER, _champ_values, _champ_action, gate_fires,
                         dist_seed, _fork_label, heights, null_keeps_flip)
+from temporal_accum import (TemporalState, CAND_TEMPORAL_NAMES,
+                            STATE_TEMPORAL_NAMES)
 
 MAX_TIELOG = 400            # a 300-pill game at a ~2% tie dose cannot approach this
 
@@ -223,10 +225,12 @@ def candidate_feature_rows(col, vir, ca, cb, cands, fl):
 class H12ArmDataset(H12Arm):
     """H12Arm + a tie-ply record.  `perturb_first_tie` is the killed mutant."""
 
-    def __init__(self, perturb_first_tie=False, **kw):
+    def __init__(self, perturb_first_tie=False, temporal=True, **kw):
         super().__init__(**kw)
         self.perturb_first_tie = bool(perturb_first_tie)
         self._perturbed = False
+        self.temporal = bool(temporal)
+        self.tstate = TemporalState() if self.temporal else None
         self.tie_log = []
 
     def choose(self, env, seed, C, bmodel, w, fl, wt, ws, ply):
@@ -236,6 +240,17 @@ class H12ArmDataset(H12Arm):
 
         fb = FB.from_board(env.board)
         col, vir = RS.board_flat_from_fb(fb)
+
+        # TEMPORAL FOLD.  Runs at EVERY ply, gated or not, and BEFORE any early
+        # return, because the accumulators are per-GAME history: a counter that
+        # skipped the ungated ~62% of plies would be measuring something else
+        # and would not match what a cart accumulates.  It reads the board and
+        # writes only to self, so it cannot reach the decision — which the
+        # identity gate then PROVES rather than assumes.  Forks never call
+        # choose(), so fork play cannot contaminate the counters.
+        if self.temporal:
+            self.tstate.observe(col, vir)
+
         vals = _champ_values(col, vir, int(env.cur.a), int(env.cur.b),
                              int(env.nxt.a), int(env.nxt.b), w, fl, wt, ws)
         order = CHAMP_ORDER[::-1] if self.order_flip else CHAMP_ORDER
@@ -350,4 +365,19 @@ class H12ArmDataset(H12Arm):
             "feats": [[round(float(v), 6) for v in row] for row in X],
         }
         rec.update(ctx)
+        if self.temporal:
+            # State is candidate-INVARIANT and so cancels in any difference
+            # design; it is logged once per event and consumed as context.
+            # Only tfeats varies by candidate and gets differenced.
+            rec["tstate"] = self.tstate.state_features()
+            tf = []
+            for i in range(len(cands)):
+                d = self.tstate.candidate_features(
+                    col,
+                    np.frombuffer(bytes.fromhex(ctx["post_col"][i]),
+                                  dtype=np.uint8),
+                    np.frombuffer(bytes.fromhex(ctx["post_vir"][i]),
+                                  dtype=np.uint8))
+                tf.append([float(d[k]) for k in CAND_TEMPORAL_NAMES])
+            rec["tfeats"] = tf
         self.tie_log.append(rec)

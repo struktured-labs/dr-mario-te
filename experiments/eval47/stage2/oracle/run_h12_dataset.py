@@ -46,7 +46,7 @@ def dataset_manifest(model):
     """
     m = runtime_manifest(model)
     import hashlib
-    for name in ("run_h12_dataset", "h12_arm_dataset"):
+    for name in ("run_h12_dataset", "h12_arm_dataset", "temporal_accum"):
         path = os.path.join(HERE, name + ".py")
         m["files"][name] = {"path": path, "sha256": _sha256(path)}
     m["rolled"] = hashlib.sha256("".join(
@@ -80,8 +80,16 @@ def _work(seed):
                          null_keep_den=_W["null_keep_den"],
                          tie_margin=_W["tie_margin"])
     rt = O.play_one(seed, at, _W["C"], _W["bmodel"])
+    # KEEP the treatment arm's action sequence; the sealed runner discards it.
+    # With it, ANY future feature -- temporal, static, or not yet imagined --
+    # can be recomputed offline by REPLAYING the game at ~6 s/game instead of
+    # re-paying the ~200 s/game rollout.  This lane already lost one run to a
+    # spec extension that landed after launch; ~140 ints per game retires that
+    # tax permanently.
+    trt_actions = [int(x) for x in (rt.get("_actions") or [])]
     for r in (rb, rt):
         r.pop("_actions", None)
+    rt["actions"] = trt_actions
     rb["arm"], rt["arm"] = "base", "trt"
     if _W["provenance"]:
         rt["flip_log"] = at.flip_log[:MAX_FLIPLOG]

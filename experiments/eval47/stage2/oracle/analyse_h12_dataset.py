@@ -64,7 +64,10 @@ sys.path.insert(0, HERE)
 
 from h12_arm_dataset import (FEAT_NAMES, BASE_NAMES, CAND_NAMES,  # noqa: E402
                              FREE_IN_COLWALK, OFF_BUDGET)
+from temporal_accum import (CAND_TEMPORAL_NAMES,  # noqa: E402
+                            STATE_TEMPORAL_NAMES)
 
+H12_MARGIN_SUM = 3      # ceil(0.5 * 5 fork samples) — H12's frozen dose gate
 SPLIT_RNG = 20260817
 TEST_FRAC = 0.30
 N_SHUFFLE = 12          # draws in the permuted-label null band
@@ -221,7 +224,10 @@ def build_listwise_design(rows):
     would actually be used.
     """
     X, y, ev, seeds, marg, ctx = [], [], [], [], [], []
+    XT = []                       # temporal per-candidate deltas (differenced)
+    CT = []                       # temporal running state (event-level context)
     prefer_by_event, seed_by_event = [], []
+    n_temporal = 0
     for e, r in enumerate(rows):
         h = r["post_hash"]
         A = h[0]
@@ -229,12 +235,21 @@ def build_listwise_design(rows):
         fa = np.asarray(r["feats"][0], dtype=np.float64)
         va = float(r["champ_vals"][0])
         pa = r["labels"][0][1]
+        tf = r.get("tfeats")
+        has_t = tf is not None and r.get("tstate") is not None
+        n_temporal += int(has_t)
+        ta = np.asarray(tf[0], dtype=np.float64) if has_t else None
+        tsv = ([float(r["tstate"][k]) for k in STATE_TEMPORAL_NAMES]
+               if has_t else [0.0] * len(STATE_TEMPORAL_NAMES))
         seen = {A}
         n_alt = 0
         for i in range(len(h)):
             if h[i] in seen:
                 continue
             seen.add(h[i])
+            XT.append(np.asarray(tf[i], dtype=np.float64) - ta if has_t
+                      else np.zeros(len(CAND_TEMPORAL_NAMES)))
+            CT.append(tsv)
             # The champion's OWN value gap is appended as a 27th feature.  It is
             # free on silicon — the eval already computed it — and at an exact
             # top-2 tie it is exactly 0 for the duplicate board and negative for
@@ -252,9 +267,16 @@ def build_listwise_design(rows):
             n_alt += 1
         prefer_by_event.append(int(best != A))
         seed_by_event.append(r["seed"])
-    return (np.asarray(X), np.asarray(y), np.asarray(ev), np.asarray(seeds),
-            np.asarray(marg), np.asarray(ctx, dtype=np.float64),
-            np.asarray(prefer_by_event), np.asarray(seed_by_event))
+    return {
+        "X_static": np.asarray(X),
+        "X_temporal": np.asarray(XT),
+        "ctx_static": np.asarray(ctx, dtype=np.float64),
+        "ctx_temporal": np.asarray(CT, dtype=np.float64),
+        "y": np.asarray(y), "ev": np.asarray(ev),
+        "seeds": np.asarray(seeds), "marg": np.asarray(marg),
+        "prefer_by_event": np.asarray(prefer_by_event),
+        "seed_by_event": np.asarray(seed_by_event),
+        "n_events_with_temporal": n_temporal}
 
 
 def event_decision_accuracy(score, y, ev, prefer_by_event, tau):
@@ -574,69 +596,136 @@ def main():
                       if k in ("logit", "gbm", "shuffle_null",
                                "beats_null_band")}, indent=1))
 
-    # ---- LISTWISE: every tie event, including the 3- and 4-board ones ----
-    LX, Ly, Lev, Lseed, Lmarg, Lctx, pref_ev, seed_ev = \
-        build_listwise_design(rows)
-    LXf = np.concatenate([LX, Lctx], axis=1)
-    lnames = ([f"d_{n}" for n in FEAT_NAMES] + ["d_champ_val"]
-              + names_f[-5:])
+    # ---- LISTWISE + THREE-WAY FEATURE-CLASS DECOMPOSITION ----------------
+    # This block IS the pilot's headline: it decides whether the owner's
+    # accumulator hypothesis beats plain static distillation, or whether both
+    # fail together (which would send the lane to garbage-window compute).
+    L = build_listwise_design(rows)
+    LX, LXT, Lctx, LCT = (L["X_static"], L["X_temporal"],
+                          L["ctx_static"], L["ctx_temporal"])
+    Ly, Lev, Lseed, Lmarg = L["y"], L["ev"], L["seeds"], L["marg"]
+    pref_ev = L["prefer_by_event"]
     ltr, lte = seed_split(Lseed)
 
-    # POSITIVE CONTROL, in the spirit of stage 2's A3 f_leak.  The rollout's own
-    # progress margin is handed to the SAME fitting harness.  It must score far
-    # above everything else.  Without this, a near-chance result on the real
-    # features is uninterpretable: it could equally mean the harness is broken.
-    pc = fit_eval(np.column_stack([LXf, Lmarg])[ltr], Ly[ltr],
-                  np.column_stack([LXf, Lmarg])[lte], Ly[lte], "logit")
-    doc["positive_control_leak"] = pc if isinstance(pc, dict) else pc[0]
-    print("\nPOSITIVE CONTROL (rollout margin as a feature — the harness must "
-          "be able to learn):")
-    print(json.dumps({k: v for k, v in doc["positive_control_leak"].items()
-                      if k in ("auc", "acc", "majority_prior")}, indent=1))
+    static_names = ([f"d_{n}" for n in FEAT_NAMES] + ["d_champ_val"]
+                    + ["ctx_viruses", "ctx_maxh", "ctx_d_spawn_h",
+                       "ctx_n_legal", "ctx_pills_placed"])
+    temporal_names = ([f"d_{n}" for n in CAND_TEMPORAL_NAMES]
+                      + [f"c_{n}" for n in STATE_TEMPORAL_NAMES])
+
+    # Feature CLASSES.  Each carries its own context block, so 'temporal-only'
+    # is genuinely temporal-only and does not smuggle in static board terms.
+    CLASSES = {
+        "static": (np.concatenate([LX, Lctx], axis=1), static_names),
+        "temporal": (np.concatenate([LXT, LCT], axis=1), temporal_names),
+        "combined": (np.concatenate([LX, Lctx, LXT, LCT], axis=1),
+                     static_names + temporal_names)}
+
     doc["listwise_design"] = {
         "n_alternative_rows": int(len(LX)),
         "n_events": int(len(pref_ev)),
+        "n_events_with_temporal": int(L["n_events_with_temporal"]),
         "event_prefer_rate": round(float(pref_ev.mean()), 4),
-        "row_positive_rate": round(float(Ly.mean()), 4)}
+        "row_positive_rate": round(float(Ly.mean()), 4),
+        "n_static_cols": int(CLASSES["static"][0].shape[1]),
+        "n_temporal_cols": int(CLASSES["temporal"][0].shape[1])}
     print("\nlistwise design:", json.dumps(doc["listwise_design"]))
-    rl = run_target("T1_listwise", LXf, Ly, Lseed, ltr, lte, lnames)
-    lp = rl.pop("_logit_pred", None)
-    rl.pop("_gbm_pred", None)
-    doc["T1_listwise"] = rl
-    print("\nT1 LISTWISE (rank the rollout's board above the other "
-          "alternatives), all tie events:")
-    print(json.dumps(rl, indent=1))
+    if doc["listwise_design"]["n_events_with_temporal"] == 0:
+        print("WARNING: no temporal fields in this dataset — the temporal and "
+              "combined arms are VACUOUS and must not be reported as evidence")
 
-    if lp is not None:
-        # Re-index the test rows to a contiguous event numbering, then sweep the
-        # firing threshold.  tau is the silicon knob: it sets how often the
-        # distilled term is allowed to overrule the champion.
-        ev_te = Lev[lte]
-        remap = {e: i for i, e in enumerate(sorted(set(ev_te.tolist())))}
-        ev_c = np.array([remap[e] for e in ev_te])
-        pref_te = np.array([pref_ev[e] for e in sorted(set(ev_te.tolist()))])
+    # POSITIVE CONTROL (stage 2 A3 f_leak in spirit): the rollout's own margin
+    # through the SAME harness.  Without it, a near-chance result on the real
+    # features is uninterpretable — it could equally mean the harness is broken,
+    # and 'the rollout's information is not in these features' is exactly the
+    # conclusion this lane may have to publish.
+    Xpc = np.column_stack([CLASSES["combined"][0], Lmarg])
+    pc = fit_eval(Xpc[ltr], Ly[ltr], Xpc[lte], Ly[lte], "logit")
+    doc["positive_control_leak"] = pc if isinstance(pc, dict) else pc[0]
+    print("\nPOSITIVE CONTROL (rollout margin as a feature — the harness must "
+          "be able to learn):", json.dumps(
+              {k: v for k, v in doc["positive_control_leak"].items()
+               if k in ("auc", "acc", "majority_prior")}))
+
+    doc["feature_class_decomposition"] = {}
+    preds = {}
+    print("\n=== THREE-WAY FEATURE-CLASS DECOMPOSITION (listwise, all tie "
+          "events) ===")
+    for cls, (Xc, nm) in CLASSES.items():
+        r = run_target(cls, Xc, Ly, Lseed, ltr, lte, nm)
+        preds[cls] = r.pop("_logit_pred", None)
+        r.pop("_gbm_pred", None)
+        lin = r.get("logit", {}).get("auc")
+        ceil = r.get("gbm", {}).get("auc")
+        # linear-vs-ceiling gap: small => the FEATURES decide everything and a
+        # linear term is enough; large => MODEL CLASS matters and phase 2 should
+        # consider the LUT-of-learned-score route (stage-2 precedent).
+        r["linear_vs_ceiling_gap"] = (round(float(ceil - lin), 4)
+                                      if (lin is not None and ceil is not None)
+                                      else None)
+        doc["feature_class_decomposition"][cls] = r
+        nullmax = r.get("shuffle_null", {}).get("max")
+        print(f"  {cls:9s} linear AUC {lin}  CI "
+              f"{r.get('logit', {}).get('auc_ci95_seed_boot')}  "
+              f"ceiling(GBM) {ceil}  gap {r['linear_vs_ceiling_gap']}  "
+              f"null_max {nullmax}  beats_null {r.get('beats_null_band')}")
+
+    # ---- REGRESSION FORM: predict the CONTINUOUS rollout margin -------------
+    # The deployable artifact is sign(pred) thresholded at theta, which mirrors
+    # H12's own gate semantics with zero discretisation loss: H12 accepts a flip
+    # iff the fork progress-sum difference clears margin_sum, and margin_sum is
+    # exactly what is regressed here.
+    from sklearn.linear_model import Ridge
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.metrics import roc_auc_score
+    from scipy.stats import spearmanr
+    doc["margin_regression"] = {}
+    print("\n=== MARGIN REGRESSION (continuous rollout margin; deploy as "
+          f"sign(pred) at theta) ===  H12 theta_sum = {H12_MARGIN_SUM}")
+    for cls, (Xc, _nm) in CLASSES.items():
+        sc = StandardScaler().fit(Xc[ltr])
+        rg = Ridge(alpha=1.0).fit(sc.transform(Xc[ltr]), Lmarg[ltr])
+        pred = rg.predict(sc.transform(Xc[lte]))
+        rho, pval = spearmanr(pred, Lmarg[lte])
+        # would this predictor reproduce H12's OWN accept/reject decision?
+        y_gate = (Lmarg[lte] >= H12_MARGIN_SUM).astype(int)
+        auc_gate = (float(roc_auc_score(y_gate, pred))
+                    if len(np.unique(y_gate)) > 1 else None)
+        d = {"spearman_rho": round(float(rho), 4),
+             "spearman_p": float(pval),
+             "r2": round(float(rg.score(sc.transform(Xc[lte]), Lmarg[lte])), 4),
+             "auc_reproducing_theta_gate": (round(auc_gate, 4)
+                                            if auc_gate else None),
+             "gate_positive_rate": round(float(y_gate.mean()), 4)}
+        doc["margin_regression"][cls] = d
+        print(f"  {cls:9s} rho {d['spearman_rho']}  R2 {d['r2']}  "
+              f"AUC(reproduce theta gate) {d['auc_reproducing_theta_gate']}  "
+              f"(gate positive rate {d['gate_positive_rate']})")
+
+    # ---- EVENT-LEVEL DECISION MATCH, per feature class ---------------------
+    ev_te = Lev[lte]
+    uniq_ev = sorted(set(ev_te.tolist()))
+    remap = {e: i for i, e in enumerate(uniq_ev)}
+    ev_c = np.array([remap[e] for e in ev_te])
+    pref_te = np.array([pref_ev[e] for e in uniq_ev])
+    doc["event_decision_sweep"] = {}
+    print("\n=== EVENT-LEVEL DECISION MATCH (does the comparator pick the "
+          "rollout's board?) ===")
+    for cls, p in preds.items():
+        if p is None:
+            continue
         sweep = []
         for tau in (0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8):
-            d = event_decision_accuracy(lp, Ly[lte], ev_c, pref_te, tau)
+            d = event_decision_accuracy(p, Ly[lte], ev_c, pref_te, tau)
             d["tau"] = tau
             sweep.append(d)
-        doc["event_decision_sweep"] = sweep
-        print("\nEVENT-LEVEL DECISION MATCH (does the comparator pick the "
-              "rollout's board?):")
-        for d in sweep:
-            print(f"  tau={d['tau']}: acc={d['event_accuracy']} "
-                  f"fired={d['n_fired']}/{d['n_events']} "
-                  f"prec_when_fired={d['precision_when_fired']} "
-                  f"(keep-champion base rate {d['base_rate_keep_champion']})")
-        doc["calibration_T1_listwise"] = calibration(lp, Lmarg[lte])
-        print("\ncalibration (listwise score vs realized rollout margin):")
-        print(json.dumps(doc["calibration_T1_listwise"], indent=1))
-
-    if logit_p is not None:
-        doc["calibration_T1_logit"] = calibration(logit_p, marg[te])
-        print("\ncalibration (predicted preference vs realized rollout "
-              "margin, TEST split):")
-        print(json.dumps(doc["calibration_T1_logit"], indent=1))
+        doc["event_decision_sweep"][cls] = sweep
+        best = max(sweep, key=lambda d: d["event_accuracy"])
+        print(f"  {cls:9s} best acc {best['event_accuracy']} at tau="
+              f"{best['tau']} (fired {best['n_fired']}/{best['n_events']}, "
+              f"prec {best['precision_when_fired']}) vs keep-champion base "
+              f"rate {best['base_rate_keep_champion']}")
+        doc.setdefault("calibration", {})[cls] = calibration(p, Lmarg[lte])
 
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     json.dump(doc, open(a.out, "w"), indent=1, default=float)
