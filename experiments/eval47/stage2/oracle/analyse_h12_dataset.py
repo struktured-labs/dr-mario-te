@@ -161,6 +161,80 @@ def build_pair_design(rows):
             n_multi)
 
 
+def build_listwise_design(rows):
+    """One row per DISTINCT ALTERNATIVE board, which keeps every tie event.
+
+    The 2-board design above drops the ~20% of events that resolve to 3 or 4
+    distinct boards.  Dropping a fifth of the population and then reporting an
+    AUC on the remainder would be sizing a problem nobody has.  Here each
+    distinct board d != A contributes a row x = feat(d) - feat(A) labelled "is d
+    the rollout's argmax", and the deployed decision is argmax over an event's
+    rows against a threshold — the same linear comparator, evaluated the way it
+    would actually be used.
+    """
+    X, y, ev, seeds, marg, ctx = [], [], [], [], [], []
+    prefer_by_event, seed_by_event = [], []
+    for e, r in enumerate(rows):
+        h = r["post_hash"]
+        A = h[0]
+        best = h[r["rollout_rank1"]]
+        fa = np.asarray(r["feats"][0], dtype=np.float64)
+        pa = r["labels"][0][1]
+        seen = {A}
+        n_alt = 0
+        for i in range(len(h)):
+            if h[i] in seen:
+                continue
+            seen.add(h[i])
+            X.append(np.asarray(r["feats"][i], dtype=np.float64) - fa)
+            y.append(int(h[i] == best))
+            ev.append(e)
+            seeds.append(r["seed"])
+            marg.append(int(r["labels"][i][1] - pa))
+            ctx.append([r["viruses"], r["maxh"], r["d_spawn_h"],
+                        r["n_legal_pre"], r["pills_placed"]])
+            n_alt += 1
+        prefer_by_event.append(int(best != A))
+        seed_by_event.append(r["seed"])
+    return (np.asarray(X), np.asarray(y), np.asarray(ev), np.asarray(seeds),
+            np.asarray(marg), np.asarray(ctx, dtype=np.float64),
+            np.asarray(prefer_by_event), np.asarray(seed_by_event))
+
+
+def event_decision_accuracy(score, y, ev, prefer_by_event, tau):
+    """Fraction of EVENTS where the comparator picks the rollout's board.
+
+    An event is correct when either (a) no alternative clears tau and the
+    rollout also kept the champion's board, or (b) the argmax alternative
+    clears tau and IS the rollout's board.  This is the number that matters:
+    row AUC can look fine while the per-decision behaviour does not match.
+    """
+    n_ev = int(ev.max()) + 1 if len(ev) else 0
+    correct = 0
+    fired = 0
+    fired_correct = 0
+    for e in range(n_ev):
+        m = ev == e
+        if not m.any():
+            correct += int(prefer_by_event[e] == 0)
+            continue
+        s = score[m]
+        j = int(np.argmax(s))
+        if s[j] <= tau:
+            correct += int(prefer_by_event[e] == 0)
+        else:
+            fired += 1
+            hit = bool(y[m][j] == 1)
+            correct += int(hit)
+            fired_correct += int(hit)
+    return {"event_accuracy": round(correct / max(1, n_ev), 4),
+            "n_events": n_ev, "n_fired": fired,
+            "precision_when_fired": (round(fired_correct / fired, 4)
+                                     if fired else None),
+            "base_rate_keep_champion": round(
+                float((prefer_by_event == 0).mean()), 4)}
+
+
 def seed_split(seeds):
     uniq = np.unique(seeds)
     rng = np.random.default_rng(SPLIT_RNG)
@@ -438,6 +512,50 @@ def main():
     print(json.dumps({k: v for k, v in rb.items()
                       if k in ("logit", "gbm", "shuffle_null",
                                "beats_null_band")}, indent=1))
+
+    # ---- LISTWISE: every tie event, including the 3- and 4-board ones ----
+    LX, Ly, Lev, Lseed, Lmarg, Lctx, pref_ev, seed_ev = \
+        build_listwise_design(rows)
+    LXf = np.concatenate([LX, Lctx], axis=1)
+    ltr, lte = seed_split(Lseed)
+    doc["listwise_design"] = {
+        "n_alternative_rows": int(len(LX)),
+        "n_events": int(len(pref_ev)),
+        "event_prefer_rate": round(float(pref_ev.mean()), 4),
+        "row_positive_rate": round(float(Ly.mean()), 4)}
+    print("\nlistwise design:", json.dumps(doc["listwise_design"]))
+    rl = run_target("T1_listwise", LXf, Ly, Lseed, ltr, lte, names_f)
+    lp = rl.pop("_logit_pred", None)
+    rl.pop("_gbm_pred", None)
+    doc["T1_listwise"] = rl
+    print("\nT1 LISTWISE (rank the rollout's board above the other "
+          "alternatives), all tie events:")
+    print(json.dumps(rl, indent=1))
+
+    if lp is not None:
+        # Re-index the test rows to a contiguous event numbering, then sweep the
+        # firing threshold.  tau is the silicon knob: it sets how often the
+        # distilled term is allowed to overrule the champion.
+        ev_te = Lev[lte]
+        remap = {e: i for i, e in enumerate(sorted(set(ev_te.tolist())))}
+        ev_c = np.array([remap[e] for e in ev_te])
+        pref_te = np.array([pref_ev[e] for e in sorted(set(ev_te.tolist()))])
+        sweep = []
+        for tau in (0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8):
+            d = event_decision_accuracy(lp, Ly[lte], ev_c, pref_te, tau)
+            d["tau"] = tau
+            sweep.append(d)
+        doc["event_decision_sweep"] = sweep
+        print("\nEVENT-LEVEL DECISION MATCH (does the comparator pick the "
+              "rollout's board?):")
+        for d in sweep:
+            print(f"  tau={d['tau']}: acc={d['event_accuracy']} "
+                  f"fired={d['n_fired']}/{d['n_events']} "
+                  f"prec_when_fired={d['precision_when_fired']} "
+                  f"(keep-champion base rate {d['base_rate_keep_champion']})")
+        doc["calibration_T1_listwise"] = calibration(lp, Lmarg[lte])
+        print("\ncalibration (listwise score vs realized rollout margin):")
+        print(json.dumps(doc["calibration_T1_listwise"], indent=1))
 
     if logit_p is not None:
         doc["calibration_T1_logit"] = calibration(logit_p, marg[te])
