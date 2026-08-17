@@ -161,6 +161,54 @@ def build_pair_design(rows):
             n_multi)
 
 
+def representability_ceiling(rows):
+    """CAN THE FEATURE SET EVEN SEE THE DIFFERENCE?
+
+    Before asking how well a model fits, ask whether the modelling assumption is
+    itself the defect.  If two DISTINCT boards carry an IDENTICAL 26-feature
+    vector (plus an identical champion value), then NO function of those
+    features can rank one above the other — the error is irreducible, and any
+    threshold sweep on top of it is measuring the wrong thing.
+
+    Returns the collision rate and, more usefully, the resulting CEILING on
+    event-level decision accuracy: on a colliding event the best any comparator
+    can do is guess, so it is charged the majority outcome.
+    """
+    n_ev = len(rows)
+    collide = 0
+    ceiling_hits = 0
+    collide_prefer = 0
+    for r in rows:
+        h = r["post_hash"]
+        A = h[0]
+        fa = np.asarray(r["feats"][0], dtype=np.float64)
+        va = float(r["champ_vals"][0])
+        best = h[r["rollout_rank1"]]
+        seen = {A}
+        blind = False
+        for i in range(len(h)):
+            if h[i] in seen:
+                continue
+            seen.add(h[i])
+            same_feats = np.array_equal(
+                np.asarray(r["feats"][i], dtype=np.float64), fa)
+            if same_feats and float(r["champ_vals"][i]) == va:
+                blind = True
+                if h[i] == best:
+                    collide_prefer += 1
+        if blind:
+            collide += 1
+        else:
+            ceiling_hits += 1
+    return {
+        "n_events": n_ev,
+        "n_events_with_feature_blind_alternative": collide,
+        "frac_feature_blind": round(collide / max(1, n_ev), 4),
+        "n_blind_alternatives_the_rollout_preferred": collide_prefer,
+        "event_accuracy_ceiling_if_blind_events_are_coinflips": round(
+            (ceiling_hits + 0.5 * collide) / max(1, n_ev), 4)}
+
+
 def build_listwise_design(rows):
     """One row per DISTINCT ALTERNATIVE board, which keeps every tie event.
 
@@ -474,6 +522,11 @@ def main():
 
     doc = {"n_files": len(paths), "census": census(rows)}
     print(json.dumps(doc["census"], indent=1))
+
+    doc["representability"] = representability_ceiling(rows)
+    print("\nREPRESENTABILITY (can the 26 features + champion value tell the "
+          "candidate boards apart at all?):")
+    print(json.dumps(doc["representability"], indent=1))
 
     X, yP, yF, seeds, marg, ctx, n_multi = build_pair_design(rows)
     doc["pair_design"] = {"n_rows": int(len(X)),
