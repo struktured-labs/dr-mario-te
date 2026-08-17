@@ -28,10 +28,29 @@ MODEL SHAPE, DECLARED BEFORE FITTING
 ------------------------------------
 The silicon precedent is stage 2's shippable 64-level LUT: no multiplies, 0.34
 M10K, 18 of 250 cycles.  So the PRIMARY model is the cheapest thing that could
-ship: a LINEAR comparator on the FEATURE DIFFERENCE between the two candidate
-boards, score = w . (x_B - x_A), decide B iff score > threshold.  A gradient-
-boosted model on the same inputs is fitted ONLY as a capacity ceiling — it says
-how much signal exists, not what ships.
+ship: a pairwise (Bradley-Terry / logistic) comparator on the FEATURE DIFFERENCE
+between candidate boards, score = w . (x_d - x_A), decide d iff score > tau.
+The REGRESSION form on the continuous rollout margin is fitted alongside it,
+because the deployable artifact is sign(pred) thresholded at theta and that
+mirrors H12's own gate semantics (accept iff the fork progress-sum difference
+clears margin_sum = 3) with zero discretisation loss.
+
+CEILING PROBES — instruments, not candidates.  Neither ships.
+  gbm     gradient-boosted: finds axis-aligned structure.
+  kernel  Nystroem-RBF + logistic: finds smooth structure.  This is the
+          feasible stand-in for the GP; an exact GP is O(n^3) at ~35k rows.
+Both are reported, and the ceiling is their max.  A SMALL linear-vs-ceiling gap
+means the FEATURES decide everything and a linear term suffices; a LARGE gap
+means model class matters and phase 2 should weigh the LUT-of-learned-score
+route.
+
+THE HEADLINE IS THE THREE-WAY FEATURE-CLASS SPLIT
+-------------------------------------------------
+static-only / temporal-only / combined, each with its own context block, its own
+shuffle null band and its own ceiling.  It decides whether the owner's
+accumulator hypothesis beats plain static distillation, whether they are
+complementary, or whether both fail — the last of which sends the lane to
+garbage-window compute.
 
 CONTROLS (a check that cannot fail is not a check)
 --------------------------------------------------
@@ -338,6 +357,25 @@ def fit_eval(Xtr, ytr, Xte, yte, kind, seed=0):
         m.fit(sc.transform(Xtr), ytr)
         p = m.predict_proba(sc.transform(Xte))[:, 1]
         coef = m.coef_[0] / np.maximum(sc.scale_, 1e-12)
+    elif kind == "kernel":
+        # KERNEL CEILING — the closest FEASIBLE stand-in for the GP the addendum
+        # asked for.  An exact GP is O(n^3) at ~35k alternative rows, so it is
+        # infeasible rather than merely unwieldy; a Nystroem RBF map with 400
+        # components approximates the same kernel in O(n * m^2).  Reported
+        # alongside the boosted ceiling because the two fail DIFFERENTLY: trees
+        # find axis-aligned structure, the kernel finds smooth structure, and a
+        # feature set that really contains signal should be visible to at least
+        # one of them.  Neither ships; both are instruments.
+        from sklearn.kernel_approximation import Nystroem
+        from sklearn.pipeline import make_pipeline
+        m = make_pipeline(
+            StandardScaler(),
+            Nystroem(gamma=1.0 / max(1, Xtr.shape[1]), n_components=400,
+                     random_state=seed),
+            LogisticRegression(max_iter=3000, C=1.0))
+        m.fit(Xtr, ytr)
+        p = m.predict_proba(Xte)[:, 1]
+        coef = None
     else:
         m = HistGradientBoostingClassifier(
             max_iter=300, learning_rate=0.06, max_leaf_nodes=15,
@@ -380,7 +418,7 @@ def cluster_boot_auc(y, p, seeds):
 
 def run_target(name, X, y, seeds, tr, te, feat_names):
     res = {}
-    for kind in ("logit", "gbm"):
+    for kind in ("logit", "gbm", "kernel"):
         r = fit_eval(X[tr], y[tr], X[te], y[te], kind)
         if isinstance(r, dict):
             res[kind] = r
@@ -656,7 +694,9 @@ def main():
         preds[cls] = r.pop("_logit_pred", None)
         r.pop("_gbm_pred", None)
         lin = r.get("logit", {}).get("auc")
-        ceil = r.get("gbm", {}).get("auc")
+        ceils = [r.get(k, {}).get("auc") for k in ("gbm", "kernel")]
+        ceils = [c for c in ceils if c is not None]
+        ceil = max(ceils) if ceils else None
         # linear-vs-ceiling gap: small => the FEATURES decide everything and a
         # linear term is enough; large => MODEL CLASS matters and phase 2 should
         # consider the LUT-of-learned-score route (stage-2 precedent).
@@ -665,10 +705,12 @@ def main():
                                       else None)
         doc["feature_class_decomposition"][cls] = r
         nullmax = r.get("shuffle_null", {}).get("max")
-        print(f"  {cls:9s} linear AUC {lin}  CI "
-              f"{r.get('logit', {}).get('auc_ci95_seed_boot')}  "
-              f"ceiling(GBM) {ceil}  gap {r['linear_vs_ceiling_gap']}  "
-              f"null_max {nullmax}  beats_null {r.get('beats_null_band')}")
+        print(f"  {cls:9s} linear {lin} CI "
+              f"{r.get('logit', {}).get('auc_ci95_seed_boot')} | "
+              f"ceiling gbm {r.get('gbm', {}).get('auc')} "
+              f"kernel {r.get('kernel', {}).get('auc')} -> {ceil} | "
+              f"gap {r['linear_vs_ceiling_gap']} | null_max {nullmax} | "
+              f"beats_null {r.get('beats_null_band')}")
 
     # ---- REGRESSION FORM: predict the CONTINUOUS rollout margin -------------
     # The deployable artifact is sign(pred) thresholded at theta, which mirrors
