@@ -35,8 +35,11 @@ how much signal exists, not what ships.
 
 CONTROLS (a check that cannot fail is not a check)
 --------------------------------------------------
-* SHUFFLE: the same fit on permuted labels must land at AUC ~0.5.  If it does
-  not, the split leaks and every number below is void.
+* SHUFFLE NULL BAND: the same fit on permuted training labels, repeated
+  N_SHUFFLE times.  The real AUC must clear the MAXIMUM of that band.  One
+  shuffle draw is NOT a control — a logistic fit on permuted labels is a random
+  direction in 31-dim space, and a single draw measured 0.63 against a planted
+  signal.  The null is the distribution, not a point.
 * GROUPED SPLIT: train/test split is BY SEED.  Plies within a game share a
   board trajectory; a random row split would inflate AUC by memorising games.
 * PRIOR: the majority-class rate is printed next to every accuracy, because an
@@ -64,6 +67,8 @@ from h12_arm_dataset import (FEAT_NAMES, BASE_NAMES, CAND_NAMES,  # noqa: E402
 
 SPLIT_RNG = 20260817
 TEST_FRAC = 0.30
+N_SHUFFLE = 12          # draws in the permuted-label null band
+N_BOOT = 300            # cluster (by seed) bootstrap draws for the AUC CI
 
 
 # ------------------------------------------------------------------- loading
@@ -198,6 +203,29 @@ def fit_eval(Xtr, ytr, Xte, yte, kind, seed=0):
     return out, p, coef
 
 
+def cluster_boot_auc(y, p, seeds):
+    """AUC CI resampling WHOLE SEEDS, not rows.
+
+    Tie plies inside one game are not independent — they sit on one board
+    trajectory — so a row bootstrap would report a CI several times too narrow
+    and turn a coin-flip into a verdict.
+    """
+    from sklearn.metrics import roc_auc_score
+    uniq = np.unique(seeds)
+    rng = np.random.default_rng(SPLIT_RNG + 999)
+    out = []
+    for _ in range(N_BOOT):
+        pick = rng.choice(uniq, size=len(uniq), replace=True)
+        idx = np.concatenate([np.flatnonzero(seeds == s) for s in pick])
+        if len(np.unique(y[idx])) < 2:
+            continue
+        out.append(roc_auc_score(y[idx], p[idx]))
+    if not out:
+        return None
+    return [round(float(np.quantile(out, 0.025)), 4),
+            round(float(np.quantile(out, 0.975)), 4)]
+
+
 def run_target(name, X, y, seeds, tr, te, feat_names):
     res = {}
     for kind in ("logit", "gbm"):
@@ -206,6 +234,7 @@ def run_target(name, X, y, seeds, tr, te, feat_names):
             res[kind] = r
             continue
         stats, p, coef = r
+        stats["auc_ci95_seed_boot"] = cluster_boot_auc(y[te], p, seeds[te])
         res[kind] = stats
         if coef is not None:
             top = sorted(zip(feat_names, coef), key=lambda kv: -abs(kv[1]))[:8]
@@ -213,12 +242,30 @@ def run_target(name, X, y, seeds, tr, te, feat_names):
             res["_logit_pred"] = p
         else:
             res["_gbm_pred"] = p
-    # SHUFFLE CONTROL: permute labels within the training set only.
-    rng = np.random.default_rng(SPLIT_RNG + 1)
-    ysh = y.copy()
-    ysh[tr] = rng.permutation(ysh[tr])
-    r = fit_eval(X[tr], ysh[tr], X[te], y[te], "logit")
-    res["shuffle_control"] = r if isinstance(r, dict) else r[0]
+    # SHUFFLE CONTROL, REPEATED.  A SINGLE shuffle draw is not a control: a
+    # logistic fit on permuted labels yields an essentially RANDOM direction in
+    # 31-dim feature space, and the test AUC of a random direction against a
+    # label that depends strongly on a few of those features is centred on 0.5
+    # but with a wide spread — one draw measured 0.63 on planted-signal smoke
+    # data and would have read as a leak.  The null is the DISTRIBUTION.
+    nulls = []
+    for i in range(N_SHUFFLE):
+        rng = np.random.default_rng(SPLIT_RNG + 1 + i)
+        ysh = y.copy()
+        ysh[tr] = rng.permutation(ysh[tr])
+        r = fit_eval(X[tr], ysh[tr], X[te], y[te], "logit")
+        if not isinstance(r, dict):
+            nulls.append(r[0]["auc"])
+    if nulls:
+        res["shuffle_null"] = {
+            "n_draws": len(nulls),
+            "mean": round(float(np.mean(nulls)), 4),
+            "max": round(float(np.max(nulls)), 4),
+            "q95": round(float(np.quantile(nulls, 0.95)), 4),
+            "draws": [round(float(v), 4) for v in nulls]}
+        real = res.get("logit", {}).get("auc")
+        if real is not None:
+            res["beats_null_band"] = bool(real > np.max(nulls))
     return res
 
 
@@ -389,7 +436,8 @@ def main():
     doc["T1_free_budget_only"] = rb
     print("\nT1 restricted to FREE_IN_COLWALK features:")
     print(json.dumps({k: v for k, v in rb.items()
-                      if k in ("logit", "gbm", "shuffle_control")}, indent=1))
+                      if k in ("logit", "gbm", "shuffle_null",
+                               "beats_null_band")}, indent=1))
 
     if logit_p is not None:
         doc["calibration_T1_logit"] = calibration(logit_p, marg[te])

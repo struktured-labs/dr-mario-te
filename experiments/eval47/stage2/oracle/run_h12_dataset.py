@@ -30,9 +30,29 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 from run_h12 import (freeze_meta, runtime_manifest, _done_seeds,  # noqa: E402
-                     _load_segment, _segment_summary, MAX_FLIPLOG)
+                     _load_segment, _segment_summary, MAX_FLIPLOG, _sha256)
 
 _W = {}
+
+
+def dataset_manifest(model):
+    """`run_h12.runtime_manifest` PLUS the two derivative files.
+
+    Inherited unchanged, the manifest hashes `run_h12.py` (its own __file__) and
+    never sees `run_h12_dataset.py` or `h12_arm_dataset.py` — so a dataset would
+    carry a code fingerprint that does not include the code that produced it.
+    This project has already been bitten once by a cross-node skew that left
+    every headline summary unchanged; an unhashed instrument is the same hole.
+    """
+    m = runtime_manifest(model)
+    import hashlib
+    for name in ("run_h12_dataset", "h12_arm_dataset"):
+        path = os.path.join(HERE, name + ".py")
+        m["files"][name] = {"path": path, "sha256": _sha256(path)}
+    m["rolled"] = hashlib.sha256("".join(
+        f"{n}:{d['sha256']}" for n, d in sorted(m["files"].items())
+    ).encode()).hexdigest()
+    return m
 
 
 def _winit(model, label, topk, horizon, fork_samples, provenance,
@@ -130,7 +150,7 @@ def main():
             "arm_class": "H12ArmDataset",
             "purpose": "H12 distillation phase-1 dataset (logging-only arm)",
             "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
-    manifest = runtime_manifest(a.model)
+    manifest = dataset_manifest(a.model)
     freeze_meta(a.outdir, meta, manifest)
     print(f"runtime_manifest={manifest['rolled']}", flush=True)
 
