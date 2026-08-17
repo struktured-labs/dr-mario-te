@@ -179,6 +179,7 @@ def build_listwise_design(rows):
         A = h[0]
         best = h[r["rollout_rank1"]]
         fa = np.asarray(r["feats"][0], dtype=np.float64)
+        va = float(r["champ_vals"][0])
         pa = r["labels"][0][1]
         seen = {A}
         n_alt = 0
@@ -186,7 +187,14 @@ def build_listwise_design(rows):
             if h[i] in seen:
                 continue
             seen.add(h[i])
-            X.append(np.asarray(r["feats"][i], dtype=np.float64) - fa)
+            # The champion's OWN value gap is appended as a 27th feature.  It is
+            # free on silicon — the eval already computed it — and at an exact
+            # top-2 tie it is exactly 0 for the duplicate board and negative for
+            # the rank-2/3 boards, so it carries the "how much champion value am
+            # I giving up" term that the feature differences alone cannot.
+            X.append(np.append(
+                np.asarray(r["feats"][i], dtype=np.float64) - fa,
+                float(r["champ_vals"][i]) - va))
             y.append(int(h[i] == best))
             ev.append(e)
             seeds.append(r["seed"])
@@ -517,14 +525,28 @@ def main():
     LX, Ly, Lev, Lseed, Lmarg, Lctx, pref_ev, seed_ev = \
         build_listwise_design(rows)
     LXf = np.concatenate([LX, Lctx], axis=1)
+    lnames = ([f"d_{n}" for n in FEAT_NAMES] + ["d_champ_val"]
+              + names_f[-5:])
     ltr, lte = seed_split(Lseed)
+
+    # POSITIVE CONTROL, in the spirit of stage 2's A3 f_leak.  The rollout's own
+    # progress margin is handed to the SAME fitting harness.  It must score far
+    # above everything else.  Without this, a near-chance result on the real
+    # features is uninterpretable: it could equally mean the harness is broken.
+    pc = fit_eval(np.column_stack([LXf, Lmarg])[ltr], Ly[ltr],
+                  np.column_stack([LXf, Lmarg])[lte], Ly[lte], "logit")
+    doc["positive_control_leak"] = pc if isinstance(pc, dict) else pc[0]
+    print("\nPOSITIVE CONTROL (rollout margin as a feature — the harness must "
+          "be able to learn):")
+    print(json.dumps({k: v for k, v in doc["positive_control_leak"].items()
+                      if k in ("auc", "acc", "majority_prior")}, indent=1))
     doc["listwise_design"] = {
         "n_alternative_rows": int(len(LX)),
         "n_events": int(len(pref_ev)),
         "event_prefer_rate": round(float(pref_ev.mean()), 4),
         "row_positive_rate": round(float(Ly.mean()), 4)}
     print("\nlistwise design:", json.dumps(doc["listwise_design"]))
-    rl = run_target("T1_listwise", LXf, Ly, Lseed, ltr, lte, names_f)
+    rl = run_target("T1_listwise", LXf, Ly, Lseed, ltr, lte, lnames)
     lp = rl.pop("_logit_pred", None)
     rl.pop("_gbm_pred", None)
     doc["T1_listwise"] = rl
