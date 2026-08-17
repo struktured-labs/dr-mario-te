@@ -1935,6 +1935,37 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_absX", 0x0500); a.ins16("STA_absX", HOLD_BUF2)
         a.ins("INX"); a.br("BNE", "hb_snap_lp")
     if STUDY and STUDYCOUNTS:
+        # ---- PAUSE GATE (task #46 Pocket menu-garble fix) ---------------------------------
+        # This used to draw on EVERY mode-4 hook, on the theory that the write is idempotent
+        # against the game's own in-play draw. It is -- but it is NOT accounted for in the
+        # game's OAM bookkeeping: the driver never touches the sprite high-water mark ($42),
+        # so R8712's padding starts BELOW these slots and never clears them. On the transit
+        # out of play the stale digits survive, and the game's OAM compaction RELOCATES them
+        # (measured, tmp/task46/out_OAM/oam_at_first_garble.txt: written at slots 8-15,
+        # observed at 4-11 on mode 3) -- which is why the fixed-window blank below cannot
+        # catch them, and why WIDENING that window is the wrong fix: slots 4-15 are
+        # legitimately the settings screen's own sprites.
+        # Fix: draw ONLY while actually paused -- the same condition the STUDY letters use --
+        # so no stale digit ever exists to be relocated. The in-play write was pure loss: the
+        # game draws these counters itself during play, and STUDYCOUNTS exists only because
+        # the base PAUSE path blanks them.
+        # ⚠ Deliberately does NOT blank slots 8-15 here. During unpaused play those slots hold
+        # the GAME's live counter sprites; parking them every hook would stomp the counters the
+        # player is reading. Skip, don't blank. Non-play modes are still blanked below.
+        # Needs the S2P_TTL heartbeat, which exists only on the EVAC/STUDY2P path; without it
+        # TTL is permanently 0 and the gate would invert (drawing on every play hook), so
+        # non-STUDY2P carts keep the old unconditional draw and rebuild byte-identical.
+        if STUDY2P:
+            a.ins16("LDA_abs", S2P_TTL); a.br("BEQ", "sc_ttl0")   # TTL live => unpaused play
+            a.jmp("sc_skip")                                      # invert-and-JMP: the draw body
+            a.label("sc_ttl0")                                    # is far past branch range
+            a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "sc_ma")
+            a.jmp("sc_skip")                                      # no live match => nothing to show
+            a.label("sc_ma")
+            if HOLDBOARD:
+                a.ins16("LDA_abs", HOLD_ACTIVE); a.br("BEQ", "sc_go")
+                a.jmp("sc_skip")                                  # STAGE CLEAR's own mode-4 wait
+                a.label("sc_go")
         # STUDY counter redraw (see DRSTUDYCOUNTS). Stack-free: ones stays in A, tens in X.
         # ★ THE TWO COUNTERS USE DIFFERENT ENCODINGS -- do not share a digit splitter.
         # Proven from the BASE GAME's own draw/clamp code in drmario_v28cs.nes, which is the
@@ -1974,6 +2005,8 @@ def build_main(level=11, speed=1):
             a.ins16("STA_abs", 0x0200 + sa * 4 + 2); a.ins16("STA_abs", 0x0200 + sb * 4 + 2)
             a.ins("LDA_imm", xa); a.ins16("STA_abs", 0x0200 + sa * 4 + 3)
             a.ins("LDA_imm", xb); a.ins16("STA_abs", 0x0200 + sb * 4 + 3)
+        if STUDY2P:
+            a.label("sc_skip")                                    # unpaused play: game owns 8-15
     # ---- pill-lock edge detect (both players) ----
     a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", LASTY1)
     a.br("BCC", "no_p1_new"); a.br("BEQ", "no_p1_new")
