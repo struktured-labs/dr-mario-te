@@ -36,21 +36,6 @@ class H12Arm(OracleArm):
         self.stats["tie_plies"] = 0
         self.stats["margin_rejected_flips"] = 0
 
-    def _gate(self, env):
-        """The gate predicate. H13 overrides ONLY this; see h13_arm.py.
-
-        Extracted 2026-08-18 for the H13 lane so gate-v1 and gate-v2 share this
-        `choose` verbatim instead of living in two transcribed copies
-        (measurement rule 3: one kernel, many call sites). `gate_h13.py` G0
-        proves the extraction is a no-op against `h12_arm_sealed.py`, a pristine
-        copy of the sealed 2b96cd3 file.
-        """
-        return gate_fires(env)
-
-    def arm_tag(self):
-        """Machine-readable stamp of the gate actually executed (rule 26)."""
-        return f"h12_{self.label_mode}_m{self.tie_margin}"
-
     def choose(self, env, seed, C, bmodel, w, fl, wt, ws, ply):
         from fb import FB
         import root_search as RS
@@ -65,7 +50,7 @@ class H12Arm(OracleArm):
             return None, None
         self.stats["plies"] += 1
 
-        fires, d_spawn_h, viruses = self._gate(env)
+        fires, d_spawn_h, viruses = gate_fires(env)
         if not fires:
             return base_a, base_a
         self.stats["gated_plies"] += 1
@@ -126,7 +111,7 @@ class H12Arm(OracleArm):
                 H = heights(env.board.color)
                 self.flip_log.append({
                     "seed": int(seed),
-                    "arm": self.arm_tag(),
+                    "arm": f"h12_{self.label_mode}_m{self.tie_margin}",
                     "ply": ply, "viruses": viruses, "maxh": int(H.max()),
                     "d_spawn_h": d_spawn_h,
                     "base_action": int(base_a), "trt_action": int(a),
