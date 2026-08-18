@@ -97,6 +97,23 @@ left the tie-break seed at 0 — where the base search already picks the cheap m
 flag has nothing to do. `F binds` exists so that cannot happen silently again, and
 `run_fw`'s docstring says why `tseed` is load-bearing.
 
+### Result — `GATE: PASS` (full log in `GATE_RESULT.txt`)
+
+100 double decisions and 100 non-double controls per arm, 4 match seeds, real firmware.
+
+    REAL   B bind PASS (2356B -> 2372B) · C canon-eq PASS · C even-o4 PASS
+           C board-id PASS (0 DIFFERENT boards) · D control PASS
+           E tempo PASS (rot 200 -> 100) · F binds PASS (50/100) · G inert@s0 PASS
+    mutants killed 4/4
+
+`F binds 50/100` is the algebra landing on the nose: the expensive member wins in exactly
+half the columns. `E tempo 200 -> 100` is the same fact in rotations — the flag halves the
+double-capsule rotation bill.
+
+★ **M1 changed 0 of 100 decisions.** The `(v, v+2)` key is *inert*, reproducing the h13-gate
+null exactly — a de-dup that removes nothing while every plumbing check stays green. That is
+the mutant's whole purpose, and it is why "removes nothing" has to count as a kill.
+
 ### Mutants
 
 | mutant | caught by |
@@ -117,6 +134,29 @@ n = 120 games, 19,798 plies, 7,075 double plies (35.7 %), × 7 realistic match s
 | doubles per game | 59.0 [54.1, 64.2] |
 | **rotations (= frames) saved per game** | **57.7** [51.1, 65.1] |
 | at 60 fps | **0.96 s per game** |
+
+## Ship-hex reproducibility
+
+`dbg_build.py all 0`, twice per arm:
+
+| | md5 |
+|---|---|
+| `DRDBLCANON=0` | `c87e60a1`, both runs — **exactly the hash `build_copro_d3.py`'s own comment records for this recipe** |
+| `DRDBLCANON=1` | `22be358c`, both runs |
+
+Both deterministic; OFF reproduces the documented artifact byte-for-byte. `copro_rom.hex` was
+backed up and restored around the sweep, and `git status` confirms it unchanged.
+
+⚠ **The committed `fpga/copro/copro_rom.hex` on this branch is `f4b6dfbf`, which
+`dbg_build.py all 0` does not produce.** Five plausible flag combinations
+(`DRSTRAND=20`, `DRCHAIN=180`, both, `DRCOPRO_ARM=1`, `DRSTRAND=20 DRFIX=1`) give
+`111fa9b9 / c87e60a1 / 111fa9b9 / 63bcac9d / 111fa9b9` — none match. The committed ship hex
+on `gw-design` has **no recorded recipe**, which is the exact failure the romgen rule exists
+to prevent. Not introduced here and not this lane's to fix, but it should be run down before
+that hex reaches a card.
+
+Flag-combination check (cf. the DRPRESTART×DRTUCK wedge pair): `DRCOPRO_TUCKV3=1` with
+`DRDBLCANON` both 0 and 1 builds and passes py65 validation.
 
 ## Side findings worth banking
 

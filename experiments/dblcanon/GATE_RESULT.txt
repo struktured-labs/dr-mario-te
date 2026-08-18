@@ -1,0 +1,64 @@
+======================================================================
+GATE #123 DRDBLCANON -- real 6502 firmware under py65, both flag states
+======================================================================
+  A identity  : PASS (OFF md5=e7bb5d16, pre-#123 md5=e7bb5d16)
+
+=== REAL  (n_double=100, n_control=100, moved=50)
+  B bind      : PASS (search 2356B -> 2372B)
+  C canon-eq  : PASS (0 mismatches)
+  C even-o4   : PASS (0 odd)
+  C board-id  : PASS (0 DIFFERENT boards)
+  D control   : PASS (0 non-doubles perturbed)
+  E tempo     : rot 200 -> 100 (PASS)
+  F binds     : PASS (flag changed 50/100 double decisions)
+  G inert@s0  : PASS (0/25 perturbed with jitter off)
+
+=== M1_wrongkey  (n_double=100, n_control=100, moved=0)
+  B bind      : PASS (search 2356B -> 2372B)
+  C canon-eq  : PASS (0 mismatches)
+  C even-o4   : FAIL (50 odd)
+  C board-id  : PASS (0 DIFFERENT boards)
+  D control   : PASS (0 non-doubles perturbed)
+  E tempo     : rot 200 -> 200 (FAIL/na)
+  F binds     : FAIL (flag changed 0/100 double decisions)
+  G inert@s0  : PASS (0/25 perturbed with jitter off)
+
+=== M2_nogate  (n_double=100, n_control=100, moved=50)
+  B bind      : PASS (search 2356B -> 2362B)
+  C canon-eq  : PASS (0 mismatches)
+  C even-o4   : PASS (0 odd)
+  C board-id  : PASS (0 DIFFERENT boards)
+  D control   : FAIL (48 non-doubles perturbed)
+  E tempo     : rot 200 -> 100 (PASS)
+  F binds     : PASS (flag changed 50/100 double decisions)
+  G inert@s0  : PASS (0/25 perturbed with jitter off)
+
+=== M3_expensive  (n_double=100, n_control=100, moved=50)
+  B bind      : PASS (search 2356B -> 2372B)
+  C canon-eq  : PASS (0 mismatches)
+  C even-o4   : FAIL (100 odd)
+  C board-id  : PASS (0 DIFFERENT boards)
+  D control   : PASS (0 non-doubles perturbed)
+  E tempo     : rot 200 -> 300 (FAIL/na)
+  F binds     : PASS (flag changed 50/100 double decisions)
+  G inert@s0  : FAIL (25/25 perturbed with jitter off)
+
+=== M4_inert  (n_double=100, n_control=100, moved=0)
+  B bind      : FAIL (search 2356B -> 2356B)
+  C canon-eq  : PASS (0 mismatches)
+  C even-o4   : FAIL (50 odd)
+  C board-id  : PASS (0 DIFFERENT boards)
+  D control   : PASS (0 non-doubles perturbed)
+  E tempo     : rot 200 -> 200 (FAIL/na)
+  F binds     : FAIL (flag changed 0/100 double decisions)
+  G inert@s0  : PASS (0/25 perturbed with jitter off)
+
+======================================================================
+REAL implementation: PASS
+mutants killed 4/4
+  KILLED  M1_wrongkey    by F_binds
+  KILLED  M2_nogate      by D_control
+  KILLED  M3_expensive   by E_tempo,C_even
+  KILLED  M4_inert       by B_bind,F_binds
+
+GATE: PASS
