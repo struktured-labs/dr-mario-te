@@ -40,11 +40,18 @@ def main():
         print(f"FAIL: repro_bootstrap resolved outside the clone: "
               f"{repro_bootstrap.__file__}")
         return 2
-    try:
-        resolved = repro_bootstrap.install()
-    except repro_bootstrap.VendorError as exc:
-        print(f"FAIL: {exc}")
-        return 2
+    # DRM_GATE_NO_BOOTSTRAP is the CONTROL ARM, used only by --mutants: it
+    # reproduces the pre-#19 state so that check C can be shown to go red.
+    # Never set it for a real gate run.
+    if os.environ.get("DRM_GATE_NO_BOOTSTRAP") == "1":
+        print("CONTROL ARM: bootstrap skipped (pre-#19 resolution)")
+        resolved = {}
+    else:
+        try:
+            resolved = repro_bootstrap.install()
+        except repro_bootstrap.VendorError as exc:
+            print(f"FAIL: {exc}")
+            return 2
 
     sealed = json.load(open(SEALED))["runtime_manifest"]
 

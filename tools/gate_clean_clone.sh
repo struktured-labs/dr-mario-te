@@ -53,12 +53,12 @@ fi
 # ---- killed-mutant standard: the gate must go RED on wrong inputs ----------
 # Each mutant names the file it damaged; the gate must exit non-zero AND say so.
 fails=0
-mutant() {  # mutant <name> <path-that-must-be-named> <shell-damage>
-  local name=$1 needle=$2 damage=$3
+mutant() {  # mutant <name> <path-that-must-be-named> <shell-damage> [env]
+  local name=$1 needle=$2 damage=$3 envvar=${4:-}
   git -C "$CLONE" checkout --quiet -- . && git -C "$CLONE" clean --quiet -fd
   ( cd "$CLONE" && eval "$damage" )
   local o r
-  o=$(cd "$CLONE" && "$PY" "$GATE" 2>&1); r=$?
+  o=$(cd "$CLONE" && env ${envvar:+"$envvar"} "$PY" "$GATE" 2>&1); r=$?
   local named=no; grep -qF -- "$needle" <<<"$o" && named=yes
   echo "--- mutant $name: exit=$r names_file=$named"
   grep -E "FAIL|MISSING|MISMATCH|CLEAN-CLONE" <<<"$o" | head -4
@@ -90,11 +90,23 @@ mutant M3_corrupt_vendored_fb "experiments/vendor/fb.py" \
 mutant M4_swap_nes_pills "nes_pills" \
   "cp experiments/nes_pills.py experiments/vendor/nes_pills.py"
 
+# M5: damage a manifested file that is NOT in the pin list, so the failure must
+# come from the ROLLED/per-file comparison rather than from pin verification.
+# Without this, checks A and B have never been observed going red.
+mutant M5_corrupt_oracle_arm "oracle_arm" \
+  "printf '\n# corrupted by the mutant\n' >> experiments/eval47/stage2/oracle/oracle_arm.py"
+
+# M6: the control arm - resolution exactly as it was before #19. Content is
+# unchanged, so A and B still pass; only check C can catch it. This is what
+# makes C demonstrably load-bearing rather than decorative.
+mutant M6_control_no_bootstrap "OUTSIDE the clone" \
+  "true" "DRM_GATE_NO_BOOTSTRAP=1"
+
 git -C "$CLONE" checkout --quiet -- . && git -C "$CLONE" clean --quiet -fd
 
 echo
 if [[ $fails -eq 0 ]]; then
-  echo "CLEAN-CLONE GATE: PASS (4/4 mutants killed)"
+  echo "CLEAN-CLONE GATE: PASS (6/6 mutants killed)"
   exit 0
 fi
 echo "CLEAN-CLONE GATE: UNSOUND ($fails mutant(s) survived)"
