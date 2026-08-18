@@ -1,0 +1,72 @@
+{
+ "seeds": [
+  90001,
+  90007,
+  71003,
+  41005
+ ],
+ "checks": {
+  "alt_differs_from_true": true,
+  "alts_differ_from_each_other": true,
+  "alt_seed_not_play_seed_canonical": true,
+  "parent_cursor_unadvanced": true,
+  "nxt_redrawn_on_clone": true,
+  "cur_preserved_on_clone": true
+ },
+ "rows": [
+  {
+   "seed": 90001,
+   "alt_seeds": [
+    55167,
+    55298
+   ],
+   "alt_differs_from_true": true,
+   "alts_differ_from_each_other": true,
+   "alt_seed_not_play_seed_canonical": true,
+   "parent_cursor_unadvanced": true,
+   "nxt_redrawn_on_clone": true,
+   "cur_preserved_on_clone": true
+  },
+  {
+   "seed": 90007,
+   "alt_seeds": [
+    37145,
+    37276
+   ],
+   "alt_differs_from_true": true,
+   "alts_differ_from_each_other": true,
+   "alt_seed_not_play_seed_canonical": true,
+   "parent_cursor_unadvanced": true,
+   "nxt_redrawn_on_clone": true,
+   "cur_preserved_on_clone": true
+  },
+  {
+   "seed": 71003,
+   "alt_seeds": [
+    15125,
+    15256
+   ],
+   "alt_differs_from_true": true,
+   "alts_differ_from_each_other": true,
+   "alt_seed_not_play_seed_canonical": true,
+   "parent_cursor_unadvanced": true,
+   "nxt_redrawn_on_clone": true,
+   "cur_preserved_on_clone": true
+  },
+  {
+   "seed": 41005,
+   "alt_seeds": [
+    28963,
+    29094
+   ],
+   "alt_differs_from_true": true,
+   "alts_differ_from_each_other": true,
+   "alt_seed_not_play_seed_canonical": true,
+   "parent_cursor_unadvanced": true,
+   "nxt_redrawn_on_clone": true,
+   "cur_preserved_on_clone": true
+  }
+ ],
+ "pass": true,
+ "supersedes": "gate_screen.py S2 m_no_deepcopy, which is EQUIVALENT under an action-sequence observable because _fork_label deepcopies its input"
+}

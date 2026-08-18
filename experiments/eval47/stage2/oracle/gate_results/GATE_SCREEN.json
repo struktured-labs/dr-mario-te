@@ -1,0 +1,44 @@
+{
+ "seeds": [
+  71000,
+  71001,
+  71002,
+  71003,
+  71004,
+  71005,
+  71006,
+  71007,
+  71008,
+  71009,
+  71010,
+  71011
+ ],
+ "thresh": 13,
+ "k_streams": 5,
+ "S1": {
+  "pass": true,
+  "n": 12,
+  "of": 12,
+  "events": 10,
+  "validated": true
+ },
+ "S2": {
+  "m_cursor_steal": {
+   "pass": true,
+   "diverged": 4,
+   "of": 12
+  },
+  "m_no_deepcopy": {
+   "pass": false,
+   "diverged": 0,
+   "of": 12
+  }
+ },
+ "S3": {
+  "pass": true,
+  "checked": 4
+ },
+ "overall": false,
+ "not_covered": "Proves the logger does not change the GAME. Says nothing about whether the screened comparison is the RIGHT comparison (prereg's job), nor about the fork machinery, which is H12's and gated upstream.",
+ "elapsed_min": 20.0
+}

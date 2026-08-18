@@ -88,24 +88,49 @@ def _winit(thresh, k_streams, horizon, alt_base):
               horizon=horizon, alt_base=alt_base)
 
 
-def _work(seed):
-    """Play the H13 arm on `seed`; screen every v2-only accepted flip inline."""
+SCREEN_MUTANTS = ("m_cursor_steal", "m_no_deepcopy")
+
+
+def _hexb(arr):
+    """Board plane -> hex. json-safe, diff-able, no pickle, no version skew."""
+    import numpy as np
+    return np.asarray(arr, dtype=np.uint8).tobytes().hex()
+
+
+def _bhash(col, vir):
+    """Board identity for dedup. Features are a lossy hash; use the bytes."""
+    import hashlib
+    import numpy as np
+    h = hashlib.sha256()
+    h.update(np.asarray(col, dtype=np.uint8).tobytes())
+    h.update(np.asarray(vir, dtype=np.uint8).tobytes())
+    return h.hexdigest()[:12]
+
+
+class ScreeningArm:
+    """Mixin factory — built at call time so it can close over rig constants.
+
+    Defined at MODULE level, not inside `_work`, so `gate_screen.py` can prove
+    the screening logger is INERT: its action sequence must equal the plain
+    H13Arm's, seed for seed. Comparing outcomes is not enough — a logger that
+    perturbs one decision in fifty passes an outcome check and still invalidates
+    every screened flip. (Thanks to the distill lane for this one; my H13 gate
+    certified H13Arm, while the thing that actually runs here is this SUBCLASS,
+    which the gate never saw — a check whose scope was smaller than its claim.)
+    """
+
+
+def make_screening_arm(C, K, H, alt_base, events, mutant=None, store_boards=True):
     import numpy as np
     from oracle_arm import (_fork_label, gate_fires, heights, _champ_values,
-                            _champ_action, CHAMP_ORDER)
-    from h13_arm import H13Arm, gate_v2
-    O, C, bmodel = _W["O"], _W["C"], _W["bmodel"]
-    T, K, H = _W["thresh"], _W["k"], _W["horizon"]
-    w, fl, wt, ws = C["w"], C["fl"], C["wt"], C["ws"]
-    events = []
+                            CHAMP_ORDER)
+    from h13_arm import H13Arm
 
-    class ScreeningArm(H13Arm):
+    class _Arm(H13Arm):
         def choose(self, env, seed_, C_, bmodel_, w_, fl_, wt_, ws_, ply):
             v1_open, _ds, _vir = gate_fires(env)
             a, base_a = super().choose(env, seed_, C_, bmodel_, w_, fl_,
                                        wt_, ws_, ply)
-            # Screen ONLY the decisions that distinguish H13 from H12: an
-            # accepted flip at a ply where gate-v1 was CLOSED.
             if a is None or base_a is None or a == base_a or v1_open:
                 return a, base_a
             H_ = heights(env.board.color)
@@ -114,43 +139,68 @@ def _work(seed):
                    "viruses": int(env.board.virus_count()),
                    "keep_action": int(base_a), "flip_action": int(a),
                    "keep": [], "flip": [], "rand": []}
+            bargs = _board_args(env)
+            if store_boards:
+                # BOTH PLANES, taken from the SAME flattening the champion's
+                # own decider consumes. Every virus-dependent term (BURIED,
+                # MATCHED, g_stranded, g_tower) is UNRECOVERABLE from colour
+                # alone, and you find that out on the day you want one.
+                rec["pre_col"] = _hexb(bargs[0])
+                rec["pre_vir"] = _hexb(bargs[1])
+                rec["cur"] = [int(env.cur.a), int(env.cur.b)]
+                rec["nxt"] = [int(env.nxt.a), int(env.nxt.b)]
+                rec["bhash"] = _bhash(bargs[0], bargs[1])
 
-            # POSITIVE CONTROL, scored on the SAME streams as the real pair.
-            # A screen that has never been shown to separate a known-worse
-            # action from the champion's pick has not been shown to
-            # discriminate at all ([[dr-mario-gate-standard-killed-mutants]]).
-            # If flip-vs-keep is indistinguishable from rand-vs-keep, the
-            # "improvement" is at the scale of picking a legal move at random.
-            vals = _champ_values(*_board_args(env), w_, fl_, wt_, ws_)
+            vals = _champ_values(*bargs, w_, fl_, wt_, ws_)
             legal = [int(s) for s in CHAMP_ORDER if np.isfinite(vals[int(s)])]
             pool = [c for c in legal if c not in (int(a), int(base_a))]
             rand_a = (pool[(int(seed_) * 7919 + ply) % len(pool)]
                       if pool else None)
             rec["rand_action"] = rand_a
 
+            if mutant == "m_cursor_steal":
+                # The classic defect this project already paid for: the screen
+                # draws from the LIVE env, advancing the game's own capsule
+                # cursor ([[dr-mario-deepcopy-pill-closure]]).
+                env._rand_pill()
+
             for j in range(K):
-                alt = _alt_seed(_W["alt_base"], int(seed_), j)
-                e_alt = alt_stream_clone(env, alt)
+                alt = _alt_seed(alt_base, int(seed_), j)
+                if mutant == "m_no_deepcopy":
+                    e_alt = env                      # screens ON the live game
+                else:
+                    e_alt = alt_stream_clone(env, alt)
                 arms = [("keep", base_a), ("flip", a)]
                 if rand_a is not None:
                     arms.append(("rand", rand_a))
                 for tag, act in arms:
-                    # fork_seed=seed_ keeps the PRESSURE model common to both
-                    # lines and to every stream; only the capsules vary.
                     surv, prog = _fork_label(e_alt, act, C_, seed_, bmodel_,
                                              w_, fl_, wt_, ws_, H)
                     rec[tag].append([int(surv), int(prog)])
             events.append(rec)
             return a, base_a
 
-    arm = ScreeningArm(gate_mode="v2", maxh_thresh=T, label_mode="true",
-                       tie_margin=0.5, provenance=True)
+    return _Arm
+
+
+def _work(seed):
+    """Play the H13 arm on `seed`; screen every v2-only accepted flip inline."""
+    O, C, bmodel = _W["O"], _W["C"], _W["bmodel"]
+    T, K, H = _W["thresh"], _W["k"], _W["horizon"]
+    events = []
+    Arm = make_screening_arm(C, K, H, _W["alt_base"], events)
+    arm = Arm(gate_mode="v2", maxh_thresh=T, label_mode="true",
+              tie_margin=0.5, provenance=True)
     t0 = time.monotonic()
     res = O.play_one(seed, arm, C, bmodel)
-    res.pop("_actions", None)
+    # STORE THE ACTION SEQUENCE, not just the boards. Boards cover only the
+    # plies we logged; the action sequence makes the WHOLE trajectory
+    # replayable, which is the difference between a null screen being a dead
+    # end and being a reusable v2-only corpus at ~6 s/game instead of ~150.
+    actions = [int(x) for x in (res.pop("_actions", None) or [])]
     return {"seed": seed, "res": res["res"], "pills": res["pills"],
             "dies_ahead": res["dies_ahead"], "plies": res["plies_scored"],
-            "flips": res["flips"],
+            "flips": res["flips"], "actions": actions,
             "v1_gated_plies": arm.stats["v1_gated_plies"],
             "v2_only_gated_plies": arm.stats["v2_only_gated_plies"],
             "arm_tag": arm.arm_tag(), "events": events,
