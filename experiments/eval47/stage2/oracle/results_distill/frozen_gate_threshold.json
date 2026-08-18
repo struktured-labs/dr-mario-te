@@ -1,0 +1,81 @@
+{
+ "fitted_on": {
+  "n_seeds": 838,
+  "n_rows": 30119,
+  "seed_ranges": [
+   "60000-60499",
+   "62000-62337"
+  ],
+  "pos_rate": 0.0844
+ },
+ "model": "StandardScaler + LogisticRegression(max_iter=5000) on 51 features",
+ "feature_order": [
+  "d_MAXH",
+  "d_HOLES",
+  "d_TOPRISK",
+  "d_SPAWN",
+  "d_SETUP",
+  "d_MATCHED",
+  "d_BURIED",
+  "d_RDYEXT",
+  "d_VRDY",
+  "d_CROSS",
+  "d_POLL",
+  "d_a_topout_dist",
+  "d_a_d_maxh",
+  "d_b_spawn_prox",
+  "d_b_spawn_prox_strict",
+  "d_c_das_reach",
+  "d_c_d_das_reach",
+  "d_c_nlegal_probe",
+  "d_c_d_nlegal",
+  "d_d_gvuln_mass",
+  "d_d_crit_cols",
+  "d_d_spawn_h",
+  "d_e_escape_routes",
+  "d_e_escape_reach",
+  "d_x_hvar",
+  "d_x_jagged",
+  "d_champ_val",
+  "ctx_viruses",
+  "ctx_maxh",
+  "ctx_d_spawn_h",
+  "ctx_n_legal",
+  "ctx_pills_placed",
+  "d_tc_d_burial_total",
+  "d_tc_d_burial_max",
+  "d_tc_d_covered_cols",
+  "d_tc_d_adj_v",
+  "d_tc_d_adj_h",
+  "d_tc_stale_touched_max",
+  "d_tc_clears_virus",
+  "d_tc_viruses_cleared",
+  "c_ts_burial_total",
+  "c_ts_burial_max",
+  "c_ts_covered_cols",
+  "c_ts_adj_v_growth_win",
+  "c_ts_adj_h_growth_win",
+  "c_ts_maxh_trend_win",
+  "c_ts_stale_max",
+  "c_ts_stale_mean",
+  "c_ts_pills_since_virus_clear",
+  "c_ts_pills_since_any_clear",
+  "c_ts_locks"
+ ],
+ "model_sha256": "a8d31602ccb7b3205ce2c8863ac721eaecd4da19ed9bb2b2dc891ce61084d846",
+ "target": "margin_sum >= 3 (H12's own theta gate)",
+ "thresholds": {
+  "top_0.5pct": {
+   "score_cutoff": 0.36504052,
+   "n_fire": 151,
+   "precision_margin_ge3": 0.3377,
+   "mean_margin": -1.444
+  },
+  "top_1pct": {
+   "score_cutoff": 0.33719365,
+   "n_fire": 302,
+   "precision_margin_ge3": 0.2947,
+   "mean_margin": -2.109
+  }
+ }
+}
