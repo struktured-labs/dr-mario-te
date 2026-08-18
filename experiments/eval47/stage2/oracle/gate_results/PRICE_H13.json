@@ -1,0 +1,27 @@
+{
+ "trigger_ratio": 1.129,
+ "extra_trigger_frac": 0.129,
+ "dies-ahead": {
+  "h12_discordant": 1362,
+  "scaled_discordant": 175.698,
+  "mde_split": 0.6056794228453279,
+  "h12_split": 0.657856093979442,
+  "detectable_at_h12_effect_size": true
+ },
+ "clear": {
+  "h12_discordant": 1859,
+  "scaled_discordant": 239.811,
+  "mde_split": 0.59045639834357,
+  "h12_split": 0.7046799354491662,
+  "detectable_at_h12_effect_size": true
+ },
+ "cost": {
+  "secs_per_pair": 279.0,
+  "core_h_phase1": 697.5,
+  "core_h_phase2": 1011.375,
+  "core_h_total": 1708.875,
+  "usd_per_core_h": 0.101,
+  "usd": 172.59637500000002,
+  "usd_with_void_rerun": 274.74525000000006
+ }
+}

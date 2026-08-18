@@ -1,0 +1,84 @@
+{
+ "thresh": 13,
+ "seeds": [
+  41000,
+  41001,
+  41002,
+  41003,
+  41004,
+  41005,
+  41006,
+  41007,
+  41008,
+  41009,
+  41010,
+  41011,
+  41012,
+  41013,
+  41014,
+  41015,
+  41016,
+  41017,
+  41018,
+  41019
+ ],
+ "mutant_seeds": [
+  41000,
+  41001,
+  41002,
+  41003,
+  41004,
+  41005
+ ],
+ "G0": {
+  "pass": true,
+  "n": 20,
+  "of": 20
+ },
+ "G1": {
+  "pass": true,
+  "n": 20,
+  "of": 20
+ },
+ "G2": {
+  "pass": true,
+  "plies": 1039,
+  "v1_on": 624,
+  "v2_on": 631,
+  "v2_only": 7
+ },
+ "equivalence_precheck": {
+  "m_inverted": 1039,
+  "m_offby4_low": 382,
+  "m_offby4_high": 7,
+  "m_always": 408
+ },
+ "G3": {
+  "m_inverted": {
+   "pass": true,
+   "diverged": 6,
+   "of": 6
+  },
+  "m_offby4_low": {
+   "pass": true,
+   "diverged": 6,
+   "of": 6
+  },
+  "m_offby4_high": {
+   "pass": true,
+   "diverged": 1,
+   "of": 6
+  },
+  "m_always": {
+   "pass": true,
+   "diverged": 6,
+   "of": 6
+  }
+ },
+ "G4": {
+  "pass": true
+ },
+ "overall": true,
+ "elapsed_min": 54.9,
+ "not_covered": "Exercises the gate predicate and the action sequence it produces. Says NOTHING about whether gate-v2's extra triggers improve play (endpoint's job), and nothing about the shuffled-null thinning, inherited unchanged from H12."
+}
