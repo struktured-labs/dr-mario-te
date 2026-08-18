@@ -1,0 +1,515 @@
+<title>Garbage-Window Compute — feasibility verdict</title>
+
+<style>
+  :root {
+    --ground:      #F2F4F6;
+    --panel:       #FFFFFF;
+    --rule:        #D3DAE1;
+    --rule-soft:   #E6EBEF;
+    --ink:         #10151B;
+    --ink-2:       #414D59;
+    --ink-3:       #6E7C8A;
+    --accent:      #10627F;
+    --accent-soft: #DCEDF4;
+    --ok:          #1F6B4E;
+    --ok-fill:     #7FC4A4;
+    --warn:        #9A6410;
+    --warn-fill:   #E0B463;
+    --crit:        #A33229;
+    --crit-fill:   #E0938B;
+    --shadow:      0 1px 2px rgba(16,33,45,.06), 0 8px 24px -16px rgba(16,33,45,.28);
+
+    --f-head: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --f-body: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --f-data: ui-monospace, SFMono-Regular, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:      #0D1218;
+      --panel:       #141B23;
+      --rule:        #2A3742;
+      --rule-soft:   #1E2831;
+      --ink:         #E3E9EF;
+      --ink-2:       #A8B6C2;
+      --ink-3:       #75838F;
+      --accent:      #63C2E0;
+      --accent-soft: #14313D;
+      --ok:          #63C39A;
+      --ok-fill:     #2F6B52;
+      --warn:        #DDA65B;
+      --warn-fill:   #6E5323;
+      --crit:        #EE8A80;
+      --crit-fill:   #75332D;
+      --shadow:      0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0D1218; --panel: #141B23; --rule: #2A3742; --rule-soft: #1E2831;
+    --ink: #E3E9EF; --ink-2: #A8B6C2; --ink-3: #75838F;
+    --accent: #63C2E0; --accent-soft: #14313D;
+    --ok: #63C39A; --ok-fill: #2F6B52;
+    --warn: #DDA65B; --warn-fill: #6E5323;
+    --crit: #EE8A80; --crit-fill: #75332D;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+  }
+
+  :root[data-theme="light"] {
+    --ground: #F2F4F6; --panel: #FFFFFF; --rule: #D3DAE1; --rule-soft: #E6EBEF;
+    --ink: #10151B; --ink-2: #414D59; --ink-3: #6E7C8A;
+    --accent: #10627F; --accent-soft: #DCEDF4;
+    --ok: #1F6B4E; --ok-fill: #7FC4A4;
+    --warn: #9A6410; --warn-fill: #E0B463;
+    --crit: #A33229; --crit-fill: #E0938B;
+    --shadow: 0 1px 2px rgba(16,33,45,.06), 0 8px 24px -16px rgba(16,33,45,.28);
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: 3rem 1.25rem 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.75rem;
+  }
+
+  .eyebrow {
+    font-family: var(--f-data);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: var(--f-head);
+    font-size: clamp(1.9rem, 4.6vw, 2.9rem);
+    line-height: 1.08;
+    letter-spacing: -.022em;
+    font-weight: 750;
+    text-wrap: balance;
+    margin: .5rem 0 0;
+  }
+
+  h2 {
+    font-family: var(--f-head);
+    font-size: 1.18rem;
+    letter-spacing: -.01em;
+    font-weight: 700;
+    margin: 0 0 .2rem;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-family: var(--f-head);
+    font-size: .93rem;
+    font-weight: 660;
+    margin: 0;
+    letter-spacing: -.005em;
+  }
+
+  p { margin: 0; max-width: 66ch; }
+  section { display: flex; flex-direction: column; gap: .85rem; }
+
+  .lede { font-size: 1.12rem; color: var(--ink-2); max-width: 60ch; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .rule { height: 1px; background: var(--rule); border: 0; margin: 0; }
+
+  /* ---- verdict strip ---- */
+  .verdict {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 3px;
+    padding: 1.15rem 1.35rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+  }
+  .verdict p { max-width: 68ch; }
+
+  /* ---- stat row ---- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .stat { background: var(--panel); padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .18rem; }
+  .stat .n {
+    font-family: var(--f-data);
+    font-size: 1.5rem;
+    font-weight: 620;
+    letter-spacing: -.03em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .stat .k { font-family: var(--f-head); font-size: .78rem; color: var(--ink-2); line-height: 1.35; }
+  .stat .src { font-family: var(--f-data); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .n.crit { color: var(--crit); }
+  .n.ok   { color: var(--ok); }
+  .n.warn { color: var(--warn); }
+
+  /* ---- tables ---- */
+  .scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; font-family: var(--f-data); font-size: .8rem; font-variant-numeric: tabular-nums; }
+  caption {
+    caption-side: top; text-align: left; padding: .85rem 1rem .1rem;
+    font-family: var(--f-head); font-size: .85rem; font-weight: 660; color: var(--ink);
+  }
+  caption span { display: block; font-family: var(--f-body); font-weight: 400; font-size: .8rem; color: var(--ink-3); line-height: 1.45; }
+  th, td { padding: .4rem .7rem; text-align: right; border-bottom: 1px solid var(--rule-soft); white-space: nowrap; }
+  th {
+    font-family: var(--f-head); font-weight: 620; font-size: .68rem;
+    letter-spacing: .07em; text-transform: uppercase; color: var(--ink-3);
+    border-bottom: 1px solid var(--rule); position: sticky; top: 0; background: var(--panel);
+  }
+  td:first-child, th:first-child { text-align: left; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .lbl { text-align: left !important; white-space: normal; min-width: 15rem; font-family: var(--f-body); font-size: .84rem; }
+
+  /* ---- budget bar ---- */
+  .bar-cell { width: 42%; min-width: 9rem; }
+  .bar { height: .52rem; border-radius: 1px; background: var(--ok-fill); display: block; }
+  .bar.w { background: var(--warn-fill); }
+  .bar.c { background: var(--crit-fill); }
+  .bar.zero { background: var(--rule); width: 2px !important; }
+
+  .mark { font-family: var(--f-head); font-weight: 640; font-size: .7rem; letter-spacing: .04em; }
+  .mark.ok { color: var(--ok); }
+  .mark.w  { color: var(--warn); }
+  .mark.c  { color: var(--crit); }
+
+  tr.band td { background: var(--accent-soft); }
+
+  /* ---- cards ---- */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; }
+  .card {
+    background: var(--panel); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .45rem;
+  }
+  .card p { font-size: .88rem; color: var(--ink-2); max-width: none; }
+  .card .tag {
+    font-family: var(--f-data); font-size: .62rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+
+  ol.steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .1rem; counter-reset: s; }
+  ol.steps li {
+    display: grid; grid-template-columns: 2.1rem 1fr; gap: .9rem;
+    padding: .8rem 0; border-bottom: 1px solid var(--rule-soft);
+  }
+  ol.steps li:last-child { border-bottom: 0; }
+  ol.steps li::before {
+    counter-increment: s; content: counter(s);
+    font-family: var(--f-data); font-size: .78rem; font-weight: 620;
+    color: var(--accent); border: 1px solid var(--rule); border-radius: 2px;
+    width: 1.9rem; height: 1.9rem; display: grid; place-items: center;
+  }
+  ol.steps .body { display: flex; flex-direction: column; gap: .2rem; }
+  ol.steps p { font-size: .89rem; color: var(--ink-2); }
+  ol.steps .cost { font-family: var(--f-data); font-size: .72rem; color: var(--ink-3); letter-spacing: .04em; }
+
+  ul.risks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .75rem; }
+  ul.risks li { display: grid; grid-template-columns: 5.6rem 1fr; gap: .9rem; align-items: start; }
+  ul.risks .sev {
+    font-family: var(--f-data); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase;
+    padding: .18rem .4rem; border-radius: 2px; text-align: center; margin-top: .18rem;
+  }
+  .sev.block { background: var(--crit-fill); color: var(--crit); filter: saturate(.9); }
+  .sev.hard  { background: var(--warn-fill); color: var(--warn); filter: saturate(.9); }
+  .sev.watch { background: var(--rule-soft); color: var(--ink-3); }
+  ul.risks p { font-size: .89rem; color: var(--ink-2); max-width: none; }
+  ul.risks strong { color: var(--ink); font-weight: 600; }
+
+  code { font-family: var(--f-data); font-size: .86em; color: var(--ink); background: var(--rule-soft); padding: .06em .3em; border-radius: 2px; }
+
+  footer { font-size: .8rem; color: var(--ink-3); display: flex; flex-direction: column; gap: .4rem; }
+  footer code { background: none; padding: 0; color: var(--ink-3); }
+
+  a { color: var(--accent); }
+  a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 34rem) {
+    ul.risks li { grid-template-columns: 1fr; gap: .25rem; }
+    ul.risks .sev { justify-self: start; padding: .18rem .5rem; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Dr. Mario RL · task #117 · branch gw-design · 2026-08-18</p>
+    <h1>The garbage window is a one-to-three&nbsp;searches budget, not a rollout budget.</h1>
+    <p class="lede" style="margin-top:.9rem">
+      The coprocessor is idle for 100% of every garbage drop. Costing that window in
+      <strong>copro cycles</strong> against 1,500 measured decision costs settles what can actually
+      run there — and rules out the thing the lane was hoping for.
+    </p>
+  </header>
+
+  <div class="verdict">
+    <h2>Verdict</h2>
+    <p>
+      Porting <strong>H12 into the window is dead, and not marginally</strong> — it needs up to 300
+      champion decisions per intervention against a window that holds at most 5.3. What
+      <em>is</em> newly affordable is a <strong>2-candidate, one-ply deepening of the top-2 tie</strong>,
+      which fits on 52.4% of releases. The decisive screen costs about <strong>$4</strong> and needs
+      no hardware. Recommendation: build nothing yet, run that screen.
+    </p>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="n">45.1 M</span>
+      <span class="k">cycles per champion decision (median) = 49.6 Pocket frames</span>
+      <span class="src">measured · n=1500</span>
+    </div>
+    <div class="stat">
+      <span class="n">264 − 16h</span>
+      <span class="k">window in frames, h = shallowest hit column's stack height</span>
+      <span class="src">cited · verified 8/8</span>
+    </div>
+    <div class="stat">
+      <span class="n crit">56×</span>
+      <span class="k">H12's cost over the largest window that ever exists</span>
+      <span class="src">derived</span>
+    </div>
+    <div class="stat">
+      <span class="n ok">52.4%</span>
+      <span class="k">of releases that can afford the 2-candidate deepening</span>
+      <span class="src">derived · median cost</span>
+    </div>
+  </div>
+
+  <section>
+    <h2>What fits, at which board height</h2>
+    <p>
+      One decision costs the same cycles on both machines; only the frames-per-cycle conversion
+      differs, by 1.57×. Figures below are the <strong>Pocket</strong> tap (54.669 MHz), the venue for
+      the rematch. MiSTer's every budget is 1.57× larger.
+    </p>
+    <div class="scroll">
+      <table>
+        <caption>Window budget by board height
+          <span>“Extra” is what remains after the mandatory post-garbage re-search. Bars scale to the h=0 budget of 5.32 decisions.</span>
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">h</th>
+            <th scope="col">window</th>
+            <th scope="col">releases</th>
+            <th scope="col">budget</th>
+            <th scope="col">extra</th>
+            <th scope="col" class="bar-cell">whole champion decisions that fit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>0</td><td>264 f</td><td>1.0%</td><td>5.32</td><td>4.32</td><td class="bar-cell"><span class="bar" style="width:100%"></span></td></tr>
+          <tr><td>2</td><td>232 f</td><td>1.9%</td><td>4.68</td><td>3.68</td><td class="bar-cell"><span class="bar" style="width:88%"></span></td></tr>
+          <tr><td>4</td><td>200 f</td><td>7.2%</td><td>4.03</td><td>3.03</td><td class="bar-cell"><span class="bar" style="width:76%"></span></td></tr>
+          <tr><td>5</td><td>184 f</td><td>13.9%</td><td>3.71</td><td>2.71</td><td class="bar-cell"><span class="bar" style="width:70%"></span></td></tr>
+          <tr><td>6</td><td>168 f</td><td>13.0%</td><td>3.39</td><td>2.39</td><td class="bar-cell"><span class="bar" style="width:64%"></span></td></tr>
+          <tr class="band"><td>7</td><td>152 f</td><td>11.1%</td><td>3.06</td><td>2.06</td><td class="bar-cell"><span class="bar" style="width:58%"></span></td></tr>
+          <tr><td>8</td><td>136 f</td><td>11.1%</td><td>2.74</td><td>1.74</td><td class="bar-cell"><span class="bar w" style="width:52%"></span></td></tr>
+          <tr><td>9</td><td>120 f</td><td>10.1%</td><td>2.42</td><td>1.42</td><td class="bar-cell"><span class="bar w" style="width:45%"></span></td></tr>
+          <tr><td>10</td><td>104 f</td><td>4.3%</td><td>2.10</td><td>1.10</td><td class="bar-cell"><span class="bar w" style="width:39%"></span></td></tr>
+          <tr><td>11</td><td>88 f</td><td>7.7%</td><td>1.77</td><td>0.77</td><td class="bar-cell"><span class="bar w" style="width:33%"></span></td></tr>
+          <tr><td>12</td><td>72 f</td><td>3.8%</td><td>1.45</td><td>0.45</td><td class="bar-cell"><span class="bar w" style="width:27%"></span></td></tr>
+          <tr><td>13</td><td>56 f</td><td>3.8%</td><td>1.13</td><td>0.13</td><td class="bar-cell"><span class="bar c" style="width:21%"></span></td></tr>
+          <tr><td>14</td><td>40 f</td><td>2.4%</td><td>0.81</td><td>0.00</td><td class="bar-cell"><span class="bar c" style="width:15%"></span></td></tr>
+          <tr><td>15</td><td>24 f</td><td>2.4%</td><td>0.48</td><td>0.00</td><td class="bar-cell"><span class="bar c" style="width:9%"></span></td></tr>
+          <tr><td>16</td><td>8 f</td><td>1.9%</td><td>0.16</td><td>0.00</td><td class="bar-cell"><span class="bar c" style="width:3%"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      The shaded row is the last height at which the base search <em>plus</em> the deepening still
+      fits. Cumulatively that is 52.4% of releases. <strong>The window shrinks exactly where the
+      danger is</strong> — the near-death regime at h ≥ 14 cannot afford even one search.
+    </p>
+  </section>
+
+  <section>
+    <h2>The cost ladder, and where the cliff is</h2>
+    <div class="scroll">
+      <table>
+        <caption>Candidate computations in the same currency
+          <span>“Fits up to” is the largest h whose window still contains the whole computation at median search cost.</span>
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col" class="lbl">computation</th>
+            <th scope="col">cycles</th>
+            <th scope="col">Pocket f</th>
+            <th scope="col">fits up to</th>
+            <th scope="col">of releases</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="lbl">Linear tail term — 19 lock-time accumulators + comparator</td><td>7.3 K</td><td>0.008</td><td class="mark ok">every h</td><td>100%</td></tr>
+          <tr><td class="lbl">Base post-garbage re-search — <strong>mandatory</strong></td><td>45.1 M</td><td>49.6</td><td class="mark ok">h ≤ 13</td><td>93.3%</td></tr>
+          <tr class="band"><td class="lbl">Base + <strong>2-candidate × 1 ply</strong></td><td>135.4 M</td><td>148.8</td><td class="mark w">h ≤ 7</td><td>52.4%</td></tr>
+          <tr><td class="lbl">…same, adopted at 80% truncation <em>(unproven lever)</em></td><td>117.3 M</td><td>129.0</td><td class="mark w">h ≤ 8</td><td>63.5%</td></tr>
+          <tr><td class="lbl">Base + top-4 × 1 ply</td><td>225.7 M</td><td>248.1</td><td class="mark c">h ≤ 0</td><td>1.0%</td></tr>
+          <tr><td class="lbl"><strong>H12 as certified</strong> — top-4 × 5 samples × 15-pill horizon</td><td>13.5 G</td><td>14,884</td><td class="mark c">never</td><td>0%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      H12's figure is an upper bound — forks terminate early on a clear. The slack cannot change the
+      verdict: even at one tenth of its horizon it still misses the largest window by 5.6×.
+    </p>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <h2>Three design constraints that fall out of the numbers</h2>
+    <div class="cards">
+      <div class="card">
+        <span class="tag">mandatory first step</span>
+        <h3>Search the post-garbage board, or don't bother</h3>
+        <p>
+          50.5% of argmax decisions flip between the pre- and post-garbage board. Letting the
+          existing search run <em>longer</em> on the stale board is wasted work half the time.
+          <strong>Caveat:</strong> every board in that run was under 45% fill — the high-fill regime
+          is uncovered.
+        </p>
+      </div>
+      <div class="card">
+        <span class="tag">atomicity</span>
+        <h3>Publish the result as one object, never field-by-field</h3>
+        <p>
+          The shipped pair-latch defect is exactly a two-field result sampled across time — worth
+          −15.8pp clear rate. The driver runs two hooks per frame, so a split publish recreates it
+          by default. A <strong>seqlock</strong> makes the bad pair unrepresentable for ~12
+          instructions.
+        </p>
+      </div>
+      <div class="card">
+        <span class="tag">pre-emption</span>
+        <h3>Abandon whole; degrade to the certified move</h3>
+        <p>
+          Write the valid flag only on completion. If the spawn edge lands first, re-GO exactly as
+          today — which also makes the OFF path provably identical. Abandonment isn't free: it
+          disarms the slam for that capsule.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How to price it, given that the farm can't see time</h2>
+    <p>
+      The co-sim farm has no time axis, and its baseline already receives the settled post-garbage
+      board for free. The way through is to stop asking it a joint question:
+    </p>
+    <p style="font-family:var(--f-data);font-size:.86rem;background:var(--accent-soft);border-radius:3px;padding:.8rem 1rem;max-width:none;color:var(--ink)">
+      shippable effect = P(compute completes | h) × value(move produced | compute granted)
+    </p>
+    <p>
+      The left factor is pure timing — the table above answers it. The right factor has no timing
+      content, so the farm can measure it honestly by granting the compute unconditionally.
+      <strong>The farm's prestart bias is common-mode across both arms here and cancels</strong> —
+      which is precisely why this lane is priceable where DRPRESTART was not. Report the right
+      factor stratified by h, never pooled, so the product can be formed height by height.
+    </p>
+  </section>
+
+  <section>
+    <h2>Recommended path</h2>
+    <ol class="steps">
+      <li><div class="body">
+        <h3>Argmax-flip screen of the deepening</h3>
+        <p>Base vs 2-candidate-deepened argmax on banked post-garbage boards at tie plies. A flip rate under ~2% closes the lane outright.</p>
+        <span class="cost">~0.5 d · $0 · <strong>can close the lane</strong></span>
+      </div></li>
+      <li><div class="body">
+        <h3>Truncation curve</h3>
+        <p>Move agreement vs fraction of cycles completed. Decides whether truncated results can be adopted — worth 27pp of affordability at p90, and currently an assumption.</p>
+        <span class="cost">~0.5 d · $0 · sets the design</span>
+      </div></li>
+      <li><div class="body">
+        <h3>Farm A/B with compute granted unconditionally</h3>
+        <p>Paired, N = 9,000, stratified by h, dies-ahead primary, dose-matched label-blind null mandatory. Measures the value ceiling.</p>
+        <span class="cost">~2 d · <strong>~$4</strong> (vs $135 for H12's endpoint) · can close the lane</span>
+      </div></li>
+      <li><div class="body">
+        <h3>Multiply by the completion curve — before launching step 3</h3>
+        <p>The shippable effect is at most 52.4% of the ceiling. Fold that discount into the MDE up front; if it lands under, the honest outcome is a registered do-not-launch.</p>
+        <span class="cost">analysis · $0</span>
+      </div></li>
+      <li><div class="body">
+        <h3>Build: firmware extras, seqlock, Mesen gate, then silicon</h3>
+        <p>Five killed mutants, default OFF and byte-identical when unset — and only after the NMI fix spec lands.</p>
+        <span class="cost">~5 d · $0 · only if 1–4 clear</span>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Risk register</h2>
+    <ul class="risks">
+      <li>
+        <span class="sev block">blocking</span>
+        <p><strong>NMI overrun.</strong> Two trace-proven hazards fire when a hook runs long; mechanism 2 is
+        confirmed on ship bytes as the root cause of the 2026-08-09 field crash. DRPRESTART's release-edge
+        spike already eats 40% of a frame, and <em>any</em> hook-lengthening flag re-arms it. The fix spec must
+        land <em>before</em> this feature — and the two NMI fixes brick each other, so gate the combination.</p>
+      </li>
+      <li>
+        <span class="sev hard">hard limit</span>
+        <p><strong>Pocket fit: 18,262 / 18,480 ALMs = 99%</strong>, ~218 spare — inside fitter-seed noise on that
+        device. This feature must cost <strong>zero ALMs</strong> on Pocket. The design satisfies that by
+        construction; any variant needing new RTL is MiSTer-only and cannot ship to the rematch venue.
+        MiSTer has 11% free.</p>
+      </li>
+      <li>
+        <span class="sev hard">hard limit</span>
+        <p><strong>Flag interactions.</strong> DRPRESTART × DRTUCK is a wedge pair — 9 pills and a hang, with
+        neither flag at fault alone. A garbage-window knob extends DRPRESTART and inherits it. Since a tuck CvC
+        cart must ship DRPRESTART=0, this feature and the tuck executor <strong>cannot coexist on that cart
+        line at all</strong>. That is a product fork, not a build detail.</p>
+      </li>
+      <li>
+        <span class="sev watch">trade-off</span>
+        <p><strong>Firmware placement costs A/B agility.</strong> Putting the extras in copro firmware keeps
+        host-side hook length unchanged — the right call for NMI safety — but <code>$readmemh</code> resolves at
+        synthesis, so every arm is a full ~40 min compile, and the cart can neither see nor verify which core it
+        is plugged into. Mitigation worth doing regardless: a firmware capability byte the cart reads at init.</p>
+      </li>
+      <li>
+        <span class="sev watch">evidence</span>
+        <p><strong>The value case rests on an uncovered stratum.</strong> The 50.5% flip was measured entirely
+        below 45% board fill, and the release-height distribution here is n=208 from 10 games with 4–8
+        observations in the decisive cells. Read the release-share column as a scale, not a rate.</p>
+      </li>
+    </ul>
+  </section>
+
+  <hr class="rule">
+
+  <footer>
+    <p><strong>Provenance.</strong> Decision costs measured from <code>/mnt/data/drmario_cosim/results/prestart_pilot.jsonl</code> — 1,500 decisions, firmware md5 <code>e970e9ab…</code>, manifest <code>bed03caf0f5290be</code>. Regenerate every table with <code>experiments/gw_design/budget_table.py</code> on branch <code>gw-design</code>.</p>
+    <p><strong>Pipeline cross-checks.</strong> Independently recovers the shadow-latency pilot's published 49.6-silicon-frame median, and reproduces the published “89.4% of releases at h ≤ 12” DRPRESTART headline from arithmetic that never saw it.</p>
+    <p>Full document: <code>GARBAGE_WINDOW_DESIGN.md</code>. Every figure there is labelled MEASURED, DERIVED or CITED.</p>
+  </footer>
+
+</div>

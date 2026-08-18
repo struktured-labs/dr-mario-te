@@ -124,7 +124,14 @@ root evaluation — once per pill. `oracle_arm.py:104-107` fixes `TOPK=4, HORIZO
 `h12_arm.py:30-33` fixes `fork_samples=5`. So one triggered ply issues 4×5 = 20 forks
 (confirmed MEASURED in the endpoint output: a game with `forks: 300` had 15 tie plies), each
 of ≤15 champion decisions ⇒ **≤300 champion decisions per intervention**.
-⚠ That is an upper bound: forks terminate early on clear or topout, and the gate opens at a
+⚠ **What "champion decision" means here, precisely.** `_champ_values` is the *fast-sim*
+mirror of the champion's move choice, not the firmware. The composition is nevertheless the
+right one for a silicon budget: a rollout step requires the copro to *pick a move*, and a
+copro move-pick is the thing measured at 45.1 M cycles. So "300 champion decisions" reads as
+"300 copro move-picks", which is exactly what porting the rollout would cost. It is not a
+claim that the Python function costs 45 M cycles.
+
+⚠ The 300 is also an upper bound: forks terminate early on clear or topout, and the gate opens at a
 median of 3 viruses, so the true mean horizon is shorter. **The bound's slack cannot change
 the verdict** — even if the average fork ran only *one tenth* of its horizon, H12 would
 still exceed the largest window that ever exists by **5.6×**, and the h=12 window by 20×.
