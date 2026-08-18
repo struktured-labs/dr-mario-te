@@ -274,11 +274,13 @@
       no hardware. Recommendation: build nothing yet, run that screen.
     </p>
     <p style="font-size:.92rem;color:var(--ink-2)">
-      <strong>⚠ Conditional on an open dependency.</strong> The measurement that makes the whole lane
-      worth pursuing — a 50.5% argmax flip between the pre- and post-garbage board — is
-      <em>un-reproducible</em> (no artifact in any of 30 worktrees) and was measured entirely below
-      45% board fill, i.e. outside the regime this lane targets. Read the plan as
-      <em>“if that flip survives re-derivation at high fill, then…”</em>.
+      <strong>✅ The lane's motivating measurement is confirmed, in every regime.</strong> An earlier
+      version of this page said the 50.5% pre-vs-post-garbage argmax flip was un-reproducible and
+      out-of-regime. Both claims were wrong — the rigs existed all along, in the session scratchpad
+      where no repository search reaches. All three have now run: <strong>50.5%</strong> at low fill,
+      <strong>53.2%</strong> at 45–60% fill, <strong>66.3%</strong> on real kill-game boards at stack
+      13–16, against a 2% testability floor. The effect is <em>strongest</em> in the near-death regime
+      this lane targets.
     </p>
   </div>
 
@@ -496,14 +498,14 @@
     <h2>Three design constraints that fall out of the numbers</h2>
     <div class="cards">
       <div class="card">
-        <span class="tag">mandatory first step · dependency OPEN</span>
+        <span class="tag">mandatory first step · confirmed</span>
         <h3>Search the post-garbage board, or don't bother</h3>
         <p>
-          50.5% of argmax decisions flip between the pre- and post-garbage board. Letting the
+          Half of all argmax decisions flip between the pre- and post-garbage board, so letting the
           existing search run <em>longer</em> on the stale board is wasted work half the time.
-          <strong>⚠ But that number is both out-of-regime and un-reproducible</strong> — every board
-          was under 45% fill, and it has no artifact in any worktree. No GO may rest on it until
-          it is re-derived.
+          Measured in three regimes: <strong>50.5%</strong> low fill, <strong>53.2%</strong> at
+          45–60% fill, <strong>66.3%</strong> near-death. It holds everywhere, and hardest where
+          the window is shortest.
         </p>
       </div>
       <div class="card">
