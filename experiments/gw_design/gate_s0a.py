@@ -63,7 +63,7 @@ def s1_identity(seeds):
     return n_obs
 
 
-def s2_fork_independence(seed=110000):
+def s2_fork_independence(seed=50100):
     print("S2 FORK INDEPENDENCE — deepen() must not disturb the parent")
     S._boot()
     import oracle_arm as O
@@ -241,7 +241,7 @@ def main():
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", type=int, default=6)
-    ap.add_argument("--seed-start", type=int, default=110000)
+    ap.add_argument("--seed-start", type=int, default=50100)
     ap.add_argument("--skip-slow", action="store_true")
     a = ap.parse_args()
     seeds = list(range(a.seed_start, a.seed_start + a.seeds))

@@ -70,10 +70,38 @@ as *predicted*, not as evidence of a broken run.
 ⚠ **Consequence for v1 §7.1's coverage void.** At 0.911% of plies and ~50 high-fill
 post-garbage plies per 1,000 seeds, the registered `MIN_HIGH_FILL = 100` may not be reachable
 at 1,000 seeds. **The threshold is NOT relaxed** — it is a real requirement, and if the run
-misses it the honest outcome is VOID with a stated seed count that would reach it. Seeds
-110000-110999 remain the registered block; if VOID on coverage, the extension block
-**111000-115999** is registered here in advance so the follow-on is not a fresh choice made
-after seeing data.
+misses it the honest outcome is VOID with a stated seed count that would reach it.
+
+## C.1 SEED BLOCK — corrected before any row exists: **50100-51099**
+
+v1 registered **110000-110999**. That block is unclaimed *by seed number* but **collides in
+stream space**, and the h13-gate lane caught it:
+
+> `NesPillSource` keys on **16 bits**. Verified, not assumed: seed 110000 and seed 44464
+> (= 110000 & 0xFFFF) produce **identical** capsule streams; likewise 110999 ↔ 45463. So
+> 110000-110999 maps to stream keys **44464-45463**, lying entirely inside the H12 endpoint
+> block 41100-50099.
+
+The virus boards would still differ (drawn from `numpy.default_rng(seed)`, which uses the
+full seed), so the games are genuinely different — but the **pill streams would be
+byte-identical to a block the certified H12 endpoint already consumed.** If this screen were
+ever pooled with or compared against H12 endpoint data, that shared-stream correlation would
+be real and invisible.
+
+⇒ **Registered block is now 50100-51099** (1,000 seeds), in the gap between the H12 endpoint
+and the distill block at 60000. Below 65536, so **seed == stream key** and the registry stays
+readable by inspection. Extension block, registered in advance for the coverage-VOID case:
+**51100-59999** (8,900 contiguous seeds, same property).
+
+⚠ **Carried, and it must NOT be "fixed":** within any contiguous block, seeds `2k` and `2k+1`
+share the identical capsule stream — the low bit is dead — so 1,000 contiguous seeds is ~500
+distinct streams. **Do not halve the block to "remove duplicates":** virus boards come from
+the full seed, so twins play different boards (measured twin-pair correlation of paired
+differences r = −0.077). Halving would cut coverage without removing redundancy, and that
+trap has been sprung on this project before.
+
+★ Registered **before any screen row exists**, which is the only reason this is an amendment
+rather than a void.
 
 ## D. CHANGE 3 — one added mutant, and it is the one that would have caught this
 

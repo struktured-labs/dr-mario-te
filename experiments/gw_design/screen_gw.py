@@ -424,7 +424,7 @@ def manifest():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--seed-start", type=int, default=110000)
+    ap.add_argument("--seed-start", type=int, default=50100)
     ap.add_argument("--seed-count", type=int, default=1000)
     ap.add_argument("--workers", type=int, default=1)
     ap.add_argument("--out", default=os.path.join(HERE, "out", "s0a.jsonl"))
