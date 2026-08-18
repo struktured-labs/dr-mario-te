@@ -1,0 +1,4 @@
+NEAR-DEATH FLIP GATE  (125 real kill-game boards, stack 13-16)
+  usable 101   instant-death-on-drop 24   errors 0
+  fill: median 36%  min 23%  max 46%
+  flips 67/101 = 66.3%

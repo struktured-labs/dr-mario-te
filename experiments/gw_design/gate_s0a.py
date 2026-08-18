@@ -96,13 +96,16 @@ def s2_fork_independence(seed=50100):
 
 
 # ---------------------------------------------------------------- S3 router
+H_OF = {"low": 4, "high": 12}      # a band <11 and a band >=11 (PREREG v2 C.2)
+
+
 def _rows(spec):
-    """spec = {fill_bin: (flips, n)} -> synthetic 'deepen' rows."""
+    """spec = {"low"|"high": (flips, n)} -> synthetic 'deepen' rows, keyed on h."""
     out = []
     for b, (k, n) in spec.items():
         for i in range(n):
             out.append({"kind": "deepen", "flip": 1 if i < k else 0,
-                        "fill_bin": b})
+                        "h_hit": H_OF[b], "fill_bin": "n/a"})
     return out
 
 
@@ -110,17 +113,17 @@ def s3_router_mutants():
     print("S3 ROUTER MUTANTS — M-R1..M-R5")
 
     # Fixtures. High-fill n is >= MIN_HIGH_FILL except where coverage is tested.
-    zero = _rows({"<30": (0, 400), "45-60": (0, 300)})           # flat 0%
-    high = _rows({"<30": (60, 400), "45-60": (60, 300)})         # ~20% everywhere
-    lown = _rows({"<30": (0, 20), "45-60": (5, 120)})            # 4.2% but wide CI
-    split = _rows({"<30": (60, 400), "45-60": (0, 300)})         # pooled 8.6%, high 0%
-    thin = _rows({"<30": (60, 400), "45-60": (9, 30)})           # coverage too thin
+    zero = _rows({"low": (0, 400), "high": (0, 300)})           # flat 0%
+    high = _rows({"low": (60, 400), "high": (60, 300)})         # ~20% everywhere
+    lown = _rows({"low": (0, 20), "high": (5, 120)})            # 4.2% but wide CI
+    split = _rows({"low": (60, 400), "high": (0, 300)})         # pooled 8.6%, h>=11 0%
+    thin = _rows({"low": (60, 400), "high": (9, 30)})           # coverage too thin
 
     base = {
         "zero -> CLOSE": (zero, "CLOSE"),
         "high -> PROCEED": (high, "PROCEED"),
         "low-n -> INDETERMINATE": (lown, "INDETERMINATE"),
-        "high-fill 0% -> CLOSE": (split, "CLOSE"),
+        "high-h 0% -> CLOSE": (split, "CLOSE"),
         "thin coverage -> VOID": (thin, "VOID"),
     }
     for name, (rows, want) in base.items():
@@ -140,7 +143,7 @@ def s3_router_mutants():
         r = V.route(rows)
         if r["verdict"] == "VOID":
             return r
-        l_hi, u_hi = r["high_fill"]["ci"]
+        l_hi, u_hi = r["high_h"]["ci"]
         if l_hi > V.FLOOR:
             return {"verdict": "CLOSE"}
         if u_hi < V.FLOOR:
@@ -156,7 +159,7 @@ def s3_router_mutants():
         r = V.route(rows)
         if r["verdict"] == "VOID":
             return r
-        return {"verdict": "PROCEED" if r["high_fill"]["rate"] > V.FLOOR
+        return {"verdict": "PROCEED" if r["high_h"]["rate"] > V.FLOOR
                 else "CLOSE"}
     check("M-R3 killed (ignores the CI)",
           m_r3(lown)["verdict"] != V.route(lown)["verdict"],
@@ -177,12 +180,12 @@ def s3_router_mutants():
 
     # --- M-R5: ignores the coverage void
     def m_r5(rows):
-        saved = V.MIN_HIGH_FILL
+        saved = V.MIN_HIGH_H
         try:
-            V.MIN_HIGH_FILL = 0
+            V.MIN_HIGH_H = 0
             return V.route(rows, min_high=0)
         finally:
-            V.MIN_HIGH_FILL = saved
+            V.MIN_HIGH_H = saved
     check("M-R5 killed (ignores coverage void)",
           m_r5(thin)["verdict"] != V.route(thin)["verdict"],
           f"m_r5={m_r5(thin)['verdict']} vs true={V.route(thin)['verdict']}")

@@ -22,8 +22,13 @@ import json
 import math
 
 FLOOR = 0.02              # PREREG sec 5, the project's standing argmax-flip floor
-MIN_HIGH_FILL = 100       # PREREG sec 7.1, coverage void threshold
-HIGH_FILL = ("45-60", ">=60")
+MIN_HIGH_H = 100          # PREREG v2 sec C.2, coverage void threshold
+# PREREG v2 sec C.2: stratify on h, NOT on fill.  The window is W = 264 - 16*h, a
+# function of HEIGHT.  Near-death boards are narrow towers -- the recovered
+# gate_neardeath rig measures fill median 36% at stack 13-16 -- so a fill-keyed
+# rule aims at a stratum that barely exists.
+H_BANDS = (("h<=7", 0, 7), ("h8-10", 8, 10), ("h11-13", 11, 13), ("h>=14", 14, 99))
+HIGH_H = ("h11-13", "h>=14")
 
 
 def wilson(k, n, z=1.96):
@@ -37,35 +42,47 @@ def wilson(k, n, z=1.96):
     return ((c - h) / d, (c + h) / d)
 
 
-def tally(rows, kind):
-    """(k, n) overall and per fill bin for one readout kind."""
+def h_band(h):
+    for name, lo, hi in H_BANDS:
+        if lo <= int(h) <= hi:
+            return name
+    return "h<=7"
+
+
+def tally(rows, kind, by="h"):
+    """(k, n) overall and per band for one readout kind.
+
+    by="h" is the PRIMARY routing (PREREG v2 C.2); by="fill" is the secondary
+    readout kept for comparability with the historical rigs.
+    """
     sel = [r for r in rows if r.get("kind") == kind]
     out = {"ALL": [sum(r["flip"] for r in sel), len(sel)]}
     for r in sel:
-        b = r.get("fill_bin", "?")
+        b = h_band(r.get("h_hit", 0)) if by == "h" else r.get("fill_bin", "?")
         out.setdefault(b, [0, 0])
         out[b][0] += r["flip"]
         out[b][1] += 1
-    hk = sum(out.get(b, [0, 0])[0] for b in HIGH_FILL)
-    hn = sum(out.get(b, [0, 0])[1] for b in HIGH_FILL)
-    out[">=45"] = [hk, hn]
+    if by == "h":
+        hk = sum(out.get(b, [0, 0])[0] for b in HIGH_H)
+        hn = sum(out.get(b, [0, 0])[1] for b in HIGH_H)
+        out["h>=11"] = [hk, hn]
     return out
 
 
-def route(rows, floor=FLOOR, min_high=MIN_HIGH_FILL):
+def route(rows, floor=FLOOR, min_high=MIN_HIGH_H):
     """The registered decision rule.  Returns a dict; never raises on data."""
     deep = tally(rows, "deepen")
     prepost = tally(rows, "prepost")
 
     k_all, n_all = deep["ALL"]
-    k_hi, n_hi = deep[">=45"]
+    k_hi, n_hi = deep["h>=11"]
 
     # --- sec 7: void conditions, checked FIRST
     voids = []
     if n_all == 0:
         voids.append("non-vacuity: zero tie post-garbage plies observed")
     if n_hi < min_high:
-        voids.append(f"coverage: only {n_hi} tie plies at >=45% fill "
+        voids.append(f"coverage: only {n_hi} tie plies at h>=11 "
                      f"(need {min_high})")
     if voids:
         return {"verdict": "VOID", "reasons": voids,
@@ -77,19 +94,19 @@ def route(rows, floor=FLOOR, min_high=MIN_HIGH_FILL):
     if u_all < floor or u_hi < floor:
         verdict = "CLOSE"
         why = (f"U(overall)={u_all:.4f}" if u_all < floor
-               else f"U(>=45% fill)={u_hi:.4f}") + f" < floor {floor}"
+               else f"U(h>=11)={u_hi:.4f}") + f" < floor {floor}"
     elif l_hi > floor:
         verdict = "PROCEED"
-        why = f"L(>=45% fill)={l_hi:.4f} > floor {floor}"
+        why = f"L(h>=11)={l_hi:.4f} > floor {floor}"
     else:
         verdict = "INDETERMINATE"
-        why = (f"L(>=45% fill)={l_hi:.4f} <= {floor} <= "
-               f"U(>=45% fill)={u_hi:.4f}; neither rule fires")
+        why = (f"L(h>=11)={l_hi:.4f} <= {floor} <= "
+               f"U(h>=11)={u_hi:.4f}; neither rule fires")
 
     return {"verdict": verdict, "why": why,
             "overall": {"k": k_all, "n": n_all, "rate": k_all / n_all,
                         "ci": [l_all, u_all]},
-            "high_fill": {"k": k_hi, "n": n_hi, "rate": k_hi / n_hi,
+            "high_h": {"k": k_hi, "n": n_hi, "rate": k_hi / n_hi,
                           "ci": [l_hi, u_hi]},
             "deepen": deep, "prepost": prepost}
 
@@ -102,9 +119,9 @@ def report(rows):
     else:
         lines.append(f"  {r['why']}")
         lines.append("")
-        lines.append("PRIMARY (sec 5) — deepening argmax flip, by board fill")
+        lines.append("PRIMARY (sec 5) — deepening argmax flip, by h_hit (PREREG v2 C.2)")
         lines.append("  bin      flips/n      rate     95% CI")
-        for b in ("<30", "30-45", "45-60", ">=60", ">=45", "ALL"):
+        for b in ("h<=7", "h8-10", "h11-13", "h>=14", "h>=11", "ALL"):
             if b not in r["deepen"]:
                 continue
             k, n = r["deepen"][b]
@@ -116,7 +133,7 @@ def report(rows):
         lines.append("SECONDARY (sec 6) — pre- vs post-garbage champion argmax "
                      "(re-derives the 50.5%, task #121)")
         lines.append("  bin      flips/n      rate     95% CI")
-        for b in ("<30", "30-45", "45-60", ">=60", ">=45", "ALL"):
+        for b in ("h<=7", "h8-10", "h11-13", "h>=14", "h>=11", "ALL"):
             if b not in r["prepost"]:
                 continue
             k, n = r["prepost"][b]

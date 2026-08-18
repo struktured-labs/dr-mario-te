@@ -395,32 +395,61 @@ on the stale board is wasted work half the time. Any implementation that spends 
 without first re-searching the projected post-garbage board is spending it on the wrong
 board.
 
-⚠⚠ **THE 50.5% CARRIES TWO DEFECTS. Both are OPEN, and the recommendation is written
-conditional on them** (§6.1). Every use of the number in this document must carry them.
+### ✅ RESOLVED — I published two defects here and BOTH WERE FALSE
 
-**(a) Scope — the high-fill re-run DID NOT LAND.** Confirmed by the mechanics lane
-2026-08-18: swept all 30 `dr-mario-*` worktrees, no artifact, nothing in flight, nothing
-modified in `experiments/` since Aug 7. The only n=200 file matching the description is the
-**spawn-lane gate probe** (task #78, arms base/gate, seeds 82000+) — a different experiment
-that is easy to mistake for it. So **every board behind the 50.5% landed below 45% fill**,
-and there is **zero coverage of the high-fill states** where the window is shortest and
-dies-ahead happens. The number licenses this lane for the **mid-board regime only**.
+**Earlier revisions of this section said the 50.5% was (a) out-of-regime and (b)
+un-reproducible, and made the whole recommendation conditional on re-deriving it. Both
+claims were wrong.** All three rigs exist, all three have now run, and **the effect survives
+in every stratum measured — it is strongest in the near-death regime the lane targets.**
 
-**(b) ★★ Provenance — the 50.5% has NO REPRODUCIBLE ARTIFACT ANYWHERE.** Grepping
-`101/200` and `50.5%` across every worktree returns exactly two hits and **neither is a
-source**: `cosim_farm/PRESTART_LATENCY_MEMO.md:96` merely *cites* it, and
-`PREREG_STAGE2.md:42` is a coincidental `50.5%` in a `T_GARB` row. **The number exists only
-as memory prose plus one downstream citation.** If the owner asks to see it, there is
-currently nothing to show. This is `dr-mario-proof-provenance-rot` territory — a proof whose
-program cannot run is an assertion.
+Recovered and committed to this branch at `experiments/gw_design/flip_rigs/`. They lived in
+the **session scratchpad**, which is why repo-scoped and git-scoped searches missed them:
 
-⇒ **Consequence for this document, stated plainly:** the single measurement that makes step
-3 of §2.1 mandatory, and that motivates the lane at all, is **un-reproducible and
-out-of-regime**. That does not make it wrong — the mechanism is sound and the effect is
-large — but it means **no GO may rest on it** until it is re-derived with a committed rig.
-Re-deriving it is cheap and it is folded into S0-A (§4.2), which runs on post-garbage boards
-anyway and should measure the pre-vs-post flip as a by-product, at proper fill, with the
-rig committed.
+| rig | corpus | flips | rate |
+|---|---|---|---|
+| `gate.py` → `flip_result.txt` | 200 mid-game boards, all <45% fill | 101/200 | **50.5%** |
+| `gate_hifill.py` → `hifill_result.txt` | seeds 300-699, drip garbage injected *during* play | 224/383 | **58.5%** |
+| — of which fill 45-60% | | 33/62 | **53.2%** |
+| `gate_neardeath.py` → `neardeath_result.txt` — **had no saved result; I ran it** | 125 real kill-game boards, **stack 13-16** | 67/101 | **66.3%** |
+
+⇒ **The mandatory post-garbage re-search is justified across the whole playable range.**
+50.5% / 58.5% / 66.3% against a 2% floor. The conditional framing is withdrawn.
+
+### ★ 2.1b The near-death rig corrected my own stratifier — STACK HEIGHT ≠ FILL
+
+`gate_neardeath.py` reports its own fill distribution: **median 36%, min 23%, max 46%** on
+boards at **stack 13-16**. That is precisely the regime where the window is shortest — and
+its **fill is LOW**, because near-death boards are narrow towers, not full boards. `W = 264 −
+16·h` is a function of **height**, not of fill.
+
+⇒ **`PREREG_S0A_v2` stratifies on the wrong variable.** The ≥60%-fill stratum its decision
+rule is built around may essentially never occur in real play: boards top out from a tower
+long before they fill. The screen must key on **`h_hit` / `max_h`**, the quantity that
+actually sets the budget, with fill demoted to a secondary readout. The screen already logs
+both; only the decision rule was wrong. Amended pre-data (v2 §C.2).
+
+⚠ Also from that rig: **24 of 125** near-death boards were *instant-death-on-drop* — the
+volley ends the game and no decision exists at all. Those plies are outside the reach of any
+compute policy, and a "flip rate" over them would be meaningless.
+
+### ⚠ 2.1c What I got wrong here, and the rule that comes out of it
+
+I accepted a teammate's negative — "no artifact in any of 30 worktrees" — without re-running
+it, while independently re-running two of their *other* claims because those contradicted me.
+**That asymmetry is the error: I verified what threatened my position and trusted what
+flattered my caution.** Their search tool was silently dead, but escalating it into this
+document, the pre-registration, a task and a published page was mine.
+
+★ **RULE: an absence claim needs a liveness-proven search AND an enumeration of what the
+search cannot reach.** On this box that list includes at least: gitignored subtrees (`tmp/`,
+where `TEMPO_DESIGN.md` was), the **session scratchpad** (where all three rigs above were),
+NUL-containing files under the shimmed grep, and process-substitution inputs. *"I searched
+the worktrees"* is not *"it does not exist"* — every artefact that mattered in this lane
+lived outside them. This is now rule 8 of the project gate standard.
+
+⚠ **The real risk was storage, not existence.** These rigs were one scratchpad cleanup from
+being gone. They are committed now, and **#121 changes from "re-derive the number" to "keep
+the rigs in the repo".**
 
 ### 2.2 Where results are latched — and not recreating the pair-latch defect
 

@@ -103,6 +103,39 @@ trap has been sprung on this project before.
 ★ Registered **before any screen row exists**, which is the only reason this is an amendment
 rather than a void.
 
+## C.2 STRATIFIER — corrected before any row exists: key on **`h`**, not on fill
+
+v1 §4 stratified on board **fill** and built the decision rule around a ≥45%-fill group.
+That is the wrong variable, and a recovered rig proves it (2026-08-18):
+
+> `gate_neardeath.py`, 125 real kill-game boards at **stack 13-16** — the exact regime where
+> the window is shortest — reports its own fill as **median 36%, min 23%, max 46%**.
+
+**Near-death boards are narrow towers, not full boards.** The window is `W = 264 − 16·h_min`,
+a function of **height**; fill correlates with it only loosely, and the ≥60%-fill stratum the
+v1 rule leans on may essentially never occur in real play, because boards top out from a
+tower long before they fill.
+
+⇒ **Primary stratifier is now `h_hit`** — the shallowest garbage-hit column's stack height,
+the quantity that literally sets the budget — in bands matching §1.3 of the design doc:
+**h ≤ 7 · 8-10 · 11-13 · ≥14**. `max_h` and `d_spawn_h` are reported alongside. **Fill is
+demoted to a secondary readout**, kept because the historical rigs stratified on it and
+comparability is worth preserving.
+
+⇒ **The decision rule (v1 §5) transfers unchanged with the group swapped.** The
+budget-pressure group is **`h ≥ 11`** (where the extra budget falls to ≤ 1 search) in place
+of "≥45% fill": CLOSE if `U < 2%` on either the overall or the `h ≥ 11` population; PROCEED
+only if `L(h ≥ 11) > 2%`; INDETERMINATE otherwise; VOID first. `MIN_HIGH_FILL = 100` becomes
+**`MIN_HIGH_H = 100`** over `h ≥ 11`.
+
+The screen already logs `h_hit`, `max_h` and `d_spawn_h` on every row, so only the routing
+changes — no new instrumentation.
+
+⚠ **Excluded population, registered:** the same rig found **24 of 125** near-death boards are
+*instant-death-on-drop* — the volley ends the game and no decision exists. Those are outside
+the reach of any compute policy and must be **counted and reported separately**, never folded
+into a flip rate as numerator or denominator.
+
 ## D. CHANGE 3 — one added mutant, and it is the one that would have caught this
 
 Added to v1 §8's set:
