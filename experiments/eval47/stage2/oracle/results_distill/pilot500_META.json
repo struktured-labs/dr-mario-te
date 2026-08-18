@@ -1,0 +1,94 @@
+{
+ "model": "lulu",
+ "label": "true",
+ "future": "dist",
+ "topk": 4,
+ "horizon": 15,
+ "seed_start": 60000,
+ "seed_count": 500,
+ "segment": 125,
+ "workers": 10,
+ "provenance": true,
+ "fork_samples": 5,
+ "null_keep_num": 1,
+ "null_keep_den": 1,
+ "gate": "d_spawn_h >= 12 OR viruses <= 8 AND exact top-2 tie",
+ "tie_margin": 0.5,
+ "arm_class": "H12ArmDataset",
+ "purpose": "H12 distillation phase-1 dataset (logging-only arm)",
+ "started": "2026-08-17T20:23:01-0400",
+ "runtime_manifest": {
+  "rolled": "c3a639d964cb8482fd5a055a1f808b8883b56335fa64c9bded09e917e2486214",
+  "files": {
+   "run_oracle": {
+    "path": "/home/struktured/projects/dr-mario-te/h12-distill/experiments/eval47/stage2/oracle/run_h12.py",
+    "sha256": "d6cb34e5cb53689752804d1be3c29d5ed0ee1768d24e1c4cc614ca74e49c7cf1"
+   },
+   "oracle_arm": {
+    "path": "/home/struktured/projects/dr-mario-te/h12-distill/experiments/eval47/stage2/oracle/oracle_arm.py",
+    "sha256": "19d6070e4a79427e0e6e9be8944cb58b09714a90f164c57f18bd596b2e6c93bd"
+   },
+   "pressure_rig": {
+    "path": "/home/struktured/projects/dr-mario-te/h12-distill/experiments/eval47/pressure_rig.py",
+    "sha256": "4cf861b702fc32239ede0a4f3cb631c394183dbc734546e08c2fae6f2bf6c95a"
+   },
+   "p0_ab": {
+    "path": "/home/struktured/projects/dr-mario-te/h12-distill/experiments/eval47/jointdig/p0_ab.py",
+    "sha256": "ae88719d818bbb7f87fc1f3aecf72f78285080138b134241899e1007b8c9abfd"
+   },
+   "bursty_model": {
+    "path": "/home/struktured/projects/dr-mario-te/h12-distill/experiments/eval47/bursty_model.py",
+    "sha256": "0e5c105b9bda113fd431e2448685dfffc2c1cf59c041bb8f33a39988b32e1569"
+   },
+   "fast_rtl_x": {
+    "path": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/fast_rtl_x.py",
+    "sha256": "93e22602b80868647a5e732f57c355875e4ccc1aa71a5415496a07beba709ac3"
+   },
+   "fast_sim_x": {
+    "path": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/fast_sim_x.py",
+    "sha256": "d51e43a4cbdfb192b2b966aac7ac65d75d7b084bd9a78a4e244ca07dd0182464"
+   },
+   "root_search": {
+    "path": "/home/struktured/projects/dr-mario-qa-wt/experiments/tuck_v3/root_search.py",
+    "sha256": "43c997d20bed615e5b70f35e634c4b356fec2bbc36fb0788eb2aba3690fe3851"
+   },
+   "terms47": {
+    "path": "/home/struktured/projects/dr-mario-te/h12-distill/experiments/eval47/terms47.py",
+    "sha256": "3747754875eada71c29b10459cee0c132fe26b623fcf7876ab081dcc1d673a94"
+   },
+   "fb": {
+    "path": "/home/struktured/projects/dr_mario_rl/tmp/endgame/fb.py",
+    "sha256": "51b10f55c85594840e52c268eacdea67b855b8f66d3e1b8d71899d5684a16ddb"
+   },
+   "nes_pills": {
+    "path": "/home/struktured/projects/dr-mario-qa-wt/experiments/nes_pills.py",
+    "sha256": "9bca4013d4ea567f295db81111d463bf9ac40f401f00ce57fb411e091fde4c53"
+   },
+   "drmario.faithful_env": {
+    "path": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/faithful_env.py",
+    "sha256": "1bd9664cbe5536cb8c5c905a214948c2bbec0b2645f2e189eb9c196e1e3b21cb"
+   },
+   "drmario.faithful_game": {
+    "path": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/faithful_game.py",
+    "sha256": "9d6d8d0038c1ebc1830287b58e7f3eb1597e6e44a1988ae716b1537def118efa"
+   },
+   "dr_lulu_fit": {
+    "path": "/home/struktured/projects/dr-mario-te/h12-distill/experiments/eval47/results/dr_lulu_20260808_fit.json",
+    "sha256": "7b4e564c2aae05d646d591682828dd7fc4e80c68b5aa20d45d413aee7a4e999b"
+   },
+   "run_h12_dataset": {
+    "path": "/home/struktured/projects/dr-mario-te/h12-distill/experiments/eval47/stage2/oracle/run_h12_dataset.py",
+    "sha256": "3ce952f1445ac004529f9413a9db9fafea6e503579c5e00dc1c5dba26b7a5128"
+   },
+   "h12_arm_dataset": {
+    "path": "/home/struktured/projects/dr-mario-te/h12-distill/experiments/eval47/stage2/oracle/h12_arm_dataset.py",
+    "sha256": "89699d41b5d506f578a3a5e15ab3db1b559bc2465371fd59e14aa6b7aaa68ecd"
+   },
+   "temporal_accum": {
+    "path": "/home/struktured/projects/dr-mario-te/h12-distill/experiments/eval47/stage2/oracle/temporal_accum.py",
+    "sha256": "7e7dddada93e56039c35b2069b837c72b6fb16cbf082122b85448c540de652fa"
+   }
+  },
+  "python": "3.12.11"
+ }
+}

@@ -1,0 +1,78 @@
+{
+ "seeds": 6,
+ "seed_start": 61000,
+ "pass": true,
+ "ties_total": 87,
+ "m1_diverged": 6,
+ "m1_eligible": 6,
+ "m2_diverged": 6,
+ "n_seeds": 6,
+ "rows": [
+  {
+   "seed": 61000,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 9,
+   "n_plies": 95,
+   "res": "clear",
+   "flips": 0,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61001,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 13,
+   "n_plies": 121,
+   "res": "clear",
+   "flips": 0,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61002,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 21,
+   "n_plies": 126,
+   "res": "clear",
+   "flips": 4,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61003,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 16,
+   "n_plies": 92,
+   "res": "clear",
+   "flips": 1,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61004,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 19,
+   "n_plies": 123,
+   "res": "clear",
+   "flips": 4,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61005,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 9,
+   "n_plies": 73,
+   "res": "clear",
+   "flips": 1,
+   "m1_diverged": true,
+   "m2_diverged": true
+  }
+ ]
+}

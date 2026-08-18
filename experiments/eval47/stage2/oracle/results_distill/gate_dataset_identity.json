@@ -1,0 +1,232 @@
+{
+ "seeds": 20,
+ "seed_start": 61000,
+ "pass": true,
+ "ties_total": 429,
+ "m1_diverged": 20,
+ "m1_eligible": 20,
+ "m2_diverged": 20,
+ "n_seeds": 20,
+ "rows": [
+  {
+   "seed": 61000,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 9,
+   "n_plies": 95,
+   "res": "clear",
+   "flips": 0,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61001,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 13,
+   "n_plies": 121,
+   "res": "clear",
+   "flips": 0,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61002,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 21,
+   "n_plies": 126,
+   "res": "clear",
+   "flips": 4,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61003,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 16,
+   "n_plies": 92,
+   "res": "clear",
+   "flips": 1,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61004,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 19,
+   "n_plies": 123,
+   "res": "clear",
+   "flips": 4,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61005,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 9,
+   "n_plies": 73,
+   "res": "clear",
+   "flips": 1,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61006,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 35,
+   "n_plies": 154,
+   "res": "clear",
+   "flips": 3,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61007,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 53,
+   "n_plies": 189,
+   "res": "topout",
+   "flips": 3,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61008,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 6,
+   "n_plies": 78,
+   "res": "clear",
+   "flips": 0,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61009,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 30,
+   "n_plies": 130,
+   "res": "clear",
+   "flips": 4,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61010,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 26,
+   "n_plies": 135,
+   "res": "clear",
+   "flips": 2,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61011,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 14,
+   "n_plies": 109,
+   "res": "clear",
+   "flips": 2,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61012,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 17,
+   "n_plies": 128,
+   "res": "clear",
+   "flips": 2,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61013,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 37,
+   "n_plies": 300,
+   "res": "stall",
+   "flips": 3,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61014,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 18,
+   "n_plies": 135,
+   "res": "clear",
+   "flips": 4,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61015,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 10,
+   "n_plies": 69,
+   "res": "topout",
+   "flips": 4,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61016,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 41,
+   "n_plies": 151,
+   "res": "clear",
+   "flips": 3,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61017,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 21,
+   "n_plies": 116,
+   "res": "clear",
+   "flips": 3,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61018,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 14,
+   "n_plies": 123,
+   "res": "clear",
+   "flips": 0,
+   "m1_diverged": true,
+   "m2_diverged": true
+  },
+  {
+   "seed": 61019,
+   "identical": true,
+   "first_diff": null,
+   "n_ties": 20,
+   "n_plies": 137,
+   "res": "clear",
+   "flips": 3,
+   "m1_diverged": true,
+   "m2_diverged": true
+  }
+ ]
+}
