@@ -263,21 +263,44 @@ re-GOes the ordinary spawn-edge search exactly as today. Two consequences worth 
   the 52.4%-vs-14.4% gap in §1.4 has a real price and the budget should be set on the
   pessimistic side.
 
-**A tempting third option, and the gate it needs.** `dr-mario-link-chain-rtl` records
-**TRUNCATION IS FREE — 100% move agreement from 80% completion**, because depth-3 is
-best-first over a depth-1 ranking. If that transfers, an extra search truncated at ≥80% of
-its expected cycles could be adopted rather than dropped, lifting (b+) from 52.4% to 63.5%
-of releases at median cost and from 14.4% to **41.3% at p90**. That is the single largest
-lever in this design.
+**A third option — and it is the single largest lever in this design.** The search commits
+to its final answer early, because depth 3 is best-first over a depth-1 ranking: phase 0
+scores every legal root move at depth 1, and the deep loop walks that shortlist in
+descending shallow score, so it commits the shallow favourite immediately and spends the
+rest confirming. If an extra search truncated at fraction *f* can be adopted rather than
+dropped, its cost falls to *f* × C and affordability rises sharply.
 
-⚠ But it is an **assumption, not a measurement**, in two ways. First, the 80% figure was
-measured for the *full depth-3 root search*, not for a 2-candidate deepening, whose
-best-first structure is different. Second, it sits in direct tension with the pair-latch
-result, which found early partials badly wrong (23.2% at ~10% completion). Both can be true
-— bad below 10%, fine above 80% — but the middle is unmapped, and the *whole* value of the
-truncation lever lives in whether that curve is flat or a cliff. **Do not ship truncated
-adoption without measuring the move-agreement-vs-completion curve for the deepening
-specifically.** That measurement is cheap (§4.2) and it should gate the lever.
+★ **I initially wrote this up as an unmeasured assumption with an "unmapped middle". That
+was wrong — the whole curve exists**, RTL-measured on 69 real boards on the shipped
+`stomp180` arm (`dr-mario-qa-wt/experiments/rtl_chain/README.md:240-252`,
+`TEMPO_BASELINE_37.md:110-125`). Combining it with §1.3:
+
+| truncate at f | move agreement (MEASURED, n=69) | cost of base + deepening | affordable @median | @p90 |
+|---|---|---|---|---|
+| 1.00 | 100% | 3.0 × C | 52.4% | 14.4% |
+| 0.80 | **100%** | 2.6 × C | 63.5% | **41.3%** |
+| 0.70 | 98.6% | 2.4 × C | 73.6% | 41.3% |
+| 0.50 | 95.7% | 2.0 × C | 77.9% | 63.5% |
+| 0.20 | 82.6% | 1.4 × C | 89.4% | 77.9% |
+
+**Truncating at f = 0.80 is free by measurement and nearly triples p90 affordability
+(14.4% → 41.3%).** Going further to f = 0.50 costs 4.3% of moves and buys another 22pp at
+p90. That is a real, priced knee, and it should be a knob.
+
+Two things stop this from being vacuous, both from the same source: agreement at f = 0.05
+is only **65.2%**, so the search genuinely does refine late on a third of boards — the
+100%-at-80% is earned, not automatic — and the early convergence has a *mechanism*, which
+is why it extrapolates to tail boards never sampled. It also **reconciles cleanly with the
+pair-latch result**: 34.8% disagreement at f = 0.05 sits right beside the pair latch's
+23.2%/39.1% at a comparable completion fraction. The two findings were never in tension;
+they are the same curve read at opposite ends.
+
+⚠ What is still genuinely open — and it is narrower than I first claimed: the curve was
+measured for the **full depth-3 root search**, not for a 2-candidate deepening, whose
+best-first structure differs. Re-measure it for the deepening (§4.2 S0-B) before setting f.
+And note the source's own caveat: agreement is *move identity*, so 100% means zero cost, but
+a disagreement would not imply a *large* cost — and it models "the answer changed", not
+"the driver could still physically steer there".
 
 ### 2.5 Where the computation should live — and the trade this forces
 
@@ -413,9 +436,12 @@ Both run on banked data; neither needs hardware or the farm.
   null means nothing. ⚠ Note this is a *different* flip from the 50.5%: that one measured
   pre- vs post-garbage *board*; this measures base vs deepened *search* on the same board.
   The 50.5% is a good prior for the lane existing, not evidence for this number.
-- **S0-B · the truncation curve** (§2.4). Move agreement vs fraction-of-cycles-completed,
-  for the deepening specifically, at 10/20/…/100%. Decides whether the truncation lever is
-  real (52.4% → 63.5% at median, 14.4% → 41.3% at p90) or whether partials must be dropped.
+- **S0-B · the truncation curve for the deepening** (§2.4). Move agreement vs
+  fraction-of-cycles-completed at 5/20/50/70/80/100%, replicating the existing 69-board
+  root-search protocol on the 2-candidate deepening. The root-search curve is already
+  measured and free at f = 0.80; this checks it transfers, and sets f. It is worth up to
+  **27pp of p90 affordability**, so it deserves its own measurement rather than an
+  extrapolation.
 
 ### 4.3 Stage 1 — the farm A/B, priced
 
@@ -573,8 +599,10 @@ the recipe.
 - **The h_hit distribution in §1.3 is n=208, from 10 games, one arm, one level.** The
   decisive cells at h ≥ 13 hold 4–8 observations each. Treat the release-share column as a
   scale, not a rate.
-- **The truncation lever is an assumption** (§2.4) and it is worth ~27pp of affordability at
-  p90. Measure it before designing around it.
+- **The truncation lever is measured for the root search, not for the deepening** (§2.4).
+  It is worth ~27pp of p90 affordability, so the transfer is worth checking rather than
+  assuming. ⚠ I first wrote this risk up as "unmapped" and was wrong; the correction is in
+  §2.4. Check whether the measurement exists before pricing something as unknown.
 - **A corpus that never reaches the regime under test is not a bound, it is a different
   experiment.** The prestart lane published a 69%-fire figure that was an artifact of a
   random-play corpus topping out below the injector's own threshold. Before quoting any

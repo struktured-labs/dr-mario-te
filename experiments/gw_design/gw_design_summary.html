@@ -366,7 +366,7 @@
           <tr><td class="lbl">Linear tail term — 19 lock-time accumulators + comparator</td><td>7.3 K</td><td>0.008</td><td class="mark ok">every h</td><td>100%</td></tr>
           <tr><td class="lbl">Base post-garbage re-search — <strong>mandatory</strong></td><td>45.1 M</td><td>49.6</td><td class="mark ok">h ≤ 13</td><td>93.3%</td></tr>
           <tr class="band"><td class="lbl">Base + <strong>2-candidate × 1 ply</strong></td><td>135.4 M</td><td>148.8</td><td class="mark w">h ≤ 7</td><td>52.4%</td></tr>
-          <tr><td class="lbl">…same, adopted at 80% truncation <em>(unproven lever)</em></td><td>117.3 M</td><td>129.0</td><td class="mark w">h ≤ 8</td><td>63.5%</td></tr>
+          <tr><td class="lbl">…same, truncated at 80% <em>(100% move agreement, n=69)</em></td><td>117.3 M</td><td>129.0</td><td class="mark w">h ≤ 8</td><td>63.5%</td></tr>
           <tr><td class="lbl">Base + top-4 × 1 ply</td><td>225.7 M</td><td>248.1</td><td class="mark c">h ≤ 0</td><td>1.0%</td></tr>
           <tr><td class="lbl"><strong>H12 as certified</strong> — top-4 × 5 samples × 15-pill horizon</td><td>13.5 G</td><td>14,884</td><td class="mark c">never</td><td>0%</td></tr>
         </tbody>
@@ -375,6 +375,41 @@
     <p style="font-size:.88rem;color:var(--ink-3)">
       H12's figure is an upper bound — forks terminate early on a clear. The slack cannot change the
       verdict: even at one tenth of its horizon it still misses the largest window by 5.6×.
+    </p>
+  </section>
+
+  <section>
+    <h2>The largest lever: truncation is nearly free</h2>
+    <p>
+      Depth 3 is best-first over a depth-1 ranking — it commits the shallow favourite immediately and
+      spends the rest confirming. So a truncated search is usually the same search. The curve is
+      already measured on 69 real boards on the shipped arm, and combining it with the budget table
+      turns a marginal feature into a comfortable one at the p90 cost that actually binds.
+    </p>
+    <div class="scroll">
+      <table>
+        <caption>Adopting a search truncated at fraction f
+          <span>Agreement is RTL-measured (n=69, stomp180 arm). Affordability is the base search plus the deepening.</span>
+        </caption>
+        <thead>
+          <tr><th scope="col">truncate at</th><th scope="col">move agreement</th><th scope="col">cost</th><th scope="col">affordable @median</th><th scope="col">@p90</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>f = 1.00</td><td>100%</td><td>3.0 × C</td><td>52.4%</td><td>14.4%</td></tr>
+          <tr class="band"><td>f = 0.80</td><td><strong>100%</strong></td><td>2.6 × C</td><td>63.5%</td><td><strong>41.3%</strong></td></tr>
+          <tr><td>f = 0.70</td><td>98.6%</td><td>2.4 × C</td><td>73.6%</td><td>41.3%</td></tr>
+          <tr><td>f = 0.50</td><td>95.7%</td><td>2.0 × C</td><td>77.9%</td><td>63.5%</td></tr>
+          <tr><td>f = 0.05</td><td>65.2%</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      The f = 0.05 row is what keeps this from being vacuous: the search really does refine late on a
+      third of boards, so 100%-at-80% is earned. It also reconciles with the pair-latch defect — 34.8%
+      disagreement at f = 0.05 sits beside the pair latch's 23.2–39.1% at a comparable completion
+      fraction. Those two findings were never in tension; they are the same curve read at opposite
+      ends. <strong>Still open:</strong> the curve was measured for the full root search, not the
+      2-candidate deepening. Re-measure before setting f.
     </p>
   </section>
 
