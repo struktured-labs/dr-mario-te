@@ -1,0 +1,22 @@
+# Interpreter environment for the oracle / H12 decision path (task #19).
+#
+# The environment the sealed H12 run used lives at
+# /home/struktured/projects/dr_mario_rl/tmp/venv - inside a gitignored tmp/
+# tree, with no pip and no recorded recipe. These pins were read off that
+# venv's site-packages dist-info on 2026-08-18 so the environment itself is
+# reconstructable from git. Python 3.12 (sealed run recorded 3.12.3).
+#
+# `rolled` does not depend on package versions, so the clean-clone gate is not
+# a test of these pins - but a run that produces NUMBERS is, and this is the
+# only written record of what produced the certified ones.
+joblib==1.5.3
+llvmlite==0.48.0
+lmdb==2.3.0
+narwhals==2.24.0
+numba==0.66.0
+numpy==2.4.6
+pillow==12.3.0
+py65==1.2.0
+scikit-learn==1.9.0
+scipy==1.18.0
+threadpoolctl==3.6.0
