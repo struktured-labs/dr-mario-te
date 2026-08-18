@@ -509,6 +509,13 @@ Late adoption re-opens a race the project has already paid for twice.
 completion. If the spawn edge arrives first, the driver sees no valid shadow result and
 re-GOes the ordinary spawn-edge search exactly as today. Two consequences worth stating:
 
+⚠ **§6.3 amends this into a HEIGHT-DEPENDENT rule, and the amendment is the lane's main
+near-death argument.** Abandon-whole is right below h = 13, where a complete search fits and
+a partial therefore signals that something went wrong. At **h ≥ 14 it is the wrong default**:
+the window buys only 0.16-0.81 of a search, so abandoning discards a result the measured
+curve prices at **90-100% move fidelity**. Above h = 13 the rule becomes *adopt at ≥ 0.80
+completion*, gated on a **completion counter, never a timer**, behind the same seqlock.
+
 - **The OFF path becomes provably identical.** That is what made DRPRESTART safe to ship
   (byte-identical when unset, 12/12 flag arms plus whole-ROM hash both sides), and it is
   the property to reproduce.
@@ -966,12 +973,50 @@ the corrected dose (§6.1 Step 3), and apply the distill lane's law directly: **
 that cannot detect is not an experiment.** If ceiling × 0.524 × (0.48/1.98 relative dose)
 lands under the MDE at N = 9,000, the correct output is a registered DO-NOT-LAUNCH — and that
 outcome is now more likely than it looked this morning.
-3. **"The prize is where the window is longest, not where the danger is."** 89.4% of
-   releases land at h ≤ 12 with room to spare, and the near-death 6.7% at h ≥ 14 cannot
-   afford even one search. **Closing the near-death case needs a faster search, not more
-   window** — the window there is shorter than any depth-3 decision the copro makes. If
-   dies-ahead at h ≥ 14 is the actual goal, this lane is the wrong instrument and a cheap
-   endgame search mode is the right one.
+3. **"The prize is where the window is longest, not where the danger is."** ⚠ **I wrote
+   that, and §6.3 partly overturns it.** 89.4% of releases land at h ≤ 12 with room to
+   spare, and at h ≥ 14 the window is shorter than a *complete* depth-3 decision. But those
+   boards flip at **66.3%**, and §6.3 shows a **truncated** re-search fits there at 90-100%
+   move fidelity. The honest version is narrower: a *complete* search does not fit near
+   death; a *usable* one does.
+
+### 6.3 ★ The tension the team lead named — and it resolves in the lane's favour
+
+> *"h ≥ 14 can't afford even the base search, yet flips 2-in-3."*
+
+That is the sharpest objection to this lane, and the truncation curve answers it. Dividing
+the window by the measured decision cost gives the completion fraction the near-death regime
+can actually buy; the RTL agreement curve says what that fraction is worth. Pocket tap,
+`C_median` 45.1 M and `C_p90` 58.1 M:
+
+| h | W (f) | f at median cost | agreement | f at p90 cost | agreement |
+|---|---|---|---|---|---|
+| 13 | 56 | 1.00 | **completes** | 0.88 | **~100%** |
+| 14 | 40 | 0.81 | **~100%** | 0.63 | **~98%** |
+| 15 | 24 | 0.48 | **~95%** | 0.38 | **~90%** |
+| 16 | 8 | 0.16 | ~78% | 0.13 | ~74% |
+
+⇒ **A truncated post-garbage re-search is viable down to h = 15**, costing 0-5% of move
+fidelity (0-10% at p90). h = 16 is the only genuine write-off, and that board is lost anyway
+(§1.1: the garbage overwrites row 0 and the next spawn tops the receiver out).
+
+★★ **Here the truncation lever needs NO transfer assumption.** §2.4 flags that the 69-board
+curve was measured for the *full depth-3 root search* and only *assumed* to carry to the
+2-candidate deepening. **The base re-search IS that full depth-3 root search** — same object,
+same best-first structure. For the mandatory step the curve is measurement, not
+extrapolation; the assumption is confined to the optional extras.
+
+⇒ **This reframes the near-death story.** Not "the window is useless where the danger is",
+but: *the regime with the strongest evidence (66.3% flip) is reachable, provided the design
+adopts truncated results instead of abandoning them.* That makes the abandon-whole rule of
+§2.4 the **wrong default at h ≥ 14** — there, abandoning discards a result worth 90-100%
+fidelity. The policy should be height-dependent: **abandon whole below h = 13** (a complete
+search fits, so a partial signals something went wrong), **adopt at ≥ 0.80 completion above
+it**.
+⚠ This is a design change with a real hazard attached — adopting partials is exactly how the
+pair-latch defect happened. It must ship behind the seqlock (§2.2), gate on a **completion
+counter and never a timer**, and carry its own killed mutant: adopt below the threshold and
+the stale-move signature must reappear.
 
 ---
 
