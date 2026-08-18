@@ -440,9 +440,9 @@
         <span class="src">measured · 9,000 games</span>
       </div>
       <div class="stat">
-        <span class="n ok">1.37–1.66%</span>
-        <span class="k">of plies would trigger, after affordability</span>
-        <span class="src">derived</span>
+        <span class="n crit">0.48%</span>
+        <span class="k">of plies actually trigger, after de-duplication and affordability</span>
+        <span class="src">corrected · see below</span>
       </div>
       <div class="stat">
         <span class="n">1.98%</span>
@@ -450,13 +450,43 @@
         <span class="src">measured · 9,000 games</span>
       </div>
     </div>
+    <div class="verdict" style="border-left-color:var(--crit)">
+      <h3>⚠ Retraction: 87% of “exact top-2 ties” are the same physical placement</h3>
+      <p style="font-size:.92rem">
+        An earlier version of this page put the trigger population at 1.37–1.66% of plies and called it
+        “the same order as H12's 1.98% — the encouraging part of this document”. That was wrong, and it
+        was caught while gating the screen, before the registered run.
+      </p>
+      <p style="font-size:.92rem">
+        A Dr. Mario capsule is a <strong>double</strong> (both halves the same colour) one time in three,
+        and a double is symmetric under 180°: orientations 0 and 2 are the same placement, as are 1 and 3.
+        So the action space collapses from 32 to 16 and every placement appears <em>twice with exactly
+        equal value</em>. Measured over 359 post-garbage plies: at a raw top-2 tie the two candidates
+        produce a <strong>literally identical board 87.1%</strong> of the time, with identical legal-move
+        counts <strong>100%</strong> of the time. A binary comparator over the raw top-2 is comparing a
+        board with itself, and no amount of deepening can discriminate.
+      </p>
+      <p style="font-size:.92rem">
+        De-duplicating candidates by resulting board shrinks the tie population <strong>7.53×</strong>
+        (6.86% → 0.911% of plies), giving a corrected trigger population of ~0.48% — <strong>4× smaller
+        than H12's dose, not comparable to it</strong>. Power is now a live risk rather than a reassurance.
+        <strong>H12 itself is not affected:</strong> identical candidates yield identical fork labels, so
+        its θ-margin gate rejects them automatically. What was overstated is the tie count used as a
+        <em>dose statistic</em> — which is what I had used.
+      </p>
+    </div>
     <p style="font-size:.88rem;color:var(--ink-3)">
-      <strong>⚠ Size is not dose.</strong> The distill lane's law is that dose must be weighted by
+      <strong>⚠ And size is still not dose.</strong> Per the distill lane's law, dose must be weighted by
       selection quality — its safe linear rule fired at a usable rate but carried only 2.7% of H12's
       effective dose, because precision fell as fast as firing rose. One extra ply is a far weaker
-      discriminator than a 15-pill rollout, so per-flip quality here is unknown and is exactly what
-      the screen exists to measure. The two rates also come from different corpora, and the release
-      rate is a property of the opponent's pressure model.
+      discriminator than a 15-pill rollout, so per-flip quality remains unknown and is exactly what the
+      screen exists to measure.
+    </p>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      <strong>A free tempo win falls out of this, unrelated to the lane.</strong> For a double capsule the
+      mirrored orientations are the same placement but <em>not</em> the same cost to reach: the executor is
+      CCW-only, so orient 1 costs three rotations from spawn where orient 3 costs one. Canonicalising to
+      the cheapest-to-reach member is a pure tempo gain with provably zero board effect.
     </p>
   </section>
 

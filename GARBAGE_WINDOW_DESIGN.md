@@ -25,11 +25,12 @@ post-garbage board — mandatory, since 50.5% of argmax decisions flip on it ⚠
 that number is both **out-of-regime and un-reproducible**, and no GO may rest on it), and exactly
 one thing is newly affordable: a **2-candidate, 1-ply deepening of the top-2 tie**, which
 fits on **52.4% of releases** at median search cost, rising to **63.5%** if truncated at
-80% completion — which the RTL measures as costing **zero moves**. Its trigger population is
-**1.4–1.7% of plies**, the same order as the **1.98%** dose that produced H12's certified
-+8.5pp clear rate, so the experiment is plausibly powered rather than a formality. That is
-the shippable step, and the decisive screen for it costs about **$4** of compute and needs
-no hardware.
+80% completion — which the RTL measures as costing **zero moves**. ⚠ Its trigger population
+is **~0.48% of plies** once candidates are de-duplicated by resulting board — **4× smaller
+than H12's 1.98% dose**, because 87% of "exact top-2 ties" turn out to be a placement and
+its own 180° mirror (§1.6b). Power is therefore a live risk, not a reassurance. The decisive
+screen still costs about **$4** and needs no hardware, and it is still the right next step —
+but it is now screening a smaller population than this document originally claimed.
 
 ---
 
@@ -248,12 +249,71 @@ often it fires. Both halves are measurable from banked data.
 ★ **Third pipeline reproduction:** 1.98% recovers H12's published "~2.0% flip dose" from
 its raw per-game counters.
 
-⇒ **Raw trigger population for this feature = 13.87% × 18.88% = 2.62% of plies**, of which
-52.4% are affordable at f = 1.0 (63.5% at f = 0.80) ⇒ **1.37–1.66% of plies**.
+⇒ Raw trigger population = 13.87% × 18.88% = 2.62% of plies, of which 52.4% are affordable
+⇒ 1.37–1.66% of plies. **I published that as "the same order as H12's 1.98%, the
+encouraging part of this document". ⚠⚠ IT IS WRONG, AND THE RETRACTION IS BELOW.**
 
-**That is the same order as H12's 1.98%, which is the encouraging part of this document.**
-The garbage window's trigger population is not a niche — it is comparable in size to the
-dose that produced a certified +8.5pp clear rate.
+### 1.6b ⚠⚠ RETRACTED — 87% of "exact top-2 ties" are the SAME PHYSICAL PLACEMENT
+
+Found 2026-08-18 while gating the S0-A screen, **before** the registered run. The screen as
+pre-registered would have measured almost nothing and returned a spurious CLOSE.
+
+**MEASURED** (12 seeds, 2,085 plies, 359 post-garbage plies, champion under lulu pressure):
+
+| observation | value |
+|---|---|
+| at a raw top-2 tie, the two candidates produce a **literally identical board** | **87.1%** (108/124) |
+| tie events whose capsule is a **double** (`cur.a == cur.b`) | **89.5%** |
+| top-2 landing in the **same column** | 91.9% |
+| successor value spectra identical under max / sorted-vector / top-3 / mean | 94-96% |
+| legal-move count identical | **100%** |
+
+**Mechanism, and it is arithmetic, not a bug.** A Dr. Mario capsule is a double with
+probability 1/3 (three colours, drawn independently). For a double, orientations 0 and 2 are
+the same placement, and so are 1 and 3 — the capsule is symmetric under 180°. So the action
+space collapses from 32 to 16, and every surviving placement appears **twice with exactly
+equal value**. The "exact top-2 tie" predicate therefore fires overwhelmingly on a candidate
+and its own mirror.
+
+⇒ **A binary comparator over the raw top-2 is comparing a board with itself.** No amount of
+deepening can discriminate; the boards are equal. This is the wrong-observable trap in its
+purest form, and neither the non-vacuity check (n > 0) nor the M-D1/M-D2 mutants caught it —
+they all passed while the instrument measured nothing.
+
+**Corrected population — de-duplicate candidates by RESULTING BOARD, then test for a tie
+among distinct boards** (MEASURED, same corpus):
+
+| | of post-garbage plies | of all plies |
+|---|---|---|
+| raw top-2 tie, as originally registered | 39.8% | 6.86% |
+| **de-duplicated top-2 tie (distinct boards)** | **5.29%** | **0.911%** |
+| shrinkage | | **7.53×** |
+
+⇒ **corrected trigger population = 0.911% × 52.4% affordable ≈ 0.48% of plies**, against
+H12's measured **1.98%** accepted-flip dose. **The garbage-window comparator's trigger
+population is ~4× SMALLER than H12's dose, not comparable to it** — and the *flip* dose is
+strictly smaller still, since flips are a subset of triggers. The power argument I gave is
+withdrawn; §6 now treats power as a live risk rather than a reassurance.
+⚠ n = 19 de-duplicated tie events; the 5.29% is order-of-magnitude, the **7.53× shrinkage is
+not in doubt**.
+
+### 1.6c Three consequences that outlive this lane
+
+1. **H12 itself is NOT invalidated, and the reason is worth recording.** Its trigger is the
+   same raw predicate, so its `tie_plies` count is inflated the same way. But identical
+   candidates produce **identical fork labels**, so the θ-margin gate (`margin_sum ≥ 3`)
+   rejects them automatically. H12 self-protects; its certified effect stands. What is
+   overstated is `tie_plies` **as a dose statistic** — anyone sizing a new arm from 18.88%
+   (as I did) overcounts by ~7× for any top-2 comparator.
+2. **A free tempo win, unrelated to this lane** (feeds task #114). For a double capsule,
+   orientations 0/2 and 1/3 are the same placement — but **not the same cost to reach**:
+   the executor is CCW-only, so orient 1 costs 3 rotations from spawn where orient 3 costs 1.
+   Canonicalising double-capsule orientations to the cheapest-to-reach member is a pure
+   tempo gain with **provably zero board effect**, which makes it about the safest change
+   available anywhere in this project.
+3. **De-duplication is nearly free on silicon.** It needs no board comparison: `if cur.a ==
+   cur.b, skip orientations 2 and 3`. One byte compare and a branch — not the 32-board
+   canonicalisation the offline screen uses.
 
 ⚠ **Three ways this could be optimistic, and they must not be waved through.**
 1. **Size is not dose.** The distill lane's law is that dose must be weighted by *selection
@@ -488,11 +548,15 @@ priced and built). Spend it on *extras* iff both:
    the column heights, in about ten 6502 instructions (CITED). This is what lets the search
    be **budgeted rather than merely started**, which is precisely what the pair-latch
    history demands.
-2. **TIE.** The top-2 champion values are exactly tied. This is free: the copro already has
-   all 32 candidate values. It is also well-founded — H12's flip provenance is **100%
-   champion-value ties**, with ranks `{1: 1580, 2: 21273, 3: 1767}` (CITED). The mass is at
-   rank 2, which is exactly why a **2-candidate binary comparator** is the right shape and
-   a top-4 comparator is mostly wasted budget.
+2. **TIE, over DE-DUPLICATED candidates.** The top-2 values are exactly tied *after*
+   collapsing actions that produce the same board. H12's flip provenance is 100%
+   champion-value ties with ranks `{1: 1580, 2: 21273, 3: 1767}` (CITED) — the mass at rank
+   2 is why a **2-candidate binary comparator** is the right shape and top-4 is mostly
+   wasted budget.
+   ⚠⚠ **The de-duplication is not an optimisation, it is a correctness requirement**
+   (§1.6b): 87% of raw top-2 ties are a placement and its own 180° mirror, so an
+   un-de-duplicated comparator spends the whole window comparing a board with itself. On
+   silicon it costs one byte compare: `if cur.a == cur.b, skip orientations 2 and 3`.
 
 This gate is deterministic, computable on-cart, costs nothing, and has no learned component
 to mis-calibrate.
