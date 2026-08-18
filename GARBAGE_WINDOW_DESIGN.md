@@ -929,7 +929,19 @@ the recipe.
   lane currently rests on a stratum that excludes the regime the lane is aimed at.
 - **The h_hit distribution in §1.3 is n=208, from 10 games, one arm, one level.** The
   decisive cells at h ≥ 13 hold 4–8 observations each. Treat the release-share column as a
-  scale, not a rate.
+  scale, not a rate. **This is now the single weakest distribution in the budget table** —
+  every "% of releases" figure inherits it.
+  ⏳ **Cross-check pending, at zero marginal cost:** the h13-gate lane stores both board
+  planes per screened flip, so `h_min` is recomputable post-hoc over its v2-only corpus
+  (~420 flips, a **mid-game** population at median 15 viruses) with no re-run. Two
+  independent `h_min` distributions from different regimes — near-death and mid-game —
+  would replace this n=208 with something quotable as a rate. Requested; expected with
+  their verdict.
+  ⚠ **Pre-committed reading, so the result cannot be rationalised afterwards:** if the
+  mid-game distribution resembles the near-death one (median `h_min` ≈ 4), ample windows
+  are regime-general and §1.5's retraction generalises beyond death boards. If it differs
+  materially, window length is **regime-dependent** and every release-share percentage in
+  §1.3-1.4 is under-powered and must be re-derived per regime before being quoted as a rate.
 - **TRUNCATION TRANSFER — treat as an ASSUMPTION, and the recommendation does not depend on
   it.** The agreement-vs-completion curve is measured (n=69, 100% at f=0.80) but **for the
   full depth-3 root search**, not for the 2-candidate deepening, whose best-first structure
