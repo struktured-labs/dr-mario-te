@@ -113,7 +113,7 @@ a minority of releases and this lane would be dead. Worth resolving, not averagi
   comments still assume ~5 calls/frame, they are "calibration prose, not measured", and
   should be revisited "before anyone RE-TUNES the hook-counted constants".
 
-**Four independent measurements agree with each other and with the constant's original
+**Five independent measurements agree with each other and with the constant's original
 intent, not with 150 f:**
 
 | source | DONE latency | domain |
@@ -121,7 +121,26 @@ intent, not with 150 f:**
 | this document, 1,500 decisions | median **31.6 f** (p90 40.6) | MiSTer |
 | pair-latch co-sim, 69 real L11 boards | median **34 f**, max 60 | MiSTer |
 | link-chain ship report, stomper180 | worst **57.2 f** of ~80 | MiSTer |
+| **the emitter's own measured wall-clock**, `patch_cartridge_copro.py:403-411` | worst case **0.78 s = 46.9 f** | MiSTer |
 | `TEMPO_DESIGN.md:119` — the constant's own cited source | **≈60 f** | — |
+
+★★ **The clincher sits fifteen lines below the line that carries the error** (found by the
+mechanics lane): *"MiSTer chain180 @ 85.909 MHz 0.78 s = 18% of threshold / Pocket chain180
+@ 54.669 MHz 1.23 s = 29% (projected)"*. 150 f = 2.50 s would be **3.2× the file's own
+measured MiSTer worst case** and would exceed even the Pocket projection — the reading is not
+merely uncalibrated, it is impossible. Meanwhile 300/5 = 60 f = 1.0 s sits just above the
+0.78 s worst case, exactly where a warm-typical figure belongs.
+
+★ **Cross-check in the clock-free unit, which settles it with no domain argument at all:**
+0.78 s at 85.909 MHz = **67.0 M copro cycles**, landing between this document's p90 (58.1 M)
+and p99 (72.1 M). Two instruments, different arms (chain180 vs champion), agreeing in the one
+unit that needs no clock assumption.
+
+⚠ **Provenance note, because the citation was challenged:** both derivation files exist but
+are **gitignored** (`.gitignore:27` → `/tmp/`), so a git-history search reports them absent.
+They are at `dr-mario-mods-wt/driver-slam/tmp/driver_slam/round1_repro.py` and
+`dr-mario-mods/tmp/tempo/TEMPO_DESIGN.md`. Checkable — but only by someone who knows not to
+trust `git log` for them, which is its own provenance hazard.
 
 ⇒ **The budget table stands.** Two things must not be lost:
 
@@ -129,12 +148,24 @@ intent, not with 150 f:**
    baseline timeline carries "`T_s` = 300 hooks warm depth-3" *alongside* its own measured
    49.6-frame median — one lane holding both numbers, inconsistently. A stale hook-counted
    constant has already propagated into a second lane's model.
-2. ⚠ **`DRSLAM` / `FAST_HI` / `WDOG` are hook-counted and were tuned under the superseded
-   rate.** `FAST_HI=2` was chosen as "above warm-typical (300)". If warm-typical is really
-   ~64-100 hooks, that gate is far looser than intended. **Driver-lane item; flagged, not
-   fixed here** — and it should not be "fixed" by arithmetic either, since the constants
-   were tuned empirically on silicon and may be fine as shipped for reasons unrelated to
-   their stated derivation.
+2. ⚠⚠ **THE MATURITY GATE HAS NEVER FIRED ON ANY SHIPPED CART** (task #122 — stronger than
+   "looser than intended", which is how I first filed it). At the measured worst case,
+   0.78 s × 2 hooks/frame × 60.0988 = **93.8 hooks** (Pocket 1.23 s → 147.8), so
+   `WDOGH2 = hooks >> 8 = 0` on both platforms. The gate is `CMP #FAST_HI(2); BCS mat_slow`,
+   disarming only at ≥ 512 hooks = 4.27 s. **The disarm branch has never been taken**, so the
+   "arm the slam iff the search was fast" semantics have never been exercised — and any A/B
+   that thought it was testing them was testing nothing. Reaching the threshold needs ~2.9×
+   the worst latency ever measured. Free confirmation with no silicon time: the driver stores
+   `LAST_LAT = WDOGH2` at DONE in PRG-RAM at `$6173`; all zeros in any soak save-state closes
+   it.
+   ⚠⚠ **But `DRSLAM_MATURE=0` is NOT the equivalent no-op this makes it look like.**
+   `MATURE = (FAST_HI > 0) and SLAM` (`:413`) also gates **`RECOMMIT`** (`:551`) — the
+   converged-orient pair-latch fix, worth −15.8pp clear rate when absent — plus nine other
+   sites, and the emitter's own note at `:431-434` says removing it pushes a branch out of
+   range. The safe claim is *"the FAST_HI comparison never fires"*, **not** *"the two
+   settings are equivalent"*. **Driver-lane item; flagged, not fixed here** — and not to be
+   "fixed" by arithmetic, since the constants were tuned empirically on silicon and may be
+   right for reasons unrelated to their stated derivation.
 
 ★ The general shape: **a hook-counted constant is a unit-bearing quantity whose unit was
 later revised.** The audit that fixed the rate fixed the prose and not the constants, so
