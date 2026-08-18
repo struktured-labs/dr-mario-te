@@ -232,6 +232,101 @@ gross defect early. Registered before the data exists:
 - It says nothing about silicon implementability. H12 itself is a RESEARCH
   champion; root rollouts are copro/driver work not shipped by any verdict here.
 
+## 9. AMENDMENT (2026-08-18, after the DOSE census, before any endpoint spend)
+### THE ENDPOINT IS THE WRONG NEXT PURCHASE — REGISTER THE FLIP SCREEN FIRST
+
+The fork-free census (400 seeds, 60,686 champion plies) measured two things
+that together change what should be bought next. Both are dose quantities, not
+endpoint quantities, so registering this amendment stays endpoint-blind.
+
+**(a) The extra dose is small: trigger ratio 1.129 [1.109, 1.151] at T=13.**
+
+**(b) But gate-v1 is overwhelmingly an ENDGAME gate, and the widening is not.**
+
+```
+                                   % of plies   % of v1 opens
+  gate-v1 open (either clause)        54.61          100.0
+    d_spawn_h >= 12 ALONE              5.70           10.4
+    viruses <= 8 ALONE                35.61           65.2
+    both                              13.29           24.3
+  v2-only (T=13, v1 closed)            7.92            —
+```
+
+Median context: v1 opens at **3 viruses remaining**; v2-only plies at **15**,
+with `max(H)` a median of **7 rows above** the spawn columns.
+
+**So gate-v2 is not a marginal widening. It is a 2.4x expansion of the
+HEIGHT-driven sensor** (5.70% -> 13.62% of plies), which reads as a mere +12.9%
+on the total only because the endgame clause dwarfs everything else. The extra
+triggers are a MID-GAME off-centre-tower population that H12's gate barely
+touches — exactly the regime the soak photographs came from.
+
+**⚠ THIS BREAKS THE POWER EXTRAPOLATION IN BOTH DIRECTIONS.** `price_h13.py`
+scales H12's published discordance by the extra dose to project ~176
+discordant dies-ahead pairs at N=9,000. That projection assumes the extra
+flips behave like H12's own. They are drawn from a **different regime**, so it
+is not an upper bound and not a lower bound — it is an extrapolation across
+exactly the boundary this project has been burned on before
+([[dr-mario-measurement-rules]] #20/#24: a mid-game corpus does not certify
+near-death behaviour, and the converse holds too). The honest statement is that
+**the endpoint's power is unknown, not marginal.**
+
+**REGISTERED CONSEQUENCE — the N=9,000 endpoint is NOT the next purchase.**
+Buying it now spends $173-$384 (see section 10) to answer "are the extra flips
+good?" through the lossiest possible channel: whole-game outcomes, ~176
+discordant pairs. The same question is answerable directly, per flip, for
+about two dollars.
+
+**THE FLIP SCREEN (registered here, before it is run):**
+1. Run the H13 arm ALONE on ~500 fresh seeds (block 73000-73499, reserved
+   here). One arm suffices: at a v2-only trigger H12 does not act, so H12's
+   action IS the champion's base action, and both the keep and the flip are
+   recoverable from the H13 flip log.
+2. Take every accepted flip whose trigger was **v2-only** (`gate_v2 and not
+   gate_v1`) — the decisions that distinguish H13 from H12, and the only ones.
+3. Screen each with the project-standard **CAPSULE-FAIR refork**
+   ([[dr-mario-flip-fairness-screen]]): fork the H12 keep and the H13 flip
+   under K=17 UNSEEN capsule streams and compare mean progress. This is
+   mandatory project policy for calling any single flip an improvement, and it
+   applies a fortiori to the aggregate.
+4. Expected volume: 4.07 extra triggers/game x ~10.3% margin-pass = **~0.42
+   extra flips/game**, so ~500 seeds yields **~200 screened flips**.
+
+**DECISION RULE, fixed before the data exists:**
+- Extra flips price **NEGATIVE** (mean fair gain < 0, CI excluding 0) =>
+  gate-v2 is REFUTED. Close #110. Cost of learning this: ~$2.
+- Extra flips price **NULL** (CI spans 0, |mean| small) => the widening is
+  churn: it adds compute and changes decisions without adding judgment. NO-GO
+  on the endpoint. This is the outcome the 13:21 vindication predicts.
+- Extra flips price **POSITIVE** => the endpoint spend is unblocked, and only
+  then, with the screen's effect size available to size N honestly.
+
+⚠ **WHAT THE SCREEN CANNOT DO, registered so a positive is not over-read:** it
+prices per-flip quality, not the compounding of many flips across a game. It is
+a **RULE-OUT instrument** ([[dr-mario-label-budget-rules]]: proxies rule out
+only). A negative kills the lane cheaply; a positive does NOT certify gate-v2 —
+it only licenses paying for the endpoint that can.
+
+Seed block **73000-73499** is reserved for the screen and is disjoint from
+every block in section 4.
+
+## 10. THE PRICE, COMPUTED (see `price_h13.py`, `out/PRICE_H13*.json`)
+
+Cost basis is anchored on H12's OWN spend rather than a quoted rate: H12 paid
+~$135 for roughly 1,337 core-hours (phase 1 343, phase 2 null ~497, and the
+VOID re-run ~497) = **$0.101 per core-hour**.
+
+| basis for s/pair | core-h (both phases) | cost | with a VOID re-run |
+|---|---|---|---|
+| 279 s (H12's quiet-node calibration x the measured dose) | 1,709 | **$173** | $275 |
+| 390 s (measured locally, but under heavy contention — load-inflated) | 2,389 | **$241** | $384 |
+
+Both exceed the $50-100 envelope this lane was asked to check against. The
+flip screen in section 9 costs ~21 core-hours (~$2), or nothing at all if run
+on blackmage overnight (~3.5 h wall at 6 workers).
+
 ---
 
-*Drafted 2026-08-18 by the h13-gate lane, before any H13 arm was run.*
+*Drafted 2026-08-18 by the h13-gate lane, before any H13 arm was run.
+Section 9-10 amended the same morning after the DOSE census and before any
+endpoint or screen data existed.*
