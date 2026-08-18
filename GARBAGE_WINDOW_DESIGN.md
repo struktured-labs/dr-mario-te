@@ -1197,6 +1197,85 @@ are different populations (all post-garbage plies at h ≥ 14 during normal play
 selected real kill-game boards), and the gap should not be averaged away. **Flagged, not
 explained.**
 
+---
+
+## 8. S0-B CLOSED — **INDETERMINATE-BY-INSTRUMENT**, and I am not running a third time
+
+**Verdict: the arm is NOT adjudicated.** The refork ran, produced a clean-looking result, and I
+cannot certify it, because the control that would license a verdict has no trustworthy
+threshold. Recorded rather than resolved.
+
+### 8.1 Run 1 — VOID, as registered
+
+```
+flips scored   381
+d = flip − keep   +0.0157   95% CI [−0.0142, +0.0457] viruses/flip
+RAND control      −0.1510   95% CI [−0.2052, −0.0968]   (h13: −0.559)
+win / loss / tie  137 / 137 / 107
+```
+
+`PREREG_S0B_REFORK.md` §3 required the RAND CI upper below **−0.2**. It came in at
+**−0.0968** ⇒ **VOID**. I had already seen the primary, so re-registering a threshold
+afterwards would have been rationalisation; the verdict was declined.
+
+⚠ **Observation, explicitly not a verdict:** d spans zero with **137 wins against 137
+losses** — h13-gate's churn signature (+0.012, wins ≈ losses) reproduced almost exactly on
+an independent population.
+
+### 8.2 The v2 derivation was attempted, and it FALSIFIED ITS OWN ASSUMPTION
+
+Derived the bar from board structure on spent seeds — no refork data (`derive_rand_bar.py`):
+
+| | |
+|---|---|
+| champion-value gap, top vs uniform non-top-2, at **tie** plies | **690.2** (n=162) |
+| same at **all post-garbage** plies | **565.1** (n=3,732) |
+| structural ratio | **1.221** |
+| ⇒ predicted RAND, scaling h13's −0.559 | **−0.683** |
+| **measured RAND (run 1)** | **−0.151** |
+| **discrepancy** | **4.5×** |
+
+Two things break at once. First, the ratio is **1.221** — ties have a **bigger** top-vs-rest
+value gap, **directly contradicting** my earlier story that "a random alternative is less
+damaging at ties by construction." Second, the derivation scales a **virus**-unit quantity by
+a **value**-unit ratio, which silently imports h13's viruses-per-value conversion — **another
+borrowed calibration, one level down**, and exactly the error the day already taught twice.
+
+### 8.3 ★ Both anomalies dissolve into one real finding
+
+Stop assuming the conversion is constant and everything is consistent:
+
+> implied value→virus conversion at tie plies = `(0.151/0.559) / 1.221` = **0.22**, i.e.
+> **~4.5× weaker** than elsewhere.
+
+**At tie plies the champion's value differences overstate real outcome consequence by ~4.5×.**
+Bigger value gaps, far less actual virus damage. That is a substantive fact about the
+evaluator, not a nuisance — and it lands on **exactly the population this whole arm targets**.
+It is an independent reason for scepticism about deepening at ties, arriving from a direction
+that has nothing to do with the refork verdict.
+
+### 8.4 Why I stopped instead of running v2
+
+A bar built on a conversion the same data falsifies is not derived, it is decorated. Running
+a third registered experiment against it would have produced a number I could not defend —
+**a prereg you expect to void is theater**. So: **INDETERMINATE-BY-INSTRUMENT**, seeds
+51100-52099 unspent, ~$0 spent on a bad third run.
+
+### 8.5 The corrected design, handed forward
+
+**The RAND bar should not be a magnitude at all.** Its job is to show the instrument can
+*order* known-bad choices at *my* plies — that is a **qualitative ordering** test, immune to
+every unit-conversion problem that killed v1 and v2:
+
+> Add a **WORST-legal-move** arm beside RAND. Require **worst < rand < 0** with separation,
+> on my own population, in my own instrument. No magnitude imported from any other lane, at
+> any level.
+
+Cheap (~20 min on the banked seeds), and it makes the control self-calibrating. **That is the
+prerequisite for any future verdict on this arm** — and per §8.3 the arm now carries an extra
+question it did not have this morning: whether tie plies are a population where evaluator
+value differences mean much of anything at all.
+
 ## Appendix: sources
 
 **Data (MEASURED here).** `/mnt/data/drmario_cosim/results/prestart_pilot.jsonl` — 1,500

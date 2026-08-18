@@ -294,6 +294,61 @@ def play_one_screened(seed, C, bmodel, rows, mut=None):
             "n_plies": len(actions), "actions": actions}
 
 
+def _alt_seed(base, play_seed, j):
+    """An UNSEEN capsule-stream seed (h13-gate's, reused verbatim).
+
+    NesPillSource keys on 16 bits and 2k/2k+1 alias to one stream, so equality
+    must be checked on the CANONICAL (even) member -- otherwise a "different"
+    alt seed can silently BE the game's own stream and re-introduce the
+    seed-peeking the refork exists to remove.
+    """
+    s = (base + 7919 * (play_seed % 100000) + 131 * j) & 0xFFFF
+    if (s & ~1) == (play_seed & 0xFFFF & ~1) or s <= 1:
+        s = (s + 12345) & 0xFFFF
+    return s
+
+
+def alt_stream_clone(env, alt_seed):
+    """Deepcopy `env` onto an UNSEEN capsule stream. `cur` is kept (it is the
+    capsule under decision); `nxt` is redrawn, because under a different stream
+    the preview differs. Both arms then see the SAME alternate future."""
+    from oracle_arm import PillDraw
+    from nes_pills import NesPillSource
+    e = copy.deepcopy(env)
+    e._rand_pill = PillDraw(NesPillSource(seed=int(alt_seed)))
+    e.nxt = e._rand_pill()
+    return e
+
+
+def refork(env, keep_a, flip_a, rand_a, seed, ply, C, bmodel, w, fl, wt, ws,
+           K, H, mut):
+    """PREREG_S0B: fork keep/flip/rand under K unseen streams, common random
+    numbers within each stream. Returns per-arm [(survived, progress)] lists."""
+    from oracle_arm import _fork_label
+    out = {"keep": [], "flip": [], "rand": []}
+    base = 991 + 17 * (ply + 1)
+    for j in range(K):
+        alt = _alt_seed(base, int(seed), j)
+        e_alt = alt_stream_clone(env, alt)
+        arms = [("keep", keep_a), ("flip", flip_a)]
+        if mut.get("f1"):                      # M-F1: fork keep twice
+            arms = [("keep", keep_a), ("flip", keep_a)]
+        if mut.get("f2"):                      # M-F2: unpaired streams
+            arms = [("keep", keep_a)]
+        if rand_a is not None:
+            arms.append(("rand", rand_a))
+        for tag, act in arms:
+            surv, prog = _fork_label(e_alt, act, C, seed, bmodel,
+                                     w, fl, wt, ws, H)
+            out[tag].append([int(surv), int(prog)])
+        if mut.get("f2"):
+            e2 = alt_stream_clone(env, _alt_seed(base + 7, int(seed), j))
+            surv, prog = _fork_label(e2, flip_a, C, seed, bmodel,
+                                     w, fl, wt, ws, H)
+            out["flip"].append([int(surv), int(prog)])
+    return out
+
+
 def _observe(env, pre, vals_post, a_post, seed, ply, C, bmodel,
              w, fl, wt, ws, rows, mut):
     """Both readouts, at one post-garbage ply.  Never mutates `env`."""
@@ -338,7 +393,17 @@ def _observe(env, pre, vals_post, a_post, seed, ply, C, bmodel,
                           disable=bool(mut.get("disable")),
                           unpaired=bool(mut.get("unpaired")))
     s0, s1 = scores[0], scores[1]
+    rf = None
+    if mut.get("refork") and int(pick) != int(cands[0]):
+        import random as _r
+        legal_all = [int(x) for x in range(32) if np.isfinite(vals_post[x])]
+        pool = [c for c in legal_all if c not in (int(cands[0]), int(pick))]
+        rand_a = (_r.Random(seed * 7919 + ply).choice(pool) if pool else None)
+        rf = refork(env, int(cands[0]), int(pick), rand_a, seed, ply, C,
+                    bmodel, w, fl, wt, ws, int(mut.get("K", 17)),
+                    int(mut.get("H", 15)), mut)
     rows.append(dict(kind="deepen", flip=int(int(pick) != int(cands[0])),
+                     refork=rf,
                      champ_pick=int(cands[0]), alt_cand=int(cands[1]),
                      deep_pick=int(pick), dup_pair=int(bool(dup)),
                      double_capsule=int(env.cur.a == env.cur.b),
@@ -432,12 +497,19 @@ def main():
     ap.add_argument("--mut-disable", action="store_true", help="M-D1")
     ap.add_argument("--mut-unpaired", action="store_true", help="M-D2")
     ap.add_argument("--manifest", action="store_true")
+    ap.add_argument("--refork", action="store_true", help="PREREG_S0B S0-B")
+    ap.add_argument("--K", type=int, default=17)
+    ap.add_argument("--H", type=int, default=15)
+    ap.add_argument("--mut-f1", action="store_true", help="M-F1 fork keep twice")
+    ap.add_argument("--mut-f2", action="store_true", help="M-F2 unpaired streams")
     a = ap.parse_args()
     if a.manifest:
         print(json.dumps(manifest(), indent=2))
         return
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
-    mut = {"disable": a.mut_disable, "unpaired": a.mut_unpaired}
+    mut = {"disable": a.mut_disable, "unpaired": a.mut_unpaired,
+           "refork": a.refork, "K": a.K, "H": a.H,
+           "f1": a.mut_f1, "f2": a.mut_f2}
     run(a.seed_start, a.seed_count, a.workers, a.out, a.model, mut)
 
 
