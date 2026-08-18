@@ -9,8 +9,18 @@ decodes; it deliberately computes NO h_min.
 verified here rather than asserted. `--selftest` decodes real banked events and
 cross-checks the recovered column heights against `maxh` and `d_spawn_h`, which
 were computed at capture time by a COMPLETELY DIFFERENT code path
-(`heights(env.board.color)` on the live env, never from the hex). Agreement is
-therefore evidence, not a tautology. Measured on the first 80 banked events:
+(the rig call `heights(env.board.color)` on the live env, never from the hex).
+Agreement is therefore evidence, not a tautology.
+
+⚠ SCHEMA, stated because that expression above is a CAPTURE-TIME CALL and reads
+like a field name — gw-design lost a moment to exactly that. The JSON keys are:
+    pre_col   hex, 256 chars -> the (16,8) COLOUR plane   <- what you decode
+    pre_vir   hex, 256 chars -> the (16,8) VIRUS plane
+    cur, nxt  [a, b] capsule colours
+    bhash     sha256 of colour+virus bytes, first 12 hex (board identity)
+There is no `board_color` key. `iter_events()` filters on `pre_col`.
+
+Measured on the first 80 banked events:
 
     (16,8) row0=TOP      maxh 80/80   d_spawn 80/80   <- correct
     (16,8) row0=bottom   maxh  8/80   d_spawn  0/80
