@@ -173,34 +173,27 @@ every consumer since has silently read them 2.5× long.
 
 ### 1.3 Window budget by board height — DERIVED
 
-> ## ⚠⚠ THE `releases` COLUMN IS INVALID — WRONG VARIABLE. Recompute pending (task #124).
+> ## ✅ RECOMPUTED from the correct `h_min` — n=23,792 real releases (was 208)
 >
-> **The co-sim farm logs `h_hit` as the MAX stack height over garbage-hit columns. The
-> window formula needs the MIN.** `game.py:184` even states the reasoning — *"the tallest
-> hit column sets the binding window"* — and it is backwards. A tile falls `15 − h`, so the
-> animation ends with the tile that falls **furthest**, i.e. the one in the **shallowest**
-> hit column: `W = 24 + 16(15 − h_min) = 264 − 16·h_min`.
+> The farm logs `h_hit` as the **MAX** over garbage-hit columns; the window formula needs the
+> **MIN** (a tile falls `15 − h`, so the animation ends with the tile falling *furthest*, in
+> the *shallowest* hit column). Filed as **#124**. The replacement cost nothing: S0-A's screen
+> already records `h_hit` correctly at every real post-garbage ply (`screen_gw.py:307`).
 >
-> Measured on 446 real boards × 12 volley shapes (5,352 pairs): the logged variable gives
-> median h **11** and W **88 f** where the correct one gives median h **4** and W **200 f** —
-> **overstating h by 7 and understating the window by 112 frames**, with 42.5% of pairs
-> pushed to h ≥ 13 against a true 0.0%.
+> | distribution | n | median h | median W | share h ≥ 13 |
+> |---|---|---|---|---|
+> | INVALIDATED — farm `lat[4]`, max over hit cols | 208 | 7 | 152 f | 10.6% |
+> | **REPLACEMENT — S0-A, min over hit cols** | **23,792** | **6** | **168 f** | **8.2%** |
 >
-> ⇒ **Every percentage in this section and §1.4 that is a share OF RELEASES is wrong**,
-> including the **52.4%** that gates the recommendation and the 14.4% p90 figure. The
-> **h-axis itself is correct** — `W(h)`, the cycle costs, and the budget columns are all
-> sound; only the *distribution over h* is corrupt. **Direction is favourable**: true windows
-> are longer, so real affordability is **higher** than stated here. Nothing is silently
-> patched; the figures stand marked until recomputed from `h_min`.
+> ⚠ **That side-by-side changes TWO things at once** — the variable *and* the corpus (10 games
+> → 1,000). The variable's effect in isolation, on identical boards, is much larger: median
+> `h_min` 4 vs `h_max` 11 (§1.6b). The real-release gap is smaller because the bursty model
+> draws **random distinct** columns while the ROM uses maximally **spread** sets
+> ({c,c+4}, {c,c+2,c+4}, …), and a spread set finds a shallow column more often. ⇒ **even
+> these corrected figures are a LOWER BOUND on the true window** (fidelity gap, filed
+> separately from #124).
 >
-> ⚠ The same field feeds the **published DRPRESTART "89.4% at h ≤ 12" headline**, which
-> inherits the same defect.
->
-> ★ **And it kills a validation I was proud of.** I cited reproducing that 89.4% "from
-> arithmetic that never saw it" as evidence my pipeline was right. It was evidence of
-> **agreement, not correctness** — two lanes computing from the same wrong field is a shared
-> dependency wearing corroboration's clothes. Independent reproduction corroborates only when
-> the *inputs* are independent, and here they were the same 5 bytes.
+> **Every dependent percentage moved UP**, as the error's direction predicted.
 
 Pocket (the rematch venue). `budget` = how many whole champion decisions fit in the window.
 `extra` = what is left after the **mandatory** post-garbage re-search (§2.1).
@@ -209,28 +202,21 @@ see the box above.**
 
 | h | W (f) | W (cycles) | releases | cum. | budget @median | budget @p90 | **extra @median** |
 |---|---|---|---|---|---|---|---|
-| 0 | 264 | 240.1 M | 1.0% | 1.0% | 5.32 | 4.14 | **4.32** |
-| 2 | 232 | 211.0 M | 1.9% | 3.4% | 4.68 | 3.63 | **3.68** |
-| 4 | 200 | 181.9 M | 7.2% | 14.4% | 4.03 | 3.13 | **3.03** |
-| 5 | 184 | 167.4 M | 13.9% | 28.4% | 3.71 | 2.88 | **2.71** |
-| 6 | 168 | 152.8 M | 13.0% | 41.3% | 3.39 | 2.63 | **2.39** |
-| **7** | 152 | 138.3 M | 11.1% | **52.4%** | 3.06 | 2.38 | **2.06** |
-| 8 | 136 | 123.7 M | 11.1% | 63.5% | 2.74 | 2.13 | **1.74** |
-| 9 | 120 | 109.2 M | 10.1% | 73.6% | 2.42 | 1.88 | **1.42** |
-| 10 | 104 | 94.6 M | 4.3% | 77.9% | 2.10 | 1.63 | **1.10** |
-| 11 | 88 | 80.0 M | 7.7% | 85.6% | 1.77 | 1.38 | **0.77** |
-| **12** | 72 | 65.5 M | 3.8% | **89.4%** | 1.45 | 1.13 | **0.45** |
-| 13 | 56 | 50.9 M | 3.8% | 93.3% | 1.13 | 0.88 | **0.13** |
-| 14 | 40 | 36.4 M | 2.4% | 95.7% | 0.81 | 0.63 | **— base itself doesn't fit** |
-| 15 | 24 | 21.8 M | 2.4% | 98.1% | 0.48 | 0.38 | **— base itself doesn't fit** |
-| 16 | 8 | 7.3 M | 1.9% | 100% | 0.16 | 0.13 | **— base itself doesn't fit** |
-
-⚠ **Read the last column carefully** — a reviewer misread an earlier draft's `0.00` there as
-"the window is zero at h ≥ 14". It is not: the *window* is 40 f at h=14 and 24 f at h=15
-(the `W` columns), and at h=16 the column is full to row 0, the garbage overwrites row 0 and
-the following spawn tops the receiver out. What is zero is the *extra* budget — because at
-h ≥ 14 even the single mandatory base search does not complete, so there is nothing left over
-by definition. The rows now say so instead of clamping to zero.
+| 0 | 264 | 240.1 M | 4.6% | 4.6% | 5.32 | 4.14 | **4.32** |
+| 2 | 232 | 211.0 M | 6.4% | 15.5% | 4.68 | 3.63 | **3.68** |
+| 4 | 200 | 181.9 M | 9.1% | 33.4% | 4.03 | 3.13 | **3.03** |
+| 5 | 184 | 167.4 M | 9.1% | 42.5% | 3.71 | 2.88 | **2.71** |
+| 6 | 168 | 152.8 M | 9.4% | 51.9% | 3.39 | 2.63 | **2.39** |
+| **7** | 152 | 138.3 M | 8.2% | **60.0%** | 3.06 | 2.38 | **2.06** |
+| 8 | 136 | 123.7 M | 7.9% | 68.0% | 2.74 | 2.13 | **1.74** |
+| 9 | 120 | 109.2 M | 6.6% | 74.6% | 2.42 | 1.88 | **1.42** |
+| 10 | 104 | 94.6 M | 6.1% | 80.7% | 2.10 | 1.63 | **1.10** |
+| 11 | 88 | 80.0 M | 5.3% | 85.9% | 1.77 | 1.38 | **0.77** |
+| 12 | 72 | 65.5 M | 5.9% | 91.8% | 1.45 | 1.13 | **0.45** |
+| **13** | 56 | 50.9 M | 4.7% | **96.4%** | 1.13 | 0.88 | **0.13** |
+| 14 | 40 | 36.4 M | 2.0% | 98.5% | 0.81 | 0.63 | **— base itself doesn't fit** |
+| 15 | 24 | 21.8 M | 1.5% | 100.0% | 0.48 | 0.38 | **— base itself doesn't fit** |
+| 16 | 8 | 7.3 M | 0.0% | 100.0% | 0.16 | 0.13 | **— never observed** |
 
 MiSTer's tap is 1.57× faster, so every budget column scales by 1.57 (h=0 → 8.36 decisions,
 h=12 → 2.28, h=14 → 1.27). **MiSTer is a materially roomier machine for this feature** —
@@ -243,12 +229,12 @@ both domains are in the script output.
 |---|---|---|---|---|---|
 | (a) linear tail term, per-feature LUT in 6502 firmware — 19 terms × 32 candidates | 7.3 K | 0.008 | h ≤ 16 | 100% / 100% | DERIVED |
 | (a′) same term in RTL beside LeafEval | 1.3 K | 0.001 | h ≤ 16 | 100% / 100% | DERIVED |
-| base post-garbage re-search — **mandatory** | 45.1 M | 49.6 | h ≤ 13 | 93.3% / **89.4%** | MEASURED |
+| base post-garbage re-search — **mandatory** | 45.1 M | 49.6 | h ≤ 13 | **96.4% / 91.8%** | MEASURED |
 | (b) 2-candidate × 1 extra ply | 90.3 M | 99.2 | h ≤ 10 | — | DERIVED |
-| **(b+) base + 2-candidate deepening** | 135.4 M | 148.8 | **h ≤ 7** | **52.4% / 14.4%** | DERIVED |
-| (b+) at 80% truncation (see §2.4) | 117.3 M | 129.0 | h ≤ 8 | 63.5% / 41.3% | DERIVED |
+| **(b+) base + 2-candidate deepening** | 135.4 M | 148.8 | **h ≤ 7** | **60.0% / 33.4%** | DERIVED |
+| (b+) at 80% truncation (see §2.4) | 117.3 M | 129.0 | h ≤ 8 | **68.0% / 51.9%** | DERIVED |
 | base + **1** extra candidate at 80% | 81.2 M | 89.3 | h ≤ 10 | 77.9% / 73.6% | DERIVED |
-| (c) top-4 × 1 extra ply + base | 225.7 M | 248.1 | h ≤ 0 | 1.0% / 0.0% | DERIVED |
+| (c) top-4 × 1 extra ply + base | 225.7 M | 248.1 | h ≤ 0 | 4.6% / 0.0% | DERIVED |
 | (c′) **H12 as certified** — topk 4 × fork_samples 5 × horizon 15 | 13.5 **G** | 14,884 | **never** | 0% | DERIVED |
 
 **The cliff is between (b+) and (c).** Two extra candidate-plies is the last thing that
@@ -1130,6 +1116,86 @@ counter and never a timer**, and carry its own killed mutant: adopt below the th
 the stale-move signature must reappear.
 
 ---
+
+---
+
+## 7. S0-A RESULT — the screen PASSES, and the dose arithmetic changes the plan
+
+Run 2026-08-18, seeds **50100-51099** under `PREREG_S0A_v2` with the h-keyed decision rule.
+1,000 games, **158,968 plies**, 566 s on 14 cores, $0. Gate green, `dup_pair` = 0/1126 as
+required.
+
+### 7.1 Registered primary — **PROCEED**
+
+`L(h ≥ 11) = 22.34%`, far above the 2% floor.
+
+| h band | flips / n | rate | 95% CI |
+|---|---|---|---|
+| h ≤ 7 | 244 / 652 | 37.4% | [33.8, 41.2] |
+| h 8-10 | 64 / 207 | 30.9% | [25.0, 37.5] |
+| h 11-13 | 54 / 210 | 25.7% | [20.3, 32.0] |
+| h ≥ 14 | 19 / 57 | 33.3% | [22.5, 46.3] |
+| **ALL** | **381 / 1126** | **33.8%** | **[31.1, 36.6]** |
+
+**The deepening changes the move on a third of tie plies — 17× the testability floor.** It is
+not a formality, and the effect is present in every height band including h ≥ 14.
+
+The trigger population also lands where §1.6b predicted it: de-duplicated ties are **4.46%**
+of post-garbage plies (predicted 5.29%) and **0.708%** of all plies (predicted 0.911%).
+Registering that expectation before the run is what makes the small `n` readable as
+*designed* rather than *broken*.
+
+### 7.2 ⚠ But the dose is 7.3% of H12's, and that is the binding constraint
+
+| stage | of all plies |
+|---|---|
+| post-garbage plies | 15.88% |
+| × de-duplicated top-2 tie | **0.708%** |
+| × flips (33.8%) | **0.240%** ← ceiling dose |
+| × affordability (60.0%) | **0.144%** ← shippable dose |
+| **H12's measured accepted-flip dose** | **1.98%** |
+
+At **H12-equal per-flip quality** — a generous assumption, since H12's flips survive a θ
+margin on a 15-pill rollout while these are ungated one-ply comparisons — the shippable arm
+projects **0.62pp** of clear-rate movement against an **MDE of ~0.84pp** at N = 9,000. That
+is **under-powered by ~1.35×** before any quality discount. The ceiling arm (1.03pp) is
+merely *marginal*.
+
+⇒ **This is the §6.1 Step 3 arithmetic firing exactly as pre-committed**, and it says the
+endpoint A/B I originally proposed **cannot decide this arm**. Running it would produce a
+guaranteed-ambiguous null — the distill lane's ending, which the operating-point law exists
+to prevent.
+
+### 7.3 ⇒ RE-SCOPED RECOMMENDATION: price the flips directly, not through an endpoint
+
+**Do not run the endpoint A/B.** Run the **capsule-fair refork screen** on the 381 flips
+already banked — the instrument the h13-gate lane used to close gate-v2 the same day, which
+delivered a decisive verdict on 446 flips with CI [−0.058, +0.085] and a RAND control at
+−0.559 proving it discriminates.
+
+It prices **per-flip quality directly**, so it needs no endpoint power at all. That converts
+an experiment that *cannot* decide into one that can, on data already on disk, for
+approximately the same ~$4.
+
+- **Refork verdict clearly positive** ⇒ the arm is real; then, and only then, is an endpoint
+  worth pricing — and it would need a dose increase (wider h band, or top-3) to be powered.
+- **Refork null or negative** ⇒ close the lane on evidence, having spent ~$4 total.
+
+⚠ The two free wins stand regardless of that verdict, and neither depends on this arm:
+**#123** (double-capsule canonicalisation, provably zero board effect) and **#124** (the farm's
+inverted `h_hit`, which corrupts published figures in two lanes).
+
+### 7.4 One number that did NOT reproduce, stated plainly
+
+The secondary readout re-derives the pre-vs-post-garbage flip at **34.4%** (n = 25,251),
+against the historical **50.5%** and the near-death rig's **66.3%**. It is far above the 2%
+floor either way, so the mandatory re-search premise is unaffected — but the discrepancy is
+real and I have not resolved it. The likeliest cause is champion generation: the historical
+rigs used `StrandedChainD3Decider` (chain180), this one uses the H12-era `_champ_values`.
+⚠ Note also the h ≥ 14 band gives **9.8%** here versus 66.3% on the near-death corpus — those
+are different populations (all post-garbage plies at h ≥ 14 during normal play, versus
+selected real kill-game boards), and the gap should not be averaged away. **Flagged, not
+explained.**
 
 ## Appendix: sources
 
