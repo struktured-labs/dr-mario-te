@@ -1,0 +1,54 @@
+A. COUNTER -- recovery of an injected asymmetry
+  PASS  deaths_side0: got 60 want 60
+  PASS  deaths_side1: got 7 want 7
+  PASS  discordant b/c: got (60, 7) want (60, 7)
+       rate0=0.0600 rate1=0.0070 delta=5.30pp p=1.33e-11
+
+A2. COUNTER -- the swap_scoring MUTANT must exchange the counts exactly
+  PASS  mutant exchanges deaths: got True want True
+  PASS  mutant gate pass: got True want True
+
+A3. COUNTER -- an INERT counter (ignores the side) must FAIL the gate
+  PASS  inert counter is rejected: got False want False
+
+A4. MIRROR counter -- seat/board decomposition
+  PASS  pure-seat win0 rate: got 1.0 want 1.0
+  PASS  pure-seat seat_determined: got 1000 want 1000
+  PASS  pure-board win0 rate: got 0.5 want 0.5
+  PASS  pure-board board_determined: got 1000 want 1000
+
+B. VERDICT FUNCTION -- seven tables straddling the registered bands
+  PASS  claim reproduced (60 vs 7 @1500): got 'CONFIRM' want 'CONFIRM'
+        -> McNemar p=1.328e-11 < 0.05 and ratio 8.57x >= 2.0x
+  PASS  exact null @1500: got 'REFUTE' want 'REFUTE'
+        -> McNemar p=1; 95% CI on delta -1.27..1.27 pp excludes the claimed 5.33 pp
+  PASS  near-null @1500: got 'REFUTE' want 'REFUTE'
+        -> McNemar p=0.4657; 95% CI on delta -0.73..1.80 pp excludes the claimed 5.33 pp
+  PASS  zero deaths anywhere: got 'UNMEASURABLE' want 'UNMEASURABLE'
+        -> zero champion deaths in either seat: the arm cannot express the quantity, so this is not evidence of symmetry (rule 24 #2)
+  PASS  underpowered null @80 (orig n): got 'INDETERMINATE' want 'INDETERMINATE'
+        -> p=1 and the CI -6.25..6.25 pp still contains the claimed 5.33 pp: underpowered, not negative
+  PASS  significant but TINY ratio: got 'INDETERMINATE' want 'INDETERMINATE'
+        -> p=8.94e-06 significant but ratio 1.50x below the 2.0x bar -- a real but much smaller effect
+  PASS  large effect, wrong direction: got 'CONFIRM' want 'CONFIRM'
+        -> McNemar p=1.328e-11 < 0.05 and ratio 8.57x >= 2.0x
+
+B2. MIRROR verdict bands
+  PASS  pure seat bias @1000: got 'STRUCTURAL_BIAS' want 'STRUCTURAL_BIAS'
+        -> P(side 0 wins)=1.0000 CI [1.0000,1.0000] excludes 0.5 in a perfect board-cancelled mirror
+  PASS  perfect symmetry @1000: got 'NO_STRUCTURAL_BIAS' want 'NO_STRUCTURAL_BIAS'
+        -> CI [0.5000,0.5000] contains 0.5 with half-width 0.0000 < 0.05
+  PASS  mild bias @1000 (55/45): got 'STRUCTURAL_BIAS' want 'STRUCTURAL_BIAS'
+        -> P(side 0 wins)=0.5500 CI [0.5410,0.5595] excludes 0.5 in a perfect board-cancelled mirror
+  PASS  too few seeds to bound: got 'INDETERMINATE' want 'INDETERMINATE'
+        -> CI [0.3333,0.6667] half-width 0.1667 too wide
+  PASS  same split, n large enough: got 'NO_STRUCTURAL_BIAS' want 'NO_STRUCTURAL_BIAS'
+        -> CI [0.4780,0.5225] contains 0.5 with half-width 0.0222 < 0.05
+
+C. POPULATION NON-DEGENERACY -- the mirror arm's two sides must play DIFFERENT boards
+  PASS  virus boards differ on every seed: got 40 want 40
+  PASS  capsule streams identical on every seed: got 40 want 40
+       (boards differ + pills shared is exactly the mechanic the mirror arm relies on:
+        a real contest, with the ONLY seat-linked variable being turn order)
+
+ALL GATES PASSED
