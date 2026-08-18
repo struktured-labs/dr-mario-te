@@ -248,11 +248,34 @@ Measuring the true mean horizon is a cheap refinement (§4.5) and a sign-preserv
 
 Three things this table says that are easy to get backwards:
 
-1. **The window shrinks exactly where the danger is.** 89.4% of releases land at h ≤ 12,
-   where there is room; the near-death regime that dies-ahead comes from is the 6.7% at
-   h ≥ 14 where the budget is *below one decision*. Reclaiming the window buys the most
-   time where it is least needed. This is the same inversion the shadow-latency pilot
-   flagged for DRPRESTART, and it applies with full force here.
+1. ~~**The window shrinks exactly where the danger is.**~~ ⚠⚠ **REFUTED — and this was the
+   lane's central pessimism.** The mechanics lane retracted it after measuring `h_min` on
+   the same 125 real kill-game boards this document uses elsewhere:
+
+   | on real near-death boards | |
+   |---|---|
+   | tallest column | median **15** (13-15) — genuinely near death |
+   | **h_min (shallowest garbage-hit column)** | median **4** (0-13) |
+   | **W = 264 − 16·h_min** | median **200 f = 3.33 s** |
+   | boards at W ≤ 56 f | **4/125 = 3.2%** |
+   | worst volley phase per board (adversarial) | median 136 f = 2.26 s |
+
+   **Near-death boards are towers, so the garbage — which lands in spread columns
+   ({c, c+4}, {c, c+2, c+4}, …) — almost always finds a low one, and one low column sets
+   the whole window.** The near-death window is **~3.3 s, not the 0.93 s** the flat-stack
+   synthetic implied; the short-window shape occurs in 3.2% of real deaths.
+
+   ⇒ **The compute is abundant AND most valuable in the same regime**: ~3.3 s of window
+   alongside the highest flip rate measured anywhere (66.3%, §2.1). Every "arrives where it
+   is least needed" caveat in earlier drafts argued against a fact that is not true.
+
+   ★ The error was mine and the mechanics lane's in the same shape, one level apart: I used
+   *fill* as the axis for a *height*-keyed formula; they had the right per-column quantity
+   (`h_min`) but described its behaviour with an aggregate ("as the board fills") and then
+   reasoned about a regime from that aggregate. **A formula in a per-column quantity
+   licenses no claim about a regime described by an aggregate.** Hence `h_hit` must be the
+   **min over hit columns** — that single column sets the entire window regardless of the
+   other seven.
 2. **p90 is not a rounding error, it is the design question.** (b+) is affordable on 52.4%
    of releases at median cost and only **14.4%** at p90. Whether that gap is a problem
    depends entirely on the pre-emption semantics (§2.4): if an unfinished extra is
@@ -342,9 +365,26 @@ not in doubt**.
    Canonicalising double-capsule orientations to the cheapest-to-reach member is a pure
    tempo gain with **provably zero board effect**, which makes it about the safest change
    available anywhere in this project.
-3. **De-duplication is nearly free on silicon.** It needs no board comparison: `if cur.a ==
-   cur.b, skip orientations 2 and 3`. One byte compare and a branch — not the 32-board
-   canonicalisation the offline screen uses.
+3. **De-duplication is nearly free on silicon — but I had the pairing WRONG.** I wrote
+   *"skip orientations 2 and 3"*, reasoning that a double is 180°-symmetric so `o ↔ o+2`.
+   ⚠ **False in this encoding, and the h13-gate lane caught it before it reached #123.**
+   Their `(v, v+2)` detector found *nothing* — 1.1% on doubles vs 0.9% on non-doubles, no
+   signal — while the board-level tie rate on those same doubles is **1.0000**. A de-dup
+   that removes nothing reports "no contamination found", indistinguishable from a broken
+   detector, and arrives wearing a green badge.
+
+   **MEASURED instead** (413 double-capsule plies, 12 seeds, actions paired by *resulting
+   board*): identical-board pairs are **var 2 ↔ var 3** and **var 0 ↔ var 1**, always same
+   column — **adjacent** variants, slots differing by 8, never 16. With
+   `_VAR_OF_O4 = [2,3,0,1]` that is orientations **o4 0↔1 and o4 2↔3**.
+
+   The physics is more natural than my guess: **for a double, the two colour-orderings
+   within each axis are the same placement.** Variants 0/1 are one axis's two orderings,
+   2/3 the other's, and a double makes the ordering irrelevant. It was never about rotation.
+
+   ⇒ still one byte compare and a branch — `if cur.a == cur.b`, keep one member of each
+   *adjacent* pair — but **derive the pairing from boards, never read it off a constant**.
+   `_VAR_OF_O4` looks like it answers this and does not.
 
 ⚠ **Three ways this could be optimistic, and they must not be waved through.**
 1. **Size is not dose.** The distill lane's law is that dose must be weighted by *selection
@@ -621,9 +661,11 @@ priced and built). Spend it on *extras* iff both:
    2 is why a **2-candidate binary comparator** is the right shape and top-4 is mostly
    wasted budget.
    ⚠⚠ **The de-duplication is not an optimisation, it is a correctness requirement**
-   (§1.6b): 87% of raw top-2 ties are a placement and its own 180° mirror, so an
-   un-de-duplicated comparator spends the whole window comparing a board with itself. On
-   silicon it costs one byte compare: `if cur.a == cur.b, skip orientations 2 and 3`.
+   (§1.6b): 87% of raw top-2 ties are a placement and its duplicate, so an un-de-duplicated
+   comparator spends the whole window comparing a board with itself. On silicon it costs one
+   byte compare on `cur.a == cur.b` — but see §1.6c item 3: the pair is **adjacent
+   variants** (o4 0↔1, 2↔3), **not** `o ↔ o+2`, and that must be derived from boards rather
+   than from the orientation constant.
 
 This gate is deterministic, computable on-cart, costs nothing, and has no learned component
 to mis-calibrate.
@@ -999,6 +1041,14 @@ can actually buy; the RTL agreement curve says what that fraction is worth. Pock
 ⇒ **A truncated post-garbage re-search is viable down to h = 15**, costing 0-5% of move
 fidelity (0-10% at p90). h = 16 is the only genuine write-off, and that board is lost anyway
 (§1.1: the garbage overwrites row 0 and the next spawn tops the receiver out).
+
+★★ **AND the regime this rescues is rarer than it looks — which is better news still.**
+§1.5 point 1 records the retraction: on real near-death boards `h_min` has median **4**, and
+only **3.2%** land at W ≤ 56 f. So the primary near-death story is not truncation at all — it
+is that **a COMPLETE re-search fits, in ~3.3 s of window, at the highest flip rate measured
+(66.3%)**. Truncation is the *tail insurance* covering that 3.2%, not the main mechanism.
+Both readings favour the lane; do not let the truncation machinery obscure the simpler and
+stronger fact.
 
 ★★ **Here the truncation lever needs NO transfer assumption.** §2.4 flags that the 69-board
 curve was measured for the *full depth-3 root search* and only *assumed* to carry to the

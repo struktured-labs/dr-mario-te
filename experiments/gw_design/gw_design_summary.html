@@ -350,9 +350,26 @@
     </div>
     <p style="font-size:.88rem;color:var(--ink-3)">
       The shaded row is the last height at which the base search <em>plus</em> the deepening still
-      fits. Cumulatively that is 52.4% of releases. <strong>The window shrinks exactly where the
-      danger is</strong> — the near-death regime at h ≥ 14 cannot afford even one search.
+      fits. Cumulatively that is 52.4% of releases.
     </p>
+    <div class="verdict" style="border-left-color:var(--ok)">
+      <h3>⚠ Retraction: the window does <em>not</em> shrink where the danger is</h3>
+      <p style="font-size:.92rem">
+        Earlier drafts carried “the window is shortest exactly in the near-death regime” as the lane's
+        central pessimism. <strong>Measured on 125 real kill-game boards, it is false.</strong> That
+        claim came from flat synthetic stacks, where every column has the same height. Real
+        near-death boards are <strong>towers</strong>: the tallest column has median height 15, but
+        the window is set by the <em>shallowest garbage-hit</em> column — and garbage lands in spread
+        columns, so it almost always finds a low one.
+      </p>
+      <p style="font-size:.92rem">
+        Shallowest-hit height has median <strong>4</strong>, giving a near-death window of
+        <strong>median 200 frames = 3.33 s</strong>, not the 0.93 s implied by the synthetic. Only
+        <strong>3.2%</strong> of real death boards land in the short-window shape. So the compute is
+        <strong>abundant and most valuable in the same regime</strong> — ~3.3 s of window alongside
+        the highest flip rate measured anywhere (66.3%).
+      </p>
+    </div>
   </section>
 
   <section>
@@ -489,6 +506,56 @@
       mirrored orientations are the same placement but <em>not</em> the same cost to reach: the executor is
       CCW-only, so orient 1 costs three rotations from spawn where orient 3 costs one. Canonicalising to
       the cheapest-to-reach member is a pure tempo gain with provably zero board effect.
+    </p>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <h2>The near-death regime is reachable — the lane's strongest argument</h2>
+    <p>
+      The sharpest objection to this lane was: <em>boards at h ≥ 14 flip 2-in-3, yet cannot afford
+      even the base search.</em> Dividing the window by the measured decision cost gives the
+      completion fraction the regime can buy, and the truncation curve says what that fraction is
+      worth.
+    </p>
+    <div class="scroll">
+      <table>
+        <caption>What a truncated re-search buys near death
+          <span>Pocket tap. Agreement read off the RTL curve (n=69) at the achievable completion fraction.</span>
+        </caption>
+        <thead>
+          <tr><th scope="col">h</th><th scope="col">window</th><th scope="col">fraction @median</th><th scope="col">agreement</th><th scope="col">fraction @p90</th><th scope="col">agreement</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>13</td><td>56 f</td><td>1.00</td><td><strong>completes</strong></td><td>0.88</td><td>~100%</td></tr>
+          <tr class="band"><td>14</td><td>40 f</td><td>0.81</td><td><strong>~100%</strong></td><td>0.63</td><td>~98%</td></tr>
+          <tr class="band"><td>15</td><td>24 f</td><td>0.48</td><td><strong>~95%</strong></td><td>0.38</td><td>~90%</td></tr>
+          <tr><td>16</td><td>8 f</td><td>0.16</td><td>~78%</td><td>0.13</td><td>~74%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      <strong>★ Here the truncation curve needs no transfer assumption.</strong> It was measured for the
+      full depth-3 root search and only <em>assumed</em> to carry to the 2-candidate deepening — but the
+      base re-search <em>is</em> that full root search, same object and same best-first structure. For the
+      mandatory step this is measurement, not extrapolation; the assumption stays confined to the
+      optional extras. h = 16 is the only write-off, and that board is already lost — the garbage
+      overwrites row 0 and the next spawn tops out.
+    </p>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      <strong>And the regime this rescues is rarer than it looks, which is better news still.</strong>
+      Since only 3.2% of real death boards have a short window, the primary near-death story is not
+      truncation at all — it is that a <em>complete</em> re-search fits, in ~3.3 s, at a 66.3% flip
+      rate. Truncation is tail insurance for the remainder.
+    </p>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      <strong>⚠ It does force a design change.</strong> Abandon-whole pre-emption is the wrong default
+      above h = 13, where it would discard a result worth 90–100% fidelity. The rule becomes
+      height-dependent: abandon below h = 13, adopt at ≥ 80% completion above it — gated on a
+      <em>completion counter, never a timer</em>, behind the same seqlock, with a killed mutant where
+      adopting below the threshold must reproduce the stale-move signature. Adopting partials is the
+      pair-latch failure mode by another name.
     </p>
   </section>
 
