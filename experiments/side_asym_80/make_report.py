@@ -41,6 +41,17 @@ def main(path, out):
               f"({'exchanged exactly' if g['deaths_exchanged'] else 'NOT exchanged'}).")
     w("- verdict-script + counter gates: see `out/gate.txt` (24/24 before launch, "
       "incl. an inert counter the gate must reject).")
+    ga = R.get("mutant_gate_adv")
+    if ga and (ga["base"][0] + ga["base"][1]) < 10:
+        w(f"\n⚠ **What the adv killed-mutant does NOT cover.** Its 200-seed subset "
+          f"contained only {ga['base'][0] + ga['base'][1]} champion deaths, so the "
+          f"death-exchange half of that gate is demonstrated on very few events. Two "
+          f"other checks carry the load: the mirror gate exchanges its deaths AND "
+          f"holds {R['mutant_gate_mirror']['base'][2]}/"
+          f"{R['mutant_gate_mirror']['base'][3]} seat/board classifications invariant "
+          f"(199 seeds), and the synthetic gate exercises the same counter at 60-vs-7 "
+          f"on 1000 seeds, where an inert counter is rejected. Stated here so the gap "
+          f"travels with the number rather than living in a design doc.")
 
     # -------------------------------------------------------------- primary arm
     if a:
@@ -116,10 +127,45 @@ def main(path, out):
             w("Prediction substantially met — the first-mover structure dominates "
               "the exact-tie limit, though not universally.")
         else:
-            w("**PREDICTION NOT MET.** The first-mover mechanism named in the prereg "
-              "does not decide the exact-tie limit, and is withdrawn as the "
-              "explanation. What separates the seats under identical boards is "
-              "unexplained and needs its own investigation.")
+            w("**PREDICTION FAILED AS SPECIFIED.** Registered 1.000, measured "
+              f"{sb['win0_rate']:.4f} (CI [{sb['win0_ci'][0]:.2f}, "
+              f"{sb['win0_ci'][1]:.2f}]). Logged as a failure, not reinterpreted.\n")
+            d = R.get("diag_firstmover")
+            if not d:
+                w("No follow-up diagnostic was run, so the first-mover mechanism is "
+                  "**withdrawn** and what separates the seats under identical boards "
+                  "is unexplained.")
+            else:
+                w("**Diagnosis — the PREDICATE was under-specified; the MECHANISM "
+                  "survives.** `same_board` equalises the virus boards but does not "
+                  "reach the exact-tie limit the prediction was about: garbage column "
+                  "phase is keyed on the GLOBAL volley ordinal (`seed*7919 + vol` in "
+                  "`play_match`), so the two seats take garbage in different columns "
+                  "and diverge from the first release onward. Measured: of "
+                  f"{sb['n_games']} same_board games, **zero had zero releases** "
+                  f"(mean {d['mean_releases']:.1f} releases/game) — not one was ever "
+                  "in the tie limit.\n")
+                w("Severing the attack channel as well (`garbage=False`, boards still "
+                  "identical) leaves turn order as the only asymmetry. Measured over "
+                  f"{d['n']} seeds: **P(seat 0 wins) = {d['win0_rate']:.4f}** "
+                  f"({d['w0']}/{d['n']}), with {d['releases_nonzero']} games having "
+                  "any release.\n")
+                if abs(d["win0_rate"] - 1.0) < 1e-9:
+                    w("**The first-mover mechanism is therefore real and total in the "
+                      "true tie limit**: both seats play identical moves, seat 0 moves "
+                      "first, and its terminal condition is detected before seat 1 gets "
+                      "its move that round. The registered prediction named the right "
+                      "mechanism and the wrong CONDITION for reaching it.\n")
+                    w("⚠ **It does not translate into a measurable seat bias in real "
+                      "play.** The mirror arm's CI contains 0.5. A structural advantage "
+                      "that is total under identical boards is swamped once board or "
+                      "garbage variation is present. Both statements hold at once: the "
+                      "mechanism exists, and its effect size in the regime actually "
+                      "played is not distinguishable from zero.\n")
+                else:
+                    w("Even with the attack channel severed the seats do not separate "
+                      "deterministically, so the first-mover mechanism is **withdrawn** "
+                      "as the explanation.\n")
 
     w("\n## Scope — what this does NOT cover\n")
     w("Offline fast sim only; level 11; `max_pills` 300; garbage ON; the "

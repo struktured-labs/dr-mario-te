@@ -1,0 +1,107 @@
+{
+  "mirror": {
+    "n_seeds": 1500,
+    "n_games": 3000,
+    "stall_games": 2,
+    "win0_rate": 0.5123497997329773,
+    "win0_ci": [
+      0.4959946595460614,
+      0.5290387182910548
+    ],
+    "seat_determined_seeds": 621,
+    "board_determined_seeds": 877,
+    "deaths_side0": 12,
+    "deaths_side1": 14,
+    "total_deaths": 26,
+    "death0_rate": 0.46,
+    "death0_ci": [
+      0.28,
+      0.66
+    ],
+    "death_mcnemar_p_GAMELEVEL": 0.8450189828872763,
+    "n_seeds_with_death": 25,
+    "verdict": "NO_STRUCTURAL_BIAS",
+    "verdict_reason": "CI [0.4960,0.5290] contains 0.5 with half-width 0.0165 < 0.05"
+  },
+  "adv": {
+    "n_seeds": 1500,
+    "n_games": 3000,
+    "deaths_side0": 18,
+    "deaths_side1": 20,
+    "rate_side0": 0.012,
+    "rate_side1": 0.013333333333333334,
+    "delta_pp": -0.13333333333333333,
+    "delta_ci_pp": [
+      -0.9333333333333335,
+      0.6666666666666667
+    ],
+    "discordant_b": 18,
+    "discordant_c": 20,
+    "mcnemar_p": 0.8714146793645323,
+    "total_deaths": 38,
+    "verdict": "REFUTE",
+    "verdict_reason": "McNemar p=0.8714; 95% CI on delta -0.93..0.67 pp excludes the claimed 5.33 pp"
+  },
+  "same_board": {
+    "n_seeds": 100,
+    "n_games": 200,
+    "stall_games": 0,
+    "win0_rate": 0.46,
+    "win0_ci": [
+      0.36,
+      0.56
+    ],
+    "seat_determined_seeds": 100,
+    "board_determined_seeds": 0,
+    "deaths_side0": 0,
+    "deaths_side1": 2,
+    "total_deaths": 2,
+    "death0_rate": 0.0,
+    "death0_ci": [
+      0.0,
+      0.0
+    ],
+    "death_mcnemar_p_GAMELEVEL": 0.5,
+    "n_seeds_with_death": 1
+  },
+  "mutant_gate_adv": {
+    "base": [
+      0,
+      2,
+      0,
+      2
+    ],
+    "mutant": [
+      2,
+      0,
+      2,
+      0
+    ],
+    "deaths_exchanged": true,
+    "pass": true
+  },
+  "mutant_gate_mirror": {
+    "base": [
+      3,
+      0,
+      81,
+      118
+    ],
+    "mutant": [
+      0,
+      3,
+      81,
+      118
+    ],
+    "deaths_exchanged": true,
+    "pass": true
+  },
+  "diag_firstmover": {
+    "n": 100,
+    "w0": 100,
+    "win0_rate": 1.0,
+    "releases_nonzero": 0,
+    "mean_releases": 26.26,
+    "sameboard_zero_release_games": 0
+  }
+}
