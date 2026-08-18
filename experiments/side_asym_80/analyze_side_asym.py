@@ -224,6 +224,8 @@ def main():
     ap.add_argument("--mirror", nargs="*", default=[])
     ap.add_argument("--adv-mutant", nargs="*", default=[])
     ap.add_argument("--mirror-mutant", nargs="*", default=[])
+    ap.add_argument("--same-board", nargs="*", default=[],
+                    help="the population mutant: both seats on one virus board")
     ap.add_argument("--json-out", default=None)
     a = ap.parse_args()
 
@@ -240,6 +242,9 @@ def main():
         v, why = verdict_adv(d)
         d["verdict"], d["verdict_reason"] = v, why
         out["adv"] = d
+    if a.same_board:
+        rows, _ = load(a.same_board)
+        out["same_board"] = analyse_mirror(rows)
     for tag, base_p, mut_p in (("adv", a.adv, a.adv_mutant),
                                ("mirror", a.mirror, a.mirror_mutant)):
         if base_p and mut_p:
