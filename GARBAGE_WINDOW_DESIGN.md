@@ -21,7 +21,8 @@ certified costs up to **300 champion decisions per intervention**, which is **56
 largest window that ever exists**, 207× the window at h=12, and 620× at h=15.
 The window is a *one-to-three extra searches* budget, not a rollout budget. Within that
 budget exactly one thing is already built (DRPRESTART: re-search the projected
-post-garbage board — mandatory, since 50.5% of argmax decisions flip on it), and exactly
+post-garbage board — mandatory, since 50.5% of argmax decisions flip on it ⚠ but see §2.1:
+that number is both **out-of-regime and un-reproducible**, and no GO may rest on it), and exactly
 one thing is newly affordable: a **2-candidate, 1-ply deepening of the top-2 tie**, which
 fits on **52.4% of releases** at median search cost, rising to **63.5%** if truncated at
 80% completion — which the RTL measures as costing **zero moves**. Its trigger population is
@@ -53,6 +54,20 @@ the end, report both.
 ⚠ Derive cycles/frame from `HZ / 60.0988`; do not transcribe the rounded 909,650 literal
 that appears in the older memo.
 
+Three mechanical facts that constrain the trigger, re-confirmed by the mechanics lane
+(ROM-derived, verified 8/8 on the real ROM in a real 2P VS game):
+
+- **Volley SIZE is irrelevant.** 2-, 3- and 4-tile volleys on the same board all give the
+  same window. Only `h_min`, the stack height of the *shallowest hit column*, matters.
+- **The window is per-RECEIVER-PILL, not per-volley.** Garbage is buffered attacker-side in
+  `p1/p2_attackSize` (`$0318`/`$0398`) and releases only when the receiver reaches
+  `action_checkAttack` — strictly between the receiver's own pill lock and its next spawn.
+  So the trigger fires on the receiver's clock, and the window always sits in the gap the
+  copro is idle in anyway.
+- At **h=16** the column is full to row 0, the garbage **overwrites row 0**, W = 24 f, and
+  the following spawn tops the receiver out. That row of the budget table is describing a
+  board that is already lost.
+
 ### 1.2 What one champion decision actually costs — MEASURED
 
 Source: `/mnt/data/drmario_cosim/results/prestart_pilot.jsonl` — **1,500 real
@@ -75,6 +90,55 @@ silicon frames" from a completely separate script. My independent conversion lan
 that never saw it. Two independent reproductions; the clock domain and the unit
 interpretation are right.
 
+### 1.2b ⚠ A 3× conflict over C, raised in review — RESOLVED, and the resolution is a live hazard
+
+The mechanics lane challenged the whole table with a different figure: *"a warm depth-3
+search is ~300 hooks = 150 frames (`patch_cartridge_copro.py:391`), so the window fits one
+entire warm search only while h ≤ 7."* If that were right the base search alone would fit on
+a minority of releases and this lane would be dead. Worth resolving, not averaging.
+
+**The 300-hook constant is an orphan, and 150 frames is a stale-unit misreading of it.**
+
+- The driver comment cites its derivation as `tmp/driver_slam/round1_repro.py` +
+  `TEMPO_DESIGN.md` §2.3. **`round1_repro.py` contains neither the string "300" nor
+  "hook"**, and **`TEMPO_DESIGN.md:119` states `T_s ≈ 60 f`**, not 150.
+- 300 hooks ÷ **5 hooks/frame** = **60 frames** — exactly `TEMPO_DESIGN`'s figure. The
+  constant was authored to encode ~60 frames, under the hook rate assumed at the time.
+- The 2026-08-01 audit **corrected the rate to 2 hooks/frame** (measured, by tracing the
+  single NMI call site) and rescaled the *wall-clock prose* around `FAST_HI` — but left
+  `T_s` as a raw hook count. Read at the corrected rate, "300 hooks" now says 150 frames:
+  **2.5× what it was calibrated to mean.**
+- The file **warns about exactly this** at `patch_cartridge_copro.py:104-110`: several
+  comments still assume ~5 calls/frame, they are "calibration prose, not measured", and
+  should be revisited "before anyone RE-TUNES the hook-counted constants".
+
+**Four independent measurements agree with each other and with the constant's original
+intent, not with 150 f:**
+
+| source | DONE latency | domain |
+|---|---|---|
+| this document, 1,500 decisions | median **31.6 f** (p90 40.6) | MiSTer |
+| pair-latch co-sim, 69 real L11 boards | median **34 f**, max 60 | MiSTer |
+| link-chain ship report, stomper180 | worst **57.2 f** of ~80 | MiSTer |
+| `TEMPO_DESIGN.md:119` — the constant's own cited source | **≈60 f** | — |
+
+⇒ **The budget table stands.** Two things must not be lost:
+
+1. ⚠ **This is cross-lane contamination, not a local nit.** The prestart lane's modelled
+   baseline timeline carries "`T_s` = 300 hooks warm depth-3" *alongside* its own measured
+   49.6-frame median — one lane holding both numbers, inconsistently. A stale hook-counted
+   constant has already propagated into a second lane's model.
+2. ⚠ **`DRSLAM` / `FAST_HI` / `WDOG` are hook-counted and were tuned under the superseded
+   rate.** `FAST_HI=2` was chosen as "above warm-typical (300)". If warm-typical is really
+   ~64-100 hooks, that gate is far looser than intended. **Driver-lane item; flagged, not
+   fixed here** — and it should not be "fixed" by arithmetic either, since the constants
+   were tuned empirically on silicon and may be fine as shipped for reasons unrelated to
+   their stated derivation.
+
+★ The general shape: **a hook-counted constant is a unit-bearing quantity whose unit was
+later revised.** The audit that fixed the rate fixed the prose and not the constants, so
+every consumer since has silently read them 2.5× long.
+
 ### 1.3 Window budget by board height — DERIVED
 
 Pocket (the rematch venue). `budget` = how many whole champion decisions fit in the window.
@@ -95,9 +159,16 @@ Pocket (the rematch venue). `budget` = how many whole champion decisions fit in 
 | 11 | 88 | 80.0 M | 7.7% | 85.6% | 1.77 | 1.38 | **0.77** |
 | **12** | 72 | 65.5 M | 3.8% | **89.4%** | 1.45 | 1.13 | **0.45** |
 | 13 | 56 | 50.9 M | 3.8% | 93.3% | 1.13 | 0.88 | **0.13** |
-| 14 | 40 | 36.4 M | 2.4% | 95.7% | 0.81 | 0.63 | **0.00** |
-| 15 | 24 | 21.8 M | 2.4% | 98.1% | 0.48 | 0.38 | **0.00** |
-| 16 | 8 | 7.3 M | 1.9% | 100% | 0.16 | 0.13 | **0.00** |
+| 14 | 40 | 36.4 M | 2.4% | 95.7% | 0.81 | 0.63 | **— base itself doesn't fit** |
+| 15 | 24 | 21.8 M | 2.4% | 98.1% | 0.48 | 0.38 | **— base itself doesn't fit** |
+| 16 | 8 | 7.3 M | 1.9% | 100% | 0.16 | 0.13 | **— base itself doesn't fit** |
+
+⚠ **Read the last column carefully** — a reviewer misread an earlier draft's `0.00` there as
+"the window is zero at h ≥ 14". It is not: the *window* is 40 f at h=14 and 24 f at h=15
+(the `W` columns), and at h=16 the column is full to row 0, the garbage overwrites row 0 and
+the following spawn tops the receiver out. What is zero is the *extra* budget — because at
+h ≥ 14 even the single mandatory base search does not complete, so there is nothing left over
+by definition. The rows now say so instead of clamping to zero.
 
 MiSTer's tap is 1.57× faster, so every budget column scales by 1.57 (h=0 → 8.36 decisions,
 h=12 → 2.28, h=14 → 1.27). **MiSTer is a materially roomier machine for this feature** —
@@ -155,9 +226,12 @@ Three things this table says that are easy to get backwards:
    depends entirely on the pre-emption semantics (§2.4): if an unfinished extra is
    abandoned cleanly, p90 overruns cost only wasted work; if a partial can be adopted, p90
    is where the pair-latch defect gets reinvented.
-3. **The linear tail term is not a budget question at all.** At 7.3 K cycles it is
-   0.1% of even the h=16 window. It cannot be the thing the window is *for*; it is
-   something to run *always*, whose only design question is value, not cost (§3.3).
+3. **The linear tail term is not a budget question at all.** At 7.3 K cycles it is 0.1% of
+   even the h=16 window, so it is **free to run**. ⚠ But free is not the same as useful, and
+   the budget side must not be used to re-open a closed lane: the distill verdict stands
+   unchanged — as a decision-maker it peaks at **2.7% of H12's effective dose, 6.6× under
+   the MDE**. Its admissible role here is **trigger / prior, never decision-maker**
+   (§3.3). *Free to run, unproven to help.*
 
 ### 1.6 How big is the dose? — MEASURED, and it is the number the power calculation needs
 
@@ -230,11 +304,32 @@ on the stale board is wasted work half the time. Any implementation that spends 
 without first re-searching the projected post-garbage board is spending it on the wrong
 board.
 
-⚠ **Scope caveat on the 50.5%, carried forward unresolved:** every board in that run
-landed below 45% fill. There is **zero coverage of the high-fill states** where the window
-is shortest and dies-ahead happens. I have asked the mechanics lane whether the high-fill
-re-run landed; if it did not, the 50.5% licenses steps 3–4 for the mid-board regime only,
-and the near-death regime remains unmeasured.
+⚠⚠ **THE 50.5% CARRIES TWO DEFECTS. Both are OPEN, and the recommendation is written
+conditional on them** (§6.1). Every use of the number in this document must carry them.
+
+**(a) Scope — the high-fill re-run DID NOT LAND.** Confirmed by the mechanics lane
+2026-08-18: swept all 30 `dr-mario-*` worktrees, no artifact, nothing in flight, nothing
+modified in `experiments/` since Aug 7. The only n=200 file matching the description is the
+**spawn-lane gate probe** (task #78, arms base/gate, seeds 82000+) — a different experiment
+that is easy to mistake for it. So **every board behind the 50.5% landed below 45% fill**,
+and there is **zero coverage of the high-fill states** where the window is shortest and
+dies-ahead happens. The number licenses this lane for the **mid-board regime only**.
+
+**(b) ★★ Provenance — the 50.5% has NO REPRODUCIBLE ARTIFACT ANYWHERE.** Grepping
+`101/200` and `50.5%` across every worktree returns exactly two hits and **neither is a
+source**: `cosim_farm/PRESTART_LATENCY_MEMO.md:96` merely *cites* it, and
+`PREREG_STAGE2.md:42` is a coincidental `50.5%` in a `T_GARB` row. **The number exists only
+as memory prose plus one downstream citation.** If the owner asks to see it, there is
+currently nothing to show. This is `dr-mario-proof-provenance-rot` territory — a proof whose
+program cannot run is an assertion.
+
+⇒ **Consequence for this document, stated plainly:** the single measurement that makes step
+3 of §2.1 mandatory, and that motivates the lane at all, is **un-reproducible and
+out-of-regime**. That does not make it wrong — the mechanism is sound and the effect is
+large — but it means **no GO may rest on it** until it is re-derived with a committed rig.
+Re-deriving it is cheap and it is folded into S0-A (§4.2), which runs on post-garbage boards
+anyway and should measure the pre-vs-post flip as a by-product, at proper fill, with the
+rig committed.
 
 ### 2.2 Where results are latched — and not recreating the pair-latch defect
 
@@ -410,6 +505,15 @@ a real silicon contract: small integers, updated at lock time only, strictly cau
 computable from the candidate's post-board (`temporal_accum.py:13-24`). At 7.3 K cycles
 they are free (§1.4).
 
+⚠⚠ **BOUNDARY WITH THE CLOSED DISTILL LANE, so nobody re-litigates it from the budget
+side.** That the term is free to *run* says nothing about whether it *helps*. The distill
+verdict is unchanged and binding: as a decision-maker the safe linear rule carries **2.7% of
+H12's effective dose, 6.6× under the MDE**, and the A/B is registered DO-NOT-LAUNCH. Its
+only admissible role in this design is as a **trigger or prior over which plies deserve the
+window's compute** — a job where firing rarely and imprecisely is tolerable because the
+*decision* is still made by real search. **Free to run, unproven to help. It must never be
+promoted to decision-maker on the grounds that it costs nothing.**
+
 Three rules apply, all paid for in blood by that lane:
 
 - **No AUC without the operating-point table.** Report realized value (mean true margin of
@@ -475,7 +579,9 @@ Both run on banked data; neither needs hardware or the farm.
   flip rate is **below ~2%, close the lane** — below that floor an arm is untestable and a
   null means nothing. ⚠ Note this is a *different* flip from the 50.5%: that one measured
   pre- vs post-garbage *board*; this measures base vs deepened *search* on the same board.
-  The 50.5% is a good prior for the lane existing, not evidence for this number.
+  The 50.5% is a good prior for the lane existing, not evidence for this number — and per
+  §2.1 it is itself un-reproducible, so S0-A should **re-derive it** at proper fill with a
+  committed rig while it is in there.
 
   Three by-products to log while it runs, each of which closes a gap in this document at
   zero marginal cost:
@@ -644,15 +750,22 @@ the recipe.
 
 ### 5.4 Measurement risks specific to this lane
 
-- **The 50.5% argmax-flip has no high-fill coverage** (§2.1). The value case for the whole
+- ★★ **The 50.5% argmax-flip is un-reproducible AND out-of-regime** (§2.1) — no artifact in
+  any worktree, and every board below 45% fill. This is the single biggest evidence risk on
+  the page. The value case for the whole
   lane currently rests on a stratum that excludes the regime the lane is aimed at.
 - **The h_hit distribution in §1.3 is n=208, from 10 games, one arm, one level.** The
   decisive cells at h ≥ 13 hold 4–8 observations each. Treat the release-share column as a
   scale, not a rate.
-- **The truncation lever is measured for the root search, not for the deepening** (§2.4).
-  It is worth ~27pp of p90 affordability, so the transfer is worth checking rather than
-  assuming. ⚠ I first wrote this risk up as "unmapped" and was wrong; the correction is in
-  §2.4. Check whether the measurement exists before pricing something as unknown.
+- **TRUNCATION TRANSFER — treat as an ASSUMPTION, and the recommendation does not depend on
+  it.** The agreement-vs-completion curve is measured (n=69, 100% at f=0.80) but **for the
+  full depth-3 root search**, not for the 2-candidate deepening, whose best-first structure
+  differs. It is worth ~27pp of p90 affordability, which is precisely why it must be earned
+  rather than extrapolated. **Gate:** S0-B replicates the 69-board protocol on the
+  deepening at f = 0.05/0.20/0.50/0.70/0.80/1.00 and sets f from the result; until then the
+  go/no-go arithmetic uses **52.4%**, the untruncated number (§6.1 Step 3). ⚠ I first wrote
+  this risk up as "unmapped" and was wrong — check whether the measurement exists before
+  pricing something as unknown; the correction is in §2.4.
 - **A corpus that never reaches the regime under test is not a bound, it is a different
   experiment.** The prestart lane published a 69%-fire figure that was an artifact of a
   random-play corpus topping out below the injector's own threshold. Before quoting any
@@ -671,10 +784,19 @@ two extra candidate-plies at a tie change the outcome? Everything else — the s
 budget table, the firmware placement, the flag matrix — is engineering that is worth doing
 only if that answer is yes, and all of it is cheap once it is.
 
-**Step 1 (today, ~0.5 d, $0): S0-A, the argmax-flip screen.** Base vs 2-candidate-deepened
-argmax on banked post-garbage boards at tie plies. **A flip rate below ~2% closes the lane
-for the cost of an afternoon.** Run S0-B (the truncation curve) alongside; it is the same
-corpus and it sets the design either way.
+⚠ **THE RECOMMENDATION IS CONDITIONAL, AND ON AN OPEN DEPENDENCY.** Step 3 of §2.1 — the
+post-garbage re-search that everything else sits on top of — is justified by a 50.5%
+argmax-flip that is **un-reproducible and measured entirely below 45% board fill** (§2.1).
+Read every step below as: *if the flip rate survives re-derivation at high fill, then…*
+**If it does not survive, the lane closes at Step 1 and nothing further is owed.** The
+dependency is marked OPEN, not assumed, and S0-A re-derives it as a by-product.
+
+**Step 1 (today, ~0.5 d, $0): S0-A, the argmax-flip screen — and the re-derivation.** Base
+vs 2-candidate-deepened argmax on post-garbage boards at tie plies, plus a committed rig
+that re-measures the pre-vs-post-garbage flip at proper fill. **A deepening flip rate below
+~2% closes the lane for the cost of an afternoon**, and a pre-vs-post flip that does not
+survive at high fill closes it just as decisively. Run S0-B (the truncation-transfer curve)
+alongside; it is the same corpus.
 
 **Step 2 (~2 d, ~$4): the farm A/B with compute granted unconditionally**, base and
 treatment both on the settled post-garbage board, paired, N=9,000, stratified by h,
@@ -682,9 +804,12 @@ dose-matched label-blind null mandatory, dies-ahead primary. This measures the *
 ceiling**.
 
 **Step 3 (analysis, $0): multiply by the completion curve.** The shippable effect is at most
-**52.4%** of the ceiling at median search cost, or 63.5% if the truncation lever proves out
-— and only **14.4%** if p90 costs must be respected. **Fold that discount into the MDE
-before launching Step 2, not after.** If ceiling × 0.524 lands under the MDE, the honest
+**52.4%** of the ceiling at median search cost — and only **14.4%** if p90 costs must be
+respected. **Use 52.4%; do not credit the truncation lever here.** It would raise the
+figure to 63.5% (and p90 to 41.3%), but it depends on a transfer that S0-B has not yet
+measured, so the go/no-go arithmetic must stand without it and treat any lift as upside.
+**Fold the discount into the MDE before launching Step 2, not after.** If ceiling × 0.524
+lands under the MDE, the honest
 outcome is a registered DO-NOT-LAUNCH, exactly as the distill lane produced. That is a
 success of the process, not a failure of the idea.
 

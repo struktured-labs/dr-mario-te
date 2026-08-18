@@ -273,6 +273,13 @@
       which fits on 52.4% of releases. The decisive screen costs about <strong>$4</strong> and needs
       no hardware. Recommendation: build nothing yet, run that screen.
     </p>
+    <p style="font-size:.92rem;color:var(--ink-2)">
+      <strong>⚠ Conditional on an open dependency.</strong> The measurement that makes the whole lane
+      worth pursuing — a 50.5% argmax flip between the pre- and post-garbage board — is
+      <em>un-reproducible</em> (no artifact in any of 30 worktrees) and was measured entirely below
+      45% board fill, i.e. outside the regime this lane targets. Read the plan as
+      <em>“if that flip survives re-derivation at high fill, then…”</em>.
+    </p>
   </div>
 
   <div class="stats">
@@ -409,7 +416,8 @@
       disagreement at f = 0.05 sits beside the pair latch's 23.2–39.1% at a comparable completion
       fraction. Those two findings were never in tension; they are the same curve read at opposite
       ends. <strong>Still open:</strong> the curve was measured for the full root search, not the
-      2-candidate deepening. Re-measure before setting f.
+      2-candidate deepening, so the transfer is an assumption. The go/no-go arithmetic therefore
+      uses the untruncated <strong>52.4%</strong> and treats any lift from truncation as upside.
     </p>
   </section>
 
@@ -458,13 +466,14 @@
     <h2>Three design constraints that fall out of the numbers</h2>
     <div class="cards">
       <div class="card">
-        <span class="tag">mandatory first step</span>
+        <span class="tag">mandatory first step · dependency OPEN</span>
         <h3>Search the post-garbage board, or don't bother</h3>
         <p>
           50.5% of argmax decisions flip between the pre- and post-garbage board. Letting the
           existing search run <em>longer</em> on the stale board is wasted work half the time.
-          <strong>Caveat:</strong> every board in that run was under 45% fill — the high-fill regime
-          is uncovered.
+          <strong>⚠ But that number is both out-of-regime and un-reproducible</strong> — every board
+          was under 45% fill, and it has no artifact in any worktree. No GO may rest on it until
+          it is re-derived.
         </p>
       </div>
       <div class="card">
@@ -570,10 +579,22 @@
         is plugged into. Mitigation worth doing regardless: a firmware capability byte the cart reads at init.</p>
       </li>
       <li>
-        <span class="sev watch">evidence</span>
-        <p><strong>The value case rests on an uncovered stratum.</strong> The 50.5% flip was measured entirely
-        below 45% board fill, and the release-height distribution here is n=208 from 10 games with 4–8
-        observations in the decisive cells. Read the release-share column as a scale, not a rate.</p>
+        <span class="sev block">evidence</span>
+        <p><strong>The number the lane rests on cannot currently be shown.</strong> The 50.5% flip has
+        <em>no reproducible artifact in any of the 30 worktrees</em> — it survives only as prose plus one
+        downstream citation — and every board behind it was under 45% fill, excluding the regime the lane
+        targets. Re-deriving it with a committed rig is folded into the screen. The release-height
+        distribution here is separately thin: n=208 from 10 games, 4–8 observations in the decisive
+        cells, so read that column as a scale, not a rate.</p>
+      </li>
+      <li>
+        <span class="sev watch">measurement</span>
+        <p><strong>A 3× conflict over search cost, raised in review and resolved.</strong> A competing figure
+        of 150 frames per warm search would have killed the lane. It traces to a hook-counted constant
+        authored to mean ~60 frames under a 5-hooks/frame assumption; a later audit corrected the rate to
+        2/frame, fixed the surrounding prose, and left the constant — so it now reads 2.5× long. Four
+        independent measurements (31.6 / 34 / 57.2 / 60 frames) agree with the original intent.
+        <strong>Knock-on:</strong> the DRSLAM arming threshold was tuned against that same stale constant.</p>
       </li>
     </ul>
   </section>
