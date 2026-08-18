@@ -23,8 +23,12 @@ The window is a *one-to-three extra searches* budget, not a rollout budget. With
 budget exactly one thing is already built (DRPRESTART: re-search the projected
 post-garbage board — mandatory, since 50.5% of argmax decisions flip on it), and exactly
 one thing is newly affordable: a **2-candidate, 1-ply deepening of the top-2 tie**, which
-fits on **52.4% of releases** at median search cost. That is the shippable step, and the
-decisive screen for it costs about **$4** of compute and needs no hardware.
+fits on **52.4% of releases** at median search cost, rising to **63.5%** if truncated at
+80% completion — which the RTL measures as costing **zero moves**. Its trigger population is
+**1.4–1.7% of plies**, the same order as the **1.98%** dose that produced H12's certified
++8.5pp clear rate, so the experiment is plausibly powered rather than a formality. That is
+the shippable step, and the decisive screen for it costs about **$4** of compute and needs
+no hardware.
 
 ---
 
@@ -472,6 +476,16 @@ Both run on banked data; neither needs hardware or the farm.
   null means nothing. ⚠ Note this is a *different* flip from the 50.5%: that one measured
   pre- vs post-garbage *board*; this measures base vs deepened *search* on the same board.
   The 50.5% is a good prior for the lane existing, not evidence for this number.
+
+  Three by-products to log while it runs, each of which closes a gap in this document at
+  zero marginal cost:
+  **(i)** the **tie rate on post-garbage boards specifically** — §1.6's dose estimate
+  multiplies two rates from different corpora and this is the direct measurement;
+  **(ii)** the **h_hit distribution on a proper corpus**, replacing §1.3's n=208 from 10
+  games; **(iii)** per-flip provenance — ply index, `t_to_end`, champion rank chosen,
+  first-divergence marker. That last one is not optional: Stage 2 spent 15,000 games to
+  reach a NO_GO with **zero mechanism**, because `flips` was logged as a bare integer.
+  Per-ply flip provenance is mandatory for every arm now.
 - **S0-B · the truncation curve for the deepening** (§2.4). Move agreement vs
   fraction-of-cycles-completed at 5/20/50/70/80/100%, replicating the existing 69-board
   root-search protocol on the 2-candidate deepening. The root-search curve is already
