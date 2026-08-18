@@ -19,6 +19,7 @@ patch_vs_cpu.OPS.setdefault("LSR_zp", 0x46)
 patch_vs_cpu.OPS.setdefault("ASL_zp", 0x06)
 patch_vs_cpu.OPS.setdefault("ORA_zp", 0x05)
 patch_vs_cpu.OPS.setdefault("EOR_zp", 0x45)
+patch_vs_cpu.OPS.setdefault("EOR_abs", 0x4D)   # DRDBLCANON's double test (#123)
 from py65_harness import Cpu
 from test_depth2 import (S_BEST_C, S_BEST_O,
                          _rand_board, _emit_calc_imm, _emit_copy, emit_landplace,
@@ -57,6 +58,60 @@ DRSTRAND = 0                   # #47 stranded-half root cost dose (set by build_
                                # DRSTRAND). 0 emits NOTHING -> byte-identical firmware, which the
                                # hex drift guard depends on. Offline gates for dose 20: mirror
                                # -9.85 REAL, VS 54.2% vs chain180 (eval47/SILICON_PLAN.md).
+DBLCANON = 0                   # #123 double-capsule orient canonicalisation (set by
+                               # build_copro_d3 from env DRDBLCANON). 0 emits NOTHING ->
+                               # byte-identical firmware.  See _e_dblcanon for what it does
+                               # and why it is at the PUBLISH site and not in the p0 loop.
+
+
+def canon_o4(o4, cA, cB):
+    """#123 / DRDBLCANON, in Python: the SPEC the 6502 in `_e_dblcanon` implements.
+
+    Lives here rather than in `nes_d3_golden` on purpose.  `build_copro_d3.py`
+    force-registers THIS tree's `test_search_d3` into `sys.modules` (see its
+    import-order guard) but does not do the same for `nes_d3_golden`, which
+    therefore resolves to a sibling worktree's copy -- so this module is the
+    only place a gate can import the contract from and be sure which file it
+    got.
+    """
+    return (int(o4) & 0xFE) if int(cA) == int(cB) else int(o4)
+
+
+def _e_dblcanon(a, tag):
+    """#123: rewrite a winning DOUBLE's orient to the cheaper-to-reach member.
+
+    A capsule with `cA == cB` produces every physical placement twice: the two
+    colour-orderings within an axis are the same placement once the colours are
+    equal.  The duplicate pairs are o4 0<->1 and o4 2<->3, always at the same
+    column -- MEASURED from resulting boards over 7,075 real double plies
+    (`experiments/dblcanon/`), 7075/7075 cell-for-cell identical, and NOT
+    derivable from `_VAR_OF_O4` slot arithmetic (the `(v, v+2)` key removes
+    nothing and reports a clean bill of health while doing it).
+
+    The executor presses only A (CCW), so a target's cost is its CCW distance
+    from the spawn orient, which is game orient 0.  Through the driver's
+    copro->game map {0:3, 1:1, 2:0, 3:2} that is o4 {0:1, 1:3, 2:0, 3:2} -- the
+    EVEN member of each pair is cheaper by exactly two rotations, in both pairs.
+    So the whole canonicalisation is `AND #$FE`.
+
+    ⚠ WHY THIS IS AT THE PUBLISH SITE AND NOT IN THE p0 LOOP.  Skipping the
+    expensive slot during enumeration is NOT board-neutral on a real cart.
+    With `DRSEED != 0` (the default, and DRSEED=1 in every shipped flag
+    snapshot) the firmware adds a `+0..3` jitter keyed on (o4, col) before the
+    argmax.  A duplicate pair's two members differ only in bit 0 of o4 = bit 3
+    of the jitter input, so their jitters differ by exactly XOR 1 -- meaning a
+    duplicated placement effectively draws the MAX of two jitter values while a
+    unique placement draws one.  Dropping the duplicate removes that advantage
+    and can hand the ply to a DIFFERENT placement: measured 0.158% of double
+    plies.  Canonicalising the WINNER instead leaves the candidate set, the
+    jitters and the argmax untouched and rewrites only the orient byte, which
+    is zero board effect by construction rather than by measurement.
+    """
+    a.ins16("LDA_abs", S_CA); a.ins16("EOR_abs", S_CB); a.ins("AND_imm", 0x0F)
+    a.br("BNE", f"{tag}_dcx")        # colours differ -> not a double -> leave it
+    a.ins("LDA_zp", D_BO); a.ins("AND_imm", 0xFE); a.ins("STA_zp", D_BO)
+    a.label(f"{tag}_dcx")
+
 
 THIRD = [(0, 1), (1, 2), (2, 0), (1, 1)]   # stratified 4-pill subset (3 mixed + 1 double), /4=shift
 RESOLVE_LBL = "resolve_capped"   # TARGETED (deploy config, isolation 12/12); "resolve_capped_full" for full
@@ -585,6 +640,8 @@ def _emit_search_d3_engine(a):
     a.br("BVC", "o_s1"); a.ins("EOR_imm", 0x80); a.label("o_s1"); a.br("BPL", "s_next")
     a.ins("LDA_zp", D_V1L); a.ins("STA_zp", D_BVL); a.ins("LDA_zp", D_V1H); a.ins("STA_zp", D_BVH)
     a.ins("LDA_zp", D_C1); a.ins("STA_zp", D_BC); a.ins("LDA_zp", D_O1); a.ins("STA_zp", D_BO)
+    if DBLCANON:
+        _e_dblcanon(a, "e")          # #123: before BOTH the anytime mailbox and the final D_BO
     a.ins("LDA_zp", D_BC); a.ins16("STA_abs", S_BEST_C)     # ANYTIME: live-publish running best
     a.ins("LDA_zp", D_BO); a.ins16("STA_abs", S_BEST_O)
     a.label("s_next")
@@ -967,6 +1024,8 @@ def _emit_search_d3(a):
     a.br("BVC", "o_s1"); a.ins("EOR_imm", 0x80); a.label("o_s1"); a.br("BPL", "s_next")
     a.ins("LDA_zp", D_V1L); a.ins("STA_zp", D_BVL); a.ins("LDA_zp", D_V1H); a.ins("STA_zp", D_BVH)
     a.ins("LDA_zp", D_C1); a.ins("STA_zp", D_BC); a.ins("LDA_zp", D_O1); a.ins("STA_zp", D_BO)
+    if DBLCANON:
+        _e_dblcanon(a, "s")          # #123, soft build -- distinct label prefix from the engine
     a.ins("LDA_zp", D_BC); a.ins16("STA_abs", S_BEST_C)     # ANYTIME: live-publish running best
     a.ins("LDA_zp", D_BO); a.ins16("STA_abs", S_BEST_O)
     a.label("s_next")
