@@ -155,6 +155,42 @@ Three things this table says that are easy to get backwards:
    0.1% of even the h=16 window. It cannot be the thing the window is *for*; it is
    something to run *always*, whose only design question is value, not cost (§3.3).
 
+### 1.6 How big is the dose? — MEASURED, and it is the number the power calculation needs
+
+A budget table says what *can* run. Whether an experiment can *detect* it depends on how
+often it fires. Both halves are measurable from banked data.
+
+| quantity | value | source |
+|---|---|---|
+| plies that are post-garbage decisions | **13.87%** (208 / 1500) | MEASURED — prestart pilot |
+| plies with an exact top-2 champion-value tie | **18.88%** (234,198 / 1,240,445) | MEASURED — H12 endpoint, 9,000 games |
+| **H12's own accepted-flip dose** | **1.98%** of plies | MEASURED — same |
+| H12's accept rate at a tie (after the θ margin) | 10.5% | MEASURED — same |
+
+★ **Third pipeline reproduction:** 1.98% recovers H12's published "~2.0% flip dose" from
+its raw per-game counters.
+
+⇒ **Raw trigger population for this feature = 13.87% × 18.88% = 2.62% of plies**, of which
+52.4% are affordable at f = 1.0 (63.5% at f = 0.80) ⇒ **1.37–1.66% of plies**.
+
+**That is the same order as H12's 1.98%, which is the encouraging part of this document.**
+The garbage window's trigger population is not a niche — it is comparable in size to the
+dose that produced a certified +8.5pp clear rate.
+
+⚠ **Three ways this could be optimistic, and they must not be waved through.**
+1. **Size is not dose.** The distill lane's law is that dose must be weighted by *selection
+   quality*: its safe linear rule fired at a nominally usable rate but carried only 2.7% of
+   H12's effective dose because precision fell as fast as firing rose. One extra ply is a
+   far weaker discriminator than a 15-pill rollout, so the per-flip quality here is unknown
+   and is exactly what S0-A and Stage 1 exist to measure. **Do not quote 2.62% as a dose.**
+2. **The two rates come from different corpora** — 13.87% from the prestart pilot (10 games,
+   s20b, drop+bursty), 18.88% from the H12 endpoint (9,000 games, lulu). Multiplying them
+   assumes ties are no rarer on post-garbage boards than elsewhere, which is untested. It is
+   cheap to test directly and should be, since the product is load-bearing.
+3. **The release rate is a property of the pressure model.** 13.87% is what dr. lulu's
+   bursty injector produces. A different opponent produces a different number, and against a
+   weak opponent this feature has almost no trigger population at all.
+
 ---
 
 ## 2. ARCHITECTURE SKETCH
