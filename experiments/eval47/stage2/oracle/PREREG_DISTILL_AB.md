@@ -126,8 +126,19 @@ If either produces a linear rule with positive held-out mean margin at ≥2% dos
 the N=9,000 A/B becomes both cheap and adequately powered, and this prereg's
 frozen-threshold procedure applies unchanged.
 
-## 6. Seed block (registered, unused unless launched)
+## 6. Seed block (registered, unused — the A/B is not launching)
 
-70000–78999, pending confirmation from the h13-gate lane. Disjoint from
-41100–50099, 42000–42059, 60000–60499, 61000–61999 (gates, in perpetuity) and
-62000–62999.
+**72000–80999**, released to this lane by h13-gate and confirmed 2026-08-18.
+
+The originally proposed 70000–78999 was WRONG and was caught by asking before
+freezing: it overlapped h13-gate's spent dose census (70000–70399) and ran
+straight through its **live** pilot block (71000–71999). Registering it would
+have collided with a running job, not merely a reservation.
+
+72000–80999 is a contiguous 9,000-seed block, disjoint from every block held by
+either lane: 41000–41099 and 41100–50099, 42000–42059, 60000–60499,
+61000–61999 (this lane's gate seeds, in perpetuity), 62000–62999,
+70000–70399, 71000–71999, 90000–90499.
+
+This block is recorded for auditability only. **The A/B is not being run** (sec
+3), so the block is not consumed and h13-gate should not hold compute for it.
