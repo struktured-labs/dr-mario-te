@@ -94,20 +94,61 @@ N_BOOT = 300            # cluster (by seed) bootstrap draws for the AUC CI
 
 
 # ------------------------------------------------------------------- loading
-def load_ties(spec):
-    paths = []
+def load_ties(spec, require_same_manifest=True):
+    """Load tie records from one or more run directories.
+
+    MERGE PROVENANCE GUARD.  Rows from blackmage and from the Hetzner node are
+    meant to be POOLED, which is only legitimate if both were produced by the
+    same decision-path code.  Each run directory carries a META.json with a
+    rolled runtime-manifest hash; if two directories disagree, pooling them
+    would silently mix instruments — the exact cross-node skew that once left
+    every headline summary in this project unchanged and wrong.  Refuse and name
+    the offending directories rather than average over the difference.
+
+    Overlapping seed ranges are refused too: a seed present in two runs is
+    double-counted and breaks the by-seed clustering every CI here depends on.
+    """
+    paths, dirs = [], []
     for s in spec:
         if os.path.isdir(s):
             paths += sorted(glob.glob(os.path.join(s, "ties_*.jsonl")))
+            dirs.append(os.path.normpath(s))
         else:
             paths += sorted(glob.glob(s))
+    manifests = {}
+    for d in dirs:
+        mp = os.path.join(d, "META.json")
+        if os.path.exists(mp):
+            try:
+                manifests[d] = json.load(open(mp))["runtime_manifest"]["rolled"]
+            except Exception:
+                manifests[d] = "UNREADABLE"
+    if require_same_manifest and len(set(manifests.values())) > 1:
+        raise SystemExit(
+            "REFUSING TO MERGE: run directories were produced by different "
+            "code.\n" + "\n".join(f"  {d}: {h[:16]}"
+                                  for d, h in sorted(manifests.items())))
     rows = []
+    seen_by_dir = {}
     for p in paths:
+        d = os.path.normpath(os.path.dirname(p))
         with open(p) as fh:
             for line in fh:
                 line = line.strip()
-                if line:
-                    rows.append(json.loads(line))
+                if not line:
+                    continue
+                r = json.loads(line)
+                rows.append(r)
+                seen_by_dir.setdefault(d, set()).add(r["seed"])
+    ds = sorted(seen_by_dir)
+    for i in range(len(ds)):
+        for j in range(i + 1, len(ds)):
+            overlap = seen_by_dir[ds[i]] & seen_by_dir[ds[j]]
+            if overlap:
+                raise SystemExit(
+                    f"REFUSING TO MERGE: {len(overlap)} seeds appear in both "
+                    f"{ds[i]} and {ds[j]} (e.g. {sorted(overlap)[:5]}); "
+                    "double-counted seeds break the by-seed clustering")
     return rows, paths
 
 
