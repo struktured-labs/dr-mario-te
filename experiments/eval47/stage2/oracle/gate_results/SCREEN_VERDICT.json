@@ -1,0 +1,21 @@
+{
+ "screen": "out/screen_90000.jsonl",
+ "games": 500,
+ "n_flips": 446,
+ "mean_flip_vs_keep": 0.012265892904246909,
+ "ci95": [
+  -0.06093708783962017,
+  0.08546557636507517
+ ],
+ "mean_rand_vs_keep": -0.5586916380902136,
+ "rand_ci95": [
+  -0.6523377736744922,
+  -0.4658401477182801
+ ],
+ "wins": 2651,
+ "ties": 2280,
+ "losses": 2651,
+ "verdict": "NULL",
+ "reason": "CI spans 0 and |mean| 0.012 is below the interpretability floor 0.25: churn, not judgment",
+ "floor": 0.25
+}
