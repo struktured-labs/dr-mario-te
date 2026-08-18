@@ -128,8 +128,17 @@ def representatives(env, legal, vals, dedup=True):
 
     ⚠ SILICON: the cart needs no board comparison for this.  `cur.a == cur.b ->
     skip orientations 2 and 3` captures the whole effect in one byte compare.
+
+    ⚠ TIE-BREAK MUST BE THE CHAMPION'S.  `CHAMP_ORDER` walks variants in the
+    order (2, 3, 0, 1), NOT ascending action index, and `_champ_action` returns
+    the first maximum in THAT order.  Ranking by raw index instead silently
+    disagrees with the champion's own pick whenever a tied set spans variants --
+    which dropped 5 of every 6 tie events in the first cut of this screen, an
+    invisible and biased loss of population.
     """
-    ranked = sorted(legal, key=lambda c: (-float(vals[c]), int(c)))
+    from oracle_arm import CHAMP_ORDER
+    rank = {int(a): i for i, a in enumerate(CHAMP_ORDER)}
+    ranked = sorted(legal, key=lambda c: (-float(vals[c]), rank[int(c)]))
     if not dedup:                                   # M-D3
         top = ranked[:2]
         return top, _same_board(env, top)
@@ -320,8 +329,11 @@ def _observe(env, pre, vals_post, a_post, seed, ply, C, bmodel,
         return
     if float(vals_post[cands[0]]) != float(vals_post[cands[1]]):
         return
-    if int(cands[0]) != int(a_post):
-        return                       # champion's pick must be rank-0 by construction
+    # BY CONSTRUCTION now that the tie-break is CHAMP_ORDER's.  An assertion, not
+    # a skip: silently dropping these is how the first cut lost 5/6 of its
+    # population without any check noticing.
+    assert int(cands[0]) == int(a_post), (
+        f"rank-0 {cands[0]} != champion pick {a_post}; tie-break diverged")
     pick, scores = deepen(env, cands, C, seed, bmodel, w, fl, wt, ws, ply,
                           disable=bool(mut.get("disable")),
                           unpaired=bool(mut.get("unpaired")))
