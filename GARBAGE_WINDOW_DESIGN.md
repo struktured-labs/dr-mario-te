@@ -173,9 +173,39 @@ every consumer since has silently read them 2.5× long.
 
 ### 1.3 Window budget by board height — DERIVED
 
+> ## ⚠⚠ THE `releases` COLUMN IS INVALID — WRONG VARIABLE. Recompute pending (task #124).
+>
+> **The co-sim farm logs `h_hit` as the MAX stack height over garbage-hit columns. The
+> window formula needs the MIN.** `game.py:184` even states the reasoning — *"the tallest
+> hit column sets the binding window"* — and it is backwards. A tile falls `15 − h`, so the
+> animation ends with the tile that falls **furthest**, i.e. the one in the **shallowest**
+> hit column: `W = 24 + 16(15 − h_min) = 264 − 16·h_min`.
+>
+> Measured on 446 real boards × 12 volley shapes (5,352 pairs): the logged variable gives
+> median h **11** and W **88 f** where the correct one gives median h **4** and W **200 f** —
+> **overstating h by 7 and understating the window by 112 frames**, with 42.5% of pairs
+> pushed to h ≥ 13 against a true 0.0%.
+>
+> ⇒ **Every percentage in this section and §1.4 that is a share OF RELEASES is wrong**,
+> including the **52.4%** that gates the recommendation and the 14.4% p90 figure. The
+> **h-axis itself is correct** — `W(h)`, the cycle costs, and the budget columns are all
+> sound; only the *distribution over h* is corrupt. **Direction is favourable**: true windows
+> are longer, so real affordability is **higher** than stated here. Nothing is silently
+> patched; the figures stand marked until recomputed from `h_min`.
+>
+> ⚠ The same field feeds the **published DRPRESTART "89.4% at h ≤ 12" headline**, which
+> inherits the same defect.
+>
+> ★ **And it kills a validation I was proud of.** I cited reproducing that 89.4% "from
+> arithmetic that never saw it" as evidence my pipeline was right. It was evidence of
+> **agreement, not correctness** — two lanes computing from the same wrong field is a shared
+> dependency wearing corroboration's clothes. Independent reproduction corroborates only when
+> the *inputs* are independent, and here they were the same 5 bytes.
+
 Pocket (the rematch venue). `budget` = how many whole champion decisions fit in the window.
 `extra` = what is left after the **mandatory** post-garbage re-search (§2.1).
-`releases` = share of the 208 MEASURED post-garbage decisions at that `h_hit`.
+~~`releases` = share of the 208 MEASURED post-garbage decisions at that `h_hit`.~~ **INVALID,
+see the box above.**
 
 | h | W (f) | W (cycles) | releases | cum. | budget @median | budget @p90 | **extra @median** |
 |---|---|---|---|---|---|---|---|
@@ -434,6 +464,25 @@ Step 3 is mandatory because of the single largest measured fact in this lane:
 on the stale board is wasted work half the time. Any implementation that spends the window
 without first re-searching the projected post-garbage board is spending it on the wrong
 board.
+
+### ✅ CROSS-CHECK LANDED — the window profile is REGIME-GENERAL
+
+The h13-gate flip-screen corpus (**446 mid-game flips**, median 15 viruses) run through the
+near-death rig's own `h_min` definition, method-identical by construction:
+
+| | tallest column | `h_min` median | W median | W ≤ 56 f |
+|---|---|---|---|---|
+| **mid-game**, 446 flips | 13 | **4** | **200 f** | **0.0%** |
+| **near-death**, 125 kill boards | 15 | **4** | **200 f** | 3.2% |
+
+Indistinguishable. **This fires pre-committed branch 1** (registered in §5.4 before the data
+existed): ample windows are **regime-general**, and §1.5's retraction generalises well beyond
+death boards. Worst-phase figures agree too (mid-game W 152 f vs near-death 136 f).
+
+⚠ The h13-gate lane's stated prior was "regime-dependent" and it was **wrong** — they had
+withdrawn their stake before the number landed, and said so unprompted. Their separate
+*narrow-tower geometry* hunch was **right**: towers recur across regimes, which is exactly
+why `h_min` stays low everywhere. Rig: `experiments/gw_design/hmin_screen_corpus.py`.
 
 ### ✅ RESOLVED — I published two defects here and BOTH WERE FALSE
 

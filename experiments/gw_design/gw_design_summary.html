@@ -352,6 +352,31 @@
       The shaded row is the last height at which the base search <em>plus</em> the deepening still
       fits. Cumulatively that is 52.4% of releases.
     </p>
+    <div class="verdict" style="border-left-color:var(--crit)">
+      <h3>⚠⚠ The “% of releases” figures on this page are computed from the WRONG VARIABLE</h3>
+      <p style="font-size:.92rem">
+        The co-sim farm logs the garbage-hit height as the <strong>max</strong> over hit columns; the
+        window formula needs the <strong>min</strong>. A tile falls <code>15 − h</code>, so the drop
+        animation ends with the tile falling <em>furthest</em> — the one in the <em>shallowest</em>
+        hit column. Measured on 446 real boards × 12 volley shapes: the logged variable gives median
+        h 11 and window 88 f where the correct one gives median h <strong>4</strong> and window
+        <strong>200 f</strong> — overstating height by 7 and understating the window by 112 frames.
+      </p>
+      <p style="font-size:.92rem">
+        <strong>So every percentage on this page that is a share “of releases” is wrong</strong>,
+        including the 52.4% that gates the recommendation. The <em>h-axis is sound</em> — the window
+        formula, the cycle costs and the budget columns are unaffected; only the distribution over h
+        is corrupt, and <strong>the error is conservative</strong>: true windows are longer, so real
+        affordability is higher than shown. Recompute is filed; nothing here is silently patched.
+      </p>
+      <p style="font-size:.92rem">
+        ★ It also retires a validation this page previously leaned on. Reproducing the published
+        “89.4% at h ≤ 12” independently was cited as evidence the pipeline was right — but both
+        figures come from the same logged field, so it demonstrated <em>agreement, not correctness</em>.
+        Independent reproduction corroborates only when the inputs are independent.
+      </p>
+    </div>
+
     <div class="verdict" style="border-left-color:var(--ok)">
       <h3>⚠ Retraction: the window does <em>not</em> shrink where the danger is</h3>
       <p style="font-size:.92rem">
@@ -368,6 +393,12 @@
         <strong>3.2%</strong> of real death boards land in the short-window shape. So the compute is
         <strong>abundant and most valuable in the same regime</strong> — ~3.3 s of window alongside
         the highest flip rate measured anywhere (66.3%).
+      </p>
+      <p style="font-size:.92rem">
+        <strong>Now confirmed regime-general on a second, independent corpus.</strong> 446 mid-game
+        flips (median 15 viruses) give shallowest-hit height median <strong>4</strong>, window median
+        <strong>200 f</strong>, and <strong>0.0%</strong> short-window — indistinguishable from the
+        near-death boards. Ample windows are not a near-death peculiarity; they are the normal case.
       </p>
     </div>
   </section>
