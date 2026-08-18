@@ -734,6 +734,67 @@
 
   <hr class="rule">
 
+  <section>
+    <h2>Did the extra compute help? Not adjudicated — and that is the honest answer</h2>
+    <p>
+      The screen asked two questions. The first has a clean answer; the second does not, and the
+      instrument that was supposed to settle it turned out to need a fix of its own.
+    </p>
+    <div class="cards">
+      <div class="card">
+        <span class="tag">answered</span>
+        <h3>The deepening changes decisions</h3>
+        <p>
+          <strong>33.8%</strong> of tie plies flip [31.1, 36.6] — 17× the testability floor, across
+          1,000 games and 158,968 plies, present in every board-height band. Not a formality.
+        </p>
+      </div>
+      <div class="card">
+        <span class="tag">not answered</span>
+        <h3>Whether the changes <em>help</em></h3>
+        <p>
+          The per-flip screen ran: <strong>+0.016</strong> viruses/flip [−0.014, +0.046] with
+          <strong>137 wins against 137 losses</strong> — the churn signature, exactly. But it is an
+          <em>observation</em>, not a verdict: the run voided on its own control threshold.
+        </p>
+      </div>
+      <div class="card">
+        <span class="tag">blocking</span>
+        <h3>The control has no trustworthy bar</h3>
+        <p>
+          Two attempts failed the same way — a threshold borrowed from a neighbouring lane, then a
+          derivation that borrowed that lane's unit conversion one level down. Fix handed forward:
+          make the bar a <strong>qualitative ordering test</strong> (worst &lt; random &lt; 0) inside
+          this instrument, importing no magnitude from anywhere.
+        </p>
+      </div>
+    </div>
+    <div class="verdict" style="border-left-color:var(--accent)">
+      <h3>★ The failed derivation produced the most interesting result of the day</h3>
+      <p style="font-size:.92rem">
+        At tie plies the champion's value gap between its top move and a random alternative is
+        <strong>1.221× larger</strong> than at ordinary post-garbage plies — yet the measured damage
+        of taking that random alternative is <strong>4.5× smaller</strong>. Drop the assumption that
+        value converts to outcome at a fixed rate and both facts hold at once:
+      </p>
+      <p style="font-size:.92rem">
+        <strong>At tie plies, the evaluator's value differences overstate real outcome consequence by
+        roughly 4.5×.</strong> Bigger gaps, far less actual damage — on precisely the population every
+        tie-gated arm targets. It rhymes with the distillation lane's finding that value magnitude at
+        ties resists learning: two lanes, from opposite directions, finding that value structure and
+        outcome structure come apart at ties.
+      </p>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      <strong>Bottom line.</strong> The window is real, the compute is affordable, and the deepening
+      demonstrably changes decisions. Nothing yet shows those changes are improvements, and the cheap
+      instrument that would say so needs its control rebuilt first. A third pre-registered run against
+      a bar the data already refutes would have produced a number, not an answer.
+    </p>
+  </section>
+
+  <hr class="rule">
+
   <footer>
     <p><strong>Provenance.</strong> Decision costs measured from <code>/mnt/data/drmario_cosim/results/prestart_pilot.jsonl</code> — 1,500 decisions, firmware md5 <code>e970e9ab…</code>, manifest <code>bed03caf0f5290be</code>. Regenerate every table with <code>experiments/gw_design/budget_table.py</code> on branch <code>gw-design</code>.</p>
     <p><strong>Pipeline cross-checks.</strong> Independently recovers the shadow-latency pilot's published 49.6-silicon-frame median, and reproduces the published “89.4% of releases at h ≤ 12” DRPRESTART headline from arithmetic that never saw it.</p>
