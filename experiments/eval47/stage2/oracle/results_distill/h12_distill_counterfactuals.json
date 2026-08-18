@@ -1,0 +1,129 @@
+{
+ "n_tie_events": 22988,
+ "n_seeds": 838,
+ "seed_min": 60000,
+ "seed_max": 62337,
+ "sources": [
+  "out/distill_pilot_v2_60000",
+  "out/distill_ext_62000"
+ ],
+ "test1_magnitude": {
+  "static": {
+   "ridge_absfeat_R2_absmargin": 0.2323,
+   "ridge_null_R2_max": 0.0123,
+   "gbm_signed_R2_absmargin": 0.2502,
+   "gate_clf_logit_auc": 0.734,
+   "gate_clf_gbm_auc": 0.7594,
+   "gate_clf_gbm_ci95": [
+    0.7364,
+    0.7786
+   ],
+   "gate_clf_null_max": 0.5583,
+   "gate_clf_beats_null": true
+  },
+  "temporal": {
+   "ridge_absfeat_R2_absmargin": 0.2256,
+   "ridge_null_R2_max": 0.0116,
+   "gbm_signed_R2_absmargin": 0.2347,
+   "gate_clf_logit_auc": 0.7469,
+   "gate_clf_gbm_auc": 0.7414,
+   "gate_clf_gbm_ci95": [
+    0.7161,
+    0.7629
+   ],
+   "gate_clf_null_max": 0.6381,
+   "gate_clf_beats_null": true
+  },
+  "combined": {
+   "ridge_absfeat_R2_absmargin": 0.2388,
+   "ridge_null_R2_max": 0.0101,
+   "gbm_signed_R2_absmargin": 0.2479,
+   "gate_clf_logit_auc": 0.7476,
+   "gate_clf_gbm_auc": 0.7578,
+   "gate_clf_gbm_ci95": [
+    0.7353,
+    0.7783
+   ],
+   "gate_clf_null_max": 0.5631,
+   "gate_clf_beats_null": true
+  }
+ },
+ "test2_regime": {
+  "h_le_12": {
+   "n_events": 20207,
+   "n_rows": 26655,
+   "prefer_rate": 0.255,
+   "static": {
+    "logit_auc": 0.6164,
+    "ci95": [
+     0.5967,
+     0.6371
+    ],
+    "null_max": 0.5367,
+    "beats_null": true,
+    "gate_clf_gbm_auc": 0.7349
+   },
+   "temporal": {
+    "logit_auc": 0.6439,
+    "ci95": [
+     0.6268,
+     0.6608
+    ],
+    "null_max": 0.5243,
+    "beats_null": true,
+    "gate_clf_gbm_auc": 0.7182
+   },
+   "combined": {
+    "logit_auc": 0.6411,
+    "ci95": [
+     0.6226,
+     0.6581
+    ],
+    "null_max": 0.5245,
+    "beats_null": true,
+    "gate_clf_gbm_auc": 0.7335
+   }
+  },
+  "h_ge_13": {
+   "n_events": 2781,
+   "n_rows": 3464,
+   "prefer_rate": 0.2884,
+   "static": {
+    "logit_auc": 0.6341,
+    "ci95": [
+     0.5952,
+     0.675
+    ],
+    "null_max": 0.5797,
+    "beats_null": true,
+    "gate_clf_gbm_auc": 0.7234
+   },
+   "temporal": {
+    "logit_auc": 0.6202,
+    "ci95": [
+     0.5777,
+     0.6627
+    ],
+    "null_max": 0.5445,
+    "beats_null": true,
+    "gate_clf_gbm_auc": 0.7242
+   },
+   "combined": {
+    "logit_auc": 0.6249,
+    "ci95": [
+     0.5858,
+     0.664
+    ],
+    "null_max": 0.5531,
+    "beats_null": true,
+    "gate_clf_gbm_auc": 0.7427
+   }
+  }
+ },
+ "verdict": "REOPEN",
+ "verdict_inputs": {
+  "gate_clf_beats_null_and_ge_0.65": true,
+  "magnitude_R2_gt_0.10": true,
+  "any_band_gate_auc_ge_0.65": true
+ }
+}
