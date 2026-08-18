@@ -33,8 +33,16 @@ def mcnemar_mde(n_disc, alpha=0.05, power=0.80):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--trigger-ratio", type=float, required=True,
-                    help="v2/v1 trigger-rate ratio at the primary T")
+    ap.add_argument("--trigger-ratio", type=float, required=True, nargs="+",
+                    help="v2/v1 trigger-rate ratio(s), one per --thresholds")
+    ap.add_argument("--thresholds", type=int, nargs="+", required=True,
+                    help="the T each --trigger-ratio belongs to, e.g. 12 13")
+    ap.add_argument("--theta-conversion", type=float, default=1.0,
+                    help="MEASURED P(accepted flip | gated) for the v2-only "
+                         "population divided by the same for v1. The CENSUS "
+                         "CANNOT SEE THIS FACTOR — it is the census's known "
+                         "blind spot, and only a paired arm measures it. "
+                         "1.0 = assume the trigger ratio carries through")
     ap.add_argument("--secs-per-pair", type=float, required=True,
                     help="measured wall-seconds of CPU for one H12+H13 pair")
     ap.add_argument("--n", type=int, default=9000)
@@ -51,43 +59,70 @@ def main():
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
 
-    extra = a.trigger_ratio - 1.0
-    out = {"trigger_ratio": a.trigger_ratio, "extra_trigger_frac": extra}
+    assert len(a.trigger_ratio) == len(a.thresholds), \
+        "one trigger ratio per threshold"
+    out = {"theta_conversion": a.theta_conversion, "by_threshold": {}}
 
-    print("=" * 72)
+    print("=" * 78)
     print("H13 ENDPOINT PRICING — power first, then cost")
-    print("=" * 72)
-    print(f"\nMeasured extra trigger dose at the primary threshold: "
-          f"{100*extra:+.1f}%")
-    print("H13 flips on a strict SUPERSET of H12's flip plies, so the only "
-          "decisions that\ncan differ are the extra triggers that also pass "
-          "the theta margin.\n")
+    print("=" * 78)
+    print("\nH13 flips on a strict SUPERSET of H12's flip plies, so the only "
+          "decisions that can\ndiffer from H12 are the extra triggers that "
+          "ALSO clear the theta margin.\n")
+    if abs(a.theta_conversion - 1.0) > 1e-9:
+        print(f"THETA-CONVERSION ADJUSTMENT = {a.theta_conversion:.2f}. The "
+              f"census measures the TRIGGER ratio\nexactly but is blind to "
+              f"P(margin passes | tie), which it can only observe on "
+              f"v1-triggered\nplies. This factor is that blind spot, measured "
+              f"on the paired pilot: the v2-only\npopulation converts gated "
+              f"plies into accepted flips at {a.theta_conversion:.2f}x the "
+              f"v1 rate.\n")
 
-    print("POWER. H12-vs-champion discordance is published; H13-vs-H12 "
-          "discordance is\nthat scaled by the extra dose. This is an UPPER "
-          "bound on the discordance and\ntherefore an OPTIMISTIC power "
-          "estimate: it assumes the extra triggers change\noutcomes as often "
-          "as H12's own triggers did.\n")
-    print(f"{'endpoint':>8} {'H12 disc':>9} {'scaled':>8} "
-          f"{'MDE split':>10} {'H12 actual split':>18} {'detectable?':>12}")
-    for name, resc, broke in (("dies-ahead", a.h12_da_rescued, a.h12_da_broke),
-                              ("clear", a.h12_clear_rescued,
-                               a.h12_clear_broke)):
-        disc = resc + broke
-        scaled = disc * extra * (a.n / a.h12_n)
-        mde = mcnemar_mde(scaled)
-        actual = resc / disc
-        det = "YES" if actual >= mde else "NO"
-        print(f"{name:>8} {disc:>9d} {scaled:>8.0f} {mde:>10.3f} "
-              f"{actual:>18.3f} {det:>12}")
-        out[name] = {"h12_discordant": disc, "scaled_discordant": scaled,
-                     "mde_split": mde, "h12_split": actual,
-                     "detectable_at_h12_effect_size": det == "YES"}
+    print("POWER. Projected H13-vs-H12 discordance = H12's PUBLISHED "
+          "discordance scaled by the\nextra accepted-flip dose. BREAK-EVEN = "
+          "how favourable the extra flips must be,\nRELATIVE to H12's own "
+          "flips, for N=9,000 to reach p<0.05 at 80% power.\n")
+    hdr = (f"{'T':>3} {'dose':>7} {'endpoint':>11} {'disc':>6} "
+           f"{'MDE split':>10} {'H12 split':>10} {'break-even':>11} {'verdict':>22}")
+    print(hdr); print("-" * len(hdr))
+    for T, ratio in zip(a.thresholds, a.trigger_ratio):
+        extra = (ratio - 1.0) * a.theta_conversion
+        out["by_threshold"][T] = {"trigger_ratio": ratio,
+                                  "extra_flip_dose": extra, "endpoints": {}}
+        for name, resc, broke in (("dies-ahead", a.h12_da_rescued,
+                                   a.h12_da_broke),
+                                  ("clear", a.h12_clear_rescued,
+                                   a.h12_clear_broke)):
+            disc = resc + broke
+            scaled = disc * extra * (a.n / a.h12_n)
+            mde = mcnemar_mde(scaled)
+            actual = resc / disc
+            be = mde / actual
+            verdict = ("NEEDS BETTER THAN H12" if be > 1.0
+                       else f"needs {100*be:.0f}% of H12")
+            print(f"{T:>3} {100*extra:>6.1f}% {name:>11} {scaled:>6.0f} "
+                  f"{mde:>10.3f} {actual:>10.3f} {be:>11.2f} {verdict:>22}")
+            out["by_threshold"][T]["endpoints"][name] = {
+                "scaled_discordant": scaled, "mde_split": mde,
+                "h12_split": actual, "break_even_vs_h12": be,
+                "needs_better_than_h12": bool(be > 1.0)}
+        print()
 
-    print("\nRead this as: at N=9,000 the H13-vs-H12 contrast can only reach "
-          "significance\nif the EXTRA triggers are at least as favourable, "
-          "per flip, as H12's own were.\nThe forced-move pricing of the 13:21 "
-          "exhibit argues the opposite direction.\n")
+    print("⚠ THE SCALING IS NOT A BOUND IN EITHER DIRECTION. It assumes the "
+          "extra flips change\noutcomes as often as H12's own did. They are "
+          "drawn from a DIFFERENT REGIME (median 15\nviruses, off-centre "
+          "towers, vs H12's median-3-virus endgame), so this is an\n"
+          "extrapolation across exactly the boundary this project has been "
+          "burned on before.\nRead these rows as a scale, not as a power "
+          "calculation.\n")
+    print("⚠ CALIBRATION-POPULATION DRIFT, stated for BOTH thresholds rather "
+          "than pre-decided:\n   T=13 admits ~13% more triggers — theta=0.5 "
+          "was calibrated on substantially this\n   population, so the "
+          "calibration carries.\n   T=12 admits ~26% more, roughly 2.2x the "
+          "extra mass. Whether theta=0.5 still\n   describes that population "
+          "is a judgment call, not a settled one: it is the owner's\n"
+          "   to make, and it would want a re-calibration before an endpoint, "
+          "not after.\n")
 
     core_h_p1 = a.n * a.secs_per_pair / 3600.0
     core_h_p2 = core_h_p1 * a.null_cost_inflation

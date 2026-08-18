@@ -278,8 +278,8 @@ discordant pairs. The same question is answerable directly, per flip, for
 about two dollars.
 
 **THE FLIP SCREEN (registered here, before it is run):**
-1. Run the H13 arm ALONE on ~500 fresh seeds (block 73000-73499, reserved
-   here). One arm suffices: at a v2-only trigger H12 does not act, so H12's
+1. Run the H13 arm ALONE on ~500 fresh seeds (block **90000-90499**; see the
+   seed-block amendment below). One arm suffices: at a v2-only trigger H12 does not act, so H12's
    action IS the champion's base action, and both the keep and the flip are
    recoverable from the H13 flip log.
 2. Take every accepted flip whose trigger was **v2-only** (`gate_v2 and not
@@ -307,8 +307,34 @@ a **RULE-OUT instrument** ([[dr-mario-label-budget-rules]]: proxies rule out
 only). A negative kills the lane cheaply; a positive does NOT certify gate-v2 —
 it only licenses paying for the endpoint that can.
 
-Seed block **73000-73499** is reserved for the screen and is disjoint from
-every block in section 4.
+**SEED-BLOCK AMENDMENT (same morning, before the screen ran).** The screen was
+first registered at 73000-73499, which sits INSIDE this lane's own 72000-80999
+endpoint reservation — a self-collision caught while deconflicting with the
+distill lane. Two corrections:
+- the screen moves to **90000-90499**, clean of every block held by either lane;
+- **72000-80999 is RELEASED** to the distill lane for its N=9,000 fork-free A/B,
+  since this lane's endpoint is a NO-GO and the reservation is dead. It is
+  released WHOLE — moving the screen is what avoids punching a hole in it.
+
+h13-gate's live blocks are therefore: 41000-41099 (gates), 70000-70399 (census,
+spent), 71000-71999 (pilot), 90000-90499 (screen).
+
+⚠ The screen's ALTERNATE capsule streams are drawn from a separate 16-bit space
+(`--alt-base`, default 500000, masked) and are checked against the play seed on
+its CANONICAL (even) member, because 2k and 2k+1 alias to one stream
+([[dr-mario-seed-space-is-32767]]). Without the canonical check a "different"
+alt seed can silently BE the game's own stream, quietly reintroducing the
+seed-peeking the screen exists to remove.
+
+**A CONTROL ARM IS PART OF THE SCREEN'S VERDICT, not a footnote.** At every
+screened flip a third line is forked on the identical streams: `rand`, a legal
+action that is neither the keep nor the flip. If flip-vs-keep cannot be
+separated from rand-vs-keep, the screen has NOT shown gate-v2 selects well — it
+has shown that perturbing the champion's choice at these plies is roughly
+neutral, which IS the churn hypothesis. `analyse_screen.py` routes that case to
+its own verdict, POSITIVE_BUT_UNCONTROLLED, rather than to POSITIVE. The router
+is driven by 7 synthetic tables straddling every threshold (`--selftest`,
+passing) before it ever saw real data.
 
 ## 10. THE PRICE, COMPUTED (see `price_h13.py`, `out/PRICE_H13*.json`)
 
