@@ -890,8 +890,22 @@ byte-identical when unset, five killed mutants (§4.5), Mesen mechanism gate, th
    it. If the owner wants the tight number, §4.5's cheap fork-horizon measurement gives it.
 2. **"The window is a 1–3 search budget, not a rollout budget."** If that reframing is
    accepted, the whole lane's ambition should be reset from "gated depth-4 / gated H12" to
-   "a binary comparator at a tie" — which is a smaller idea, but a shippable one, and it is
-   pointed at the same tie population where H12's entire certified effect lives.
+   "a binary comparator at a tie" — a smaller idea, but a shippable one.
+   ⚠ **And it is smaller than this document first claimed.** The tie population it aims at
+   is ~0.48% of plies once mirrored placements are removed, **4× under H12's dose** (§1.6b).
+   A reasonable push-back is: *is a comparator over 0.48% of plies worth building at all?*
+   My answer is that Step 1 costs an afternoon and settles it, and that the same
+   de-duplication finding pays for the lane on its own via the free tempo win (§1.6c) —
+   but if the owner would not fund a 0.48%-dose arm even at a good flip rate, **say so now
+   and close the lane before Step 2**, not after.
+
+**⚠ POWER IS NOW A LIVE RISK, AND IT SHOULD GATE STEP 2.** The withdrawn version of §1.6
+was the reassurance that this arm was "plausibly powered rather than a formality". With the
+population 4× smaller, that reassurance is gone. Before spending the $4, redo the MDE against
+the corrected dose (§6.1 Step 3), and apply the distill lane's law directly: **an experiment
+that cannot detect is not an experiment.** If ceiling × 0.524 × (0.48/1.98 relative dose)
+lands under the MDE at N = 9,000, the correct output is a registered DO-NOT-LAUNCH — and that
+outcome is now more likely than it looked this morning.
 3. **"The prize is where the window is longest, not where the danger is."** 89.4% of
    releases land at h ≤ 12 with room to spare, and the near-death 6.7% at h ≥ 14 cannot
    afford even one search. **Closing the near-death case needs a faster search, not more
