@@ -18,7 +18,7 @@ The copro is idle for the whole garbage drop, and that window is worth
 **0.16 to 5.3 champion decisions** depending on board height — not the "3–8 seconds of
 free thinking" the idea started from, and **not remotely enough for H12**. H12 as
 certified costs up to **300 champion decisions per intervention**, which is **56× the
-largest window that ever exists** and ~1,900× the window at the heights where it matters.
+largest window that ever exists**, 207× the window at h=12, and 620× at h=15.
 The window is a *one-to-three extra searches* budget, not a rollout budget. Within that
 budget exactly one thing is already built (DRPRESTART: re-search the projected
 post-garbage board — mandatory, since 50.5% of argmax decisions flip on it), and exactly
@@ -697,7 +697,7 @@ byte-identical when unset, five killed mutants (§4.5), Mesen mechanism gate, th
 
 1. **"H12 will never fit in the window."** This is the load-bearing negative result and it
    rests on an upper bound (≤300 champion decisions). The bound is loose, but it has ~56× of
-   slack against the largest window and ~1,900× at h=12, so no plausible tightening changes
+   slack against the largest window and 207× at h=12, so no plausible tightening changes
    it. If the owner wants the tight number, §4.5's cheap fork-horizon measurement gives it.
 2. **"The window is a 1–3 search budget, not a rollout budget."** If that reframing is
    accepted, the whole lane's ambition should be reset from "gated depth-4 / gated H12" to
