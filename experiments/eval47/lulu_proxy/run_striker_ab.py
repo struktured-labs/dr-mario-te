@@ -144,7 +144,7 @@ def _place_cells(env, r0, c0, r1, c1, col0, col1):
 
 # ------------------------------------------------------------------ workers
 def _init(level, decider, theta, model_kind, model_obj, h_release, timeout,
-          mutant, schedules, budget, height_metric="scaffold"):
+          mutant, schedules, budget, height_metric="scaffold", seed_offset=0):
     if decider == "champion":
         import numpy as np
         import fast_rtl_x as FX
@@ -161,7 +161,7 @@ def _init(level, decider, theta, model_kind, model_obj, h_release, timeout,
     _C.update(level=level, decider=decider, theta=theta, model_kind=model_kind,
               model_obj=model_obj, h_release=h_release, timeout=timeout,
               mutant=mutant, schedules=schedules or {}, budget=budget,
-              height_metric=height_metric)
+              height_metric=height_metric, seed_offset=seed_offset)
 
 
 def play(seed):
@@ -177,15 +177,30 @@ def play(seed):
     h_release, timeout, mutant = _C["h_release"], _C["timeout"], _C["mutant"]
     budget = _C["budget"]
     height_metric = _C["height_metric"]
+    # PAIRING MUTANT ONLY: seed_offset != 0 desynchronizes the game seed from
+    # the arm's nominal seed (offset 2, not 1 -- seeds 2k and 2k+1 are the
+    # SAME game, dr-mario-seed-space-is-32767.md, so a +1 mutant would be
+    # EQUIVALENT on even seeds and the pairing gate could not catch it).
+    seed_offset = _C.get("seed_offset", 0)
+    game_seed = seed + seed_offset
     schedule = _C["schedules"].get(seed, [])   # blind mode: [(idx, n_cells)]
     if model_kind == "bursty":
         from bursty_model import inject_bursty_garbage
 
-    env = FaithfulDrMarioEnv(level=level, seed=seed, max_pills=300)
+    env = FaithfulDrMarioEnv(level=level, seed=game_seed, max_pills=300)
     env.reset()
-    NesPillSource(seed=seed).attach(env)
+    NesPillSource(seed=game_seed).attach(env)
     env.cur = env._rand_pill()
     env.nxt = env._rand_pill()
+    # PAIRING EVIDENCE: fingerprint of the opening virus field (colors +
+    # virus mask, before a single pill lands) and the realized capsule
+    # stream, both logged per game so check_pairing() can prove two arms saw
+    # the same game.
+    import hashlib
+    virus_sig = hashlib.md5(
+        env.board.color.astype("int8").tobytes()
+        + env.board.is_virus.astype("int8").tobytes()).hexdigest()
+    capsule_seq = []
 
     res = "stall"
     col = vir = None
@@ -210,6 +225,7 @@ def play(seed):
         col, vir = RS.board_flat_from_fb(fb)
         ca, cb = int(env.cur.a), int(env.cur.b)
         na, nb = int(env.nxt.a), int(env.nxt.b)
+        capsule_seq.append((ca, cb))
 
         # --- EXPOSURE (pre-registered secondary): counted at decision time,
         # against the board the decision is made on
@@ -276,19 +292,16 @@ def play(seed):
                         env.board, model_obj, seed, pills, clear_size)
 
             elif model_kind == "striker":
-                # EARN: byte-identical draws to the bursty hook, banked
-                if clear_size > 0 and (budget is None or earned_total < budget):
-                    n = SM.earn_volley(model_obj, seed, pills, clear_size)
-                    if budget is not None:
-                        n = min(n, budget - earned_total)
-                    if n > 0:
-                        bank.append({"earned_pill": pills, "n_cells": n})
-                        earned_total += n
-                # RELEASE: the timing predicate under test
-                if bank:
+                # RELEASE is evaluated BEFORE the earn step, so a volley
+                # earned at placement p is only eligible from p+1: the bank
+                # is a real bank (min age 1 tick) and check_release_log's
+                # min_bank_ticks=1 assertion is meaningful.  Amendment
+                # 2026-08-08 #2, made before any measured run.
+                if bank and mutant != "ignores_bank":
                     h_rel = SM.measure_height(env.board, height_metric)
                     h_raw = SM.max_height(env.board)
                     age_oldest = pills - bank[0]["earned_pill"]
+                    age_newest = pills - bank[-1]["earned_pill"]
                     rng_rel = random.Random((seed * 1000 + pills) ^ RELEASE_SALT)
                     reason = None
                     if SM.release_fires(mutant, h_rel, h_release, rng_rel):
@@ -305,9 +318,34 @@ def play(seed):
                             {"pill": pills, "reason": reason,
                              "h_at_release": h_rel, "h_raw": h_raw,
                              "sizes": sizes, "placed": placed,
-                             "age_oldest": age_oldest})
+                             "age_oldest": age_oldest,
+                             "age_newest": age_newest})
                         impact_heights.append(h_rel)
                         landed = placed
+                # EARN: byte-identical draws to the bursty hook, banked
+                if clear_size > 0 and (budget is None or earned_total < budget):
+                    n = SM.earn_volley(model_obj, seed, pills, clear_size)
+                    if budget is not None:
+                        n = min(n, budget - earned_total)
+                    if n > 0:
+                        if mutant == "ignores_bank":
+                            # MUTANT: never banks -- drops the volley the
+                            # instant it is earned, whatever the height.
+                            h_rel = SM.measure_height(env.board, height_metric)
+                            rng_rel = random.Random(
+                                (seed * 1000 + pills) ^ RELEASE_SALT)
+                            placed = SM.drop_volley(env.board, n, rng_rel)
+                            release_log.append(
+                                {"pill": pills, "reason": "height",
+                                 "h_at_release": h_rel,
+                                 "h_raw": SM.max_height(env.board),
+                                 "sizes": [n], "placed": placed,
+                                 "age_oldest": 0, "age_newest": 0})
+                            impact_heights.append(h_rel)
+                            landed += placed
+                        else:
+                            bank.append({"earned_pill": pills, "n_cells": n})
+                        earned_total += n
 
             elif model_kind == "blind":
                 # volume-matched replay: same sizes, blind timing
@@ -355,18 +393,21 @@ def play(seed):
             "decisions": decisions, "exposed_decisions": exposed,
             "exposure": (exposed / decisions) if decisions else 0.0,
             "impact_heights": impact_heights,
-            "release_log": release_log}
+            "release_log": release_log,
+            "virus_sig": virus_sig, "capsule_seq": capsule_seq,
+            "game_seed": game_seed}
 
 
 def run_arm(level, seeds, workers, decider, theta, model_kind, model_obj,
             h_release, timeout, mutant="none", schedules=None, budget=None,
-            height_metric="scaffold", tag=""):
+            height_metric="scaffold", tag="", seed_offset=0):
     workers = min(workers, MAX_WORKERS)
     rows = []
     with ProcessPoolExecutor(max_workers=workers, initializer=_init,
                              initargs=(level, decider, theta, model_kind,
                                        model_obj, h_release, timeout, mutant,
-                                       schedules, budget, height_metric)) as ex:
+                                       schedules, budget, height_metric,
+                                       seed_offset)) as ex:
         futs = [ex.submit(play, s) for s in seeds]
         for i, f in enumerate(as_completed(futs)):
             rows.append(f.result())
@@ -477,7 +518,7 @@ def summarize_pair(blind, striker, tag):
     return out
 
 
-def _schedules_for(striker):
+def _schedules_for(striker, drop_one=False):
     """Per-seed blind schedules.  Horizon = the striker's LAST RELEASE pill
     (its actual delivery window), not the game's final pill -- see
     striker_model.build_blind_schedule docstring for the smoke measurement
@@ -487,7 +528,8 @@ def _schedules_for(striker):
     for s, row in striker.items():
         rl = row["release_log"]
         horizon = max(ev["pill"] for ev in rl) if rl else row["pills"]
-        scheds[s] = SM.build_blind_schedule(rl, horizon, s, GARBAGE_MIN_PILLS)
+        scheds[s] = SM.build_blind_schedule(rl, horizon, s, GARBAGE_MIN_PILLS,
+                                            drop_one=drop_one)
     return scheds
 
 
@@ -548,7 +590,7 @@ def gate_demo(args):
                    height_metric=args.height_metric, tag="real")
     gate_or_die(real, H, TO, tag="real striker")
     results = []
-    for mut in ("inverted", "random"):
+    for mut in ("inverted", "inverted_lt", "random", "ignores_bank"):
         rows = run_arm(args.level, seeds, args.workers, "champion", None,
                        "striker", model, H, TO, mutant=mut,
                        height_metric=args.height_metric, tag=mut)

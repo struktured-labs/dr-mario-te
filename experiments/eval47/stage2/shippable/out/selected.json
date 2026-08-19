@@ -1,0 +1,85 @@
+{
+ "caveat": "Corpus s2lulu: generating policy = shipped champion (bit-exact), environment = dr. lulu fitted bursty pressure, clear rate 79.80% - BELOW the 96.9% label-quality screen. Labels are game outcomes broadcast onto decisions; no counterfactual attribution.",
+ "prereg": "PREREG_SHIPPABLE.md",
+ "scope": "TRAIN ROWS ONLY (holdout sealed)",
+ "eligible": [
+  "MAXH",
+  "HOLES",
+  "TOPRISK",
+  "SPAWN",
+  "a_topout_dist",
+  "d_spawn_h",
+  "d_crit_cols",
+  "d_gvuln_mass",
+  "x_jagged",
+  "x_hvar",
+  "e_escape_routes"
+ ],
+ "selected": [
+  "e_escape_routes",
+  "MAXH",
+  "x_hvar",
+  "HOLES",
+  "SPAWN",
+  "x_jagged",
+  "d_gvuln_mass",
+  "d_spawn_h"
+ ],
+ "trace": [
+  {
+   "k": 1,
+   "added": "e_escape_routes",
+   "cv_auc": 0.6787739215010841
+  },
+  {
+   "k": 2,
+   "added": "MAXH",
+   "cv_auc": 0.695372383952826
+  },
+  {
+   "k": 3,
+   "added": "x_hvar",
+   "cv_auc": 0.7011973044201525
+  },
+  {
+   "k": 4,
+   "added": "HOLES",
+   "cv_auc": 0.704438501005731
+  },
+  {
+   "k": 5,
+   "added": "SPAWN",
+   "cv_auc": 0.7057620674489975
+  },
+  {
+   "k": 6,
+   "added": "x_jagged",
+   "cv_auc": 0.7064063386354328
+  },
+  {
+   "k": 7,
+   "added": "d_gvuln_mass",
+   "cv_auc": 0.7065464360860243
+  },
+  {
+   "k": 8,
+   "added": "d_spawn_h",
+   "cv_auc": 0.706558145364443
+  }
+ ],
+ "single_feature_train_auc": {
+  "MAXH": 0.6762440347541563,
+  "HOLES": 0.4833370073415487,
+  "TOPRISK": 0.611307801130903,
+  "SPAWN": 0.5548020886147894,
+  "a_topout_dist": 0.32375596524584377,
+  "d_spawn_h": 0.6581015236203251,
+  "d_crit_cols": 0.6128224095102986,
+  "d_gvuln_mass": 0.6770748663299411,
+  "x_jagged": 0.5106598062226401,
+  "x_hvar": 0.5191164818580362,
+  "e_escape_routes": 0.3149434722451266
+ },
+ "n_train_rows": 255893,
+ "n_train_games": 1598
+}
