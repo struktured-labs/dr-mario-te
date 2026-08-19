@@ -68,6 +68,31 @@ proves produces an identical board. Zero board effect by construction, not by sa
 evaluates one placement — nothing in the RTL enumerates orientations, so there is no
 resynthesis.
 
+### Who consumes the published orient (the executor-consumption audit)
+
+Asked because a rewrite that lands *after* something latches the orient would be worthless.
+Every cart-side consumer reaches the orient through exactly one byte — the result mailbox —
+and then through `TGT_O2`:
+
+| consumer | `patch_cartridge_copro.py` | reads |
+|---|---|---|
+| `handle()` DONE branch | `{L}_map` … `{L}_pst` | mailbox `wor`, maps copro→game, stores `TGT_O2` |
+| DRROTFIX anytime weave | `nf2_o1` … `nf2_ost` | live mailbox snapshot `$616C` (torn-read checked), → `TGT_O2` |
+| argmax-stability counter | `p2_st_chg` | `TGT_O2` vs `LAST_ORI2` |
+| DRRECOMMIT | `{L}_rcdone` | `tgt_o` vs `$03A5` |
+| rotation executor | `act_p2` | `$03A5` vs `TGT_O2`, presses A |
+
+So **nothing downstream distinguishes odd from even except by rotating to it**, and the
+canonicalisation happens in the COPRO, before any value crosses the mailbox — strictly
+upstream of every latch, on the other side of the chip boundary, not merely "atomic with" it.
+
+⚠ The one real hazard that leaves is the **ANYTIME** publish: the select loop republishes on
+every improving candidate and the pair latch can grab an intermediate. The emission therefore
+sits before *both* the mailbox store and the final `D_BO`, and checks **H** (mailbox agrees
+with zero page) and **I** (every value the mailbox ever holds is canonical) verify it on the
+real firmware. Mutant **M5** — correct final answer, raw orient reaching the mailbox first —
+is killed by **I alone**, which is what proves I is load-bearing rather than decorative.
+
 ### Scope limit, stated rather than discovered later
 
 `tuck_v3.py:746-748` overwrites `D_BO` from `tuck_o4_table` and republishes `S_BEST_O`
@@ -147,16 +172,63 @@ n = 120 games, 19,798 plies, 7,075 double plies (35.7 %), × 7 realistic match s
 Both deterministic; OFF reproduces the documented artifact byte-for-byte. `copro_rom.hex` was
 backed up and restored around the sweep, and `git status` confirms it unchanged.
 
-⚠ **The committed `fpga/copro/copro_rom.hex` on this branch is `f4b6dfbf`, which
-`dbg_build.py all 0` does not produce.** Five plausible flag combinations
-(`DRSTRAND=20`, `DRCHAIN=180`, both, `DRCOPRO_ARM=1`, `DRSTRAND=20 DRFIX=1`) give
-`111fa9b9 / c87e60a1 / 111fa9b9 / 63bcac9d / 111fa9b9` — none match. The committed ship hex
-on `gw-design` has **no recorded recipe**, which is the exact failure the romgen rule exists
-to prevent. Not introduced here and not this lane's to fix, but it should be run down before
-that hex reaches a card.
+### ⚠ RETRACTED — "the committed copro_rom.hex has no recorded recipe" was MY FALSE ZERO
 
-Flag-combination check (cf. the DRPRESTART×DRTUCK wedge pair): `DRCOPRO_TUCKV3=1` with
-`DRDBLCANON` both 0 and 1 builds and passes py65 validation.
+I reported that the committed `fpga/copro/copro_rom.hex` (`f4b6dfbf`) had no recorded recipe,
+on the strength of `dbg_build.py all 0` plus five flag combinations (`DRSTRAND=20`,
+`DRCHAIN=180`, both, `DRCOPRO_ARM=1`, `DRSTRAND=20 DRFIX=1`) returning
+`111fa9b9 / c87e60a1 / 111fa9b9 / 63bcac9d / 111fa9b9`, none matching. **That claim is wrong
+and is withdrawn.** The recipe is recorded, in `experiments/cosim_farm/FW_RECIPES.json` under
+`arms.pre20`:
+
+    DRCHAIN=180 DRCOPRO_ARM=1 DRFIX=1 DRCOPRO_TUCK=1
+    built via experiments/cosim_farm/build_dbgpub.py
+
+**Verified here: rebuilds to `f4b6dfbf` byte-exact.**
+
+Two reasons the sweep could not have found it, both worth keeping:
+
+1. I never tried `DRCOPRO_TUCK=1`. The recipe file says why — *"DRFIX=1 / DRCOPRO_TUCK=1 are
+   not guessable from the arm names"* — those arms were once genuinely unprovenanced and were
+   recovered by an exhaustive sweep. I ran a **narrower** sweep than the one that had already
+   solved this, and read my miss as absence.
+2. Right flags alone would still not have matched: `build_dbgpub.py` exists precisely because
+   **a plain build resolves `tuck_v3` from a SIBLING worktree**. It pins the emitter modules
+   to this tree.
+
+⇒ Rule 8 of the killed-mutant standard, turned on its author. An absence claim needs a
+**liveness-proven search** (mine never showed it could find a recipe it was given) and an
+**enumeration of what the search cannot reach** (a `dbg_build.py`-only sweep reaches no
+artifact built through `build_dbgpub.py`). The cheap move I skipped: `grep -rl f4b6dfbf`
+finds the recipe file immediately. Same shape as the "no artifact in any worktree" false zero
+this lane inherited — one week later, from the opposite direction.
+
+## ⚠ The DRDBLCANON × DRTUCK combination is NOT ESTABLISHED
+
+nmi-fix is right that flag interactions must be gated as combinations — this project has two
+precedents (DRPRESTART×DRTUCK is a wedge pair; DRRTIVEC×DRMMC1RST brick each other two ways,
+each having passed its own mutants). `DRCOPRO_TUCKV3=1` with `DRDBLCANON` at 0 and 1 both
+build and pass py65 validation, but **that is not a combination gate and I am not reporting it
+as one.**
+
+`probe_tuck_combo.py` asks the prior question first, because
+`dr-mario-tuck-mailbox-vacuous-gate` says the stock rig never serves the tuck mailbox:
+
+    double decisions compared: 24
+      DRCOPRO_TUCKV3 changed the decision : 0     <-- the tuck path never fired
+      DRDBLCANON changed the decision     : 12
+      DRDBLCANON changed it WITH tuck on  : 12
+
+**The tuck path is INERT in this harness**, so a combination arm measured here would be
+vacuous by construction — it would go green while establishing nothing, which is the exact
+failure this lane already documented for the `(v, v+2)` key. The combination must be gated on
+a rig that actually serves the tuck mailbox, or on silicon, **before any cart carries both
+flags.** Recorded as a blocker on the cart, not on the branch.
+
+Also load-bearing for whoever builds that cart (nmi-fix's second trap): the CvC tuck line is
+at a 6502 **branch-range cliff** — the full `m-v8auto` set with `DRPRESTART=0` fails to
+assemble ("branch out of range to not_play"), which is why `9fefaedb` was built UP from the
+`7611d54b` CvC base. Build up from `7611d54b`, not down from `m-v8auto`.
 
 ## Side findings worth banking
 

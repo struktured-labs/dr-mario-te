@@ -15,6 +15,14 @@ must FAIL it; a check no mutant can break is not evidence.
   D CONTROL    on NON-double capsules, ON == OFF exactly.  The flag must be inert
                where it has no business acting.
   E TEMPO      rotations-from-spawn strictly decrease on the plies that moved.
+  F BINDS      the flag actually fired (non-vacuity).
+  G INERT@s0   with the tie-break jitter off, the flag changes nothing.
+  H MAILBOX    the ANYTIME mailbox ($6135) agrees with the zero page. The cart
+               reads the mailbox, not D_BC/D_BO, so that is the real observable.
+  I PUBLSTREAM EVERY value the mailbox ever holds during a search is canonical
+               (or 0xFF, the invalid marker the driver peels off). The cart's
+               pair latch samples the mailbox MID-SEARCH, so fixing only the
+               final answer would still let it latch a non-canonical orient.
 
 MUTANTS (each must fail at least one check, and the sheet says which):
   M1 WRONGKEY  the `(v, v+2)` key -- the canonical WRONG answer for this lane.
@@ -27,6 +35,9 @@ MUTANTS (each must fail at least one check, and the sheet says which):
                holds, so only the TEMPO check (E) can catch it.  Without E, "any
                canonicalisation" would pass.
   M4 INERT     claim ON but emit nothing -> must break BIND (B).
+  M5 LATEFINAL right final answer, but the RAW orient reaches the anytime mailbox
+               first -> only I PUBLSTREAM can see it. This is the pair-latch
+               failure mode; without I the gate would not cover it at all.
 
 Usage:  python gate_dblcanon.py [--n 60]
 Exit 0 = all checks pass AND all mutants killed.
@@ -78,10 +89,25 @@ def apply_mutant(D3, name):
     def inert(a, tag):                          # M4: emit nothing
         pass
 
+    def latefinal(a, tag):
+        """M5: fix the FINAL answer but leak every INTERMEDIATE publish.
+
+        Stores the RAW orient to the anytime mailbox first and only then
+        canonicalises the zero page, so the last value is right while the cart's
+        pair latch can still grab a non-canonical intermediate. This is the
+        pair-latch failure mode, and only the publish-stream check sees it.
+        """
+        a.ins("LDA_zp", D3.D_BO); a.ins16("STA_abs", D3.S_BEST_O)
+        a.ins16("LDA_abs", D3.S_CA); a.ins16("EOR_abs", D3.S_CB)
+        a.ins("AND_imm", 0x0F); a.br("BNE", f"{tag}_dcx")
+        a.ins("LDA_zp", D3.D_BO); a.ins("AND_imm", 0xFE); a.ins("STA_zp", D3.D_BO)
+        a.label(f"{tag}_dcx")
+
     muts = {"M1_wrongkey": (wrongkey, lambda o, x, y: (o & 0xFD) if x == y else o),
             "M2_nogate": (nogate, lambda o, x, y: o & 0xFE),
             "M3_expensive": (expensive, lambda o, x, y: (o | 1) if x == y else o),
-            "M4_inert": (inert, lambda o, x, y: o)}
+            "M4_inert": (inert, lambda o, x, y: o),
+            "M5_latefinal": (latefinal, orig_canon)}
     emit, canon = muts[name]
     D3._e_dblcanon = emit
     D3.canon_o4 = canon
@@ -127,6 +153,57 @@ def run_fw(B, D3, img_full, search_ep, board, cA, cB, nA, nB, tseed=0):
     if cpu.mem[D3.D_BO] == 0xFF:
         return None
     return (cpu.mem[D3.D_BC], cpu.mem[D3.D_BO])
+
+
+def run_fw_traced(B, D3, img_full, search_ep, board, cA, cB, nA, nB, tseed=0):
+    """As `run_fw`, but also returns the MAILBOX and the whole publish STREAM.
+
+    Two observables, and the gate needs both:
+
+      * zero page `D_BC`/`D_BO` -- what the stub copies out at the end;
+      * `S_BEST_O` ($6135) -- the ANYTIME mailbox the select loop republishes on
+        every improving candidate, which the RTL xlates into the cart's window.
+
+    The cart samples that mailbox MID-SEARCH (`patch_cartridge_copro.py`'s nf2
+    path snapshots it at $616C behind a torn-read check) and the argmax-stability
+    counter latches from it, so a canonicalisation that only fixed the FINAL
+    value would leave the pair latch free to grab a non-canonical intermediate.
+    `stream` is every distinct value the mailbox ever held, which makes that
+    failure mode observable instead of argued about.
+    """
+    from py65_harness import Cpu, HALT
+    from test_depth2 import S_CA, S_CB, S_NA, S_NB, S_BEST_C, S_BEST_O
+    cpu = Cpu()
+    for a, v in enumerate(img_full):
+        cpu.mem[a] = v
+    for i in range(16):
+        cpu.mem[D3.PILLA + i] = img_full[B.PILL_ROM + i]
+    cpu.set_board(board)
+    D3.attach_engine_emu(cpu)
+    cpu.mem[S_CA] = ((int(tseed) & 0x0F) << 4) | cA
+    cpu.mem[S_CB] = (int(tseed) & 0xF0) | cB
+    cpu.mem[S_NA], cpu.mem[S_NB] = nA, nB
+
+    m = cpu.mpu
+    ret = HALT - 1
+    m.sp = 0xFD
+    cpu.mem[0x01FE] = ret & 0xFF
+    cpu.mem[0x01FF] = (ret >> 8) & 0xFF
+    m.pc = search_ep
+    stream, last = [], None
+    for _ in range(B.MAX_STEPS):
+        m.step()
+        v = cpu.mem[S_BEST_O]
+        if v != last:
+            stream.append(v)
+            last = v
+        if m.pc == HALT:
+            break
+    else:
+        raise RuntimeError("search did not return")
+    zp = None if cpu.mem[D3.D_BO] == 0xFF else (cpu.mem[D3.D_BC], cpu.mem[D3.D_BO])
+    mb = (cpu.mem[S_BEST_C], cpu.mem[S_BEST_O])
+    return zp, mb, stream
 
 
 def image_for(B, D3, on):
@@ -198,6 +275,9 @@ def run_gate(n, mutant=None, verbose=True):
         canon_mismatch = []
         odd_on = []
         ctl_mismatch = []
+        mailbox_mismatch = []
+        stream_bad = []
+        n_stream = 0
 
         for _ in range(n):
             fb = make_fewlegal(rng, FaithfulBoard)
@@ -205,9 +285,20 @@ def run_gate(n, mutant=None, verbose=True):
             na, nb = rng.randint(0, 2), rng.randint(0, 2)
             c = rng.randint(0, 2)
             for ts in tseeds:
-                # --- DOUBLE arm, at a REAL (non-zero) tie-break seed
+                # --- DOUBLE arm, at a REAL (non-zero) tie-break seed.
+                #     Traced on the ON side: the cart reads the MAILBOX, and the
+                #     pair latch can grab an INTERMEDIATE publish, so both the
+                #     final mailbox value and the whole publish stream are checked.
                 a_off = run_fw(B, D3, img_off, ep_off, nes, c, c, na, nb, ts)
-                a_on = run_fw(B, D3, img_on, ep_on, nes, c, c, na, nb, ts)
+                a_on, mb_on, stream_on = run_fw_traced(
+                    B, D3, img_on, ep_on, nes, c, c, na, nb, ts)
+                if a_on is not None:
+                    n_stream += 1
+                    if mb_on != a_on:
+                        mailbox_mismatch.append((a_on, mb_on))
+                    bad = [v for v in stream_on if v != 0xFF and v % 2 != 0]
+                    if bad:
+                        stream_bad.append((a_on, stream_on))
                 if a_off is not None and a_on is not None:
                     n_dbl += 1
                     col_off, o_off = a_off
@@ -248,6 +339,12 @@ def run_gate(n, mutant=None, verbose=True):
         checks["E_tempo"] = (rot_on_tot < rot_off_tot) if moved else None
         # NON-VACUITY: if the flag never fires, every check above passed for free.
         checks["F_binds"] = moved > 0
+        # The cart reads the MAILBOX, not the zero page.
+        checks["H_mailbox"] = (not mailbox_mismatch) and n_stream > 0
+        # ...and it can latch an INTERMEDIATE publish, so EVERY value the anytime
+        # mailbox ever held must already be canonical (0xFF = the invalid marker
+        # the driver peels off explicitly, so it is allowed through).
+        checks["I_stream"] = (not stream_bad) and n_stream > 0
         checks["G_inert0"] = (inert0_bad == 0) and n_inert0 > 0
 
         if verbose:
@@ -269,6 +366,11 @@ def run_gate(n, mutant=None, verbose=True):
                   f"(flag changed {moved}/{n_dbl} double decisions)")
             print(f"  G inert@s0  : {'PASS' if checks['G_inert0'] else 'FAIL'} "
                   f"({inert0_bad}/{n_inert0} perturbed with jitter off)")
+            print(f"  H mailbox   : {'PASS' if checks['H_mailbox'] else 'FAIL'} "
+                  f"({len(mailbox_mismatch)}/{n_stream} mailbox != zero page)")
+            print(f"  I publstream: {'PASS' if checks['I_stream'] else 'FAIL'} "
+                  f"({len(stream_bad)}/{n_stream} searches published a "
+                  f"non-canonical INTERMEDIATE orient)")
         return checks
     finally:
         restore()
@@ -313,7 +415,7 @@ def main():
 
     # every listed check must pass on the real implementation
     must = ["B_bind", "C_canon", "C_even", "C_board", "D_control", "E_tempo",
-            "F_binds", "G_inert0"]
+            "F_binds", "G_inert0", "H_mailbox", "I_stream"]
     real_ok = ident and all(real.get(k) for k in must)
 
     # ---- mutants: each must FAIL its named check
@@ -326,7 +428,11 @@ def main():
     expect = {"M1_wrongkey": ("C_board", "F_binds"),
               "M2_nogate": ("D_control",),   # no double test -> perturbs non-doubles
               "M3_expensive": ("E_tempo", "C_even"),  # right key, wrong direction
-              "M4_inert": ("B_bind", "F_binds")}      # emits nothing
+              "M4_inert": ("B_bind", "F_binds"),       # emits nothing
+              # M5 gets ONLY the stream check: its final answer is correct, so
+              # every other check passes. If I_stream cannot kill it, the gate
+              # does not actually cover the pair-latch hazard.
+              "M5_latefinal": ("I_stream",)}
     killed, survived = [], []
     for m, ks in expect.items():
         res = run_gate(args.n, mutant=m)
