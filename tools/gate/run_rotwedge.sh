@@ -5,7 +5,7 @@
 # carrying THIS arm's tag, exact-pid reap, no name-pattern kills.
 set -euo pipefail
 
-D=/home/struktured/projects/dr-mario-rotexec-wt
+D=/home/struktured/projects/dr-mario-dispatch131-wt
 SRC=/home/struktured/projects/dr-mario-pockettuck-wt
 PY=/home/struktured/projects/dr_mario_rl/tmp/venv/bin/python
 MESEN=/home/struktured/projects/dr-mario-mods/mesen2/bin/linux-x64/Release/Mesen

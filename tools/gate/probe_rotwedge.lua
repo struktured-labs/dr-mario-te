@@ -114,7 +114,18 @@ emu.addMemoryCallback(function() a5_writes = a5_writes + 1 end, emu.callbackType
 local modeCache = -1
 local inCur, inUntil = nil, -1
 emu.addEventCallback(function()
-  if inCur and frame < inUntil and modeCache ~= 4 then emu.setInput(inCur, 0) end
+  if not (inCur and frame < inUntil) then return end
+  -- #131: gate on the LIVE mode, and exclude 8 as well as 4.  modeCache is
+  -- sampled at endFrame, but this poll runs in NMI at the TOP of a frame and
+  -- the ROM advances 8->4 later in that same frame -- so a START permitted
+  -- here at mode 8 is still in the P1 newly-pressed latch $F5 when the stock
+  -- pause routine $978E runs, already in mode 4.  $97A7 accepts it and the
+  -- match pauses at spawn; on a P1-native cart that pause is UNEXITABLE (#133,
+  -- the executor rewrites $F5 every hook from a vocabulary with no START), so
+  -- the run wedges forever.  Mode 8 is the only predecessor of mode 4.
+  local live = rd(0x46)
+  if live == 4 or live == 8 then return end
+  emu.setInput(inCur, 0)
 end, emu.eventType.inputPolled)
 local function press(i, d) inCur = i; inUntil = frame + (d or 4) end
 
