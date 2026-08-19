@@ -70,3 +70,32 @@ by the same predicates. A mutant that passes P1 is a surviving mutant and voids 
 - P1's CI includes 0 => under-powered or null; report the interval and close, do not ship.
 - P3 fails => the flag is not doing what it claims; NO-GO.
 - < 8 surviving pairs => NO-VERDICT; the blocker is #131, not this fix.
+
+## Mutant-table amendment, registered before m2b/m3b were ever run
+
+The v1 mutant sheet ran and **two of the four mutants were dead on arrival**. The data said so
+before any verdict was read, so this is recorded as a defect in my own gate, not smoothed over.
+
+- **m2 is ALGEBRAICALLY EQUIVALENT TO m1.** m2 computes `($03A5 - TGT_O2) & 3` and tests `== 1`;
+  m1 computes `(TGT_O2 - $03A5) & 3` and tests `== 3`. Those are the same condition. Different
+  instruction bytes, different cart md5, **identical behaviour: all 6 cells matched m1 to the
+  last digit** (goes, dones, wedges, pressA, pressB).
+- **m3 is UNKILLABLE BY CONSTRUCTION on the only arm that exercises B.** m3 omits the
+  `STA $F8` that re-arms the press edge — but delta 1 needs exactly **one** press, and on the
+  frame before it the driver was not pressing, so `$F8` is already 0 and the omitted clear is
+  never reached. m3's cells matched the **real fix** to the last digit. Per gate-standard rule 6
+  this is the *wrong observable*, not a wrong mutant: the property "the edge is armed" is not an
+  across-frames property here, because there is no second frame.
+
+Replacements, both built and hashed before any run:
+
+| # | mutation | cart md5 | must fail |
+|---|---|---|---|
+| m2b | press B **unconditionally** (no delta test) | `3e590af3` | passes the win, must FAIL the delta-3 control: that orient goes 1 press -> 3 |
+| m3b | mark B **already-held** (`$F8 = $40`) so the edge is dead on the FIRST press | `af7e1f21` | P1 and P3 — the capsule never rotates at all |
+
+m2b is deliberately chosen to attack the **control** side: it is the mutant that would sail
+through a win-only gate. m1 and m4 are unchanged and stay in the table.
+
+Re-verified after the refactor that added these: `DRROTDIR=0` still builds `9fefaedb`
+and `DRROTDIR=1` still builds `d1db55ba`, so the real arms were not perturbed.

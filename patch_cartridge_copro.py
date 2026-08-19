@@ -389,9 +389,23 @@ ROTFIX = _os.environ.get("DRROTFIX", "1") != "0"
 ROTDIR = (_os.environ.get("DRROTDIR", "0") != "0") and ROTFIX
 # DRROTDIR_MUT: test-only deliberate defects for PREREG_ROTDIR's killed-mutant table.
 # "none" (default) is the real fix. Any other value builds a cart that MUST fail the prereg.
+#   m1  press B on delta 3 instead of delta 1   (direction inverted)
+#   m2b press B UNCONDITIONALLY                 (passes the win, must FAIL the delta-3 control)
+#   m3b mark B already-held ($F8=$40)           (kills the press edge on the FIRST press)
+#   m4  CMP #$05, so the B branch is unreachable (POPULATION mutant: pressB must stay 0)
+# ⚠ m2 and m3 are RETIRED and kept only so this note is auditable. BOTH WERE DEAD ON ARRIVAL,
+# and the data said so before any verdict was read (measured 2026-08-19):
+#   m2 ("delta computed as ($03A5 - TGT_O2) & 3, CMP #1") is ALGEBRAICALLY EQUIVALENT TO m1 --
+#     (cur-tgt)&3 == 1 is exactly (tgt-cur)&3 == 3. Different bytes, different md5, IDENTICAL
+#     behaviour: all 6 cells matched m1 to the last digit.
+#   m3 ("omit the STA $F8 on the B path") is UNKILLABLE BY CONSTRUCTION on the only arm that
+#     exercises B: delta 1 needs exactly ONE press, and the frame before it the driver was not
+#     pressing, so $F8 is already 0 and the omitted clear is never reached. m3's 6 cells matched
+#     the REAL FIX to the last digit. This is the "wrong observable" case, not a wrong mutant --
+#     m3b tests the same property (is the edge armed?) with an observable that can fail.
 ROTDIR_MUT = _os.environ.get("DRROTDIR_MUT", "none")
-if ROTDIR_MUT not in ("none", "m1", "m2", "m3", "m4"):
-    raise SystemExit(f"DRROTDIR_MUT must be none|m1|m2|m3|m4 (got {ROTDIR_MUT!r})")
+if ROTDIR_MUT not in ("none", "m1", "m2", "m2b", "m3", "m3b", "m4"):
+    raise SystemExit(f"DRROTDIR_MUT must be none|m1|m2|m2b|m3|m3b|m4 (got {ROTDIR_MUT!r})")
 if ROTDIR_MUT != "none" and not ROTDIR:
     raise SystemExit("DRROTDIR_MUT set but DRROTDIR is off -- the mutant would be a silent no-op")
 # minimum-think gate: hooks of search (WDOG2) the driver waits before committing laterally /
@@ -2683,17 +2697,21 @@ def build_main(level=11, speed=1):
             # ---- TEST-ONLY MUTANTS (DRROTDIR_MUT). Same precedent as DRDIST_FLOORREL above:
             # kept buildable solely so PREREG_ROTDIR's mutant table can be demonstrated to FAIL
             # (killed-mutant discipline). NEVER ship a cart with DRROTDIR_MUT != none.
-            if ROTDIR_MUT == "m2":            # delta computed the wrong way round
+            if ROTDIR_MUT == "m2":            # RETIRED, EQUIVALENT TO m1 -- see below
                 a.ins16("LDA_abs", 0x03A5); a.ins("SEC"); a.ins16("SBC_abs", TGT_O2)
             else:
                 a.ins16("LDA_abs", TGT_O2); a.ins("SEC"); a.ins16("SBC_abs", 0x03A5)
             a.ins("AND_imm", 0x03)
-            _mcmp = {"m1": 0x03, "m4": 0x05}.get(ROTDIR_MUT, 0x01)    # m1: B on the wrong delta
-            a.ins("CMP_imm", _mcmp); a.br("BNE", "p2_rot_ccw")        # delta 2 or 3 -> A (CCW)
-            if ROTDIR_MUT != "m3":                                    # m3: no press edge
+            if ROTDIR_MUT != "m2b":           # m2b: press B UNCONDITIONALLY (no delta test)
+                _mcmp = {"m1": 0x03, "m2": 0x01, "m4": 0x05}.get(ROTDIR_MUT, 0x01)
+                a.ins("CMP_imm", _mcmp); a.br("BNE", "p2_rot_ccw")    # delta 2 or 3 -> A (CCW)
+            if ROTDIR_MUT == "m3b":           # m3b: mark B ALREADY-HELD -> the press edge is dead
+                a.ins("LDA_imm", 0x40); a.ins("STA_zp", 0xF8)
+            elif ROTDIR_MUT != "m3":          # m3: RETIRED, UNKILLABLE -- see below
                 a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)         # edge (held=0) so B rotates,
             a.ins("LDA_imm", 0x40); a.ins("STA_zp", 0xF6); a.jmp("act_p1")   # B = CW = INC $A5
-            a.label("p2_rot_ccw")
+            if ROTDIR_MUT != "m2b":
+                a.label("p2_rot_ccw")
         a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)                # edge (held=0) so A rotates,
         a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF6); a.jmp("act_p1")   # under live gravity, no pin
         a.label("p2_orient_ok")                                       # orient reached; think gate:
