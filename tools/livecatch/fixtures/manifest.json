@@ -1,0 +1,20 @@
+[
+  {
+    "name": "drmario_tuck_cvc_mister_20260818-221003.win.gz",
+    "ram_base": 1059592,
+    "source": "drmario_tuck_cvc_mister_20260818-221003.ss",
+    "sha256": "85b757c6f915a8b3f7940b732bdc0c7056a0d6a1e250d71a06ca7c0aba879646"
+  },
+  {
+    "name": "latch_converged_native_20260801-232156.win.gz",
+    "ram_base": 1059592,
+    "source": "latch_converged_native_20260801-232156.ss",
+    "sha256": "de38a8db709bf9c48c8b1aa5d38884b09822adc411f095228cceb6cb67ae3915"
+  },
+  {
+    "name": "freeze3_20260802_0306.win.gz",
+    "ram_base": 1059592,
+    "source": "freeze3_20260802_0306.ss",
+    "sha256": "11437bdb3c79f541b69311c4d3300b71d853caaf441ab53582a3aa0d6934e2cd"
+  }
+]
