@@ -387,6 +387,13 @@ ROTFIX = _os.environ.get("DRROTFIX", "1") != "0"
 # ⚠ default MUST stay off until gated -- a default-on flag decouples artifact from recipe
 # ([[pocket-rbf-md5-gate-unsound]]).
 ROTDIR = (_os.environ.get("DRROTDIR", "0") != "0") and ROTFIX
+# DRROTDIR_MUT: test-only deliberate defects for PREREG_ROTDIR's killed-mutant table.
+# "none" (default) is the real fix. Any other value builds a cart that MUST fail the prereg.
+ROTDIR_MUT = _os.environ.get("DRROTDIR_MUT", "none")
+if ROTDIR_MUT not in ("none", "m1", "m2", "m3", "m4"):
+    raise SystemExit(f"DRROTDIR_MUT must be none|m1|m2|m3|m4 (got {ROTDIR_MUT!r})")
+if ROTDIR_MUT != "none" and not ROTDIR:
+    raise SystemExit("DRROTDIR_MUT set but DRROTDIR is off -- the mutant would be a silent no-op")
 # minimum-think gate: hooks of search (WDOG2) the driver waits before committing laterally /
 # locking orient. ~5 hooks/frame. Default 25 (~5f). Was 90 (~18f), a guard against the shallow-argmax
 # slam back when searches were slow; with K_OPEN=255 (wait-for-DONE) + RECOMMIT (orient re-open at DONE
@@ -2673,10 +2680,18 @@ def build_main(level=11, speed=1):
             # frames per rotation. So this is worth ~2.2 f/pill on the delta-1 orient and nothing
             # on the other three -- which is exactly what makes it gateable: three arms MUST NOT
             # move.
-            a.ins16("LDA_abs", TGT_O2); a.ins("SEC"); a.ins16("SBC_abs", 0x03A5)
+            # ---- TEST-ONLY MUTANTS (DRROTDIR_MUT). Same precedent as DRDIST_FLOORREL above:
+            # kept buildable solely so PREREG_ROTDIR's mutant table can be demonstrated to FAIL
+            # (killed-mutant discipline). NEVER ship a cart with DRROTDIR_MUT != none.
+            if ROTDIR_MUT == "m2":            # delta computed the wrong way round
+                a.ins16("LDA_abs", 0x03A5); a.ins("SEC"); a.ins16("SBC_abs", TGT_O2)
+            else:
+                a.ins16("LDA_abs", TGT_O2); a.ins("SEC"); a.ins16("SBC_abs", 0x03A5)
             a.ins("AND_imm", 0x03)
-            a.ins("CMP_imm", 0x01); a.br("BNE", "p2_rot_ccw")         # delta 2 or 3 -> A (CCW)
-            a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)             # edge (held=0) so B rotates,
+            _mcmp = {"m1": 0x03, "m4": 0x05}.get(ROTDIR_MUT, 0x01)    # m1: B on the wrong delta
+            a.ins("CMP_imm", _mcmp); a.br("BNE", "p2_rot_ccw")        # delta 2 or 3 -> A (CCW)
+            if ROTDIR_MUT != "m3":                                    # m3: no press edge
+                a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)         # edge (held=0) so B rotates,
             a.ins("LDA_imm", 0x40); a.ins("STA_zp", 0xF6); a.jmp("act_p1")   # B = CW = INC $A5
             a.label("p2_rot_ccw")
         a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)                # edge (held=0) so A rotates,

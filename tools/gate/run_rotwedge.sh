@@ -25,8 +25,30 @@ got=$(md5sum "$CART" | cut -d' ' -f1)
 [[ "$got" == "$CART_MD5" ]] || { echo "CART MD5 MISMATCH: $got != $CART_MD5" >&2; exit 2; }
 [[ -x "$MESEN" ]] || { echo "missing Mesen: $MESEN" >&2; exit 2; }
 
-if ps -eo args | command grep -a 'Release/Mesen' | command grep -av grep >/dev/null; then
-  echo "a Mesen is already alive -- refusing to run two arms concurrently" >&2; exit 3
+# SEAT CHECK on the process NAME, not on `ps -eo args`. Matching the args string
+# 'Release/Mesen' self-matched the calling shell -- whose own command line carries that path
+# from this very check -- and refused 22 of 24 cells of a paired ladder while reporting
+# nothing ([[harness-pgrep-self-match]], second sighting). `pgrep -x` matches comm only.
+# ZOMBIES DO NOT COUNT. A previous arm's Mesen can sit <defunct> for a while when the shell
+# that spawned it was abandoned; `pgrep` reports it, `ps -o args=` shows nothing, and the arm
+# refuses against a process that is already dead. Filter on run state, and WAIT for a live
+# one rather than refusing instantly -- this batch is sequential, so a live Mesen means the
+# previous cell has not finished teardown yet, not that someone else is using the box.
+live_mesen() {
+  local p s out=""
+  for p in $(pgrep -x Mesen 2>/dev/null); do
+    s=$(ps -o state= -p "$p" 2>/dev/null | tr -d ' ')
+    case "$s" in ""|Z*) ;; *) out="$out $p";; esac
+  done
+  printf '%s' "$out"
+}
+for _ in $(seq 1 60); do
+  [ -z "$(live_mesen)" ] && break
+  sleep 2
+done
+if [ -n "$(live_mesen)" ]; then
+  echo "a Mesen is still alive after 120 s (pids:$(live_mesen)) -- refusing to run two arms concurrently" >&2
+  exit 3
 fi
 
 out="$D/tmp/rotwedge/$tag"; mkdir -p "$out"
