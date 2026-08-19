@@ -143,6 +143,28 @@ def col_heights(color):
     return out
 
 
+def col_occupancy(color):
+    """Occupied cell COUNT per column -- deliberately not col_heights().
+
+    The garbage-hit set must be identified by occupancy growth, not by a height
+    change: a tile can land in a hole below the surface and leave the height alone,
+    and gravity after an unrelated clear can move a column that was never hit.
+    Method-identical to the S0-A screen (experiments/gw_design/screen_gw.py:80-84),
+    which is the implementation the published h_min figures came from."""
+    return [sum(1 for r in range(ROWS) if color[r, c] != 0) for c in range(COLS)]
+
+
+def garbage_hit_h(h_before, occ_before, occ_after):
+    """h for the window formula W = 264 - 16*h, or -1 if the hit set is unknowable.
+
+    MIN over the hit columns, of the PRE-garbage heights, with hits taken from
+    occupancy growth. All three choices are load-bearing and all three were wrong
+    before #124 -- see play_game's docstring for the derivation. Kept as a named
+    function so tests/test_gw_hhit.py can gate it directly and mutate it."""
+    hits = [c for c in range(COLS) if occ_after[c] > occ_before[c]]
+    return min(h_before[c] for c in hits) if hits else -1
+
+
 GARBAGE_MIN_PILLS = 25          # reach_root_ab.GARBAGE_MIN_PILLS, not re-chosen here
 DIES_AHEAD_VIRUS_THRESHOLD = 12  # reach_root_ab.DIES_AHEAD_VIRUS_THRESHOLD
 
@@ -181,9 +203,40 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
       post_garbage  1 iff this decision immediately follows a bursty garbage
                     injection, i.e. it sits at the release+settle edge where the
                     264 - 16*h frame window applies. Always 0 under pressure="clean".
-      h_hit         when post_garbage=1: max settled stack height among the columns
-                    the garbage landed in (the tallest hit column sets the binding
-                    window); -1 otherwise.
+                    It is its OWN flag and is NOT `h_hit >= 0`: a release whose hit
+                    columns cannot be identified is still a release, and collapsing
+                    the two would drop it from the denominator.
+      h_hit         when post_garbage=1: the MINIMUM PRE-GARBAGE stack height among
+                    the columns the garbage landed in; -1 when post_garbage=0, and
+                    also -1 when the hit set could not be identified (see below).
+                    W = 264 - 16*h_hit.
+
+                    ⚠ THIS FIELD WAS WRONG IN THREE WAYS UNTIL 2026-08-19 (#124), and
+                    every "% of releases" figure computed from it before that date is
+                    invalid -- conservatively so, the true windows are LONGER. Do not
+                    mix pre- and post-fix jsonl. The three, all on one line:
+
+                      1. it took the MAX over hit columns. A garbage tile spawns at
+                         row 0 and falls 15 - h to rest on its column's stack, so the
+                         animation ends when the tile falling FURTHEST lands -- the
+                         one in the SHALLOWEST hit column. The tallest hit column has
+                         the shortest fall and binds nothing.
+                      2. it sampled heights AFTER the garbage settled. h_after is
+                         h_before plus the tiles that just landed there, so every hit
+                         column was over-counted by >= 1 => W understated by >= 16 f,
+                         compounding with (1). The window is set by the stack the tile
+                         falls ONTO.
+                      3. the hit set was inferred from a HEIGHT change, and when that
+                         inference came up empty the fallback took max() over ALL
+                         columns -- wrong aggregate over the wrong column set, silently
+                         substituted for a measurement. Hits now come from occupancy
+                         growth (col_occupancy), and an unidentifiable hit set records
+                         -1 rather than a fabricated number.
+
+                    (1) and (2) agree only on a flat stack where every column has the
+                    same height, which is exactly why synthetic flat boards never
+                    exposed either. Reference implementation, method-identical and
+                    independently written: experiments/gw_design/screen_gw.py:362.
 
     Nothing in the capture feeds back into any decision -- it is pure observation,
     and gate_validate.py's determinism key (result, pills, viruses_cleared, clocks,
@@ -215,7 +268,8 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
     clocks = 0
     moves = []
     lat = []               # per-decision latency capture, see the docstring
-    pending_gh = -1        # settled max height in garbage-hit columns; -1 = none
+    pending_pg = 0         # 1 iff the NEXT decision sits at a release+settle edge
+    pending_gh = -1        # min PRE-garbage height over the hit columns; -1 = unknown
 
     for _ in range(max_pills):
         if env.board.virus_count() == 0:
@@ -233,8 +287,8 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
         # entry_row (slot 1) is back-filled once the placement is known; it stays -1
         # only on the illegal-placement path, where nothing is applied.
         lat.append([int(d["clocks"]), -1, max(col_heights(env.board.color)),
-                    int(pending_gh >= 0), pending_gh])
-        pending_gh = -1
+                    pending_pg, pending_gh])
+        pending_pg, pending_gh = 0, -1
         col, o4, tcol, trow = d["col"], d["o4"], d["tcol"], d["trow"]
         if trace:
             moves.append((col, o4, tcol, trow))
@@ -304,17 +358,20 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
             clear_size = max(0, occ_before + 2 - occ_after)
             if clear_size > 0:
                 h_before = col_heights(env.board.color)
+                occ_before_col = col_occupancy(env.board.color)
                 added = inject_bursty_garbage(
                     env.board, model, seed, env.pills_placed, clear_size)
                 garbage += added
                 if added > 0:
                     # Release+settle edge: the NEXT decision is made inside the
-                    # 264 - 16*h garbage window. Hit columns are the ones whose
-                    # settled height changed; the tallest sets the binding window.
-                    h_after = col_heights(env.board.color)
-                    hit = [h_after[c] for c in range(COLS)
-                           if h_after[c] != h_before[c]]
-                    pending_gh = max(hit) if hit else max(h_after)
+                    # 264 - 16*h_hit garbage window. See the docstring for the three
+                    # ways this was wrong before #124 -- MIN, not max; PRE-garbage
+                    # heights, not settled ones; hits by occupancy growth, and -1
+                    # rather than a fabricated fallback when they cannot be found.
+                    pending_pg = 1
+                    pending_gh = garbage_hit_h(
+                        h_before, occ_before_col,
+                        col_occupancy(env.board.color))
             if env.board.virus_count() == 0:
                 res = "clear"
                 break
