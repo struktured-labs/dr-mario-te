@@ -126,10 +126,11 @@ flag has nothing to do. `F binds` exists so that cannot happen silently again, a
 
 100 double decisions and 100 non-double controls per arm, 4 match seeds, real firmware.
 
-    REAL   B bind PASS (2356B -> 2372B) · C canon-eq PASS · C even-o4 PASS
-           C board-id PASS (0 DIFFERENT boards) · D control PASS
-           E tempo PASS (rot 200 -> 100) · F binds PASS (50/100) · G inert@s0 PASS
-    mutants killed 4/4
+    REAL   A identity PASS · B bind PASS (2356B -> 2372B) · C canon-eq PASS
+           C even-o4 PASS · C board-id PASS (0 DIFFERENT boards) · D control PASS
+           E tempo PASS (rot 200 -> 100) · F binds PASS (50/100)
+           G inert@s0 PASS · H mailbox PASS (0/100) · I publstream PASS (0/100)
+    mutants killed 5/5
 
 `F binds 50/100` is the algebra landing on the nose: the expensive member wins in exactly
 half the columns. `E tempo 200 -> 100` is the same fact in rotations — the flag halves the
@@ -147,6 +148,7 @@ the mutant's whole purpose, and it is why "removes nothing" has to count as a ki
 | M2 no `cA == cB` test (population mutant) | `D_control` — perturbs non-doubles |
 | M3 canonicalise to the ODD member | `E_tempo` / `C_even` — board identity still holds, so only tempo catches it |
 | M4 claim ON, emit nothing | `B_bind`, `F_binds` |
+| M5 correct FINAL answer, raw orient reaches the anytime mailbox first | **`I_stream` alone** — every other check passes. This is the pair-latch failure mode, and M5 surviving would mean the gate never covered it |
 
 ## Measured tempo
 
