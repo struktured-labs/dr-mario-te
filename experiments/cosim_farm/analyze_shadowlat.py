@@ -24,21 +24,36 @@ Budgets priced against:
   (b) GARBAGE WINDOW -- for decisions flagged post_garbage=1 (made at the
       release+settle edge of a bursty injection), the measured window is
       264 - 16*h frames where h = h_hit, the SHALLOWEST PRE-garbage stack height
-      among the columns the garbage actually hit (game.garbage_hit_h, #124). The
-      window is set by the tile that falls furthest, so it is a MIN over hit
-      columns, of the heights the tiles fell ONTO -- not a max, and not the
-      post-settle heights. A decision is "late vs window" when its frames exceed
-      that.
+      among the VOLLEY'S OWN target columns (game.garbage_hit_h, #124). The window
+      is set by the tile that falls furthest, so it is a MIN, of the heights the
+      tiles fell ONTO -- not a max, and not the post-settle heights. A decision is
+      "late vs window" when its frames exceed that.
 
-      h_hit == H_HIT_UNKNOWN (-1) means the hit set could not be identified. Such
-      a release is NOT scored against a window -- it stays in n_post_garbage (the
-      release denominator) and is counted in n_window_unscorable. Scoring it would
-      invent a 280-frame window, longer than the physical maximum of 264.
+      The column set is re-derived from the injector's own model draw, never
+      inferred from a board difference: garbage that lands in a column which then
+      CLEARS grows in neither height nor occupancy, so any inferred set silently
+      drops the binding column and takes the min over the survivors. That error
+      hides in clear-triggering volleys -- exactly the longest windows.
+
+      h_hit == H_HIT_UNKNOWN (-1) means no column was targeted at all. Once a volley
+      has fired this cannot happen (a non-zero cell count implies a non-empty draw),
+      so the skip below is defensive, not an expected path. It exists because an
+      unguarded -1 scores as 264 + 16 = 280 f, longer than the physical maximum of
+      264, and does so silently. Such a release stays in n_post_garbage (the release
+      denominator) and is counted in n_window_unscorable. A NON-ZERO
+      n_window_unscorable is therefore a signal to go look at the injector, not a
+      routine exclusion to skim past.
+
+      FIDELITY CEILING (filed separately, not a defect in this file): bursty_model
+      draws random distinct columns, while the ROM releases maximally spread sets
+      ({c, c+4} etc., checkReleaseAttack $9C01). Spread sets find a shallow column
+      more often, so the real h_min is LOWER and real windows LONGER than anything
+      reported here. Every late_vs_window count below is therefore an upper bound.
 
       PROVENANCE: jsonl written before #124 carries a DIFFERENT h_hit quantity (max
-      over hit columns, post-settle heights, fabricated fallback) and never emits -1.
-      Such files still parse, so nothing here can detect them. Do not pool pre- and
-      post-fix runs, and do not re-publish a pre-fix late_vs_window without a re-run.
+      over board-inferred hits, post-settle heights) and never emits -1. Such files
+      still parse, so nothing here can detect them. Do not pool pre- and post-fix
+      runs, and do not re-publish a pre-fix late_vs_window without a re-run.
 
 All output is COUNTS (n late / n total per band), not adjectives. Constants are
 module-level so test_lat_conversion.py can gate them with hand-computed cases.
@@ -60,7 +75,7 @@ SIM_CLOCKS_PER_FRAME = 48 * 29780.5       # = 1,429,464.0 master clocks / NES fr
 FALL_FRAMES_PER_ROW = 13                  # L11 gravity, frames per row
 GARBAGE_WINDOW_BASE = 264                 # measured window = 264 - 16*h (8/8 exact)
 GARBAGE_WINDOW_PER_H = 16
-H_HIT_UNKNOWN = -1                        # game.garbage_hit_h: hit set unidentifiable
+H_HIT_UNKNOWN = -1                        # game.garbage_hit_h: no column was targeted
 
 HEIGHT_BANDS = ((0, 4), (5, 8), (9, 12), (13, 99))
 
@@ -79,11 +94,11 @@ def fall_budget_frames(entry_row: int) -> int:
 
 
 def garbage_window_frames(h_hit: int) -> int:
-    """Window for a KNOWN hit height. Callers must skip h_hit < 0 (see analyze)."""
+    """Window for a real hit height. Callers must skip h_hit < 0 (see analyze)."""
     if h_hit < 0:
         raise ValueError(
-            f"garbage_window_frames called with unknown h_hit={h_hit}; "
-            "an unidentifiable hit set is unscorable, not a 280-frame window")
+            f"garbage_window_frames called with h_hit={h_hit} (no column targeted); "
+            "that release is unscorable, not a 280-frame window")
     return GARBAGE_WINDOW_BASE - GARBAGE_WINDOW_PER_H * h_hit
 
 
@@ -155,8 +170,9 @@ def analyze(rows):
                 out["n_post_garbage"] += 1
                 b["n_post_garbage"] += 1
                 if h_hit < 0:
-                    # Hit set unidentifiable (#124). Stays in the release
-                    # denominator; scored against no window.
+                    # No column targeted (#124) -- unreachable once a volley has
+                    # fired. Defensive: stays in the release denominator, scored
+                    # against no window.
                     out["n_window_unscorable"] += 1
                     b["n_window_unscorable"] += 1
                 else:

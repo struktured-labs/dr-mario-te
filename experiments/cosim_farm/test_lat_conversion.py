@@ -63,9 +63,10 @@ check("fall budget entry_row=15 == 195 frames", M.fall_budget_frames(15) == 195)
 check("garbage window h=0 == 264", M.garbage_window_frames(0) == 264)
 check("garbage window h=6 == 168", M.garbage_window_frames(6) == 168)
 check("garbage window h=15 == 24", M.garbage_window_frames(15) == 24)
-# h_hit == -1 means "hit set unknown" (game.garbage_hit_h, #124). The old code turned
-# that into 264 + 16 = 280 f -- longer than the physical maximum -- and scored it as if
-# measured. It must refuse instead.
+# h_hit == -1 means "no column targeted" (game.garbage_hit_h, #124) -- unreachable once
+# a volley has fired, so these cases pin DEFENSIVE behaviour rather than a live path.
+# The old code turned -1 into 264 + 16 = 280 f, longer than the physical maximum, and
+# scored it as if measured. It must refuse instead.
 try:
     got = M.garbage_window_frames(-1)
     check(f"garbage window h=-1 refuses (got {got})", False)
@@ -83,8 +84,8 @@ LAT = [
     [10 * F, 4, 3, 0, -1],    # not post_garbage: h_hit ignored entirely
     [10 * F, 4, 3, 1, 0],     # window 264 -> on time
     [300 * F, 4, 3, 1, 0],    # window 264 -> LATE (300 > 264)
-    [270 * F, 4, 6, 1, -1],   # unknown hit set: 270 f would be "late" vs a bogus 280
-    [270 * F, 4, 6, 1, -1],   # ... second one, so the counter has to count, not flag
+    [270 * F, 4, 6, 1, -1],   # no column targeted: 270 f slips under a bogus 280 f
+    [270 * F, 4, 6, 1, -1],   # ... twice, so the counter has to count, not just flag
     [10 * F, 4, 6, 1, 15],    # window 24 -> on time (10 < 24)
 ]
 rep = M.analyze([{"seed": 7, "lat": LAT}])

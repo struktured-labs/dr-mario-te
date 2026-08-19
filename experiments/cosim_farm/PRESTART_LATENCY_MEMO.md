@@ -36,10 +36,14 @@ binds exactly in the near-death regime the project cares about (cf. fidelity-is-
 
 **Prestart accounting:** the prestart arm starts its clock at the release edge — the
 `inject_bursty_garbage` call site (game.py:248-253) — earning a credit of
-`min(F, 264 - 16*h)` frames (h = `game.garbage_hit_h`: the MIN over hit columns of the
-PRE-garbage stack heights, per #124 — not the max, and not post-settle heights; when the hit
-set is unidentifiable it is -1 and the release is unscorable, not a 280-frame window);
-the baseline arm starts at the next
+`min(F, 264 - 16*h)` frames (h = `game.garbage_hit_h`: the MIN, over the volley's own target
+columns, of the PRE-garbage stack heights, per #124 — not the max, not post-settle heights,
+and the column set re-derived from the injector's model draw rather than inferred from the
+board, since a hit column that then clears vanishes from any board-difference set).
+⚠ The volley column model is itself low-fidelity: `bursty_model.sample` draws random distinct
+columns while the ROM releases maximally spread sets (`checkReleaseAttack` $9C01), which find
+a shallow column more often — so real windows are LONGER than the farm reports, and every
+window-overrun count is an upper bound. The baseline arm starts at the next
 spawn. Same moves, different frame charges. Bursty draws key on `(seed, pills_placed)`
 (bursty_model.py:628-632), so pairing survives as long as placements remain the pairing index.
 
