@@ -71,6 +71,25 @@ if "test_search_d3" not in sys.modules or _bad_cached:
     _spec.loader.exec_module(_mod)
     del _ilu, _spec, _mod
 del _bad_cached
+#
+# ---- #127: THE GUARD ABOVE WAS COVERING 1 NAME OF 16 -------------------------------
+# Everything above is true and stays true -- but it defends exactly ONE module. MEASURED
+# 2026-08-19 with only that guard in place, FIFTEEN further modules still resolved into
+# dr-mario-mods, among them `nes_d3_golden` -- the GOLDEN this firmware is validated
+# against -- plus primitives, py65_harness, patch_vs_cpu, test_depth2 and nes_d2_golden.
+# So the py65 firmware gate was comparing this tree's firmware to ANOTHER BRANCH'S
+# reference, and this tree's own nes_d3_golden never executed at all.
+#
+# Name-by-name registration cannot close that: it only ever covers the names someone
+# already thought of, and it EXECUTES each one whether the run needs it or not.
+# copro_bootstrap.install() instead puts a finder at the FRONT of sys.meta_path, which is
+# consulted BEFORE any sys.path entry -- so this tree wins for the whole class of names,
+# no matter who inserts what at position 0, now or later. It also reclaims names already
+# bound to an outside copy (a finder cannot: sys.modules is checked before meta_path).
+# The single-name block above is left in place deliberately: it runs first, it is correct,
+# and it documents the original root-cause trace.
+import copro_bootstrap
+copro_bootstrap.install(ROOT)
 
 import patch_vs_cpu
 patch_vs_cpu.OPS.setdefault("SEI", 0x78)
@@ -86,6 +105,13 @@ from test_search_d3 import (THIRD, PILLA, PILLB, D_BC, D_BO, make_fewlegal)
 from test_depth2 import S_CA, S_CB, S_NA, S_NB, S_BEST_C, S_BEST_O
 import primitives as P
 import nes_d3_golden as G3
+
+# #127: the imports are done -- now PROVE the shield held. The single-name assert above can
+# only speak for test_search_d3, and it was green for months while nes_d3_golden resolved
+# elsewhere. This one names EVERY module this tree owns a copy of that resolved outside it,
+# so the failure mode is a loud list rather than a firmware gate quietly scored against
+# another branch. Absence of an exception is not evidence unless something checked.
+copro_bootstrap.assert_self_contained(ROOT, where="build_copro_d3 import block")
 
 EMPTY = 0xFF
 STUB = 0xBF80            # MiSTer mapper hardcodes the copro reset to $BF80 (in-ROM)
