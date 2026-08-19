@@ -108,6 +108,62 @@ check("band 5-8 carries 3 releases, 2 unscorable",
 check("late_vs_window_pct == 33.333 (denominator excludes the unscorable)",
       rep["silicon"]["late_vs_window_pct"] == 33.333)
 
+# --- by_h_hit: the #92 headline table, keyed on h_hit and NOT on max_h -------------
+# Hand-built so the two variables DISAGREE: every decision below sits at max_h=3 (band
+# "0-4") while carrying h_hit 12 or 13. A by_h_hit that silently keyed on max_h -- the
+# variable the bands use, and the one #124 proved people conflate -- would collapse all
+# five rows into one entry and cannot pass this.
+LAT2 = [
+    [10 * F, 4, 3, 1, 12],    # W = 264-192 = 72 -> on time
+    [80 * F, 4, 3, 1, 12],    # W = 72 -> LATE (80 > 72)
+    [50 * F, 4, 3, 1, 13],    # W = 264-208 = 56 -> on time (50 < 56)
+    [60 * F, 4, 3, 1, 13],    # W = 56 -> LATE
+    [70 * F, 4, 3, 1, 13],    # W = 56 -> LATE; median of {50,60,70} = 60
+    # h_hit 11 (W = 264-176 = 88) is deliberately SKEWED so median != mean: median of
+    # {10, 20, 300} is 20 while the mean is 110. Without an asymmetric cell a
+    # mean-for-median mutant is unkillable -- {50,60,70} and {10,80} both agree.
+    [10 * F, 4, 3, 1, 11],
+    [20 * F, 4, 3, 1, 11],
+    [300 * F, 4, 3, 1, 11],   # W = 88 -> LATE
+    # h_hit 2 (W = 232) with a DEEP entry_row 15 (fall budget 13*15 = 195). 210 frames
+    # busts the fall budget but fits the window, so the two budgets disagree on this
+    # one decision. Without it, every cell above happens to be scored the same way by
+    # either budget and a "table uses the fall budget" mutant is unkillable.
+    [210 * F, 15, 3, 1, 2],
+]
+rep2 = M.analyze([{"seed": 8, "lat": LAT2}])
+bh = rep2["by_h_hit"]
+check("by_h_hit keys are the h_hit values 2, 11, 12, 13, not the max_h 3",
+      sorted(bh, key=int) == ["2", "11", "12", "13"])
+check("by_h_hit['2'] scores against the WINDOW (232 f), not the fall budget (195 f)",
+      bh["2"]["n"] == 1 and bh["2"]["late"]["silicon"] == 0
+      and bh["2"]["window_frames"] == 232)
+check("by_h_hit['11'] median == 20.0, NOT the mean 110.0",
+      bh["11"]["median_frames_silicon"] == 20.0)
+check("by_h_hit['11'] n=3 late_si=1 W=88",
+      bh["11"]["n"] == 3 and bh["11"]["late"]["silicon"] == 1
+      and bh["11"]["window_frames"] == 88)
+check("by_h_hit['12'] n=2 late_si=1 W=72",
+      bh["12"]["n"] == 2 and bh["12"]["late"]["silicon"] == 1
+      and bh["12"]["window_frames"] == 72)
+check("by_h_hit['13'] n=3 late_si=2 W=56 (50 f fits, 60 and 70 do not)",
+      bh["13"]["n"] == 3 and bh["13"]["late"]["silicon"] == 2
+      and bh["13"]["window_frames"] == 56)
+check("by_h_hit['13'] median silicon frames == 60.0",
+      bh["13"]["median_frames_silicon"] == 60.0)
+check("by_h_hit['12'] median silicon frames == 45.0 (even case averages 10 and 80)",
+      bh["12"]["median_frames_silicon"] == 45.0)
+# sim-lockstep is 1.5714x cheaper, so the SAME clocks must be late less often. 80 f
+# silicon = 50.91 f sim, which fits the 72 f window: the domain split has to survive
+# into this table too, or a silicon-only claim could be quoted from a sim number.
+check("by_h_hit['12'] late_sim == 0 (same decision, other domain, fits)",
+      bh["12"]["late"]["sim_lockstep"] == 0)
+# Unscorable releases must not appear as an h_hit entry at all (they have no window).
+check("by_h_hit has no entry for the -1 releases in the first fixture",
+      "-1" not in rep["by_h_hit"])
+check("by_h_hit n sums to n_window_scored (nothing dropped, nothing double-counted)",
+      sum(e["n"] for e in bh.values()) == rep2["silicon"]["n_window_scored"])
+
 # --- height bands ---------------------------------------------------------------
 check("band(0)=0-4 band(4)=0-4 band(5)=5-8 band(8)=5-8 band(9)=9-12 "
       "band(12)=9-12 band(13)=13+ band(16)=13+",

@@ -116,6 +116,17 @@ def garbage_window_frames(h_hit: int) -> int:
     return GARBAGE_WINDOW_BASE - GARBAGE_WINDOW_PER_H * h_hit
 
 
+def _median(xs):
+    """Median with the even case averaged -- 0 on an empty list is never reached
+    (by_h_hit only builds an entry when a decision is added to it)."""
+    s = sorted(xs)
+    n = len(s)
+    if n == 0:
+        return 0.0
+    m = n // 2
+    return s[m] if n % 2 else 0.5 * (s[m - 1] + s[m])
+
+
 def band_of(h: int) -> str:
     for lo, hi in HEIGHT_BANDS:
         if lo <= h <= hi:
@@ -153,6 +164,7 @@ def analyze(rows):
             "max_frames": 0.0,
         }
     worst = []
+    by_h = {}                    # exact h_hit -> the #92 headline table, see below
     for r in rows:
         lat = r.get("lat")
         if lat is None:
@@ -196,7 +208,29 @@ def analyze(rows):
                         if fr[d] > win:
                             out[d]["late_vs_window"] += 1
                             b["late_window"][d] += 1
+                    e = by_h.setdefault(
+                        h_hit, {"n": 0, "late": {"silicon": 0, "sim_lockstep": 0},
+                                "fr_si": []})
+                    e["n"] += 1
+                    e["fr_si"].append(fr["silicon"])
+                    for d in per_domain:
+                        if fr[d] > win:
+                            e["late"][d] += 1
     out["bands"] = bands
+    # EXACT h_hit, not the 13+ band. #92's headline ("all 186 decisions at h<=12 finish
+    # inside the window; 25/80/100/100% late at h=13/14/15/16") came from this breakout,
+    # NOT from the bands above -- and the bands key on max_h, a different variable from
+    # the h_hit the window is set by. Reproducing that headline needs this table, so it
+    # lives in the gated module rather than in a one-off script beside it.
+    out["by_h_hit"] = {
+        str(h): {
+            "n": v["n"],
+            "window_frames": garbage_window_frames(h),
+            "late": v["late"],
+            "median_frames_silicon": round(_median(v["fr_si"]), 3),
+        }
+        for h, v in sorted(by_h.items())
+    }
     worst.sort(reverse=True)
     out["worst_fall_overruns_silicon"] = [
         {"overrun_frames": o, "seed": s, "clocks": c, "entry_row": e, "max_h": h}
@@ -252,6 +286,12 @@ def main():
               f"pg_unscorable={b['n_window_unscorable']:3d} "
               f"late_win_si={b['late_window']['silicon']:3d} "
               f"late_win_sim={b['late_window']['sim_lockstep']:3d}")
+    print("by EXACT h_hit (the window's own variable):")
+    for h, e in rep["by_h_hit"].items():
+        print(f"  h_hit {h:>2}: n={e['n']:5d} W={e['window_frames']:4d}f "
+              f"late_si={e['late']['silicon']:4d} "
+              f"late_sim={e['late']['sim_lockstep']:4d} "
+              f"median_si={e['median_frames_silicon']}f")
     if rep["worst_fall_overruns_silicon"]:
         print("worst silicon fall overruns (frames over budget):")
         for w in rep["worst_fall_overruns_silicon"]:

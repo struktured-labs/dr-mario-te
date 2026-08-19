@@ -173,6 +173,25 @@ def garbage_hit_h(h_before, cols):
     return min(h_before[c] for c in cols) if cols else -1
 
 
+def garbage_hit_h_legacy(h_before, h_after):
+    """The PRE-#124 quantity, reproduced verbatim, for side-by-side capture only.
+
+    `max(hit) if hit else max(h_after)` where `hit` is INFERRED from the board as the
+    columns whose height changed -- all three defects at once (max not min, post-settle
+    heights not pre-settle, inferred columns not the injector's own draw). Nothing reads
+    this for a window; it exists so one run carries BOTH definitions on the SAME releases.
+
+    Why that matters: #124 established that no pre-fix capture can be repaired by
+    re-analysis, which also means a fresh corrected run cannot be POOLED with, or
+    differenced against, the old pilot's file -- different games, different firmware.
+    Capturing both here makes the size of the correction a PAIRED, within-release
+    measurement instead of a cross-file guess, and it is the only available check that
+    the fix is not INERT on this corpus: on a flat stack the two definitions coincide,
+    which is exactly why synthetic boards never exposed the defect."""
+    hit = [i for i in range(len(h_after)) if h_after[i] != h_before[i]]
+    return max(h_after[i] for i in hit) if hit else max(h_after)
+
+
 GARBAGE_MIN_PILLS = 25          # reach_root_ab.GARBAGE_MIN_PILLS, not re-chosen here
 DIES_AHEAD_VIRUS_THRESHOLD = 12  # reach_root_ab.DIES_AHEAD_VIRUS_THRESHOLD
 
@@ -292,6 +311,8 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
     lat = []               # per-decision latency capture, see the docstring
     pending_pg = 0         # 1 iff the NEXT decision sits at a release+settle edge
     pending_gh = -1        # min PRE-garbage height over the hit columns; -1 = unknown
+    h_legacy = []          # [[h_corrected, h_prefix], ...] per release -- see
+                           # garbage_hit_h_legacy. Report-only, feeds no decision.
 
     for _ in range(max_pills):
         if env.board.virus_count() == 0:
@@ -401,6 +422,12 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
                     _n_cells, gcols = model.sample(seed, gp)
                     pending_pg = 1
                     pending_gh = garbage_hit_h(h_before, gcols)
+                    # Paired legacy capture (#136). Kept OUT of `lat` so the five-field
+                    # row contract every reader unpacks positionally is untouched; it
+                    # rides its own list, one entry per release, in release order.
+                    h_legacy.append([pending_gh,
+                                     garbage_hit_h_legacy(h_before,
+                                                          col_heights(env.board.color))])
             if env.board.virus_count() == 0:
                 res = "clear"
                 break
@@ -423,6 +450,7 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
         "garbage": garbage,
         "clocks": clocks,
         "lat": lat,
+        "h_legacy": h_legacy,
         "exec_mode": exec_mode, "pressure": pressure,
         "fw_md5": cosim.fw_md5,
     }

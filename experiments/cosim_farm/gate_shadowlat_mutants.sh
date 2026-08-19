@@ -82,6 +82,40 @@ mut M5_dead_band_counter \
 mut M6_base_280 \
   'GARBAGE_WINDOW_BASE = 264' \
   'GARBAGE_WINDOW_BASE = 280'
+# --- by_h_hit table (#136) -------------------------------------------------------
+# M7: THE #124 CONFLATION ITSELF -- key the per-h table on max_h, the variable the
+# BANDS use, instead of h_hit, the variable the window is set by. This is the exact
+# substitution that produced the stale pilot, so the gate has to be able to see it.
+mut M7_key_on_max_h \
+  '                    e = by_h.setdefault(
+                        h_hit,' \
+  '                    e = by_h.setdefault(
+                        max_h,'
+# M8: late counted against the fall budget instead of the window inside the table
+# (aggregate late_vs_window stays correct, so only the new table can catch it).
+mut M8_wrong_budget_in_table \
+  '                    for d in per_domain:
+                        if fr[d] > win:
+                            e["late"][d] += 1' \
+  '                    for d in per_domain:
+                        if fr[d] > fall_budget_frames(entry_row):
+                            e["late"][d] += 1'
+# M9: silicon frames written into the table for BOTH domains -- a sim-domain claim
+# would then silently quote silicon lateness (the domain trap, table-local).
+mut M9_domain_collapse \
+  '                    for d in per_domain:
+                        if fr[d] > win:
+                            e["late"][d] += 1' \
+  '                    for d in per_domain:
+                        if fr["silicon"] > win:
+                            e["late"][d] += 1'
+# M10: median replaced by the mean. This was EQUIVALENT on the first two fixture cells
+# ({10,80} -> 45 either way; {50,60,70} -> 60 either way), so a skewed cell
+# ({10,20,300}: median 20, mean 110) was added to the fixture to make it killable
+# rather than dropping it -- an unkillable mutant is a fact about the fixtures.
+mut M10_mean_not_median \
+  '    return s[m] if n % 2 else 0.5 * (s[m - 1] + s[m])' \
+  '    return sum(s) / n'
 
 echo
 if [ $fails -ne 0 ]; then
