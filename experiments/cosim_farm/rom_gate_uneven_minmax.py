@@ -33,6 +33,18 @@ branch on a tie -- flagged by its own author before anyone quoted it. Here coinc
 is detected explicitly and D can only ever report INVARIANT HELD or a failure. It is the
 control that demonstrates the blind spot, not evidence against H_max.
 
+PROVENANCE OF THE TWO PATH DEFECTS -- corrected 2026-08-19 at the original author's
+insistence, because getting this backwards in a thread about provenance would be the
+same corruption in miniature:
+  * THEIRS: a single hardcoded absolute path into a sibling worktree (the #118/#127
+    literal hazard). Replaced here by the ordered search below.
+  * MINE: the silent ROM fallback. It did NOT exist in the original -- with one literal
+    and no override there was nothing to fall through TO. It arrived WITH my ordered
+    search, which treated DRMARIO_ROM as merely one more candidate, so pointing it at a
+    missing file silently measured a DIFFERENT ROM and printed a confident PASS. Caught
+    by the skip test rather than by reading the code. Fixing one hazard class introduced
+    another; that is the note worth keeping, not the credit.
+
 Run: /home/struktured/projects/dr-mario-mods/.venv/bin/python rom_gate_uneven_minmax.py
 Exit: 0 pass · 1 a case failed · 77 SKIPPED (nes_py or ROM absent -- never a silent pass)
 """
