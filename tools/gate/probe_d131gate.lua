@@ -139,12 +139,20 @@ end, emu.callbackType.exec, 0x97AD)
 -- callbacks are always installed (they cost nothing on arms that never hit
 -- them) and every hit is logged with its frame, alongside the value of $F5
 -- observed at the entry gate $97A7 itself.
+-- These three are ALSO the whole population for task #134 (the silicon
+-- soft-lock hazard): a driver START that lands while $0046 is 4 pauses the
+-- match on a cart that cannot be unpaused (#133), with no harness involved.
+-- So each hit records the LIVE mode at the instant of the store -- navInMode4
+-- is a direct count of the hazard firing, and a run with navInMode4 == 0 over
+-- many matches is a real (if one-cart, one-seed) bound on it.
 local navStart = { [0x8173] = "nav$8173", [0x822C] = "nav$822C", [0x8329] = "nav$8329" }
-local navHits, navLog = 0, {}
+local navHits, navInMode4, navLog = 0, 0, {}
 for addr, name in pairs(navStart) do
   emu.addMemoryCallback(function()
     navHits = navHits + 1
-    if #navLog < 64 then navLog[#navLog + 1] = string.format("%s@f%d", name, curFrame) end
+    local m = rd(0x46)
+    if m == 4 then navInMode4 = navInMode4 + 1 end
+    if #navLog < 64 then navLog[#navLog + 1] = string.format("%s@f%d/m%d", name, curFrame, m) end
   end, emu.callbackType.exec, addr)
 end
 local gateSeen, gateLog = 0, {}
@@ -172,7 +180,7 @@ local function dump_state(why)
     rd(P1Y), rd(P2X), rd(P2Y), rd(P2STEP), rd(P2GRAV)))
   log(string.format("  pauseIters=%d entryHits=%d entryFrame=%d exitTaken=%d exitFrame=%d servedN=%d",
     pauseIters, entryHits, entryFrame, exitTaken, exitFrame, servedN))
-  log(string.format("  navStartHits=%d  %s", navHits, table.concat(navLog, " ")))
+  log(string.format("  navStartHits=%d navInMode4=%d  %s", navHits, navInMode4, table.concat(navLog, " ")))
   log(string.format("  entryGateSeen=%d  %s", gateSeen, table.concat(gateLog, " ")))
 end
 
@@ -280,9 +288,9 @@ emu.addEventCallback(function()
         verdict = resumed and "RESUMED" or "STILL_WEDGED"
         dump_state("POST")
         log(string.format("SUMMARY tag=%s arm=%s orient=%d verdict=%s wedgeFrame=%d exitTaken=%d " ..
-            "distinctP2Y=%d pauseIters=%d entryHits=%d entryFrame=%d servedN=%d frames=%d goes=%d dones=%d",
+            "distinctP2Y=%d pauseIters=%d entryHits=%d entryFrame=%d servedN=%d navStartHits=%d navInMode4=%d frames=%d goes=%d dones=%d",
             TAG, ARM, ORIENT, verdict, wedgeFrame, exitTaken, resumeSeen, pauseIters,
-            entryHits, entryFrame, servedN, frame, S.goes, S.dones))
+            entryHits, entryFrame, servedN, navHits, navInMode4, frame, S.goes, S.dones))
         finished = true; logf:flush(); emu.stop(0)
       end
     end
@@ -293,9 +301,9 @@ emu.addEventCallback(function()
     verdict = (wedgeFrame < 0) and "NO_WEDGE" or "TIMEOUT"
     dump_state("MAXF")
     log(string.format("SUMMARY tag=%s arm=%s orient=%d verdict=%s wedgeFrame=%d exitTaken=%d " ..
-        "distinctP2Y=%d pauseIters=%d entryHits=%d entryFrame=%d servedN=%d frames=%d goes=%d dones=%d",
+        "distinctP2Y=%d pauseIters=%d entryHits=%d entryFrame=%d servedN=%d navStartHits=%d navInMode4=%d frames=%d goes=%d dones=%d",
         TAG, ARM, ORIENT, verdict, wedgeFrame, exitTaken, resumeSeen, pauseIters,
-        entryHits, entryFrame, servedN, frame, S.goes, S.dones))
+        entryHits, entryFrame, servedN, navHits, navInMode4, frame, S.goes, S.dones))
     finished = true; logf:flush(); emu.stop(0)
   end
 end, emu.eventType.endFrame)
