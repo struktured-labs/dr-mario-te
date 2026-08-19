@@ -33,8 +33,12 @@ own `flag_snapshot`), and the firmware then adds a per-candidate `+0..3` before 
 
 A pair shares `col` and differs only in bit 0 of `o4`, which is **bit 3 of `t`**, so
 `j(partner) = j(member) ^ 1` — the two jitters are always `{e, e+1}` and the odd one wins.
-Which member that is comes out as `bit3(seed) ^ bit0(col)`, i.e. **fixed per column**, half
-the columns each way. The closed form matched the observed outcome on **3157/3157** rows.
+Which member that is comes out as `bit0(seed) ^ bit3(seed) ^ bit0(col) == 0`, i.e. **fixed
+per column**, half the columns each way. A real cart seed is always ODD
+(`SEED2 = (NAV_T | 1) ^ $A4`, and `$A4` has bit 0 clear), which collapses it to
+`bit3(seed) ^ bit0(col) == 1` — the form the rig used, matching the observed outcome on
+**3157/3157** rows. ⚠ The reduced form is valid ONLY for odd seeds; I first wrote it as
+though it were general and `test_jitter_pairing.py` caught that on its first run.
 
 ⚠ **This also means the offline champion and the cart are different deciders on ~49 % of
 double-capsule plies.** Any fidelity or co-sim comparison that leaves `DRSEED` out of the
@@ -116,6 +120,8 @@ flag states over the same boards, at realistic non-zero tie-break seeds.
 | E tempo | rotations-from-spawn strictly decrease |
 | F binds | the flag actually fired (non-vacuity) |
 | G inert@s0 | with the jitter off, the flag changes nothing |
+| H mailbox | the ANYTIME mailbox (`$6135`) agrees with the zero page — the cart reads the mailbox, not `D_BC`/`D_BO` |
+| I publstream | EVERY value the mailbox holds during a search is canonical (or `0xFF`, the invalid marker the driver peels off) |
 
 ⚠ **The first cut of this gate was six-for-six green while measuring nothing**, because it
 left the tie-break seed at 0 — where the base search already picks the cheap member and the
