@@ -73,3 +73,22 @@ GO under the inherited routing is a *recommendation to consider*, not a ship.
 Committed with `tmp/d114/` absent, no v3 run directories, and no v3 results file on disk. The
 commit that adds this file contains no data. A pre-registration nobody can date is just an
 assertion ([[dr-mario-gate-standard-killed-mutants]]).
+
+## ADDENDUM G — mutant seed-set size (registered before the surviving set is known)
+
+v2 says the mutants are "re-scored on the same surviving seed set" without fixing its SIZE.
+Taken literally that is 4 mutants × 2 orients × up to 16 seeds = up to 128 cells, which does
+not fit tonight's window. Rather than decide that after seeing the survivors, it is fixed here:
+
+**Mutants are scored on the FIRST 3 SURVIVING SEEDS in ascending numeric order**, on both
+halves (orient 1 = the win, orient 0 = the delta-3 control).
+
+Why a subset is legitimate here, and why it is the SAFE direction: a mutant is killed by
+FAILING a predicate on the cells it is scored on. Fewer seeds can only make a mutant HARDER to
+kill, never easier — an unkilled mutant counts as SURVIVING and VOIDS the verdict (v2). So this
+choice is conservative with respect to the conclusion I would prefer, and it cannot manufacture
+a GO. If any mutant survives its 3 seeds, the registered response is to widen that mutant to
+the full surviving set before reading anything, NOT to declare it killed.
+
+Committed while the main sheet is still running and before any mutant cell exists: at this
+commit `tmp/d114/` contains only `d114_{off,on}_o1_*` directories and no `d114_m*` directory.
