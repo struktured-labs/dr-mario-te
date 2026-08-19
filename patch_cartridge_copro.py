@@ -380,6 +380,13 @@ WEAVE_LIM = int(_os.environ.get("DRWEAVELIM", "40"))   # hook-cycles of no-move 
 # and a MINIMUM-THINK gate (no lateral/orient commit until DONE or MIN_THINK hooks of search).
 # DRROTFIX=0 reproduces the pre-fidelity byte-exact emission (A/B + regression parity).
 ROTFIX = _os.environ.get("DRROTFIX", "1") != "0"
+# DRROTDIR (default OFF, task #114): shortest-direction rotation. The rotation pre-phase has only
+# ever pressed A (= DEC $A5 = CCW at $8E2B), so reaching game orient 1 from spawn costs THREE
+# rotations where B (= INC $A5 = CW, same handler) reaches it in one. Requires ROTFIX because the
+# pre-phase it edits only exists there; DRROTDIR=0 rebuilds byte-exact (every add is guarded).
+# ⚠ default MUST stay off until gated -- a default-on flag decouples artifact from recipe
+# ([[pocket-rbf-md5-gate-unsound]]).
+ROTDIR = (_os.environ.get("DRROTDIR", "0") != "0") and ROTFIX
 # minimum-think gate: hooks of search (WDOG2) the driver waits before committing laterally /
 # locking orient. ~5 hooks/frame. Default 25 (~5f). Was 90 (~18f), a guard against the shallow-argmax
 # slam back when searches were slow; with K_OPEN=255 (wait-for-DONE) + RECOMMIT (orient re-open at DONE
@@ -2653,6 +2660,25 @@ def build_main(level=11, speed=1):
         #  That is the feasibility lock -- a late candidate can't re-rotate a low/flush capsule.)
         a.ins16("LDA_abs", ROT_DONE2); a.br("BNE", "mv_p2")           # committed -> column only
         a.ins16("LDA_abs", 0x03A5); a.ins16("CMP_abs", TGT_O2); a.br("BEQ", "p2_orient_ok")
+        if ROTDIR:
+            # DRROTDIR: SHORTEST-DIRECTION rotation. The executor has always pressed only A, and
+            # A is DEC $A5 in the ROM ($8E2B), so the orient ring is walked one way only: from
+            # spawn (game orient 0) target 3 costs 1 rotation, 2 costs 2, and **1 costs 3**. B is
+            # INC $A5 in the same handler, so the far side is one press away.
+            #   delta = (TGT_O2 - $03A5) & 3, and delta != 0 here (the CMP above peeled that off)
+            #   delta 1 -> B (CW, 1 press)      delta 3 -> A (CCW, 1 press)
+            #   delta 2 -> 2 presses either way; keep A so the 180 path is bit-for-bit the old one
+            # Measured cost of the old behaviour (constant-orient ladder, paired seeds, cart
+            # 9fefaedb): 77.79 / 78.99 / 80.48 / 81.07 f/pill at 0/1/2/3 CCW rotations = ~1.09
+            # frames per rotation. So this is worth ~2.2 f/pill on the delta-1 orient and nothing
+            # on the other three -- which is exactly what makes it gateable: three arms MUST NOT
+            # move.
+            a.ins16("LDA_abs", TGT_O2); a.ins("SEC"); a.ins16("SBC_abs", 0x03A5)
+            a.ins("AND_imm", 0x03)
+            a.ins("CMP_imm", 0x01); a.br("BNE", "p2_rot_ccw")         # delta 2 or 3 -> A (CCW)
+            a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)             # edge (held=0) so B rotates,
+            a.ins("LDA_imm", 0x40); a.ins("STA_zp", 0xF6); a.jmp("act_p1")   # B = CW = INC $A5
+            a.label("p2_rot_ccw")
         a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)                # edge (held=0) so A rotates,
         a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF6); a.jmp("act_p1")   # under live gravity, no pin
         a.label("p2_orient_ok")                                       # orient reached; think gate:

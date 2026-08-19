@@ -11,12 +11,15 @@ PY=/home/struktured/projects/dr_mario_rl/tmp/venv/bin/python
 MESEN=/home/struktured/projects/dr-mario-mods/mesen2/bin/linux-x64/Release/Mesen
 RUN_MESEN=/home/struktured/projects/dr-mario-mods/run_mesen.sh
 SANDBOX=/home/struktured/projects/dr-mario-te/v8-source/tools/gate/mesen_sandbox_settings.json
-CART="$SRC/roms/drmario_tuck_cvc_mister.nes"
-CART_MD5=9fefaedba9a27ba10f058ac239eeb77d
+# Cart under test. Defaults to the reference CvC tuck cart; RW_CART/RW_CARTMD5 select an arm.
+# The md5 is ALWAYS checked -- an arm that silently ran the wrong cart is the whole hazard
+# ([[dr-mario-watchdog-mgl-silent-cart-fallback]]: filename is not provenance).
+CART="${RW_CART:-$SRC/roms/drmario_tuck_cvc_mister.nes}"
+CART_MD5="${RW_CARTMD5:-9fefaedba9a27ba10f058ac239eeb77d}"
 W=0x5200
 
 orient="${1:?orient 0..3}"; maxf="${2:?frames}"; seed="${RW_SEED:-114}"
-tag="rw_o${orient}_${maxf}_s${seed}"
+tag="rw_${RW_ARMTAG:-ref}_o${orient}_${maxf}_s${seed}"
 
 got=$(md5sum "$CART" | cut -d' ' -f1)
 [[ "$got" == "$CART_MD5" ]] || { echo "CART MD5 MISMATCH: $got != $CART_MD5" >&2; exit 2; }

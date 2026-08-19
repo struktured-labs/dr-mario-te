@@ -122,6 +122,10 @@ local prevMode, lvlPoked, seedPokedRound, round = -1, false, -1, 0
 local frozen, lastPy, wedges = 0, -1, 0
 local wedgeDumped = false
 local pr_prev, p1r_prev, rot_prev, a5_prev = 0, 0, 0, 0
+-- ROTATION-BUTTON CENSUS (#114). $F6 is P2's RAW pad byte; the driver writes $80 (A = DEC $A5
+-- = CCW) or, on a DRROTDIR cart, $40 (B = INC $A5 = CW).  Counting them is the NOT-INERT check:
+-- a DRROTDIR=0 cart must show pressB == 0 by construction, so this cannot pass vacuously.
+local pressA, pressB = 0, 0
 
 local function dump_board(base, name)
   for r = 0, 15 do
@@ -171,6 +175,9 @@ emu.addEventCallback(function()
       rd(P2X), py, rd(P2O), rd(P2STEP), rd(P2GRAV),
       rd(0xF5), rd(0xF6), rd(0xF7), rd(0xF8), rd(0x0381), rd(0x0382), S.ror))
 
+    local f6 = rd(0xF6)
+    if f6 == 0x80 then pressA = pressA + 1 elseif f6 == 0x40 then pressB = pressB + 1 end
+
     if py == lastPy then frozen = frozen + 1 else frozen = 0; lastPy = py end
     if frozen == STALLN and not wedgeDumped then
       wedgeDumped = true; wedges = wedges + 1
@@ -193,8 +200,8 @@ emu.addEventCallback(function()
 
   if frame >= MAXF then
     log(string.format("SUMMARY tag=%s orient=%d frames=%d goes=%d dones=%d wedges=%d " ..
-        "p2x_reads=%d p1x_reads=%d rot8E2B=%d a5_writes=%d",
-        TAG, ORIENT, frame, S.goes, S.dones, wedges, p2x_reads, p1x_reads, rot_entries, a5_writes))
+        "p2x_reads=%d p1x_reads=%d rot8E2B=%d a5_writes=%d pressA=%d pressB=%d",
+        TAG, ORIENT, frame, S.goes, S.dones, wedges, p2x_reads, p1x_reads, rot_entries, a5_writes, pressA, pressB))
     csvf:flush(); csvf:close(); logf:close(); emu.stop(0)
   end
 end, emu.eventType.endFrame)
