@@ -113,6 +113,24 @@ emu.addMemoryCallback(function() a5_writes = a5_writes + 1 end, emu.callbackType
 -- ================= input =================
 local modeCache = -1
 local inCur, inUntil = nil, -1
+-- #135 VALIDITY CENSUS, added for the #114 v3 re-run (PREREG_ROTDIR_V3).  The #131 guard
+-- below is UNCHANGED -- this only COUNTS it, so an arm's `wedges=0` can be shown to be
+-- EARNED rather than assumed.  `blocked` is the non-vacuity control: an arm that never
+-- blocked anything never exercised the guard, and v3 drops that cell as INVALID instead of
+-- reading it as clean.  D135_LEAK=1 restores the pre-fix behaviour (killed mutant) and must
+-- make leaked > 0.
+local D135_LEAK = (os.getenv("D135_LEAK") == "1")
+local D135_OUT  = os.getenv("D135_OUT")
+local d135_blocked, d135_leaked = 0, 0
+local function d135_report()
+  if not D135_OUT then return end
+  local f = io.open(D135_OUT .. "/d135_census.txt", "w")
+  if not f then return end
+  f:write(string.format("D135 blocked=%d leaked=%d guard=%s\n",
+    d135_blocked, d135_leaked, D135_LEAK and "OFF" or "ON"))
+  f:close()
+end
+d135_report()   -- write at load: "probe never ran" must not look like "no hazard seen"
 emu.addEventCallback(function()
   if not (inCur and frame < inUntil) then return end
   -- #131: gate on the LIVE mode, and exclude 8 as well as 4.  modeCache is
@@ -124,7 +142,16 @@ emu.addEventCallback(function()
   -- the executor rewrites $F5 every hook from a vocabulary with no START), so
   -- the run wedges forever.  Mode 8 is the only predecessor of mode 4.
   local live = rd(0x46)
-  if live == 4 or live == 8 then return end
+  if live == 4 or live == 8 then
+    if D135_LEAK then
+      d135_leaked = d135_leaked + 1
+      if d135_leaked <= 10 or d135_leaked % 500 == 0 then d135_report() end
+    else
+      d135_blocked = d135_blocked + 1
+      if d135_blocked <= 10 or d135_blocked % 500 == 0 then d135_report() end
+      return
+    end
+  end
   emu.setInput(inCur, 0)
 end, emu.eventType.inputPolled)
 local function press(i, d) inCur = i; inUntil = frame + (d or 4) end
