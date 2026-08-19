@@ -52,8 +52,22 @@ Budgets priced against:
 
       PROVENANCE: jsonl written before #124 carries a DIFFERENT h_hit quantity (max
       over board-inferred hits, post-settle heights) and never emits -1. Such files
-      still parse, so nothing here can detect them. Do not pool pre- and post-fix
-      runs, and do not re-publish a pre-fix late_vs_window without a re-run.
+      still parse and look entirely healthy, so nothing here can detect them.
+
+      ⚠ A pre-fix file CANNOT BE REPAIRED BY RE-ANALYSIS -- not by this module, not
+      by any other. A lat row is exactly five fields, and the corrected h_hit needs
+      the volley's COLUMN DRAW plus the PRE-GARBAGE per-column heights. Neither is
+      in the file (verified on prestart_pilot.jsonl: 1500/1500 lat rows five wide,
+      `garbage` only a scalar cell count). The draw is deterministic in
+      (seed, pills_placed), but the release's pills_placed is not recorded either,
+      and the heights need board state regardless. Re-running the capture is the
+      only route. Read "do not pool" as "the data is not there", NOT as "re-analyze
+      more carefully".
+
+      Specifically NOT covered by the S0-A recompute (n=23,792): that screen carries
+      no latencies, so it re-derives the h_hit DISTRIBUTION only. Every
+      late_vs_window statistic pairs a per-decision latency with a per-release
+      window and has never been recomputed by anyone.
 
 All output is COUNTS (n late / n total per band), not adjectives. Constants are
 module-level so test_lat_conversion.py can gate them with hand-computed cases.
