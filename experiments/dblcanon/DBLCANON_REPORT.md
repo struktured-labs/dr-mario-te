@@ -213,30 +213,51 @@ this lane inherited — one week later, from the opposite direction.
 
 ## ⚠ The DRDBLCANON × DRTUCK combination is NOT ESTABLISHED
 
-nmi-fix is right that flag interactions must be gated as combinations — this project has two
-precedents (DRPRESTART×DRTUCK is a wedge pair; DRRTIVEC×DRMMC1RST brick each other two ways,
-each having passed its own mutants). `DRCOPRO_TUCKV3=1` with `DRDBLCANON` at 0 and 1 both
-build and pass py65 validation, but **that is not a combination gate and I am not reporting it
-as one.**
+### First, a distinction I got wrong and nmi-fix caught
 
-`probe_tuck_combo.py` asks the prior question first, because
-`dr-mario-tuck-mailbox-vacuous-gate` says the stock rig never serves the tuck mailbox:
+**`DRTUCK` and `DRCOPRO_TUCKV3` are different flags in different artifacts.**
+
+| flag | artifact | what it gates |
+|---|---|---|
+| `DRTUCK` | **cart** — `patch_cartridge_copro.py:217` | the tuck **executor** in the driver |
+| `DRCOPRO_TUCKV3` / `DRCOPRO_TUCK` | **copro firmware** — `build_copro_d3.py` | the tuck **enumerator/scorer** |
+
+My earlier note said I had "checked the combination" because `DRCOPRO_TUCKV3=1` builds and
+validates with `DRDBLCANON` at 0 and 1. That is a real check but it is **not** the arm the
+precedent demands, because it never varies `DRTUCK` at all. The verdict below was right; the
+flag I named was not.
+
+### Why a build check could not have settled it anyway
+
+The `DRPRESTART`×`DRTUCK` wedge was **not** found by a build failing. It was found by an
+18k-frame probe of actual cart play: 83 pills and 171 pills for each flag alone, **9 pills and
+a hang together**. A build that assembles says nothing about that failure mode. The required
+arm is `DRDBLCANON=1 ∧ DRTUCK=1` **exercised in play**, and it is open.
+
+### And the firmware-side combination cannot be gated in this rig either
+
+`probe_tuck_combo.py` asks the prior question, because `dr-mario-tuck-mailbox-vacuous-gate`
+says the stock rig never serves the tuck mailbox:
 
     double decisions compared: 24
       DRCOPRO_TUCKV3 changed the decision : 0     <-- the tuck path never fired
       DRDBLCANON changed the decision     : 12
       DRDBLCANON changed it WITH tuck on  : 12
 
-**The tuck path is INERT in this harness**, so a combination arm measured here would be
-vacuous by construction — it would go green while establishing nothing, which is the exact
-failure this lane already documented for the `(v, v+2)` key. The combination must be gated on
-a rig that actually serves the tuck mailbox, or on silicon, **before any cart carries both
-flags.** Recorded as a blocker on the cart, not on the branch.
+**The firmware tuck path is INERT here**, so even the firmware-side combination arm would be
+vacuous by construction — green while establishing nothing, the same shape as the `(v, v+2)`
+inert detector this lane already documented.
 
-Also load-bearing for whoever builds that cart (nmi-fix's second trap): the CvC tuck line is
-at a 6502 **branch-range cliff** — the full `m-v8auto` set with `DRPRESTART=0` fails to
-assemble ("branch out of range to not_play"), which is why `9fefaedb` was built UP from the
-`7611d54b` CvC base. Build up from `7611d54b`, not down from `m-v8auto`.
+⇒ **Two open arms, both blockers on any cart carrying both flags, neither on this branch:**
+(1) `DRDBLCANON` × `DRTUCK` exercised in play; (2) the firmware-side pair on a rig that
+actually serves the tuck mailbox, or on silicon.
+
+Also load-bearing for whoever builds that cart: the CvC tuck line is at a 6502 **branch-range
+cliff** — the full `m-v8auto` set with `DRPRESTART=0` fails to assemble ("branch out of range
+to not_play"), which is why `9fefaedb` was built UP from the `7611d54b` CvC base. Build up
+from `7611d54b`, not down from `m-v8auto`. (My change adds 16 bytes inside the copro
+firmware's search, not the cart emitter, so it should not move the cart's branch ranges at
+all — a prediction, which fails loudly at assembly if wrong.)
 
 ## Side findings worth banking
 
