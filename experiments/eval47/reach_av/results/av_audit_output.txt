@@ -1,0 +1,25 @@
+=== A_v PRE-FLIGHT AUDIT  kernel_hash=5bc91049d1946531 ===
+       clean: n=2336  mean rdy_ext  41.014 ->  31.143   unreachable share  24.1%   boards touched 1898/2336 (81.2%)
+      bursty: n=3860  mean rdy_ext  27.026 ->  20.067   unreachable share  25.7%   boards touched 2910/3860 (75.4%)
+    COMBINED: n=6196  mean rdy_ext  32.300 ->  24.243   unreachable share  24.9%   boards touched 4808/6196 (77.6%)
+
+  scale-match ratio E[rdy_ext | reach] / E[rdy_ext | no reach] = 0.7506
+    A_v at w=  8  <->  reach-OFF control at w=  6.004 (mean contribution    193.94 both)
+    A_v at w= 16  <->  reach-OFF control at w= 12.009 (mean contribution    387.89 both)
+    A_v at w= 24  <->  reach-OFF control at w= 18.013 (mean contribution    581.83 both)
+    A_v at w= 32  <->  reach-OFF control at w= 24.018 (mean contribution    775.78 both)
+    A_v at w= 48  <->  reach-OFF control at w= 36.027 (mean contribution   1163.67 both)
+
+=== ARGMAX-FLIP (full depth-3, ws=20, n=1200 real decisions, workers=6) ===
+  scalar-only w_rdyext=  6.004: argmax flips 47/1200 = 3.92%
+  scalar-only w_rdyext= 12.009: argmax flips 92/1200 = 7.67%
+  scalar-only w_rdyext= 18.013: argmax flips 232/1200 = 19.33%
+  scalar-only w_rdyext= 24.018: argmax flips 319/1200 = 26.58%
+  scalar-only w_rdyext= 36.027: argmax flips 410/1200 = 34.17%
+  A_v         w_rdyext=  8.000: argmax flips 46/1200 = 3.83%
+  A_v         w_rdyext= 16.000: argmax flips 211/1200 = 17.58%
+  A_v         w_rdyext= 24.000: argmax flips 316/1200 = 26.33%
+  A_v         w_rdyext= 32.000: argmax flips 377/1200 = 31.42%
+  A_v         w_rdyext= 48.000: argmax flips 460/1200 = 38.33%
+
+wrote results/av_audit.json

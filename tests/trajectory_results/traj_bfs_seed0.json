@@ -1,0 +1,17 @@
+{
+ "seed": 0,
+ "arm": "bfs",
+ "level": 11,
+ "result": "clear",
+ "pills": 128,
+ "n_fires": 5,
+ "fires": [
+  {"pill": 37, "target": 5, "rest": 9, "orient": 0, "approach": 4, "trigger": 9, "verified": true},
+  {"pill": 50, "target": 4, "rest": 11, "orient": 1, "approach": 3, "trigger": 11, "verified": true},
+  {"pill": 55, "target": 0, "rest": 13, "orient": 1, "approach": 1, "trigger": 12, "verified": true},
+  {"pill": 70, "target": 6, "rest": 12, "orient": 1, "approach": 5, "trigger": 12, "verified": true},
+  {"pill": 71, "target": 6, "rest": 12, "orient": 0, "approach": 5, "trigger": 12, "verified": true}
+ ],
+ "verification_failures": [],
+ "_reconstruction_note": "the live run crashed writing this file (numpy.bool_ not JSON-serializable, fixed in trajectory_fire_proof.py after this run) after the simulation itself had already completed successfully; every field here is copied verbatim from the run's own flush=True stdout log (traj_bfs_seed0.log), not re-derived or estimated."
+}

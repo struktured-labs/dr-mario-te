@@ -1,0 +1,10 @@
+{
+ "seed": 1,
+ "arm": "v3",
+ "level": 11,
+ "result": "trunc",
+ "pills": 300,
+ "n_fires": 0,
+ "fires": [],
+ "verification_failures": []
+}

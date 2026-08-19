@@ -1,0 +1,95 @@
+=== A_v DOSE-RESPONSE  kernel_hash=5bc91049d1946531  L11 n=300 wt=0 ws=20 model=bursty-v1.1 ===
+=== bursty v1.1 (honest, struktured-only): n_volleys=28 n_clears=89 volley_size_mean=2.679 ===
+  [RSS] reach=0 w=8.0 75/300: 4382 MB total python
+  [RSS] reach=0 w=8.0 150/300: 4032 MB total python
+  [RSS] reach=0 w=8.0 225/300: 4032 MB total python
+  [RSS] reach=0 w=8.0 300/300: 3842 MB total python
+  arm reach=0 w_rdyext=8.0 done (300 games)
+
+BASELINE (champion, reach=OFF w_rdyext=8, wt=0 ws=20): dies-ahead 30/300 = 10.00%   bad-ends 60/300 = 20.00%   clear 80.0%
+
+  [RSS] reach=1 w=8.0 75/300: 3837 MB total python
+  [RSS] reach=1 w=8.0 150/300: 3837 MB total python
+  [RSS] reach=1 w=8.0 225/300: 3837 MB total python
+  [RSS] reach=1 w=8.0 300/300: 3837 MB total python
+  arm reach=1 w_rdyext=8.0 done (300 games)
+                      A_v w_rdyext=8  n=300  dies-ahead 30/300=10.00% -> 29/300= 9.67% (delta +0.33 pts, disc b=26 c=25 N=51, p=1.0000)
+                                      bad-ends   60/300=20.00% -> 57/300=19.00% (delta +1.00 pts, disc b=44 c=41 N=85, p=0.8284)  clear 80.0%->81.0%
+  [RSS] reach=1 w=16.0 75/300: 3841 MB total python
+  [RSS] reach=1 w=16.0 150/300: 3841 MB total python
+  [RSS] reach=1 w=16.0 225/300: 3841 MB total python
+  [RSS] reach=1 w=16.0 300/300: 3841 MB total python
+  arm reach=1 w_rdyext=16.0 done (300 games)
+                     A_v w_rdyext=16  n=300  dies-ahead 30/300=10.00% -> 47/300=15.67% (delta -5.67 pts, disc b=24 c=41 N=65, p=0.0464)
+                                      bad-ends   60/300=20.00% -> 70/300=23.33% (delta -3.33 pts, disc b=41 c=51 N=92, p=0.3481)  clear 80.0%->76.7%
+  [RSS] reach=1 w=24.0 75/300: 3836 MB total python
+  [RSS] reach=1 w=24.0 150/300: 3836 MB total python
+  [RSS] reach=1 w=24.0 225/300: 3836 MB total python
+  [RSS] reach=1 w=24.0 300/300: 3836 MB total python
+  arm reach=1 w_rdyext=24.0 done (300 games)
+                     A_v w_rdyext=24  n=300  dies-ahead 30/300=10.00% -> 40/300=13.33% (delta -3.33 pts, disc b=27 c=37 N=64, p=0.2604)
+                                      bad-ends   60/300=20.00% -> 83/300=27.67% (delta -7.67 pts, disc b=41 c=64 N=105, p=0.0313)  clear 80.0%->72.3%
+  [RSS] reach=1 w=32.0 75/300: 3838 MB total python
+  [RSS] reach=1 w=32.0 150/300: 3838 MB total python
+  [RSS] reach=1 w=32.0 225/300: 3838 MB total python
+  [RSS] reach=1 w=32.0 300/300: 3838 MB total python
+  arm reach=1 w_rdyext=32.0 done (300 games)
+                     A_v w_rdyext=32  n=300  dies-ahead 30/300=10.00% -> 35/300=11.67% (delta -1.67 pts, disc b=26 c=31 N=57, p=0.5966)
+                                      bad-ends   60/300=20.00% -> 80/300=26.67% (delta -6.67 pts, disc b=40 c=60 N=100, p=0.0569)  clear 80.0%->73.3%
+  [RSS] reach=1 w=48.0 75/300: 3844 MB total python
+  [RSS] reach=1 w=48.0 150/300: 3844 MB total python
+  [RSS] reach=1 w=48.0 225/300: 3844 MB total python
+  [RSS] reach=1 w=48.0 300/300: 3844 MB total python
+  arm reach=1 w_rdyext=48.0 done (300 games)
+                     A_v w_rdyext=48  n=300  dies-ahead 30/300=10.00% -> 34/300=11.33% (delta -1.33 pts, disc b=26 c=30 N=56, p=0.6889)
+                                      bad-ends   60/300=20.00% -> 116/300=38.67% (delta -18.67 pts, disc b=33 c=89 N=122, p=0.0000)  clear 80.0%->61.3%
+  [RSS] reach=0 w=6.004 75/300: 3841 MB total python
+  [RSS] reach=0 w=6.004 150/300: 3841 MB total python
+  [RSS] reach=0 w=6.004 225/300: 3841 MB total python
+  [RSS] reach=0 w=6.004 300/300: 3841 MB total python
+  arm reach=0 w_rdyext=6.004 done (300 games)
+       SCALE-CTRL (no reach) w=6.004  n=300  dies-ahead 30/300=10.00% -> 34/300=11.33% (delta -1.33 pts, disc b=24 c=28 N=52, p=0.6778)
+                                      bad-ends   60/300=20.00% -> 61/300=20.33% (delta -0.33 pts, disc b=39 c=40 N=79, p=1.0000)  clear 80.0%->79.7%
+  [RSS] reach=0 w=12.009 75/300: 3840 MB total python
+  [RSS] reach=0 w=12.009 150/300: 3840 MB total python
+  [RSS] reach=0 w=12.009 225/300: 3840 MB total python
+  [RSS] reach=0 w=12.009 300/300: 3841 MB total python
+  arm reach=0 w_rdyext=12.009 done (300 games)
+      SCALE-CTRL (no reach) w=12.009  n=300  dies-ahead 30/300=10.00% -> 33/300=11.00% (delta -1.00 pts, disc b=25 c=28 N=53, p=0.7838)
+                                      bad-ends   60/300=20.00% -> 67/300=22.33% (delta -2.33 pts, disc b=42 c=49 N=91, p=0.5296)  clear 80.0%->77.7%
+  [RSS] reach=0 w=18.013 75/300: 3843 MB total python
+  [RSS] reach=0 w=18.013 150/300: 3843 MB total python
+  [RSS] reach=0 w=18.013 225/300: 3844 MB total python
+  [RSS] reach=0 w=18.013 300/300: 3844 MB total python
+  arm reach=0 w_rdyext=18.013 done (300 games)
+      SCALE-CTRL (no reach) w=18.013  n=300  dies-ahead 30/300=10.00% -> 25/300= 8.33% (delta +1.67 pts, disc b=28 c=23 N=51, p=0.5758)
+                                      bad-ends   60/300=20.00% -> 61/300=20.33% (delta -0.33 pts, disc b=45 c=46 N=91, p=1.0000)  clear 80.0%->79.7%
+  [RSS] reach=0 w=24.018 75/300: 3853 MB total python
+  [RSS] reach=0 w=24.018 150/300: 3853 MB total python
+  [RSS] reach=0 w=24.018 225/300: 3853 MB total python
+  [RSS] reach=0 w=24.018 300/300: 3853 MB total python
+  arm reach=0 w_rdyext=24.018 done (300 games)
+      SCALE-CTRL (no reach) w=24.018  n=300  dies-ahead 30/300=10.00% -> 39/300=13.00% (delta -3.00 pts, disc b=27 c=36 N=63, p=0.3135)
+                                      bad-ends   60/300=20.00% -> 94/300=31.33% (delta -11.33 pts, disc b=37 c=71 N=108, p=0.0014)  clear 80.0%->68.7%
+  [RSS] reach=0 w=36.027 75/300: 3853 MB total python
+  [RSS] reach=0 w=36.027 150/300: 3853 MB total python
+  [RSS] reach=0 w=36.027 225/300: 3853 MB total python
+  [RSS] reach=0 w=36.027 300/300: 3853 MB total python
+  arm reach=0 w_rdyext=36.027 done (300 games)
+      SCALE-CTRL (no reach) w=36.027  n=300  dies-ahead 30/300=10.00% -> 32/300=10.67% (delta -0.67 pts, disc b=28 c=30 N=58, p=0.8957)
+                                      bad-ends   60/300=20.00% -> 95/300=31.67% (delta -11.67 pts, disc b=40 c=75 N=115, p=0.0014)  clear 80.0%->68.3%
+
+=== SUMMARY (baseline = champion strand180_20, reach OFF, w_rdyext=8) ===
+  baseline: dies-ahead 30/300 = 10.00%   bad-ends 60/300 = 20.00%
+                      A_v w_rdyext=8  DA  29/300 ( 9.67%, +0.33 pts, disc  51, p=1.0000)   BE  57/300 (19.00%, +1.00 pts, disc  85, p=0.8284)
+                     A_v w_rdyext=16  DA  47/300 (15.67%, -5.67 pts, disc  65, p=0.0464)   BE  70/300 (23.33%, -3.33 pts, disc  92, p=0.3481)
+                     A_v w_rdyext=24  DA  40/300 (13.33%, -3.33 pts, disc  64, p=0.2604)   BE  83/300 (27.67%, -7.67 pts, disc 105, p=0.0313)
+                     A_v w_rdyext=32  DA  35/300 (11.67%, -1.67 pts, disc  57, p=0.5966)   BE  80/300 (26.67%, -6.67 pts, disc 100, p=0.0569)
+                     A_v w_rdyext=48  DA  34/300 (11.33%, -1.33 pts, disc  56, p=0.6889)   BE 116/300 (38.67%, -18.67 pts, disc 122, p=0.0000)
+       SCALE-CTRL (no reach) w=6.004  DA  34/300 (11.33%, -1.33 pts, disc  52, p=0.6778)   BE  61/300 (20.33%, -0.33 pts, disc  79, p=1.0000)
+      SCALE-CTRL (no reach) w=12.009  DA  33/300 (11.00%, -1.00 pts, disc  53, p=0.7838)   BE  67/300 (22.33%, -2.33 pts, disc  91, p=0.5296)
+      SCALE-CTRL (no reach) w=18.013  DA  25/300 ( 8.33%, +1.67 pts, disc  51, p=0.5758)   BE  61/300 (20.33%, -0.33 pts, disc  91, p=1.0000)
+      SCALE-CTRL (no reach) w=24.018  DA  39/300 (13.00%, -3.00 pts, disc  63, p=0.3135)   BE  94/300 (31.33%, -11.33 pts, disc 108, p=0.0014)
+      SCALE-CTRL (no reach) w=36.027  DA  32/300 (10.67%, -0.67 pts, disc  58, p=0.8957)   BE  95/300 (31.67%, -11.67 pts, disc 115, p=0.0014)
+
+DONE

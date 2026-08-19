@@ -3,6 +3,12 @@
 *DRMC handle: **davesmithsays** (badge reads "DSS" / "davesmithsays", VGC-branded lanyard)*
 *DRMC Philadelphia 2026 tournament attendee. No style data yet — identity only.*
 
+## Style at a glance
+
+- **Identity confirmed, style unknown — cite NO pressure numbers.** His one usable VS broadcast window (2024 Green Bracket) yielded healthy clear volume (n=51) but **zero attributed volleys**, so no tempo/aggression claim survives.
+- His 14 Speed-bracket appearances are a solo race format the volley extractor cannot fit (documented negative — do not attempt without solving the format mismatch).
+- Standing need: a different/wider VS window before this dossier says anything about how he plays.
+
 ## Record vs the AI
 
 Not applicable yet. davesmithsays has never played the Combo Stomper; the only material

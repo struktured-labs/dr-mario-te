@@ -1,0 +1,6 @@
+ARGMAX FLIP: pre-garbage vs post-garbage board   n=200  (skipped 0)
+  flipped 101/200 = 50.5%      gate floor ~2%
+  => PASSES the testability gate
+
+  by board fill (the compute window is SHORTEST when fill is HIGHEST):
+    low(<45%)    flips 101/200 =  50.5%

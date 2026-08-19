@@ -3,6 +3,13 @@
 *Community handle: **bidwell**. Main organizer of the TooManyGames DrMC event;
 community nickname "Dr. Mario" (the outfit). Expert-tier player.*
 
+## Style at a glance
+
+- **Expert-tier community player and DrMC/TMG event organizer** — has never faced the AI; a future showcase opponent with scene weight.
+- **Lead, not a finding (n=8 volleys, below every confidence band)**: his separated 2024 broadcast profile shows the **highest fast counter-fire rate in the ensemble** — P(counter-volley <=5s | 4-6-cell clear) = 52.0% — suggesting an aggressive fast-follow-through attacker, pending more footage.
+- The earlier "slow tempo" read of his match was an artifact of pooling with his slower opponent; treat his own tempo as unestablished.
+- Best-quality expert-move material we own (TMG 2026 handheld VOD, never-publish) awaits a perspective-rectification front end.
+
 ## Record vs the AI
 
 None yet — bidwell has never played the Combo Stomper. High-value future

@@ -1,0 +1,17 @@
+{
+ "kernel_hash": "5bc91049d1946531",
+ "n_static": 948,
+ "n_real": 6196,
+ "fails": [],
+ "p1": 30980,
+ "p3": 7500,
+ "p4": 250,
+ "n4": 4000,
+ "n1_leaf_changed": 4808,
+ "n1_rdy_changed": 4808,
+ "n1_total": 6196,
+ "n2_ok": true,
+ "n3_ok": true,
+ "l1_checked": 300,
+ "passed": true
+}

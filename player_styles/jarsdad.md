@@ -3,6 +3,12 @@
 *Handle: **jarsdad** (user-supplied 2026-08-05; no independent confirmation
 of spelling/platform yet).*
 
+## Style at a glance
+
+- **Confirmed DrMC Championship 2024 competitor** (seed 35, White Bracket); has never faced the AI.
+- **Reads as an aggressive, fast-cadence presser (LOW-CONF, n=15 volleys)**: fastest inter-volley gap in the per-player table (18.4s vs struktured's 27.4s) and high follow-through — P(counter-volley <=5s | 4-6 clear) = 50.0%.
+- Even after separating his opponent's events, his follow-through stays notably higher than dmhero's — directionally his trait, but treat as a lead until n>=20.
+
 ## Record vs the AI
 
 None. No known sessions against any Stomper build.

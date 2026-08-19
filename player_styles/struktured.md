@@ -3,6 +3,14 @@
 *DRMC handle: **struktured** (user-confirmed 2026-08-03 — same as his name here).*
 *Household co-pilot on this project; also the AI's primary test opponent.*
 
+## Style at a glance
+
+- **Quick, deliberate, clean builder**: median reactive latency 250 ms, corrections 7.25/100 pills; at the m4 decisive moment his board had 18 junk cells to the AI's 65.
+- **Signature trait — over-setup**: declines **47.9%** of available immediate clears, flat across matches and phases; a stable style, not a lapse.
+- **Pressure profile is patient**: P(volley | 4-6 clear) 28.2%, inter-volley gap 27.4s — builds structure rather than converting small clears to attacks.
+- **Under endgame pressure he gets slower AND cleaner** (tilt expresses as over-caution; zero endgame reversals) — nerves hold, closing *technique* is the gap.
+- **Wins by out-lasting** (survive the early race, let the AI's junk debt mature); **loses on last-2-virus closing lines** (8 self-seals in the m4 loss, incl. a single placement sealing three viruses).
+
 **Status: QUANTITATIVE as of 2026-08-04.** This profile was rebuilt from the
 first fully recorded set (25 min, 1080p60, OBS/DeckLink) processed by an
 11-agent film-review workflow: 331 pills individually tracked at 60 fps,

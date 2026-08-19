@@ -3,6 +3,13 @@
 *DRMC handle: **roburrito** (per the tournament name-tag/file naming; not independently confirmed)*
 *DRMC Philadelphia 2026 tournament attendee. No style data yet — identity only.*
 
+## Style at a glance
+
+- **DrMC scene regular** (Championship 2024 Red Bracket as "Rob Burrito"); has never faced the AI.
+- **Reads as a moderate-tempo, struktured-like attacker (LOW-CONF, n=12 volleys)**: volley size 2.67 cells, gap 21.5s, P(counter-volley <=5s | 4-6 clear) = 25.6% — the closest ensemble profile to struktured's own numbers.
+- The pooled match's "slower than struktured" read was driven by his opponent's slow response profile, not his.
+- One physical tell on record: grip photo shows index+middle pre-staged over both A and B — a rotation-ready posture.
+
 ## Record vs the AI
 
 Not applicable yet. roburrito has never played the Combo Stomper; the only material we

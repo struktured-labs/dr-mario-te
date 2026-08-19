@@ -218,10 +218,20 @@ def _one(job):
     win = 1.0 if r["winner"] == side else (0.0 if r["winner"] >= 0 else 0.5)
     margin = r["margin"] if side == 0 else -r["margin"]
     sent_c, sent_r = attacks_sent(r, side), attacks_sent(r, 1 - side)
+    # ★ DIES-AHEAD. margin is CANDIDATE-RELATIVE and positive means the candidate
+    # has FEWER viruses left, i.e. it was AHEAD. So "topped out while winning the
+    # virus race" is (lost) AND (topout) AND (was ahead). This is the project's
+    # most SENSITIVE paired endpoint -- it separated the tuck arm from the champion
+    # at p=1.6e-4 where win rate saw nothing at p=0.19 -- and it is the failure the
+    # owner names in real play. Derived from values already computed; no extra cost.
+    topped = r["reason"] == "topout"
+    cand_da = 1 if (win == 0.0 and topped and margin > 0) else 0
+    ref_da  = 1 if (win == 1.0 and topped and margin < 0) else 0
     return {"seed": seed, "swap": swap, "win": win, "margin": margin,
             "reason": r["reason"], "draw": r["winner"] < 0,
             "atk_cand": sent_c, "atk_ref": sent_r,
-            "pills_cand": r["pills"][side]}
+            "pills_cand": r["pills"][side],
+            "da_cand": cand_da, "da_ref": ref_da}
 
 
 def attacks_sent(r, side):
@@ -298,6 +308,10 @@ def run(cand, ref, seeds, workers=8, level=11, max_pills=300, nes_pills=True,
         "draws": sum(1 for r in rows if r["draw"]),
         "atk_cand": sum(r["atk_cand"] for r in rows) / len(rows),
         "atk_ref": sum(r["atk_ref"] for r in rows) / len(rows),
+        "da_cand": sum(r["da_cand"] for r in rows),
+        "da_ref": sum(r["da_ref"] for r in rows),
+        "da_cand_rate": sum(r["da_cand"] for r in rows) / len(rows),
+        "da_ref_rate": sum(r["da_ref"] for r in rows) / len(rows),
         "pills_cand": st.mean([r["pills_cand"] for r in rows]),
         "sec_per_match": dt / len(rows) * workers, "wall_s": dt,
         "decisive": decisive, "wr_decisive": wr_dec,
@@ -312,7 +326,9 @@ def fmt(tag, r):
             f"   n={r['n_seeds']} seeds / {r['n_matches']} matches"
             f"   draws {r['draws']}  atk {r['atk_cand']:.2f}v{r['atk_ref']:.2f}"
             + (f"   moved {r['decisive']:.0%} of seeds, won {r['wr_decisive']:.1%} of those"
-               f" [{r['wr_dec_lo']:.1%},{r['wr_dec_hi']:.1%}]" if "decisive" in r else ""))
+               f" [{r['wr_dec_lo']:.1%},{r['wr_dec_hi']:.1%}]" if "decisive" in r else "")
+            + (f"   DIES-AHEAD cand {r['da_cand']} vs ref {r['da_ref']}"
+               if "da_cand" in r else ""))
 
 
 def main():

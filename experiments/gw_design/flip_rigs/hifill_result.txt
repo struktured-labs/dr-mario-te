@@ -1,0 +1,4 @@
+HIGH-FILL FLIP GATE  (skipped 17)
+  low(<45%)    flips 191/321 =  59.5%
+  mid(45-60%)  flips  33/ 62 =  53.2%
+  ALL          flips 224/383 =  58.5%

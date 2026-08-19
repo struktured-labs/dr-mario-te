@@ -71,16 +71,27 @@ def _one(job):
     r = _play(cfg, seed, f(a), f(b))
     side = 0 if not swap else 1
     win = 1.0 if r["winner"] == side else (0.0 if r["winner"] >= 0 else 0.5)
-    return (seed, win, r["margin"] if side == 0 else -r["margin"], r["winner"] < 0,
-            attacks_sent(r, side), attacks_sent(r, 1 - side))
+    mg = r["margin"] if side == 0 else -r["margin"]
+    # ★ DIES-AHEAD. mg is candidate-relative; positive = candidate has FEWER viruses,
+    # i.e. was AHEAD. "Topped out while winning the virus race" = lost AND topout AND
+    # ahead. This is the endpoint that separated arms at p=1.6e-4 where WIN RATE saw
+    # nothing at p=0.19 -- and it is the failure the owner names in real play.
+    # NOTE: this file has its OWN _one/evaluate and does NOT call h2h_vs.run(). Two
+    # rigs for one measurement is the fragmentation that hid the garbage-gravity bug;
+    # instrumenting h2h_vs alone silently produced a 3h run with no dies-ahead data.
+    topped = r["reason"] == "topout"
+    da_c = 1 if (win == 0.0 and topped and mg > 0) else 0
+    da_r = 1 if (win == 1.0 and topped and mg < 0) else 0
+    return (seed, win, mg, r["winner"] < 0,
+            attacks_sent(r, side), attacks_sent(r, 1 - side), da_c, da_r)
 
 
 def evaluate(ex, cand, ref, seeds, cfg):
     jobs = [(s, sw, cand, ref, cfg) for s in seeds for sw in (0, 1)]
     rows = list(ex.map(_one, jobs, chunksize=2))
     by = {}
-    for seed, win, mg, draw, ac, ar in rows:
-        by.setdefault(seed, []).append((win, mg, draw, ac, ar))
+    for seed, win, mg, draw, ac, ar, dc, dr in rows:
+        by.setdefault(seed, []).append((win, mg, draw, ac, ar, dc, dr))
     wr = [sum(x[0] for x in v) / len(v) for v in by.values()]
     mg = [sum(x[1] for x in v) / len(v) for v in by.values()]
     lo, hi = boot_ci(wr)
@@ -90,7 +101,9 @@ def evaluate(ex, cand, ref, seeds, cfg):
             "n_seeds": len(by), "n_matches": len(rows),
             "draws": sum(1 for v in by.values() for x in v if x[2]),
             "atk_cand": st.mean([x[3] for v in by.values() for x in v]),
-            "atk_ref": st.mean([x[4] for v in by.values() for x in v])}
+            "atk_ref": st.mean([x[4] for v in by.values() for x in v]),
+            "da_cand": sum(x[5] for v in by.values() for x in v),
+            "da_ref": sum(x[6] for v in by.values() for x in v)}
 
 
 def main():
@@ -146,7 +159,7 @@ def main():
                     print(f"  {knob:>8}={v:<4} winrate {r['winrate']:6.1%} "
                           f"[{r['wr_lo']:.1%},{r['wr_hi']:.1%}]   margin {r['margin']:+6.2f} "
                           f"[{r['mg_lo']:+.2f},{r['mg_hi']:+.2f}]  atk {r['atk_cand']:.2f}"
-                          f"v{r['atk_ref']:.2f}{sig}", flush=True)
+                          f"v{r['atk_ref']:.2f}  DA {r['da_cand']}v{r['da_ref']}{sig}", flush=True)
     print(f"\ndone in {(time.time()-t0)/60:.1f} min -> {out}", flush=True)
 
 
