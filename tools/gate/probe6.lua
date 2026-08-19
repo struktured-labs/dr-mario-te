@@ -143,7 +143,10 @@ emu.addMemoryCallback(function()
 end, emu.callbackType.exec, 0xA02E)
 
 -- ================= copro mailbox, tuck-aware =================
-local W = 0x5000            -- DRPOCKET=1 => P2 rides the $5000 window (W2_BASE=0x5000)
+-- P2's window base. DRPOCKET=1 single-window carts ride $5000 (the default every prior
+-- probe6 run used); DRPOCKET=0 dual-window MiSTer carts talk to P2 at $5200. Serving the
+-- wrong base is SILENT -- the cart reads open bus and the arm just looks inactive.
+local W = tonumber(os.getenv("P6_W") or "0x5000")
 local S = { board = {}, done = false, go_f = -1, rcol = 0, ror = 0xFF,
             tcol = 0xFF, trow = 0xFF, pending = false, need_snap = false,
             goes = 0, dones = 0, pub = 0, opp = 0 }

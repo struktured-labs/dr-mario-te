@@ -139,7 +139,15 @@ DWELL_CNT, DWELL_LAST = 0x6177, 0x6178
 TUCK_C2 = 0x6179   # approach column for the in-flight P2 capsule; 0xFF = no tuck this pill
 TUCK_R2 = 0x617A   # steer to the FINAL column once pill Y <= this ($0386 counts UP from the floor)
 EFF_C2  = 0x617B   # effective target column this hook (approach or final)
-W_TCOL, W_TROW = 0x5087, 0x5088   # copro publishes the tuck descriptor here (0xFF = none)   # TITLE DWELL: frames dwelt at the title + last frameCounter($43) seen
+# W_TCOL/W_TROW -- the copro publishes the tuck descriptor at offsets $87/$88 of P2'S OWN
+# window, so the cart address depends on where P2's window sits: DRPOCKET=1 single-window
+# carts read $5087/$5088 (byte-identical to the historical hardcode every prior DRTUCK
+# validation ran under), but MiSTer dual-window carts talk to P2 at $5200 -- and the winner
+# single-copro core STRIPS the $5000-$51FF decode entirely, so a hardcoded $5087 read there
+# is OPEN BUS = $50, the same undecoded-address failure the published-column sanity guard
+# below documents. Derived from W2_BASE after it is set (it depends on DRPOCKET); the
+# executor is only emitted behind DRTUCK=1, so DRTUCK=0 carts are byte-identical either way.
+# TITLE DWELL: frames dwelt at the title + last frameCounter($43) seen
 # DRP1WIGGLE (see below): per-pill alternating direction latch for the P1 spectator wiggle.
 # 0 = hold LEFT this pill, 1 = hold RIGHT. Toggled on the P1 new-pill edge. $617C is the next
 # free PRG-RAM byte (BUSY..$6185 is the free window; $6186+ is the DRPROBE ring header).
@@ -372,6 +380,34 @@ WEAVE_LIM = int(_os.environ.get("DRWEAVELIM", "40"))   # hook-cycles of no-move 
 # and a MINIMUM-THINK gate (no lateral/orient commit until DONE or MIN_THINK hooks of search).
 # DRROTFIX=0 reproduces the pre-fidelity byte-exact emission (A/B + regression parity).
 ROTFIX = _os.environ.get("DRROTFIX", "1") != "0"
+# DRROTDIR (default OFF, task #114): shortest-direction rotation. The rotation pre-phase has only
+# ever pressed A (= DEC $A5 = CCW at $8E2B), so reaching game orient 1 from spawn costs THREE
+# rotations where B (= INC $A5 = CW, same handler) reaches it in one. Requires ROTFIX because the
+# pre-phase it edits only exists there; DRROTDIR=0 rebuilds byte-exact (every add is guarded).
+# ⚠ default MUST stay off until gated -- a default-on flag decouples artifact from recipe
+# ([[pocket-rbf-md5-gate-unsound]]).
+ROTDIR = (_os.environ.get("DRROTDIR", "0") != "0") and ROTFIX
+# DRROTDIR_MUT: test-only deliberate defects for PREREG_ROTDIR's killed-mutant table.
+# "none" (default) is the real fix. Any other value builds a cart that MUST fail the prereg.
+#   m1  press B on delta 3 instead of delta 1   (direction inverted)
+#   m2b press B UNCONDITIONALLY                 (passes the win, must FAIL the delta-3 control)
+#   m3b mark B already-held ($F8=$40)           (kills the press edge on the FIRST press)
+#   m4  CMP #$05, so the B branch is unreachable (POPULATION mutant: pressB must stay 0)
+# ⚠ m2 and m3 are RETIRED and kept only so this note is auditable. BOTH WERE DEAD ON ARRIVAL,
+# and the data said so before any verdict was read (measured 2026-08-19):
+#   m2 ("delta computed as ($03A5 - TGT_O2) & 3, CMP #1") is ALGEBRAICALLY EQUIVALENT TO m1 --
+#     (cur-tgt)&3 == 1 is exactly (tgt-cur)&3 == 3. Different bytes, different md5, IDENTICAL
+#     behaviour: all 6 cells matched m1 to the last digit.
+#   m3 ("omit the STA $F8 on the B path") is UNKILLABLE BY CONSTRUCTION on the only arm that
+#     exercises B: delta 1 needs exactly ONE press, and the frame before it the driver was not
+#     pressing, so $F8 is already 0 and the omitted clear is never reached. m3's 6 cells matched
+#     the REAL FIX to the last digit. This is the "wrong observable" case, not a wrong mutant --
+#     m3b tests the same property (is the edge armed?) with an observable that can fail.
+ROTDIR_MUT = _os.environ.get("DRROTDIR_MUT", "none")
+if ROTDIR_MUT not in ("none", "m1", "m2", "m2b", "m3", "m3b", "m4"):
+    raise SystemExit(f"DRROTDIR_MUT must be none|m1|m2|m2b|m3|m3b|m4 (got {ROTDIR_MUT!r})")
+if ROTDIR_MUT != "none" and not ROTDIR:
+    raise SystemExit("DRROTDIR_MUT set but DRROTDIR is off -- the mutant would be a silent no-op")
 # minimum-think gate: hooks of search (WDOG2) the driver waits before committing laterally /
 # locking orient. ~5 hooks/frame. Default 25 (~5f). Was 90 (~18f), a guard against the shallow-argmax
 # slam back when searches were slow; with K_OPEN=255 (wait-for-DONE) + RECOMMIT (orient re-open at DONE
@@ -800,6 +836,10 @@ W2_BASE = 0x5200
 if _os.environ.get("DRPOCKET", "0") == "1":
     assert _os.environ.get("DRHUMAN", "0") == "1", "DRPOCKET requires DRHUMAN=1 (single window)"
     W2_BASE = 0x5000
+# TUCK descriptor lives at offsets $87/$88 of P2's OWN copro window (see the W_TCOL comment
+# at the TUCK EXECUTOR block above): $5087/$5088 on DRPOCKET single-window carts (unchanged
+# vs the historical hardcode), $5287/$5288 on dual-window MiSTer carts.
+W_TCOL, W_TROW = W2_BASE + 0x87, W2_BASE + 0x88
 # if a pill sits still this many frames (while not search-frozen), force DOWN to unstick
 STUCK_LIM = 60        # 1s -- continuous holds again; if truly stuck kick fast to unpark
 # copro window (mapper 100)
@@ -2641,6 +2681,37 @@ def build_main(level=11, speed=1):
         #  That is the feasibility lock -- a late candidate can't re-rotate a low/flush capsule.)
         a.ins16("LDA_abs", ROT_DONE2); a.br("BNE", "mv_p2")           # committed -> column only
         a.ins16("LDA_abs", 0x03A5); a.ins16("CMP_abs", TGT_O2); a.br("BEQ", "p2_orient_ok")
+        if ROTDIR:
+            # DRROTDIR: SHORTEST-DIRECTION rotation. The executor has always pressed only A, and
+            # A is DEC $A5 in the ROM ($8E2B), so the orient ring is walked one way only: from
+            # spawn (game orient 0) target 3 costs 1 rotation, 2 costs 2, and **1 costs 3**. B is
+            # INC $A5 in the same handler, so the far side is one press away.
+            #   delta = (TGT_O2 - $03A5) & 3, and delta != 0 here (the CMP above peeled that off)
+            #   delta 1 -> B (CW, 1 press)      delta 3 -> A (CCW, 1 press)
+            #   delta 2 -> 2 presses either way; keep A so the 180 path is bit-for-bit the old one
+            # Measured cost of the old behaviour (constant-orient ladder, paired seeds, cart
+            # 9fefaedb): 77.79 / 78.99 / 80.48 / 81.07 f/pill at 0/1/2/3 CCW rotations = ~1.09
+            # frames per rotation. So this is worth ~2.2 f/pill on the delta-1 orient and nothing
+            # on the other three -- which is exactly what makes it gateable: three arms MUST NOT
+            # move.
+            # ---- TEST-ONLY MUTANTS (DRROTDIR_MUT). Same precedent as DRDIST_FLOORREL above:
+            # kept buildable solely so PREREG_ROTDIR's mutant table can be demonstrated to FAIL
+            # (killed-mutant discipline). NEVER ship a cart with DRROTDIR_MUT != none.
+            if ROTDIR_MUT == "m2":            # RETIRED, EQUIVALENT TO m1 -- see below
+                a.ins16("LDA_abs", 0x03A5); a.ins("SEC"); a.ins16("SBC_abs", TGT_O2)
+            else:
+                a.ins16("LDA_abs", TGT_O2); a.ins("SEC"); a.ins16("SBC_abs", 0x03A5)
+            a.ins("AND_imm", 0x03)
+            if ROTDIR_MUT != "m2b":           # m2b: press B UNCONDITIONALLY (no delta test)
+                _mcmp = {"m1": 0x03, "m2": 0x01, "m4": 0x05}.get(ROTDIR_MUT, 0x01)
+                a.ins("CMP_imm", _mcmp); a.br("BNE", "p2_rot_ccw")    # delta 2 or 3 -> A (CCW)
+            if ROTDIR_MUT == "m3b":           # m3b: mark B ALREADY-HELD -> the press edge is dead
+                a.ins("LDA_imm", 0x40); a.ins("STA_zp", 0xF8)
+            elif ROTDIR_MUT != "m3":          # m3: RETIRED, UNKILLABLE -- see below
+                a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)         # edge (held=0) so B rotates,
+            a.ins("LDA_imm", 0x40); a.ins("STA_zp", 0xF6); a.jmp("act_p1")   # B = CW = INC $A5
+            if ROTDIR_MUT != "m2b":
+                a.label("p2_rot_ccw")
         a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)                # edge (held=0) so A rotates,
         a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF6); a.jmp("act_p1")   # under live gravity, no pin
         a.label("p2_orient_ok")                                       # orient reached; think gate:
