@@ -104,6 +104,17 @@ is killed by **I alone**, which is what proves I is load-bearing rather than dec
 deliberate: a tuck's orient is part of a reachability plan the executor navigates, and
 flipping it would change the pose being targeted. `DRDBLCANON` covers the base search only.
 
+★ **The two features therefore compose by PRECEDENCE, not by conflict** (nmi-fix's reading,
+and it is the right one): when a tuck wins, DRDBLCANON's rewrite is simply superseded, and
+there is no state in which the data path holds two disagreeing orientations. That removes one
+whole class of risk — the data-path class — by construction.
+
+⚠ **It does NOT discharge the play-level gate, and the precedent says why.** `DRPRESTART` ×
+`DRTUCK` was never a data conflict either: it was the executor parking at the approach column
+and never switching to final — a timing/navigation failure that no data-path argument can see
+or exclude. So precedence closes the data-path risk; the play gate still owns the timing risk,
+and only one of those two is closed.
+
 ## Gate
 
 `experiments/dblcanon/gate_dblcanon.py` — runs the **real 6502 firmware under py65** in both
@@ -247,6 +258,12 @@ says the stock rig never serves the tuck mailbox:
 **The firmware tuck path is INERT here**, so even the firmware-side combination arm would be
 vacuous by construction — green while establishing nothing, the same shape as the `(v, v+2)`
 inert detector this lane already documented.
+
+★ **The 0-vs-12 contrast is what makes "inert" a measurement rather than an excuse.** Both
+numbers come from the SAME 24 decisions on the SAME corners: `DRDBLCANON` moved 12 of them,
+`DRCOPRO_TUCKV3` moved 0. So the harness demonstrably CAN move decisions — it just cannot move
+them through the tuck path. That is an internal positive control living beside the null, and
+without it "the tuck flag changed nothing" would be indistinguishable from a dead rig.
 
 ⇒ **Two open arms, both blockers on any cart carrying both flags, neither on this branch:**
 (1) `DRDBLCANON` × `DRTUCK` exercised in play; (2) the firmware-side pair on a rig that
