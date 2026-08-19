@@ -547,8 +547,43 @@ emu.addMemoryCallback(function() return S.trow end, emu.callbackType.read, W + 0
 -- ================= input =================
 local modeCache = -1
 local inCur, inUntil = nil, -1
+-- ---- #131/#135 START-leak guard (adopted from probe_rotwedge; gate gate_d135_adopt.sh) ----
+-- modeCache is sampled once per frame at endFrame, but this poll runs in NMI at the TOP of the
+-- frame and the ROM advances 8->4 LATER in that same frame.  A press permitted here at mode 8 is
+-- therefore still in the P1 newly-pressed latch $F5 when the stock pause routine $978E runs,
+-- already in mode 4.  $97A7 accepts it, the match pauses at spawn, and on a P1-native cart that
+-- pause is UNEXITABLE (#133) -- the run wedges forever.  Mode 8 is the only predecessor of 4.
+-- D135_LEAK=1 restores the pre-fix behaviour: that is the KILLED MUTANT, and it must make
+-- leaked > 0.  `blocked` is the non-vacuity control -- a fixed run that never blocked anything
+-- did not exercise the guard, and the gate FAILS it rather than reading it as clean.
+local D135_LEAK = (os.getenv("D135_LEAK") == "1")
+local D135_OUT  = os.getenv("D135_OUT")
+local d135_blocked, d135_leaked = 0, 0
+local function d135_report()
+  if not D135_OUT then return end
+  local f = io.open(D135_OUT .. "/d135_census.txt", "w")
+  if not f then return end
+  f:write(string.format("D135 blocked=%d leaked=%d guard=%s\n",
+    d135_blocked, d135_leaked, D135_LEAK and "OFF" or "ON"))
+  f:close()
+end
+d135_report()   -- write at load, so "probe never ran" is distinguishable from "no hazard seen"
+local function d135_block(i)
+  local live = emu.read(0x46, emu.memType.nesMemory, false)
+  if not (live == 8 or (live == 4 and i.start)) then return false end
+  if D135_LEAK then
+    d135_leaked = d135_leaked + 1
+    if d135_leaked <= 10 or d135_leaked % 500 == 0 then d135_report() end
+    return false
+  end
+  d135_blocked = d135_blocked + 1
+  if d135_blocked <= 10 or d135_blocked % 500 == 0 then d135_report() end
+  return true
+end
 emu.addEventCallback(function()
-  if inCur and frame < inUntil and modeCache ~= 4 then emu.setInput(inCur, 0) end
+  if inCur and frame < inUntil and modeCache ~= 4 and not d135_block(inCur) then
+    emu.setInput(inCur, 0)
+  end
 end, emu.eventType.inputPolled)
 local function press(i, d) inCur = i; inUntil = frame + (d or 4) end
 
