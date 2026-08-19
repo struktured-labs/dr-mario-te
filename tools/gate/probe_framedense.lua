@@ -61,14 +61,28 @@ local DLAT  = tonumber(os.getenv("FD_DLAT") or "34")
 local SEED  = tonumber(os.getenv("FD_SEED") or "114")
 local TFIND = os.getenv("FD_TFIND") or "synth"     -- arm C descriptor source
 -- FD_ORIENT: diagnostic override -- publish this COPRO orient on every search instead of
--- drawing from the arm's allowed set.  Exists because a per-search RANDOM orient made P2
--- livelock at the spawn row (13 pills/8000 f vs probe6's 76), which would have handed the
--- gate a denominator made of frozen duplicate frames.  -1 = normal arm behaviour.
+-- drawing from the arm's allowed set.  -1 = normal arm behaviour.
+--
+-- ⚠ CORRECTED (#132, refuted; #135 adoption pass).  The original note here read: "exists
+-- because a per-search RANDOM orient made P2 livelock at the spawn row (13 pills/8000 f vs
+-- probe6's 76)", and FD_STALLF's note below claimed "MEASURED: a sustained TGT_O2==2 pins P2
+-- at the spawn row indefinitely".  BOTH ARE WRONG, and the second one asserted a CART PROPERTY
+-- that does not exist.  #132 root-caused those freezes as the #131 match-restart wedge -- the
+-- harness's OWN START press surviving the 8->4 transit into the stock pause routine, which on
+-- a P1-native cart is unexitable (#133).  Rotation to game orient 2 works perfectly: 108 pills
+-- at 80.5 f/pill once the wedge is removed.  The orient knob only changed how long match 1 ran,
+-- which changed the RESTART PHASE, which changed whether a frame%30 press landed on the transit
+-- frame.  It was a phase artifact, not orientation.  The knob is still useful for holding orient
+-- constant across arms; it is NOT a livelock workaround, and nothing here should be read as
+-- evidence about how the cart handles orient 2.
 local ORIENT = tonumber(os.getenv("FD_ORIENT") or "-1")
--- FD_STALLF: frames of a completely frozen P2 capsule (X, Y and both colours unchanged)
--- before the harness power-cycles.  MEASURED: a sustained TGT_O2==2 pins P2 at the spawn
--- row indefinitely, so without this the denominator fills with thousands of copies of ONE
--- ply -- the [[dr-mario-soak-loops-every-2h]] failure, where a big N is a big n_eff of 1.
+-- FD_STALLF: frames of a completely frozen P2 capsule (X, Y and both colours unchanged) before
+-- the harness power-cycles.  Kept as a GENERIC stall backstop -- a denominator made of thousands
+-- of copies of one frozen ply is the [[dr-mario-soak-loops-every-2h]] failure, where a big N is
+-- a big n_eff of 1, and that hazard is real whatever the cause.  Its original justification (the
+-- refuted TGT_O2==2 claim above) is withdrawn; with the #135 guard in place the wedge this
+-- actually fired on should no longer occur, so a run that trips STALLF now wants investigating
+-- rather than absorbing.
 local STALLF = tonumber(os.getenv("FD_STALLF") or "400")
 -- FD_ANYTIME: serve a RUNNING BEST during the search instead of $FF-until-DONE.
 -- REQUIRED to exercise the DRROTFIX anytime weave and the DRRELATCH re-latch -- the two
@@ -266,8 +280,43 @@ end, emu.callbackType.write, TGT_O2)
 -- ================= input =================
 local modeCache = -1
 local inCur, inUntil = nil, -1
+-- ---- #131/#135 START-leak guard (adopted from probe_rotwedge; gate gate_d135_adopt.sh) ----
+-- modeCache is sampled once per frame at endFrame, but this poll runs in NMI at the TOP of the
+-- frame and the ROM advances 8->4 LATER in that same frame.  A press permitted here at mode 8 is
+-- therefore still in the P1 newly-pressed latch $F5 when the stock pause routine $978E runs,
+-- already in mode 4.  $97A7 accepts it, the match pauses at spawn, and on a P1-native cart that
+-- pause is UNEXITABLE (#133) -- the run wedges forever.  Mode 8 is the only predecessor of 4.
+-- D135_LEAK=1 restores the pre-fix behaviour: that is the KILLED MUTANT, and it must make
+-- leaked > 0.  `blocked` is the non-vacuity control -- a fixed run that never blocked anything
+-- did not exercise the guard, and the gate FAILS it rather than reading it as clean.
+local D135_LEAK = (os.getenv("D135_LEAK") == "1")
+local D135_OUT  = os.getenv("D135_OUT")
+local d135_blocked, d135_leaked = 0, 0
+local function d135_report()
+  if not D135_OUT then return end
+  local f = io.open(D135_OUT .. "/d135_census.txt", "w")
+  if not f then return end
+  f:write(string.format("D135 blocked=%d leaked=%d guard=%s\n",
+    d135_blocked, d135_leaked, D135_LEAK and "OFF" or "ON"))
+  f:close()
+end
+d135_report()   -- write at load, so "probe never ran" is distinguishable from "no hazard seen"
+local function d135_block(i)
+  local live = emu.read(0x46, emu.memType.nesMemory, false)
+  if not (live == 8 or (live == 4 and i.start)) then return false end
+  if D135_LEAK then
+    d135_leaked = d135_leaked + 1
+    if d135_leaked <= 10 or d135_leaked % 500 == 0 then d135_report() end
+    return false
+  end
+  d135_blocked = d135_blocked + 1
+  if d135_blocked <= 10 or d135_blocked % 500 == 0 then d135_report() end
+  return true
+end
 emu.addEventCallback(function()
-  if inCur and frame < inUntil and modeCache ~= 4 then emu.setInput(inCur, 0) end
+  if inCur and frame < inUntil and modeCache ~= 4 and not d135_block(inCur) then
+    emu.setInput(inCur, 0)
+  end
 end, emu.eventType.inputPolled)
 local function press(i, d) inCur = i; inUntil = frame + (d or 4) end
 
