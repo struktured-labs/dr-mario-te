@@ -245,6 +245,36 @@ The `DRPRESTART`×`DRTUCK` wedge was **not** found by a build failing. It was fo
 a hang together**. A build that assembles says nothing about that failure mode. The required
 arm is `DRDBLCANON=1 ∧ DRTUCK=1` **exercised in play**, and it is open.
 
+### ⚠ THE FIRST TWO PROBES WERE RUN ON A BROKEN INSTRUMENT — withdrawn and re-derived
+
+`probe_tuck_combo.py` and `probe_tuck_combo_real.py` switched build flags with
+`importlib.reload(build_copro_d3)` inside one process. **The reload silently zeroed the very
+flags they were toggling.** MEASURED: with `DRCOPRO_TUCKBFS=1` and `DRDBLCANON=1` in the
+environment, the reload path built an image with `D3.DBLCANON == 0` and ZERO canonicalisation
+bytes, while a FRESH PROCESS with an identical environment built `clen=2483` containing
+`AND #$FE` exactly once. So both probes' headline numbers measured my harness, not the
+firmware — including the "0-vs-12 internal positive control" I put in this report and asked
+nmi-fix to preserve. Both are WITHDRAWN as stated.
+
+`probe_arm_a.py` supersedes them: **each arm runs in its own process**, and it carries a
+PLUMBING CONTROL that fails the run unless every arm's built image actually contains the flag
+state it claims (`DBLCANON`, `EMIT_TUCK_BFS`, and the `AND #$FE` byte count all checked per
+arm). Re-derived on the shipped θ400 lineage, plumbing control PASSED:
+
+    tuckbfs=0 canon=0: clen=2467 AND#$FE=0 DBLCANON=0 EMIT_TUCK_BFS=False
+    tuckbfs=0 canon=1: clen=2483 AND#$FE=1 DBLCANON=1 EMIT_TUCK_BFS=False
+    tuckbfs=1 canon=0: clen=2467 AND#$FE=0 DBLCANON=0 EMIT_TUCK_BFS=True
+    tuckbfs=1 canon=1: clen=2483 AND#$FE=1 DBLCANON=1 EMIT_TUCK_BFS=True
+
+    DRCOPRO_TUCKBFS changed the decision : 0 / 24
+    DRDBLCANON changed the decision      : 12 / 24
+    DRDBLCANON changed it WITH tuck on   : 12 / 24
+
+★ **The conclusions are unchanged, but they were previously RIGHT BY LUCK.** A correct answer
+out of an instrument that cannot be trusted is not evidence, and the only reason this was
+caught is that the broken instrument happened to disagree with the firmware bytes in one cell
+of the table. **Read the artifact, not the harness.**
+
 ### And the firmware-side combination cannot be gated in this rig either
 
 `probe_tuck_combo.py` asks the prior question, because `dr-mario-tuck-mailbox-vacuous-gate`
