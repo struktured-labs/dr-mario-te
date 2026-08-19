@@ -42,12 +42,12 @@ live_mesen() {
   done
   printf '%s' "$out"
 }
-for _ in $(seq 1 60); do
+for _ in $(seq 1 900); do
   [ -z "$(live_mesen)" ] && break
   sleep 2
 done
 if [ -n "$(live_mesen)" ]; then
-  echo "a Mesen is still alive after 120 s (pids:$(live_mesen)) -- refusing to run two arms concurrently" >&2
+  echo "a Mesen is still alive after 30 min (pids:$(live_mesen)) -- refusing to run two arms concurrently" >&2
   exit 3
 fi
 
