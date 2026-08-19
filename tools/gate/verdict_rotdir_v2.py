@@ -142,16 +142,64 @@ def main():
     onw = sum(1 for sd in SEEDS if (c := cell("on", ORIENT, sd)) and c["wedges"])
     print(f"\n  EXPLORATORY (not a claim, see prereg): #131 wedges  OFF {offw}/16   ON {onw}/16")
 
-    print("\n=== mutant kill sheet (must all FAIL) ===")
-    survivors = []
-    for m in ["m1", "m2", "m3", "m4"]:
-        mok, mlines = score(m, getter(m), m)
+    # ---- mutant kill sheet ------------------------------------------------------------
+    # A mutant is KILLED if it fails EITHER half. m2b exists specifically because it passes
+    # the win half and can only be caught by the control half -- scoring mutants on the win
+    # arm alone would let exactly that mutation through.
+    MSEEDS = [271, 2001, 3001, 4001, 4002, 4003]      # OFF cells exist for all of these
+    CSEEDS = [271, 2001, 3001]                        # OFF orient-0 cells exist for these
+
+    def win_half(arm):
+        diffs = []
+        for sd in MSEEDS:
+            off, on = cell("off", ORIENT, sd), cell(arm, ORIENT, sd)
+            if off is None or on is None:
+                return None, f"missing win cell seed {sd}"
+            if off["wedges"] or on["wedges"]:
+                continue
+            diffs.append(on["fpp"] - off["fpp"])
+        if len(diffs) < 3:
+            return None, f"only {len(diffs)} clean win pairs"
+        m = statistics.mean(diffs)
+        return (m <= P1_BAR), f"win arm mean {m:+.2f} f/pill over {len(diffs)} pairs"
+
+    def control_half(arm):
+        diffs = []
+        for sd in CSEEDS:
+            off, on = cell("off", 0, sd), cell(arm, 0, sd)
+            if off is None or on is None:
+                return None, f"missing control cell seed {sd}"
+            if off["wedges"] or on["wedges"]:
+                continue
+            diffs.append(on["fpp"] - off["fpp"])
+        if not diffs:
+            return None, "no clean control pairs"
+        m = statistics.mean(diffs)
+        return (abs(m) <= 0.6), f"control (delta-3) arm mean {m:+.2f} f/pill over {len(diffs)} pairs"
+
+    print("\n=== mutant kill sheet (each must FAIL at least one half) ===")
+    survivors, unscored = [], []
+    for m in ["m1", "m2b", "m3b", "m4"]:
+        w, wmsg = win_half(m)
+        c, cmsg = control_half(m)
         print(f"  --- {m}")
-        print("\n".join("  " + l for l in mlines))
-        if mok:
+        print(f"      win half     : {wmsg}   -> {'pass' if w else ('FAIL' if w is False else 'UNSCORED')}")
+        print(f"      control half : {cmsg}   -> {'pass' if c else ('FAIL' if c is False else 'UNSCORED')}")
+        if w is None or c is None:
+            unscored.append(m)
+            print(f"      => {m}: UNSCORED (counts as SURVIVING -- absence is not a kill)")
             survivors.append(m)
+        elif w and c:
+            print(f"      => {m}: SURVIVED (indistinguishable from the fix on both halves)")
+            survivors.append(m)
+        else:
+            print(f"      => {m}: KILLED")
     print()
-    print(f"MUTANTS SURVIVED: {survivors}" if survivors else "all 4 mutants killed")
+    if survivors:
+        print(f"MUTANTS SURVIVED: {survivors}"
+              + (f" (unscored: {unscored})" if unscored else ""))
+    else:
+        print("all 4 mutants killed")
     sys.exit(0 if (ok and not survivors) else 1)
 
 
