@@ -108,13 +108,13 @@ local function dump_census(why)
   local pages = {}
   for p, n in pairs(pageHist) do pages[#pages + 1] = { p, n } end
   table.sort(pages, function(a, b) return a[2] > b[2] end)
-  for i = 1, math.min(#pages, 12) do
+  for i = 1, #pages do
     log(string.format("  PAGE $%02X00  n=%d  (%.1f%%)", pages[i][1], pages[i][2], 100 * pages[i][2] / math.max(censusN, 1)))
   end
   local ex = {}
   for a, n in pairs(exactHist) do ex[#ex + 1] = { a, n } end
   table.sort(ex, function(a, b) return a[2] > b[2] end)
-  for i = 1, math.min(#ex, 24) do
+  for i = 1, math.min(#ex, 80) do
     log(string.format("  PC $%04X  n=%d  (%.2f%%)", ex[i][1], ex[i][2], 100 * ex[i][2] / math.max(censusN, 1)))
   end
   log(string.format("  distinct pages=%d distinct PCs=%d", #pages, #ex))
