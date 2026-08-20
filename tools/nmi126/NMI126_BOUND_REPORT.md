@@ -306,6 +306,54 @@ either arm (14 clean ends both), so the `f%30` discriminator had nothing to
 adjudicate -- and DRPRESPIPE shifts GO by 3 hooks, so it IS a tempo-shifting
 flag and any future wedge on it gets that check first.
 
+### ⚠ The 18k battery is VACUOUS for this path -- and so is every prior one
+
+Measured on BOTH carts, 12,000 frames, with a positive control in the same
+callback shape: `CTL_hookwrites` 6,706 / 6,490 (pre_tick's per-hook store --
+the probe demonstrably sees this driver's writes) with
+**`atk_release_edges` = 0**. P2 never receives a garbage volley in a probe6
+CvC run, so DRPRESTART -- and therefore DRPRESPIPE -- NEVER FIRES there. The
+battery above is real evidence the flag-ON cart is HEALTHY; it is no evidence
+that the pipeline WORKS.
+
+Scope it correctly: this is a property of the CvC self-play harness, whose P1
+is the deliberately-weak DRP1NATIVE spectator search. A human P1 produces
+volleys -- but the DRHUMAN carts are exactly the ones this report already
+records as "menu-only run; play not reached". Neither `probe6.lua` nor
+`probe9.lua` watches `$0318`, `PRE_ACT2`, or any prestart state (probe6 has
+one COMMENT acknowledging the early publish, and no counter), so no play-level
+gate has ever observed the prestart firing on any cart, while DRPRESTART=1 has
+shipped on v6e, the hardened line, c-v8ship and the Pocket v7 artifact.
+
+### Forced-release liveness, both arms (`probe_prespipe_force.lua`)
+
+Pokes `p1_attackSize` + attackColors during play -- what the ROM itself writes
+on a multi-virus clear -- and lets the ROM's own `checkReleaseAttack` drop the
+garbage and clear the byte, which IS the release edge. One byte at an NMI
+boundary, not probe9's whole-RAM restore.
+
+| 6,000 frames | control `4ac725cf` | pipelined `29924c14` |
+|---|---|---|
+| release edges (forced) | 7 | 6 |
+| PP_PH starts / advances / completes | **0 / 0 / 0** | **6 / 12 / 6** |
+| aborts / max phase | 0 / 0 | **0 / 3** |
+| GO within 4 f of a release edge | 5 | **6** |
+| fc_stuck (wedge canary) | 0 | 0 |
+
+`advances` = exactly 2 per run is the designed 3-phase machine walking
+1 -> 2 -> 3, and every one of the 6 reached phase 3 and issued the GO. The
+control's 0 starts is the discriminator -- same forced edges, no phase machine.
+A GO within 4 frames of the edge can only be the prestart's: the ordinary
+spawn-edge GO is >= 24 frames away by the window formula. The control also
+committed 5 of 7, which is the first play-level evidence in this report that
+the SYNCHRONOUS prestart fires at all.
+
+⚠ Counts, not rates (n = 6 and 7, one seed). The two arms' poke counts differ
+because the trajectories differ by a few frames -- DRPRESPIPE shifts GO by 3
+hooks and is a tempo-shifting flag, exactly the phase-dial class.
+⚠ `completes` counts the phase-3 -> 0 transition, which the 4-run BAIL reaches
+too; it is the GO-register column, not that one, that shows a commit.
+
 ### NOT PROVEN
 
 - **No silicon exposure.** MiSTer/Pocket untouched; the live soak cart is
@@ -315,6 +363,9 @@ flag and any future wedge on it gets that check first.
   beyond what the 12,000-frame CvC run visited could eat a large fraction of
   it. Q=3 (margin 4,926) exists for exactly this reason and passes the
   identical gate sheet.
+- Commit/bail PARITY between the arms on the same board is proven only in
+  py65 (G2, 53 boards). The forced-release runs show both arms commit, but
+  they are different trajectories, so they are not a matched comparison.
 - **Fire-rate cost of the lock-edge abort is not measured.** A P2 spawn inside
   the 3-hook window aborts a prestart the synchronous path would have
   delivered. The designed case is safe by construction -- a release opens a
