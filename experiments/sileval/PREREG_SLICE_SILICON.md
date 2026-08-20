@@ -1,10 +1,8 @@
 # PREREG — DRP1SLICE silicon evaluation (task #139 lane)
 
-**STATUS: DRAFT — NOT REGISTERED.** Endpoint choice is under team-lead review.
-Registration = a commit that (a) removes this banner, (b) states in its commit
-message the proof of timing ("0 silicon rows exist; rows dir empty"), per the
-datable-preregistration standard. **No silicon row may be produced before that
-commit exists.**
+**STATUS: REGISTERED 2026-08-20** (team-lead endpoint approval received; the
+registering commit's message carries the empty-rows proof of timing, per the
+datable-preregistration standard). No silicon row existed before this commit.
 
 Branch `sileval-139` off `v8-rematch@b4e289a`. 2026-08-20.
 
