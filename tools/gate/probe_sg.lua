@@ -65,6 +65,13 @@ local DLAT      = tonumber(os.getenv("SG_DLAT") or "34")
 
 local NES = emu.memType.nesMemory
 local function rd(a) return emu.read(a, NES, false) end
+-- DRIVER-BANK QUALIFIER. Exec callbacks fire on CPU ADDRESS, not bank: the driver lives in
+-- the switched $8000-$BFFF window, so a callback on a driver PC also fires whenever the STOCK
+-- bank is mapped and its own code passes the same address (measured: fc_press "fired" at
+-- fcHits=0 -- phantom stock-bank hits). The DRRTIVEC probe byte at $A02E reads $40 only while
+-- the driver bank is mapped low ($00 in base bank 0); every driver-address callback must be
+-- qualified by it.
+local function in_driver_bank() return rd(0xA02E) == 0x40 end
 local function wr(a, v) emu.write(a, v, NES) end
 local logf = io.open(OUT .. "/sg.log", "w")
 local function log(s) logf:write(s .. "\n"); logf:flush() end
@@ -119,14 +126,17 @@ emu.addMemoryCallback(function() entryHits = entryHits + 1 end, emu.callbackType
 local guardHits, staHits, staForced, forcing, savedMode = 0, 0, 0, false, -1
 if ARM == "site1" then
   emu.addMemoryCallback(function()
+    if not in_driver_bank() then return end
     guardHits = guardHits + 1
     if not forcing then savedMode = rd(0x46); forcing = true; wr(0x46, FORCEMODE) end
   end, emu.callbackType.exec, INJ_GUARD)
   emu.addMemoryCallback(function()
+    if not in_driver_bank() then return end
     if forcing then wr(0x46, savedMode); forcing = false end
   end, emu.callbackType.exec, AN_RET)
 end
 emu.addMemoryCallback(function()
+  if not in_driver_bank() then return end
   staHits = staHits + 1
   if forcing then staForced = staForced + 1 end
 end, emu.callbackType.exec, INJ_STA)
@@ -135,6 +145,7 @@ end, emu.callbackType.exec, INJ_STA)
 local fcHits, fcPressHits, fcFirstHit, fcFirstPress = 0, 0, -1, -1
 local fcStabMax, pokedVC = 0, false
 emu.addMemoryCallback(function()
+  if not in_driver_bank() then return end
   fcHits = fcHits + 1
   if fcFirstHit < 0 then
     fcFirstHit = fcHits          -- hook index 1
@@ -149,6 +160,7 @@ emu.addMemoryCallback(function()
   if sv ~= 0xFF and sv > fcStabMax and sv <= 32 then fcStabMax = sv end
 end, emu.callbackType.exec, FC_CLEAR)
 emu.addMemoryCallback(function()
+  if not in_driver_bank() then return end
   fcPressHits = fcPressHits + 1
   if fcFirstPress < 0 then fcFirstPress = fcHits end
 end, emu.callbackType.exec, FC_PRESS)
@@ -265,9 +277,10 @@ emu.addEventCallback(function()
           "staForced=%d pauseIters=%d frames=%d goes=%d dones=%d",
           TAG, ARM, verdict, FORCEMODE, guardHits, staHits, staForced, pauseIters, frame, S.goes, S.dones))
     elseif ARM == "site2" then
-      local delay = (fcFirstPress > 0) and (fcFirstPress - fcFirstHit) or -1
+      local delay = (fcFirstPress >= 0) and (fcFirstPress - fcFirstHit) or -1
       verdict = (fcFirstPress < 0) and "NO_PRESS" or
-                ((delay >= FCSTABK) and "DELAYED_PRESS" or "IMMEDIATE_PRESS")
+                ((fcFirstPress < 1) and "PHANTOM_PRESS" or
+                 ((delay >= FCSTABK) and "DELAYED_PRESS" or "IMMEDIATE_PRESS"))
       log(string.format("SUMMARY tag=%s arm=%s verdict=%s fcHits=%d fcPressHits=%d firstHit=%d " ..
           "firstPressHookIdx=%d pressDelayHooks=%d fcStabMax=%d pausedDuringFC=%d pauseIters=%d " ..
           "frames=%d goes=%d dones=%d",
