@@ -16,3 +16,8 @@ touches the live soak box.
 | `sileval.env.example` | the only place the new box's IP + pinned template md5s live |
 | `mgl/` | loaders for both arms (both reference the proven θ400 core `de7dea35`) |
 | `vendor/seedjit_ss.py` | vendored seed-injection tool (`a26a0d5f`), no gitignored-path dependency |
+
+Refusal-gate verification (2026-08-20, offline, no network): 5/5 mutants refused
+with exit 2 — placeholder IP, live-box IP (driver + watchdog), unpinned
+templates, wrong template md5. Positive control: vendored seedjit patched seed
+27875 into a real pre-generation template and read it back (0x6ce3, mode $00).
