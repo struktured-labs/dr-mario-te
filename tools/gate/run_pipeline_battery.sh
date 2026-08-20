@@ -19,6 +19,6 @@ run_arm "$D/roms/manifests/hardened-prestart-20260820.json" control.ok
 
 [[ -f "$OUT/control.ok" ]] || { echo "control arm produced no marker -- refusing to run the ON arm" >&2; exit 3; }
 
-echo "=== ARM B flag-ON prespipe-hardened (DRPRESPIPE=1)" | tee -a "$OUT/battery.log"
-run_arm "$D/roms/manifests/prespipe-hardened.json" on.ok
+echo "=== ARM B flag-ON prespipe-hardened-q3 (DRPRESPIPE=1, Q=3 default)" | tee -a "$OUT/battery.log"
+run_arm "$D/roms/manifests/prespipe-hardened-q3.json" on.ok
 echo "=== BATTERY COMPLETE" | tee -a "$OUT/battery.log"

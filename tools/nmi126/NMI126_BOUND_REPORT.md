@@ -208,27 +208,32 @@ remains open for the next session.
 release path across hooks via a PRG-RAM phase byte (`PP_PH` $61C2, `PP_SWAL`
 $61C3):
 
-| hook | work |
-|---|---|
-| 0 (release edge) | detect + the `$0500` -> `PRE_BUF` snapshot copy |
-| 1 | orphan guard + settle |
-| 2 | match records 0-3 |
-| 3 | match records 4-7 + upload + GO |
+| hook | work (Q=3 default) | (Q=4 variant) |
+|---|---|---|
+| 0 (release edge) | detect + the `$0500` -> `PRE_BUF` snapshot copy | same |
+| 1 | orphan guard + settle | same |
+| 2 | match records 0-2 | match 0-3 |
+| 3 | match records 3-5 | match 4-7 + upload + GO |
+| 4 | match records 6-7 + upload + GO | -- |
 
-GO lands on edge+3 hooks = **1.5 frames** of a 24-264 frame lead. The copy
+GO lands on edge+NM hooks: **2.0 frames** at the Q=3 default (1.5 at Q=4), of
+a 24-264 frame lead. The copy
 stays in the edge hook deliberately: garbage falls a row per 16 frames and the
 settle scan keys on row 0, so a copy delayed a hook would project a different
 board (gated: G3 wipes the live board after the edge hook and asserts the
 upload is still the snapshot).
 
-`DRPRESPIPE_Q` (default 4) is records per match phase. **The pair, not the
+`DRPRESPIPE_Q` (default **3**, team-lead ruling 2026-08-20: the Q=4 shape's
+1,154-cycle margin rests on a measured-not-bounded game head plus an estimated
+eps, while 0.5 frame of a >=24-frame lead is noise) is records per match
+phase. **The pair, not the
 phase, is the constraint** -- two hooks run per NMI -- and the total work is
 fixed, so the worst adjacent pair shrinks only by ADDING phases; rebalancing
 work between two adjacent phases cannot change their sum.
 
 ### Bound table (v6e class, sound census bounds, cycles; frame = 29,780)
 
-| quantity | ship (DRPRESTART) | DRPRESPIPE Q=4 | Q=3 |
+| quantity | ship (DRPRESTART) | Q=4 variant | **Q=3 (DEFAULT, ships)** |
 |---|---|---|---|
 | worst release-edge hook | 27,960 | **13,561** | 11,269 |
 | worst release FRAME | **35,595 (OVER)** | **28,626 (96.1%)** | **24,854 (83.5%)** |
@@ -283,11 +288,23 @@ would silently survive a re-split.
 
 ### Mesen play battery, 18,000 frames each, chained A/B
 
-Candidate cart `roms/prespipe-hardened.nes` md5 `29924c14` = the hardened
-prestart ship flags + `DRPRESPIPE=1` and nothing else (2,718 bytes differ);
-control `hardened-prestart-20260820` `4ac725cf`.
+**Ship candidate `roms/prespipe-hardened-q3.nes` md5 `7e73d4a3`** = the
+hardened prestart ship flags + `DRPRESPIPE=1` at the Q=3 default; the Q=4
+variant `prespipe-hardened.nes` `29924c14` is kept per keep-versions and its
+manifest still replays byte-exact after the default flip (snapshot recorded
+DRPRESPIPE_Q=4 -- default-proof both directions). Control
+`hardened-prestart-20260820` `4ac725cf`. The battery below was run on BOTH
+flag-ON carts (Q=4 first as a dry run, then the Q=3 ship bytes -- rule 6);
+the two flag-ON columns were numerically IDENTICAL, so one is shown.
 
-| | control `4ac725cf` | pipelined `29924c14` |
+On the exact Q=3 ship image the release-class certificate is
+**worst admissible frame 23,648 of 29,780 (79.4%), margin 6,132** (hardened
+class; the v6e class gives 24,854 / margin 4,926). The P1-search class on this
+cart (unsliced, 103.5k ALL_PATHS) remains enforcement 1's territory and is NOT
+certified here -- the combined DRPRESPIPE+DRP1SLICE cart is blocked on the
+$61BB collision.
+
+| | control `4ac725cf` | pipelined (`7e73d4a3` and `29924c14`) |
 |---|---|---|
 | goes / dones | 178 / 172 | 181 / 173 |
 | matches started / ended / clean | 15 / 14 / 14 | 14 / 14 / 14 |
@@ -332,16 +349,17 @@ on a multi-virus clear -- and lets the ROM's own `checkReleaseAttack` drop the
 garbage and clear the byte, which IS the release edge. One byte at an NMI
 boundary, not probe9's whole-RAM restore.
 
-| 6,000 frames | control `4ac725cf` | pipelined `29924c14` |
-|---|---|---|
-| release edges (forced) | 7 | 6 |
-| PP_PH starts / advances / completes | **0 / 0 / 0** | **6 / 12 / 6** |
-| aborts / max phase | 0 / 0 | **0 / 3** |
-| GO within 4 f of a release edge | 5 | **6** |
-| fc_stuck (wedge canary) | 0 | 0 |
+| 6,000 frames | control `4ac725cf` | Q=4 `29924c14` | **Q=3 `7e73d4a3`** |
+|---|---|---|---|
+| release edges (forced) | 7 | 6 | 6 |
+| PP_PH starts / advances / completes | **0 / 0 / 0** | 6 / 12 / 6 | **6 / 18 / 6** |
+| aborts / max phase | 0 / 0 | 0 / 3 | **0 / 4** |
+| GO within 4 f of a release edge | 5 | 6 | **6** |
+| fc_stuck (wedge canary) | 0 | 0 | 0 |
 
-`advances` = exactly 2 per run is the designed 3-phase machine walking
-1 -> 2 -> 3, and every one of the 6 reached phase 3 and issued the GO. The
+`advances` per start is exactly NM-1 on each variant (2 at Q=4's 3 phases, 3
+at Q=3's 4), i.e. the machine walking its designed phase sequence, and every
+start reached the last phase and issued the GO. The
 control's 0 starts is the discriminator -- same forced edges, no phase machine.
 A GO within 4 frames of the edge can only be the prestart's: the ordinary
 spawn-edge GO is >= 24 frames away by the window formula. The control also

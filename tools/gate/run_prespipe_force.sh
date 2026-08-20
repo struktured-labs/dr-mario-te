@@ -43,4 +43,4 @@ arm () {  # $1 cart  $2 tag
 }
 
 arm "$D/roms/hardened-prestart-20260820.nes" control
-arm "$D/roms/prespipe-hardened.nes" flagon
+arm "$D/roms/prespipe-hardened-q3.nes" flagon
