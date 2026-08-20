@@ -23,9 +23,6 @@
 .venv
 .venv/
 /tmp/
-<<<<<<< HEAD
-=======
->>>>>>> origin/copro-qa-harness
 __pycache__/
 drmario_banktest.nes
 drmario_cart.nes
