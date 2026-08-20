@@ -408,6 +408,57 @@ if ROTDIR_MUT not in ("none", "m1", "m2", "m2b", "m3", "m3b", "m4"):
     raise SystemExit(f"DRROTDIR_MUT must be none|m1|m2|m2b|m3|m3b|m4 (got {ROTDIR_MUT!r})")
 if ROTDIR_MUT != "none" and not ROTDIR:
     raise SystemExit("DRROTDIR_MUT set but DRROTDIR is off -- the mutant would be a silent no-op")
+
+# ---- HARDENED-CART TRIO (tasks #129/#133/#134, each default OFF -> byte-identical) ----
+# DRVERFIX (#129): 3-byte STOCK-ROM fix. checkVerMatch's vertical colour-chain scan steps the
+# field index by +8 and tests for the bottom with AND #$F8 / BEQ -- zero only for indices 0..7,
+# i.e. it terminates by WRAPPING PAST 255, reading the 128 bytes AFTER the field on the way. If
+# that trailing region shares the chain's colour nibble the wrapped index is written back into
+# fieldPos and the scan restarts forever (the #129 soak wedge -- stock Nintendo code, byte-
+# identical in vanilla drmario.nes; the horizontal twin is correctly bounded). The GAME OVER /
+# STAGE CLEAR text boxes write $8D/$8F/$EF straight into the field, so colour-$F chains are
+# ROUTINELY armed at every match end. Fix: replace the wrap test with a real bound of identical
+# length -- AND #$F8 / BEQ -> CMP #$80 / BCS (branch target byte untouched). Verified offline
+# (tempo-wt tmp/wedge129): kills all known hangs; 4000/4000 random legal-colour boards leave a
+# byte-identical field; also stops the vertical CLEAR loop ever writing past the field (removes
+# the wedge's persistence mechanism, not just the hang). Applied by anchor match, never by
+# pinned offset (#120 gate rot).
+VERFIX = _os.environ.get("DRVERFIX", "0") == "1"
+# DRUNPAUSE (#133): a P1-driven cart is UNPAUSABLE -- the P1 executor rewrites $F5 (the raw P1
+# latch at hook time; the ROM derives pressed/held from it AFTER the hook) every hook from a
+# vocabulary {none,right,left,down,A} with no START, and it runs before the stock edge-detect,
+# so the pause loop's exact-compare $F5==$10 at $97D6 can never be satisfied: one stray START
+# (human, script, or nav glitch) soft-locks the cart permanently. Fix: restore STOCK START
+# semantics for P1 -- at the top of act_p1, if the raw latch has bit 4 set, write $F5 = $10
+# (pure START, the exact byte both the pause entry and the pause exit compare against) and skip
+# the synthesized command for that hook. With no controller attached the raw latch is 0 and the
+# path never fires, so soak behaviour is unchanged; with one, START pauses AND unpauses exactly
+# as on the stock ROM. Not emitted on DRHUMAN carts (P1 is already a passthrough there).
+UNPAUSE = _os.environ.get("DRUNPAUSE", "0") == "1"
+# DRSTARTGUARD (#134): guard the driver's START injection sites against landing on a match
+# frame. The #131 lesson: gating a press on the mode read at HOOK time does not protect against
+# the SAME frame's main loop advancing 8->4 and running the play input handler on the injected
+# byte -- any mode-gated input arm must exclude the PREDECESSOR mode too. Sites:
+#   1. autonav inject() -- skip the store when live $0046 reads 4 (the match frame) or 8 (its
+#      predecessor; 8->4 transits within one frame). Structurally unreachable today (dispatch
+#      only reaches inject from modes 0/1/7, and a menu-mode poke is re-read from hardware the
+#      next frame) -- this makes it STRUCTURAL rather than incidental.
+#   2. fc_clear stage-clear dismiss -- fires at mode==4 by design (RB337's blocking wait holds
+#      $0046==4), but the state's FIRST hooks can still be inside a live play frame; require the
+#      full-clear state to persist FC_STAB_K hooks before the first press. The wait lasts
+#      seconds, so a ~4-hook arm delay cannot miss the dismiss (it can shift dismiss timing by
+#      up to one 32-hook press window -- a tempo effect; see d131-wedge-discriminator-f30).
+#   3. DRNAVESC -- already excludes mode 8 (intro hands-off) and fires only after ESC_N hooks of
+#      a completely frozen ($0046,$F8,$0386) state, so it cannot land on a live-play or transit
+#      frame by construction; at a frozen mode 4 its exact-$10 own-the-frame write is the
+#      UNPAUSE idiom (recovery, not hazard). No code change -- documented + gated as-is.
+STARTGUARD = _os.environ.get("DRSTARTGUARD", "0") == "1"
+FC_STAB = 0x61BB      # DRSTARTGUARD site 2: hooks the full-clear state has persisted
+                      # (first byte of the $61BB-$61FF free run in PRG_RAM_MAP.md; cleared
+                      # every go_ai play hook, so a stale/garbage boot value only skips the
+                      # arm delay once -- the pre-fix behaviour -- and never blocks a press)
+FC_STAB_K = 4         # hooks (~2 frames at the 2-hook/frame play cadence) before the press
+
 # minimum-think gate: hooks of search (WDOG2) the driver waits before committing laterally /
 # locking orient. ~5 hooks/frame. Default 25 (~5f). Was 90 (~18f), a guard against the shallow-argmax
 # slam back when searches were slow; with K_OPEN=255 (wait-for-DONE) + RECOMMIT (orient re-open at DONE
@@ -1647,11 +1698,21 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", 0); a.ins16("STA_abs", HOLD_CNT); a.ins16("STA_abs", HOLD_CNT + 1)
         a.ins("LDA_zp", 0x43); a.ins16("STA_abs", HOLD_LASTCLK)
         a.label("hb_fc_armed")
+    if STARTGUARD:
+        # #134 site 2: the full-clear state's FIRST hooks can still be inside a live play frame
+        # (the pause check reachable on the injected byte); require the state to persist
+        # FC_STAB_K hooks before the first press. RB337's blocking wait holds mode 4 for
+        # seconds, so the arm delay cannot miss the dismiss. FC_STAB is cleared every go_ai
+        # play hook, so it counts THIS match-end's fc hooks only.
+        a.ins16("LDA_abs", FC_STAB); a.ins("CMP_imm", FC_STAB_K); a.br("BCS", "fcg_ok")
+        a.ins16("INC_abs", FC_STAB); a.jmp("fc_ret")
+        a.label("fcg_ok")
     a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 4); a.br("BCS", "fc_ret")
     if not HUMAN_P1:
         # $F5 is P1's controller latch. On a HUMAN_P1 cart P1 is a PERSON, so injecting
         # START here presses the human's button for them (spec P0.4). The human dismisses
         # their own STAGE CLEAR; the AI is P2 and never needed this.
+        a.label("fc_press")             # gate instrumentation anchor (the actual press store)
         a.ins("LDA_imm", B_START); a.ins("STA_zp", 0xF5)    # inject START to dismiss STAGE CLEAR
     a.label("fc_ret"); a.ins("RTS")
     a.label("fc_no")
@@ -1672,6 +1733,10 @@ def build_main(level=11, speed=1):
         a.label("np_1p_done")
     a.ins("RTS")
     a.label("go_ai")
+    if STARTGUARD:
+        # #134 site 2 reset: any hook that reaches live-play dispatch proves we are NOT in the
+        # full-clear wait, so the fc arm counter starts from zero at every match end.
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", FC_STAB)
     if MATURE:
         # EXPLICIT GAME-START INIT: on the first play frame of a match (MATCH_ACTIVE still 0), disarm
         # the slam -- the first pill has no prior search latency, and the cold $5200 window holds no
@@ -1828,9 +1893,21 @@ def build_main(level=11, speed=1):
     # marks the button already-held and zeroes the edge (the original injection bug).
     # Window (NAV_T & $1F) < 4: pressed ~1 frame in ~6 (hook ~5 calls/frame), then released.
     def inject(bits):
+        a.label("inj_guard")            # gate instrumentation anchor (labels emit no bytes)
+        if STARTGUARD:
+            # #134 site 1: never let an injected press be live on a frame whose main loop can
+            # run the play input handler -- mode 4 is the match frame itself, and mode 8 is its
+            # PREDECESSOR (the 8->4 transit happens later in the SAME frame, after this hook --
+            # the #131 lesson). Re-read the LIVE mode at the store, not any cached copy.
+            a.ins16("LDA_abs", 0x0046)
+            a.ins("CMP_imm", 0x04); a.br("BEQ", "inj_skip")
+            a.ins("CMP_imm", 0x08); a.br("BEQ", "inj_skip")
+        a.label("inj_sta")              # gate instrumentation anchor (the actual press store)
         a.ins("LDA_imm", bits); a.ins("STA_zp", 0xF5)
         a.ins16("STA_abs", 0x6148)                          # DBG: last injected
         a.ins16("INC_abs", 0x614B)                          # DBG: inject count
+        if STARTGUARD:
+            a.label("inj_skip")
     a.label("autonav")
     a.ins16("LDA_abs", 0x0046)
     if NAV_V4:
@@ -1943,6 +2020,7 @@ def build_main(level=11, speed=1):
         # human IS P1 and navigates for themselves -- injecting here fights them for control
         # (measured 7/40 hooks). Leave an_st_go as a bare RTS so the nav path is inert.
         inject(B_START)
+    a.label("an_st_ret")                # gate instrumentation anchor (both inject paths converge here)
     # NOTE: do NOT re-arm DWELL_CNT here. This runs on the FIRST hook that injects START, so the
     # next hook of the SAME press window re-enters the dwell hold and RTSes before inject() --
     # the press lasts one hook. The game ANDs TWO raw passes of $F5, so a 1-hook press can never
@@ -2887,6 +2965,18 @@ def build_main(level=11, speed=1):
     a.ins("LDY_imm", 0x04)
     a.label("st_p2"); a.ins("STY_zp", 0xF6)
     a.label("act_p1")
+    if UNPAUSE and not HUMAN_P1:
+        # #133 fix: restore STOCK START semantics for P1. $F5 still holds the ROM's raw pad
+        # read at this point (the hook runs inside the read routine, before the edge-detect,
+        # and nothing upstream of act_p1 writes $F5 on the go_ai path), so bit 4 here is a REAL
+        # controller START. Write $F5 = $10 exactly -- the byte the pause loop's exact-compare
+        # at $97D6 requires -- and skip the synthesized command for this hook. Both hook passes
+        # of a held press take this path, so the value survives the ROM's two-pass AND; the
+        # ROM's own pressed/held derivation then gives a proper edge (pause on press, unpause
+        # on re-press). With no controller attached bit 4 is never set and this is dead code.
+        a.ins("LDA_zp", 0xF5); a.ins("AND_imm", 0x10); a.br("BEQ", "unp_no")
+        a.ins("LDA_imm", 0x10); a.ins("STA_zp", 0xF5); a.jmp("act_done")
+        a.label("unp_no")
     if HUMAN_P1:
         a.jmp("act_done")                                   # human P1: never touch $F5/$F7/GRAV_P1
     elif P1WIGGLE:
@@ -3091,6 +3181,22 @@ def main():
         "unexpected v28cs blob head"
     rom[BLOB_FILE:BLOB_FILE + 5] = bytes([0x85, 0xF6, 0x4C, 0x54, 0xFF])
     print("blob head repointed: STA $F6; JMP $FF54 (every frame, all modes)")
+
+    if VERFIX:
+        # #129 stock-ROM fix (see the DRVERFIX flag block). Anchor = checkVerMatch's row step
+        # (LDA $5A / CLC / ADC #$08 / STA $5A / LDA $5A) plus the unbounded wrap test
+        # (AND #$F8 / BEQ). Located by content, verified unique, originals asserted before any
+        # write; the BEQ's target byte is untouched (same branch, real bound).
+        _vf_anchor = bytes.fromhex("a55a186908855aa55a29f8f0")
+        _vf_i = rom.find(_vf_anchor)
+        assert _vf_i >= 0, "DRVERFIX: checkVerMatch anchor not found in base image"
+        assert rom.find(_vf_anchor, _vf_i + 1) < 0, "DRVERFIX: checkVerMatch anchor not unique"
+        _vf_off = _vf_i + 9                                  # the AND #$F8 / BEQ opcode bytes
+        assert bytes(rom[_vf_off:_vf_off + 3]) == bytes.fromhex("29f8f0"), \
+            "DRVERFIX: unexpected bytes at edit site"
+        rom[_vf_off:_vf_off + 3] = bytes.fromhex("c980b0")   # CMP #$80 / BCS (same length+target)
+        print(f"DRVERFIX: checkVerMatch vertical scan bounded "
+              f"(AND #$F8/BEQ -> CMP #$80/BCS) at file offset 0x{_vf_off:04X}")
 
     if STUDY:
         # v8.2 EVAC: keep part1 ($D2CC STUDY + P1 preview, RTS), drop the 2P tail, and restore the 4
