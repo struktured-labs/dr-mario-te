@@ -16,6 +16,12 @@ arm () {  # $1 cart  $2 tag
   local rt="$out/runtime-tmp"; rm -rf -- "$rt"; mkdir -p "$rt/xdg/Mesen2"
   cp "$SANDBOX" "$rt/xdg/Mesen2/settings.json"
   local mmc1="$out/$2_mmc1.nes"
+  # ⚠ STALE-LOG TRAP: the wait loop greps for the SUMMARY tag, and a PREVIOUS
+  # run's log satisfies that grep instantly -- the arm then "succeeds" without
+  # Mesen having produced anything. Delete the log and require it to be newer
+  # than launch (same discipline as run_probe6_hardened.sh).
+  rm -f "$out/prespipe.log"
+  local launched; launched=$(date +%s)
   "$PY" "$D/tools/gate/remap_mapper.py" "$1" "$mmc1" >"$out/remap.log" 2>&1
   echo "[$2] cart=$(md5sum "$1" | cut -d' ' -f1)"
   ( cd "$(dirname "$MESEN")"
@@ -30,6 +36,9 @@ arm () {  # $1 cart  $2 tag
     sleep 5
   done
   kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true
+  [[ -f "$out/prespipe.log" ]] || { echo "[$2] NO LOG -- FAILURE, not zero" >&2; return 1; }
+  local mt; mt=$(stat -c %Y "$out/prespipe.log")
+  (( mt >= launched )) || { echo "[$2] STALE LOG -- refusing to report it" >&2; return 4; }
   command grep -a "^SUMMARY" "$out/prespipe.log" || { echo "[$2] NO SUMMARY -- FAILURE, not zero" >&2; return 1; }
 }
 

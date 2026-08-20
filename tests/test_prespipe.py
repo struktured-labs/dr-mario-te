@@ -381,8 +381,25 @@ def main():
             f"G1 FAIL: unit {name} differs between unset and DRPRESPIPE=0"
     assert meta_off["units"]["main"]["bytes"] != meta_on["units"]["main"]["bytes"], \
         "G1 sanity: DRPRESPIPE=1 must change the driver (flag inert?)"
+    # STRUCTURAL: PP_PH must be cleared at power-on AND per match. PRE_ACT2
+    # boot garbage was "catastrophic in exactly the DRHUMAN-PEND1 way", and a
+    # garbage PP_PH is worse -- it dispatches a phase against an un-copied
+    # PRE_BUF on the first play hook. Neither reset is reachable from the
+    # release-edge corpus, so assert they EXIST rather than pretend G2 sees them.
+    um = meta_on["units"]["main"]
+    ulabs, urecs = um["labels"], [r for r in um["records"] if r["k"] != "label"]
+
+    def stores_in(lo, hi):
+        return [r for r in urecs if lo <= r["off"] < hi and r["k"] == "ins"
+                and r["m"] == "STA_abs"
+                and r["ops"] == [PP_PH & 0xFF, PP_PH >> 8]]
+
+    assert stores_in(ulabs["do_init"], ulabs["inited"]), \
+        "G1 STRUCTURAL: PP_PH is never cleared in the cold-init block"
+    assert stores_in(ulabs["ga_pre_ok"] - 400, ulabs["ga_pre_ok"]), \
+        "G1 STRUCTURAL: PP_PH is never cleared in the per-match re-init block"
     print(f"G1 byte-identity OFF: PASS (window ${w:04X}, {NM} phases, "
-          f"GO on hook {GO_HOOK})")
+          f"GO on hook {GO_HOOK}; PP_PH cleared at cold-init and per-match)")
 
     # ---- G2 -------------------------------------------------------------
     cases = corpus()
