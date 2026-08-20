@@ -146,6 +146,7 @@ that appears in only one is flag-conditional and is the dangerous kind.
 | `$61B8` | `HOLD_ONCE` | `842` | holdboard | `STA abs:L1606`, `STA abs:L1694` |
 | `$61B9` | `TG_NEED` | `229` | tuck-guard | `STA abs:L2111` |
 | `$61BA` | `TG_OFF` | `230` | tuck-guard | `STA abs:L2114`, `STA abs:L2118` |
+| `$61BB` | `FC_STAB` | — | hardened (DRSTARTGUARD, #134) | fc_clear arm counter: INC at the fc stability guard, cleared every go_ai play hook |
 | `$6200` | `<UNDECLARED>` | — | trace | `STA abs,X:L1247` |
 | `$6201` | `<UNDECLARED>` | — | trace | `STA abs,X:L1247`, `STA abs,X:L1248` |
 | `$6202` | `<UNDECLARED>` | — | trace | `STA abs,X:L1247`, `STA abs,X:L1248`, `STA abs,X:L1249` |
@@ -1122,7 +1123,7 @@ allocating**, since a future indexed writer can walk in from a lower base):
 
 - `$6600-$7FFF` (6656 B)
 - `$6000-$6142` (323 B)
-- `$61BB-$61FF` (69 B)
+- `$61BC-$61FF` (68 B) -- $61BB taken by FC_STAB (DRSTARTGUARD, #134)
 - `$62C7-$62FF` (57 B)
 - `$617C-$6185` (10 B)
 - `$614A-$614D` (4 B)
