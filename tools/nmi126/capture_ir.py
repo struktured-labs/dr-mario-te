@@ -30,8 +30,12 @@ import sys
 def main():
     manifest_path, out_path = sys.argv[1], sys.argv[2]
     man = json.load(open(manifest_path))
-    snap = man.get("flag_snapshot") or man.get("flags")
+    snap = dict(man.get("flag_snapshot") or man.get("flags"))
     assert snap, f"{manifest_path} has no flag_snapshot"
+    # optional KEY=VAL overlays (argv[3:]) for candidate configs, e.g. DRP1SLICE=1
+    for kv in sys.argv[3:]:
+        k, v = kv.split("=", 1)
+        snap[k] = v
     # Emitter reads flags from the environment at import time.
     for k, v in snap.items():
         os.environ[k] = str(v)

@@ -584,6 +584,35 @@ assert not (P1NATIVE and P1WIGGLE), (
     "DRP1NATIVE=1 and DRP1WIGGLE=1 are mutually exclusive: both replace act_p1 outright, so "
     "one would silently win. Pick the P1 personality you want.")
 P1_OWNED = P1WIGGLE or P1NATIVE   # act_p1 is replaced; the copro P1 path is not used at all
+# DRP1SLICE=1 (default OFF -> byte-identical; requires DRP1NATIVE): #126 enforcement (b) for
+# the P1 native search. The unsliced search runs all 15 placements + the colour-swap re-eval
+# synchronously inside ONE hook -- sound cycle bound 90,012, adversarially measured 26,398,
+# live-measured 19,818 (tools/nmi126/NMI126_BOUND_REPORT.md) -- which can push the whole NMI
+# past the 29,780-cycle frame on tall same-colour tower boards (the near-death regime).
+# Sliced: a PRG-RAM state machine runs ONE column-step per hook (a step = one v_loop or
+# h_loop iteration = at most one eval_pair; the spec ceiling was two, but two steps in both
+# hooks of a frame pushes the census same-frame pair bound to 36k > the 29,780 frame --
+# one step keeps the whole frame provably inside budget). 8 V + 7 H + 1 swap step finish in
+# <=16 hooks = 8 frames, and the result publishes to P1AI_C/P1AI_O exactly as before. Loop BODIES are verbatim transcriptions of the v18 AI's
+# (tests/test_p1slice.py holds whole-chain argmax equivalence against the unsliced search,
+# with zp scratch deliberately clobbered between ticks -- the game owns those bytes between
+# NMIs, so everything cross-step lives in PRG-RAM and is restored per tick).
+# Two documented behaviour deltas, both bounded and spectator-grade:
+#   * the publish can land on hook 1 of a frame, so that frame's two $F5 passes may differ
+#     and the AND eats ONE input frame per pill (the press retries next frame);
+#   * the board can change mid-search (a volley landing on P1), so early steps may have seen
+#     the older board -- inconsistency window <=4 frames, same class as anytime steering.
+P1SLICE = _os.environ.get("DRP1SLICE", "0") == "1"
+assert not (P1SLICE and not P1NATIVE), (
+    "DRP1SLICE=1 without DRP1NATIVE=1 is refused: there is no P1 native search to slice.")
+# state machine, allocated from the PRG_RAM_MAP free run $61BB-$61FF:
+SL_PH  = 0x61BB   # phase: 0 idle, 1 vertical pass, 2 horizontal pass, 3 swap+publish
+SL_COL = 0x61BC   # resume column for the current pass
+SL_BEST = 0x61BD  # persisted Z_BEST  ($01)
+SL_TGT = 0x61BE   # persisted Z_TARGET($00)
+SL_ORI = 0x61BF   # persisted Z_BORIENT($DA)
+SL_OFA = 0x61C0   # persisted best-cell offsets ($D0/$D1, the swap re-eval's input)
+SL_OFB = 0x61C1
 RECOMMIT = (MATURE
             and (not NO_FREEZE or _os.environ.get("DRRECOMMIT_NOFREEZE", "0") == "1")
             and (_os.environ.get("DRRECOMMIT", "1") != "0"))
@@ -2534,6 +2563,84 @@ def build_main(level=11, speed=1):
         a.label("pt_bail")
         a.ins("RTS")
 
+    if P1NATIVE and P1SLICE:
+        # ================= DRP1SLICE: the sliced P1 search (JSR-only zone) =================
+        # One TICK = restore cross-step state from PRG-RAM into the v18 AI's zp scratch,
+        # run TWO column-steps, save the state back. The zp bytes are the game's between
+        # NMIs, so nothing cross-step may live there (tests/test_p1slice.py clobbers them
+        # between ticks to prove it). Step bodies are VERBATIM transcriptions of the v18
+        # v_loop / h_loop iteration bodies (patch_vs_cpu.build_v18_ai); the swap step tail-
+        # calls the existing swap_eval and publishes.
+        _p1lab = build_p1_native()[1]
+        _LAND, _EVAL = _p1lab["land_col"], _p1lab["eval_pair"]
+        a.label("p1s_tick")
+        a.ins16("LDA_abs", SL_BEST); a.ins("STA_zp", 0x01)     # Z_BEST
+        a.ins16("LDA_abs", SL_TGT); a.ins("STA_zp", 0x00)      # Z_TARGET
+        a.ins16("LDA_abs", SL_ORI); a.ins("STA_zp", 0xDA)      # Z_BORIENT
+        a.ins16("LDA_abs", SL_OFA); a.ins("STA_zp", 0xD0)      # best OFFA (swap input)
+        a.ins16("LDA_abs", SL_OFB); a.ins("STA_zp", 0xD1)      # best OFFB
+        a.ins16("LDA_abs", SL_COL); a.ins("STA_zp", 0x6B)      # Z_COL
+        a.ins16("LDA_abs", 0x0301); a.ins("ORA_imm", 0x4C); a.ins("STA_zp", 0xD2)  # tiles,
+        a.ins16("LDA_abs", 0x0302); a.ins("ORA_imm", 0x4C); a.ins("STA_zp", 0xD3)  # as search_entry
+        a.jsr("p1s_one")
+        a.ins("LDA_zp", 0x01); a.ins16("STA_abs", SL_BEST)
+        a.ins("LDA_zp", 0x00); a.ins16("STA_abs", SL_TGT)
+        a.ins("LDA_zp", 0xDA); a.ins16("STA_abs", SL_ORI)
+        a.ins("LDA_zp", 0xD0); a.ins16("STA_abs", SL_OFA)
+        a.ins("LDA_zp", 0xD1); a.ins16("STA_abs", SL_OFB)
+        a.ins("LDA_zp", 0x6B); a.ins16("STA_abs", SL_COL)
+        a.ins("RTS")
+
+        a.label("p1s_one")                       # one column-step, dispatched on phase
+        a.ins16("LDA_abs", SL_PH)
+        a.ins("CMP_imm", 1); a.br("BEQ", "p1s_v")
+        a.ins("CMP_imm", 2); a.br("BEQ", "p1s_h")
+        a.ins("CMP_imm", 3); a.br("BEQ", "p1s_sw")
+        a.ins("RTS")
+
+        a.label("p1s_v")                         # == one v_loop iteration ==
+        a.ins("LDX_zp", 0x6B); a.jsr(_LAND); a.br("BCS", "p1s_vnext")
+        a.ins("LDA_zp", 0x6F); a.br("BEQ", "p1s_vnext")        # no room above (orig: BNE/JMP)
+        a.ins("LDA_zp", 0x6E); a.ins("SEC"); a.ins("SBC_imm", 0x08); a.ins("STA_zp", 0x6D)
+        a.ins("DEC_zp", 0x6F)
+        a.ins("LDA_imm", 0x01); a.ins("STA_zp", 0xD9)
+        a.jsr(_EVAL)
+        a.label("p1s_vnext")
+        a.ins("INC_zp", 0x6B); a.ins("LDA_zp", 0x6B); a.ins("CMP_imm", 0x08)
+        a.br("BCC", "p1s_vret")
+        a.ins("LDA_imm", 2); a.ins16("STA_abs", SL_PH)         # -> H pass
+        a.ins("LDA_imm", 0); a.ins("STA_zp", 0x6B)
+        a.label("p1s_vret"); a.ins("RTS")
+
+        a.label("p1s_h")                         # == one h_loop iteration ==
+        a.ins("LDX_zp", 0x6B); a.jsr(_LAND); a.br("BCS", "p1s_hnext")
+        a.ins("LDA_zp", 0x6E); a.ins("STA_zp", 0x6D)
+        a.ins("LDA_zp", 0x6F); a.ins("PHA")
+        a.ins("INC_zp", 0x6B); a.ins("LDX_zp", 0x6B); a.jsr(_LAND); a.ins("DEC_zp", 0x6B)
+        a.br("BCS", "p1s_hpull")
+        a.ins("PLA"); a.ins("CMP_zp", 0x6F); a.br("BCC", "p1s_hleft")
+        a.ins("LDA_zp", 0x6F)
+        a.label("p1s_hleft"); a.ins("STA_zp", 0x6F)
+        a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+        a.ins("CLC"); a.ins("ADC_zp", 0x6B); a.ins("STA_zp", 0x6D)
+        a.ins("CLC"); a.ins("ADC_imm", 0x01); a.ins("STA_zp", 0x6E)
+        a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xD9)
+        a.jsr(_EVAL)
+        a.jmp("p1s_hnext")
+        a.label("p1s_hpull"); a.ins("PLA")
+        a.label("p1s_hnext")
+        a.ins("INC_zp", 0x6B); a.ins("LDA_zp", 0x6B); a.ins("CMP_imm", 0x07)
+        a.br("BCC", "p1s_hret")
+        a.ins("LDA_imm", 3); a.ins16("STA_abs", SL_PH)         # -> swap+publish
+        a.label("p1s_hret"); a.ins("RTS")
+
+        a.label("p1s_sw")                        # == swap re-eval + publish ==
+        a.jsr(P1SWAP_CPU)                        # v18's search_done tail-call, as a JSR
+        a.ins("LDA_zp", 0x00); a.ins16("STA_abs", P1AI_C)
+        a.ins("LDA_zp", 0xDA); a.ins16("STA_abs", P1AI_O)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", SL_PH)         # idle until the next spawn
+        a.ins("RTS")
+
     # (time-shared d_start / start_p1 / start_p2 removed: handle() above starts each player's
     #  search on its own copro.)
 
@@ -2908,13 +3015,29 @@ def build_main(level=11, speed=1):
         # RISEN above the last Y we saw, i.e. a new capsule spawned. Hook 1 of a frame does the
         # search and then stores the key; hook 2 finds the key equal, skips, and reuses the same
         # P1AI_C/P1AI_O -- so both passes write an IDENTICAL $F5 and survive the AND.
-        a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", P1AI_Y)
-        a.br("BCC", "p1n_nosearch"); a.br("BEQ", "p1n_nosearch")
-        a.jsr(build_p1_native()[1]["search_entry"])          # JSR the mirrored search (abs)
-        a.ins("LDA_zp", 0x00); a.ins16("STA_abs", P1AI_C)   # Z_TARGET -> ours NOW ($00 is
-        a.ins("LDA_zp", 0xDA); a.ins16("STA_abs", P1AI_O)   # CTRL_exp1, rewritten every read)
-        a.label("p1n_nosearch")
-        a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", P1AI_Y)
+        if P1SLICE:
+            # spawn edge ARMS the sliced search instead of running it; the tick below then
+            # advances it two column-steps per hook until the swap step publishes.
+            a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", P1AI_Y)
+            a.br("BCC", "p1s_noarm"); a.br("BEQ", "p1s_noarm")
+            a.ins("LDA_imm", 1); a.ins16("STA_abs", SL_PH)          # phase = V pass
+            a.ins("LDA_imm", 0)
+            a.ins16("STA_abs", SL_COL); a.ins16("STA_abs", SL_BEST)
+            a.ins16("STA_abs", SL_ORI); a.ins16("STA_abs", SL_OFA); a.ins16("STA_abs", SL_OFB)
+            a.ins("LDA_imm", 3); a.ins16("STA_abs", SL_TGT)         # search_entry's defaults
+            a.label("p1s_noarm")
+            a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", P1AI_Y)
+            a.ins16("LDA_abs", SL_PH); a.br("BEQ", "p1s_idle")
+            a.jsr("p1s_tick")
+            a.label("p1s_idle")
+        else:
+            a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", P1AI_Y)
+            a.br("BCC", "p1n_nosearch"); a.br("BEQ", "p1n_nosearch")
+            a.jsr(build_p1_native()[1]["search_entry"])          # JSR the mirrored search (abs)
+            a.ins("LDA_zp", 0x00); a.ins16("STA_abs", P1AI_C)   # Z_TARGET -> ours NOW ($00 is
+            a.ins("LDA_zp", 0xDA); a.ins16("STA_abs", P1AI_O)   # CTRL_exp1, rewritten every read)
+            a.label("p1n_nosearch")
+            a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", P1AI_Y)
         # ORIENT phase: press A until the capsule matches the searched orientation. $F7 is
         # cleared first so each hook reads as a FRESH press edge -- without that, held==raw
         # from the previous hook makes pressed==0 and rotation stops after one step. (This is
