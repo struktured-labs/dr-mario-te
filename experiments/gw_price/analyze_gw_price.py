@@ -151,6 +151,15 @@ def main():
     res["arms"] = {k: {kk: vv for kk, vv in v.items() if kk != "rows"}
                    for k, v in tabs.items()}
 
+    # PREREG §4: first trigger ply must be common to all arms of a seed
+    for s_ in set(k[0] for k in by):
+        firsts = {arm: by[(s_, arm)]["ivs"][0]["ply"]
+                  for arm in ("base", "deepen", "rand", "worst")
+                  if (s_, arm) in by and by[(s_, arm)]["ivs"]}
+        if len(set(firsts.values())) > 1:
+            void.append(f"first-trigger ply differs across arms at seed {s_}: "
+                        f"{firsts}")
+
     # mirror-mismatch VOID check (PREREG §4: >10% of tie plies)
     n_tie = sum(r["n_tie"] for r in by.values())
     n_mm = sum(r["n_mirror_mismatch"] for r in by.values())
