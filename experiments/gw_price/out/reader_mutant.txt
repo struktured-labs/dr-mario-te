@@ -1,0 +1,6 @@
+edited rows: 2
+mutant d_vc mean=-1.750 CI=(-4.375,0.000)  d_won mean=-0.250
+READER MUTANT: KILLED (reader moves with the data) -- the real zeros are DATA
+real d_vc mean=0.0 CI=(0.0,0.0) over n=8 diverged seeds
+results across all 96 real rows: {'clear': 96, 'topout': 0, 'stall': 0}
+viruses_cleared==start_viruses in 96 of 96 rows

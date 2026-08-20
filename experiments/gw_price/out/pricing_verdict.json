@@ -1,0 +1,192 @@
+{
+ "farm": "/mnt/data/drmario_cosim/results/gw_price/farm.jsonl",
+ "arms": {
+  "deepen": {
+   "n_seeds": 32,
+   "n_diverged": 8,
+   "d_vc_mean": 0.0,
+   "d_vc_ci": [
+    0.0,
+    0.0
+   ],
+   "d_won_mean": 0.0,
+   "d_da_mean": 0.0,
+   "d_pills_mean": -15.5
+  },
+  "rand": {
+   "n_seeds": 16,
+   "n_diverged": 4,
+   "d_vc_mean": 0.0,
+   "d_vc_ci": [
+    0.0,
+    0.0
+   ],
+   "d_won_mean": 0.0,
+   "d_da_mean": 0.0,
+   "d_pills_mean": 8.25
+  },
+  "worst": {
+   "n_seeds": 16,
+   "n_diverged": 4,
+   "d_vc_mean": 0.0,
+   "d_vc_ci": [
+    0.0,
+    0.0
+   ],
+   "d_won_mean": 0.0,
+   "d_da_mean": 0.0,
+   "d_pills_mean": -49.25
+  }
+ },
+ "mirror_mismatch": {
+  "n_tie": 113,
+  "n_mm": 6,
+  "rate": 0.05309734513274336
+ },
+ "ordering": {
+  "green": false,
+  "worst": 0.0,
+  "rand": 0.0,
+  "worst_ci": [
+   0.0,
+   0.0
+  ]
+ },
+ "strata": {
+  "h<=7": {
+   "n": 7,
+   "d_vc_mean": 0.0,
+   "d_vc_ci": [
+    0.0,
+    0.0
+   ]
+  },
+  "h8-10": {
+   "n": 1,
+   "d_vc_mean": 0.0,
+   "d_vc_ci": [
+    0.0,
+    0.0
+   ]
+  }
+ },
+ "p_complete": {
+  "0": {
+   "pocket": 0.9986666666666667,
+   "mister": 1.0
+  },
+  "1": {
+   "pocket": 0.9953333333333333,
+   "mister": 1.0
+  },
+  "2": {
+   "pocket": 0.986,
+   "mister": 1.0
+  },
+  "3": {
+   "pocket": 0.9666666666666667,
+   "mister": 1.0
+  },
+  "4": {
+   "pocket": 0.9313333333333333,
+   "mister": 1.0
+  },
+  "5": {
+   "pocket": 0.8633333333333333,
+   "mister": 1.0
+  },
+  "6": {
+   "pocket": 0.7426666666666667,
+   "mister": 0.9986666666666667
+  },
+  "7": {
+   "pocket": 0.55,
+   "mister": 0.9906666666666667
+  },
+  "8": {
+   "pocket": 0.2753333333333333,
+   "mister": 0.964
+  },
+  "9": {
+   "pocket": 0.06266666666666666,
+   "mister": 0.8866666666666667
+  },
+  "10": {
+   "pocket": 0.012,
+   "mister": 0.6986666666666667
+  },
+  "11": {
+   "pocket": 0.0006666666666666666,
+   "mister": 0.31933333333333336
+  },
+  "12": {
+   "pocket": 0.0,
+   "mister": 0.027333333333333334
+  },
+  "13": {
+   "pocket": 0.0,
+   "mister": 0.0006666666666666666
+  },
+  "14": {
+   "pocket": 0.0,
+   "mister": 0.0
+  },
+  "15": {
+   "pocket": 0.0,
+   "mister": 0.0
+  },
+  "16": {
+   "pocket": 0.0,
+   "mister": 0.0
+  },
+  "n_costs": 1500
+ },
+ "product": {
+  "h<=7": {
+   "pocket": {
+    "P_complete": 0.87925,
+    "effect": 0.0
+   },
+   "mister": {
+    "P_complete": 0.9986666666666667,
+    "effect": 0.0
+   }
+  },
+  "h8-10": {
+   "pocket": {
+    "P_complete": 0.11666666666666665,
+    "effect": 0.0
+   },
+   "mister": {
+    "P_complete": 0.8497777777777777,
+    "effect": 0.0
+   }
+  }
+ },
+ "mde": {
+  "fires_per_game": 0.293,
+  "p_complete_bar": 0.7839270833333333,
+  "d_won_per_trigger": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "projected_pp_point": 0.0,
+  "projected_pp_ci_hi": 0.0,
+  "mde_pp": 0.84,
+  "h12_games": 9000
+ },
+ "verdict": {
+  "verdict": "VOID",
+  "why": "only 8 triggered seeds (<10)",
+  "summary": {
+   "void_reason": "only 8 triggered seeds (<10)",
+   "ordering_green": false,
+   "d_vc_mean": 0.0,
+   "d_vc_ci_lo": 0.0,
+   "d_vc_ci_hi": 0.0,
+   "proj_pp_point": 0.0,
+   "proj_pp_hi": 0.0
+  }
+ }
+}
