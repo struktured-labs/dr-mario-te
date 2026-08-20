@@ -9,3 +9,6 @@ SUMMARY tag=sg_hardened-prestart-20260820_pause2e_m4_9000 arm=pause2e verdict=PA
 
 ## G3 hgate unpause o3 4000 s114 (rc=0)
 SUMMARY tag=hg_hardened-prestart-20260820_o3_4000_s114_unpause arm=unpause orient=3 verdict=RESUMED wedgeFrame=1471 exitTaken=1 distinctP2Y=7 pauseIters=304 entryHits=1 entryFrame=1170 servedN=0 navStartHits=34 navInMode4=0 frames=1651 goes=13 dones=12
+
+## G4 probe9 arm 9000 wedge129_ram.hex (rc=0)
+SUMMARY tag=p136prestart-arm mode=arm cart=p136prestart-arm_mmc1.nes cartid=? nonce=86b598-e93b00 frames=4860 inj_f=3000 verdict=NO_WEDGE fc_values=256 step_left_at=3002 field_changed_at=3002 mode_left_at=-1 goes=47 dones=45
