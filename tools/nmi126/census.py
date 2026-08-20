@@ -113,6 +113,10 @@ EXTERNAL_COSTS = {
 
 def load(path):
     meta = json.load(open(path))
+    return meta, load_from_meta(meta)
+
+
+def load_from_meta(meta):
     # Global instruction map: cpu addr -> node
     nodes = {}
     unit_of = {}
@@ -142,7 +146,7 @@ def load(path):
             node["unit"] = uname
             nodes[addr] = node
             unit_of[addr] = uname
-    return meta, nodes
+    return nodes
 
 
 def instr_cost(node):
@@ -183,10 +187,43 @@ def successors(node, nodes):
 
 
 class Analyzer:
-    def __init__(self, nodes):
+    def __init__(self, nodes, cuts=(), site_overrides=None):
+        """cuts: iterable of edge-cut specs applied to the whole graph:
+          ('into', label)  -- remove EVERY edge whose destination is the label's
+                              address (fall-through included): 'this path is not
+                              taken this hook'.
+          ('fallof', label) -- for branches TARGETING the label, remove their
+                              fall-through edge: 'the branch to label is always
+                              taken'.
+        A label absent from the image is a hard error (a silently ignored cut
+        would loosen nothing and quietly report the wrong scenario)."""
         self.nodes = nodes
-        self.routine_cost = {}   # entry addr -> (worst_cycles, witness path summary)
+        self.routine_cost = {}   # (entry, overrides) -> (worst_cycles, witness)
         self.in_progress = set()
+        self.site_overrides = site_overrides or {}
+        self.cut_edges = set()
+        label_addr = {}
+        for a, n in nodes.items():
+            for l in n.get("labels") or []:
+                label_addr[l] = a
+        for kind, lab in cuts:
+            assert lab in label_addr, f"cut label {lab!r} not in image"
+            t = label_addr[lab]
+            if kind == "into":
+                for a, n in nodes.items():
+                    for sdst, _ in successors(n, nodes):
+                        if sdst == t:
+                            self.cut_edges.add((a, t))
+            elif kind == "fallof":
+                for a, n in nodes.items():
+                    if n["kind"] == "br" and n["target"] == t:
+                        self.cut_edges.add((a, a + 2))
+            else:
+                raise SystemExit(f"unknown cut kind {kind}")
+
+    def succ(self, node):
+        return [(sdst, ec) for sdst, ec in successors(node, self.nodes)
+                if (node["addr"], sdst) not in self.cut_edges]
 
     def resolve(self, addr, ctx):
         if addr in self.nodes:
@@ -195,12 +232,15 @@ class Analyzer:
             f"UNRESOLVED target ${addr:04X} reached from {ctx} -- add to "
             f"EXTERNAL_COSTS or capture the unit")
 
-    def worst(self, entry):
-        if entry in self.routine_cost:
-            return self.routine_cost[entry][0]
-        if entry in self.in_progress:
+    def worst(self, entry, overrides=frozenset()):
+        key = (entry, overrides)
+        if key in self.routine_cost:
+            return self.routine_cost[key][0]
+        if key in self.in_progress:
             raise SystemExit(f"RECURSION through ${entry:04X}")
-        self.in_progress.add(entry)
+        self.in_progress.add(key)
+        bounds = dict(LOOP_BOUNDS)
+        bounds.update(dict(overrides))
 
         # 1. collect routine nodes (intra-routine traversal)
         seen = set()
@@ -211,13 +251,13 @@ class Analyzer:
                 continue
             seen.add(a)
             n = self.resolve(a, f"routine ${entry:04X}")
-            for s, _ in successors(n, self.nodes):
+            for s, _ in self.succ(n):
                 if s not in seen:
                     stack.append(s)
             if n["kind"] == "jsr":
                 t = n["target"]
                 if t in self.nodes:
-                    self.worst(t)  # recurse into callee now (cycle check)
+                    self.worst(t, self.site_overrides.get(a, frozenset()))
                 elif t not in EXTERNAL_COSTS:
                     raise SystemExit(
                         f"JSR ${t:04X} from ${a:04X} unresolved -- declare in "
@@ -230,7 +270,7 @@ class Analyzer:
 
         def dfs(a):
             color[a] = 1
-            for s, _ in successors(self.nodes[a], self.nodes):
+            for s, _ in self.succ(self.nodes[a]):
                 if color.get(s, 0) == 0:
                     dfs(s)
                 elif color[s] == 1:
@@ -254,7 +294,7 @@ class Analyzer:
         # build predecessor map (intra-routine)
         preds = defaultdict(list)
         for a in seen:
-            for s, _ in successors(self.nodes[a], self.nodes):
+            for s, _ in self.succ(self.nodes[a]):
                 preds[s].append(a)
         for head, tails in loops.items():
             body = {head}
@@ -274,7 +314,7 @@ class Analyzer:
         missing = []
         for head in loops:
             lab = head_label(head)
-            if lab is None or lab not in LOOP_BOUNDS:
+            if lab is None or lab not in bounds:
                 tails = ", ".join(f"${t:04X}" for t in loops[head])
                 missing.append(f"  head ${head:04X} label={lab!r} unit="
                                f"{self.nodes[head]['unit']} back-edges from {tails}")
@@ -284,7 +324,7 @@ class Analyzer:
         # innermost first = smallest body first
         for head in sorted(loops, key=lambda h: len(loop_nodes[h])):
             lab = head_label(head)
-            bound = LOOP_BOUNDS[lab]
+            bound = bounds[lab]
             # worst single iteration: longest acyclic path head->tail inside
             # the body (back-edges of THIS loop excluded) + the back-edge cost
             body = loop_nodes[head]
@@ -299,11 +339,12 @@ class Analyzer:
                 cost_here = extra.get(a, 0) if a != head else 0
                 if n["kind"] == "jsr":
                     t = n["target"]
-                    call = (6 + self.routine_cost[t][0]) if t in self.nodes else \
+                    ck = (t, self.site_overrides.get(a, frozenset()))
+                    call = (6 + self.routine_cost[ck][0]) if t in self.nodes else \
                            (6 + EXTERNAL_COSTS[t][1])
                 else:
                     call = None
-                for s, ec in successors(n, self.nodes):
+                for s, ec in self.succ(n):
                     if s not in body:
                         continue
                     if (a, s) in [(t, head) for t in loops[head]]:
@@ -340,7 +381,7 @@ class Analyzer:
                 continue
             d = dist[a] + extra.get(a, 0)
             n = self.nodes[a]
-            succs = [(s, ec) for s, ec in successors(n, self.nodes)
+            succs = [(s, ec) for s, ec in self.succ(n)
                      if (a, s) not in be_set]
             if n["kind"] == "ins" and n["m"] == "RTS":
                 total = d + 6
@@ -349,7 +390,8 @@ class Analyzer:
                 continue
             if n["kind"] == "jsr":
                 t = n["target"]
-                call = (6 + self.routine_cost[t][0]) if t in self.nodes else \
+                ck = (t, self.site_overrides.get(a, frozenset()))
+                call = (6 + self.routine_cost[ck][0]) if t in self.nodes else \
                        (6 + EXTERNAL_COSTS[t][1])
                 succs = [(s, call) for s, _ in succs]
             for s, ec in succs:
@@ -366,33 +408,111 @@ class Analyzer:
                 trail.append(labs[0])
             a = parent[a]
         trail.reverse()
-        self.in_progress.discard(entry)
-        self.routine_cost[entry] = (worst_term[0], trail)
+        self.in_progress.discard(key)
+        self.routine_cost[key] = (worst_term[0], trail)
         return worst_term[0]
+
+
+def detect_site_overrides(meta, nodes):
+    """Call-context loop bounds, auto-derived from the IR itself:
+    pre_run's pr_l walks PRE_MIN..PRE_MAX by PRE_TMP; the emitter sets
+    PRE_TMP (LDA_imm v / STA_abs PRE_TMP) immediately before each JSR pre_run.
+    step 1 = row scan (8 cells), step 8 = column scan (16 cells). A site whose
+    step cannot be recovered keeps the global conservative bound (16)."""
+    consts = meta.get("consts") or {}
+    if "PRE_TMP" not in consts:
+        return {}
+    pre_tmp = consts["PRE_TMP"]
+    u = meta["units"]["main"]
+    base, labels = u["base"], u["labels"]
+    if "pre_run" not in labels:
+        return {}
+    pre_run_addr = base + labels["pre_run"]
+    overrides = {}
+    last_imm = None
+    step_at_jsr = None
+    for r in u["records"]:
+        if r["k"] == "ins" and r["m"] == "LDA_imm":
+            last_imm = r["ops"][0]
+        elif (r["k"] == "ins" and r["m"] == "STA_abs"
+              and r["ops"] == [pre_tmp & 0xFF, (pre_tmp >> 8) & 0xFF]):
+            step_at_jsr = last_imm
+        elif r["k"] == "jsr":
+            t = r["target"]
+            dest = base + labels[t] if isinstance(t, str) else t
+            if dest == pre_run_addr and step_at_jsr in (1, 8):
+                overrides[base + r["off"]] = frozenset(
+                    {("pr_l", 8 if step_at_jsr == 1 else 16)})
+    return overrides
+
+
+SCENARIO_CUTS = {
+    # Per-hook path classes. Every spike path is edge-triggered (fires at most
+    # once per its trigger) and the cuts below EXCLUDE it from a scenario:
+    #   pt_edge       DRPRESTART release-edge projection+upload (P2)
+    #   h1_start/h2_start  spawn-edge board upload + GO (per player window)
+    #   do_init       PRG-RAM cold init (power-on only)
+    #   p1n search    DRP1NATIVE per-pill depth-1 search (fallof p1n_nosearch
+    #                 = 'the skip branch is always taken' = no search)
+    "steady_play": [("into", "pt_edge"), ("into", "h1_start"),
+                     ("into", "h2_start"), ("into", "do_init"),
+                     ("fallof", "p1n_nosearch")],
+    "spawn_edge_p2": [("into", "pt_edge"), ("into", "h1_start"),
+                       ("into", "do_init"), ("fallof", "p1n_nosearch")],
+    "release_edge": [("into", "h1_start"), ("into", "h2_start"),
+                      ("into", "do_init"), ("fallof", "p1n_nosearch")],
+    "p1_search": [("into", "pt_edge"), ("into", "h1_start"),
+                   ("into", "h2_start"), ("into", "do_init")],
+}
 
 
 def main():
     path = sys.argv[1]
     meta, nodes = load(path)
-    an = Analyzer(nodes)
     units = meta["units"]
     wrap_entry = units["wrapper"]["base"]
-    w = an.worst(wrap_entry)
     main_entry = meta["main_cpu"]
+    have = set()
+    for n in nodes.values():
+        have.update(n.get("labels") or [])
+
     print(f"config: {meta['manifest']}")
-    print(f"  W(main)    = {an.routine_cost[main_entry][0]:6d} cycles")
-    if "p1ai" in units:
-        se = units["p1ai"]["base"] + units["p1ai"]["labels"]["search_entry"]
-        if se in an.routine_cost:
-            print(f"  W(p1ai search) = {an.routine_cost[se][0]:6d} cycles")
-    print(f"  W(wrapper) = {w:6d} cycles   (+6 blob head STA $F6/JMP = hook)")
-    print(f"  HOOK WORST = {w + 6:6d} cycles")
-    print(f"  witness: {' -> '.join(an.routine_cost[wrap_entry][1][:12])}")
-    # per-routine table
-    print("  routines:")
-    for e, (c, tr) in sorted(an.routine_cost.items(), key=lambda kv: -kv[1][0]):
+    results = {}
+    so = detect_site_overrides(meta, nodes)
+    an_all = Analyzer(nodes, site_overrides=so)
+    results["ALL_PATHS"] = an_all.worst(wrap_entry)
+    for name, cuts in SCENARIO_CUTS.items():
+        cuts_here = [(k, l) for k, l in cuts if l in have]
+        skipped = [l for k, l in cuts if l not in have]
+        an = Analyzer(nodes, cuts_here, site_overrides=so)
+        results[name] = an.worst(wrap_entry)
+        note = f"  (absent labels skipped: {','.join(skipped)})" if skipped else ""
+        print(f"  {name:16s} hook worst = {results[name] + 6:6d} cyc{note}")
+    print(f"  {'ALL_PATHS':16s} hook worst = {results['ALL_PATHS'] + 6:6d} cyc")
+
+    # same-frame pair bound: each spike class fires at most once per frame;
+    # P2-side spikes exclude each other via ARMED2/PEND2, but a P1NATIVE
+    # search (hook 1) can share a frame with a P2 spawn upload (hook 2).
+    spikes = [k for k in ("release_edge", "spawn_edge_p2", "p1_search")
+              if results.get(k) is not None]
+    if "p1_search" in have and False:
+        pass
+    if meta.get("p1native"):
+        pair = results["p1_search"] + results["spawn_edge_p2"] + 12
+        note = "p1_search + spawn_edge_p2"
+    else:
+        pair = max(results[k] for k in spikes) + results["steady_play"] + 12
+        note = f"max(spike) + steady_play"
+    print(f"  SAME-FRAME PAIR (2 hooks) worst = {pair} cyc   [{note}]")
+    print(f"  frame budget: 29780 CPU cycles minus the game NMI's own work")
+
+    # per-routine detail from the uncut analysis
+    print("  routines (ALL_PATHS):")
+    for (e, ov), (c, tr) in sorted(an_all.routine_cost.items(),
+                                    key=lambda kv: -kv[1][0]):
         labs = nodes[e].get("labels") or [f"${e:04X}"]
-        print(f"    ${e:04X} {labs[0]:24s} {c:8d}")
+        tag = " [ctx]" if ov else ""
+        print(f"    ${e:04X} {labs[0]:24s} {c:8d}{tag}")
 
 
 if __name__ == "__main__":

@@ -169,7 +169,12 @@ def main():
             f"GROUND-TRUTH GATE FAILED: unit {name} IR reassembly != emitter bytes "
             f"(len {len(got)} vs {len(auth)})")
 
+    consts = {}
+    for cname in ("PRE_TMP",):
+        if hasattr(pcc, cname):
+            consts[cname] = getattr(pcc, cname)
     meta = {
+        "consts": consts,
         "manifest": manifest_path,
         "flags_on": {k: v for k, v in snap.items() if v not in ("0", "", None)},
         "p1native": pcc.P1NATIVE,
