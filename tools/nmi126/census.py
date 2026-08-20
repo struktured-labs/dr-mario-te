@@ -86,6 +86,10 @@ LOOP_BOUNDS = {
     # match check: PRE_I 0..PRE_N with PRE_N <= 8 (one record per column);
     # head executes PRE_N+1 <= 9 times.
     "pt_mchk": 9,
+    # NOTE: the DRPRESPIPE match drivers pp_m2.. are NOT declared here. Their
+    # bound is the phase QUOTA, which is a build knob (DRPRESPIPE_Q), so it is
+    # DERIVED FROM THE IR by detect_prespipe_bounds() -- a hand-written number
+    # would silently keep the old bound after a re-split.
     # projection upload PRE_BUF -> $5x00 window: X 0..127 -> exactly 128.
     "pt_up": 128,
     # divide-by-3 of a reserve value 0..8: quotient <= 2 -> head passes <= 3.
@@ -187,7 +191,7 @@ def successors(node, nodes):
 
 
 class Analyzer:
-    def __init__(self, nodes, cuts=(), site_overrides=None):
+    def __init__(self, nodes, cuts=(), site_overrides=None, extra_bounds=None):
         """cuts: iterable of edge-cut specs applied to the whole graph:
           ('into', label)  -- remove EVERY edge whose destination is the label's
                               address (fall-through included): 'this path is not
@@ -198,6 +202,7 @@ class Analyzer:
         A label absent from the image is a hard error (a silently ignored cut
         would loosen nothing and quietly report the wrong scenario)."""
         self.nodes = nodes
+        self.extra_bounds = dict(extra_bounds or {})
         self.routine_cost = {}   # (entry, overrides) -> (worst_cycles, witness)
         self.in_progress = set()
         self.site_overrides = site_overrides or {}
@@ -240,6 +245,7 @@ class Analyzer:
             raise SystemExit(f"RECURSION through ${entry:04X}")
         self.in_progress.add(key)
         bounds = dict(LOOP_BOUNDS)
+        bounds.update(self.extra_bounds)
         bounds.update(dict(overrides))
 
         # 1. collect routine nodes (intra-routine traversal)
@@ -446,6 +452,57 @@ def detect_site_overrides(meta, nodes):
     return overrides
 
 
+def detect_prespipe_bounds(meta):
+    """Per-phase loop bounds for the DRPRESPIPE match drivers, read out of the
+    IR's own quota compares -- the same discipline as detect_site_overrides.
+
+    Each driver head pp_m<N> opens either
+        LDA PRE_I / CMP_imm quota / BCS done   (a quota-bounded phase), or
+        LDA PRE_I / CMP_abs PRE_N / BCS done   (the LAST phase, PRE_N-bounded).
+    Records run are (quota - previous quota), and the head executes once more
+    than that. A head that does not match this shape is a HARD FAIL: falling
+    back to the loose 9 would still be sound but would quietly destroy the
+    per-phase certificate the split exists to produce."""
+    u = meta["units"].get("main")
+    if not u:
+        return {}
+    labels = u["labels"]
+    heads = sorted((l for l in labels if l.startswith("pp_m")
+                    and l[4:].isdigit()), key=lambda l: int(l[4:]))
+    if not heads:
+        return {}
+    recs = [r for r in u["records"] if r["k"] != "label"]
+    by_off = {r["off"]: i for i, r in enumerate(recs)}
+    out = {}
+    prev_q = 0
+    for i, h in enumerate(heads):
+        j = by_off.get(labels[h])
+        if j is None:
+            raise SystemExit(f"prespipe: head {h} is not an instruction boundary")
+        a0, a1 = recs[j], recs[j + 1]
+        if not (a0["k"] == "ins" and a0["m"] == "LDA_abs"):
+            raise SystemExit(f"prespipe: {h} does not open with LDA PRE_I")
+        if a1["k"] == "ins" and a1["m"] == "CMP_imm":
+            q = a1["ops"][0]
+            if i == len(heads) - 1:
+                raise SystemExit(f"prespipe: last phase {h} is quota-bounded; "
+                                 "records above the final quota would never run")
+        elif a1["k"] == "ins" and a1["m"] == "CMP_abs":
+            if i != len(heads) - 1:
+                raise SystemExit(f"prespipe: non-final phase {h} has no quota")
+            q = 8                      # PRE_N <= 8 (one settle record per column)
+        else:
+            raise SystemExit(f"prespipe: {h} quota compare not recognised "
+                             f"({a1.get('m')})")
+        if q <= prev_q or q > 8:
+            raise SystemExit(f"prespipe: {h} quota {q} not in ({prev_q}, 8]")
+        out[h] = (q - prev_q) + 1
+        prev_q = q
+    if prev_q != 8:
+        raise SystemExit(f"prespipe: phases cover only {prev_q} of 8 records")
+    return out
+
+
 SCENARIO_CUTS = {
     # Per-hook path classes. Every spike path is edge-triggered (fires at most
     # once per its trigger) and the cuts below EXCLUDE it from a scenario:
@@ -463,7 +520,53 @@ SCENARIO_CUTS = {
                       ("into", "do_init"), ("fallof", "p1n_nosearch")],
     "p1_search": [("into", "pt_edge"), ("into", "h1_start"),
                    ("into", "h2_start"), ("into", "do_init")],
+    # ---- DRPRESPIPE per-phase classes (absent labels are skipped, so these
+    # collapse onto the scenarios above on a non-pipelined image). Exactly one
+    # phase runs per hook: PP_PH is read once at the top of pre_tick and each
+    # phase either RTSes or reaches pt_bail, so cutting the other entries is a
+    # statement about the DISPATCH, not an assumption about the workload.
+    #
+    # ⚠ The h2_cp cut is the load-bearing one and it is PROVEN, not assumed:
+    # handle(2)'s `_start` opens `LDA PEND2 / BNE st1 / JMP h2_done`, so the
+    # 128-byte spawn upload requires PEND2 != 0 -- and pp_disp ABORTS the whole
+    # pipeline when PEND2 != 0 (and when ARMED2 != 0). A phase hook and a
+    # spawn-edge upload are therefore mutually exclusive BY THE ABORT CHECKS.
+    # Cutting `h2_cp` (the upload loop head) rather than `h2_start` keeps the
+    # cheap guard path in the graph, so the cut removes only what the guard
+    # provably removes. tests/test_prespipe.py M3 deletes the abort check and
+    # must fail, which is what keeps this certificate honest.
 }
+
+# Common cuts for every DRPRESPIPE phase class: no spawn upload (proven above), no
+# power-on init, no P1 search.
+_PP_BASE = [("into", "h1_start"), ("into", "h2_cp"), ("into", "do_init"),
+            ("fallof", "p1n_nosearch")]
+
+
+def prespipe_scenarios(have):
+    """Per-phase scenario cuts for a DRPRESPIPE image, derived from the labels the
+    image actually carries (the phase COUNT is a build knob, DRPRESPIPE_Q), so a
+    re-split cannot silently leave a phase uncertified. Returns {} on an image
+    without the pipeline."""
+    if "pp_disp" not in have:
+        return {}
+    match = sorted((l for l in have if l.startswith("pp_m")
+                    and l[4:].isdigit()), key=lambda l: int(l[4:]))
+    phases = ["pp_ph1"] + match           # dispatch entry label per phase, in order
+    # ⚠ steady_play / spawn_edge_p2 are NOT usable as the "other hook" of a pair
+    # on a pipelined image: they cut only pt_edge, so they still admit a PHASE
+    # hook and pairing one with a phase double-counts the pipeline. These two
+    # classes cut BOTH entries (no edge, no phase) and are the honest partners.
+    out = {"pp_edge": [("into", "pp_disp")] + _PP_BASE,
+           "pp_idle": [("into", "pp_disp"), ("into", "pt_edge")] + _PP_BASE,
+           "pp_spawn": [("into", "pp_disp"), ("into", "pt_edge"),
+                        ("into", "h1_start"), ("into", "do_init"),
+                        ("fallof", "p1n_nosearch")]}
+    for i, entry in enumerate(phases):
+        others = [("into", e) for e in phases if e != entry]
+        out[f"pp_ph{i + 1}"] = [("into", "ppd_skip")] + others + _PP_BASE
+    return out, ["pp_edge"] + [f"pp_ph{i + 1}" for i in range(len(phases))]
+
 
 
 def main():
@@ -479,12 +582,17 @@ def main():
     print(f"config: {meta['manifest']}")
     results = {}
     so = detect_site_overrides(meta, nodes)
-    an_all = Analyzer(nodes, site_overrides=so)
+    eb = detect_prespipe_bounds(meta)
+    an_all = Analyzer(nodes, site_overrides=so, extra_bounds=eb)
     results["ALL_PATHS"] = an_all.worst(wrap_entry)
-    for name, cuts in SCENARIO_CUTS.items():
+    pp = prespipe_scenarios(have)
+    pp_cuts, pp_order = pp if pp else ({}, [])
+    scenarios = dict(SCENARIO_CUTS)
+    scenarios.update(pp_cuts)
+    for name, cuts in scenarios.items():
         cuts_here = [(k, l) for k, l in cuts if l in have]
         skipped = [l for k, l in cuts if l not in have]
-        an = Analyzer(nodes, cuts_here, site_overrides=so)
+        an = Analyzer(nodes, cuts_here, site_overrides=so, extra_bounds=eb)
         results[name] = an.worst(wrap_entry)
         note = f"  (absent labels skipped: {','.join(skipped)})" if skipped else ""
         print(f"  {name:16s} hook worst = {results[name] + 6:6d} cyc{note}")
@@ -505,6 +613,37 @@ def main():
         note = f"max(spike) + steady_play"
     print(f"  SAME-FRAME PAIR (2 hooks) worst = {pair} cyc   [{note}]")
     print(f"  frame budget: 29780 CPU cycles minus the game NMI's own work")
+
+    if pp_order:
+        # ---- DRPRESPIPE admissible-pair certificate -------------------------
+        # The generic pair line above is the WRONG MODEL for a pipelined image:
+        # it pairs a spawn upload with a phase hook, which the abort checks make
+        # impossible (see the h2_cp note in SCENARIO_CUTS). Admissible frames,
+        # each an ORDERED pair of hooks 1 and 2 of one frame:
+        #   (phase_i, phase_i+1)   the pipeline advancing across a frame boundary
+        #   (edge, phase_1)        the edge hook and the first phase
+        #   (spawn_edge_p2, edge)  a spawn upload, then a release edge next hook
+        #   (X, steady_play)       any class followed by an ordinary hook
+        # A phase can never share a frame with a spawn upload IN EITHER ORDER:
+        # in the same hook the guard forbids it, and across the two hooks of a
+        # frame PEND2/ARMED2 is still set at the second hook's dispatch, which
+        # aborts the pipeline instead of running a phase.
+        seq = [(pp_order[i], pp_order[i + 1]) for i in range(len(pp_order) - 1)]
+        seq += [(a, "pp_idle") for a in pp_order]
+        seq += [("pp_spawn", "pp_edge"), ("pp_idle", "pp_edge")]
+        GAME_HEAD, EPS, FRAME = 2040, 300, 29780
+        worst = max(seq, key=lambda ab: results[ab[0]] + results[ab[1]])
+        wv = results[worst[0]] + results[worst[1]] + 12
+        print("  DRPRESPIPE admissible frames (hook1 + hook2 + 12):")
+        for a, b in sorted(seq, key=lambda ab: -(results[ab[0]] + results[ab[1]])):
+            tot = results[a] + results[b] + 12 + GAME_HEAD + EPS
+            print(f"    {a:10s} + {b:14s} = {results[a] + results[b] + 12:6d}"
+                  f"  + head {GAME_HEAD} + eps {EPS} = {tot:6d}"
+                  f"  {'OK' if tot < FRAME else 'OVER'}  margin {FRAME - tot:+6d}")
+        tot = wv + GAME_HEAD + EPS
+        print(f"  WORST ADMISSIBLE FRAME = {tot} of {FRAME} "
+              f"({100.0 * tot / FRAME:.1f}%), margin {FRAME - tot} cyc "
+              f"[{worst[0]} + {worst[1]}]")
 
     # per-routine detail from the uncut analysis
     print("  routines (ALL_PATHS):")
