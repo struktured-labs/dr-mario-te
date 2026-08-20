@@ -125,3 +125,33 @@ but the margin near death is ~25%, not ~60%.
 - v6e was not driven into play in Mesen (DRHUMAN cart, no self-nav); its
   game head is inherited from TCVC (identical base-game code, different
   driver — driver cost is separately bounded).
+
+## #129-family entry-point witness (team-lead addition, 2026-08-19)
+
+The probe additionally watches writes of any colour-`$F` byte into either
+field page and into attackColors (both homes: zero-page `$A9-$AC` live store
+AND the `$0329/$03A9` swap copies), with PC, mode, and distance to the last
+shield-absorb event on every hit. renderGameOver's mode-7 box tiles
+(`$8F/$EF/$1F`) are the built-in positive control: a run that visits mode 7
+with zero non-play field-`$F` writes is stamped `VOID129`, never a thin zero.
+
+RESULTS (tcvc129: 24,000 frames real CvC play, multiple match ends, mode-7
+visited):
+
+| class | count | liveness of its watch region |
+|---|---|---|
+| `$xF` into a field DURING PLAY (the finding class) | **0** | field writes 27,003 / 29,802 |
+| `$xF` into a field, other modes | 98 — ALL pc=$96E3 renderGameOver, values $8F/$1F, mode 07 (**positive control: FIRED**) | — |
+| colour-$F into attackColors (zp $A9-$AC or $0329/$03A9) | **0** | 141,541 zp + 72,968×2 copy writes |
+| shield absorbs | **0** / 23,995 shield entries | — |
+
+Correlation: vacuous — both event classes were zero; every XF hit logged
+`dAbsorb=never`. The known-benign arm events (mode-7 box writes) never
+coincided with an absorb in this run.
+
+Rule-8 framing: this is BOUNDED EXPOSURE, not absence — 24,000 frames, one
+cart (TCVC `9fefaedb`), Lua-mailbox harness, deterministic boot-seed path.
+The #129 entry-point question (what writes the FIRST stray `$0F` into
+attackColors) remains open; this run adds that under #126's own witness
+conditions — the exact runs where the NMI-corruption family would be the
+prime suspect — nothing fired.
