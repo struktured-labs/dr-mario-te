@@ -31,3 +31,10 @@ hash + `romgen rebuild <manifest>` — none of the untracked files participate.
 
 Why this entry exists: a wrong provenance field left standing is how
 tier-3-hash-confound class problems start (team-lead ruling, 2026-08-19).
+
+## 2026-08-20 — hardened-prestart-20260820.json: `dirty: true`, same dirt as 2026-08-19 entry
+
+Built at d14e869 (variant lane, DRPRESTART=1 delta only). The dirt is the SAME ten
+pre-existing untracked files enumerated in the 2026-08-19 entry above (none a build
+input), plus this manifest itself before its commit. Reproduction: checkout d14e869 +
+base ROM 7d307c30… + `romgen rebuild hardened-prestart-20260820.json`.
