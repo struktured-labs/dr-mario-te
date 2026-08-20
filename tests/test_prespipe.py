@@ -267,6 +267,27 @@ def corpus():
     b = blank(); b[4] = GARB | 1; b[8 * 8 + 4] = 0xB0 | 1
     out.append(("clearing_bail", b))
 
+    # More PRE_N=8 geometries. The whole certificate is about the 8-record
+    # state, and a corpus that reaches it once out of 50 is barely a sample of
+    # the case the bound exists for (rule 7: check the POPULATION, not only the
+    # plumbing). Each of these settles all 8 columns by a different route.
+    b = blank()                                   # every column full to row 1
+    for col in range(8):
+        b[col] = GARB | (col % 3)
+        for r in range(1, 16):
+            b[r * 8 + col] = VIRUS | ((col * 3 + r) % 3)
+    out.append(("full8_norun", b))
+    b = blank()                                   # 8 singles, all deep falls
+    for col in range(8):
+        b[col] = GARB | (col % 3)
+    out.append(("deep8", b))
+    b = blank()                                   # 8 singles onto staggered stacks
+    for col in range(8):
+        b[col] = GARB | (col % 3)
+        for r in range(15 - col, 16):
+            b[r * 8 + col] = VIRUS | ((col + r) % 3)
+    out.append(("stagger8", b))
+
     rng = random.Random(138)
     for i in range(40):
         b = blank()
@@ -366,8 +387,10 @@ def main():
     # ---- G2 -------------------------------------------------------------
     cases = corpus()
     worst_hook, commits, bails = 0, 0, 0
+    nseen = {}
     for name, board in cases:
-        want, got, go_hook, worst, hooks, _ = g2_case(meta_off, meta_on, w, name, board)
+        want, got, go_hook, worst, hooks, mm = g2_case(meta_off, meta_on, w, name, board)
+        nseen[name] = mm.memory[PRE_N]
         assert got == want, f"G2 {name}: pipelined != synchronous\n  {got}\n  {want}"
         worst_hook = max(worst_hook, worst)
         if want["armed"]:
@@ -377,12 +400,19 @@ def main():
         else:
             bails += 1
             assert go_hook is None, f"G2 {name}: bail case issued a GO"
+    # POPULATION CHECK: the bound the fix exists for is the PRE_N=8 state
+    # (mixed8 killed the "volley <= 4" refinement). A corpus that never settles
+    # 8 records would test the pipeline everywhere except where it matters.
+    n8 = sum(1 for v in nseen.values() if v == 8)
+    n6 = sum(1 for v in nseen.values() if v >= 6)
+    assert n8 >= 3, f"G2 corpus reaches PRE_N=8 only {n8}x -- the certificate's " \
+                    "binding state is barely sampled"
     assert commits > 0 and bails > 0, \
         f"G2 corpus is one-sided ({commits} commits, {bails} bails) -- an " \
         "equivalence gate that never sees a bail cannot see a bail defect"
     print(f"G2 whole-chain equivalence: PASS ({len(cases)} boards, "
-          f"{commits} commit / {bails} bail; zp+regs clobbered every hook; "
-          f"worst hook {worst_hook} cyc)")
+          f"{commits} commit / {bails} bail; PRE_N=8 on {n8}, >=6 on {n6}; "
+          f"zp+regs clobbered every hook; worst hook {worst_hook} cyc)")
 
     # ---- G3 snapshot semantics ------------------------------------------
     _, board = next((n, b) for n, b in cases if n == "spread4_empty")
