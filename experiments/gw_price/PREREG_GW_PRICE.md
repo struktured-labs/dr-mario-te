@@ -126,3 +126,28 @@ Long steps under `systemd-run --user` units `drm-gw-screen`, `drm-gw-farm` with 
 chained inside the unit. JSONL to `/mnt/data/drmario_cosim/results/gw_price/`; verdicts and
 manifests committed. Never touches live soak files or any SD. Commit+push after each
 milestone with explicit remote+branch over SSH.
+
+## 2.1 AMENDMENT (2026-08-20, BEFORE any RTL farm row exists — datable: no
+`out/farm_*.jsonl` and no `/mnt/data/drmario_cosim/results/gw_price/` at the
+amending commit)
+
+The §2 seed-selection rule used the S0-A screen's flip-seeds. The screen runs the
+`lulu` pressure model; the farm runs bursty v1.1 keyed on (seed, pills_placed).
+The two games share virus board + capsule stream but diverge after the first
+volley, so screen flip-seeds enrich the FARM's trigger yield only weakly
+(measured on the first smoke: screen flip-seed 52105 produced 0 farm-loop tie
+events). Registered fix, replacing §2's selection rule only:
+
+- **Pre-screen** = the intervention runner's own game loop with a MIRROR-STUB
+  cosim (champion mirror argmax in place of the RTL, everything else identical —
+  same bursty v1.1 injection, same trigger code path), base arm, over
+  52100–53099.
+- **N1 = the first 32 seeds (ascending) whose pre-screen game contains ≥ 1
+  FIRE event** (full trigger incl. flip); **N2 = the first 16 of those.**
+- The pre-screen also supplies the farm-population dose figures
+  (triggers/game under v1.1 pressure) used in the §5 MDE arithmetic; the §3
+  precondition verdict (already banked, GO) is unchanged.
+- Residual hazard, stated: mirror-stub games can diverge from RTL games where
+  mirror≠RTL (mid-game transfer 100 %/50; endgame unmeasured), so realized farm
+  trigger yield may be < 100 % of pre-screened seeds; the §6 VOID floor
+  (≥ 10 triggered seeds) is unchanged and now expected to clear with margin.
