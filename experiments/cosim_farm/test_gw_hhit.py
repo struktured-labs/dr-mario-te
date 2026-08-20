@@ -126,6 +126,22 @@ def m_shipped(hb, ha, ob, oa, cols):
     return max(hb[c] for c in h) if h else max(ha)
 
 
+def m_shipped_verbatim(hb, ha, ob, oa, cols):
+    """game.garbage_hit_h_legacy -- the pre-#124 line COPIED FROM main, character for
+    character, and now captured alongside the corrected value on every release (#136).
+
+    ⚠ It is NOT the same function as m_shipped above. main's game.py:314-317 is
+
+        hit = [h_after[c] for c in range(COLS) if h_after[c] != h_before[c]]
+        pending_gh = max(hit) if hit else max(h_after)
+
+    -- `hit` holds POST-SETTLE HEIGHTS, so the aggregate is over h_after, not h_before.
+    m_shipped takes its max over `hb`, which drops defect 2 and therefore models a
+    variant that never shipped. Both are legitimate mutants; only this one may be
+    quoted as "what the old pilot measured"."""
+    return G.garbage_hit_h_legacy(hb, ha)
+
+
 def m_occ_hits(hb, ha, ob, oa, cols):
     """MY OWN FIRST FIX, which garbage-window-mech caught.
 
@@ -144,8 +160,8 @@ def m_first_col(hb, ha, ob, oa, cols):
 
 
 MUTANTS = [("m_max", m_max), ("m_after", m_after), ("m_height_hits", m_height_hits),
-           ("m_shipped", m_shipped), ("m_occ_hits", m_occ_hits),
-           ("m_first_col", m_first_col)]
+           ("m_shipped", m_shipped), ("m_shipped_verbatim", m_shipped_verbatim),
+           ("m_occ_hits", m_occ_hits), ("m_first_col", m_first_col)]
 
 
 # --------------------------------------------------------------------------------
@@ -244,6 +260,42 @@ def tier1():
         ok = False
     else:
         print("    invariant holds: FLAT (all definitions coincide) did not move")
+
+    # ---- PAIRED LEGACY CAPTURE (#136) -------------------------------------------
+    # The re-run logs garbage_hit_h_legacy beside the corrected h on every release, so
+    # the size of the #124 correction becomes a WITHIN-RELEASE measurement instead of
+    # a comparison across two files that must not be pooled.
+    #
+    # ⚠ This is deliberately NOT checked against the Tier-1 scenarios. Their `drop_into`
+    # helper parks the garbage cell at ROW 0 (VS garbage floats before it settles), so
+    # every hit column reads h_after = 16 there. The pre-#124 line ran on the board the
+    # injector had already SETTLED, so a Tier-1 h_after is not the quantity it saw and
+    # any divergence/invariant read off these boards would be about the fixture, not the
+    # formula. Instead: hand-built SETTLED height pairs, checked against the pre-fix
+    # expression transcribed independently from main's game.py:314-317.
+    print("\n  paired legacy capture -- pre-#124 formula on SETTLED height pairs:")
+    legacy_cases = [
+        # (h_before, h_after, corrected_cols, want_legacy, want_corrected, note)
+        ([2, 15, 4, 14, 13, 15, 3, 14], [2, 16, 4, 14, 13, 15, 4, 14], [1, 6], 16, 3,
+         "uneven hits: legacy takes the MAX post-settle (16), correct takes min pre (3)"),
+        ([7] * 8, [7, 7, 8, 7, 7, 7, 8, 7], [2, 6], 8, 7,
+         "FLAT: legacy 8 vs correct 7 -- the +1 is defect 2 alone, all that is left"),
+        ([9, 12, 11, 10, 1, 13, 12, 11], [10, 12, 11, 10, 0, 13, 12, 11], [0, 4], 10, 1,
+         "CLEARING: col 4 hit then cleared; legacy keeps col 0 and misses the binding one"),
+    ]
+    for hb, ha, cols, want_leg, want_fix, note in legacy_cases:
+        got_leg = G.garbage_hit_h_legacy(hb, ha)
+        got_fix = G.garbage_hit_h(hb, cols)
+        good = got_leg == want_leg and got_fix == want_fix
+        ok &= good
+        print(f"    [{'PASS' if good else 'FAIL'}] legacy={got_leg:3d} (want {want_leg}) "
+              f"corrected={got_fix:3d} (want {want_fix})  "
+              f"W {window(got_leg):3d} -> {window(got_fix):3d} f  -- {note}")
+    # NOT-INERT is a property of the CORPUS, not of these three cases, so it is not
+    # asserted here: it is registered as the population check on the real run
+    # (median(h_legacy - h_corrected) >= 1 over live releases). A run where the two
+    # agree everywhere would mean the volleys landed on flat stacks and the whole
+    # re-capture said nothing -- which is a finding, and must not be silent.
 
     # ---- MUTANT KILL ------------------------------------------------------------
     print("\n  mutant kill sheet (a mutant must fail at least one case):")
