@@ -6,3 +6,6 @@ D135 blocked=10 leaked=0 guard=ON
 
 ## G2 sggate pause2e 9000 (rc=0)
 SUMMARY tag=sg_hardened-prestart-20260820_pause2e_m4_9000 arm=pause2e verdict=PAUSED_THEN_RESUMED pauseIters=240 entryHits=1 exitTaken=1 distinctP2Y=6 frames=1267 goes=8 dones=7
+
+## G3 hgate unpause o3 4000 s114 (rc=0)
+SUMMARY tag=hg_hardened-prestart-20260820_o3_4000_s114_unpause arm=unpause orient=3 verdict=RESUMED wedgeFrame=1471 exitTaken=1 distinctP2Y=7 pauseIters=304 entryHits=1 entryFrame=1170 servedN=0 navStartHits=34 navInMode4=0 frames=1651 goes=13 dones=12
