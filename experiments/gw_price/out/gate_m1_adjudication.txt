@@ -1,0 +1,7 @@
+gate_m1_unit (adjudication of the surviving closure mutant):
+  nes_pills resolved to: /home/struktured/projects/dr_mario_rl/tmp/pillrng/nes_pills.py
+  context: attach() is the FIXED impl PASS  attach installs _PillDraw
+  retired mutant is a NO-OP here     PASS  closure_source=True still yields _PillDraw
+  U1 parent stream unmoved (real ctor) PASS  
+  M1a raw-lambda mutant KILLED       PASS  clone steps steal parent draws, check sees it
+RESULT: ALL PASS

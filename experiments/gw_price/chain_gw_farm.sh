@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # drm-gw-farm: gates -> farm run -> analysis, chained so a session reap cannot
 # strand the run between steps (PREREG_GW_PRICE §8). Gates red => farm not spent.
-set -e
+set -eo pipefail
 cd "$(dirname "$0")"
 PY=../../.venv-gw/bin/python
 OUT=out

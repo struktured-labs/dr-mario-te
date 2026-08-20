@@ -361,9 +361,17 @@ def build_farm_model():
     fitter cannot find the footage data. Resolution is asserted, not hoped
     (remote-node-code-skew rule).
     """
-    import run_bursty_v1_1_validity as V11
-    assert V11.__file__.startswith(QA47), \
-        f"run_bursty_v1_1_validity resolved to {V11.__file__}, not {QA47}"
+    # Load the QA copy EXPLICITLY by path (sitecustomize pattern): sys.path
+    # resolution is hijackable — oracle_arm pushes the h13-gate eval47 dir ahead
+    # of QA47, and the (byte-identical) h13 copy fails on module-relative
+    # footage paths. Explicit loading cannot be raced by import order.
+    import importlib.util
+    _p = os.path.join(QA47, "run_bursty_v1_1_validity.py")
+    _spec = importlib.util.spec_from_file_location("run_bursty_v1_1_validity", _p)
+    V11 = importlib.util.module_from_spec(_spec)
+    sys.modules.setdefault("run_bursty_v1_1_validity", V11)
+    _spec.loader.exec_module(V11)
+    assert V11.__file__ == _p
     m = V11.build_v1_1()
     m.meta = {k: v for k, v in m.meta.items() if k != "raw_events"}
     return m

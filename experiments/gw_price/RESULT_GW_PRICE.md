@@ -74,12 +74,34 @@ pressure, or higher virus loads) — a NEW experiment, not an extension of this 
 closing the lane on the converging evidence (this VOID + the ~4.5× tie-value-overstates-
 outcome finding) that tie plies carry little outcome consequence.
 
-## Process defect, disclosed
+## Process defects and the gate record, in full
 
-The chained unit's gate step crashed at import (`oracle_arm` imported before
-`_boot_oracle()`), and `set -e` without `pipefail` let `tee` mask it — the farm ran
-UNGATED at 09:26. Fixed (`gate_gw_price.py` import order; `chain_gw_farm.sh`
-`set -eo pipefail`) and the full killed-mutant suite was run post-hoc on the unchanged
-instrument (`out/gate_result.txt`); the timing violation of §7 ("gates before any real
-farm row is read") is real and disclosed — the gates validate the instrument, and the
-reader mutant above independently validates the one reading the verdict relied on.
+1. **The farm ran ungated.** The chained unit's gate step crashed at import
+   (`oracle_arm` imported before `_boot_oracle()`), and `set -e` without `pipefail`
+   let `tee` mask the failure — the farm ran UNGATED at 09:26. Fixed
+   (`gate_gw_price.py` import order; `chain_gw_farm.sh` `set -eo pipefail`). The §7
+   timing rule ("gates before any real farm row is read") was violated and is
+   disclosed; the suite was run post-hoc on the unchanged instrument.
+
+2. **The post-hoc suite is 19/20 green — the one red line is the closure mutant, and
+   it survived TWICE** (`out/gate_result.txt`, final run 12:33: "G1-M1 closure mutant
+   KILLED FAIL — mutant IDENTICAL", first with 1 observed tie, then with 3 after the
+   case was strengthened to seed 52125's 188-pill tail). Rule-5/6 adjudication
+   (`gate_m1_unit.py`, `out/gate_m1_adjudication.txt`, ALL PASS): the mutant is
+   **EQUIVALENT BY IMPORT CONTEXT**, not weak and not a defect in the instrument.
+   Two divergent copies of `nes_pills` exist — `dr_mario_rl/tmp/pillrng` has been
+   FIXED (`attach()` installs a deepcopy-safe `_PillDraw`; its docstring records the
+   repair) while the `dr-mario-qa-wt` copy still installs the lambda — and
+   `oracle_arm` pushes the pillrng path ahead, so in the instrument's real import
+   context the mutant's `attach()` call installs the SAFE object: the defect it was
+   built to express is unreachable through that code path. (The 2026-08-10 memory
+   note "nes_pills is still unfixed everywhere" is therefore STALE; corrected.)
+   Per the A_v precedent the retired mutant is replaced by direct unit checks, both
+   green: **U1** — the real constructor's observer forks leave the parent capsule
+   stream untouched (paired-reference probe); **M1a** — an import-proof raw-lambda
+   mutant (bypasses `attach()` entirely) IS detected by the same probe, so the check
+   is not vacuous. Net gate status: every §7 gate green, with G1-M1 retired as
+   equivalent and replaced by U1/M1a — recorded here rather than quietly dropped.
+
+3. The reader mutant (§ adjudication above) independently validates the analysis
+   path the VOID verdict actually rests on.

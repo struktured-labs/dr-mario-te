@@ -1,0 +1,9 @@
+prescreen mirror games (n=1000): {'clear': 810, 'topout': 124, 'stall': 66} -> clear rate 81.0 %
+  N1 fire-seeds in mirror: {'clear': 22, 'topout': 4, 'stall': 6}
+RTL base games on N1: seeds with >=1 fire: 8 / 32  ties total: 37
+mirror mismatches by seed (base arm): [(52125, 1), (52162, 1)]
+farm spend: 96 RTL games, 30.8 core-h, mean 19.3 min/game, mean pills 143
+RTL fire events in base games: 8 over 32 games = 0.250/game (mirror predicted 0.293/game over all seeds; these are fire-ENRICHED seeds)
+seed 52125: fires at plies [74], n_mm=1
+seed 52162: fires at plies [107], n_mm=1
+fire h_hits: [1, 2, 2, 4, 5, 6, 6, 9]

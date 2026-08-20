@@ -34,6 +34,12 @@ import run_gw_price as R  # noqa: E402  (sets up sys.path for everything else)
 FARM_BIN = os.path.join(R.FARM, "build", "obj_farm", "farm_vsim")
 FW = "/mnt/data/drmario_cosim/fw/s20b"
 G1_SEEDS = (52105, 52108, 52111)   # first N1 seeds: real triggers occur
+# M1 seed: the closure mutant steals ~30 draws from the parent stream at each
+# observed tie ply, so the kill needs a tie EARLY in a LONG game. 52105's one
+# tie sits at ~ply 100 of a 101-pill game — stolen draws never resurfaced and
+# the mutant survived the 11:00 run (weak case, not an equivalent mutant).
+# 52125's base game ties at ply 74 of 262 pills (banked farm row).
+M1_SEED = 52125
 
 _fail = []
 
@@ -89,15 +95,16 @@ def g1(C, bmodel):
         f_stock = {s: ex.submit(_worker_stock, s) for s in G1_SEEDS}
         f_mine = {s: ex.submit(_worker_iv, (s, "base", False, None))
                   for s in G1_SEEDS}
-        f_mut = ex.submit(_worker_iv, (G1_SEEDS[0], "base", False,
+        f_mut = ex.submit(_worker_iv, (M1_SEED, "base", False,
                                        {"closure": True}))
+        f_stock_m1 = ex.submit(_worker_stock, M1_SEED)
         for seed in G1_SEEDS:
             sk, sres, spills = f_stock[seed].result()
             mine = f_mine[seed].result()
             check(f"G1 stock-identity seed {seed}", sk == _key_iv(mine),
                   f"stock={sres}/{spills} mine={mine['result']}/"
                   f"{mine['pills']} ties={mine['n_tie']}")
-        sk0, _, _ = f_stock[G1_SEEDS[0]].result()
+        sk0, _, _ = f_stock_m1.result()
         mut = f_mut.result()
         killed = sk0 != _key_iv(mut)
         check("G1-M1 closure mutant KILLED", killed,
@@ -253,8 +260,8 @@ def g6():
 
 def main():
     print("gate_gw_price:")
-    import oracle_arm as O
-    R._boot_oracle()
+    R._boot_oracle()          # MUST precede any oracle import (this exact line
+    import oracle_arm as O    # being missing crashed the 09:xx chain run)
     C, _ = O.init_rig("lulu")
     g1(C, None)
     boards, C2, bm2 = _tie_boards()
