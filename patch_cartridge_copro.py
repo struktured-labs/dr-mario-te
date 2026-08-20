@@ -1080,11 +1080,14 @@ assert not (PRESPIPE and not PRESTART), (
 # claimants (FC_STAB/DRSTARTGUARD at $61BB and SL_PH..SL_OFB/DRP1SLICE at $61BB-$61C1, which
 # collide with EACH OTHER; latent today, reported to the team lead). All other cross-hook
 # state (PRE_I/PRE_COL/PRE_N/PRE_LND/PRE_BUF) is already PRG-RAM and persists for free.
-# PRESPIPE_Q = match records per match phase (see the driver comment). Default 4 = the
-# 3-hook pipeline the spec budgets; 3 gives 4 hooks and a much wider frame margin. Any Q in
-# 1..8 is legal and the census + gate certify whatever is set -- the knob does not get to
-# bypass the certificate, it only chooses which certificate you are asking for.
-PRESPIPE_Q = int(_os.environ.get("DRPRESPIPE_Q", "4"))
+# PRESPIPE_Q = match records per match phase (see the driver comment). DEFAULT 3 (team-lead
+# ruling 2026-08-20): 4 hooks = 2.0 frames, sound margin 4,926. Q=4 gives the spec's original
+# 3-hook / 1.5-frame shape but its 1,154-cycle margin rests on a MEASURED-not-bounded game
+# head (2,040) plus an estimated eps (300) -- the certificate shape this week taught us to
+# distrust -- while 0.5 frame of a >=24-frame lead is noise. Any Q in 1..8 is legal and the
+# census + gate certify whatever is set: the knob does not get to bypass the certificate,
+# it only chooses which certificate you are asking for.
+PRESPIPE_Q = int(_os.environ.get("DRPRESPIPE_Q", "3"))
 assert 1 <= PRESPIPE_Q <= 8, "DRPRESPIPE_Q must be 1..8 (there are at most 8 settle records)"
 PP_NM = -(-8 // PRESPIPE_Q)             # match phases needed to cover 8 records (ceil)
 PP_PH = 0x61C2                          # pipeline phase: 0 idle, 1 orphan+settle, 2 match 0-3, 3 match 4-7+commit
@@ -2689,8 +2692,8 @@ def build_main(level=11, speed=1):
             # PRESPIPE_Q records per match phase. The pair -- not the phase -- is the real
             # constraint (two hooks run per NMI), and the TOTAL work is fixed, so the worst
             # adjacent pair shrinks only by adding phases, never by rebalancing between two:
-            #   Q=4 -> 3 hooks (1.5 frames), the spec's latency budget, thinner margin
-            #   Q=3 -> 4 hooks (2.0 frames), materially wider margin
+            #   Q=3 (DEFAULT) -> 4 hooks (2.0 frames), margin 4,926
+            #   Q=4 -> 3 hooks (1.5 frames), the spec's original budget, margin 1,154
             # The quota is on the INDEX, not on PRE_N, so the pipeline is a FIXED number of
             # hooks whatever PRE_N is -- a latency the gate asserts exactly.
             a.label("pp_rec")
