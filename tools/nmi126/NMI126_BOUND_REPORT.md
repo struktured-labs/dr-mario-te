@@ -155,3 +155,49 @@ The #129 entry-point question (what writes the FIRST stray `$0F` into
 attackColors) remains open; this run adds that under #126's own witness
 conditions — the exact runs where the NMI-corruption family would be the
 prime suspect — nothing fired.
+
+## Enforcement 1 SHIPPED-AS-CANDIDATE: DRP1SLICE (2026-08-19, same night)
+
+`DRP1SLICE=1` (default OFF, requires DRP1NATIVE) slices the P1 native search:
+ONE column-step per hook via a PRG-RAM state machine ($61BB-$61C1), loop
+bodies verbatim from the v18 AI, swap re-eval + publish as the final step,
+<=16 hooks = 8 frames per pill. Two documented behaviour deltas, both
+spectator-grade: one possible AND-cancelled input frame per pill at publish,
+and a <=8-frame board-drift window mid-search (anytime-steering class).
+
+Candidate cart `roms/tcvc-p1slice.nes` md5 `010f4ffe` = TCVC ship flags +
+DRP1SLICE=1 (manifest `roms/manifests/tcvc-p1slice.json`; ship cart
+`9fefaedb` still rebuilds byte-exact — the flag is default-proof).
+
+Gate battery `tests/test_p1slice.py`, ALL PASS:
+- G1 byte-identity OFF (unset == "0"; flag demonstrably not inert)
+- G2 whole-chain argmax equivalence: 44 boards x colours, sliced ==
+  unsliced (column, orient, best score), with ALL v18 zp scratch clobbered
+  0xA5 between ticks and boards bit-restored; max 16 ticks
+- G3 mutants 4/4 KILLED: skip-a-column, no-save-best, skip-swap (orient 3
+  vs 1 — swap-decisive corpus case), no-restore-col
+- G4 measured tick 1,868 <= census bound 6,029; census same-frame pair
+  24,319 + game head 2,040 + eps 300 = 26,659 < 29,780 — the sliced cart
+  carries the SOUND whole-frame certificate the ship cart cannot
+  (ship p1-hook bound: 94,784)
+
+Mesen A/B (12,000 frames each, same probe/harness, matches cycling on both):
+
+| | ship `9fefaedb` | sliced `010f4ffe` |
+|---|---|---|
+| P1 hook worst (mxh1) | 19,818 | **4,745** |
+| worst whole NMI | 22,602 (76% of frame) | **8,741 (29%)** |
+| NMIs >=16k cycles | 54 | **0** |
+| overruns / bails | 0 / 0 | 0 / 0 |
+| #129 witness | clean, control fired | clean, control fired (42 mode-7 writes) |
+
+The kill pair, stated per the standard: on the adversarial tower board the
+SHIP configuration's whole-NMI (~30.1k measured parts) exceeds the frame and
+only the DRRTIVEC absorb stands behind it; the SLICED configuration cannot
+exceed the frame BY THE SOUND BOUND (26,659 incl. game head + tail). No wedge
+appeared in either arm (modes cycled 04/07/08 normally), so the f%30
+discriminator had nothing to adjudicate.
+
+NOT yet done: silicon soak of `010f4ffe` (no MiSTer/Pocket exposure; the
+live soak cart is untouched), and the prestart pipelining (enforcement 2)
+remains open for the next session.
