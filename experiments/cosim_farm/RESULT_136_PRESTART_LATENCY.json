@@ -1,0 +1,38 @@
+{
+  "task": 136,
+  "prereg": "906787d5f3477f76483605d68d7500be7c8dcdd4",
+  "date": "2026-08-20",
+  "rig": "Verilator co-sim farm (real RTL, real copro_rom.hex, per-decision clocks); Mesen/py65 excluded in the prereg (rule 10)",
+  "arms": {
+    "p136_cur": {"fw_md5": "b03a586e8316ccf6741a15ac70123886", "manifest": "66ef9e9f9975f5f5",
+                 "games": 80, "decisions": 11472, "releases_scored": 1444,
+                 "results": {"clear": 55, "topout": 19, "stall": 6}},
+    "p136_leg": {"fw_md5": "e970e9ab0208cdbce1d39ed33e2f51ee", "manifest": "244507cfcde5c70a",
+                 "games": 80, "releases_scored": 1572,
+                 "results": {"clear": 74, "topout": 3, "stall": 3}}
+  },
+  "seeds": "63000-63079 verdict (calibration 63900-63907 excluded per prereg); interrupted twice (host kernel crash ~19:58, harness reaper ~21:15) and RESUMED via run_farm.py's banked-seed skip -- games are per-seed atomic+deterministic (G6), single manifest per arm proves no code drift across resume boundaries",
+  "R1": {"verdict": "SURVIVES",
+         "on_time": "1415/1444 = 97.99%", "cluster_bootstrap_95": [97.22, 98.68],
+         "wilson_95_reported_only": [97.13, 98.60], "bar": 89.4,
+         "note": "lower bound clears #92's point estimate by 7.8pp"},
+  "R2": {"verdict": "RE-AFFIRMED", "h_star": 14,
+         "late_below": "1.05% (n=1424, h<=13)", "late_above": "100% (n=10, h>=15)",
+         "bars": "<5% / >50%",
+         "note": "h* was ~13.6 on #92's mis-measured windows; corrected windows move it to 14. Cost is flat ~48-56 f through h=10, then drops (shallower boards near death = smaller search)."},
+  "R3": {"descriptive": "current generation is SLOWER per decision: median 61.79 f (cur) vs 50.54 f (leg); mean paired diff +10.12 f, 95% [+7.40, +12.85], paired on 80 seeds -- theta400+DBLCANON buys its quality with real clocks, and the window still absorbs it"},
+  "R4": {"n": 1454, "median_dh": 2.0, "range_dh": [-7, 15], "identical_pct": 0.1,
+         "median_window_understated_frames": 32,
+         "correction_to_prereg_claim": "the prereg said every pre-#124 window figure is a LOWER bound; TRUE in the median (+2 rows = 32 f) but NOT uniformly: 77/1454 releases (5.3%) have h_legacy < h_corrected, i.e. the old formula OVERSTATED those windows. Does not touch R1 (corrected h only)."},
+  "gates": {
+    "G1_test_lat_conversion": "PASS",
+    "G2_mutants": "10/10 killed (incl. M7 max_h-keying, M8 fall-budget)",
+    "G3_test_gw_hhit": "PASS",
+    "G4_population": "PASS all 5 (unscorable=0; median dh=2.0>=1 so the #124 defect is exercised; one fw md5/arm; one manifest/arm; 0 ERROR games)",
+    "G5_provenance": "PASS -- and the registered open item is CLOSED: b03a586e rebuilt BYTE-EXACT from s20t3 + THETA=400 + DRDBLCANON=1 + DRCOPRO_TUCKV3_FIXSLOT=1 (FW_RECIPES.json arm s20t3_th400dblcanon)",
+    "G6_determinism": "PASS -- 2 seeds re-captured per arm, lat rows byte-identical (checker itself mutant-gated)"
+  },
+  "rule12_screen": "no DRPRESTART arm exists in this measurement; both arms turn-based, phase-free by construction; R3's delta is clocks-spent-searching, not phase",
+  "scope": "BUDGET ONLY: turn-based shadow projection of measured RTL clocks onto ROM windows. Does NOT execute the DRPRESTART driver code; no rig here runs it. Window figures remain lower bounds (bursty model draws random columns vs ROM's spread sets). One pressure model (bursty v1.1), level 11, drop mode.",
+  "separate_known_issue": "m-v8auto's DRPRESTART=0 ASSEMBLY failure is real and separate; noted, not touched by this lane"
+}
