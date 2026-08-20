@@ -33,6 +33,7 @@ local starts, advances, completes, aborts, swal = 0, 0, 0, 0, 0
 local ctl_hooks, edges, pokes, gos_after_edge = 0, 0, 0, 0
 local maxph, prev = 0, 0
 local frame, atk_prev, lastEdgeF, armed_prev = 0, 0, -999, 0
+local lastPokeF = -99999
 -- wedge canaries: the driver freezing is the failure this whole family is about
 local fc_prev, fc_stuck, mode_hist = -1, 0, {}
 
@@ -72,7 +73,12 @@ emu.addEventCallback(function()
   end
   armed_prev = armed
 
-  if mode == 4 and frame >= FIRST and (frame - FIRST) % EVERY == 0
+  -- ⚠ NOT a frame grid: `(frame-FIRST) % EVERY == 0` conjoined with "in play"
+  -- fired ZERO times in 12,000 frames (play is only ~28% of frames and the
+  -- grid points missed every mode-4 span). Trigger on time SINCE THE LAST POKE
+  -- instead, so the condition is evaluated on play frames rather than hoping
+  -- play coincides with the grid.
+  if mode == 4 and frame >= FIRST and (frame - lastPokeF) >= EVERY
      and rd(PRE_ATK2) == 0 then
     -- attackColors alongside the size: checkReleaseAttack reads both, and a
     -- size with stale colours would drop a malformed volley. 0-based colours
@@ -83,7 +89,7 @@ emu.addEventCallback(function()
       emu.write(0x0329 + k, (pokes + k) % 3, emu.memType.nesMemory, false)
     end
     emu.write(PRE_ATK2, SIZE, emu.memType.nesMemory, false)
-    pokes = pokes + 1
+    pokes = pokes + 1; lastPokeF = frame
   end
 
   if frame >= MAXF then
