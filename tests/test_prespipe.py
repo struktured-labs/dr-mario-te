@@ -529,6 +529,19 @@ def main():
         prs += [("pp_spawn", "pp_edge"), ("pp_idle", "pp_edge")]
         return r, prs, order_
 
+    # PREMISE CHECK. The whole admissible-frame model rests on "a phase hook and
+    # a spawn upload are mutually exclusive", which needs handle(2)'s upload to
+    # be unreachable at PEND2 == 0. That is a claim about the EMITTED code, so
+    # read it out of the IR instead of trusting the source. If a future edit
+    # moves the guard, the certificate silently becomes wrong -- this fails first.
+    seq = [r for r in urecs if ulabs["h2_start"] <= r["off"] < ulabs["h2_cp"]]
+    assert seq and seq[0]["k"] == "ins" and seq[0]["m"] == "LDA_abs" and \
+        seq[0]["ops"] == [PEND2 & 0xFF, PEND2 >> 8] and seq[1]["k"] == "br" and \
+        seq[2]["k"] == "jmp", \
+        "G6 PREMISE: handle(2) _start no longer opens with the PEND2 guard -- " \
+        "the admissible-frame model's exclusion is no longer proven"
+    print("G6 premise (spawn upload unreachable at PEND2==0): VERIFIED from the IR")
+
     nodes = census.load_from_meta(meta_on)
     so = census.detect_site_overrides(meta_on, nodes)
     eb = census.detect_prespipe_bounds(meta_on)
