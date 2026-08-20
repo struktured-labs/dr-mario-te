@@ -129,10 +129,39 @@ def measure_v6e(ir):
         st[0x0780] = 0x08   # reserve value 8 -> pt_dv max iterations
         return st
 
+    def state_mixed8():
+        """ROM-reachable 8-record worst: 4 volley singles falling 16 rows into
+        empty columns PLUS 4 pre-existing supported singles at row 0 of columns
+        full to row 1 (legal near-death state; the volley does not need to hit
+        them). Colours arranged so NO 4-run forms anywhere -> full commit path
+        with PRE_N=8 and every match scan walking its whole axis."""
+        st = {}
+        for i in range(128):
+            st[0x0500 + i] = 0xFF
+        full_cols, empty_cols = [1, 3, 5, 7], [0, 2, 4, 6]
+        for c in full_cols:                       # support rows 1..15, colours
+            for r in range(1, 16):                # alternate down the column
+                st[0x0500 + r * 8 + c] = 0xD0 + ((r + c) % 3)
+        for c in full_cols:                       # supported singles at row 0
+            st[0x0500 + c] = 0x80 + ((c // 2) % 3)
+        for c in empty_cols:                      # the volley itself
+            st[0x0500 + c] = 0x80 + ((c // 2 + 1) % 3)
+        st[0x0398] = 0x00
+        st[pcc.PRE_LAST2] = 0x03
+        st[pcc.PRE_ACT2] = 0x00
+        st[pcc.ARMED2] = 0x00
+        st[pcc.PEND2] = 0x00
+        st[0x039A] = 0x01
+        st[0x039B] = 0x02
+        st[0x03A7] = 0x00
+        st[0x0780] = 0x08
+        return st
+
     cases = {
         "vs4_empty":  state_for([0, 2, 4, 6]),                       # ROM-max volley, 16-row falls
         "vs4_runs":   state_for([0, 2, 4, 6], runs=True),
-        "hyp8_empty": state_for(list(range(8))),                     # beyond ROM (size<=4): hypothetical
+        "mixed8":     state_mixed8(),                                # ROM-reachable 8-record commit
+        "hyp8_empty": state_for(list(range(8))),                     # all-8 volley (not ROM), kept as probe
         "hyp8_runs":  state_for(list(range(8)), runs=True),
     }
     worst_rom = worst_hyp = 0
@@ -140,7 +169,7 @@ def measure_v6e(ir):
         cyc, m = run_routine(mem, entry, st)
         committed = m.memory[pcc.PRE_ACT2]
         print(f"  {name:12s} {cyc:7d} cyc  (committed={committed})")
-        if name.startswith("vs4"):
+        if name.startswith("vs4") or name == "mixed8":
             worst_rom = max(worst_rom, cyc)
         else:
             worst_hyp = max(worst_hyp, cyc)

@@ -41,6 +41,7 @@ end
 local nmi_n, c0 = 0, nil
 local hook_i = 0            -- 0/1/2 within the current NMI
 local cw, parts = nil, {}
+local h1_end = nil
 local worst = {}            -- top records {sum,pre,h1,mid,h2,frame,mode}
 local mx = {pre=0, h1=0, mid=0, h2=0, sum=0}
 local hist = {0,0,0,0,0,0}  -- sum buckets: <8k,<12k,<16k,<20k,<29780,>=29780
@@ -50,7 +51,10 @@ local entryHits, exitHits = 0, 0
 local function finish_nmi()
   if parts.pre and parts.h1 and parts.h2 then
     local sum = parts.pre + parts.h1 + (parts.mid or 0) + parts.h2
-    for k, v in pairs(parts) do if v > mx[k] then mx[k] = v end end
+    for _, k in ipairs({"pre", "h1", "mid", "h2"}) do
+      local v = parts[k]
+      if v and v > mx[k] then mx[k] = v end
+    end
     if sum > mx.sum then mx.sum = sum end
     local b = sum < 8000 and 1 or sum < 12000 and 2 or sum < 16000 and 3
               or sum < 20000 and 4 or sum < 29780 and 5 or 6
@@ -64,13 +68,20 @@ local function finish_nmi()
   end
   parts = {}
   hook_i = 0
+  h1_end = nil
 end
 
-emu.addEventCallback(function()
+-- eventType.nmi fired only ONCE per run in this build (measured f=1200 nmi=1),
+-- so NMI entry is taken from exec at the game's NMI handler $8005 instead,
+-- BANK-QUALIFIED: $8005 is in the switched window and the driver bank holds
+-- different bytes there (dr-mario-mesen-exec-callbacks-bank-blind) -- accept
+-- only when the base bank is mapped ($A02E reads $00; driver bank reads $40).
+emu.addMemoryCallback(function()
+  if rd(0xA02E) == 0x40 then return end
   finish_nmi()
   nmi_n = nmi_n + 1
   c0 = cyc()
-end, emu.eventType.nmi)
+end, emu.callbackType.exec, 0x8005)
 
 emu.addMemoryCallback(function()
   entryHits = entryHits + 1
@@ -78,7 +89,7 @@ emu.addMemoryCallback(function()
   if not c or not c0 then return end
   hook_i = hook_i + 1
   if hook_i == 1 then parts.pre = c - c0
-  elseif hook_i == 2 and parts.h1_end then parts.mid = c - parts.h1_end end
+  elseif hook_i == 2 and h1_end then parts.mid = c - h1_end end
   cw = c
 end, emu.callbackType.exec, WRAP_ENTRY)
 
@@ -86,7 +97,7 @@ local function hook_exit()
   exitHits = exitHits + 1
   local c = cyc()
   if not c or not cw then return end
-  if hook_i == 1 then parts.h1 = c - cw; parts.h1_end = c
+  if hook_i == 1 then parts.h1 = c - cw; h1_end = c
   elseif hook_i == 2 then parts.h2 = c - cw end
 end
 emu.addMemoryCallback(hook_exit, emu.callbackType.exec, WRAP_RTS)
@@ -122,6 +133,7 @@ emu.addMemoryCallback(function() return (S.done == 1) and S.ror or 0xFF end,
 
 -- ---------------- frame pump + void guard ----------------
 local lastEntryHits, stale = 0, 0
+local summary_done = false
 emu.addEventCallback(function()
   frame = frame + 1
   if frame % 600 == 0 then
@@ -135,7 +147,8 @@ emu.addEventCallback(function()
     log(string.format("TICK f=%d nmi=%d hooks=%d mode=%02x mxsum=%d",
         frame, nmi_n, entryHits, rd(0x0046), mx.sum))
   end
-  if frame >= MAXF then
+  if frame >= MAXF and not summary_done then
+    summary_done = true
     finish_nmi()
     for _, s in ipairs(worst) do log(s) end
     log(string.format("HIST <8k=%d <12k=%d <16k=%d <20k=%d <29780=%d OVER=%d",

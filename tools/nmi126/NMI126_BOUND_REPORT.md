@@ -1,129 +1,127 @@
-# #126 — Bounding the NMI hook: cycle census, verdicts, enforcement
+# #126 — Bounding the NMI hook: cycle census, measurement, verdicts
 
-**Branch** `nmi-bound-126` off `v8-rematch@1bb81bc`. **Status: DRAFT — Mesen
-measurement columns land as runs complete.**
+**Branch** `nmi-bound-126` off `v8-rematch@1bb81bc`. 2026-08-19.
 
 ## The question
 
-The shipped NMI fixes (DRRTIVEC + DRMMC1RST) make an NMI overrun *survivable*
-(one absorbed game NMI; self-aligning MMC1 writes). #126 asks for a *bound*:
-prove — or enforce by construction — that the driver's NMI hook cannot exceed
-its frame budget on any path, so overruns stop happening rather than stop
-killing.
+The shipped NMI fixes (DRRTIVEC + DRMMC1RST) make an NMI overrun *survivable*.
+#126 asks for a *bound*: prove — or enforce by construction — that the
+driver's NMI hook cannot exceed its frame budget on any path.
 
-Overrun condition: the NMI handler's total work exceeds the NTSC frame period,
-**29,780 CPU cycles**. The handler = the game's own NMI work + exactly TWO
-driver hook invocations (both inside the NMI; there is no main-loop call).
+Overrun condition: total NMI handler work > the NTSC frame period,
+**29,780 CPU cycles**. Handler = game NMI head + exactly TWO hook invocations
+(both inside the NMI; no main-loop call) + a small post-hook tail (register
+restore + RTI; the hook is the tail of `addExpansionCTRL`, the NMI's last
+call), estimated ε ≈ 100–300 cycles.
 
 ## Rig coverage (rule 10)
 
-| question | rig | why |
-|---|---|---|
-| worst-case cycles of any hook path | static census of the emitter's IR | only static analysis quantifies over *all* paths |
-| is the static bound sane / real | py65 on the real emitted bytes | cycle-exact, adversarial states we choose |
-| game-NMI head cost + real overruns | Mesen on the real cart | only rig that executes the game+driver together; copro mailbox is Lua-emulated (Mesen never executes firmware — irrelevant here, the hook cost is host-side by construction) |
-| silicon | **not covered** | no full-core sim exists; residual risk stated at the end |
+| question | rig |
+|---|---|
+| worst case over ALL hook paths | static census of the emitter's IR (sound upper bound) |
+| how loose is the bound / what is reachable | py65 on the real emitted bytes, adversarial states |
+| game-NMI head + live overrun witnesses | Mesen on the real cart (mapper-100→MMC1 header remap, byte-identical PRG/CHR; Lua copro mailbox; game+driver both really execute) |
+| silicon | **not covered** — no full-core sim; residual risk at the end |
 
-## Method and its gates
+## Method gates (all green)
 
-1. `capture_ir.py` — runs the REAL emitter under a manifest's `flag_snapshot`,
-   captures the Asm6502 instruction stream + labels for every unit that runs
-   in the hook (wrapper `$FF54`, main `$8000`, and on P1NATIVE builds the v18
-   AI `$9000` + swap-eval `$9200`). **Ground-truth gate:** reassembling the
-   captured IR must reproduce the emitter's own bytes, byte-exact, per unit
-   (hard fail). Both ship configs rebuild byte-exact from their manifests via
-   `romgen rebuild` (verified 2026-08-18), so IR == ship bytes.
-2. `census.py` — CFG worst-case over the IR. Sound-by-construction rules, all
-   hard failures: undeclared loop back-edge, unknown opcode, unresolved
-   JSR/JMP target, recursion. All 15 loops enumerated and bounded with
-   justifications in `LOOP_BOUNDS`; `pre_run` gets call-context bounds
-   (row scan 8 / column scan 16), auto-derived from the IR's own PRE_TMP
-   stores. Conservatisms are one-directional (indexed reads always +1;
-   branch direction free choice; every loop iteration charged its worst).
-3. `test_census.py` — the analyzer's own killed-mutant sheet: EXACT on four
-   hand-computed fixtures (diamond, counted loop, nested loop, JSR); mutants
-   **M1** undeclared loop, **M2** unknown opcode, **M3** recursion,
-   **M4** bound−1 (shifts the answer by exactly one worst-iteration),
-   **M5** +10-cycle insertion (moves the bound by exactly 10) — ALL KILLED.
-   Whole-chain anchor: real v6e bytes on py65 from three concrete states,
-   actual ≤ bound.
-4. `measure_py65.py` — adversarial measured worst of the two spike paths on
-   the real bytes (boards chosen to maximise scan depth / run length).
-5. `probe_nmi126.lua` + `run_probe.sh` — Mesen per-NMI anatomy
-   (pre/h1/mid/h2 via `cpu.cycleCount`, proven exposed in this build) plus
-   DIRECT overrun witnesses: shield-absorb executions (`$CEEC` with
-   `$A02E==$40`) and wrapper BUSY-bail executions. VOID guard: frozen
-   callback counters abort the run rather than thin-pass.
+- `capture_ir.py` ground-truth gate: IR reassembly == emitter bytes, per unit,
+  both configs (hard fail otherwise). Ship carts rebuild byte-exact from
+  manifests (romgen, verified 2026-08-18), so IR == ship bytes.
+- `census.py`: hard-fails on undeclared loop / unknown opcode / unresolved
+  target / recursion. 15 loops bounded with justifications; `pre_run` gets
+  call-context bounds auto-derived from the IR's own `PRE_TMP` stores.
+  Conservatisms one-directional.
+- `test_census.py`: EXACT on 4 hand-computed fixtures; mutants M1 undeclared
+  loop, M2 unknown opcode, M3 recursion, M4 bound−1 (answer shifts by exactly
+  one worst-iteration), M5 +10-cycle insertion (bound moves by exactly 10) —
+  ALL KILLED. py65 whole-chain anchor holds on real v6e bytes.
+- `probe_nmi126.lua` VOID guard (frozen counters ⇒ VOID, not thin-pass);
+  every switched-window exec callback bank-qualified via `$A02E`
+  (`dr-mario-mesen-exec-callbacks-bank-blind`). Instrument self-checks in the
+  TCVC run: entry==exit==2×frames (23,992/12,000), bail=0,
+  shield=11,995≈nmi=11,996 (shield on every NMI — the known DRMMC1RST mode-3
+  effect, reconfirmed live).
 
 ## Budget table (cycles; frame = 29,780)
 
-### v6e (`c0082cb3`, Pocket rematch line — DRPRESTART=1, DRHUMAN, P2 copro @$5000)
+### TCVC `9fefaedb` (CvC tuck MiSTer, the live-soak lineage — DRP1NATIVE, P2 copro @$5200)
 
-| hook class | static bound | py65 adversarial | Mesen max (measured) |
+| quantity | static bound | py65 adversarial | Mesen live (12,000 f, real CvC play) |
 |---|---|---|---|
-| steady play | 5,279 | 326–1,062 (typical) | TBD |
-| spawn edge (128 B upload + GO) | 7,963 | — | TBD |
-| **prestart release edge** | **27,960** | **12,871** (ROM-max 4-col volley, commit) | TBD |
-| same-frame pair (h1+h2) | 33,239 | — | TBD |
-| game NMI head (`pre`) | not bounded statically (stock game) | — | TBD |
+| game NMI head (`pre`) | n/a (stock game) | — | **2,040 max** |
+| steady hook | 4,751 | — | (typ. <1.1k) |
+| spawn-edge P2 hook (upload+GO) | 7,420 | — | ≤1,269 (h2 max) |
+| **P1NATIVE search hook** | **94,784** | **26,398** (tall same-colour towers) | **19,818 max** |
+| worst whole NMI (pre+h1+mid+h2) | 102,204+pre | ~30,100 (adversarial h1 + measured rest) | **22,602 max** |
+| overruns | — | — | **0** (shield-absorb = 0 / 11,995 shield entries) |
 
-### TCVC (`9fefaedb`, CvC tuck MiSTer — DRP1NATIVE, DRTUCK, P2 copro @$5200)
+### v6e `c0082cb3` (Pocket rematch line — DRPRESTART=1, DRHUMAN, P2 copro @$5000)
 
-| hook class | static bound | py65 adversarial | Mesen max (measured) |
+| quantity | static bound | py65 adversarial | Mesen live |
 |---|---|---|---|
-| steady play | 4,751 | — | TBD |
-| spawn edge P2 | 7,420 | — | TBD |
-| **P1NATIVE depth-1 search** | **94,784** | **26,398** (tall same-colour board) | TBD |
-| same-frame pair | 102,204 | — | TBD |
+| steady hook | 5,279 | 326–1,062 (typical states) | (menu-only run; play not reached — DRHUMAN cart does not self-navigate; game head reused from TCVC, same base game code) |
+| spawn-edge hook | 7,963 | — | |
+| **prestart release-edge hook** | **27,960** | **18,495** (`mixed8`: 4 deep-fall volley singles + 4 ROM-legal supported row-0 singles, no 4-run, full commit) | |
+| worst release frame (spike + pre + mid + steady h2) | **35,687** | ~22,200 (measured parts) / 26,200 (h2 at bound) | |
 
-## Verdicts (a)=proof holds / (b)=enforcement needed
+⚠ The previously quoted prestart worst (11.9k, "40% of a frame") **understates
+the reachable worst by ~1.55×** — the `mixed8` state (row-0 singles supported
+by full columns, legal near death) drives `pre_tick` to 18,495 because PRE_N
+reaches 8 and every match scan walks its whole axis. Still under one frame,
+but the margin near death is ~25%, not ~60%.
 
-- **v6e steady + spawn frames: (a) provable** pending the measured game-NMI
-  head: pair bound 13,242 leaves 16.5k for the game head — TBD confirm.
-- **v6e prestart release frames: (b).** The sound bound (27,960) is ~94% of
-  the frame *before* the game head and the second hook. The *reality* is
-  ~12.9k worst — likely fits — but "measured, not proven" is exactly the
-  standard #126 rejects, and the pair bound exceeds the frame. Enforcement
-  spec below.
-- **TCVC P1-spawn frames: (b), and it is not close.** Even the measured
-  search (26.4k) plus the same hook's remaining work, the second hook, and
-  any game head exceeds the frame. **The live-soak cart overruns on every P1
-  spawn today** and survives only through the DRRTIVEC absorb (cost: one
-  skipped game NMI + one skipped sound/timer tick per pill). This also means
-  hazard exposure is not hypothetical: the shield is load-bearing at ~1
-  absorb per pill. Mesen witness counts: TBD.
+## Verdicts
 
-## Enforcement spec (the (b) changes — NOT implemented tonight; each needs its
-## own gate battery per the 12 rules)
+1. **TCVC steady + spawn frames: (a) proof holds.** Pair bound 4,751+7,420+12
+   + game head 2,040 + ε ≈ **14.5k of 29,780 — 51% margin**, and that is the
+   SOUND bound, not an estimate.
+2. **TCVC P1-search frames: (b) enforcement needed.** The sound bound (94.8k)
+   is 3.2 frames; the adversarial reachable is ~30.1k for the whole NMI —
+   OVER the frame. Live play showed 0 overruns in 12,000 frames with worst
+   22.6k (76%), so this is a TAIL risk, not a routine one — concentrated on
+   tall same-colour tower boards, i.e. **exactly the near-death regime**
+   (`dr-mario-clean-failure-geometry`), where a skipped game NMI (the shield's
+   absorb cost) is least affordable. Interim claim "overruns at every P1
+   spawn" is hereby CORRECTED: refuted by the live measurement.
+3. **v6e steady + spawn frames: (a) proof holds** — pair bound 13,254 + head
+   2,040 + ε ≈ 15.5k, 48% margin.
+4. **v6e prestart release frames: (b) enforcement needed by the proof
+   standard.** Sound bound 35,687 > frame. Reachable measured ≈ 22.2k (75%),
+   so empirically safe today — but "measured, not proven" is the standard
+   #126 rejects, and the analyzer cannot tighten below the frame because the
+   9-pass match scan and 8-column settle are genuinely ROM-reachable
+   (`mixed8` proves the 8-record state is real, killing the tempting
+   "volley ≤ 4 ⇒ PRE_N ≤ 4" refinement).
 
-1. **TCVC: slice the P1 search across hooks.** The search is already per-pill
-   cached (keyed on pill Y); make the cache a 3-field state machine in free
-   driver PRG-RAM (phase, col, best-so-far) and evaluate ≤2 placements per
-   hook (≤ ~4k adversarial cycles). 15 placements finish in ≤8 hooks = 4
-   frames; the anytime driver already steers from stale targets while
-   searching, and P1 is the deliberately-slow spectator side. Kill-test: the
-   probe's shield-absorb count must go to 0 on the sliced build and stay >0
-   on ship (test-the-defect, not the fix).
-2. **v6e: pipeline pre_tick.** Phases per hook: (copy 128 B) → (orphan guard
-   + settle) → (match scan) → (upload + GO). Worst phase ≤ ~8k bound; the
-   prestart's lead shrinks by ≤3 hooks = 1.5 frames out of a 24–264-frame
-   window. The volley state is stable across the pipeline (garbage sits in
-   row 0 for 16 frames/row); re-verify the tear-down path (second volley
-   mid-pipeline → abandon whole, same as today's PRE_ACT2 teardown).
-3. **Rule for garbage-window compute (the successor lane):** no new
-   host-hook cycles, period — new work goes to copro firmware behind a
-   capability byte (as the gw design already specifies); any host-side
-   addition must come with a census re-run and stay under the per-class
-   bounds above.
+## Enforcement spec (the (b) changes — each needs its own gate battery)
+
+1. **TCVC: slice the P1 search across hooks.** Already per-pill cached (keyed
+   on pill Y); make it a small state machine in free driver PRG-RAM (phase,
+   col, best-so-far), ≤2 placements per hook (≤ ~4k cycles). 15 placements
+   finish in ≤8 hooks = 4 frames; the anytime driver already steers from
+   stale targets, and P1 is the deliberately-slow spectator side.
+   Kill-test: probe_nmi126 absorb-count and mxsum — the sliced build's mxsum
+   must stay <29,780 on the adversarial tower board where ship exceeds it
+   (test the defect, not the fix).
+2. **v6e: pipeline `pre_tick`.** Phases per hook: copy 128 B → orphan guard +
+   settle → match scan → upload + GO. Worst phase ≤ ~8k bound; lead shrinks
+   ≤3 hooks = 1.5 frames of a 24–264-frame window. Second-volley-mid-pipeline
+   ⇒ abandon whole (existing PRE_ACT2 teardown semantics).
+3. **Binding rule for the garbage-window lane:** ZERO new host-hook cycles —
+   new compute is copro firmware behind a capability byte; any host-side
+   addition requires a census re-run against the per-class bounds above.
+   See `GW_INCREMENT_SPEC.md`.
 
 ## What remains unproven on silicon
 
-- The census + py65 are cycle-exact for the 6502 model; the MiSTer/Pocket
-  core's cycle timing is the same 2A03 model but no full-core sim exists to
-  confirm the NMI cadence end-to-end (rule 10 rig map).
-- The game-NMI head is MEASURED (Mesen), not statically bounded — the stock
-  game is out of scope for path enumeration; the measured max over
-  menu/play/render/garbage frames is used with a stated margin.
-- Mesen's mapper-100 handling routes to MMC1 like the cores do, but Mesen
-  timing of OAM DMA/odd cycles may differ ±~10 cycles per frame from
-  silicon; margins are quoted accordingly.
+- No full-core sim: the 2A03 cycle model (py65/Mesen) is the same one the
+  cores implement, but the end-to-end NMI cadence on MiSTer/Pocket silicon is
+  unverified; Mesen OAM-DMA/odd-cycle timing may differ ±~10 cycles/frame.
+- The game NMI head (2,040 max) is measured over one 12,000-frame CvC run
+  (menus, play, clears, game-over, board init all visited); it is not a
+  static bound. A field-re-render worst frame beyond what this run visited
+  would eat margin — verdicts 1 and 3 keep >14k of slack against that.
+- v6e was not driven into play in Mesen (DRHUMAN cart, no self-nav); its
+  game head is inherited from TCVC (identical base-game code, different
+  driver — driver cost is separately bounded).
