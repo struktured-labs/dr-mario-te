@@ -201,3 +201,130 @@ discriminator had nothing to adjudicate.
 NOT yet done: silicon soak of `010f4ffe` (no MiSTer/Pocket exposure; the
 live soak cart is untouched), and the prestart pipelining (enforcement 2)
 remains open for the next session.
+
+## Enforcement 2 SHIPPED-AS-CANDIDATE: DRPRESPIPE (2026-08-20)
+
+`DRPRESPIPE=1` (default OFF, requires DRPRESTART) pipelines the prestart
+release path across hooks via a PRG-RAM phase byte (`PP_PH` $61C2, `PP_SWAL`
+$61C3):
+
+| hook | work |
+|---|---|
+| 0 (release edge) | detect + the `$0500` -> `PRE_BUF` snapshot copy |
+| 1 | orphan guard + settle |
+| 2 | match records 0-3 |
+| 3 | match records 4-7 + upload + GO |
+
+GO lands on edge+3 hooks = **1.5 frames** of a 24-264 frame lead. The copy
+stays in the edge hook deliberately: garbage falls a row per 16 frames and the
+settle scan keys on row 0, so a copy delayed a hook would project a different
+board (gated: G3 wipes the live board after the edge hook and asserts the
+upload is still the snapshot).
+
+`DRPRESPIPE_Q` (default 4) is records per match phase. **The pair, not the
+phase, is the constraint** -- two hooks run per NMI -- and the total work is
+fixed, so the worst adjacent pair shrinks only by ADDING phases; rebalancing
+work between two adjacent phases cannot change their sum.
+
+### Bound table (v6e class, sound census bounds, cycles; frame = 29,780)
+
+| quantity | ship (DRPRESTART) | DRPRESPIPE Q=4 | Q=3 |
+|---|---|---|---|
+| worst release-edge hook | 27,960 | **13,561** | 11,269 |
+| worst release FRAME | **35,595 (OVER)** | **28,626 (96.1%)** | **24,854 (83.5%)** |
+| margin | none | +1,154 | +4,926 |
+| hooks to GO | 1 | 3 (1.5 f) | 4 (2.0 f) |
+
+Per-hook (Q=4): edge 8,019 / ph1 11,268 / ph2 12,725 / ph3 13,561, each
+including the ~5.3k steady residue.
+
+⚠ **The generic `SAME-FRAME PAIR` census line is the WRONG MODEL on a
+pipelined image** -- it pairs a spawn upload with a phase hook, which cannot
+happen. `census.py` now emits an ADMISSIBLE-FRAME table instead, and the
+exclusion is proven, not assumed: `handle(2)`'s `_start` opens
+`LDA PEND2 / BNE st1 / JMP h2_done`, so the 128-byte spawn upload requires
+PEND2 != 0, and the dispatcher ABORTS the pipeline whenever PEND2 != 0 (or
+ARMED2 != 0). The abort checks are therefore load-bearing for the
+CERTIFICATE, not only for correctness -- `test_prespipe.py` M3 deletes the
+check and must fail.
+
+Census additions: per-phase scenario classes derived from the labels the image
+carries (the phase count is a knob), and match-driver loop bounds DERIVED from
+the IR's own quota compares rather than hand-declared -- a hand-written bound
+would silently survive a re-split.
+
+### Gate battery `tests/test_prespipe.py`, ALL PASS (both Q=4 and Q=3)
+
+- G1 byte-identity OFF (unset == "0"; flag demonstrably not inert). Also
+  proven at the CART level: `hardened-prestart-20260820` still rebuilds
+  byte-exact `4ac725cf` from the changed emitter.
+- G2 whole-chain equivalence, 53 boards (43 commit / 10 bail): same 128
+  upload bytes, same mailbox +$80..+$84, same commit-or-bail decision and same
+  PRE_ACT2/ARMED2/PEND2/WDOG2/WDOGH2 end state as ONE synchronous `pre_tick`,
+  with ALL zero page and both index registers clobbered 0xA5 between hooks,
+  and GO on exactly the designed hook. Population check: PRE_N=8 on 4 boards
+  (the state the whole bound is about -- it was 1 of 50 before the check).
+- G3 snapshot semantics.
+- G4 mutants 5/5 KILLED: M1 dispatcher never reaches phase 1, M2 commit
+  uploads from the LIVE board, M3 PEND2 abort deleted, M5 `pt_bail` does not
+  disarm, and **M4 quota 4 -> 8, which is behaviourally EQUIVALENT** (the
+  quota only decides which hook does which record) and is therefore invisible
+  to every behaviour gate -- it is killed by the CERTIFICATE, which is what
+  proves G6 constrains the split.
+  ⚠ M3 first died of the harness (rule 12): NOPing only its LDA+BEQ left the
+  following `JMP pt_bail` exposed and made the dispatcher bail
+  unconditionally. Fixed to delete all 8 bytes.
+- G5 abort obligations: PEND2, ARMED2 and a second buffered volley each
+  abandon whole with no commit and no GO; the second volley's own release edge
+  is swallowed once, matching what the synchronous teardown does there.
+- G6 certificate, with a NOT-INERT arm asserting the UNPIPELINED image is
+  still OVER the frame (35,595) -- without it a PASS could mean the defect was
+  simply absent.
+
+### Mesen play battery, 18,000 frames each, chained A/B
+
+Candidate cart `roms/prespipe-hardened.nes` md5 `29924c14` = the hardened
+prestart ship flags + `DRPRESPIPE=1` and nothing else (2,718 bytes differ);
+control `hardened-prestart-20260820` `4ac725cf`.
+
+| | control `4ac725cf` | pipelined `29924c14` |
+|---|---|---|
+| goes / dones | 178 / 172 | 181 / 173 |
+| matches started / ended / clean | 15 / 14 / 14 | 14 / 14 / 14 |
+| pills | 163 | 167 |
+| MIXED_total / brk_a02e / ABORT_4to0 | 0 / 0 / 0 | 0 / 0 / 0 |
+| soft8036 / wipes | 2 / 14 | 2 / 13 |
+| D135 | blocked=10 leaked=0 | blocked=10 leaked=0 |
+| fail_hi / fail_lo | 0 / 2 | 0 / 2 |
+
+The control arm reproduced the merge lane's own recorded numbers exactly
+(`GATE_PRESTART_20260820_raw.md` G1), which is the provenance check on a
+harness copy repointed to a different worktree. No fire-rate loss appears
+(goes 178 -> 181). `soft8036=2` and the wipe counts are present in BOTH arms
+and are a property of this cart class, not of the flag. No wedge appeared in
+either arm (14 clean ends both), so the `f%30` discriminator had nothing to
+adjudicate -- and DRPRESPIPE shifts GO by 3 hooks, so it IS a tempo-shifting
+flag and any future wedge on it gets that check first.
+
+### NOT PROVEN
+
+- **No silicon exposure.** MiSTer/Pocket untouched; the live soak cart is
+  untouched.
+- The game NMI head (2,040) is inherited MEASURED, not bounded, and eps 300 is
+  an estimate. At Q=4 the margin is 1,154 cycles, so a game-head excursion
+  beyond what the 12,000-frame CvC run visited could eat a large fraction of
+  it. Q=3 (margin 4,926) exists for exactly this reason and passes the
+  identical gate sheet.
+- **Fire-rate cost of the lock-edge abort is not measured.** A P2 spawn inside
+  the 3-hook window aborts a prestart the synchronous path would have
+  delivered. The designed case is safe by construction -- a release opens a
+  window of W = 264-16*h_min >= 24 frames before the next spawn, against a
+  1.5-frame pipeline -- but a release landing one or two frames before a spawn
+  is not excluded by that argument. The 18k A/B shows no loss (goes 178 ->
+  181), which bounds it as small on this cart and workload; it is not a rate.
+- No combined `DRPRESPIPE` + `DRP1SLICE` image is certified, and it cannot be
+  built safely yet: **`FC_STAB` (DRSTARTGUARD, #134) and `SL_PH` (DRP1SLICE)
+  both claim `$61BB`.** Verified directly -- an image with both flags emits 6
+  writers at `$61BB`. Latent today (no shipped cart carries both), but
+  `derive_prg_ram_map.py` reported 0 collisions on that config, so the map's
+  check appears blind to two DECLARED symbols sharing one address.
