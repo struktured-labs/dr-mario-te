@@ -73,13 +73,18 @@ pull_state() { # $1 remote path, $2 local path, $3 pre-save mtime
 # owner power-cycle killed it; the FIFO must be a real fifo (a dead daemon plus
 # a stray echo leaves a REGULAR file that swallows keys silently).
 ensure_inputd() {
+  # defense in depth: the hardware-touching helpers re-check ARMED themselves,
+  # so no call path (sourcing, future refactor) can reach the box unarmed.
+  [ -f "$OUT_DIR/ARMED" ] || fatal "not armed (ensure_inputd)"
   $SSH "root@$NEWMISTER_IP" "test -p /tmp/sileval_input.fifo" && return 0
   $SSH "root@$NEWMISTER_IP" "rm -f /tmp/sileval_input.fifo; nohup python3 /media/fat/linux/sileval_inputd.py >/tmp/sileval_inputd.log 2>&1 & sleep 2; test -p /tmp/sileval_input.fifo"
 }
 send_combo() { # $*: key names
+  [ -f "$OUT_DIR/ARMED" ] || fatal "not armed (send_combo)"
   $SSH "root@$NEWMISTER_IP" "test -p /tmp/sileval_input.fifo && echo 'combo $*' > /tmp/sileval_input.fifo"
 }
 take_shot() { # $1 local path
+  [ -f "$OUT_DIR/ARMED" ] || fatal "not armed (take_shot)"
   local tag="sv$$_$RANDOM"
   $SSH "root@$NEWMISTER_IP" "echo 'screenshot $tag' > /dev/MiSTer_cmd" || return 1
   sleep 2

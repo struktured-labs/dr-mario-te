@@ -28,6 +28,8 @@ mkdir -p "$(dirname "$LOG")"
 
 case "$NEWMISTER_IP" in ""|FILL_ME_IN) echo "NEWMISTER_IP unset" >&2; exit 2;; esac
 [ "$NEWMISTER_IP" = "$LIVE_MISTER_IP" ] && { echo "refusing: IP is the LIVE box" >&2; exit 2; }
+ARMED="${SILEVAL_ARMED:-$HERE/out/ARMED}"
+[ -f "$ARMED" ] || { echo "not armed: touch $ARMED first" >&2; exit 2; }
 ssh -o ConnectTimeout=10 "root@$NEWMISTER_IP" "test -f /media/fat/SILEVAL_BOX_ID" \
   || { echo "SILEVAL_BOX_ID sentinel absent — refusing" >&2; exit 2; }
 
