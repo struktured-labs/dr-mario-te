@@ -26,9 +26,12 @@
   (2-3 shots, distinct hashes) before anything counts — corevideo's hazard.
 - RE-VERIFY the nine bundle md5s (03:00-UTC update_all modified the box) and
   re-confirm the savestate hotkey + inputd under the NEW Main before reuse.
-- RECONFIRM THE BOX IP: corevideo reports the new box at 10.42.0.233;
-  sileval.env pins 10.42.0.225 (pre-update lease). Resolve with team-lead
-  before arming; the sentinel check is the identity backstop either way.
+- IP RECONCILED (2026-08-21, corevideo verification): same unit, lease moved
+  .225 -> .233 across the update reboots; sentinel read back verbatim on .233;
+  .225 is a dead lease. Env re-pinned to .233. The box now carries a unique
+  locally-administered MAC 02:53:49:4c:45:56 ("SILEV") — MAC-collision hazard
+  retired for this box, and MAC-scan rediscovery is safe if the lease wanders
+  again. Bundle + savestates confirmed intact on .233 by corevideo.
 - Same-seed/diff-seed template validity gate (2+1 cycles, cell-set rule).
 - Cold-boot RNG read ($89/$88 at title).
 - Fingerprint board set.
