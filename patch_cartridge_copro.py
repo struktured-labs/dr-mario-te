@@ -1051,6 +1051,47 @@ PRE_LND = 0x61A1                        # $61A1-$61A8: board offsets of the sett
 PRE_I, PRE_RUN, PRE_MC, PRE_SOFF = 0x61A9, 0x61AA, 0x61AB, 0x61AC    # match-scan scratch
 PRE_TMP, PRE_MIN, PRE_MAX = 0x61AD, 0x61AE, 0x61AF
 PRE_BUF = 0x6500                        # 128B projected board ($6500-$657F)
+# DRPRESPIPE=1 (default OFF -> byte-identical; requires DRPRESTART): #126 enforcement (b) for
+# the prestart release edge. The synchronous pre_tick does copy + orphan guard + settle + match
+# scan + upload + GO in ONE hook -- sound bound 22,724 for the routine, 27,960 for the hook,
+# 35,687 for the release frame > the 29,780-cycle frame (NMI126_BOUND_REPORT.md verdict 4; the
+# mixed8 state proves PRE_N=8 is ROM-reachable, so the analyzer cannot tighten below the frame).
+# Pipelined: the release-edge hook keeps the DETECT + SNAPSHOT COPY (the copy must not slip a
+# hook -- garbage falls a row per 16 frames and the settle scan keys on row 0), then a PRG-RAM
+# phase byte advances one phase per hook: ph1 orphan+settle, ph2 match records 0-3, ph3 match
+# records 4-7 + upload + GO. GO lands exactly 3 hooks (1.5 frames) after the edge, of a 24-264
+# frame lead. Hooks run 2/frame, so two ADJACENT phases share a frame -- the match scan (11,715
+# sound) is split across ph2/ph3 precisely so every adjacent-phase pair certifies under 29,780
+# (tests/test_prespipe.py G4 asserts all pairs). Mid-pipeline the world can move; every phase
+# entry re-checks and ABANDONS WHOLE (spec: the PRE_ACT2-teardown semantics) on any of:
+#   * PRE_CUR != 0 -- a second volley was buffered; also swallow its future release edge
+#     (PP_SWAL), because the synchronous path would have torn down AT that edge and started
+#     nothing (its PRE_ACT2 would still be set from the commit the pipeline hasn't reached);
+#   * PEND2/ARMED2 != 0 -- the P2 lock edge fired (spawn is coming) or a search started; the
+#     pill falls back to the ordinary spawn-edge path. Behaviour delta vs ship: a lock edge
+#     inside the 3-hook window aborts a prestart the synchronous path would have delivered.
+# Commit-time reads of the preview colours ($039A/$039B/$03A7) are safe under these aborts:
+# generateNextPill runs at spawn, and any spawn is preceded by the lock edge setting PEND2,
+# which aborts the pipeline before a stale read.
+PRESPIPE = _os.environ.get("DRPRESPIPE", "0") == "1"
+assert not (PRESPIPE and not PRESTART), (
+    "DRPRESPIPE=1 without DRPRESTART=1 is refused: there is no prestart release path to pipeline.")
+# Allocated from the PRG_RAM_MAP free run at $61C2+ -- deliberately CLEAR of both $61BB
+# claimants (FC_STAB/DRSTARTGUARD at $61BB and SL_PH..SL_OFB/DRP1SLICE at $61BB-$61C1, which
+# collide with EACH OTHER; latent today, reported to the team lead). All other cross-hook
+# state (PRE_I/PRE_COL/PRE_N/PRE_LND/PRE_BUF) is already PRG-RAM and persists for free.
+# PRESPIPE_Q = match records per match phase (see the driver comment). DEFAULT 3 (team-lead
+# ruling 2026-08-20): 4 hooks = 2.0 frames, sound margin 4,926. Q=4 gives the spec's original
+# 3-hook / 1.5-frame shape but its 1,154-cycle margin rests on a MEASURED-not-bounded game
+# head (2,040) plus an estimated eps (300) -- the certificate shape this week taught us to
+# distrust -- while 0.5 frame of a >=24-frame lead is noise. Any Q in 1..8 is legal and the
+# census + gate certify whatever is set: the knob does not get to bypass the certificate,
+# it only chooses which certificate you are asking for.
+PRESPIPE_Q = int(_os.environ.get("DRPRESPIPE_Q", "3"))
+assert 1 <= PRESPIPE_Q <= 8, "DRPRESPIPE_Q must be 1..8 (there are at most 8 settle records)"
+PP_NM = -(-8 // PRESPIPE_Q)             # match phases needed to cover 8 records (ceil)
+PP_PH = 0x61C2                          # pipeline phase: 0 idle, 1 orphan+settle, 2 match 0-3, 3 match 4-7+commit
+PP_SWAL = 0x61C3                        # !=0: swallow the NEXT release edge (post-abort teardown parity)
 
 # DRBUILDID=1 (task: "which brain am I fighting", default ON for human-profile carts): stamp a
 # short build tag onto the settings screen ("2 PLAYER GAME" row 25, columns 6-14) -- the exact
@@ -1430,6 +1471,10 @@ def build_main(level=11, speed=1):
         # nonzero value makes the FIRST spawn edge believe a prestart already owns the pill, so it
         # never sets PEND2 and the capsule falls with no search behind it.
         a.ins16("STA_abs", PRE_ACT2); a.ins16("STA_abs", PRE_LAST2)
+        if PRESPIPE:
+            # A==0. PP_PH boot-garbage would dispatch a phase against an un-copied PRE_BUF on
+            # the first play hook; PP_SWAL garbage would eat the first real release edge.
+            a.ins16("STA_abs", PP_PH); a.ins16("STA_abs", PP_SWAL)
     if STUDY2P:
         # A==0. Boot-garbage S2P_TTL is only a bounded nuisance (a nonzero value decays 2/frame
         # while blanking, the safe direction), but init it with the rest of the sticky-PRG-RAM
@@ -1804,6 +1849,11 @@ def build_main(level=11, speed=1):
         # rather than zeroed so a stale nonzero value cannot manufacture a phantom release edge.
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_pre_ok")
         a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_ACT2)
+        if PRESPIPE:
+            # A==0. Same persistence argument as PRE_ACT2: a pipeline aborted by a match end
+            # would otherwise resume phases against a dead board next match; a stale swallow
+            # would eat the new match's first release edge.
+            a.ins16("STA_abs", PP_PH); a.ins16("STA_abs", PP_SWAL)
         a.ins16("LDA_abs", PRE_ATK2); a.ins16("STA_abs", PRE_LAST2)
         a.label("ga_pre_ok")
     if STUDY2P:
@@ -2432,6 +2482,13 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", PRE_ATK2); a.ins16("STA_abs", PRE_CUR)
         a.ins16("LDA_abs", PRE_LAST2); a.ins16("STA_abs", PRE_PREV)
         a.ins16("LDA_abs", PRE_CUR); a.ins16("STA_abs", PRE_LAST2)   # latch for the next hook
+        if PRESPIPE:
+            # Pipeline active -> the whole idle/edge path is skipped this hook; the latch above
+            # still ran, so pp_disp's abort checks see a FRESH PRE_CUR. (census scenario handles:
+            # 'into pp_disp' isolates the edge hook; 'into ppd_skip' forces a phase hook.)
+            a.ins16("LDA_abs", PP_PH); a.br("BEQ", "ppd_skip")
+            a.jmp("pp_disp")
+            a.label("ppd_skip")
         a.ins16("LDA_abs", PRE_CUR); a.br("BEQ", "pt_zero")
         a.ins("RTS")                                    # still buffered: not released yet
         a.label("pt_zero")
@@ -2440,6 +2497,14 @@ def build_main(level=11, speed=1):
         a.label("pt_edge")
         # --- RELEASE EDGE: every garbage byte is already in $0500 row 0 (the size clear is the
         #     LAST write checkReleaseAttack performs, so this observation cannot be torn).
+        if PRESPIPE:
+            # Post-abort teardown parity: an abort that saw a SECOND volley buffered set
+            # PP_SWAL; consume that volley's edge here exactly as the synchronous teardown
+            # would have (it would have found PRE_ACT2 still set and started nothing).
+            a.ins16("LDA_abs", PP_SWAL); a.br("BEQ", "pp_nsw")
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", PP_SWAL)
+            a.ins("RTS")
+            a.label("pp_nsw")
         a.ins16("LDA_abs", PRE_ACT2); a.br("BEQ", "pt_try")
         # SECOND VOLLEY before the spawn: the projection we already searched is stale. Tear the
         # in-flight prestart down -- with ARMED2 cleared, handle(2) routes to `_start` and never
@@ -2466,6 +2531,11 @@ def build_main(level=11, speed=1):
         a.label("pt_cpnz")
         a.ins16("STA_absX", PRE_BUF)
         a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "pt_cp")
+        if PRESPIPE:
+            # Edge hook ends with the snapshot taken; the orphan guard opens phase 1 next hook.
+            a.ins("LDA_imm", 1); a.ins16("STA_abs", PP_PH)
+            a.ins("RTS")
+            a.label("pp_ph1")
 
         # ---- orphan guard (MUST run as a separate pass, before anything moves) --------------
         # checkReleaseAttack writes row 0 with a plain `sta` and no occupancy test, so a volley
@@ -2565,39 +2635,97 @@ def build_main(level=11, speed=1):
         a.ins16("INC_abs", PRE_N)
         a.label("pt_ncol")
         a.ins16("INC_abs", PRE_COL)
-        a.ins16("LDA_abs", PRE_COL); a.ins("CMP_imm", 8); a.br("BEQ", "pt_match")
+        a.ins16("LDA_abs", PRE_COL); a.ins("CMP_imm", 8)
+        a.br("BEQ", "pp_s_done" if PRESPIPE else "pt_match")
         a.jmp("pt_col")
+        if PRESPIPE:
+            # Phase 1 ends: seed the resumable match index (the synchronous path zeroes it at
+            # pt_match's head; here it must survive the hook boundary in PRG-RAM).
+            a.label("pp_s_done")
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_I)
+            a.ins("LDA_imm", 2); a.ins16("STA_abs", PP_PH)
+            a.ins("RTS")
 
         # ---- match check: bail if any settled cell completes a 4-run ------------------------
         # Cascades are explicitly NOT resolved in 6502; a match means the board the game will
         # actually spawn onto is not the board we projected, so we hand the pill back to the
         # ordinary spawn-edge path.
-        a.label("pt_match")
-        a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_I)
-        a.label("pt_mchk")
-        a.ins16("LDA_abs", PRE_I); a.ins16("CMP_abs", PRE_N); a.br("BCC", "pt_mgo")
-        a.jmp("pt_commit")
-        a.label("pt_mgo")
-        a.ins16("LDX_abs", PRE_I)
-        a.ins16("LDA_absX", PRE_LND); a.ins16("STA_abs", PRE_OFF)
-        a.ins16("LDX_abs", PRE_OFF)
-        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", PRE_MC)
-        a.ins16("LDA_abs", PRE_OFF); a.ins("AND_imm", 0xF8); a.ins16("STA_abs", PRE_MIN)  # row scan
-        a.ins("CLC"); a.ins("ADC_imm", 7); a.ins16("STA_abs", PRE_MAX)
-        a.ins("LDA_imm", 1); a.ins16("STA_abs", PRE_TMP)
-        a.jsr("pre_run")
-        a.ins16("LDA_abs", PRE_MC); a.ins("CMP_imm", 0xFF); a.br("BNE", "pt_mv")
-        a.jmp("pt_bail")
-        a.label("pt_mv")
-        a.ins16("LDA_abs", PRE_OFF); a.ins("AND_imm", 0x07); a.ins16("STA_abs", PRE_MIN)  # col scan
-        a.ins("CLC"); a.ins("ADC_imm", 120); a.ins16("STA_abs", PRE_MAX)
-        a.ins("LDA_imm", 8); a.ins16("STA_abs", PRE_TMP)
-        a.jsr("pre_run")
-        a.ins16("LDA_abs", PRE_MC); a.ins("CMP_imm", 0xFF); a.br("BNE", "pt_mnx")
-        a.jmp("pt_bail")
-        a.label("pt_mnx")
-        a.ins16("INC_abs", PRE_I)
-        a.jmp("pt_mchk")
+        # ONE SOURCE OF TRUTH for the per-record computation: both arms emit these bytes from
+        # the same helper, so the pipelined arm cannot drift from the synchronous one by a
+        # hand transcription (rule 11: the input a fix depends on must not be re-typed).
+        # Only the CONTROL FLOW around it differs -- the synchronous arm jumps straight to
+        # pt_bail on a 4-run, the pipelined arm returns with PRE_MC == $FF for its driver.
+        def emit_pre_record(lbl_col, on_match):
+            a.ins16("LDX_abs", PRE_I)
+            a.ins16("LDA_absX", PRE_LND); a.ins16("STA_abs", PRE_OFF)
+            a.ins16("LDX_abs", PRE_OFF)
+            a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", PRE_MC)
+            a.ins16("LDA_abs", PRE_OFF); a.ins("AND_imm", 0xF8); a.ins16("STA_abs", PRE_MIN)  # row scan
+            a.ins("CLC"); a.ins("ADC_imm", 7); a.ins16("STA_abs", PRE_MAX)
+            a.ins("LDA_imm", 1); a.ins16("STA_abs", PRE_TMP)
+            a.jsr("pre_run")
+            # A row match leaves PRE_MC == $FF, which is NOT a colour: the column scan must not
+            # be entered with it as pre_run's input, so the early-out is load-bearing in both arms.
+            a.ins16("LDA_abs", PRE_MC); a.ins("CMP_imm", 0xFF); a.br("BNE", lbl_col)
+            on_match()
+            a.label(lbl_col)
+            a.ins16("LDA_abs", PRE_OFF); a.ins("AND_imm", 0x07); a.ins16("STA_abs", PRE_MIN)  # col scan
+            a.ins("CLC"); a.ins("ADC_imm", 120); a.ins16("STA_abs", PRE_MAX)
+            a.ins("LDA_imm", 8); a.ins16("STA_abs", PRE_TMP)
+            a.jsr("pre_run")
+
+        if not PRESPIPE:
+            a.label("pt_match")
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_I)
+            a.label("pt_mchk")
+            a.ins16("LDA_abs", PRE_I); a.ins16("CMP_abs", PRE_N); a.br("BCC", "pt_mgo")
+            a.jmp("pt_commit")
+            a.label("pt_mgo")
+            emit_pre_record("pt_mv", lambda: a.jmp("pt_bail"))
+            a.ins16("LDA_abs", PRE_MC); a.ins("CMP_imm", 0xFF); a.br("BNE", "pt_mnx")
+            a.jmp("pt_bail")
+            a.label("pt_mnx")
+            a.ins16("INC_abs", PRE_I)
+            a.jmp("pt_mchk")
+        else:
+            # ---- pipelined match scan: one record subroutine, quota-bounded drivers ---------
+            # PRESPIPE_Q records per match phase. The pair -- not the phase -- is the real
+            # constraint (two hooks run per NMI), and the TOTAL work is fixed, so the worst
+            # adjacent pair shrinks only by adding phases, never by rebalancing between two:
+            #   Q=3 (DEFAULT) -> 4 hooks (2.0 frames), margin 4,926
+            #   Q=4 -> 3 hooks (1.5 frames), the spec's original budget, margin 1,154
+            # The quota is on the INDEX, not on PRE_N, so the pipeline is a FIXED number of
+            # hooks whatever PRE_N is -- a latency the gate asserts exactly.
+            a.label("pp_rec")
+            emit_pre_record("pp_rcol", lambda: a.ins("RTS"))   # PRE_MC == $FF: caller bails
+            a.ins("RTS")
+
+            def match_driver(head, quota, done):
+                a.label(head)
+                if quota is not None:
+                    a.ins16("LDA_abs", PRE_I); a.ins("CMP_imm", quota); a.br("BCS", done)
+                a.ins16("LDA_abs", PRE_I); a.ins16("CMP_abs", PRE_N); a.br("BCS", done)
+                a.jsr("pp_rec")
+                a.ins16("LDA_abs", PRE_MC); a.ins("CMP_imm", 0xFF); a.br("BNE", f"{head}_nx")
+                a.jmp("pt_bail")                                # 4-run: hand the pill back
+                a.label(f"{head}_nx")
+                a.ins16("INC_abs", PRE_I)
+                a.jmp(head)
+
+            # Phases 2..(1+PP_NM) are the match phases; the last one falls into commit.
+            # (No separate phase label on a driver head: a head carrying two labels makes the
+            # census bound key depend on emission order -- the driver head IS the entry.)
+            for k in range(PP_NM):
+                ph = 2 + k
+                last = (k == PP_NM - 1)
+                quota = None if last else (k + 1) * PRESPIPE_Q
+                match_driver(f"pp_m{ph}", quota, f"pp_m{ph}_done")
+                a.label(f"pp_m{ph}_done")
+                if last:
+                    a.jmp("pt_commit")
+                else:
+                    a.ins("LDA_imm", ph + 1); a.ins16("STA_abs", PP_PH)
+                    a.ins("RTS")
 
         # ---- commit: upload the projection, fill the mailbox, GO ----------------------------
         a.label("pt_commit")
@@ -2639,7 +2767,40 @@ def build_main(level=11, speed=1):
         # WRETRY2 is deliberately left alone: it is a once-per-PILL latch and this search belongs
         # to a pill that has not spawned yet (same reasoning as WRETRY_FIX's dropped clear).
         a.label("pt_bail")
+        if PRESPIPE:
+            # THE single pipeline exit. Every terminal path -- commit (falls through from
+            # above), 4-run bail, orphan bail, mid-animation bail, and pp_abort -- passes
+            # here, so clearing the phase in one place is what makes "no path leaves the
+            # machine armed" checkable by inspection rather than by enumeration.
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", PP_PH)
         a.ins("RTS")
+
+    if PRESTART and PRESPIPE:
+        # ---- pipeline dispatcher: runs INSTEAD of the idle/edge path while PP_PH != 0 ------
+        a.label("pp_disp")
+        # ABORT CHECKS, re-evaluated at EVERY phase entry (the world moves between hooks):
+        # (1) a second volley is buffered -> the projection under construction is stale.
+        #     Swallow that volley's own release edge as well, because the synchronous path
+        #     reaching it would have found PRE_ACT2 set (its commit already done) and torn
+        #     down without starting anything -- so ship also gets no search for volley 2.
+        a.ins16("LDA_abs", PRE_CUR); a.br("BEQ", "pp_d1")
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", PP_SWAL)
+        a.jmp("pt_bail")
+        a.label("pp_d1")
+        # (2) the P2 lock edge fired (spawn imminent) or a search is already running: the
+        #     ordinary spawn-edge path owns this capsule now.
+        a.ins16("LDA_abs", PEND2); a.br("BEQ", "pp_d2")
+        a.jmp("pt_bail")
+        a.label("pp_d2")
+        a.ins16("LDA_abs", ARMED2); a.br("BEQ", "pp_d3")
+        a.jmp("pt_bail")
+        a.label("pp_d3")
+        a.ins16("LDA_abs", PP_PH)
+        for ph in range(1, 2 + PP_NM):
+            a.ins("CMP_imm", ph); a.br("BNE", f"pp_d3_{ph}")
+            a.jmp("pp_ph1" if ph == 1 else f"pp_m{ph}")
+            a.label(f"pp_d3_{ph}")
+        a.jmp("pt_bail")                        # out-of-range phase byte: disarm, never dispatch
 
     if P1NATIVE and P1SLICE:
         # ================= DRP1SLICE: the sliced P1 search (JSR-only zone) =================

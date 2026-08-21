@@ -217,6 +217,12 @@ CONFIGS = {
     "trace": dict(DRTRACE=1, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1, DRBUILDID=0),
     "tuck-guard": dict(DRTUCK=1, DRTUCKGUARD=1, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1,
                        DRBUILDID=0),
+    # #126 enforcement 2: DRPRESPIPE adds PP_PH/PP_SWAL. Both split settings are
+    # derived -- the phase COUNT is a knob, and a map derived at one setting
+    # would under-report the other exactly the way the DRPRESTART omission did.
+    "prespipe": dict(DRPRESPIPE=1, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1, DRBUILDID=0),
+    "prespipe-q3": dict(DRPRESPIPE=1, DRPRESPIPE_Q=3, DRMMC1RST=1, DRRTIVEC=1,
+                        DRFCGATE=1, DRBUILDID=0),
 }
 
 
