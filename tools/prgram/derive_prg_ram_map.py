@@ -84,13 +84,21 @@ BOUNDS = {
 
 
 def declared(path=EMITTER):
-    """Module-level constants bound to an address in the window -> {addr: (symbol, lineno)}."""
+    """Module-level constants bound to an address in the window -> {addr: [(symbol, lineno), ...]}.
+
+    EVERY declaring symbol is kept. The original returned one (symbol, line) per address via
+    dict.setdefault, so a SECOND symbol declaring the same address was silently dropped --
+    two-symbols-one-address was unrepresentable in the output, and that is exactly how the
+    FC_STAB/SL_PH share of $61BB produced a "0 collisions" map (2026-08-20). The absolute-store
+    path could not save it either: collisions() only examines INDEXED spans, and all six $61BB
+    writers were absolute. Duplicate declarations are now a first-class finding.
+    """
     tree = ast.parse(open(path).read())
     out = {}
 
     def note(name, value, lineno):
         if isinstance(value, int) and WIN_LO <= value <= WIN_HI:
-            out.setdefault(value, (name, lineno))
+            out.setdefault(value, []).append((name, lineno))
 
     for node in tree.body:
         if not isinstance(node, ast.Assign):
@@ -223,6 +231,15 @@ CONFIGS = {
     "prespipe": dict(DRPRESPIPE=1, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1, DRBUILDID=0),
     "prespipe-q3": dict(DRPRESPIPE=1, DRPRESPIPE_Q=3, DRMMC1RST=1, DRRTIVEC=1,
                         DRFCGATE=1, DRBUILDID=0),
+    # 2026-08-20: neither DRSTARTGUARD (#134) nor DRP1SLICE (#126 enf.1) was derived, so their
+    # $61BB claimants showed "declared, never written" and the shared byte drew no writer at
+    # all. Config coverage is part of correctness -- the DRPRESTART omission already taught
+    # this once. The combined config is the collision config itself (and the next-gen cart).
+    "startguard": dict(DRSTARTGUARD=1, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1, DRBUILDID=0),
+    "p1slice": dict(DRP1NATIVE=1, DRP1SLICE=1, DRHUMAN=0, DRPOCKET=0, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1,
+                    DRBUILDID=0),
+    "startguard-p1slice": dict(DRSTARTGUARD=1, DRP1NATIVE=1, DRP1SLICE=1, DRHUMAN=0, DRPOCKET=0, DRMMC1RST=1,
+                               DRRTIVEC=1, DRFCGATE=1, DRBUILDID=0),
 }
 
 
@@ -239,15 +256,31 @@ def base_flags():
     return b
 
 
+def dup_declared(decl):
+    """Addresses claimed by TWO OR MORE declared symbols -> [(addr, [(sym, line), ...])].
+
+    This is the check that would have caught FC_STAB(#134)/SL_PH(#126) both claiming $61BB.
+    It needs no writer to fire: a shared declaration is a collision even in a flag set where
+    neither claimant emits a store (which is why the emitted view alone stayed green -- no
+    derived config enabled DRSTARTGUARD or DRP1SLICE).
+    """
+    return [(a, syms) for a, syms in sorted(decl.items()) if len(syms) > 1]
+
+
 def collisions(owner_of, hits):
     """Two distinct symbols claiming a byte, or an indexed span covering another's byte."""
     bad = []
     for off, mnem, base, lo, hi, bounded in hits:
         if lo == hi:
             continue                                   # absolute store: owner is exact
-        covered = {a: owner_of[a] for a in range(lo, hi + 1) if a in owner_of}
-        base_owner = owner_of.get(base, ("<undeclared>", 0))[0]
-        foreign = {a: s for a, (s, _l) in covered.items() if s != base_owner}
+        base_owners = {sym for sym, _l in owner_of.get(base, [("<undeclared>", 0)])}
+        foreign = {}
+        for a in range(lo, hi + 1):
+            if a == base or a not in owner_of:
+                continue
+            for sym, _l in owner_of[a]:
+                if sym not in base_owners:
+                    foreign[a] = sym
         if foreign:
             bad.append((off, mnem, base, lo, hi, bounded, foreign))
     return bad
@@ -256,6 +289,7 @@ def collisions(owner_of, hits):
 def derive():
     """Run every config, attribute every touched byte, return (rows, findings)."""
     decl = declared()
+    dups = dup_declared(decl)
     live = {}          # addr -> set(config)
     writers = {}       # addr -> set("mnem@0xFILEOFF")
     unbounded = []     # indexed writers with no proven bound
@@ -274,13 +308,17 @@ def derive():
             coll.append((tag,) + c)
     rows = []
     for a in sorted(set(decl) | set(live)):
-        sym, line = decl.get(a, ("<UNDECLARED>", 0))
+        syms = decl.get(a, [("<UNDECLARED>", 0)])
         rows.append({
-            "addr": a, "symbol": sym, "line": line,
+            "addr": a,
+            "symbol": " ⚠SHARED⚠ ".join(n for n, _l in syms) if len(syms) > 1 else syms[0][0],
+            "line": syms[0][1] if len(syms) == 1 else 0,
+            "lines": [l for _n, l in syms],
             "configs": sorted(live.get(a, [])),
             "writers": sorted(writers.get(a, [])),
         })
-    return rows, {"collisions": coll, "unbounded": unbounded, "declared": decl}
+    return rows, {"collisions": coll, "unbounded": unbounded, "declared": decl,
+                  "dup_declared": dups}
 
 
 def render(rows, findings):
@@ -295,6 +333,16 @@ def render(rows, findings):
     A("**emitted** (a byte-level store/RMW scan of the built ROM, which also sees ROM-patch")
     A("writes the AST cannot). Disagreement is the signal.\n")
     A("## Findings\n")
+    if findings["dup_declared"]:
+        A(f"⚠ **{len(findings['dup_declared'])} SHARED DECLARATION(S)** — two or more symbols")
+        A("declare the SAME byte. This is a collision whether or not any derived config writes")
+        A("the byte (FC_STAB/SL_PH shared $61BB behind a green map until 2026-08-20):\n")
+        for a, syms in findings["dup_declared"]:
+            who = ", ".join(f"`{n}` (line {l})" for n, l in syms)
+            A(f"- `${a:04X}`: {who}")
+        A("")
+    else:
+        A("No shared declarations: every byte has at most one declared owning symbol.\n")
     if findings["collisions"]:
         A(f"⚠ **{len(findings['collisions'])} COLLISION(S)** — an indexed span covers a byte owned")
         A("by a different symbol:\n")
@@ -332,7 +380,8 @@ def render(rows, findings):
         if len(r["writers"]) > 3:
             w += f" +{len(r['writers']) - 3}"
         cfg = ", ".join(r["configs"]) or "*(declared, never written)*"
-        line = f"`{r['line']}`" if r["line"] else "—"
+        line = f"`{r['line']}`" if r["line"] else (
+            "`" + "`,`".join(str(l) for l in r.get("lines", [])) + "`" if r.get("lines") and len(r["lines"]) > 1 else "—")
         A(f"| `${r['addr']:04X}` | `{r['symbol']}` | {line} | {cfg} | {w} |")
     A("")
     A("## Free runs\n")
@@ -359,20 +408,22 @@ def main():
     a = ap.parse_args()
     rows, findings = derive()
     md = render(rows, findings)
-    bad = bool(findings["collisions"]) or bool(findings["unbounded"])
+    bad = (bool(findings["collisions"]) or bool(findings["unbounded"])
+           or bool(findings["dup_declared"]))
     if a.check:
         cur = open(OUT_MD).read() if os.path.exists(OUT_MD) else ""
         if cur != md:
             print("STALE: PRG_RAM_MAP.md differs from the derivation — regenerate it")
             return 1
         if bad:
-            print("COLLISION or UNPROVEN BOUND present — see PRG_RAM_MAP.md")
+            print("COLLISION, SHARED DECLARATION or UNPROVEN BOUND present — see PRG_RAM_MAP.md")
             return 1
         print("ok: map current, no collisions, every indexed writer bounded")
         return 0
     open(OUT_MD, "w").write(md)
     print(f"wrote {OUT_MD}  ({len(rows)} allocated bytes, "
           f"{len(findings['collisions'])} collisions, "
+          f"{len(findings['dup_declared'])} shared declarations, "
           f"{len(findings['unbounded'])} unbounded writers)")
     return 1 if bad else 0
 

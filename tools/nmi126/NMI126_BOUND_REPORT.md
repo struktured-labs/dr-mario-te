@@ -397,3 +397,14 @@ too; it is the GO-register column, not that one, that shows a commit.
   writers at `$61BB`. Latent today (no shipped cart carries both), but
   `derive_prg_ram_map.py` reported 0 collisions on that config, so the map's
   check appears blind to two DECLARED symbols sharing one address.
+  **RESOLVED 2026-08-20 (collision-140):** mechanism confirmed as THREE
+  independent blind spots -- (1) `declared()` kept one symbol per address via
+  `dict.setdefault`, silently dropping `SL_PH`; (2) `collisions()` skips every
+  ABSOLUTE store (`if lo == hi: continue`) and only checks indexed spans, so
+  even a correct owner map could not flag the six absolute writers; (3) no
+  derived config enabled `DRSTARTGUARD` or `DRP1SLICE`, so the emitted view
+  never saw a `$61BB` writer at all. Fix: `FC_STAB` relocated to `$61C4`,
+  `declared()` now keeps every claimant, a `dup_declared` finding fails
+  `--check`, the three missing configs are derived, and the gate carries the
+  retired one-owner implementation as a named killed mutant (M4/M4m in
+  `tests/test_prg_ram_map.py`).

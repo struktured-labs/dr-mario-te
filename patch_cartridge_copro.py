@@ -453,8 +453,11 @@ UNPAUSE = _os.environ.get("DRUNPAUSE", "0") == "1"
 #      frame by construction; at a frozen mode 4 its exact-$10 own-the-frame write is the
 #      UNPAUSE idiom (recovery, not hazard). No code change -- documented + gated as-is.
 STARTGUARD = _os.environ.get("DRSTARTGUARD", "0") == "1"
-FC_STAB = 0x61BB      # DRSTARTGUARD site 2: hooks the full-clear state has persisted
-                      # (first byte of the $61BB-$61FF free run in PRG_RAM_MAP.md; cleared
+FC_STAB = 0x61C4      # DRSTARTGUARD site 2: hooks the full-clear state has persisted
+                      # (RELOCATED 2026-08-20 from $61BB, which DRP1SLICE's SL_PH also
+                      # claims -- the deriver's declared view kept one symbol per address
+                      # and could not report the share; now the dup-declared check catches
+                      # it. First byte of the $61C4+ free run in PRG_RAM_MAP.md; cleared
                       # every go_ai play hook, so a stale/garbage boot value only skips the
                       # arm delay once -- the pre-fix behaviour -- and never blocks a press)
 FC_STAB_K = 4         # hooks (~2 frames at the 2-hook/frame play cadence) before the press
@@ -1076,9 +1079,9 @@ PRE_BUF = 0x6500                        # 128B projected board ($6500-$657F)
 PRESPIPE = _os.environ.get("DRPRESPIPE", "0") == "1"
 assert not (PRESPIPE and not PRESTART), (
     "DRPRESPIPE=1 without DRPRESTART=1 is refused: there is no prestart release path to pipeline.")
-# Allocated from the PRG_RAM_MAP free run at $61C2+ -- deliberately CLEAR of both $61BB
-# claimants (FC_STAB/DRSTARTGUARD at $61BB and SL_PH..SL_OFB/DRP1SLICE at $61BB-$61C1, which
-# collide with EACH OTHER; latent today, reported to the team lead). All other cross-hook
+# Allocated from the PRG_RAM_MAP free run at $61C2+ -- deliberately CLEAR of the $61BB
+# claimants (SL_PH..SL_OFB/DRP1SLICE at $61BB-$61C1; FC_STAB/DRSTARTGUARD ALSO claimed $61BB
+# until 2026-08-20, when it was relocated to $61C4 -- collision fixed, deriver now checks). All other cross-hook
 # state (PRE_I/PRE_COL/PRE_N/PRE_LND/PRE_BUF) is already PRG-RAM and persists for free.
 # PRESPIPE_Q = match records per match phase (see the driver comment). DEFAULT 3 (team-lead
 # ruling 2026-08-20): 4 hooks = 2.0 frames, sound margin 4,926. Q=4 gives the spec's original

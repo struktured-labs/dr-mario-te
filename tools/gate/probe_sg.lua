@@ -18,7 +18,7 @@
 --            sees it). At the FIRST exec of SG_FC_CLEAR poke NAV_T ($6147) to a
 --            press-window phase (adversarial: the state-entry hook is already
 --            inside the press window). Record hooks between first SG_FC_CLEAR
---            and first SG_FC_PRESS exec, FC_STAB ($61BB) high-water, and whether
+--            and first SG_FC_PRESS exec, FC_STAB ($61C4) high-water, and whether
 --            the stock pause loop ($97C7) ever runs. GUARDED: press_delay >=
 --            FC_STAB_K. CONTROL: press_delay < FC_STAB_K (kill). Either way the
 --            match end must still DISMISS (mode leaves 4) -- the guard must not
@@ -35,7 +35,7 @@
 --            cart does both.
 --
 -- Env: SG_OUT SG_TAG SG_ARM SG_MAXF SG_W  SG_INJ_GUARD SG_INJ_STA SG_AN_RET
---      SG_FC_PRESS SG_FC_CLEAR  [SG_FORCEMODE=4 SG_FCSTAB=0x61BB SG_FCSTABK=4
+--      SG_FC_PRESS SG_FC_CLEAR  [SG_FORCEMODE=4 SG_FCSTAB=0x61C4 SG_FCSTABK=4
 --      SG_HOLDF=240 SG_SEED=114 SG_DLAT=34]
 -- ============================================================================
 local function need(name)
@@ -57,7 +57,7 @@ local AN_RET    = tonumber(need("SG_AN_RET"))
 local FC_PRESS  = tonumber(need("SG_FC_PRESS"))
 local FC_CLEAR  = tonumber(need("SG_FC_CLEAR"))
 local FORCEMODE = tonumber(os.getenv("SG_FORCEMODE") or "4")
-local FCSTAB    = tonumber(os.getenv("SG_FCSTAB") or "0x61BB")
+local FCSTAB    = tonumber(os.getenv("SG_FCSTAB") or "0x61C4")
 local FCSTABK   = tonumber(os.getenv("SG_FCSTABK") or "4")
 local HOLDF     = tonumber(os.getenv("SG_HOLDF") or "240")
 local SEED      = tonumber(os.getenv("SG_SEED") or "114")

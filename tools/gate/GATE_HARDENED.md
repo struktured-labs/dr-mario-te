@@ -60,7 +60,7 @@ frame's 8→4 transit — exclude the predecessor mode.
 | ship forced mode 4 (pre-fix behaviour = the named mutant) | STA_UNDER_FORCE (58/58) — killed |
 | hardened-all forced mode 4 | GUARD_HELD |
 
-**Site 2 — fc_clear stage-clear dismiss** (guard: FC_STAB=$61BB must count 4 stable fc
+**Site 2 — fc_clear stage-clear dismiss** (guard: FC_STAB=$61C4 (relocated 2026-08-20 from $61BB: SL_PH/DRP1SLICE also claimed $61BB) must count 4 stable fc
 hooks before the first press; cleared every go_ai play hook):
 
 | arm (probe_sg `site2`, VC1 poked to 0 mid-play, NAV_T poked to an open press window at fc entry — adversarial phase) | verdict |
