@@ -56,7 +56,13 @@
 - Owner is power-cycling for SNAC bring-up; two reboots + two power-offs
   observed tonight. All interrupted captures voided.
 - Old-box migration rsync (team-lead's lane) will eventually rewrite SD
-  content: RE-VERIFY the nine md5s before any A/B row after it runs.
+  content: RE-VERIFY the nine md5s before any A/B row after it runs
+  (push is --ignore-existing, so bundle files are safe by construction —
+  verify anyway, rule 11).
+- POLICY (team-lead, 2026-08-21): NO update_all on the new box while an
+  experiment is armed or running — the 03:00-UTC run replaced Main (260707)
+  and changed MGL parsing under our feet; schedule around mutations, don't
+  just catch them.
 - 4 stale `misterclaw-mcp --host MiSTer` processes from OTHER sessions (Aug 19,
   pts/9,12,15,17) resolve by mDNS name — with the old box off, "MiSTer" may now
   resolve to the NEW box. Not this lane's processes; flagged to team-lead.
