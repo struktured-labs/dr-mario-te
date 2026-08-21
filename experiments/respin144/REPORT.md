@@ -82,3 +82,45 @@ alive, per FROZEN_NOTES.md).
   CTS=74250/VIC=4, then 1080p → CTS=148500/VIC=16 (i2cget 0x39 regs 0x04-0x06, VIC
   0x3E>>2, PLL-lock 0x9E bit4), restore ini after. All ssh via sshpass -p 1 / keyed
   BatchMode. Soak-length liveness criterion for defect 2 after the A/B window.
+
+## BUILD RESULT (2026-08-21, take 2) — ALL LOCAL GATES PASS
+
+Take 1 (pin to "PLLOUTPUTCOUNTER_X0_Y7_N0") FAILED LOUDLY: fitter Error 171016
+"illegal location assignment" — N0 slots are phantoms. Diagnosis revised the mechanism:
+- The location's N suffix is NOT the counter index; the Y row encodes it
+  (NES.vo atom param output_counter_index: X89_Y0/Y5/Y7_N1 = 0/5/7; X0_Y7_N1 = 7).
+- The runtime contract is counter INDEX 5, not C0: sys/pll_cfg/pll_cfg_hdmi.v
+  hardcodes c_cnt_changed[5] / DPRIO C_CNT_0_DIV_ADDR+5; Main's video.cpp write
+  (addr 5, getPLLdiv(c), verified vs Main_MiSTer master) carries no counter select.
+  Q17 placed outclk_0 on counter 5; Q23 chose 7 -> miss -> stuck compile C=3.
+
+Take 2: pin retargeted to PLLOUTPUTCOUNTER_X0_Y5_N1 (winner tree commit 08f2343).
+Build: unit drm-respin-quartus, 13:35-13:52 EDT, WRAPPER rc=0, fw restored.
+
+Deliverable: NES_theta400dblcanon_20260821_c0pin.rbf
+  md5 4bcd7428b6fe14143e04801863c1f46d (staging/ + ship archive theta400dblcanon-c0pin-seed13)
+  manifest: rtl 08f2343 (claude/winner-single-copro), seed 13, fw b03a586e (DRDBLCANON)
+
+Gate sheet (gate_c0pin.sh):
+  PASS G1-fitverdict : SHIP AS-IS — ALMs 37664/41910 (4246 free); copro slack +0.165ns
+                       (bar +0.10); pll_hdmi +0.381ns (baseline -0.012)
+  PASS G2-c0loc      : counter[0].output_counter at PLLOUTPUTCOUNTER_X0_Y5_N1
+  PASS G3-divclk     : divclk[0] placement agrees (X0_Y5_N1, GCLK6)
+  PASS G4-notignored : pin absent from Ignored Assignments
+  PASS G5-video      : VIDEO domain quoted — pll_hdmi divclk setup +1.003ns min
+  PASS G6-userio     : USER_IO domain quoted — spi_sck 100MHz constrained, Fmax 320.1MHz,
+                       setup +6.876 / hold +0.318 / recovery +4.251 ns
+  PASS G7-fwproof    : firmware-in-netlist 16384/16384 == b03a586e; controls KILLED
+                       (baseline f78f1e93 1356B, th150 2B-dose control) — content proof,
+                       not rbf md5 (build_id.v date stamp)
+  PASS G7b-index5    : rebuilt NES.vo output_counter_index = 5 == the DPRIO index
+                       pll_cfg_hdmi.v writes (THE semantic fix proof)
+  PASS G8-distinct   : rbf differs from 974de3ed (frozen dblcanon) and de7dea35 (theta400)
+
+Note the pin changed the whole fit (copro slack 0.391->0.165, still >= bar; pll_hdmi
+slack IMPROVED 0.051->0.381). Defect-2 corollary: the c0pin fit is NOT byte-identical to
+the frozen build's, so the 6h soak doubles as both the freeze reproduce-attempt and the
+fixed core's acceptance test (criterion unchanged).
+
+REMAINING (brokered window, ONBOX_TEST_PLAN.md): ADV7513 video gate 1080p+720p via
+onbox_video_gate.sh, then the 6h input-bridge liveness soak.

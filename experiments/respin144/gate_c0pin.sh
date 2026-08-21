@@ -19,11 +19,11 @@ chk() { local n=$1 ok=$2 d=$3; if [ "$ok" = 1 ]; then say "PASS" "$n: $d"; else 
 command grep -q 'VERDICT: SHIP AS-IS' "$OUT/verdict_gate.txt"; chk G1-fitverdict $([ $? -eq 0 ] && echo 1 || echo 0) "fit_verdict SHIP AS-IS"
 
 # G2: C0 pin honored -- Output Clock Location is N0
-loc=$(command grep -A3 'counter\[0\].output_counter' "$FITRPT" | command grep -o 'PLLOUTPUTCOUNTER_X0_Y7_N[0-9]*' | head -1)
+loc=$(command grep -A3 'counter\[0\].output_counter' "$FITRPT" | command grep -o 'PLLOUTPUTCOUNTER_X0_Y[0-9]*_N[0-9]*' | head -1)
 chk G2-c0loc $([ "$loc" = "PLLOUTPUTCOUNTER_X0_Y5_N1" ] && echo 1 || echo 0) "pll_hdmi output counter at ${loc:-NOT-FOUND}"
 
 # G3: divclk[0] resource placement agrees
-dloc=$(command grep 'pll_hdmi.*divclk\[0\]' "$FITRPT" | command grep -o 'PLLOUTPUTCOUNTER_X0_Y7_N[0-9]*' | sort -u | tr '\n' ' ')
+dloc=$(command grep 'pll_hdmi.*divclk\[0\]' "$FITRPT" | command grep -o 'PLLOUTPUTCOUNTER_X0_Y[0-9]*_N[0-9]*' | sort -u | tr '\n' ' ')
 chk G3-divclk $([ "$dloc" = "PLLOUTPUTCOUNTER_X0_Y5_N1 " ] && echo 1 || echo 0) "divclk[0] placed at: ${dloc:-NOT-FOUND}"
 
 # G4: the location assignment was not IGNORED
@@ -39,7 +39,7 @@ echo "--- USER_IO/SPI domain (sta rpt) ---"; command grep -n 'spi_sck' "$STARPT"
 [ -s "$OUT/quote_userio_domain.txt" ]; chk G6-userio $([ $? -eq 0 ] && echo 1 || echo 0) "spi_sck domain lines quoted"
 
 # G7: firmware-in-netlist content proof with killed-mutant controls
-( cd "$FORK" && "$QEDA" --simulation --format=verilog NES ) > "$OUT/eda.log" 2>&1
+( cd "$FORK" && "$QEDA" --simulation --tool=modelsim --format=verilog --output_directory=output_files/simnet NES ) > "$OUT/eda.log" 2>&1
 python3 "$FORK/tools_verify_fw_in_image.py" "$FORK/output_files/simnet/NES.vo" "$EXPECTED" "$CTRL_BASE" "$CTRL_TH150" \
   | tee "$OUT/FW_IN_IMAGE_PROOF.txt"; rcp=${PIPESTATUS[0]}
 chk G7-fwproof $([ "$rcp" = 0 ] && echo 1 || echo 0) "16384/16384 expected match + controls killed (exit $rcp)"
