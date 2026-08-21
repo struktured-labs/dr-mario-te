@@ -87,9 +87,28 @@ interlock was never exercised and the witness never had a chance to fire — the
 only while SL_PH != 0, PS_EVERY=120; probe reports ov_hooks so zero
 opportunity reads VOID, not PASS)
 
-RESULTS PENDING (drm-coll-force2).
+| | combo 2b806db8 | noguard mutant 408a4de5 |
+|---|---|---|
+| pokes → release_edges | 14 → 15 | 14 → 15 |
+| pp starts/completes/aborts | 12/11/1 (abort path exercised too) | 12/11/1 |
+| sl starts/completes/ticks | 18/18/268 | 18/18/268 |
+| ppran sets | 60 | 60 |
+| **ov_hooks** (overlap opportunities) | **8** | **7** |
+| **viol** | **0** | **6 — witness FIRES** |
+| fc_stuck / wedges | 0 | 0 |
+
+The kill pair, stated per the standard: with real overlap opportunities
+present (ov_hooks 8/7, non-vacuous by construction), the guarded cart never
+runs a slice tick on a pipeline-work hook (viol=0), and the SAME workload on
+the guard-deleted mutant fires the witness 6 times. The mutant's failure mode
+matches the hypothesised mechanism exactly (ticks landing on phase hooks),
+and the two arms' trajectories are otherwise identical — no phase dial.
 
 ## LAST LINE
 
-PENDING STAGE 2b (stage 1 green; stage 2 green except the interlock witness,
-which was vacuous on the plain grid and is being re-run overlap-forced).
+ALL GREEN: static C1-C5 pass (mutants killed incl. the retired per-lane
+certification), census worst admissible frame 26,587/29,780 (margin +3,193),
+probe6 18k A/B same-shape/no-drift, dual PP+SL liveness with reverse-positive
+control, and the interlock witness non-vacuous: ov_hooks 8 → viol 0 on combo,
+ov_hooks 7 → viol 6 on the NOGUARD mutant. combo-hardened-pp3sl-20260820
+(2b806db8) is CERTIFIED as the next-generation hardened-class candidate.
