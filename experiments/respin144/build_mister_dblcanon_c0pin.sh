@@ -10,7 +10,7 @@ HERE=$(dirname "$(readlink -f "$0")")
 NEW_FW=/home/struktured/projects/dr_mario_rl/tmp/rtl_chain/ship/theta400dblcanon-seed13/copro_rom.hex
 WANT_FW=b03a586e8316ccf6741a15ac70123886    # DRDBLCANON=1 firmware (byte-exact keep)
 BASE_FW=f78f1e9376405dc996404f68dfa9dfb8    # what the fork must start and end holding
-WANT_COMMIT=1297a6c
+WANT_COMMIT=08f2343
 SEED=13
 TAG=theta400dblcanon-c0pin
 
@@ -18,7 +18,7 @@ cd "$FORK" || exit 64
 
 at=$(git rev-parse --short HEAD)
 [ "$at" = "$WANT_COMMIT" ] || { echo "ABORT: fork at $at, want $WANT_COMMIT (C0-pin commit)" >&2; exit 64; }
-command grep -q 'PLLOUTPUTCOUNTER_X0_Y7_N0' NES.qsf || { echo "ABORT: C0 pin absent from NES.qsf" >&2; exit 64; }
+command grep -q 'PLLOUTPUTCOUNTER_X0_Y5_N1' NES.qsf || { echo "ABORT: C0 pin absent from NES.qsf" >&2; exit 64; }
 
 pre=$(md5sum copro_rom.hex | cut -d' ' -f1)
 if [ "$pre" != "$BASE_FW" ]; then

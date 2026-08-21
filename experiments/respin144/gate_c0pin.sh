@@ -20,11 +20,11 @@ command grep -q 'VERDICT: SHIP AS-IS' "$OUT/verdict_gate.txt"; chk G1-fitverdict
 
 # G2: C0 pin honored -- Output Clock Location is N0
 loc=$(command grep -A3 'counter\[0\].output_counter' "$FITRPT" | command grep -o 'PLLOUTPUTCOUNTER_X0_Y7_N[0-9]*' | head -1)
-chk G2-c0loc $([ "$loc" = "PLLOUTPUTCOUNTER_X0_Y7_N0" ] && echo 1 || echo 0) "pll_hdmi output counter at ${loc:-NOT-FOUND}"
+chk G2-c0loc $([ "$loc" = "PLLOUTPUTCOUNTER_X0_Y5_N1" ] && echo 1 || echo 0) "pll_hdmi output counter at ${loc:-NOT-FOUND}"
 
 # G3: divclk[0] resource placement agrees
 dloc=$(command grep 'pll_hdmi.*divclk\[0\]' "$FITRPT" | command grep -o 'PLLOUTPUTCOUNTER_X0_Y7_N[0-9]*' | sort -u | tr '\n' ' ')
-chk G3-divclk $([ "$dloc" = "PLLOUTPUTCOUNTER_X0_Y7_N0 " ] && echo 1 || echo 0) "divclk[0] placed at: ${dloc:-NOT-FOUND}"
+chk G3-divclk $([ "$dloc" = "PLLOUTPUTCOUNTER_X0_Y5_N1 " ] && echo 1 || echo 0) "divclk[0] placed at: ${dloc:-NOT-FOUND}"
 
 # G4: the location assignment was not IGNORED
 ign=$(command grep -i -c 'ignored.*PLLOUTPUTCOUNTER\|PLLOUTPUTCOUNTER.*ignored' "$FITRPT" || true)
@@ -43,6 +43,11 @@ echo "--- USER_IO/SPI domain (sta rpt) ---"; command grep -n 'spi_sck' "$STARPT"
 python3 "$FORK/tools_verify_fw_in_image.py" "$FORK/output_files/simnet/NES.vo" "$EXPECTED" "$CTRL_BASE" "$CTRL_TH150" \
   | tee "$OUT/FW_IN_IMAGE_PROOF.txt"; rcp=${PIPESTATUS[0]}
 chk G7-fwproof $([ "$rcp" = 0 ] && echo 1 || echo 0) "16384/16384 expected match + controls killed (exit $rcp)"
+
+# G7b: THE semantic content proof -- the built netlist's counter atom is physical index 5,
+# the index pll_cfg_hdmi.v's hardcoded DPRIO write targets.
+oci=$(command grep -o 'pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|counter\[0\].output_counter .output_counter_index = [0-9]*' "$FORK/output_files/simnet/NES.vo" | command grep -o '[0-9]*$' | head -1)
+chk G7b-index5 $([ "$oci" = 5 ] && echo 1 || echo 0) "netlist output_counter_index = ${oci:-NOT-FOUND} (want 5 = reconfig write target)"
 
 # G8: distinctness -- new rbf differs from every prior artifact
 new=$(md5sum "$OUT/NES.rbf" | cut -d' ' -f1)
