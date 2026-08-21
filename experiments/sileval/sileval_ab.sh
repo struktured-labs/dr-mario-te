@@ -61,6 +61,27 @@ pull_state() { # $1 remote path, $2 local path, $3 pre-save mtime
   return 1
 }
 
+# Input + screenshot via the on-box channels (the new box has no misterclaw):
+# hotkeys through the sileval_inputd FIFO (onbox/inputd.py), screenshots through
+# the stock 'screenshot' MiSTer_cmd. ensure_inputd restarts the daemon if an
+# owner power-cycle killed it; the FIFO must be a real fifo (a dead daemon plus
+# a stray echo leaves a REGULAR file that swallows keys silently).
+ensure_inputd() {
+  $SSH "root@$NEWMISTER_IP" "test -p /tmp/sileval_input.fifo" && return 0
+  $SSH "root@$NEWMISTER_IP" "rm -f /tmp/sileval_input.fifo; nohup python3 /media/fat/linux/sileval_inputd.py >/tmp/sileval_inputd.log 2>&1 & sleep 2; test -p /tmp/sileval_input.fifo"
+}
+send_combo() { # $*: key names
+  $SSH "root@$NEWMISTER_IP" "test -p /tmp/sileval_input.fifo && echo 'combo $*' > /tmp/sileval_input.fifo"
+}
+take_shot() { # $1 local path
+  local tag="sv$$_$RANDOM"
+  $SSH "root@$NEWMISTER_IP" "echo 'screenshot $tag' > /dev/MiSTer_cmd" || return 1
+  sleep 2
+  local remote
+  remote=$($SSH "root@$NEWMISTER_IP" "ls -t /media/fat/screenshots/NES/*-$tag.png 2>/dev/null | head -1")
+  [ -n "$remote" ] && scp -q "root@$NEWMISTER_IP:$remote" "$1" && $SSH "root@$NEWMISTER_IP" "rm -f '$remote'"
+}
+
 run_arm() { # $1 seed, $2 arm  -> writes rows/<seed>_<arm>.json
   local seed=$1 arm=$2
   local row="$OUT_DIR/rows/${seed}_${arm}.json"
@@ -86,7 +107,8 @@ run_arm() { # $1 seed, $2 arm  -> writes rows/<seed>_<arm>.json
   sleep 10
   $SSH "root@$NEWMISTER_IP" "echo load_core $mgl > /dev/MiSTer_cmd" || { void_row "$row" "$seed" "$arm" "mgl_load_failed"; return 1; }
   sleep 15
-  misterclaw-send --host "$NEWMISTER_IP" --timeout 30 input combo f1 >/dev/null 2>&1 \
+  ensure_inputd || { void_row "$row" "$seed" "$arm" "inputd_unavailable"; return 1; }
+  send_combo f1 \
     || { void_row "$row" "$seed" "$arm" "f1_restore_failed"; return 1; }
   local corename t0 n=0 shot_fail=0 pull_fail=0
   corename=$($SSH "root@$NEWMISTER_IP" "cat /tmp/CORENAME 2>/dev/null" || echo "?")
@@ -100,10 +122,9 @@ run_arm() { # $1 seed, $2 arm  -> writes rows/<seed>_<arm>.json
     local tgt=$(( t0 + (n+1)*SAMPLE_SECS )); local w=$(( tgt - now )); [ "$w" -gt 0 ] && sleep "$w"
     n=$(( n + 1 ))
     local pre; pre=$($SSH "root@$NEWMISTER_IP" "stat -c '%Y' '$save2' 2>/dev/null" || echo 0)
-    misterclaw-send --host "$NEWMISTER_IP" --timeout 30 input combo leftalt f2 >/dev/null 2>&1
+    send_combo leftalt f2
     pull_state "$save2" "$adir/s$(printf %03d "$n").ss" "$pre" || pull_fail=$(( pull_fail + 1 ))
-    misterclaw-send --host "$NEWMISTER_IP" --timeout 30 screenshot \
-      --output "$adir/s$(printf %03d "$n").png" >/dev/null 2>&1 || shot_fail=$(( shot_fail + 1 ))
+    take_shot "$adir/s$(printf %03d "$n").png" || shot_fail=$(( shot_fail + 1 ))
     # motion check on the last 3 screenshots (wedge SUSPECT only — adjudication
     # is by the prereg's screenshot-timeout/no-motion rule, offline)
     if [ -f "$adir/s$(printf %03d "$n").png" ]; then

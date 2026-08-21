@@ -45,7 +45,7 @@ while true; do
     scp -q "$PATCHED" "root@$NEWMISTER_IP:$SLOT" &&
     ssh "root@$NEWMISTER_IP" "echo load_core /media/fat/menu.rbf > /dev/MiSTer_cmd" && sleep 10 &&
     ssh "root@$NEWMISTER_IP" "echo load_core $MGL > /dev/MiSTer_cmd" && sleep 15 &&
-    misterclaw-send --host "$NEWMISTER_IP" --timeout 30 input combo f1 >/dev/null 2>&1 &&
+    ssh "root@$NEWMISTER_IP" "test -p /tmp/sileval_input.fifo && echo 'combo f1' > /tmp/sileval_input.fifo" &&
     printf '%s sileval-wd seed=%s cart_md5=%s template_md5=%s mgl=%s ip=%s\n' \
       "$(date -Is)" "$SEED" "$CART_MD5" "$(md5sum "$TEMPLATE" | cut -d' ' -f1)" "$MGL" "$NEWMISTER_IP" \
     || echo "$(date -Is) sileval-wd CYCLE FAILED seed=$SEED"

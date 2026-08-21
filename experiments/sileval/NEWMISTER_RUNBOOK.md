@@ -61,6 +61,33 @@ New silicon ≠ proven silicon until it recovers known answers:
 3. Cold-boot RNG check: two power cycles, title save-states, rng0/rng1 must
    read $89/$88 both times (reset-constant seed confirmed on this box too).
 
+## 3b. Remote input + screenshots on the factory box (day-one findings, 2026-08-21)
+
+The new box has NO misterclaw daemon (it exists only on the live box). The lane
+runs on stock channels instead — all deployed and proven on the box:
+- Hotkeys: `onbox/inputd.py` at `/media/fat/linux/sileval_inputd.py` — a
+  pure-stdlib uinput virtual keyboard fed by `/tmp/sileval_input.fifo`
+  (`echo 'combo leftalt f2' > /tmp/sileval_input.fifo`). PROVEN: save-state
+  hotkey lands (exact 1,327,112-byte .ss); one persistent device survives
+  `load_core`.
+- Screenshots: `echo 'screenshot <tag>' > /dev/MiSTer_cmd` →
+  `/media/fat/screenshots/NES/`, then scp. PROVEN.
+- ⚠ NEVER churn uinput devices (repeated create/destroy): it poisons the
+  MiSTer main process's input handling until it restarts — measured: after ~8
+  transient injector runs, ALL virtual keys were silently ignored (even with
+  the device open in MiSTer's fd table). One long-lived daemon, no churn.
+- ⚠ A dead daemon + a stray `echo` leaves a REGULAR FILE at the fifo path that
+  swallows keys silently — `test -p` before every write (`ensure_inputd` in
+  the driver does this).
+- ⚠ The daemon dies with every owner power-cycle (/tmp is tmpfs). A 3-line
+  `/media/fat/linux/user-startup.sh` would make it boot-persistent — PENDING
+  OWNER APPROVAL (boot-persistence on their box is their call). Until then:
+  restart per session.
+- ⚠ Savestate hotkeys are REFUSED by the NES core until ~8–15 s after
+  `load_core` — the pre-generation window (~t2.5–3.5 s) closes first, so a
+  NATIVE pre-gen template capture is impossible on this path. Bootstrap is the
+  live-era template instead (below).
+
 ## 4. Smoke (15 min)
 
 - Boot `sileval_ship.mgl`: title clean, CvC reaches play, pills place.
@@ -83,21 +110,29 @@ Unattended soak of either cart: `sileval_watchdog.sh` (its own unit
 ## 6. Seedjit template capture for the NEW box (per arm)
 
 **The template pins cart+core+frame — a different template is a different
-experiment.** The live box's `seedjit_template.ss` (md5 `0d9e7b2f…`) is NOT
-reusable here: it pins the old box's cart lineage and, more importantly, a
-template must be captured against the exact cart it will inject into.
-Per arm (ship, slice):
-1. Load the arm's MGL. At t≈1 s after the cart loads (pre-generation window is
-   ~1 s wide: mode $00, boards empty; t≈2 s is already mid-generation), trigger
-   leftalt+f2.
-2. Pull the state (race-guarded), verify with `vendor/seedjit_ss.py info`:
-   mode $00, virus counts 0/0, boards empty. If mode ≠ $00, recapture with an
-   earlier trigger.
-3. md5 the template and pin path+md5 in `sileval.env`
-   (`TEMPLATE_SHIP*`, `TEMPLATE_SLICE*`).
-4. Validity gate (per template, from the 2026-08-16 validation): inject the
-   same seed twice → screenshots 0.00% differing pixels; two different seeds →
-   >5% differing. Both must reproduce on the new box before row 1.
+experiment.** REVISED after day-one (2026-08-21): native pre-gen capture is
+impossible on the new box (hotkeys dead until after the window closes, §3b),
+so the bootstrap IS the live-era template `seedjit_template.ss`
+(md5 `0d9e7b2f…`) — and its pinned identity MATCHES both arms:
+- same cart lineage: it was captured on the θ400 CvC soak cart `9fefaedb` =
+  our SHIP arm byte-for-byte; same core: `NES_theta400_20260809.rbf`
+  `de7dea35` = the bundle core.
+- the .ss is PRG-AGNOSTIC: it embeds the full 32K CHR (byte-identical across
+  ship/slice) but NOT the PRG — the entire ship/slice code diff
+  (0x8535–0x8953, 1,010 bytes) is absent from the state file (checked byte-
+  level 2026-08-21; the only "matches" were zero-padding runs). Restoring it
+  under the SLICE cart keeps the slice PRG. One template therefore serves
+  BOTH arms; per-arm md5 pins point at the same file.
+Remaining steps per arm:
+1. Pin `TEMPLATE_SHIP*` / `TEMPLATE_SLICE*` in `sileval.env` to the template
+   (vendored copy + md5 `0d9e7b2f…`).
+2. Validity gate ON THE NEW BOX, per arm, BEFORE row 1 (this is what makes
+   the reuse sound — the gate would catch any core/cart/format mismatch):
+   inject the same seed twice → virus cell sets from sampled save-states must
+   match ≥46/48 (clears allowed); two different seeds → overlap ~26/48-level.
+   Cell-set comparison replaces the old 0.00%-pixel rule because wall-clock
+   screenshot timing on this path has ±0.2 s jitter (sprites differ; the
+   static virus field does not).
 
 ## 7. Start the A/B (only after the prereg is REGISTERED)
 
