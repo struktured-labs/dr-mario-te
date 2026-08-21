@@ -25,6 +25,11 @@ local MAXF = tonumber(os.getenv("PS_MAXF") or "12000")
 local FIRST = tonumber(os.getenv("PS_FIRST") or "1800")
 local EVERY = tonumber(os.getenv("PS_EVERY") or "600")
 local SIZE  = tonumber(os.getenv("PS_SIZE") or "4")
+-- PS_SLONLY=1: poke ONLY while a P1 slice search is in flight (SL_PH != 0).
+-- The first battery run proved the plain grid is VACUOUS for the interlock:
+-- 6 pokes never overlapped a ~15-hook slice episode, so combo and NOGUARD
+-- were byte-identical with viol=0 -- the witness never had a chance to fire.
+local SLONLY = (os.getenv("PS_SLONLY") or "0") == "1"
 
 local f = assert(io.open(OUT .. "/force.log", "w"))
 local function log(s) f:write(s .. "\n"); f:flush() end
@@ -40,6 +45,10 @@ local fc_prev, fc_stuck, mode_hist = -1, 0, {}
 -- slice machine + interlock
 local sl_starts, sl_completes, sl_aborts, sl_maxph, sl_prev = 0, 0, 0, 0, 0
 local sl_ticks, viol, ppran_sets, ppran_clears = 0, 0, 0, 0
+-- ov_hooks: pipeline-work hooks that landed while SL_PH != 0 -- the overlap
+-- OPPORTUNITY count. ov_hooks == 0 means the interlock was never exercised
+-- and viol==0 is VOID, not a pass.
+local ov_hooks = 0
 
 emu.addMemoryCallback(function(addr, value)
   if value == prev then return end
@@ -74,7 +83,12 @@ emu.addMemoryCallback(function(addr, value)
 end, emu.callbackType.write, SL_COL, SL_COL)
 
 emu.addMemoryCallback(function(a, v)
-  if v ~= 0 then ppran_sets = ppran_sets + 1 else ppran_clears = ppran_clears + 1 end
+  if v ~= 0 then
+    ppran_sets = ppran_sets + 1
+    if rd(SL_PH) ~= 0 then ov_hooks = ov_hooks + 1 end
+  else
+    ppran_clears = ppran_clears + 1
+  end
 end, emu.callbackType.write, PP_RAN, PP_RAN)
 
 emu.addMemoryCallback(function() ctl_hooks = ctl_hooks + 1 end,
@@ -111,7 +125,7 @@ emu.addEventCallback(function()
         frame, mode, rd(PRE_ATK2), frame - lastPokeF))
   end
   if mode == 4 and frame >= FIRST and (frame - lastPokeF) >= EVERY
-     and rd(PRE_ATK2) == 0 then
+     and rd(PRE_ATK2) == 0 and (not SLONLY or rd(SL_PH) ~= 0) then
     local ok, err = pcall(function()
       for k = 0, 3 do
         emu.write(0x0329 + k, (pokes + k) % 3, emu.memType.nesMemory)
@@ -134,11 +148,11 @@ emu.addEventCallback(function()
       .. "starts=%d advances=%d completes=%d aborts=%d maxphase=%d swallows=%d "
       .. "armedgos=%d GO_total=%d GO_near_edge=%d CTL_hookwrites=%d fc_stuck=%d "
       .. "sl_starts=%d sl_completes=%d sl_aborts=%d sl_maxph=%d sl_ticks=%d "
-      .. "ppran_sets=%d ppran_clears=%d viol=%d modes=%s",
+      .. "ppran_sets=%d ppran_clears=%d ov_hooks=%d viol=%d modes=%s",
       TAG, frame, pokes, edges, starts, advances, completes, aborts, maxph,
       swal, gos_after_edge, gos_total, gos_near, ctl_hooks, fc_stuck,
       sl_starts, sl_completes, sl_aborts, sl_maxph, sl_ticks,
-      ppran_sets, ppran_clears, viol,
+      ppran_sets, ppran_clears, ov_hooks, viol,
       table.concat(mh, ",")))
     emu.stop(0)
   end

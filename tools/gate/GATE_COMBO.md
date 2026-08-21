@@ -51,9 +51,45 @@ Stage 1: probe6 18k A/B — control prespipe-hardened-q3 (7e73d4a3) vs combo
 (probe_combo_live.lua, FR=6000): control (sl counters must be ZERO), combo
 (pp+sl live, viol==0), NOGUARD byte-patched mutant (viol MUST fire).
 
-RESULTS — pending; this section is completed from the arms' SUMMARY lines
-(the sheet is characterized by its LAST LINE).
+### Stage 1 — probe6 18k A/B: GREEN
+
+| | control 7e73d4a3 | combo 2b806db8 |
+|---|---|---|
+| matches started/ended/clean | 14/14/14 | 15/14/14 |
+| goes/dones/pills | 181/173/167 | 179/173/164 |
+| MIXED_total / MIXED_PRG_nonboot / brk_a02e | 0/0/0 | 0/0/0 |
+| ABORT_4to0 (wedges) | 0 | 0 |
+| soft8036 / wipes | 2/13 | 2/14 (normal family) |
+| tuck live | pub=1 D1=1 D2=1 | pub=1 D1=1 D2=1 |
+
+Same shape, no drift — the slice flag costs nothing visible at 18k.
+
+### Stage 2 — forced-release dual liveness (FR=6000, poke grid EVERY=600)
+
+| | control | combo | noguard mutant |
+|---|---|---|---|
+| pokes → release_edges | 6 → 6 | 6 → 6 | 6 → 6 |
+| pp starts/completes/aborts | 6/6/0 | 6/6/0 | 6/6/0 |
+| GO_near_edge | 6 | 6 | 6 |
+| sl starts/completes/ticks | **0/0/0** ✓ | 17/17/252 | 17/17/252 |
+| ppran sets/clears | 0/0 ✓ | 30/4229 | 30/4229 |
+| viol | 0 | 0 | **0 ⚠ VACUOUS** |
+| fc_stuck / wedges | 0 | 0 | 0 |
+
+Control is the perfect reverse-positive (sl and ppran identically zero while
+pp lives). BUT the NOGUARD mutant arm came back **byte-identical to combo with
+viol=0**: on this workload no pipeline hook ever landed while a slice search
+was active (6 pokes vs ~15-hook slice episodes ≈ 4% overlap odds each), so the
+interlock was never exercised and the witness never had a chance to fire — the
+#126 vacuity lesson, again, caught by the mutant arm doing exactly its job.
+
+### Stage 2b — overlap-FORCED rerun (run_combo_force2.sh: PS_SLONLY=1 pokes
+only while SL_PH != 0, PS_EVERY=120; probe reports ov_hooks so zero
+opportunity reads VOID, not PASS)
+
+RESULTS PENDING (drm-coll-force2).
 
 ## LAST LINE
 
-PENDING BATTERY.
+PENDING STAGE 2b (stage 1 green; stage 2 green except the interlock witness,
+which was vacuous on the plain grid and is being re-run overlap-forced).
