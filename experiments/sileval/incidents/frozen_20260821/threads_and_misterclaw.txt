@@ -1,0 +1,24 @@
+tid=1063 state=1063 (MiSTer) R 1 1062 1062 0 -1 4210944 2984 879 1 0 1173869 981115 2 3 20 0 2 0 44718 84094976 1848 4294967295 65536 1063232 3196411440 0 0 0 0 0 2 0 0 0 17 1 0 0 0 0 0 1129708 1189028 14356480 3196411674 3196411774 3196411774 3196411882 0
+R wchan=0 syscall=running
+tid=1065 state=1065 (MiSTer) S 1 1062 1062 0 -1 4210752 277 879 0 0 33 4 2 3 20 0 2 0 44723 84094976 1848 4294967295 65536 1063232 3196411440 0 0 0 0 0 2 1 0 0 -1 0 0 0 0 0 0 1129708 1189028 14356480 3196411674 3196411774 3196411774 3196411882 0
+S wchan=futex_wait_queue_me syscall=240
+===
+-rwx------ 1 root root 6734251 Aug 21 04:56 /tmp/misterclaw
+-rw------- 1 root root    3532 Aug 21 05:01 /tmp/misterclaw.log
+===dmesg
+[  121.081994] MiSTer_fb 22000000.MiSTer_fb: width = 1920, height = 1080, format=8888
+[  121.129868] input: MiSTer virtual input as /devices/virtual/input/input5
+[  210.259407] input: misterclaw as /devices/virtual/input/input6
+[  225.409349] MiSTer_fb 22000000.MiSTer_fb: width = 1920, height = 1080, format=8888
+[  225.456860] input: MiSTer virtual input as /devices/virtual/input/input7
+[  274.434411] MiSTer_fb 22000000.MiSTer_fb: width = 1920, height = 1080, format=8888
+[  274.481717] input: MiSTer virtual input as /devices/virtual/input/input8
+[  317.430372] MiSTer_fb 22000000.MiSTer_fb: width = 1920, height = 1080, format=8888
+[  317.477831] input: MiSTer virtual input as /devices/virtual/input/input9
+[  447.443456] MiSTer_fb 22000000.MiSTer_fb: width = 1920, height = 1080, format=8888
+[  447.491615] input: MiSTer virtual input as /devices/virtual/input/input10
+[19162.011990] input: sileval-inputd as /devices/virtual/input/input11
+[21874.538417] EXT4-fs (loop8): re-mounted. Opts: (null). Quota mode: disabled.
+[21874.538451] ext4 filesystem being remounted at / supports timestamps until 2038 (0x7fffffff)
+[21874.609460] EXT4-fs (loop8): re-mounted. Opts: (null). Quota mode: disabled.
+===starttime

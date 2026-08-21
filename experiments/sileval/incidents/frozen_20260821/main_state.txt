@@ -1,0 +1,28 @@
+mainpid=1063
+      1 event0
+      1 event1
+      1 event2
+      1 event4
+      1 event5
+stat: R 1171447 979691
+wchan: 0
+Mem: 128816K used, 375280K free, 6892K shrd, 3184K buff, 88860K cached
+CPU:  31% usr  22% sys   0% nic  45% idle   0% io   0% irq   0% sirq
+Load average: 1.00 1.00 1.00 2/91 10176
+  PID  PPID USER     STAT   VSZ %VSZ %CPU COMMAND
+ 1063     1 root     R    82124  16%  45% /media/fat/MiSTer /media/fat/_console/NES_theta400dblcanon_20260819.rbf /media/fat/BEST_AI_demo.mgl
+  882     1 root     S     524m 107%   0% /tmp/misterclaw
+  581     1 root     S    13764   3%   0% /sbin/udevd -d
+ 8872     1 root     S     9116   2%   0% python3 /media/fat/linux/sileval_inputd.py --daemon
+N: Name="Dell KB216 Wired Keyboard"
+H: Handlers=sysrq kbd leds event0 
+N: Name="Dell KB216 Wired Keyboard Consumer Control"
+H: Handlers=kbd event1 
+N: Name="Dell KB216 Wired Keyboard System Control"
+H: Handlers=kbd event2 
+N: Name="misterclaw"
+H: Handlers=sysrq kbd event4 
+N: Name="MiSTer virtual input"
+H: Handlers=sysrq kbd event3 
+N: Name="sileval-inputd"
+H: Handlers=sysrq kbd event5 

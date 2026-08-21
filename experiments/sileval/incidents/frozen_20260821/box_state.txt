@@ -1,0 +1,25 @@
+Fri Aug 21 10:57:47 UTC 2026
+ 10:57:47  up   6:04,  0 users,  load average: 1.00, 0.00, 1.00
+NES===MGL
+<mistergamedescription>
+  <rbf>_console/nes_theta400dblcanon_20260819</rbf>
+  <file delay="2" type="f" index="0" path="/media/fat/games/NES/drmario_hardened_prestart_4ac725cf.nes"/>
+</mistergamedescription>
+===SAVESTATES
+total 2688
+drwxr-xr-x 2 root root   32768 Aug 21 02:45 .
+drwxr-xr-x 3 root root   32768 Aug 21 02:25 ..
+-rwxr-xr-x 1 root root 1327112 Aug 21 02:44 drmario_tcvc_ship_9fefaedb_1.ss
+-rwxr-xr-x 1 root root 1327112 Aug 21 02:46 drmario_tcvc_ship_9fefaedb_2.ss
+===FIFO
+FIFO_OK
+ 8872 root     python3 /media/fat/linux/sileval_inputd.py --daemon
+10070 root     bash -c date -u; uptime; cat /tmp/CORENAME; echo ===MGL; cat /media/fat/BEST_AI_demo.mgl; echo ===SAVESTATES; ls -la /media/fat/savestates/NES/ 2>/dev/null; echo ===FIFO; test -p /tmp/sileval_input.fifo && echo FIFO_OK || echo FIFO_MISSING; ps | command grep "[s]ileval" ; echo ===SHOTS; ls -t /media/fat/screenshots/NES/ | head -6
+10077 root     bash -c date -u; uptime; cat /tmp/CORENAME; echo ===MGL; cat /media/fat/BEST_AI_demo.mgl; echo ===SAVESTATES; ls -la /media/fat/savestates/NES/ 2>/dev/null; echo ===FIFO; test -p /tmp/sileval_input.fifo && echo FIFO_OK || echo FIFO_MISSING; ps | command grep "[s]ileval" ; echo ===SHOTS; ls -t /media/fat/screenshots/NES/ | head -6
+===SHOTS
+20260821_101139-drmario_hardened_prestart_4ac725cf.png
+20260821_101132-drmario_hardened_prestart_4ac725cf.png
+20260821_050105-drmario_hardened_prestart_4ac725cf.png
+20260821_050100-drmario_hardened_prestart_4ac725cf.png
+20260821_050054-drmario_hardened_prestart_4ac725cf.png
+20260821_045842-drmario.png

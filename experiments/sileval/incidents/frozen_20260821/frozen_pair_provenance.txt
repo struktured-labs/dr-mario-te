@@ -1,0 +1,3 @@
+4ac725cffe84c547b358e3700e6df04d  /media/fat/games/NES/drmario_hardened_prestart_4ac725cf.nes
+974de3ed0464edf666b45768007e7be6  /media/fat/_console/nes_theta400dblcanon_20260819.rbf
+9d5f18d3a087985597c89177386bb586  /media/fat/MiSTer
