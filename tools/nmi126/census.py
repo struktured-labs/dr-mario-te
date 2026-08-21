@@ -557,14 +557,30 @@ def prespipe_scenarios(have):
     # on a pipelined image: they cut only pt_edge, so they still admit a PHASE
     # hook and pairing one with a phase double-counts the pipeline. These two
     # classes cut BOTH entries (no edge, no phase) and are the honest partners.
-    out = {"pp_edge": [("into", "pp_disp")] + _PP_BASE,
+    #
+    # COMBINED IMAGE (DRPRESPIPE + DRP1SLICE, #140): a hook can otherwise carry
+    # BOTH a pp phase (~10.7k) and a p1 slice tick (~6k) -- the pairing NEITHER
+    # lane's certificate covered, and the naive bound is 35.8k > 29,780, a real
+    # OVER. The emitter's PP_RAN interlock makes the exclusion true BY GUARD:
+    # pre_tick sets PP_RAN on every pipeline-work hook (edge family, phases,
+    # bail, commit) and the slice dispatch branches to p1s_idle on it. So on a
+    # combined image every pipeline-class scenario adds ("fallof","p1s_idle") --
+    # "every branch to p1s_idle is taken", the exact analogue of the
+    # p1n_nosearch cut -- and the slice tick is admitted ONLY in pp_idle /
+    # pp_spawn, whose hooks the interlock leaves alone. The cut's premise is
+    # verified from the IR by tests/test_combo_cart.py (guard present between
+    # the slice dispatch and the JSR), whose mutants delete the guard and must
+    # fail. On a slice-less pipelined image "p1s_idle" is absent and the cut is
+    # dropped by the caller's have-filter as before.
+    interlock = [("fallof", "p1s_idle")] if "p1s_ppguard" in have else []
+    out = {"pp_edge": [("into", "pp_disp")] + interlock + _PP_BASE,
            "pp_idle": [("into", "pp_disp"), ("into", "pt_edge")] + _PP_BASE,
            "pp_spawn": [("into", "pp_disp"), ("into", "pt_edge"),
                         ("into", "h1_start"), ("into", "do_init"),
                         ("fallof", "p1n_nosearch")]}
     for i, entry in enumerate(phases):
         others = [("into", e) for e in phases if e != entry]
-        out[f"pp_ph{i + 1}"] = [("into", "ppd_skip")] + others + _PP_BASE
+        out[f"pp_ph{i + 1}"] = [("into", "ppd_skip")] + others + interlock + _PP_BASE
     return out, ["pp_edge"] + [f"pp_ph{i + 1}" for i in range(len(phases))]
 
 
@@ -631,6 +647,12 @@ def main():
         seq = [(pp_order[i], pp_order[i + 1]) for i in range(len(pp_order) - 1)]
         seq += [(a, "pp_idle") for a in pp_order]
         seq += [("pp_spawn", "pp_edge"), ("pp_idle", "pp_edge")]
+        # #140: on a COMBINED image pp_idle/pp_spawn carry the p1 slice tick, so
+        # ordinary frames with a tick in both hooks and spawn+tick frames are no
+        # longer dominated by the (X, pp_idle) rows -- enumerate them explicitly.
+        # (Harmless duplicates/orderings on a slice-less image: idle is cheap there.)
+        seq += [("pp_idle", "pp_idle"), ("pp_spawn", "pp_idle"),
+                ("pp_idle", "pp_spawn")]
         GAME_HEAD, EPS, FRAME = 2040, 300, 29780
         worst = max(seq, key=lambda ab: results[ab[0]] + results[ab[1]])
         wv = results[worst[0]] + results[worst[1]] + 12

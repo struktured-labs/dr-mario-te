@@ -100,6 +100,9 @@ run test_rtivec_aclobber "$SHIP" "$V6E"
 # PRG-RAM map gate (2026-08-20, collision-140): killed mutants for the deriver, incl. the
 # two-symbols-one-address check that would have caught FC_STAB/SL_PH sharing $61BB. 0.1 s.
 run test_prg_ram_map
+# Combined-cart gate (#140): PP_RAN interlock premise + admissible-frame certificate for
+# the DRPRESPIPE+DRP1SLICE image, byte-identity vs the certified carts. ~0.5 s.
+run test_combo_cart
 
 echo "----------------------------------------------------------------------"
 if [ $rc -eq 0 ]; then echo "cart hazard gates: ALL PASS"; else echo "cart hazard gates: FAILURES ABOVE"; fi

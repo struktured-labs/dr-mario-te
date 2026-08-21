@@ -174,7 +174,7 @@ def main():
             f"(len {len(got)} vs {len(auth)})")
 
     consts = {}
-    for cname in ("PRE_TMP",):
+    for cname in ("PRE_TMP", "PP_PH", "PP_SWAL", "PP_RAN", "SL_PH", "FC_STAB"):
         if hasattr(pcc, cname):
             consts[cname] = getattr(pcc, cname)
     meta = {

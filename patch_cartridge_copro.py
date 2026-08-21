@@ -1095,6 +1095,12 @@ assert 1 <= PRESPIPE_Q <= 8, "DRPRESPIPE_Q must be 1..8 (there are at most 8 set
 PP_NM = -(-8 // PRESPIPE_Q)             # match phases needed to cover 8 records (ceil)
 PP_PH = 0x61C2                          # pipeline phase: 0 idle, 1 orphan+settle, 2 match 0-3, 3 match 4-7+commit
 PP_SWAL = 0x61C3                        # !=0: swallow the NEXT release edge (post-abort teardown parity)
+PP_RAN = 0x61C5                         # #140 phase/slice interlock: pre_tick sets it on ANY pipeline-work
+                                        # hook (edge family incl. swallow/teardown, every phase, bail,
+                                        # commit); act_p1's slice dispatch reads it and skips the tick, then
+                                        # clears it unconditionally at p1s_idle (same-hook semantics, no
+                                        # staleness). $61C4 is FC_STAB; $61C5 is the next free byte per
+                                        # PRG_RAM_MAP.md. Emitted only on PRESPIPE+P1SLICE images.
 
 # DRBUILDID=1 (task: "which brain am I fighting", default ON for human-profile carts): stamp a
 # short build tag onto the settings screen ("2 PLAYER GAME" row 25, columns 6-14) -- the exact
@@ -1478,6 +1484,8 @@ def build_main(level=11, speed=1):
             # A==0. PP_PH boot-garbage would dispatch a phase against an un-copied PRE_BUF on
             # the first play hook; PP_SWAL garbage would eat the first real release edge.
             a.ins16("STA_abs", PP_PH); a.ins16("STA_abs", PP_SWAL)
+            if P1SLICE:
+                a.ins16("STA_abs", PP_RAN)   # interlock latch exists only on combined images
     if STUDY2P:
         # A==0. Boot-garbage S2P_TTL is only a bounded nuisance (a nonzero value decays 2/frame
         # while blanking, the safe direction), but init it with the rest of the sticky-PRG-RAM
@@ -1857,6 +1865,8 @@ def build_main(level=11, speed=1):
             # would otherwise resume phases against a dead board next match; a stale swallow
             # would eat the new match's first release edge.
             a.ins16("STA_abs", PP_PH); a.ins16("STA_abs", PP_SWAL)
+            if P1SLICE:
+                a.ins16("STA_abs", PP_RAN)   # interlock latch exists only on combined images
         a.ins16("LDA_abs", PRE_ATK2); a.ins16("STA_abs", PRE_LAST2)
         a.label("ga_pre_ok")
     if STUDY2P:
@@ -2490,6 +2500,8 @@ def build_main(level=11, speed=1):
             # still ran, so pp_disp's abort checks see a FRESH PRE_CUR. (census scenario handles:
             # 'into pp_disp' isolates the edge hook; 'into ppd_skip' forces a phase hook.)
             a.ins16("LDA_abs", PP_PH); a.br("BEQ", "ppd_skip")
+            if P1SLICE:
+                a.ins("LDA_imm", 1); a.ins16("STA_abs", PP_RAN)   # interlock: phase/bail/commit hook
             a.jmp("pp_disp")
             a.label("ppd_skip")
         a.ins16("LDA_abs", PRE_CUR); a.br("BEQ", "pt_zero")
@@ -2500,6 +2512,8 @@ def build_main(level=11, speed=1):
         a.label("pt_edge")
         # --- RELEASE EDGE: every garbage byte is already in $0500 row 0 (the size clear is the
         #     LAST write checkReleaseAttack performs, so this observation cannot be torn).
+        if PRESPIPE and P1SLICE:
+            a.ins("LDA_imm", 1); a.ins16("STA_abs", PP_RAN)       # interlock: edge-hook family
         if PRESPIPE:
             # Post-abort teardown parity: an abort that saw a SECOND volley buffered set
             # PP_SWAL; consume that volley's edge here exactly as the synchronous teardown
@@ -3282,8 +3296,25 @@ def build_main(level=11, speed=1):
             a.label("p1s_noarm")
             a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", P1AI_Y)
             a.ins16("LDA_abs", SL_PH); a.br("BEQ", "p1s_idle")
+            if PRESPIPE:
+                # #140 PHASE/SLICE INTERLOCK: on a combined DRPRESPIPE+DRP1SLICE image a
+                # hook can otherwise carry BOTH a pp phase (~10.7k) and a slice tick
+                # (~6k), and the sound census pair bound goes to 35.8k > 29,780 (OVER by
+                # ~6k -- the pairing neither lane's certificate covered). pre_tick sets
+                # PP_RAN on EVERY pipeline-work hook (edge family incl. swallow/
+                # teardown, every phase, bail, commit); the tick is skipped on those
+                # hooks, and p1s_idle clears the latch unconditionally after the read
+                # (same-hook semantics: no staleness, and a garbage boot value self-
+                # heals in one hook). Cost: the spectator-side search stalls <= PP_NM+2
+                # hooks (~2 frames) per volley; the P1 executor keeps steering from the
+                # previous target meanwhile (anytime-steering class, same as the
+                # slice's own drift window). Labeled so gates verify it from the IR.
+                a.label("p1s_ppguard")
+                a.ins16("LDA_abs", PP_RAN); a.br("BNE", "p1s_idle")
             a.jsr("p1s_tick")
             a.label("p1s_idle")
+            if PRESPIPE:
+                a.ins("LDA_imm", 0); a.ins16("STA_abs", PP_RAN)   # consume the latch every hook
         else:
             a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", P1AI_Y)
             a.br("BCC", "p1n_nosearch"); a.br("BEQ", "p1n_nosearch")

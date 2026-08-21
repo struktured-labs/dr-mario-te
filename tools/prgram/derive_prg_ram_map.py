@@ -240,6 +240,11 @@ CONFIGS = {
                     DRBUILDID=0),
     "startguard-p1slice": dict(DRSTARTGUARD=1, DRP1NATIVE=1, DRP1SLICE=1, DRHUMAN=0, DRPOCKET=0, DRMMC1RST=1,
                                DRRTIVEC=1, DRFCGATE=1, DRBUILDID=0),
+    # #140 combined ship class: the PP_RAN interlock latch only exists when BOTH
+    # machines are on, so this config is what makes $61C5 show its writers.
+    "prespipe-p1slice": dict(DRPRESPIPE=1, DRPRESPIPE_Q=3, DRSTARTGUARD=1, DRP1NATIVE=1,
+                             DRP1SLICE=1, DRHUMAN=0, DRPOCKET=0, DRMMC1RST=1, DRRTIVEC=1,
+                             DRFCGATE=1, DRBUILDID=0),
 }
 
 
