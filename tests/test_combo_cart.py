@@ -105,8 +105,26 @@ def c1():
     diffs = [i for i in range(len(a)) if a[i] != ref[i]]
     sites = [i for i in diffs
              if ref[i] == 0xBB and a[i] == 0xC4 and ref[i + 1] == 0x61 == a[i + 1]]
-    check("C1a DRP1SLICE=0 vs 7e73d4a3: exactly the 3 FC_STAB operands",
-          len(diffs) == 3 and len(sites) == 3, f"diffs={len(diffs)} fc_sites={len(sites)}")
+
+    # Bind the diff set to an INDEPENDENTLY DERIVED reference set (team-lead
+    # ruling, DRVERFIX style): enumerate every emitted instruction whose 16-bit
+    # operand is FC_STAB in the flags-off IR, translate those operand offsets
+    # to file offsets, and assert SET EQUALITY with the observed diffs -- not
+    # a hardcoded count. The CPU->file delta is derived from the first match
+    # and must be consistent for all (one contiguous bank).
+    meta_off = capture(f"{TMP}/c1_off_ir.json")
+    fc = meta_off["consts"]["FC_STAB"]
+    fc_ops = [fc & 0xFF, fc >> 8]
+    u = meta_off["units"]["main"]
+    op_offs = [u["base"] + r["off"] + 1 for r in u["records"]
+               if r["k"] == "ins" and r.get("ops") == fc_ops and r["m"].endswith("_abs")]
+    ok_ref = len(op_offs) > 0 and len(op_offs) == len(sites)
+    if ok_ref and sites:
+        delta = sorted(sites)[0] - sorted(op_offs)[0]
+        ok_ref = sorted(sites) == [o + delta for o in sorted(op_offs)]
+    check("C1a DRP1SLICE=0 vs 7e73d4a3: diff set == IR-derived FC_STAB operand set",
+          len(diffs) == len(sites) and ok_ref,
+          f"diffs={len(diffs)} fc_sites={len(sites)} ir_refs={len(op_offs)}")
 
     snap_t = json.load(open(TCVC_SL_MAN))["flag_snapshot"]
     b = build(f"{TMP}/c1_tcvc.nes", snap_t, {})
