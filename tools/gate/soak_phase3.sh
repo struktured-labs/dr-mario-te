@@ -19,7 +19,10 @@
 # The soak's own arms are untouched: same run_soak.sh, same probe_soak.lua, same cart, so the
 # four segments remain byte-identical instrumentation and the pooled bound stays homogeneous.
 set -u
-D=/home/struktured/projects/dr-mario-v8-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 R=$D/tools/gate
 BOOT=$D/tmp/soak/v6e_mmc1.nes
 LOG=$D/tmp/soak/drive.log

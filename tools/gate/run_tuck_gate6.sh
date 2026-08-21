@@ -6,7 +6,10 @@
 # all and every "0 events" result below it is VOID, not a pass. Published reference to beat:
 # a-v6crepro = MIXED_total 126 / MIXED_PRG_nonboot 18 / soft8036 20 / wipes 18 / sr_resets 2.
 set -u
-D=/home/struktured/projects/dr-mario-v8-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 R="$D/tools/gate/run_one6.sh"
 LOG="$D/tmp/clean/tuckgate6.log"
 mkdir -p "$D/tmp/clean"

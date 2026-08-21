@@ -3,7 +3,10 @@
 # Every cell's FULL output is echoed -- an earlier version filtered to ^SUMMARY and silently
 # swallowed 22 refusals, which read as a completed batch. Absence is not pass.
 set -u
-D=/home/struktured/projects/dr-mario-rotexec-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 OFF_MD5=$(md5sum "$D/roms/rotdir_off.nes" | cut -d' ' -f1)
 ON_MD5=$(md5sum "$D/roms/rotdir_on.nes"  | cut -d' ' -f1)
 echo "OFF=$OFF_MD5 ON=$ON_MD5"

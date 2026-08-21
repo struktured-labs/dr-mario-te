@@ -16,7 +16,10 @@
 # with THIS tag AND newer than the launch, exact-pid reap, seat check on the BINARY not a name.
 set -u
 
-D=/home/struktured/projects/dr-mario-hygiene-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 MESEN=/home/struktured/projects/dr-mario-mods/mesen2/bin/linux-x64/Release/Mesen
 RUN_MESEN=/home/struktured/projects/dr-mario-mods/run_mesen.sh
 SANDBOX=/home/struktured/projects/dr-mario-te/v8-source/tools/gate/mesen_sandbox_settings.json

@@ -3,7 +3,10 @@
 # Launch discipline copied from tools/gate/run_one.sh (fresh Xvfb per attempt,
 # hard single-instance seat wait, tag-verified log before declaring success).
 set -u
-D=/home/struktured/projects/dr-mario-v8-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 tag="${1:?tag}"; cart="$(readlink -f "${2:?cart}")"; maxf="${3:-6000}"; win="${4:-0x5000}"
 out="$D/tmp/nmi126/$tag"; mkdir -p "$out"
 

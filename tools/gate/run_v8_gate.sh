@@ -2,7 +2,10 @@
 # run_v8_gate.sh -- multi-match ship gate for the v8 candidates.
 # 18000 frames ~ 20 matches at the ~900 frames/match the control arm measured.
 set -u
-D=/home/struktured/projects/dr-mario-v8-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 PY=/home/struktured/projects/dr_mario_rl/tmp/venv/bin/python
 F=${F:-18000}
 mkdir -p "$D/tmp/gate"

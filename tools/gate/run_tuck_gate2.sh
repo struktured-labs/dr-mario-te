@@ -10,7 +10,10 @@
 # while the trigger is present. probe6 mode 2 fixes probe5's other instrument defect (trigger row
 # so shallow the capsule was already past it when the copro answer arrived).
 set -u
-D=/home/struktured/projects/dr-mario-v8-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 R="$D/tools/gate/run_one6.sh"
 LOG="$D/tmp/clean/tuckgate2.log"
 mkdir -p "$D/tmp/clean"; : >"$LOG"

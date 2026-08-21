@@ -3,7 +3,10 @@
 #   copro 1 (delta 1) = the WIN arm            -- M1/M2/M3/M4 must all fail to speed it up
 #   copro 0 (delta 3) = a MUST-NOT-MOVE arm    -- M1/M2 must slow it down
 set -u
-D=/home/struktured/projects/dr-mario-rotexec-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 # wait for the main ladder to finish rather than racing it
 while [ ! -s "$D/tmp/rotdir_batch.log" ] || ! command grep -aq BATCH_DONE "$D/tmp/rotdir_batch.log"; do sleep 20; done
 for m in m1 m2 m3 m4; do

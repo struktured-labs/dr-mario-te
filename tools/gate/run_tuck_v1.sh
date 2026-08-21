@@ -8,7 +8,10 @@
 # The number that matters is MISLAND -- pills where a descriptor was live and the capsule did
 # NOT rest on the column the search scored, i.e. the documented "strictly worse than no tuck".
 set -u
-D=/home/struktured/projects/dr-mario-v8-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 R="$D/tools/gate/run_one7.sh"
 LOG="$D/tmp/clean/tuckv1.log"
 mkdir -p "$D/tmp/clean"; : >"$LOG"

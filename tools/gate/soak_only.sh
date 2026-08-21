@@ -12,7 +12,10 @@
 #
 # Env: BOOT SEEDS FPS ACHK_USABLE DEADLINE_EPOCH [PS_ACHK_EVERY] [EXTRA_ENV...]
 set -u
-D=/home/struktured/projects/dr-mario-v8-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 R=$D/tools/gate
 BOOT=${BOOT:-$D/tmp/soak/v6e_mmc1.nes}
 SEEDS=${SEEDS:-"114 4271 21013 30011"}

@@ -16,7 +16,10 @@
 # Phase 4  if the soak came back PARTIAL and budget remains, continue in a second segment
 #          rather than losing the rest of the window.
 set -u
-D=/home/struktured/projects/dr-mario-v8-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 R=$D/tools/gate
 # ⚠ TARGET = v6e, NOT 087ff959. The staged v8 candidate is ON HOLD: its DRRTIVEC shield does
 # `LDA $A02E` and falls into the game's NMI handler, so A is destroyed on every NMI the shield

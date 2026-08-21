@@ -4,7 +4,10 @@
 # marker; the ON arm refuses to start without it, so an ON-only result can never be
 # read as an A/B (a gate that must run before data needs its own marker).
 set -eo pipefail
-D=/home/struktured/projects/dr-mario-pipeline-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 OUT=$D/tmp/pipebattery; mkdir -p "$OUT"
 FRAMES="${FRAMES:-18000}"
 

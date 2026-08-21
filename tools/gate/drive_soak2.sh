@@ -26,7 +26,10 @@
 #           not hold, the A-check is disabled and said to be void rather than shipped green.
 # Phase 3   the soak, split into SEGMENTS across seeds, sized to land before DEADLINE_EPOCH.
 set -u
-D=/home/struktured/projects/dr-mario-v8-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 R=$D/tools/gate
 SHIP_MD5=c0082cb34259007854120d3d4ab9fa27
 SHIP="$D/roms/v6e.nes"

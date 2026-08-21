@@ -17,7 +17,10 @@
 # Exit: 0 = completed (SUMMARY present)  2 = PARTIAL (tagged log, no SUMMARY)
 #       1 = failed to produce a tagged log   4 = seat held by another lane, NOT LAUNCHED
 set -u
-D=/home/struktured/projects/dr-mario-v8-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 tag="${1:?tag}"; cart="${2:?cart}"; maxf="${3:-18000}"; tmo="${4:-600}"
 out="${PS_OUTDIR:-$D/tmp/soak}/$tag"; mkdir -p "$out"
 EARLY_S="${EARLY_S:-180}"

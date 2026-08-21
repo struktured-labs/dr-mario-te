@@ -1,7 +1,10 @@
 #!/bin/bash
 # Replacement mutants m2b/m3b, sequenced after the v2 ladder's own completion artifact.
 set -u
-D=/home/struktured/projects/dr-mario-rotexec-wt
+# Worktree-relative (dispatcher-hook pattern, 2026-08-20 #140): a hardcoded worktree
+# here silently gated ANOTHER worktree's carts when run from a foreign checkout.
+D=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || exit 2
+[ -f "$D/patch_cartridge_copro.py" ] || { echo "FAIL: resolved worktree $D lacks the emitter -- refusing to gate the wrong tree" >&2; exit 2; }
 while ! command grep -aq V2_BATCH_DONE "$D/tmp/rotdir_v2b.log" 2>/dev/null; do sleep 30; done
 for m in m2b m3b; do
   cart="$D/roms/rotdir_${m}.nes"; md5=$(md5sum "$cart" | cut -d' ' -f1)
