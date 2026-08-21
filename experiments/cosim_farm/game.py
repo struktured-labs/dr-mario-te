@@ -313,6 +313,8 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
     pending_gh = -1        # min PRE-garbage height over the hit columns; -1 = unknown
     h_legacy = []          # [[h_corrected, h_prefix], ...] per release -- see
                            # garbage_hit_h_legacy. Report-only, feeds no decision.
+    volleys = []           # regime-141: [[gp, added, n_cells, [cols...]], ...] per
+                           # release, in release order. Report-only, feeds no decision.
 
     for _ in range(max_pills):
         if env.board.virus_count() == 0:
@@ -428,6 +430,11 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
                     h_legacy.append([pending_gh,
                                      garbage_hit_h_legacy(h_before,
                                                           col_heights(env.board.color))])
+                    # regime-141 additive capture: the volley's own draw, so the
+                    # aimed-variant binding gate audits columns END-TO-END from the
+                    # row. Same deterministic second sample() as above.
+                    volleys.append([int(gp), int(added), int(_n_cells),
+                                    [int(c) for c in gcols]])
             if env.board.virus_count() == 0:
                 res = "clear"
                 break
@@ -451,6 +458,7 @@ def play_game(cosim: Cosim, seed: int, level: int = 11, max_pills: int = 300,
         "clocks": clocks,
         "lat": lat,
         "h_legacy": h_legacy,
+        "volleys": volleys,
         "exec_mode": exec_mode, "pressure": pressure,
         "fw_md5": cosim.fw_md5,
     }

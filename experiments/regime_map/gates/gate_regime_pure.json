@@ -1,0 +1,76 @@
+{
+ "results": [
+  {
+   "name": "g1 amplifier binds",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "g1-M1 mutant killed (alpha inert -> detector rejects)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "g2 aim binds",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "g2-M2 mutant killed (aim inert -> detector rejects)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "g3 aim replay-determinism",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "g4 level binds (env)",
+   "pass": true,
+   "detail": "L11=48 L20=84"
+  },
+  {
+   "name": "g4-M3 mutant killed (level inert -> detector rejects)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "g5 reader alive (edited row moves the summary)",
+   "pass": true,
+   "detail": "0->1"
+  },
+  {
+   "name": "g6 population gate: clean baseline accepted",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "g6-M5a population mutant killed (out-of-block seed)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "g6-M5b population mutant killed (mislabeled pressure)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "g6-M5c population mutant killed (wrong firmware)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "g6-M5d population mutant killed (duplicate row)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "name": "g6-M5e population mutant killed (unaimed volley in aim cell)",
+   "pass": true,
+   "detail": ""
+  }
+ ],
+ "pass": true,
+ "rtl_included": false
+}

@@ -1,0 +1,330 @@
+{
+ "fw_dir": "/mnt/data/drmario_cosim/fw/s20b",
+ "exec_mode": "drop",
+ "gate_e_orientation": {
+  "pass": true,
+  "rows": [
+   {
+    "o4": 0,
+    "variant": 2,
+    "ring": 3,
+    "variant_horizontal": false,
+    "ring_horizontal": false,
+    "variant_flipped": false,
+    "ring_flipped": false,
+    "agree": true
+   },
+   {
+    "o4": 1,
+    "variant": 3,
+    "ring": 1,
+    "variant_horizontal": false,
+    "ring_horizontal": false,
+    "variant_flipped": true,
+    "ring_flipped": true,
+    "agree": true
+   },
+   {
+    "o4": 2,
+    "variant": 0,
+    "ring": 0,
+    "variant_horizontal": true,
+    "ring_horizontal": true,
+    "variant_flipped": false,
+    "ring_flipped": false,
+    "agree": true
+   },
+   {
+    "o4": 3,
+    "variant": 1,
+    "ring": 2,
+    "variant_horizontal": true,
+    "ring_horizontal": true,
+    "variant_flipped": true,
+    "ring_flipped": true,
+    "agree": true
+   }
+  ]
+ },
+ "gate_d_physics": {
+  "pass": true,
+  "checked": 10554,
+  "bad": []
+ },
+ "gate_a_determinism": {
+  "pass": true,
+  "seeds": [
+   1,
+   2
+  ],
+  "max_pills": 8,
+  "a1_fresh_vs_fresh_mismatched_seeds": [],
+  "a2_fresh_vs_reused_mismatched_seeds": [],
+  "games": {
+   "1": {
+    "seed": 1,
+    "level": 11,
+    "result": "stall",
+    "won": 0,
+    "topout": 0,
+    "stall": 1,
+    "pills": 8,
+    "start_viruses": 48,
+    "viruses_left": 48,
+    "viruses_cleared": 0,
+    "dies_ahead": 0,
+    "n_tuck": 0,
+    "n_tuck_published": 8,
+    "n_incoherent": 0,
+    "n_illegal": 0,
+    "garbage": 0,
+    "clocks": 389559552,
+    "lat": [
+     [
+      47498592,
+      5,
+      10,
+      0,
+      -1
+     ],
+     [
+      47601984,
+      5,
+      12,
+      0,
+      -1
+     ],
+     [
+      50551008,
+      3,
+      12,
+      0,
+      -1
+     ],
+     [
+      47601984,
+      5,
+      12,
+      0,
+      -1
+     ],
+     [
+      50551008,
+      3,
+      12,
+      0,
+      -1
+     ],
+     [
+      47601984,
+      5,
+      12,
+      0,
+      -1
+     ],
+     [
+      50551008,
+      3,
+      12,
+      0,
+      -1
+     ],
+     [
+      47601984,
+      5,
+      12,
+      0,
+      -1
+     ]
+    ],
+    "h_legacy": [],
+    "exec_mode": "drop",
+    "pressure": "clean",
+    "fw_md5": "e970e9ab0208cdbce1d39ed33e2f51ee",
+    "moves": [
+     [
+      5,
+      0,
+      4,
+      7
+     ],
+     [
+      1,
+      0,
+      4,
+      7
+     ],
+     [
+      1,
+      0,
+      4,
+      7
+     ],
+     [
+      1,
+      0,
+      4,
+      7
+     ],
+     [
+      1,
+      0,
+      4,
+      7
+     ],
+     [
+      1,
+      0,
+      4,
+      7
+     ],
+     [
+      1,
+      0,
+      4,
+      7
+     ],
+     [
+      1,
+      0,
+      4,
+      7
+     ]
+    ]
+   },
+   "2": {
+    "seed": 2,
+    "level": 11,
+    "result": "stall",
+    "won": 0,
+    "topout": 0,
+    "stall": 1,
+    "pills": 8,
+    "start_viruses": 48,
+    "viruses_left": 46,
+    "viruses_cleared": 2,
+    "dies_ahead": 0,
+    "n_tuck": 0,
+    "n_tuck_published": 0,
+    "n_incoherent": 0,
+    "n_illegal": 0,
+    "garbage": 0,
+    "clocks": 418464816,
+    "lat": [
+     [
+      51498864,
+      5,
+      10,
+      0,
+      -1
+     ],
+     [
+      50377296,
+      5,
+      11,
+      0,
+      -1
+     ],
+     [
+      53524896,
+      6,
+      12,
+      0,
+      -1
+     ],
+     [
+      56447712,
+      3,
+      12,
+      0,
+      -1
+     ],
+     [
+      45135600,
+      5,
+      11,
+      0,
+      -1
+     ],
+     [
+      48263616,
+      4,
+      11,
+      0,
+      -1
+     ],
+     [
+      55769280,
+      6,
+      12,
+      0,
+      -1
+     ],
+     [
+      57447552,
+      5,
+      12,
+      0,
+      -1
+     ]
+    ],
+    "h_legacy": [],
+    "exec_mode": "drop",
+    "pressure": "clean",
+    "fw_md5": "e970e9ab0208cdbce1d39ed33e2f51ee",
+    "moves": [
+     [
+      0,
+      3,
+      255,
+      255
+     ],
+     [
+      6,
+      0,
+      255,
+      255
+     ],
+     [
+      5,
+      0,
+      255,
+      255
+     ],
+     [
+      5,
+      3,
+      255,
+      255
+     ],
+     [
+      2,
+      2,
+      255,
+      255
+     ],
+     [
+      1,
+      3,
+      255,
+      255
+     ],
+     [
+      6,
+      2,
+      255,
+      255
+     ],
+     [
+      6,
+      3,
+      255,
+      255
+     ]
+    ]
+   }
+  }
+ },
+ "failures": [],
+ "pass": true
+}
