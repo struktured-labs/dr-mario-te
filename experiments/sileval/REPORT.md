@@ -53,6 +53,11 @@
 - ARMED does not exist while any HOLD stands.
 
 ## Standing environmental notes
+- DBLCANON status (2026-08-21): the owner ACTIVATED it on the new box during
+  their manual A/B (pre-existing BEST_AI_demo.mgl; corevideo only path-fixed
+  it). The staged-not-activated constraint now applies only to the OLD box's
+  SD copy. The sileval A/B core pin (theta400_20260809, de7dea35) is
+  unaffected and was re-hash-verified on-card by corevideo tonight.
 - Owner is power-cycling for SNAC bring-up; two reboots + two power-offs
   observed tonight. All interrupted captures voided.
 - Old-box migration rsync (team-lead's lane) will eventually rewrite SD
