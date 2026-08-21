@@ -18,6 +18,33 @@
   slot upload, menu-hop, MGL boot, F1 restore, 4 samples at 20 s cadence
   (decode: mode $04 play, healthy match rollover).
 
+## Release-day gates — ALL PASS (2026-08-21, ~11:00-11:30 UTC, full log in git history)
+- STEP 0 forensics: frozen DBLCANONxprestart state captured to the limit of any
+  channel; save-refusal documented; un-wedged via load_core menu (no reboot
+  needed; main restarts). See incidents/frozen_20260821/FROZEN_NOTES.md.
+- Fixed MGLs re-copied; NINE on-card md5s re-verified post-update_all.
+- Motion-verified first load under Main 260707: 3 distinct frames. Fixed-MGL
+  format loads the cart correctly.
+- Channel re-proof: savestate hotkey lands under new Main (1,327,112 B).
+- Template validity gate: same-seed 48/48 + 47/47 virus cells, diff-seed
+  11/85 + 10/84 — both controls fire. SLICE-arm cycle: same seed reproduces
+  the IDENTICAL boards through the slice cart (48/48, 47/47, same evolved
+  LFSR $75a6) — the paired-seed premise is silicon-proven on both arms.
+- Cold-boot determinism: two uninjected loads byte-identical (46/46, 41/41
+  even mid-play; rng frozen at $76/$f0 = the old box's exact constant).
+- Cross-box fingerprint: new-box seed-4242 board vs the OLD box's banked
+  2026-08-16 verify_4242 save-states — P1 48/48 exact; P2 old is a strict
+  SUBSET (46/47; the missing cell is a virus the old snapshot had already
+  cleared). Same silicon behavior, same cart+core pair as the A/B.
+  HONESTY NOTE: this is a generation+early-play behavioral fingerprint; the
+  committed-placement discriminator rig was not reconstructed (its expected
+  answers for the theta400 core on the 18-board set were never recorded, so
+  there is no old-box reference to compare against).
+- Hardened shakedown, 10 min each on theta400: 70a857cc PASS (motion both
+  ends, healthy rematch rollover 48/48); 4ac725cf PASS (mid-match 48/43).
+  The cart that froze overnight on DBLCANON runs clean on theta400 —
+  consistent with a pairing-specific freeze.
+
 ## NOT yet done (needs ~40 min of idle box, post-release; redo anything that
 ## spanned the no-video window)
 - RE-COPY the fixed MGLs to /media/fat (Main 260707 changed MGL parsing:
