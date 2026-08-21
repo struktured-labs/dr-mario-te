@@ -20,7 +20,9 @@ ENV_FILE="${SILEVAL_ENV:-$HERE/sileval.env}"
 # shellcheck disable=SC1090
 . "$ENV_FILE"
 
-SSH="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10"
+# BatchMode+IdentitiesOnly: a connection that CAN prompt is a bug (team-lead
+# rule after key-wipe popups on the owner's desktop) — fail loudly instead.
+SSH="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o BatchMode=yes -o IdentitiesOnly=yes -i $HOME/.ssh/id_rsa"
 fatal() { echo "$(date -Is) FATAL: $*" >&2; exit 2; }
 note()  { echo "$(date -Is) $*"; }
 
@@ -62,7 +64,7 @@ pull_state() { # $1 remote path, $2 local path, $3 pre-save mtime
     [ "$m" != "$pre" ] && [ "$s1" -gt 0 ] || { sleep 1; continue; }
     sleep 1
     s2=$($SSH "root@$NEWMISTER_IP" "stat -c '%s' '$r' 2>/dev/null" || echo 0)
-    [ "$s1" = "$s2" ] && { scp -q "root@$NEWMISTER_IP:$r" "$l" && return 0; }
+    [ "$s1" = "$s2" ] && { scp -q -o BatchMode=yes -o IdentitiesOnly=yes -i "$HOME/.ssh/id_rsa" "root@$NEWMISTER_IP:$r" "$l" && return 0; }
   done
   return 1
 }
@@ -90,7 +92,7 @@ take_shot() { # $1 local path
   sleep 2
   local remote
   remote=$($SSH "root@$NEWMISTER_IP" "ls -t /media/fat/screenshots/NES/*-$tag.png 2>/dev/null | head -1")
-  [ -n "$remote" ] && scp -q "root@$NEWMISTER_IP:$remote" "$1" && $SSH "root@$NEWMISTER_IP" "rm -f '$remote'"
+  [ -n "$remote" ] && scp -q -o BatchMode=yes -o IdentitiesOnly=yes -i "$HOME/.ssh/id_rsa" "root@$NEWMISTER_IP:$remote" "$1" && $SSH "root@$NEWMISTER_IP" "rm -f '$remote'"
 }
 
 run_arm() { # $1 seed, $2 arm  -> writes rows/<seed>_<arm>.json
@@ -113,7 +115,7 @@ run_arm() { # $1 seed, $2 arm  -> writes rows/<seed>_<arm>.json
   local patched="$adir/patched.ss"
   python3 "$HERE/vendor/seedjit_ss.py" seed "$tmpl" "$patched" "$seed" >/dev/null \
     || { void_row "$row" "$seed" "$arm" "seedjit_patch_failed"; return 1; }
-  scp -q "$patched" "root@$NEWMISTER_IP:$slot" || { void_row "$row" "$seed" "$arm" "scp_slot_failed"; return 1; }
+  scp -q -o BatchMode=yes -o IdentitiesOnly=yes -i "$HOME/.ssh/id_rsa" "$patched" "root@$NEWMISTER_IP:$slot" || { void_row "$row" "$seed" "$arm" "scp_slot_failed"; return 1; }
   $SSH "root@$NEWMISTER_IP" "echo load_core /media/fat/menu.rbf > /dev/MiSTer_cmd" || { void_row "$row" "$seed" "$arm" "menu_load_failed"; return 1; }
   sleep 10
   $SSH "root@$NEWMISTER_IP" "echo load_core $mgl > /dev/MiSTer_cmd" || { void_row "$row" "$seed" "$arm" "mgl_load_failed"; return 1; }

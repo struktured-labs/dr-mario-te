@@ -1,0 +1,3 @@
+#!/bin/bash
+# mssh — the ONLY way this lane opens ad-hoc connections to the new box.
+exec ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -o BatchMode=yes -o IdentitiesOnly=yes -i "$HOME/.ssh/id_rsa" root@10.42.0.233 "$@"
