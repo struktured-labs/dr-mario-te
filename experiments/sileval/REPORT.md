@@ -20,6 +20,15 @@
 
 ## NOT yet done (needs ~40 min of idle box, post-release; redo anything that
 ## spanned the no-video window)
+- RE-COPY the fixed MGLs to /media/fat (Main 260707 changed MGL parsing:
+  index="0" + absolute path now required; the on-SD copies are the OLD format
+  and may silently load core-without-cart) and MOTION-VERIFY the first load
+  (2-3 shots, distinct hashes) before anything counts — corevideo's hazard.
+- RE-VERIFY the nine bundle md5s (03:00-UTC update_all modified the box) and
+  re-confirm the savestate hotkey + inputd under the NEW Main before reuse.
+- RECONFIRM THE BOX IP: corevideo reports the new box at 10.42.0.233;
+  sileval.env pins 10.42.0.225 (pre-update lease). Resolve with team-lead
+  before arming; the sentinel check is the identity backstop either way.
 - Same-seed/diff-seed template validity gate (2+1 cycles, cell-set rule).
 - Cold-boot RNG read ($89/$88 at title).
 - Fingerprint board set.

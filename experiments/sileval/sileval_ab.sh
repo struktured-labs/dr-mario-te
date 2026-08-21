@@ -123,6 +123,18 @@ run_arm() { # $1 seed, $2 arm  -> writes rows/<seed>_<arm>.json
     || { void_row "$row" "$seed" "$arm" "f1_restore_failed"; return 1; }
   local corename t0 n=0 shot_fail=0 pull_fail=0
   corename=$($SSH "root@$NEWMISTER_IP" "cat /tmp/CORENAME 2>/dev/null" || echo "?")
+  # no-cart boot gate (Main 260707 MGL hazard): a silently-skipped <file> entry
+  # loads the core with NO cart — one static frame forever. Post-F1 we are in
+  # live CvC play, so two shots 3 s apart MUST differ; identical twice = VOID.
+  take_shot "$adir/boot_a.png"; sleep 3; take_shot "$adir/boot_b.png"
+  if [ -f "$adir/boot_a.png" ] && [ -f "$adir/boot_b.png" ]; then
+    if [ "$(md5sum < "$adir/boot_a.png")" = "$(md5sum < "$adir/boot_b.png")" ]; then
+      sleep 3; take_shot "$adir/boot_c.png"
+      [ -f "$adir/boot_c.png" ] && [ "$(md5sum < "$adir/boot_b.png")" = "$(md5sum < "$adir/boot_c.png")" ]         && { void_row "$row" "$seed" "$arm" "no_cart_or_static_boot"; return 1; }
+    fi
+  else
+    void_row "$row" "$seed" "$arm" "boot_motion_shots_failed"; return 1
+  fi
   t0=$(date +%s)
 
   # sample loop
