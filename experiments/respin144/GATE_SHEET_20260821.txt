@@ -1,0 +1,61 @@
+Fitter status : Successful - Fri Aug 21 13:52:09 2026
+ALMs          : 37664 / 41910  (4246 free)   PASS
+copro slack   : 0.165 ns (bar +0.10)   PASS
+pll_hdmi      : 0.381 ns (baseline -0.012)   PASS
+
+VERDICT: SHIP AS-IS -- all three criteria met; BRAM conversion (#27) not needed.
+PASS           G1-fitverdict: fit_verdict SHIP AS-IS
+PASS           G2-c0loc: pll_hdmi output counter at PLLOUTPUTCOUNTER_X0_Y5_N1
+PASS           G3-divclk: divclk[0] placed at: PLLOUTPUTCOUNTER_X0_Y5_N1 
+PASS           G4-notignored: ignored-assignment mentions of the pin: 0
+--- VIDEO domain (sta rpt) ---
+120:; pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|counter[0].output_counter|divclk ; Generated ; 6.732   ; 148.54 MHz ; 0.000 ; 3.366  ; 50.00      ; 3         ; 1           ;       ;        ;           ;            ; false    ; pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|fpll_0|fpll|vcoph[0]         ; pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|counter[0].output_counter|vco0ph[0] ; { pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|counter[0].output_counter|divclk } ;
+121:; pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|fpll_0|fpll|vcoph[0]             ; Generated ; 2.244   ; 445.61 MHz ; 0.000 ; 1.122  ; 50.00      ; 512       ; 4563        ;       ;        ;           ;            ; false    ; FPGA_CLK1_50                                                                  ; pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|fpll_0|fpll|refclkin                ; { pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|fpll_0|fpll|vcoph[0] }             ;
+140:; 157.46 MHz ; 157.46 MHz      ; pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|counter[0].output_counter|divclk ;      ;
+158:; pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|counter[0].output_counter|divclk ; 0.381  ; 0.000         ;
+176:; pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|counter[0].output_counter|divclk ; 0.254 ; 0.000         ;
+193:; pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|counter[0].output_counter|divclk ; 3.917  ; 0.000         ;
+209:; pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|counter[0].output_counter|divclk ; 1.003 ; 0.000         ;
+225:; pll_hdmi|pll_hdmi_inst|altera_pll_i|cyclonev_pll|fpll_0|fpll|vcoph[0]             ; 1.122  ; 0.000         ;
+PASS           G5-videodomain: video domain lines quoted
+--- USER_IO/SPI domain (sta rpt) ---
+122:; spi_sck                                                                           ; Base      ; 10.000  ; 100.0 MHz  ; 0.000 ; 5.000  ;            ;           ;             ;       ;        ;           ;            ;          ;                                                                               ;                                                                                      ; { spi|sclk_out }                                                                      ;
+141:; 320.1 MHz  ; 320.1 MHz       ; spi_sck                                                                           ;      ;
+162:; spi_sck                                                                           ; 6.876  ; 0.000         ;
+182:; spi_sck                                                                           ; 0.318 ; 0.000         ;
+230:; spi_sck                                                                           ; 4.251  ; 0.000         ;
+626:; spi_sck                                                                           ; pll_audio|pll_audio_inst|altera_pll_i|general[0].gpll~PLL_OUTPUT_COUNTER|divclk   ; false path   ; 0        ; 0        ; 0        ;
+632:; spi_sck                                                                           ; spi_sck                                                                           ; 1019         ; 0        ; 0        ; 0        ;
+674:; spi_sck                                                                           ; pll_audio|pll_audio_inst|altera_pll_i|general[0].gpll~PLL_OUTPUT_COUNTER|divclk   ; false path   ; 0        ; 0        ; 0        ;
+PASS           G6-userio: spi_sck domain lines quoted
+ROM slices found : 16 in 2 groups
+bytes recovered  : 16384/16384 (2 x 8192-byte halves)
+EXPECTED /home/struktured/projects/dr_mario_rl/tmp/rtl_chain/ship/theta400dblcanon-seed13/copro_rom.hex : MATCH 16384/16384 bytes (low-half=group0; the other order differs in 12094 bytes)
+CONTROL  /home/struktured/projects/dr_mario_rl/tmp/rtl_chain/ship/theta400-seed13/copro_rom.hex : DIFFERS in every half-order (min 1356 byte(s))
+    addr   288  control dd  image ed
+    addr   297  control dd  image ed
+    addr   495  control 4b  image 5b
+    addr   977  control de  image ee
+    addr  1213  control 1a  image 2a
+    addr  1230  control a5  image ad
+    addr  1231  control 46  image 24
+    addr  1232  control 8d  image 61
+    addr  1233  control 34  image 4d
+    addr  1234  control 61  image 25
+CONTROL  /mnt/data/drmario_cosim/fw/theta_sweep/th150/copro_rom.hex : DIFFERS in every half-order (min 1358 byte(s))
+    addr   288  control dd  image ed
+    addr   297  control dd  image ed
+    addr   495  control 4b  image 5b
+    addr   977  control de  image ee
+    addr  1213  control 1a  image 2a
+    addr  1230  control a5  image ad
+    addr  1231  control 46  image 24
+    addr  1232  control 8d  image 61
+    addr  1233  control 34  image 4d
+    addr  1234  control 61  image 25
+IMAGE-PROOF PASS
+PASS           G7-fwproof: 16384/16384 expected match + controls killed (exit 0)
+PASS           G7b-index5: netlist output_counter_index = 5 (want 5 = reconfig write target)
+PASS           G8-distinct: new rbf 4bcd7428b6fe14143e04801863c1f46d != dblcanon-974de3ed, theta400-de7dea35
+
+GATE SHEET: ALL LOCAL GATES PASS (4bcd7428b6fe14143e04801863c1f46d)
