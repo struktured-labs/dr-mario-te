@@ -24,6 +24,12 @@ SSH="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10"
 fatal() { echo "$(date -Is) FATAL: $*" >&2; exit 2; }
 note()  { echo "$(date -Is) $*"; }
 
+# ---- authorization gate: no hardware contact without explicit arming ---------
+# (added after an offline sanity run reached a live box: the driver is only ever
+# started deliberately, via `touch out/ARMED` + systemd-run. A missing ARMED
+# file is a refusal BEFORE any ssh/scp is attempted.)
+[ -f "$OUT_DIR/ARMED" ] || fatal "not armed: touch $OUT_DIR/ARMED to authorize hardware contact"
+
 # ---- registration + identity gates (every start, cheap) ----------------------
 case "$NEWMISTER_IP" in ""|FILL_ME_IN) fatal "NEWMISTER_IP not set in $ENV_FILE";; esac
 [ "$NEWMISTER_IP" = "$LIVE_MISTER_IP" ] && fatal "NEWMISTER_IP equals the LIVE soak box — refused"
