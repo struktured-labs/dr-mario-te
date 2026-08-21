@@ -22,7 +22,10 @@ ENV_FILE="${SILEVAL_ENV:-$HERE/sileval.env}"
 
 # BatchMode+IdentitiesOnly: a connection that CAN prompt is a bug (team-lead
 # rule after key-wipe popups on the owner's desktop) — fail loudly instead.
-SSH="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o BatchMode=yes -o IdentitiesOnly=yes -i $HOME/.ssh/id_rsa"
+# -n: ssh must NEVER read stdin — an ssh inside the seed loop slurped the
+# remaining 239 seeds as its stdin on 2026-08-21 and the run "completed" after
+# one pair. Belt (ssh -n) and suspenders (loop reads fd 3, below).
+SSH="ssh -n -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o BatchMode=yes -o IdentitiesOnly=yes -i $HOME/.ssh/id_rsa"
 fatal() { echo "$(date -Is) FATAL: $*" >&2; exit 2; }
 note()  { echo "$(date -Is) $*"; }
 
@@ -47,6 +50,12 @@ $SSH "root@$NEWMISTER_IP" "test -f /media/fat/SILEVAL_BOX_ID" \
 BOX_ID=$($SSH "root@$NEWMISTER_IP" "cat /media/fat/SILEVAL_BOX_ID")
 
 mkdir -p "$OUT_DIR/rows" "$OUT_DIR/artifacts"
+
+# The registered design is 240 paired seeds. A seed list of any other length is
+# a WIRING FAULT, never a smaller experiment — refuse before touching hardware.
+REGISTERED_SEEDS=240
+n_seeds=$(command grep -c . "$SEEDS_FILE")
+[ "$n_seeds" -eq "$REGISTERED_SEEDS" ] || fatal "seed list $SEEDS_FILE has $n_seeds seeds, registered n is $REGISTERED_SEEDS"
 
 arm_cart_md5()  { case "$1" in ship) echo "$CART_SHIP_MD5";;  slice) echo "$CART_SLICE_MD5";;  esac; }
 arm_sd_cart()   { case "$1" in ship) echo "$SD_CART_SHIP";;   slice) echo "$SD_CART_SLICE";;   esac; }
@@ -183,12 +192,19 @@ void_row() { # $1 row, $2 seed, $3 arm, $4 reason
 
 # ---- main: ABBA over the registered seed list --------------------------------
 i=0
-while read -r seed; do
+while read -r -u3 seed; do
   [ -f "$OUT_DIR/HALT" ] && { note "HALT file present — stopping"; exit 0; }
   case $(( i % 2 )) in
     0) run_arm "$seed" ship;  run_arm "$seed" slice ;;
     1) run_arm "$seed" slice; run_arm "$seed" ship  ;;
   esac
   i=$(( i + 1 ))
-done < "$SEEDS_FILE"
-note "seed list complete"
+done 3< "$SEEDS_FILE"
+
+# Completion is only completion if the row ledger says so — a clean exit with
+# fewer OK rows than the registered set is an ALARM, never a success.
+ok_rows=$(command grep -l '"status": "OK"' "$OUT_DIR"/rows/*.json 2>/dev/null | wc -l)
+if [ "$ok_rows" -lt $(( REGISTERED_SEEDS * 2 )) ]; then
+  fatal "seed loop ended with $ok_rows OK rows < registered $(( REGISTERED_SEEDS * 2 )) — incomplete run, investigate"
+fi
+note "seed list complete: $ok_rows/$(( REGISTERED_SEEDS * 2 )) OK rows"

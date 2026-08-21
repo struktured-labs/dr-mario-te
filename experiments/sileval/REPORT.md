@@ -79,6 +79,19 @@
   Unarmed refusal re-verified after each change (exit 2, zero network).
 - ARMED does not exist while any HOLD stands.
 
+## Outage record — 2026-08-21 07:45-15:15 EDT (~7.5 h, no data harm)
+The A/B's first launch exited CLEANLY after ONE pair: every un-flagged ssh in
+the seed loop's body read the loop's stdin, so cycle 1 consumed seed 27875 and
+ssh consumed the other 239 seeds — "seed list complete" after 13 minutes, and
+the monitor treated normal completion as non-alarming (its event also only
+DELIVERS at a turn boundary — silent-success is a monitor design fault on two
+axes). The one completed pair is clean (18 samples both arms, 0 fails) and is
+KEPT; resume skips it. Fixes, each mutant-tested: loop reads fd 3 (slurper-
+immune, 10/10 vs old shape's 1/10), ssh -n everywhere, startup FATAL if the
+seed list length differs from the registered 240, completion FATAL if OK rows
+< 480 at loop end, monitor rebuilt to alarm on unit-inactive-with-incomplete-
+ledger. Prereg timeline shifts ~8 h; nothing else changes.
+
 ## Standing environmental notes
 - DBLCANON status (2026-08-21): the owner ACTIVATED it on the new box during
   their manual A/B (pre-existing BEST_AI_demo.mgl; corevideo only path-fixed
