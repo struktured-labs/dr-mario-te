@@ -37,7 +37,14 @@ $PY analyze_c5ext.py --selftest 2>&1 | tee gates/gate_selftest_remote.log
 marker gates/gate_selftest_remote.log "ANALYZE_C5EXT_SELFTEST_PASS"
 
 echo "== [5/6] cross-host bit-exactness gate (seeds 33000/33002, full c5 config) =="
-[ -f gates/xhost_local.json ] || { echo "CHAIN ABORT: gates/xhost_local.json (local reference) missing"; exit 1; }
+# The local reference is produced on the i9 and rsynced in; it may lag the
+# remote gates by an hour or two. Wait (bounded), never skip: no gate, no rows.
+W=0
+until [ -f gates/xhost_local.json ]; do
+  W=$((W+1)); [ $W -gt 480 ] && { echo "CHAIN ABORT: xhost_local.json never arrived (8h)"; exit 1; }
+  [ $((W % 10)) -eq 1 ] && echo "waiting for gates/xhost_local.json (local reference)... ${W}m"
+  sleep 60
+done
 $PY xhost_gate.py --fw "$FW" --out gates/xhost_remote.json 2>&1 | tee gates/xhost_remote.log
 marker gates/xhost_remote.log "XHOST_RUN_OK"
 $PY xhost_gate.py --compare gates/xhost_local.json gates/xhost_remote.json \
