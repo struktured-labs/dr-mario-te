@@ -1,0 +1,22 @@
+{
+ "host": "blackmage",
+ "farm_vsim_md5": "3e6569f1b7cd254bac9029ea9c9d8d0f",
+ "hashes": {
+  "33000": "c545dddbce538d474a8f7f5c2450a807dc7de8f8bd7c6a62ad2b609737202600",
+  "33002": "f3a294f97fb5de39a06815335063ef6860fb3e59347cc0091a6d7a2361afbbea"
+ },
+ "results": {
+  "33000": {
+   "result": "topout",
+   "pills": 38,
+   "garbage": 8,
+   "fw_md5": "e970e9ab0208cdbce1d39ed33e2f51ee"
+  },
+  "33002": {
+   "result": "clear",
+   "pills": 208,
+   "garbage": 76,
+   "fw_md5": "e970e9ab0208cdbce1d39ed33e2f51ee"
+  }
+ }
+}
