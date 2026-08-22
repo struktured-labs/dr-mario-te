@@ -1,0 +1,32 @@
+--- a/experiments/eval47/pressure_rig.py
++++ b/experiments/eval47/pressure_rig.py
+@@ -169,6 +169,11 @@
+                       # DIFFERENT colour -- the actual disease signature
+     mm_vert = 0       # every mismatched-support vertical, streak or not
+     garbage_injected = 0
++    # VOLLEY TIMELINE (row_schema 2). garbage_injected is a per-GAME TOTAL and
++    # cannot answer "is failure clustered in the placements right after a volley
++    # lands?" -- the question that separates an ATTACK-RESPONSE defect from plain
++    # CUMULATIVE HEIGHT. Record WHEN each volley landed, not just how many.
++    volley_pills = []   # [[pills_placed, halves_landed], ...] in placement order
+     last_vert_col = -1
+     col = vir = None
+     v_at_topout = None
+@@ -243,6 +248,7 @@
+             garbage_injected += landed
+             if landed:
+                 last_garbage_landed_pill = env.pills_placed
++                volley_pills.append([int(env.pills_placed), int(landed)])
+             if env.board.virus_count() == 0:
+                 res = "clear"
+                 break
+@@ -260,6 +266,8 @@
+     return {"seed": seed, "won": int(res == "clear"), "topout": int(res == "topout"),
+             "stall": int(res == "stall"), "pills": env.pills_placed,
+             "funnel": funnel, "funnel_mm": funnel_mm, "mm_vert": mm_vert,
+             "garbage_injected": garbage_injected,
++            "volley_pills": volley_pills,
++            "row_schema": 2,   # absent => pre-timeline row; [] => genuinely zero volleys
+             "stranded_final": int(g_stranded(col, vir)),
+             "tower_final": int(g_tower(col, vir, H0)),
+             "viruses_left_at_end": v_at_topout if v_at_topout is not None else env.board.virus_count(),
