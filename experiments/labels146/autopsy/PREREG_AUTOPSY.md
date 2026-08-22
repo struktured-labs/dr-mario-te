@@ -169,3 +169,70 @@ are: (i) the avoidable:doomed split with its CI and its stated coverage,
 cluster co-occurrence table, (iv) the time-before-death distribution — each
 quoted with its n. Whether the campaign sampler is re-pointed is team-lead's
 call, made AFTER these numbers.
+
+---
+
+# AMENDMENT A1 (2026-08-22, BEFORE ANY LABEL ROW) — THE REGISTERED FUTURE DOSE IS INERT IN CLEAN PLAY
+
+TIMING PROOF: at this commit `out/` contains `gate_provenance.json` and a
+partial `census/census.jsonl` (population enumeration only — result/pills/
+viruses_left/trace per seed). Zero label rows, zero claims, zero forks run.
+
+**THE DEFECT IN §2 AS REGISTERED.** PREREG_LABELS §1 gets its rollout
+stochasticity from `dist_seed(seed, ply, sample)`, and that seed reaches the
+rollout at exactly ONE place: `oracle_arm._advance`'s garbage injection
+(`PR._inject_garbage(board, seed, ...)` / `inject_bursty_garbage(..., seed,
+...)`). **Clean solo has no injection.** The capsule stream inside a fork comes
+from the deepcopied `PillDraw` cursor, which is a function of the game seed and
+the ply — not of `fseed`. So all N=8 samples of a candidate would be
+BIT-IDENTICAL, every label would be 0/8 or 8/8, and §4's thresholds (>=5/8,
+6-vs-2) could never distinguish a decision from a coin — a vacuous gate of
+exactly the kind this project has shipped before (a dose that never fires).
+Caught by reading the dose path before running it, not after.
+
+**A1.1 CORRECTED DOSE — RESAMPLE THE UNSEEN FUTURE.** In clean solo the only
+thing the agent does not know is the capsule stream beyond `nxt`. So the fork
+resamples precisely that:
+- deepcopy the env; place the candidate; **keep `cur` and `nxt` unchanged**
+  (both are visible to the champion at the decision ply — resampling them would
+  change the decision problem, not the future);
+- replace the clone's draw with `PillDraw(NesPillSource(seed=fseed & 0xFFFF))`,
+  `fseed = dist_seed(seed, ply, sample)`, so every SUBSEQUENT capsule comes
+  from an independent NES stream;
+- CRN is preserved exactly as registered: `fseed` depends on (seed, ply,
+  sample) and never on the candidate, so candidates are compared on the same 8
+  futures.
+This is the same question the registered dist mode asks — "would a TYPICAL
+future rescue this?" — with the randomness moved to the only channel that
+carries any in this regime. Thresholds in §4 are unchanged and now meaningful.
+
+**A1.2 A NINTH, CLAIRVOYANT FORK — reported separately, never pooled.** One
+extra fork per candidate continues on the TRUE stream (no swap). It answers a
+different and stronger question: on this exact stream, did a one-ply deviation
+exist that survives/clears where the champion's pick does not? Reported as its
+own column because the two verdicts differ in kind:
+- AVOIDABLE-under-clairvoyance is WEAK evidence of a defect (the candidate may
+  be collecting luck the agent could not have foreseen) — it is an upper bound
+  on what any policy could have done;
+- **DOOMED-under-clairvoyance is the STRONG absence verdict**: not even a
+  future-reading one-ply deviation saves the game.
+The headline AVOIDABLE:DOOMED split is the DIST one (A1.1). The clairvoyant
+column is reported beside it, labeled, and the two are never averaged.
+
+**A1.3 NEW REQUIRED GATE — G-DOSE, with its own killed mutant.**
+- G-DOSE-LIVE: over the first 20 labeled states, at least one candidate must
+  show SPREAD across the 8 dist samples (not all 0, not all N). A dose that
+  cannot vary cannot be tested.
+- **M-INERT (the defect as a mutant, per test-the-defect-not-the-fix)**: run
+  the same 20 states with the stream swap REMOVED — i.e. §2 exactly as
+  originally registered. It MUST produce ZERO spread on every candidate. If
+  M-inert shows spread, my diagnosis is wrong and A1 is withdrawn; if it shows
+  none, the vacuity is proven rather than asserted, and the correction is
+  justified on the record.
+- G-FORK-INDEP: two deepcopies of the same live env draw IDENTICAL capsules
+  from their own cursors when unswapped, and DIFFERENT ones when swapped —
+  the deepcopy-shares-the-cursor hazard, asserted not assumed.
+Void class V5: G-DOSE-LIVE fails => the labels carry no information in this
+regime; report that and STOP.
+
+Everything else in PREREG_AUTOPSY §0-§9 stands unchanged.
