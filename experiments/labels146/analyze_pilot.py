@@ -168,6 +168,18 @@ def main():
     with open(os.path.join(LC.HERE, "out", "PILOT_REPORT.json"), "w") as fh:
         json.dump(rep, fh, indent=1)
     print(json.dumps(rep, indent=1))
+    # dsurv-vs-k profile as an at-a-glance table (team-lead rider): the WINDOW
+    # RULE's inputs and its verdict must be auditable from this block alone.
+    print("\nDSURV-VS-K PROFILE (S-death, H=25; claim bar = yield>=0.10)")
+    print(f"{'k':>4} {'n':>4} {'mean_dsurv':>11} {'max_dsurv':>10} "
+          f"{'claim_yield':>12}  in_window")
+    for k in KS:
+        v = prof[k]
+        inw = (win is not None and win['k_min'] <= k <= win['k_max'])
+        print(f"{k:>4} {v['n']:>4} {str(v['mean_dsurv']):>11} "
+              f"{str(v['max_dsurv']):>10} {str(v['claim_yield']):>12}  "
+              f"{'YES' if inw else '-'}")
+    print(f"WINDOW RULE -> {win}")
     print("ANALYZE_PILOT_OK", flush=True)
 
 
