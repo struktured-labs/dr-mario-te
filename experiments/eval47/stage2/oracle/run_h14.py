@@ -117,10 +117,12 @@ def freeze_meta(outdir, meta, manifest):
 
 def _winit(model, label, future, topk, horizon, fork_samples, provenance,
            null_keep_num, null_keep_den, tie_margin, level, max_pills,
-           trt_tie_margin, trt_topk, trt_horizon, trt_fork_samples):
+           trt_tie_margin, trt_topk, trt_horizon, trt_fork_samples,
+           trt_trigger_eps):
     import oracle_arm as O
     C, bmodel = O.init_rig(model, level=level)
-    _W.update(level=level, max_pills=max_pills, trt_tie_margin=trt_tie_margin,
+    _W.update(level=level, max_pills=max_pills, trt_trigger_eps=trt_trigger_eps,
+              trt_tie_margin=trt_tie_margin,
               trt_topk=trt_topk, trt_horizon=trt_horizon,
               trt_fork_samples=trt_fork_samples,
               O=O, C=C, bmodel=bmodel, model=model, label=label,
@@ -149,7 +151,8 @@ def _work(seed):
                   fork_samples=_W["trt_fork_samples"],
                   null_keep_num=_W["null_keep_num"],
                   null_keep_den=_W["null_keep_den"],
-                  tie_margin=_W["trt_tie_margin"])
+                  tie_margin=_W["trt_tie_margin"],
+                  trigger_eps=_W["trt_trigger_eps"])
     rt = O.play_one(seed, at, _W["C"], _W["bmodel"],
                     max_pills=_W["max_pills"])
     for r in (rb, rt):
@@ -245,6 +248,7 @@ def main():
     ap.add_argument("--level", type=int, default=11)
     ap.add_argument("--max-pills", type=int, default=300)
     ap.add_argument("--trt-tie-margin", type=float, default=0.5)
+    ap.add_argument("--trt-trigger-eps", type=float, default=0.0)
     ap.add_argument("--trt-topk", type=int, default=4)
     ap.add_argument("--trt-horizon", type=int, default=15)
     ap.add_argument("--trt-fork-samples", type=int, default=5)
@@ -292,6 +296,7 @@ def main():
             "trt_tie_margin": a.trt_tie_margin, "trt_topk": a.trt_topk,
             "trt_horizon": a.trt_horizon,
             "trt_fork_samples": a.trt_fork_samples,
+            "trt_trigger_eps": a.trt_trigger_eps,
             "exclude_file": a.exclude_file,
             "topk": a.topk,
             "horizon": a.horizon, "seed_start": a.seed_start,
@@ -317,7 +322,7 @@ def main():
                       a.fork_samples, prov, a.null_keep_num,
                       a.null_keep_den, a.tie_margin, a.level, a.max_pills,
                       a.trt_tie_margin, a.trt_topk, a.trt_horizon,
-                      a.trt_fork_samples)) as ex:
+                      a.trt_fork_samples, a.trt_trigger_eps)) as ex:
         for s0 in range(0, len(seeds), a.segment):
             block = [s for s in seeds[s0:s0 + a.segment] if s in todo_set]
             tag = f"seg_{a.seed_start + s0:06d}"
