@@ -26,12 +26,17 @@ from oracle_arm import (OracleArm, CHAMP_ORDER, _champ_values, _champ_action,
 
 
 class H12Arm(OracleArm):
-    def __init__(self, tie_margin=0.5, **kw):
+    def __init__(self, tie_margin=0.5, trigger_eps=0.0, **kw):
         kw.setdefault("future_mode", "dist")
         kw.setdefault("fork_samples", 5)
         assert kw["future_mode"] == "dist", "H12 is sampled-futures only"
         super().__init__(**kw)
         self.tie_margin = float(tie_margin)
+        # trigger_eps=0.0 reproduces the certified exact-tie trigger exactly:
+        # `fv[0] - fv[1] > 0.0` is the same predicate as `fv[0] != fv[1]`.
+        # eps>0 widens the trigger to near-ties (H14 AMENDMENT 1).
+        self.trigger_eps = float(trigger_eps)
+        assert self.trigger_eps >= 0.0
         self.margin_sum = math.ceil(self.tie_margin * self.fork_samples - 1e-9)
         self.stats["tie_plies"] = 0
         self.stats["margin_rejected_flips"] = 0
@@ -59,7 +64,7 @@ class H12Arm(OracleArm):
         if len(legal) < 2:
             return base_a, base_a
         fv = sorted((float(vals[c]) for c in legal), reverse=True)
-        if fv[0] != fv[1]:                      # H12 delta 1: exact top-2 tie only
+        if fv[0] - fv[1] > self.trigger_eps:    # H12 delta 1 (eps=0: exact tie)
             return base_a, base_a
         self.stats["tie_plies"] += 1
 
@@ -67,6 +72,10 @@ class H12Arm(OracleArm):
                         key=lambda i: (-vals[legal[i]], i))[:self.topk]
         cands = [legal[i] for i in ranked]
         assert cands[0] == base_a, "rank-0 candidate must be the champion's pick"
+        if self.trigger_eps > 0.0:
+            # keep only candidates inside the eps window (plus the champion)
+            cands = [c for c in cands
+                     if float(vals[c]) >= fv[0] - self.trigger_eps]
         if len(cands) <= 1:
             return base_a, base_a
 
@@ -111,7 +120,8 @@ class H12Arm(OracleArm):
                 H = heights(env.board.color)
                 self.flip_log.append({
                     "seed": int(seed),
-                    "arm": f"h12_{self.label_mode}_m{self.tie_margin}",
+                    "arm": (f"h12_{self.label_mode}_m{self.tie_margin}"
+                            f"_e{self.trigger_eps}"),
                     "ply": ply, "viruses": viruses, "maxh": int(H.max()),
                     "d_spawn_h": d_spawn_h,
                     "base_action": int(base_a), "trt_action": int(a),

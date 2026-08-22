@@ -1,0 +1,770 @@
+[
+ {
+  "seed": 30000,
+  "ply": 85,
+  "stratum": "death",
+  "k": 1,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30000,
+  "ply": 83,
+  "stratum": "death",
+  "k": 3,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30000,
+  "ply": 80,
+  "stratum": "death",
+  "k": 6,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30000,
+  "ply": 76,
+  "stratum": "death",
+  "k": 10,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30000,
+  "ply": 71,
+  "stratum": "death",
+  "k": 15,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30000,
+  "ply": 66,
+  "stratum": "death",
+  "k": 20,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30004,
+  "ply": 280,
+  "stratum": "death",
+  "k": 1,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30004,
+  "ply": 278,
+  "stratum": "death",
+  "k": 3,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30004,
+  "ply": 275,
+  "stratum": "death",
+  "k": 6,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30004,
+  "ply": 271,
+  "stratum": "death",
+  "k": 10,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30004,
+  "ply": 266,
+  "stratum": "death",
+  "k": 15,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30004,
+  "ply": 261,
+  "stratum": "death",
+  "k": 20,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30014,
+  "ply": 242,
+  "stratum": "death",
+  "k": 1,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30014,
+  "ply": 240,
+  "stratum": "death",
+  "k": 3,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30014,
+  "ply": 237,
+  "stratum": "death",
+  "k": 6,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30014,
+  "ply": 233,
+  "stratum": "death",
+  "k": 10,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30014,
+  "ply": 228,
+  "stratum": "death",
+  "k": 15,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30014,
+  "ply": 223,
+  "stratum": "death",
+  "k": 20,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30016,
+  "ply": 350,
+  "stratum": "death",
+  "k": 1,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30016,
+  "ply": 348,
+  "stratum": "death",
+  "k": 3,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30016,
+  "ply": 345,
+  "stratum": "death",
+  "k": 6,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30016,
+  "ply": 341,
+  "stratum": "death",
+  "k": 10,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30016,
+  "ply": 336,
+  "stratum": "death",
+  "k": 15,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30016,
+  "ply": 331,
+  "stratum": "death",
+  "k": 20,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30026,
+  "ply": 199,
+  "stratum": "death",
+  "k": 1,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30026,
+  "ply": 197,
+  "stratum": "death",
+  "k": 3,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30026,
+  "ply": 194,
+  "stratum": "death",
+  "k": 6,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30026,
+  "ply": 190,
+  "stratum": "death",
+  "k": 10,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30026,
+  "ply": 185,
+  "stratum": "death",
+  "k": 15,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30026,
+  "ply": 180,
+  "stratum": "death",
+  "k": 20,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30030,
+  "ply": 252,
+  "stratum": "death",
+  "k": 1,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30030,
+  "ply": 250,
+  "stratum": "death",
+  "k": 3,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30030,
+  "ply": 247,
+  "stratum": "death",
+  "k": 6,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30030,
+  "ply": 243,
+  "stratum": "death",
+  "k": 10,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30030,
+  "ply": 238,
+  "stratum": "death",
+  "k": 15,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30030,
+  "ply": 233,
+  "stratum": "death",
+  "k": 20,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30032,
+  "ply": 42,
+  "stratum": "death",
+  "k": 1,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30032,
+  "ply": 40,
+  "stratum": "death",
+  "k": 3,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30032,
+  "ply": 37,
+  "stratum": "death",
+  "k": 6,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30032,
+  "ply": 33,
+  "stratum": "death",
+  "k": 10,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30032,
+  "ply": 28,
+  "stratum": "death",
+  "k": 15,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30032,
+  "ply": 23,
+  "stratum": "death",
+  "k": 20,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30042,
+  "ply": 326,
+  "stratum": "death",
+  "k": 1,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30042,
+  "ply": 324,
+  "stratum": "death",
+  "k": 3,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30042,
+  "ply": 321,
+  "stratum": "death",
+  "k": 6,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30042,
+  "ply": 317,
+  "stratum": "death",
+  "k": 10,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30042,
+  "ply": 312,
+  "stratum": "death",
+  "k": 15,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30042,
+  "ply": 307,
+  "stratum": "death",
+  "k": 20,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30044,
+  "ply": 47,
+  "stratum": "death",
+  "k": 1,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30044,
+  "ply": 45,
+  "stratum": "death",
+  "k": 3,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30044,
+  "ply": 42,
+  "stratum": "death",
+  "k": 6,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30044,
+  "ply": 38,
+  "stratum": "death",
+  "k": 10,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30044,
+  "ply": 33,
+  "stratum": "death",
+  "k": 15,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30044,
+  "ply": 28,
+  "stratum": "death",
+  "k": 20,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30046,
+  "ply": 277,
+  "stratum": "death",
+  "k": 1,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30046,
+  "ply": 275,
+  "stratum": "death",
+  "k": 3,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30046,
+  "ply": 272,
+  "stratum": "death",
+  "k": 6,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30046,
+  "ply": 268,
+  "stratum": "death",
+  "k": 10,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30046,
+  "ply": 263,
+  "stratum": "death",
+  "k": 15,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30046,
+  "ply": 258,
+  "stratum": "death",
+  "k": 20,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30048,
+  "ply": 108,
+  "stratum": "death",
+  "k": 1,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30048,
+  "ply": 106,
+  "stratum": "death",
+  "k": 3,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30048,
+  "ply": 103,
+  "stratum": "death",
+  "k": 6,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30048,
+  "ply": 99,
+  "stratum": "death",
+  "k": 10,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30048,
+  "ply": 94,
+  "stratum": "death",
+  "k": 15,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30048,
+  "ply": 89,
+  "stratum": "death",
+  "k": 20,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30054,
+  "ply": 314,
+  "stratum": "death",
+  "k": 1,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30054,
+  "ply": 312,
+  "stratum": "death",
+  "k": 3,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30054,
+  "ply": 309,
+  "stratum": "death",
+  "k": 6,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30054,
+  "ply": 305,
+  "stratum": "death",
+  "k": 10,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30054,
+  "ply": 300,
+  "stratum": "death",
+  "k": 15,
+  "Hs": [
+   15,
+   25,
+   40
+  ]
+ },
+ {
+  "seed": 30054,
+  "ply": 295,
+  "stratum": "death",
+  "k": 20,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30002,
+  "ply": 90,
+  "stratum": "clear",
+  "k": null,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30006,
+  "ply": 271,
+  "stratum": "clear",
+  "k": null,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30008,
+  "ply": 150,
+  "stratum": "clear",
+  "k": null,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30010,
+  "ply": 216,
+  "stratum": "clear",
+  "k": null,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30012,
+  "ply": 206,
+  "stratum": "clear",
+  "k": null,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30018,
+  "ply": 329,
+  "stratum": "clear",
+  "k": null,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30020,
+  "ply": 40,
+  "stratum": "clear",
+  "k": null,
+  "Hs": [
+   25
+  ]
+ },
+ {
+  "seed": 30022,
+  "ply": 161,
+  "stratum": "clear",
+  "k": null,
+  "Hs": [
+   25
+  ]
+ }
+]

@@ -1,0 +1,11 @@
+{
+ "G1": "PASS",
+ "G2_m_stale": "KILLED",
+ "G3_m_dedup_off": {
+  "probes": 6,
+  "doubles": 1,
+  "pooled_ratio": 1.098,
+  "verdict": "KILLED"
+ },
+ "G4": "PASS"
+}
