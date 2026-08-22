@@ -23,8 +23,9 @@ sys.path.insert(0, HERE)
 import autopsycore as AC   # noqa: E402
 
 OUT = os.path.join(HERE, "out")
-LABELS = os.path.join(OUT, "labels")
-CENSUS = os.path.join(OUT, "census", "census.jsonl")
+LABELS = os.environ.get("DRM_AUTOPSY_LABELS", os.path.join(OUT, "labels"))
+CENSUS = os.environ.get("DRM_AUTOPSY_CENSUS",
+                        os.path.join(OUT, "census", "census.jsonl"))
 
 
 def scan_offsets():

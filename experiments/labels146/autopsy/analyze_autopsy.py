@@ -22,7 +22,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 OUT = os.path.join(HERE, "out")
-LABELS = os.path.join(OUT, "labels")
+LABELS = os.environ.get("DRM_AUTOPSY_LABELS", os.path.join(OUT, "labels"))
 ROWS, COLS, NCELL = 16, 8, 128
 CONTROL_SEED = 20260822
 

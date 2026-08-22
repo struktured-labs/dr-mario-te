@@ -28,7 +28,7 @@ sys.path.insert(0, HERE)
 import autopsycore as AC   # noqa: E402
 
 OUT = os.path.join(HERE, "out")
-LABELS = os.path.join(OUT, "labels")
+LABELS = os.environ.get("DRM_AUTOPSY_LABELS", os.path.join(OUT, "labels"))
 SHUFFLE_SEED = 20260822
 
 
@@ -145,7 +145,8 @@ def _init(crows):
 
 
 def census_rows_for(seeds):
-    path = os.path.join(OUT, "census", "census.jsonl")
+    path = os.environ.get("DRM_AUTOPSY_CENSUS",
+                          os.path.join(OUT, "census", "census.jsonl"))
     want = set(seeds)
     rows = {}
     with open(path) as f:
@@ -159,12 +160,68 @@ def census_rows_for(seeds):
     return rows
 
 
+def _refire(args):
+    """Re-label ONE firing ply at sample offset 1000 and re-apply the rule."""
+    seed, ply, result = args
+    import numpy as np
+    import adversary_harness as AH
+    AH._lazy()
+    C, _b = AC.init_rig()
+    row = _CROWS[seed]
+    stall = (result == "stall")
+    H = AC.H_STALL if stall else AC.H_TOPOUT
+    for p, env, vals, act in AC.replay_census_game(seed, C, row, want_plies={ply}):
+        ents = AC.label_state(env, C, seed, ply, H, clair=False, swap=True,
+                              extend_cap=stall, sample_offset=1000)
+        cl = (AC.claim_stall if stall else AC.claim_topout)(ents, act, vals)
+        return {"seed": seed, "ply": ply, "refired": bool(cl),
+                "claim": cl}
+    return {"seed": seed, "ply": ply, "error": "ply not reached"}
+
+
+def positive_control(workers):
+    """§4 / rule 8: DOOMED is an absence claim, so the instrument must be shown
+    LIVE on this population — an avoidable game's firing ply must re-fire on
+    futures it has never seen."""
+    docs = load_docs()
+    jobs = []
+    for d in docs:
+        for c in claims_of(d):
+            jobs.append((d["seed"], c["ply"], d["result"]))
+    if not jobs:
+        print("POSITIVE_CONTROL_VACUOUS: no firing plies to re-fire", flush=True)
+        with open(os.path.join(OUT, "positive_control.json"), "w") as f:
+            json.dump({"n": 0, "refired": 0, "verdict": "VACUOUS"}, f, indent=2)
+        return
+    crows = census_rows_for([j[0] for j in jobs])
+    res = []
+    with ProcessPoolExecutor(max_workers=workers, initializer=_init,
+                             initargs=(crows,)) as ex:
+        futs = [ex.submit(_refire, j) for j in jobs]
+        for fut in as_completed(futs):
+            r = fut.result()
+            res.append(r)
+            print(f"  refire seed {r['seed']} ply {r['ply']} -> "
+                  f"{r.get('refired')}", flush=True)
+    k = sum(1 for r in res if r.get("refired"))
+    print(f"POSITIVE_CONTROL refired {k}/{len(res)}", flush=True)
+    with open(os.path.join(OUT, "positive_control.json"), "w") as f:
+        json.dump({"n": len(res), "refired": k, "sample_offset": 1000,
+                   "detail": res}, f, indent=2)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--labels", default="true",
                     choices=["true", "shuffle", "mimic"])
     ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--positive-control", action="store_true",
+                    help="§4 rule-8 control: re-label every firing ply with "
+                         "FRESH sample indices (+1000); the claim must re-fire")
     a = ap.parse_args()
+
+    if a.positive_control:
+        return positive_control(a.workers)
 
     docs = load_docs()
     assert docs, "no autopsy label files"

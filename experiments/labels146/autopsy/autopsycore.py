@@ -256,17 +256,19 @@ def fork_clean(env, action, C, horizon, fseed=None, extend_cap=False):
 
 
 def label_state(env, C, seed, ply, horizon, n_samples=N_SAMPLES,
-                clair=True, swap=True, extend_cap=False):
+                clair=True, swap=True, extend_cap=False, sample_offset=0):
     """Label every unique candidate: n_samples DIST forks (+1 clair fork).
 
     `swap=False` is M-INERT — the dose exactly as originally registered, which
-    A1.3 requires to show ZERO spread.
+    A1.3 requires to show ZERO spread.  `sample_offset` shifts the CRN sample
+    indices: the §4 POSITIVE CONTROL re-labels a firing ply at offset 1000, and
+    the claim must re-fire on futures it has never seen.
     """
     import oracle_arm as OA
     ents = enumerate_candidates(env)
     for e in ents:
         e["surv"], e["clear"], e["vc"] = [], [], []
-    for s in range(n_samples):
+    for s in range(sample_offset, sample_offset + n_samples):
         fseed = OA.dist_seed(seed, ply, s)      # candidate-independent: CRN
         for e in ents:
             r = fork_clean(env, e["rep_slot"], C, horizon,
