@@ -1,0 +1,35 @@
+{
+ "n_games": 1500,
+ "n_fail_games": 739,
+ "n_ply": 364052,
+ "n_ply_in_fail_games": 182328,
+ "variants": {
+  "v1": {
+   "open_rate": 0.5032,
+   "tie_dose_of_all": 0.0257,
+   "increment_open_over_v1": 0.0,
+   "increment_tie_over_v1": 0.0,
+   "tie_dose_in_fail_games": 0.0252,
+   "tie_neardeath": 3809,
+   "tie_endgame": 8441
+  },
+  "v2@13": {
+   "open_rate": 0.8074,
+   "tie_dose_of_all": 0.0307,
+   "increment_open_over_v1": 0.3042,
+   "increment_tie_over_v1": 0.0049,
+   "tie_dose_in_fail_games": 0.0311,
+   "tie_neardeath": 3809,
+   "tie_endgame": 8441
+  },
+  "v2@12": {
+   "open_rate": 0.888,
+   "tie_dose_of_all": 0.0317,
+   "increment_open_over_v1": 0.3849,
+   "increment_tie_over_v1": 0.0059,
+   "tie_dose_in_fail_games": 0.0319,
+   "tie_neardeath": 3809,
+   "tie_endgame": 8441
+  }
+ }
+}
