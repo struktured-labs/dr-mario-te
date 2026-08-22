@@ -254,6 +254,9 @@ def main():
     ap.add_argument("--trt-fork-samples", type=int, default=5)
     ap.add_argument("--tie-margin", type=float, default=0.5,
                     help="theta_margin dose gate (calibration freeze: 0.5)")
+    ap.add_argument("--limit-eligible", type=int, default=0,
+                    help="after exclusions, keep only the FIRST N eligible "
+                         "seeds (the registered endpoint prefix)")
     ap.add_argument("--exclude-file", default=None,
                     help="file of seed numbers to EXCLUDE from the block "
                          "(the registered sileval overlaps)")
@@ -283,6 +286,11 @@ def main():
         assert not excl.intersection(seeds), "exclusion failed"
         print(f"excluded {a.seed_count - len(seeds)} seeds via "
               f"{a.exclude_file}; eligible={len(seeds)}", flush=True)
+    if a.limit_eligible:
+        seeds = seeds[:a.limit_eligible]
+        assert len(seeds) == a.limit_eligible, (len(seeds), a.limit_eligible)
+        print(f"limited to first {len(seeds)} eligible seeds "
+              f"[{seeds[0]}..{seeds[-1]}]", flush=True)
     done = _done_seeds(a.outdir)
     todo = [s for s in seeds if s not in done]
     print(f"model={a.model} label={a.label} future={a.future} topk={a.topk} "
@@ -298,6 +306,7 @@ def main():
             "trt_fork_samples": a.trt_fork_samples,
             "trt_trigger_eps": a.trt_trigger_eps,
             "exclude_file": a.exclude_file,
+            "limit_eligible": a.limit_eligible,
             "topk": a.topk,
             "horizon": a.horizon, "seed_start": a.seed_start,
             "seed_count": a.seed_count, "segment": a.segment,
