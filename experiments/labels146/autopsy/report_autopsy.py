@@ -58,6 +58,15 @@ def main():
     A(f"| games autopsied | {n} |")
     A(f"| firing plies examined | {rep['n_firing_plies']} |")
     A("")
+    A("**Population corroboration (A2): there is no remote half.** The node's "
+      "copy of the census was removed in an earlier teardown, so void class "
+      "V-P has no second half to cross-check against — it is not satisfied and "
+      "not waived, it is unreachable. What stands in its place is narrower and "
+      "is quoted as such: seeds 33269 and 33754 reproduce their census-era "
+      "record hashes (full move trace, fatal board, terminal fields) "
+      "bit-identically on today's tree, so the decide path that produced the "
+      "original 53 is the one producing these rows.")
+    A("")
     if done < total:
         A(f"⚠ **{total - done:,} seeds are NOT YET SCANNED.** Every number "
           f"below is over the {n} failures found so far, not the closed "

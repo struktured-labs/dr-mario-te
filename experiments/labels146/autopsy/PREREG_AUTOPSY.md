@@ -236,3 +236,30 @@ Void class V5: G-DOSE-LIVE fails => the labels carry no information in this
 regime; report that and STOP.
 
 Everything else in PREREG_AUTOPSY §0-§9 stands unchanged.
+
+---
+
+# AMENDMENT A2 (2026-08-22, still before any label row) — V-P HAS NO REMOTE HALF
+
+Team-lead searched the Hetzner node directly (read-only, c5 burn undisturbed):
+`/root/drm/` holds only `c5ext`, `queue`, `queue_runner.sh`, `venv` — no
+`results/` directory, and a filesystem-wide search for `census*.jsonl` came
+back EMPTY. The full-space census was removed in an earlier teardown.
+
+Consequences, registered:
+1. The local regeneration (§0) is not a fallback, it is **the only path** to the
+   population. Its soundness therefore rests entirely on the provenance gate,
+   which is why that gate was run and published BEFORE this registration.
+2. **Void class V-P is now unreachable** — there is no remote copy to
+   cross-check against. It is not satisfied and it is not waived; it simply has
+   no second half. The coverage section of the report must SAY SO, rather than
+   letting a reader assume the population was corroborated against the original.
+   What corroborates it instead is narrower and must be quoted as such: two
+   seeds (33269, 33754) whose census-era record hashes — full move trace, fatal
+   board, terminal fields — reproduce bit-identically today.
+3. The original census's own upper half was node-produced and carries the
+   stall-nondeterminism caveat recorded in the project memory. The autopsy
+   population is uniform-provenance (local, single-box) by construction, so
+   that caveat does not propagate into this work — but it is the reason the
+   regenerated population should be preferred over the original even if a copy
+   of the original later resurfaces.
