@@ -1,0 +1,6 @@
+# Bulk data: the regenerated census stream, the per-seed label rows, the lock.
+# The REPORTS (gate_*.json, validate_*.json, AUTOPSY_REPORT.json) are tracked.
+out/census/
+out/labels/
+logs/
+tmp-numba-cache/
