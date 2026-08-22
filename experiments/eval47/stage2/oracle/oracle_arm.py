@@ -428,7 +428,7 @@ class OracleArm:
 
 
 # ------------------------------------------------------------ game rollout
-def play_one(seed, arm, C, bmodel):
+def play_one(seed, arm, C, bmodel, max_pills=300):
     """The rig's game loop with `arm` at the decision point.
 
     Every non-decision line is `pressure_rig.play`'s / `arm_lut.play_one`'s.
@@ -436,10 +436,10 @@ def play_one(seed, arm, C, bmodel):
     import pressure_rig as PR
     level, wt, ws, w, fl = C["level"], C["wt"], C["ws"], C["w"], C["fl"]
 
-    env = make_env(seed, level)
+    env = make_env(seed, level, max_pills=max_pills)
     res, v_at_topout = "stall", None
     actions = []
-    for ply in range(300):
+    for ply in range(max_pills):
         if env.board.virus_count() == 0:
             res = "clear"
             break
