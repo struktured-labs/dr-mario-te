@@ -1,0 +1,61 @@
+{
+  "paths": {
+    "kind": "paths",
+    "files": {
+      "adversary_harness.py": "45b8ced67795b40eb09f74614d468141adbe7a9a6075dd3612d1a9fd4eaa3e29",
+      "reach_root.py": "f5a408399b11bc6899cfae26c1d8938e124cdfecbf0c037e18b715097e38f99a",
+      "terms47.py": "3747754875eada71c29b10459cee0c132fe26b623fcf7876ab081dcc1d673a94",
+      "root_search.py": "43c997d20bed615e5b70f35e634c4b356fec2bbc36fb0788eb2aba3690fe3851",
+      "fast_rtl_x.py": "93e22602b80868647a5e732f57c355875e4ccc1aa71a5415496a07beba709ac3",
+      "fast_sim_x.py": "d51e43a4cbdfb192b2b966aac7ac65d75d7b084bd9a78a4e244ca07dd0182464",
+      "fb.py": "51b10f55c85594840e52c268eacdea67b855b8f66d3e1b8d71899d5684a16ddb",
+      "nes_pills.py": "9bca4013d4ea567f295db81111d463bf9ac40f401f00ce57fb411e091fde4c53",
+      "faithful_env.py": "1bd9664cbe5536cb8c5c905a214948c2bbec0b2645f2e189eb9c196e1e3b21cb",
+      "faithful_game.py": "9d6d8d0038c1ebc1830287b58e7f3eb1597e6e44a1988ae716b1537def118efa"
+    },
+    "rolled": "3b9a4531c443ba810dcf81b80d7360b5ca6a2e961569dddb6605ff731cf098c4"
+  },
+  "imports": {
+    "kind": "imports",
+    "files": {
+      "adversary_harness": "45b8ced67795b40eb09f74614d468141adbe7a9a6075dd3612d1a9fd4eaa3e29",
+      "reach_root": "f5a408399b11bc6899cfae26c1d8938e124cdfecbf0c037e18b715097e38f99a",
+      "terms47": "3747754875eada71c29b10459cee0c132fe26b623fcf7876ab081dcc1d673a94",
+      "root_search": "43c997d20bed615e5b70f35e634c4b356fec2bbc36fb0788eb2aba3690fe3851",
+      "fast_rtl_x": "93e22602b80868647a5e732f57c355875e4ccc1aa71a5415496a07beba709ac3",
+      "fast_sim_x": "d51e43a4cbdfb192b2b966aac7ac65d75d7b084bd9a78a4e244ca07dd0182464",
+      "fb": "51b10f55c85594840e52c268eacdea67b855b8f66d3e1b8d71899d5684a16ddb",
+      "nes_pills": "99a4e5b9f39f5c434ad1b9d216db0ca622cc4dcadab93b8c8bb4a591ff01f496",
+      "drmario.faithful_env": "1bd9664cbe5536cb8c5c905a214948c2bbec0b2645f2e189eb9c196e1e3b21cb",
+      "drmario.faithful_game": "9d6d8d0038c1ebc1830287b58e7f3eb1597e6e44a1988ae716b1537def118efa"
+    },
+    "paths": {
+      "adversary_harness": "/home/struktured/projects/dr-mario-qa-wt/experiments/adversary/adversary_harness.py",
+      "reach_root": "/home/struktured/projects/dr-mario-qa-wt/experiments/eval47/reach_root.py",
+      "terms47": "/home/struktured/projects/dr-mario-qa-wt/experiments/eval47/terms47.py",
+      "root_search": "/home/struktured/projects/dr-mario-qa-wt/experiments/tuck_v3/root_search.py",
+      "fast_rtl_x": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/fast_rtl_x.py",
+      "fast_sim_x": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/fast_sim_x.py",
+      "fb": "/home/struktured/projects/dr_mario_rl/tmp/endgame/fb.py",
+      "nes_pills": "/home/struktured/projects/dr_mario_rl/tmp/pillrng/nes_pills.py",
+      "drmario.faithful_env": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/faithful_env.py",
+      "drmario.faithful_game": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/faithful_game.py"
+    },
+    "rolled": "d6fe8bbc9797b13e86fab49e79aea13e09d42a476ad2a3cebab1aab4deb7684b"
+  },
+  "env": {
+    "python": "3.12.11",
+    "argv0": "/home/struktured/projects/dr-mario-labels146-wt/experiments/hetzner/census.py",
+    "host": "blackmage",
+    "time": 1787369801.5896084,
+    "numpy": "2.4.6",
+    "numba": "0.66.0",
+    "llvmlite": "0.48.0"
+  },
+  "extra": {
+    "lo": 0,
+    "hi": 65536,
+    "workers": 8,
+    "chunk": 200
+  }
+}
