@@ -1,0 +1,65 @@
+==========================================================================
+G0  OUTCOME-PLAUSIBILITY GATE (rule 7) -- blocks the run on failure
+==========================================================================
+  PASS      n120_wt0_ws20.json                         ctrl  sum(won) =  115  expect 115
+  PASS      n120_wt0_ws20.json                         arm   sum(won) =  119  expect 119
+  PASS      bursty_v1_1_n120_wt0_ws20.json             arm   sum(dies_ahead) =    9  expect 9
+  PASS      dr_lulu_20260808_rig_n120_wt0_ws20.json    arm   sum(won) =   90  expect 90
+  PASS      dr_lulu_20260808_rig_n120_wt0_ws20.json    arm   sum(dies_ahead) =   17  expect 17
+  PASS      dr_lulu_20260808_rig_n120_wt0_ws20.json    ctrl  sum(dies_ahead) =   41  expect 41
+  PASS      lulu arm clear rate derived 0.7500 == stored summary 0.7500
+
+==========================================================================
+L1a(1)  PILLS-TO-CLEAR DISTRIBUTION, WINS ONLY  (n=120/arm unless noted)
+        naive/wins-only => a FLOOR on the tempo tax (survivorship)
+==========================================================================
+  stream                        won   p10   p25   MED       [95% CI]   p75   p90     min
+  clean (blunder corpus)    250/250    73    81    91 [   88,   93]   105   123    3.8m
+  canonical drip            119/120    75    85    96 [   92,  100]   110   123    4.0m
+  bursty v1.1               100/120    81   103   128 [  118,  137]   172   223    5.3m
+  lulu-fitted (POOLED)       90/120    91   104   127 [  116,  139]   165   199    5.3m
+
+==========================================================================
+L1a(4)  SURVIVORSHIP CORRECTION -- naive vs Kaplan-Meier (losses censored)
+==========================================================================
+  stream                    naive MED   KM MED   note
+  clean (blunder corpus)           91       91   agree
+  canonical drip                   96       96   agree
+  bursty v1.1                     128      136   DIVERGE -- quote KM only
+  lulu-fitted (POOLED)            127      151   DIVERGE -- quote KM only
+
+==========================================================================
+L1a(4b) ASSUMPTION-FREE ALL-GAMES QUANTILES -- no censoring model needed
+        'pills by which X% of ALL games have cleared'. Well defined whenever
+        the clear rate exceeds X. This is the number to QUOTE: it needs no
+        claim that a topped-out game 'would have' cleared later.
+==========================================================================
+  stream                     cleared  ALL-GAMES MED     min   ALL p75
+  clean (blunder corpus)    250/250              91    3.8m       105
+  canonical drip            119/120              96    4.0m       110
+  bursty v1.1               100/120             136    5.7m       222
+  lulu-fitted (POOLED)       90/120             152    6.3m       299
+
+==========================================================================
+L1a(2)  CONDITIONED ON LOSING -- how close was it when it died?
+==========================================================================
+  stream                    lost dies_ahead  med vir left  med pills
+  clean (blunder corpus)       0         --            --         --   (never lost)
+  canonical drip               1          0           nan        300   topout=0 stall=1
+  bursty v1.1                 20          9           3.0        290   topout=11 stall=9
+  lulu-fitted (POOLED)        30         17           2.0        272   topout=18 stall=12
+
+==========================================================================
+L1a(3)  BLUNDER-UNDER-VOLLEY HAZARD -- FEASIBILITY CHECK (rule 8)
+==========================================================================
+  stored row schema: ['dies_ahead', 'funnel', 'funnel_mm', 'garbage_injected', 'mm_vert', 'pills', 'reactive_fires', 'seed', 'stall', 'stranded_final', 'topout', 'tower_final', 'viruses_left_at_end', 'won']
+  needs: a per-PLACEMENT volley timeline (placement index of each volley received)
+  has  : garbage_injected = a per-GAME TOTAL (50 in this row)
+  => NOT COMPUTABLE from stored artifacts. The rig emits per-GAME aggregates;
+     the volley timeline is never serialized. L1a(3) requires a rig
+     instrumentation change AND a re-run == COMPUTE. It is therefore
+     DEFERRED, not answered, and prediction P3 is UNTESTED.
+
+SCOPE (PREREG_L1 sec.5): these are SOLO pressure-rig numbers. There is no race and
+no opponent here. They license tempo claims ONLY -- never a win rate against
+dr. lulu, and never a claim that the champion 'would' win a race.
