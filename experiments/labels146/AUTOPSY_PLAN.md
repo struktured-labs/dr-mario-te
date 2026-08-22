@@ -22,6 +22,14 @@ list unreachable places) + the local lower-half JSONL. Optionally extend with
 the regime map's L11 lab-cell failures (regime-141) as a second stratum —
 same machinery, separate reporting.
 
+LOGISTICS (checked 2026-08-21): results/full exists ONLY on the Hetzner node
+(run_census.sh OUT=$BASE/results/full); local search NEGATIVE across qa-wt
+results/ (only pressured_drip), the 20260727 backup tarball, and /mnt/data.
+Node is untouchable during the c5 burn -> either retrieve after the burn, or
+FALLBACK: regenerate locally (deterministic solo replay, ~6 cpu-s/game x
+65,536 ≈ 109 cpu-h ≈ 5.5 h at 20 workers) — the fallback needs no node at
+all and re-derives the 53-game population from scratch.
+
 ## Spec fit — three deviations from PREREG_LABELS, so a SHORT ADDENDUM
    (PREREG_AUTOPSY) is required before running. It does NOT fully fit as
    registered:
