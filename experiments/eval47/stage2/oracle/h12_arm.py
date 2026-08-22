@@ -72,10 +72,6 @@ class H12Arm(OracleArm):
                         key=lambda i: (-vals[legal[i]], i))[:self.topk]
         cands = [legal[i] for i in ranked]
         assert cands[0] == base_a, "rank-0 candidate must be the champion's pick"
-        if self.trigger_eps > 0.0:
-            # keep only candidates inside the eps window (plus the champion)
-            cands = [c for c in cands
-                     if float(vals[c]) >= fv[0] - self.trigger_eps]
         if len(cands) <= 1:
             return base_a, base_a
 

@@ -55,17 +55,23 @@ print("G1_IDENTITY_OK")
 PYEOF
 command grep -aq 'G1_IDENTITY_OK' "$OUT/g1_gate.log"
 
-# ---- G2 not-inert
+# ---- G2 not-inert: label=const makes BOTH arms flip-free, so base and trt
+# play the IDENTICAL trajectory and the trigger counts compare on the same
+# boards (no divergence confound).  eps=EPS must count MORE tie_plies than
+# the certified exact-tie trigger.
 "$PY" run_h14.py --seed-start 30000 --seed-count 8 --workers "$W" \
-  --label true --future dist --fork-samples 5 --level 20 --max-pills 400 \
+  --label const --future dist --fork-samples 5 --level 20 --max-pills 400 \
   --trt-trigger-eps "$EPS" \
   --outdir "$OUT/g2_notinert" 2>&1 | tee "$OUT/g2.log"
 "$PY" - <<PYEOF 2>&1 | tee "$OUT/g2_gate.log"
 import json
-r0 = [json.loads(l) for l in open("$OUT/g1_identity/seg_030000.jsonl")]
-r1 = [json.loads(l) for l in open("$OUT/g2_notinert/seg_030000.jsonl")]
-t0 = sum(x["trt"].get("tie_plies", 0) for x in r0)
-t1 = sum(x["trt"].get("tie_plies", 0) for x in r1)
+rows = [json.loads(l) for l in open("$OUT/g2_notinert/seg_030000.jsonl")]
+assert len(rows) == 8, len(rows)
+for x in rows:   # const => no flips => identical trajectories, same plies
+    assert x["base"]["flips"] == 0 and x["trt"]["flips"] == 0
+    assert x["base"]["pills"] == x["trt"]["pills"]
+t0 = sum(x["base"]["tie_plies"] for x in rows)
+t1 = sum(x["trt"]["tie_plies"] for x in rows)
 assert t1 > t0, ("G2 NOT-INERT FAIL", t0, t1)
 print("G2_NOTINERT_OK", t0, "->", t1)
 PYEOF

@@ -155,6 +155,8 @@ def _work(seed):
                   trigger_eps=_W["trt_trigger_eps"])
     rt = O.play_one(seed, at, _W["C"], _W["bmodel"],
                     max_pills=_W["max_pills"])
+    rb["tie_plies"] = ab.stats.get("tie_plies", 0)
+    rt["tie_plies"] = at.stats.get("tie_plies", 0)
     for r in (rb, rt):
         r.pop("_actions", None)
     rb["arm"], rt["arm"] = "base", "trt"
