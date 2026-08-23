@@ -196,3 +196,47 @@ cpu-h. Report the realized cpu-s/fork against the 0.718 prior.
 4. All import-gate mutants (m1-m5) go through the REAL gate path (patched
    blob -> `read_state`, or corrupted planes -> `decode_planes`/`build_env`),
    not reimplementations.
+
+## AMENDMENT A2 (2026-08-23 ~13:00 EDT, post-pilot, BEFORE any campaign/stage-2
+data; team-lead ruling adopting the staged structure)
+
+PREAMBLE — the honest reason for this change: **the stratum C window was
+registered at k=30-50 to avoid overlapping labels-146's end−25..−1 bank — which
+also moved it out of the claim-bearing region.** The anti-overlap constraint
+and the phenomenon's location were in conflict, and only the pilot could price
+it: C claims 0/12 (champ_surv mean 7.75/8; 95% one-sided upper bound 22%),
+while claims live at k ≤ 25 (lock-in boundary 6-10). The inherited ≥150-claim
+gate is therefore unreachable from the registered window (~700-15,000 states =
+25-1,500 cpu-h). A promotion gate inherited across a window change must be
+re-derived, not restated.
+
+1. **STAGED STRUCTURE.** Stage 1 = the registered ~163-state label bank,
+   UNCHANGED (strata, sizes, label definition, claim rule, void classes all as
+   §1-§5). Its consumer is the FEATURE FIT as registered in §0. Stage 1 needs
+   no claims gate to be useful and proceeds first.
+2. **PROMOTION GATE moves to its own stage, two routes declared now:**
+   - **PRIMARY (the promotion gate): the FEATURE-FIT ENDPOINT** — fitted
+     contamination features (contamination-adjacency / clearability-under-
+     occlusion, g_stranded mold) must beat BOTH controls on HELD-OUT states:
+     better held-out label prediction than the shuffle-control fit AND a
+     non-zero improvement over the mimic/champion-value baseline, split
+     registered before the fit runs. Rationale (team-lead ruling): the fit is
+     the registered consumer and the thing a champion actually needs;
+     rescue-claims validate the mechanism, the feature fit is the product.
+   - **SECONDARY (confirmatory/diagnostic): C-DEEP CLAIMS** — stratum C-deep,
+     window k ∈ {8, 12, 16, 20}, FRESH topout seeds only (no seed overlap
+     with labels-146's target list, no pooling with its bank or with stage 1),
+     claim rule §5 unchanged, inherited bar restated: ≥150 fresh k≥8 claims,
+     Fisher one-sided p < 0.05 rescued vs broken under §7 forced-move
+     validation, rescue−break ≥ 0.15, positive calibration slope.
+     DECLARED CAVEAT: C-deep partially re-treads labels-146's window on new
+     seeds — its distinctive value is VOLUME ON FRESH SEEDS, stated here so it
+     is a declared re-tread, not an accidental one.
+3. **EXECUTION ORDER**: stage 1 (full bank, 20 workers) on the team-lead's
+   worker handoff post-H14; C-deep launches only after the bank lands, sized
+   at launch from the fork prices below.
+4. **COST BASIS carried forward verbatim**: 1.917 cpu-s/fork is a property of
+   this box at load ~50, not of the algorithm; 0.718 is the unloaded prior;
+   all sizes are quoted in FORKS (A/B ≈ 211 forks/state; C ≈ 556 forks/seed
+   incl. gated replay). The tile-VOID rate (pilot 4/32: A 2/12, B 2/12,
+   C 0/12) TRAVELS WITH EVERY CLAIMS TOTAL reported from this campaign.
