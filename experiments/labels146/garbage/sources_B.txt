@@ -1,0 +1,17 @@
+newbox 12286_ship s012.ss s011.ss s010.ss s009.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_newbox/artifacts/12286_ship
+oldbox 16102_ship s017.ss s016.ss s015.ss s014.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_oldbox/artifacts/16102_ship
+oldbox 16102_slice s017.ss s016.ss s015.ss s014.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_oldbox/artifacts/16102_slice
+oldbox 17020_ship s018.ss s017.ss s016.ss s015.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_oldbox/artifacts/17020_ship
+oldbox 17020_slice s018.ss s017.ss s016.ss s015.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_oldbox/artifacts/17020_slice
+oldbox 27630_slice s012.ss s011.ss s010.ss s009.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_oldbox/artifacts/27630_slice
+newbox 32952_slice s013.ss s012.ss s011.ss s010.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_newbox/artifacts/32952_slice
+oldbox 41426_ship s018.ss s017.ss s016.ss s015.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_oldbox/artifacts/41426_ship
+oldbox 41426_slice s018.ss s017.ss s016.ss s015.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_oldbox/artifacts/41426_slice
+newbox 42058_ship s012.ss s011.ss s010.ss s009.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_newbox/artifacts/42058_ship
+newbox 44650_ship s012.ss s011.ss s010.ss s009.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_newbox/artifacts/44650_ship
+newbox 44650_ship s015.ss s014.ss s013.ss s012.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_newbox/artifacts/44650_ship
+newbox 44650_slice s012.ss s011.ss s010.ss s009.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_newbox/artifacts/44650_slice
+newbox 44650_slice s015.ss s014.ss s013.ss s012.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_newbox/artifacts/44650_slice
+newbox 50261_ship s010.ss s009.ss s008.ss s007.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_newbox/artifacts/50261_ship
+newbox 50261_slice s010.ss s009.ss s008.ss s007.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_newbox/artifacts/50261_slice
+oldbox 52861_ship s010.ss s009.ss s008.ss s007.ss /home/struktured/projects/dr-mario-sileval-wt/experiments/sileval/out_corpus_20260823_oldbox/artifacts/52861_ship
