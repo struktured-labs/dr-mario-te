@@ -42,10 +42,24 @@ TOP1, TOP2, WIN1, WIN2 = 0x309, 0x389, 0x31e, 0x39e
 RING = 0x200
 
 
-def find_base(blob):
-    """Offset of NES $0000 inside the .ss. Raises unless exactly one hit."""
-    hits = {w - IRAM for w in range(IRAM, len(blob) - 0x2000)
-            if blob[w + RING_MAGIC_OFF] == RING_MAGIC and blob[w + NAV_MAGIC_OFF] == NAV_MAGIC}
+def _anchored(blob, w):
+    return (IRAM <= w <= len(blob) - 0x2000
+            and blob[w + RING_MAGIC_OFF] == RING_MAGIC and blob[w + NAV_MAGIC_OFF] == NAV_MAGIC)
+
+
+def find_base(blob, hint=None):
+    """Offset of NES $0000 inside the .ss. Raises unless exactly one hit.
+
+    `hint` is only a FAST PATH: it is re-verified against both anchors and, when it
+    holds, a full scan is skipped. A wrong hint cannot be accepted silently."""
+    if hint is not None and _anchored(blob, hint + IRAM):
+        return hint
+    hits, i = set(), blob.find(b"\xa5", IRAM)
+    while i != -1:
+        w = i - NAV_MAGIC_OFF
+        if _anchored(blob, w):
+            hits.add(w - IRAM)
+        i = blob.find(b"\xa5", i + 1)
     match len(hits):
         case 1: return hits.pop()
         case n: raise ValueError(f"expected 1 RAM base, found {n}")
@@ -62,10 +76,11 @@ def match_ends(blob, base):
 def read_row(adir):
     """-> dict(p1=, p2=, intervals=[...], unreadable=[...], witnesses=[...])"""
     S = []
+    hint = None
     for f in sorted(glob.glob(os.path.join(adir, "s*.ss"))):
         blob = open(f, "rb").read()
         try:
-            base = find_base(blob)
+            base = hint = find_base(blob, hint)
         except ValueError as exc:
             S.append((os.path.basename(f), None, str(exc)))
             continue

@@ -104,3 +104,31 @@ materially from 5.1 the MDE is restated, and the restatement is disclosed.
 - E1b, E2, E3 carry over unchanged.
 - Arms, carts, core, seeds and seed order, cycle and cadence, and all seven VOID
   conditions are unchanged from the original prereg and AMENDMENT 1.
+
+---
+
+# ERRATA (2026-08-23, after computation) — E4b was never a distinct statistic
+
+**E4b (P1 minimum virus count within the match) is identical to E4a (P1 count at
+the last sample) BY CONSTRUCTION, and I should have seen that before
+registering it.**
+
+P1's virus count is monotonically non-increasing within a match — viruses are
+only ever cleared, and VS garbage adds pills, never viruses. Verified on the
+corpus: **0 of 2,244 within-match steps show an increase, across 740 complete
+matches.** So LAST == MIN in every match, and E4a and E4b return the same number
+to the last decimal.
+
+Recorded rather than quietly dropped. The consequence is small — the two were
+registered as primary and secondary, not as independent confirmations, so no
+result is double-counted — but "two endpoints agreed" would have been a
+meaningless sentence and is not one I get to write.
+
+The registered residual-tempo argument for E4b (observation count) is moot for
+the same reason: a minimum over more samples cannot go lower than a monotone
+sequence's endpoint.
+
+**E4a stands exactly as registered.** A genuinely distinct secondary would have
+to measure something the monotone count cannot — e.g. P1's peak `occ_top3`
+(how close to death it came), which is NOT registered here and is therefore not
+reported as an endpoint.
