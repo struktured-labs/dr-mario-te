@@ -176,3 +176,23 @@ Void rows go to `voids_<stratum>.jsonl` with their class.
 Prior: 0.718 cpu-s/fork (labels-146 pilot). Pilot ≈ 36 states × ~20 candidates
 × 8 forks ≈ 5.8k forks ≈ 1.2 cpu-h. Campaign ≤ ~171 states ≈ 27k forks ≈ 5.5
 cpu-h. Report the realized cpu-s/fork against the 0.718 prior.
+
+## AMENDMENT A1 (2026-08-23, pre-pilot, before any label row exists)
+
+1. **VOID class `tile`**: decode found board bytes with high-nibble $F (e.g.
+   4x `$F0` in 14293_ship s005) — mid-clear-animation tiles. A board mid-clear
+   is not a settled decision state; such states VOID with class `tile` (bail,
+   don't model). Registered before the pilot harvest; the void-rate threshold
+   of §3 covers it.
+2. **G-I5 instrument check RESULT (pre-pilot)**: color map 0=Yellow 1=Red
+   2=Blue confirmed on multiple PNG previews; `$039A/$039B` = P2 next pill
+   (two direct multiset matches, one order-exact left/right; and in
+   37987_ship s013 the RAM `nxt` became the PNG's in-flight capsule across the
+   known ~3 s PNG lag, pinning cur-vs-nxt address roles). PNG lag makes exact
+   frame-matching impossible; (a,b) ORDER is immaterial to labels (both
+   orientations of cur are enumerated; the search tries both orders of nxt).
+3. **m5 added to the §3 killed mutants**: cur pill byte forced out of range
+   must VOID(pills) through `read_state` itself.
+4. All import-gate mutants (m1-m5) go through the REAL gate path (patched
+   blob -> `read_state`, or corrupted planes -> `decode_planes`/`build_env`),
+   not reimplementations.
