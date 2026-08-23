@@ -129,6 +129,43 @@ take_shot() { # $1 local path
   [ -n "$remote" ] && scp -q -o BatchMode=yes -o IdentitiesOnly=yes -i "$HOME/.ssh/id_rsa" "root@$NEWMISTER_IP:$remote" "$1" && $SSH "root@$NEWMISTER_IP" "rm -f '$remote'"
 }
 
+# A STATIC SCREEN IS NOT AUTOMATICALLY AN INSTRUMENT FAULT.
+# The old gate VOIDed any row whose boot frames were identical, as
+# "no_cart_or_static_boot". But E2's measurand IS absence of motion, so that
+# gate could discard exactly the event E2 exists to count and file it as a
+# deployment failure (AUDIT_CHECKS_EATING_THE_PHENOMENON.md, hazard 3).
+# The discriminator is the GAME STATE, not the screen:
+#   frozen screen + ADVANCING RAM fingerprint -> the screenshot channel failed
+#   frozen screen + FROZEN   RAM fingerprint -> the game is WEDGED, and is DATA
+# Proven on the two confirmed #133 pause soft-locks: 1 distinct fingerprint
+# across 18 samples on the wedged cycles, 18 of 18 on their healthy controls.
+static_verdict() { # $1 adir, $2 arm, $3 row, $4 seed -> 0 = keep going, 1 = row finished
+  local adir=$1 arm=$2 row=$3 seed=$4 save2 pre fa fb
+  save2=$(arm_saveslot2 "$arm")
+  pre=$($SSH "root@$NEWMISTER_IP" "stat -c '%Y' '$save2' 2>/dev/null" || echo 0)
+  send_combo leftalt f2
+  pull_state "$save2" "$adir/static_a.ss" "$pre" || {
+    void_row "$row" "$seed" "$arm" "static_screen_and_no_state_pull"; return 1; }
+  sleep 5
+  pre=$($SSH "root@$NEWMISTER_IP" "stat -c '%Y' '$save2' 2>/dev/null" || echo 0)
+  send_combo leftalt f2
+  pull_state "$save2" "$adir/static_b.ss" "$pre" || {
+    void_row "$row" "$seed" "$arm" "static_screen_and_no_state_pull"; return 1; }
+  fa=$(python3 "$HERE/ram_fingerprint.py" "$adir/static_a.ss")
+  fb=$(python3 "$HERE/ram_fingerprint.py" "$adir/static_b.ss")
+  note "static-screen check: fingerprint A=[$fa] B=[$fb]"
+  case "$fa" in UNDECODABLE) void_row "$row" "$seed" "$arm" "static_screen_undecodable_state"; return 1;; esac
+  if [ "$fa" = "$fb" ]; then
+    # GAME WEDGED. Keep the row and let the cycle run so the wedge is sampled
+    # for the full duration -- it is an E2 observation, not an instrument fault.
+    note "WEDGE WITNESS seed=$seed arm=$arm fingerprint frozen across 5s"
+    printf '%s\n' "$fa" > "$adir/WEDGE_WITNESS"
+    return 0
+  fi
+  void_row "$row" "$seed" "$arm" "static_screen_but_game_advancing_capture_fault"
+  return 1
+}
+
 run_arm() { # $1 seed, $2 arm  -> writes rows/<seed>_<arm>.json
   local seed=$1 arm=$2
   local row="$OUT_DIR/rows/${seed}_${arm}.json"
@@ -204,8 +241,9 @@ run_arm() { # $1 seed, $2 arm  -> writes rows/<seed>_<arm>.json
     fi
     if [ "$(md5sum < "$adir/boot_a.png")" = "$(md5sum < "$adir/boot_b.png")" ]; then
       sleep 3; take_shot "$adir/boot_c.png"
-      [ -f "$adir/boot_c.png" ] && [ "$(md5sum < "$adir/boot_b.png")" = "$(md5sum < "$adir/boot_c.png")" ] \
-        && { void_row "$row" "$seed" "$arm" "no_cart_or_static_boot"; return 1; }
+      if [ -f "$adir/boot_c.png" ] && [ "$(md5sum < "$adir/boot_b.png")" = "$(md5sum < "$adir/boot_c.png")" ]; then
+        static_verdict "$adir" "$arm" "$row" "$seed" || return 1
+      fi
     fi
   fi
   t0=$(date +%s)
