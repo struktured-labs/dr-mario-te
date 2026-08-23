@@ -240,3 +240,50 @@ re-derived, not restated.
    all sizes are quoted in FORKS (A/B ≈ 211 forks/state; C ≈ 556 forks/seed
    incl. gated replay). The tile-VOID rate (pilot 4/32: A 2/12, B 2/12,
    C 0/12) TRAVELS WITH EVERY CLAIMS TOTAL reported from this campaign.
+
+## AMENDMENT A3 (2026-08-23, owner directive via team-lead, BEFORE ingesting
+any video-derived board)
+
+**Stratum D: video-derived decision boards** from today's televised dr. lulu
+3-0 vs OUR champion (new MiSTer). Source: phone footage → the lulu-vod lane's
+settle-gated transcription (machine-read per dr-mario-transcribed-board-settle-
+gate: grid fit, HUD-virus-counter gate, links by stability constraint) → THIS
+lane's import gates re-validate independently. Priority stretches: the G2
+combo-liquidation and the pre-death tower runs.
+
+1. **Board-file format (coordinated with lulu-vod; theirs to produce, mine to
+   gate)**: one JSON object per decision — `{game, decision_idx, ts_video,
+   nes:[128 tile bytes, link nibbles included], cur:[a,b], nxt:[a,b] (nes
+   0-based colors), hud_virus:int, played:{col, o4} or played_slot,
+   transcriber:{method, hud_gate_passed}, notes}`. Cells the transcription
+   cannot classify are marked by byte `0xFE` → **new VOID class `unreadable`**
+   (distinct from `tile`); both classes are counted per stratum and TRAVEL
+   with every claims/negative-example total.
+2. **Re-validation on import (gates, each a VOID class)**: G-I2' counter
+   (decoded virus count == `hud_virus`), G-I3 settle no-op, G-I4 reciprocal
+   links, G-I5 pill bytes in 0..2, plus `unreadable`. The m1-m5 killed-mutant
+   suite runs against the D reader before any D state is labeled (same rule
+   16 discipline as §3).
+3. **Labeling protocol**: identical to strata A/B — N=8 CRN forks, H=25,
+   home-regime pressure, de-dup by resulting board, stream-swap + injection
+   keyed by `dist_seed(source_key, 0, s)` with
+   `source_key = (3 << 24) | (game << 8) | decision_idx` (stratum id D=3).
+4. **THE SPECIAL VALUE — certified negative examples**: the champion's ACTUAL
+   played move is known from the video and is recorded in the row
+   (`played_slot`, resolved to its dedup'd candidate entry). REGISTERED
+   NEGATIVE-EXAMPLE RULE (the §5 thresholds keyed on the PLAYED move, not the
+   recomputed argmax): a board where the played entry's surv ≤ 5/8 AND some
+   sibling's surv ≥ played+3 is a certified negative example of a real
+   televised decision — the owner's ask delivered through the certified
+   machinery instead of eyeball adjudication. Where the recomputed lab-mirror
+   argmax differs from the played move, BOTH are recorded (the divergence rate
+   is itself a mirror-fidelity observation; cf. dr-mario-cosim-farm ~88%).
+5. **Feature-fit candidate set (registered addition for the A2 primary
+   endpoint)**: (i) center-column occupancy / clearability-under-occlusion
+   over columns 3-4 (gate-center-blind; both lulu kills were center-tower
+   spawn blockage); (ii) an ATTACK-CAPITAL feature — same-color mass adjacency
+   to viruses, so the fit can represent what the G2 combo-liquidation gave up
+   when a combo-shaped mass was spent as harmless singles.
+6. Stratum D is its own population: never pooled with A/B/C statistics; it
+   harvests after stage 1 as boards arrive (identity-keyed segments make
+   arrival order safe).
