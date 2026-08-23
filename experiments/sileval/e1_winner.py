@@ -128,10 +128,19 @@ def main(out_dir):
     print(f"match-ends in window={ends}  adjudicated={adj}  "
           f"UNREADABLE={ends-adj} ({100*(ends-adj)/max(ends,1):.2f}%)")
     print("reasons:", collections.Counter(u[1].split()[0] for x in rows for u in x["unreadable"]))
-    for arm in sorted({x["arm"] for x in rows}):
-        a = [x for x in rows if x["arm"] == arm]
-        p1 = sum(x["p1"] for x in a); p2 = sum(x["p2"] for x in a)
-        print(f"  arm={arm:6s} rows={len(a):4d}  P1={p1:5d}  P2={p2:5d}  P2 win rate={p2/max(p1+p2,1):.4f}")
+    # POOLED / ARM-BLIND BY DEFAULT. The arm split is the ENDPOINT; printing it casually
+    # is how a measurand gets tuned to a known answer. --by-arm is deliberate and warns.
+    tp1 = sum(x["p1"] for x in rows); tp2 = sum(x["p2"] for x in rows)
+    print(f"  POOLED (arm-blind)  P1={tp1:5d}  P2={tp2:5d}  "
+          f"P2 share={tp2/max(tp1+tp2,1):.4f}")
+    if "--by-arm" in sys.argv:
+        print("  !! ARM SPLIT — this is the ENDPOINT, not a design parameter. "
+              "Do not circulate before the measurand is registered.")
+        for arm in sorted({x["arm"] for x in rows}):
+            a = [x for x in rows if x["arm"] == arm]
+            p1 = sum(x["p1"] for x in a); p2 = sum(x["p2"] for x in a)
+            print(f"  arm={arm:6s} rows={len(a):4d}  P1={p1:5d}  P2={p2:5d}  "
+                  f"P2 win rate={p2/max(p1+p2,1):.4f}")
     ag = dis = 0
     for x in rows:
         byname = {nm: (m, d1, d2) for nm, m, d1, d2 in x["intervals"]}
@@ -148,5 +157,6 @@ def main(out_dir):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else
+    _args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    main(_args[0] if _args else
          os.path.join(os.path.dirname(os.path.abspath(__file__)), "out"))

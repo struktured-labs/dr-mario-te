@@ -1,5 +1,35 @@
 # sileval — DRP1SLICE silicon evaluation lane (task #139)
 
+> ## ⛔ WHAT THIS RIG CAN EVER MEASURE — read this before proposing an endpoint
+>
+> **Only the quantities that `L9532_TOP_5` ($9532) writes BEFORE it changes the game
+> mode, and that survive into the next match, are readable at ~100% capture.**
+> That set is exactly:
+>
+> * `$031E` / `$039E` — per-player VS win counters
+> * `$0309` / `$0389` — per-player topped-out flags
+>
+> **Everything else about a match is a WITHIN-MATCH quantity.** It resets at the match
+> boundary, so it can only be read by LANDING on the ~2.5 s end-of-match window — which
+> at the 20 s sample period happens **12.5%** of the time (124 of 989 endings in
+> population A). That applies to virus count at death, pills placed, viruses cleared,
+> and every other "how much game did P1 survive" measure anyone will propose. They are
+> all structurally in the 12.5% class, and no amount of faster sampling fixes it
+> (see hazard 2 below — the sampler floors at ~2.8 s and tier-2 capture costs 3.78 s).
+>
+> Censored substitutes are usually worse than they look: a "value at the last sample
+> before death" proxy is stale by up to one full sample period, which for a ~54-unit
+> per-match count is ~24% of the quantity.
+>
+> **Corollary: duration endpoints are not available either** — and not merely because
+> the prereg excludes them (it does, deliberately: DRP1SLICE has documented tempo
+> PHASE DIALS, so seconds-to-death can be the dial moving rather than P1 surviving).
+> A sweep of all 8 KB of cart WRAM and all 2 KB of internal RAM found **zero** bytes
+> advancing by a small constant per sample — there is **no usable in-game clock**
+> (`NAV_T` $6147 is 8-bit ticking ~5x/frame, wrapping every ~0.85 s). So every duration
+> we can measure is WALL-CLOCK, and we cannot separate "the core ran slower" from
+> "P1 survived longer." That confound is irrecoverable on this rig, not just contestable.
+
 Staged, plug-and-play the moment the NEW MiSTer is on the network. Nothing here
 touches the live soak box.
 
@@ -61,8 +91,77 @@ window is ~2.5 s (capture ≈ min(1, W/T); observed 128/989 = 12.9% at T=20.37 s
 So a trigger-then-capture detector is structurally impossible here: tier 2 costs 3.78 s,
 longer than the window it is trying to catch, and lands after mode `$07` has passed.
 
+**3. `out_oldbox/probe5s/` IS NOT A CADENCE CONTROL — cadence is confounded with BOX.**
+The 5 s probe ran on the OLD box (10.42.0.225); population A ran on the NEW box
+(10.42.0.233). Cadence and machine vary together, so that comparison cannot settle
+"does sampling faster perturb the run?" at ANY n — collecting more probe rows would
+just be more of the same unusable contrast. A real test has to be same-box with
+interleaved cadence. Note also that the two runs used different `CYCLE_SECS` (360 vs
+240), so raw matches-per-CYCLE is not comparable between them either: normalise to
+matches per unit TIME (10.73 vs 11.11 per 1000 s; the apparent 3.87-vs-2.67 gap is
+entirely the 360/240 = 1.50 cycle-length ratio).
+
 **The resolution was not a faster sampler.** `L9532_TOP_5` (`$9532`) increments the VS win
 counters `$031E`/`$039E` *before* it writes mode 7 at `$9585`, and those counters persist
 into the next match. `e1_winner.py` reads them and scores the banked corpus at
 **987/988 = 0.10% unreadable at the unchanged 20 s cadence**. When an endpoint looks
 cadence-bound, check whether the machine already writes the answer down.
+
+## CLOSE-OUT — what E1 could and could not measure, and why B was declined (2026-08-23)
+
+### What it CAN measure
+**The per-match winner, at 100% capture and independent of sampling cadence.**
+`e1_winner.py` reads `$031E`/`$039E`, cross-checked against `$0309`/`$0389` and gated on
+the `$6200` ring's match-end count. On the banked population A: **988 endings, 987
+adjudicated, 1 UNREADABLE = 0.10%** against a registered 10% void rule, at the unchanged
+20 s cadence, with 0.00% undecodable samples (4,589/4,589).
+
+Gate evidence: two independent RAM routes agree 122/0; 29 real P1 wins across 28 rows, so
+it is not stuck on one answer; mutants — swap the two players' counters and flags → the
+verdict FLIPS (live 8/8, banked 4/4); swap the flags ONLY → 110/128 self-report
+`flag_occ_conflict` rather than guessing; wipe the evidence → 100% UNREADABLE with zero
+fabricated verdicts; clobber the virus counters → answer UNCHANGED.
+
+### What it CANNOT measure
+Anything within-match — see the scope box at the top. Pills-to-top-out was gated and
+rejected on two grounds: no trustworthy per-player capsule counter exists (`$0327` fails a
+hard physical test at 13.2% impossible residues, `$0310` at 2.5%; `$0090`/`$00a7` pass only
+vacuously because the test catches under-counting and they over-count ~2x), and even a
+perfect one would be a within-match quantity at 12.5% capture. Duration is excluded by the
+prereg and, per the no-clock sweep, irrecoverably confounded here. **There is therefore no
+secondary endpoint. The binary winner ships alone.**
+
+### Why population B was declined
+Measured paired discordance, pooled and arm-blind: **12 of 445 aligned match-slots = 2.70%,
+Wilson 95% CI [1.55%, 4.65%]** — 0.47x the `2p(1-p)` = 5.70% independence bound, because the
+arms are strongly correlated (same seed, same board). At the registered 240 pairs that is
+~848 slots ⇒ **~23 discordant pairs**, which powers detection of **OR ≈ 4** among discordants
+and nothing subtler (70/30 needs 47 pairs, 75/25 needs 29, 80/20 needs 19).
+
+DRP1SLICE removes an NMI tail. Nothing in the model of that change predicts a 4x odds swing,
+and per the scope box no cheaper endpoint could catch a smaller one. So B would have spent
+~53 h of box time on an instrument that can only see an effect we have no reason to expect.
+**Declined — not deferred.**
+
+**Disclosure, recorded rather than omitted.** The team-lead making this call was **not blind**
+to population A's arm splits (E1b ship 12.99 vs slice 14.00; E4a 42.429 vs 42.484, both
+nulls), reported under authorizations they gave. The decision rests on an **arm-blind design
+parameter** — the discordance rate and the resulting OR >= 4 detection floor — **and would have
+been identical had A's exploratory reads pointed the other way, because the instrument's
+resolution does not depend on the effect's direction.** That claim is checkable: the
+discordance computation reads no arm labels. Separately, this lane computed and transmitted
+per-arm rates for A BEFORE the arm-blind ruling existed; those are sealed, undeleted, in
+`sealed/` with their provenance stated.
+
+**What would reopen B:** a specific mechanism predicting an effect of OR >= 4, or a cheaper
+endpoint that clears the structural limit in the scope box.
+
+### The root cause that recurred five times tonight
+Every reversal in this investigation had one shape: **a criterion encoding an assumption the
+phenomenon violates.** `find_base` required the virus counters to agree with the board, which
+is false exactly during the end-of-match animation, so it deleted the evidence. A one-anchor
+`$6149` base search admitted a decoy at +0x1F that decoded to all zeros. A win-counter scan
+required monotonicity, which the best-of-3 reset violates. A delta-based reader required wins
+to appear as positive increments, which the same reset violates. And an estimator was polished
+to three decimals on a quantity the prereg excludes. When a check returns "absent", ask what
+that check would do if the thing were present but malformed.
