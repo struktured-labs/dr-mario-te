@@ -1,3 +1,30 @@
+> # ⚠ RETRACTED 2026-08-23 — E1 **IS** adjudicable from these exact artifacts.
+>
+> The conclusion below ("E1-by-these-artifacts is ~99% unreadable") is WRONG, and the
+> AMENDMENT-1 tripwire it invalidated is NOT invalidated. The error was in route 4/5
+> ("a win counter in internal RAM / in cart WRAM"): the scan looked for a counter that
+> *accumulates monotonically*, and the stock ROM's VS win counters **$031E / $039E** do
+> not — they are both zeroed when one side reaches 3 (the best-of-3 set reset), so a
+> monotonicity filter discards precisely the right answer.
+>
+> `e1_winner.py` reads them, cross-checked against the ROM's topout flags $0309/$0389
+> and gated on the cart's own match-end count. On the SAME 255 banked rows / 4,589
+> samples: **988 match endings, 987 adjudicated, 1 UNREADABLE = 0.10%** (registered
+> void threshold: 10%). See `e1_winner.py`'s docstring for the disassembly of
+> `L9532_TOP_5` ($9532) that locates the bytes.
+>
+> Two further corrections to the text below:
+>  * "modes ever seen: $04, $08, $00; a results/game-over mode never observed" — mode
+>    **$07 is present in 123 samples**, and 122 of them carry live topout flags. They
+>    were not absent, they were mis-decoded (see the base-finder note in `e1_winner.py`:
+>    a 1-anchor $6149 search admits a decoy hit at +0x1F).
+>  * "15.3% of samples undecodable" did not reproduce: `score_rows.py` decodes
+>    4,589 / 4,589 today, and `e1_winner.py` decodes 4,589 / 4,589 (0.00%).
+>
+> What DOES survive from below: the 20 s sampler really does step over almost every
+> match ending (only 0.4% of samples land on one). The mistake was concluding that the
+> ENDPOINT dies with the sampler. It does not, because the ROM writes the result down.
+
 # FINDING — E1's match winner is not adjudicable from the sampled artifacts
 
 **2026-08-23, swap lane, written BEFORE any population-B row exists.**

@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
-"""match1_winner.py -- adjudicate the MATCH-1 winner of one cycle's samples.
+"""match1_winner.py -- DEPRECATED 2026-08-23. Use e1_winner.py instead.
+
+This reader is keyed on the VIRUS COUNTERS reaching 0, which requires the sampler to
+LAND inside the ~3 s game-over window; at a 20 s cadence it returns UNREADABLE on
+essentially every cycle. e1_winner.py instead reads the stock ROM's VS win counters
+$031E/$039E, which PERSIST past the ending, and gates them on the cart's own
+mode-transition ring -- 0.10% unreadable on the same banked population A.
+
+Kept only so the AMENDMENT-1 noise-floor numbers computed with it stay reproducible.
+
+Original docstring follows.
+
+adjudicate the MATCH-1 winner of one cycle's samples.
 
 Used by the AMENDMENT-1 repeatability tripwire. The rule is deliberately
 conservative: anything it cannot see, it calls UNREADABLE rather than guessing,

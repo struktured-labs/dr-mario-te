@@ -217,6 +217,16 @@ run_arm() { # $1 seed, $2 arm  -> writes rows/<seed>_<arm>.json
     [ "$el" -ge "$CYCLE_SECS" ] && break
     local tgt=$(( t0 + (n+1)*SAMPLE_SECS )); local w=$(( tgt - now )); [ "$w" -gt 0 ] && sleep "$w"
     n=$(( n + 1 ))
+    # ⚠ ORDER MATTERS AND IS LOAD-BEARING FOR ANYONE READING THESE ARTIFACTS:
+    # the save-state is pulled FIRST (pull_state polls up to 12 s) and the screenshot
+    # is taken AFTER it, so s<N>.png is captured SECONDS LATER than s<N>.ss. They are
+    # NOT a synchronous pair. Every PNG whose .ss is in the end-of-match window shows
+    # the NEXT match's virus-fill instead of the ending, and no game-over frame exists
+    # in the whole banked corpus. See README "Two properties of the sample loop".
+    # Costs, measured from artifact mtimes: pull_state 3.78 s (1,296 KB), take_shot
+    # 2.70 s (7.0 KB, a hardcoded sleep 2 + 4 ssh round-trips) => ~2.8 s floor per
+    # sample. Do not try to catch the ~2.5 s match ending by shrinking SAMPLE_SECS;
+    # the winner is recoverable without landing on it at all (e1_winner.py).
     local pre; pre=$($SSH "root@$NEWMISTER_IP" "stat -c '%Y' '$save2' 2>/dev/null" || echo 0)
     send_combo leftalt f2
     pull_state "$save2" "$adir/s$(printf %03d "$n").ss" "$pre" || pull_fail=$(( pull_fail + 1 ))
