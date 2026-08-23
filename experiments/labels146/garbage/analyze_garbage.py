@@ -133,6 +133,22 @@ def main():
             print(f"    claim {c['id']}: champ={c['champ_surv']}/8 "
                   f"best={c['best_surv']}/8 slot={c['best_slot']}")
 
+    # ---- stratum D negative examples (A3.4) --------------------------------
+    drows = [r for r in rows if r["stratum"] == "D"]
+    if drows:
+        nes_, inval = [], 0
+        for r in drows:
+            ne = G.negative_example(r)
+            if ne and ne.get("invalid_played"):
+                inval += 1
+            elif ne:
+                nes_.append({"id": r["id"], **ne})
+        print(f"stratum D negative examples: {len(nes_)}/{len(drows)} "
+              f"(invalid_played={inval})")
+        for ne in nes_[:10]:
+            print(f"    NE {ne['id']}: played={ne['played_surv']}/8 "
+                  f"best={ne['best_surv']}/8 slot={ne['best_slot']}")
+
     # ---- mutants -----------------------------------------------------------
     bad = mimic_claims(rows)
     if bad == 0:

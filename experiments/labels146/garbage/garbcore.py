@@ -254,3 +254,87 @@ def claims_from_row(rowd, n_samples=N_SAMPLES):
         return {"champ_surv": sc, "best_surv": sum(best["surv"]),
                 "best_key": best["key"], "best_slot": best["rep_slot"]}
     return None
+
+
+# ----------------------------------------------------- stratum D (A3, video)
+D_DIR = os.path.join(HERE, "incoming_d")
+STRATUM_ID["D"] = 3
+
+
+def read_d_row(rec):
+    """One lulu-vod transcription row -> decode-ready dict, gated (A3.2).
+
+    Gates: unreadable (0xFE cells), counter (vs hud_virus), pills (presence +
+    0..2), played (present, in-range).  decode_planes then adds tile/links;
+    build_env adds settle.  Every failure is a counted VOID class.
+    """
+    nes = list(rec["nes"])
+    if len(nes) != 128:
+        raise ImportVoid("format", ("nes_len", len(nes)))
+    n_unread = sum(1 for b in nes if b == 0xFE)
+    if n_unread:
+        raise ImportVoid("unreadable", n_unread)
+    nvir = sum(1 for v in nes if (v >> 4) == 0xD)
+    if nvir != int(rec["hud_virus"]):                   # G-I2'
+        raise ImportVoid("counter", (nvir, rec["hud_virus"]))
+    if "cur" not in rec or "nxt" not in rec:
+        raise ImportVoid("pills", "absent")
+    cur, nxt = tuple(rec["cur"]), tuple(rec["nxt"])
+    if not all(0 <= c <= 2 for c in cur + nxt):
+        raise ImportVoid("pills", (cur, nxt))
+    p = rec.get("played") or {}
+    if not ("col" in p and "o4" in p) and "played_slot" not in rec:
+        raise ImportVoid("played", "absent")
+    if "played_slot" in rec:
+        slot = int(rec["played_slot"])
+    else:
+        import fast_rtl_x as FX
+        slot = int(FX._VAR_OF_O4[int(p["o4"])]) * 8 + int(p["col"])
+    if not 0 <= slot < 32:
+        raise ImportVoid("played", slot)
+    return {"nes": nes, "cur": cur, "nxt": nxt, "played_slot": slot,
+            "v2": int(rec["hud_virus"]), "rec": rec}
+
+
+def load_sources_D():
+    """All decision rows dropped in incoming_d/*.jsonl(.gz), any order."""
+    import glob
+    import gzip
+    out = []
+    for p in sorted(glob.glob(os.path.join(D_DIR, "*.jsonl"))
+                    + glob.glob(os.path.join(D_DIR, "*.jsonl.gz"))):
+        op = gzip.open if p.endswith(".gz") else open
+        with op(p, "rt") as fh:
+            for ln in fh:
+                ln = ln.strip()
+                if ln:
+                    out.append((p, json.loads(ln)))
+    return out
+
+
+def d_state_id(rec):
+    return f"D_g{int(rec['game'])}_d{int(rec['decision_idx'])}"
+
+
+def d_source_key(rec):
+    g, d = int(rec["game"]), int(rec["decision_idx"])
+    assert 0 <= g < 0x10000 and 0 <= d < 0x100
+    return (STRATUM_ID["D"] << 24) | (g << 8) | d
+
+
+def negative_example(rowd, n_samples=N_SAMPLES):
+    """A3.4: §5 thresholds keyed on the PLAYED move.  None if not a NE."""
+    ents = rowd["cands"]
+    played = None
+    for e in ents:
+        if rowd["played_slot"] in e["slots"]:
+            played = e
+            break
+    if played is None:      # played move not legal on the decoded board
+        return {"invalid_played": True}
+    sp = sum(played["surv"])
+    best = max(ents, key=lambda e: sum(e["surv"]))
+    if sp <= 5 and sum(best["surv"]) - sp >= 3:
+        return {"played_surv": sp, "best_surv": sum(best["surv"]),
+                "best_key": best["key"], "best_slot": best["rep_slot"]}
+    return None

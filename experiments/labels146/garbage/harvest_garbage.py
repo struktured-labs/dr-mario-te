@@ -135,10 +135,13 @@ def _worker(item):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--set", dest="which", choices=("pilot", "campaign"),
-                    required=True)
+    ap.add_argument("--set", dest="which",
+                    choices=("pilot", "campaign", "d"), required=True)
     ap.add_argument("--workers", type=int, default=8)
     args = ap.parse_args()
+
+    if args.which == "d":
+        return main_d(args.workers)
 
     os.makedirs(LABELS, exist_ok=True)
     A, B = targets_AB(args.which)
@@ -212,6 +215,71 @@ def main():
     print("HARVEST_OK" if complete else
           "HARVEST_INCOMPLETE — voids or missing segments; see ledger",
           flush=True)
+
+
+
+
+# ------------------------------------------------------- stratum D (A3)
+def work_import_d(path, rec):
+    sid = G.d_state_id(rec)
+    t0 = time.time()
+    C, bmodel = LC.init_rig()
+    try:
+        st = G.read_d_row(rec)
+        c, v, l = G.decode_planes(st["nes"])
+        skey = G.d_source_key(rec)
+        env = G.build_env(c, v, l, st["cur"], st["nxt"], skey & 0xFFFF)
+    except G.ImportVoid as ex:
+        return {"id": sid, "void": ex.cls, "detail": repr(ex.detail),
+                "stratum": "D", "cpu_s": round(time.time() - t0, 1)}
+    vals, a = G.champ_pick(env, C)
+    ents = G.label_import_state(env, C, bmodel, skey)
+    row = {"id": sid, "stratum": "D",
+           "source": {"file": os.path.basename(path),
+                      "game": rec["game"], "decision_idx": rec["decision_idx"],
+                      "ts_video": rec.get("ts_video")},
+           "H": G.H, "N": G.N_SAMPLES, "level": G.LEVEL,
+           "pills_placed": G.PILLS_PLACED_INIT, "fseed_base": skey,
+           "v2": st["v2"], "cur": st["cur"], "nxt": st["nxt"],
+           "nes": st["nes"], "champ_slot": a,
+           "played_slot": st["played_slot"],
+           "champ_vals": [LC._round3(vv) for vv in vals],
+           "cands": ents}
+    _write_row(sid, row)
+    forks = sum(len(e["surv"]) for e in ents)
+    return {"id": sid, "stratum": "D", "cands": len(ents), "forks": forks,
+            "cpu_s": round(time.time() - t0, 1)}
+
+
+def main_d(workers):
+    os.makedirs(LABELS, exist_ok=True)
+    srcs = G.load_sources_D()
+    items = [(p, r) for p, r in srcs
+             if not os.path.exists(os.path.join(
+                 LABELS, G.d_state_id(r) + ".jsonl.gz"))]
+    print(f"[harvest:d] rows={len(srcs)} todo={len(items)} workers={workers}",
+          flush=True)
+    from concurrent.futures import ProcessPoolExecutor, as_completed
+    t0, results = time.time(), []
+    with ProcessPoolExecutor(max_workers=workers) as ex:
+        futs = [ex.submit(work_import_d, p, r) for p, r in items]
+        for i, f in enumerate(as_completed(futs), 1):
+            r = f.result()
+            results.append(r)
+            tag = (f"VOID:{r['void']}" if "void" in r else
+                   f"cands={r['cands']} forks={r['forks']}")
+            print(f"[harvest] {i}/{len(items)} {r['id']} {tag} "
+                  f"cpu_s={r['cpu_s']} wall={time.time()-t0:.0f}s", flush=True)
+    voids = [r for r in results if "void" in r]
+    with open(os.path.join(OUT, "voids.jsonl"), "a") as fh:
+        for r in voids:
+            fh.write(json.dumps(r) + "\n")
+    have = sum(os.path.exists(os.path.join(LABELS,
+               G.d_state_id(r) + ".jsonl.gz")) for _, r in srcs)
+    print(f"[ledger] stratum D: labeled {have}/{len(srcs)} "
+          f"({len(voids)} void this run)", flush=True)
+    print("HARVEST_OK" if have + len(voids) >= len(srcs)
+          else "HARVEST_INCOMPLETE", flush=True)
 
 
 if __name__ == "__main__":
