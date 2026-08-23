@@ -53,6 +53,10 @@ for try in 1 2 3; do
     export D135_OUT="$out"
     export P6_OUT="$out" P6_TAG="$tag" P6_MAXF="$maxf" P6_SEED="${P6_SEED:-114}" \
            P6_DLAT=34 P6_TUCK=1 P6_W="$W"
+    # #148: pass the forced-attack knobs through. Unset -> probe6 default OFF, so an
+    # invocation that does not ask for them runs exactly the program it ran before.
+    export P6_ATK="${P6_ATK:-0}" P6_ATK_FIRST="${P6_ATK_FIRST:-1800}" \
+           P6_ATK_EVERY="${P6_ATK_EVERY:-300}" P6_ATK_SIZE="${P6_ATK_SIZE:-4}"
     exec "$RUN_MESEN" "$mmc1" "$D/tools/gate/probe6.lua" -testrunner "-timeout=$deadline"
   ) >"$out/stdout.log" 2>&1 &
   runpid=$!

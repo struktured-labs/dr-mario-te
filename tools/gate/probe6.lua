@@ -322,6 +322,69 @@ emu.addEventCallback(function()
 end, emu.eventType.inputPolled)
 local function press(i, d) inCur = i; inUntil = frame + (d or 4) end
 
+-- ================= (D) #148 FORCED ATTACK -- prestart liveness on a HUMAN cart ==========
+-- P6_ATK=1 only; default OFF, so every existing probe6 invocation runs the identical
+-- program and no prior result is disturbed.
+--
+-- WHY THIS LIVES IN PROBE6 AND NOT IN probe_prespipe_force.lua. The #138 forced-release
+-- witness pokes p1_attackSize and lets the ROM's own checkReleaseAttack produce the release
+-- edge -- the right mechanism -- but it relies on the CART to autonavigate into play. A
+-- DRHUMAN cart does not navigate: P1's menu inputs are the PERSON's, so the emitter emits no
+-- $F5 writes at all and the cart sits at mode 0 forever with no pad attached. Measured, both
+-- arms, 9,000 frames: modes=0:9000, pokes=0, release_edges=0 -- the instrument returns a
+-- clean-looking all-zero sheet that certifies NOTHING. probe6 already knows how to walk a
+-- human cart into a match (its own D135-guarded press(), which is the FIXED START idiom, not
+-- the start-spam one), so the poke is grafted onto the navigator instead of a navigator being
+-- grafted onto the poke.
+--
+-- Without this, DRPRESTART/DRPRESPIPE are UNEXERCISED on a human cart for the same reason
+-- they are unexercised in CvC: an idle P1 never attacks, so P2 never receives a volley.
+local ATK_ON    = (os.getenv("P6_ATK") == "1")
+local ATK_FIRST = tonumber(os.getenv("P6_ATK_FIRST") or "1800")
+local ATK_EVERY = tonumber(os.getenv("P6_ATK_EVERY") or "300")
+local ATK_SIZE  = tonumber(os.getenv("P6_ATK_SIZE") or "4")
+local PP_PH, PP_SWAL, PRE_ATK2, PRE_LAST2, ARMED2 = 0x61C2, 0x61C3, 0x0318, 0x6199, 0x6161
+local atk_pokes, atk_edges, atk_lastPoke, atk_prev, atk_lastEdgeF = 0, 0, -99999, 0, -999
+local pp_starts, pp_adv, pp_done, pp_abort, pp_max, pp_prev, pp_swal = 0, 0, 0, 0, 0, 0, 0
+local atk_go_near, atk_armedgo, atk_armed_prev = 0, 0, 0
+
+emu.addMemoryCallback(function(addr, value)
+  if value == pp_prev then return end
+  if pp_prev == 0 and value == 1 then pp_starts = pp_starts + 1
+  elseif value == 0 and pp_prev ~= 0 then
+    if pp_prev >= pp_max and pp_max > 0 then pp_done = pp_done + 1 else pp_abort = pp_abort + 1 end
+  elseif value > pp_prev then
+    pp_adv = pp_adv + 1
+    if value > pp_max then pp_max = value end
+  end
+  pp_prev = value
+end, emu.callbackType.write, PP_PH, PP_PH)
+emu.addMemoryCallback(function(a, v) if v ~= 0 then pp_swal = pp_swal + 1 end end,
+                      emu.callbackType.write, PP_SWAL, PP_SWAL)
+emu.addMemoryCallback(function(addr, value)
+  if value == 0 and atk_prev ~= 0 then atk_edges = atk_edges + 1; atk_lastEdgeF = curFrame end
+  atk_prev = value
+end, emu.callbackType.write, PRE_ATK2, PRE_ATK2)
+
+-- Poke exactly the bytes the ROM writes when P1 lands a multi-virus clear: the size AND the
+-- attack colours (a size with stale colours drops a malformed volley; a single-colour volley
+-- is the 4-run BAIL case, so a fixed colour would make every release bail and the liveness
+-- run would prove nothing). 0-based colours per the mailbox convention.
+local function atk_tick(mode)
+  if not ATK_ON then return end
+  local armed = rd(ARMED2)
+  if armed ~= 0 and atk_armed_prev == 0 and (curFrame - atk_lastEdgeF) <= 8 then
+    atk_armedgo = atk_armedgo + 1
+  end
+  atk_armed_prev = armed
+  if mode ~= 4 or curFrame < ATK_FIRST then return end
+  if (curFrame - atk_lastPoke) < ATK_EVERY or rd(PRE_ATK2) ~= 0 then return end
+  for k = 0, 3 do wr(0x0329 + k, (atk_pokes + k) % 3) end
+  wr(PRE_ATK2, ATK_SIZE)
+  atk_pokes = atk_pokes + 1; atk_lastPoke = curFrame
+  ev(string.format("ATK f=%d readback=%d", curFrame, rd(PRE_ATK2)))
+end
+
 -- ================= (C) tuck-execution detection =================
 local TUCK_C2, TUCK_R2, EFF_C2, TGT_C2, EFF_DIST2 = 0x6179, 0x617A, 0x617B, 0x6152, 0x6194
 local PX2, PY2 = 0x0385, 0x0386
@@ -393,6 +456,8 @@ emu.addEventCallback(function()
       prevMode = mode
     end
 
+    atk_tick(mode)
+
     if mode ~= 4 then
       if mode >= 1 and mode <= 3 then
         if not lvlPoked then
@@ -452,10 +517,14 @@ emu.addEventCallback(function()
         "MIXED_total=%d MIXED_boot=%d MIXED_PRG_nonboot=%d soft8036=%d wipes=%d brk_a02e=%d " ..
         "matches_started=%d matches_ended=%d clean_ends=%d ABORT_4to0=%d " ..
         "pills=%d tuck_opp=%d tuck_pub=%d tuck_desc=%d desc_changed=%d " ..
-        "TUCK_EXEC_D1=%d TUCK_EXEC_D2=%d fail_hi=%d fail_lo=%d fail_reach=%d fail_land=%d",
+        "TUCK_EXEC_D1=%d TUCK_EXEC_D2=%d fail_hi=%d fail_lo=%d fail_reach=%d fail_land=%d " ..
+        "ATK=%s atk_pokes=%d atk_edges=%d pp_starts=%d pp_adv=%d pp_completes=%d pp_aborts=%d " ..
+        "pp_maxphase=%d pp_swallows=%d atk_armedgos=%d",
         TAG, CART, CARTID, NONCE, frame, S.goes, S.dones, loads, resets, mixed_total, mixed_boot, mixed_prg,
         soft8036, wipes, brkhits, matchesStarted, matchesEnded, cleanEnds, aborts,
-        nPills, S.opp, S.pub, nDesc, nChanged, nExec, nD2, fHi, fLo, fReach, fLand))
+        nPills, S.opp, S.pub, nDesc, nChanged, nExec, nD2, fHi, fLo, fReach, fLand,
+        ATK_ON and "ON" or "OFF", atk_pokes, atk_edges, pp_starts, pp_adv, pp_done,
+        pp_abort, pp_max, pp_swal, atk_armedgo))
     logf:close(); emu.stop(0)
   end
 end, emu.eventType.endFrame)

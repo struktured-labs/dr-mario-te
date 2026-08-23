@@ -45,5 +45,11 @@ arm () {  # $1 cart  $2 tag
   command grep -a "^SUMMARY" "$out/force.log" || { echo "[$2] NO SUMMARY -- FAILURE, not zero" >&2; return 1; }
 }
 
-arm "$D/roms/hardened-prestart-20260820.nes" control
-arm "$D/roms/prespipe-hardened-q3.nes" flagon
+# #148: arms are overridable so the SAME instrument can witness a HUMAN image.
+#   run_prespipe_force.sh <control.nes> <flagon.nes> [tagsuffix]
+# Default arms remain the CvC #138 pair, so existing invocations are unchanged.
+CTRL="${1:-$D/roms/hardened-prestart-20260820.nes}"
+FLAGON="${2:-$D/roms/prespipe-hardened-q3.nes}"
+SUF="${3:-}"
+arm "$CTRL" "control$SUF"
+arm "$FLAGON" "flagon$SUF"
