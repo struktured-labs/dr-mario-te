@@ -322,6 +322,50 @@ emu.addEventCallback(function()
 end, emu.eventType.inputPolled)
 local function press(i, d) inCur = i; inUntil = frame + (d or 4) end
 
+-- ================= (E) #148 P1-IDLE WITNESS -- "is P1 actually the human's seat?" ========
+-- READ-ONLY, always on: it only samples RAM, so it cannot change any arm's behaviour.
+--
+-- THE FAULT IT EXISTS FOR (found on the TV, 2026-08-22): drmario_copro_human_nofreeze is
+-- named "human" but drives BOTH bottles -- a weak native depth-1 search on P1 and the copro
+-- on P2. The owner read it off the screen as "dumb ai on P1 smart ai on P2". A cart that
+-- claims P1 leaves a person with nothing to play, and NO controller or OSD setting can fix it.
+--
+-- probe6 never presses P1 during play (its press gate is `modeCache ~= 4`), so any lateral
+-- move or rotation of P1's capsule inside mode 4 is the CART moving it, not us. A genuinely
+-- human cart must show p1_xmoves == 0 and p1_rots == 0 across every pill: the capsule falls
+-- straight down from the spawn column and nothing touches it.
+--
+-- Spawn is excluded properly: X and orientation both reset when a new capsule appears, which
+-- is not a move. A spawn is detected by Y RISING (y < prevY), and the baselines are re-seeded
+-- without counting -- otherwise every pill would score one false "move" and a driven cart and
+-- an idle cart would look alike.
+local P1X, P1Y, P1O = 0x0305, 0x0306, 0x0325
+local p1_x_prev, p1_y_prev, p1_o_prev = -1, -1, -1
+local p1_xmoves, p1_rots, p1_spawns, p1_falls = 0, 0, 0, 0
+local p1_diag = 0
+local function p1_idle_tick(mode)
+  if mode ~= 4 then p1_x_prev, p1_y_prev, p1_o_prev = -1, -1, -1; return end
+  local x, y, o = rd(P1X), rd(P1Y), rd(P1O)
+  if p1_diag < 40 and (curFrame % 20) == 0 then p1_diag = p1_diag + 1
+    ev(string.format("P1DIAG f=%d p1(x=%d y=%d o=%d) p2(x=%d y=%d o=%d)", curFrame,
+        x, y, o, rd(0x0385), rd(0x0386), rd(0x03A5))) end
+  if p1_y_prev < 0 then p1_x_prev, p1_y_prev, p1_o_prev = x, y, o; return end
+  -- ⚠ DIRECTION, measured not assumed: $0306 DECREASES as the capsule descends and JUMPS
+  -- BACK UP to the spawn row on a new pill. My first cut had this backwards, which silently
+  -- skipped the x/o check on exactly the frames a capsule is falling -- i.e. on every frame
+  -- where a driven cart would be steering it. A gate that returns 0 because it never looked
+  -- is worse than no gate.
+  if y > p1_y_prev then            -- new capsule (row reset upward): re-seed, never count
+    p1_spawns = p1_spawns + 1
+    p1_x_prev, p1_y_prev, p1_o_prev = x, y, o
+    return
+  end
+  if y < p1_y_prev then p1_falls = p1_falls + 1 end
+  if x ~= p1_x_prev then p1_xmoves = p1_xmoves + 1 end
+  if o ~= p1_o_prev then p1_rots = p1_rots + 1 end
+  p1_x_prev, p1_y_prev, p1_o_prev = x, y, o
+end
+
 -- ================= (D) #148 FORCED ATTACK -- prestart liveness on a HUMAN cart ==========
 -- P6_ATK=1 only; default OFF, so every existing probe6 invocation runs the identical
 -- program and no prior result is disturbed.
@@ -457,6 +501,7 @@ emu.addEventCallback(function()
     end
 
     atk_tick(mode)
+    p1_idle_tick(mode)
 
     if mode ~= 4 then
       if mode >= 1 and mode <= 3 then
@@ -519,12 +564,14 @@ emu.addEventCallback(function()
         "pills=%d tuck_opp=%d tuck_pub=%d tuck_desc=%d desc_changed=%d " ..
         "TUCK_EXEC_D1=%d TUCK_EXEC_D2=%d fail_hi=%d fail_lo=%d fail_reach=%d fail_land=%d " ..
         "ATK=%s atk_pokes=%d atk_edges=%d pp_starts=%d pp_adv=%d pp_completes=%d pp_aborts=%d " ..
-        "pp_maxphase=%d pp_swallows=%d atk_armedgos=%d",
+        "pp_maxphase=%d pp_swallows=%d atk_armedgos=%d " ..
+        "p1_xmoves=%d p1_rots=%d p1_spawns=%d p1_falls=%d",
         TAG, CART, CARTID, NONCE, frame, S.goes, S.dones, loads, resets, mixed_total, mixed_boot, mixed_prg,
         soft8036, wipes, brkhits, matchesStarted, matchesEnded, cleanEnds, aborts,
         nPills, S.opp, S.pub, nDesc, nChanged, nExec, nD2, fHi, fLo, fReach, fLand,
         ATK_ON and "ON" or "OFF", atk_pokes, atk_edges, pp_starts, pp_adv, pp_done,
-        pp_abort, pp_max, pp_swal, atk_armedgo))
+        pp_abort, pp_max, pp_swal, atk_armedgo,
+        p1_xmoves, p1_rots, p1_spawns, p1_falls))
     logf:close(); emu.stop(0)
   end
 end, emu.eventType.endFrame)

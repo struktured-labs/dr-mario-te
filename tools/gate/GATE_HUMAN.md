@@ -132,9 +132,61 @@ DRPRESTART itself still fires on the control; only the *pipelining* is gone.
 Forcing garbage also unlocked the tuck path that Stage 1 could not reach: `tuck_opp` 0 → 39
 with both independent detectors firing (`D1=24` cart-state, `D2=26` trajectory).
 
+### Stage 3 — P1-IDLE WITNESS (added 2026-08-23 after the fault was found on the TV)
+
+**The fault this stage exists for.** The owner loaded `drmario_copro_human_nofreeze`
+(`4b98d6c8`) on the TV and reported *"dumb ai on P1 smart ai on P2"* — the cart named
+"human" drives **both** bottles. No controller or OSD setting can fix a driver that owns P1,
+and nothing in the battery up to Stage 2 would have caught it. So P1-idle became a measured
+gate: probe6 never presses P1 during play (`modeCache ~= 4`), therefore any lateral move or
+rotation of P1's capsule inside mode 4 is the **cart** moving it.
+
+Same probe, same frames, zero input on port 0:
+
+| | OLD `4b98d6c8` | NEW `ae06cd1d` (3k) | NEW `ae06cd1d` (18k) |
+|---|---|---|---|
+| p1 capsule DESCENDS | **0** | 71 | **377** |
+| p1 spawns | 0 | 17 | 107 |
+| **p1 lateral moves** | 0 | **0** | **0** |
+| **p1 rotations** | 0 | **0** | **0** |
+| P2 meanwhile | steering (x 1..5, o 0/3) | steering | steering |
+
+**NEW:** P1's capsule falls at gravity through 107 pills / 377 descent steps, holds column 3
+throughout, and never rotates. The seat is open.
+**OLD:** P1's capsule **never moves at all** — frozen at `x=3 y=15 o=0` for the entire match
+while P2 steers beside it. Not idle, **PINNED**: the cart owns P1's gravity (`$0312`), which
+`H4a` proves this image never writes.
+
+⚠ **Mesen does not reproduce the TV symptom, and that is not hidden here.** He saw a weak AI
+playing P1; Mesen shows P1 frozen. `4b98d6c8` is a **dual-window** cart whose P1 search rides
+the `$5000` mailbox, and probe6's Lua brain answers only `$5200` (P2) — so in Mesen P1 waits
+forever for a result nobody sends. On real silicon the FPGA answers both windows and P1
+plays, badly, exactly as described. Mesen shows the cart **claims** P1; the TV shows what it
+does once claimed. Neither is a human seat.
+
+★ **A correction worth keeping.** The first version of this counter had the fall direction
+backwards — `$0306` **decreases** as the capsule descends and jumps back up on spawn, and the
+descent was being treated as a spawn. That silently skipped the x/rotation check on exactly
+the frames a capsule is falling, i.e. every frame a driven cart would be steering it. Its
+`p1_xmoves=0` was zero **because it never looked**. Caught only because `p1_falls=12` /
+`p1_spawns=60` was the wrong way round to be physical. Same pass removed a duplicated
+`atk_tick()` call; re-running Stage 2 on the corrected instrument reproduced **every number
+identically**, so the Stage 2 table above stands unchanged.
+
+## Provenance of the cart it replaces
+
+`drmario_copro_human_nofreeze` (`4b98d6c8`) appears in **no** `roms/manifests/*.json`. It has
+no recipe, no flag snapshot, no recorded emitter — its flags cannot be read, only inferred
+from behaviour. Behaviour says it owns P1 and runs a P1-side search on the `$5000` window:
+the `DRP1NATIVE` / dual-window shape, **not** `DRHUMAN`. Under `DRHUMAN` the emitter cannot
+emit any of it (no `$F5`/`$F7` writes, no P1 gravity pin). **A `DRHUMAN` MiSTer cart with a
+recorded, reproducible recipe did not exist before `ae06cd1d`** — and no earlier candidate
+could even be rebuilt to check.
+
 ## WHAT I COULD **NOT** CERTIFY
 
-1. **No human-in-the-loop play test.** Every number here comes from headless Mesen with an
+1. **No human-in-the-loop play test.** (Stage 3 narrows this: P1 is proven UNCLAIMED, but a
+   person's own presses are still unobserved.) Every number here comes from headless Mesen with an
    idle or probe-driven P1. Nobody has held a controller against this image. The one thing
    a human uniquely does — press START, and press it at arbitrary times — is exercised only
    as the D135-guarded probe press (10 blocked, 0 leaked), never as a person mashing it.
