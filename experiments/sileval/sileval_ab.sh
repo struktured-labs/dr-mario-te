@@ -139,11 +139,26 @@ run_arm() { # $1 seed, $2 arm  -> writes rows/<seed>_<arm>.json
   save2=$(arm_saveslot2 "$arm"); tmpl=$(arm_template "$arm"); cart_want=$(arm_cart_md5 "$arm")
 
   # provenance: hash the cart that is ABOUT TO BOOT + the core the MGL names
-  local cart_md5 rbf_md5
-  cart_md5=$($SSH "root@$NEWMISTER_IP" "md5sum '$sd_cart'" | cut -d' ' -f1) || cart_md5=SSH_FAIL
-  rbf_md5=$($SSH "root@$NEWMISTER_IP" "md5sum '$SD_RBF'" | cut -d' ' -f1) || rbf_md5=SSH_FAIL
-  [ "$cart_md5" = "$cart_want" ] || { void_row "$row" "$seed" "$arm" "cart_hash_mismatch got=$cart_md5 want=$cart_want"; fatal "cart hash mismatch on SD — run halted (prereg VOID 1)"; }
-  [ "$rbf_md5" = "$RBF_MD5" ]   || { void_row "$row" "$seed" "$arm" "rbf_hash_mismatch got=$rbf_md5";  fatal "rbf hash mismatch on SD — run halted"; }
+  # An UNREADABLE hash and a SUBSTITUTED cart are different events and only one
+  # of them means "someone changed the cart". Population A filed an ssh failure
+  # (got= EMPTY) under VOID 1 and halted the run as if the cart had been swapped.
+  # `... | cut` also hid the failure: the pipeline's status is cut's, so the
+  # `|| cart_md5=SSH_FAIL` fallback never fired. Capture first, then classify.
+  local cart_md5 rbf_md5 raw
+  raw=$($SSH "root@$NEWMISTER_IP" "md5sum '$sd_cart'") && cart_md5=$(echo "$raw" | cut -d' ' -f1) || cart_md5=""
+  raw=$($SSH "root@$NEWMISTER_IP" "md5sum '$SD_RBF'")  && rbf_md5=$(echo "$raw" | cut -d' ' -f1)  || rbf_md5=""
+  case "$cart_md5" in
+    "")          void_row "$row" "$seed" "$arm" "cart_hash_unreadable_ssh"; return 1 ;;  # transient, retried on resume
+    "$cart_want") : ;;
+    *)           void_row "$row" "$seed" "$arm" "cart_hash_mismatch got=$cart_md5 want=$cart_want"
+                 fatal "cart hash mismatch on SD — a DIFFERENT cart is in place — run halted (prereg VOID 1)" ;;
+  esac
+  case "$rbf_md5" in
+    "")         void_row "$row" "$seed" "$arm" "rbf_hash_unreadable_ssh"; return 1 ;;
+    "$RBF_MD5") : ;;
+    *)          void_row "$row" "$seed" "$arm" "rbf_hash_mismatch got=$rbf_md5"
+                fatal "rbf hash mismatch on SD — run halted" ;;
+  esac
 
   # inject seed into THIS arm's template, push, boot, restore
   local patched="$adir/patched.ss"
@@ -169,7 +184,29 @@ run_arm() { # $1 seed, $2 arm  -> writes rows/<seed>_<arm>.json
       [ -f "$adir/boot_c.png" ] && [ "$(md5sum < "$adir/boot_b.png")" = "$(md5sum < "$adir/boot_c.png")" ]         && { void_row "$row" "$seed" "$arm" "no_cart_or_static_boot"; return 1; }
     fi
   else
-    void_row "$row" "$seed" "$arm" "boot_motion_shots_failed"; return 1
+    # The box being mid-reboot (or the screenshot service not yet up) is
+    # TRANSIENT. Population A burned 79 seeds VOIDing on this — and the real
+    # cause was our own `ls -t` over a 22,840-file dir, not the owner's power
+    # cycling. Wait for the box to answer, re-take, and only VOID if it still
+    # fails; the seed stays retriable either way (resume skips only OK rows).
+    local try
+    for try in 1 2 3; do
+      note "boot motion shots missing (try $try) — waiting for the box"
+      sleep 20
+      $SSH "root@$NEWMISTER_IP" "test -e /dev/MiSTer_cmd" || continue
+      ensure_inputd || continue
+      rm -f "$adir/boot_a.png" "$adir/boot_b.png"
+      take_shot "$adir/boot_a.png"; sleep 3; take_shot "$adir/boot_b.png"
+      [ -f "$adir/boot_a.png" ] && [ -f "$adir/boot_b.png" ] && break
+    done
+    if [ ! -f "$adir/boot_a.png" ] || [ ! -f "$adir/boot_b.png" ]; then
+      void_row "$row" "$seed" "$arm" "boot_motion_shots_failed_after_retries"; return 1
+    fi
+    if [ "$(md5sum < "$adir/boot_a.png")" = "$(md5sum < "$adir/boot_b.png")" ]; then
+      sleep 3; take_shot "$adir/boot_c.png"
+      [ -f "$adir/boot_c.png" ] && [ "$(md5sum < "$adir/boot_b.png")" = "$(md5sum < "$adir/boot_c.png")" ] \
+        && { void_row "$row" "$seed" "$arm" "no_cart_or_static_boot"; return 1; }
+    fi
   fi
   t0=$(date +%s)
 
