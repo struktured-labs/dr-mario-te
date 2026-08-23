@@ -15,6 +15,8 @@ touches the live soak box.
 | `e1_winner.py` | **E1 PRIMARY reader** — per-match winners from `$031E`/`$039E`. Use this one. |
 | `endframe_scorer.py` | adjudicate one END-FRAME capture (`$0309`/`$0389` primary, `occ_top3` corroborating) |
 | `tier1_endframe.py` | cheap screenshot boundary classifier + its gate self-test (`--gate`) |
+| `margin_reader.py` | ⛔ NOT an endpoint — duration is prereg-EXCLUDED (tempo phase dials). Diagnostics only. |
+| `sealed/` | sealed pre-ruling computations. Do not extend, act on, or delete. |
 | `match1_winner.py` | DEPRECATED — virus-counter rule, ~100% UNREADABLE at any usable cadence |
 | `seeds_sileval.txt` | 240 pre-registered seeds (recipe in the prereg; alias-deduped, seed 1 excluded) |
 | `sileval.env.example` | the only place the new box's IP + pinned template md5s live |
