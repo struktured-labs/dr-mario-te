@@ -28,6 +28,7 @@ ENV_FILE="${SILEVAL_ENV:-$HERE/sileval.env}"
 SSH="ssh -n -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o BatchMode=yes -o IdentitiesOnly=yes -i $HOME/.ssh/id_rsa"
 fatal() { echo "$(date -Is) FATAL: $*" >&2; exit 2; }
 note()  { echo "$(date -Is) $*"; }
+INPUTD_CTL=/media/fat/linux/sileval_inputd_ctl.sh
 
 # ---- authorization gate: no hardware contact without explicit arming ---------
 # (added after an offline sanity run reached a live box: the driver is only ever
@@ -45,9 +46,23 @@ for t in SHIP SLICE; do
   got=$(md5sum "$f" | cut -d' ' -f1)
   [ "$got" = "$want" ] || fatal "template $t md5 $got != pinned $want (different template = different experiment)"
 done
+# Box identity: CONTENT + MAC, never existence and never IP (AMENDMENT 1).
+# Sentinel-EXISTS is no longer a discriminator — BOTH boxes now carry a
+# SILEVAL_BOX_ID, so the old check would have happily run population B on the
+# owner's TV box if a lease moved. The sentinel's md5 and the NIC's MAC are
+# properties of the machine; the IP is not.
 $SSH "root@$NEWMISTER_IP" "test -f /media/fat/SILEVAL_BOX_ID" \
-  || fatal "SILEVAL_BOX_ID sentinel absent on $NEWMISTER_IP — is this really the NEW box?"
+  || fatal "SILEVAL_BOX_ID sentinel absent on $NEWMISTER_IP — wrong box?"
 BOX_ID=$($SSH "root@$NEWMISTER_IP" "cat /media/fat/SILEVAL_BOX_ID")
+got_bid=$($SSH "root@$NEWMISTER_IP" "md5sum /media/fat/SILEVAL_BOX_ID" | cut -d' ' -f1)
+[ "$got_bid" = "$EXPECT_BOX_ID_MD5" ] \
+  || fatal "sentinel md5 $got_bid != expected $EXPECT_BOX_ID_MD5 — this is NOT the registered box for this population"
+got_mac=$($SSH "root@$NEWMISTER_IP" "cat /sys/class/net/eth0/address")
+[ "$got_mac" = "$FORBIDDEN_MAC" ] \
+  && fatal "target MAC $got_mac is the FORBIDDEN box (owner TV/play box) — refused"
+[ "$got_mac" = "$EXPECT_MAC" ] \
+  || fatal "target MAC $got_mac != registered $EXPECT_MAC — refused"
+note "box identity OK: mac=$got_mac sentinel_md5=$got_bid"
 
 mkdir -p "$OUT_DIR/rows" "$OUT_DIR/artifacts"
 
@@ -87,8 +102,18 @@ ensure_inputd() {
   # defense in depth: the hardware-touching helpers re-check ARMED themselves,
   # so no call path (sourcing, future refactor) can reach the box unarmed.
   [ -f "$OUT_DIR/ARMED" ] || fatal "not armed (ensure_inputd)"
-  $SSH "root@$NEWMISTER_IP" "test -p /tmp/sileval_input.fifo" && return 0
-  $SSH "root@$NEWMISTER_IP" "rm -f /tmp/sileval_input.fifo; nohup python3 /media/fat/linux/sileval_inputd.py >/tmp/sileval_inputd.log 2>&1 & sleep 2; test -p /tmp/sileval_input.fifo"
+  # Liveness is decided ON the box by sileval_inputd_ctl.sh. Two bugs this fixes:
+  #  (1) the old check was `test -p <fifo>` — FILE EXISTENCE, not liveness. A
+  #      dead daemon leaves its fifo behind, so the check reported ready forever
+  #      while every keystroke went into a fifo with no reader (verified: old
+  #      check says READY on a killed daemon, ctl says DEAD).
+  #  (2) any ssh one-liner that greps for the daemon MATCHES ITS OWN COMMAND
+  #      LINE and killed the ssh session (observed: exit 255). The pattern must
+  #      live in a file on the box, not in the command we send.
+  $SSH "root@$NEWMISTER_IP" "sh $INPUTD_CTL status" >/dev/null 2>&1 && return 0
+  note "inputd not alive — starting"
+  $SSH "root@$NEWMISTER_IP" "sh $INPUTD_CTL start" >/dev/null 2>&1
+  $SSH "root@$NEWMISTER_IP" "sh $INPUTD_CTL status" >/dev/null 2>&1
 }
 send_combo() { # $*: key names
   [ -f "$OUT_DIR/ARMED" ] || fatal "not armed (send_combo)"
@@ -100,7 +125,7 @@ take_shot() { # $1 local path
   $SSH "root@$NEWMISTER_IP" "echo 'screenshot $tag' > /dev/MiSTer_cmd" || return 1
   sleep 2
   local remote
-  remote=$($SSH "root@$NEWMISTER_IP" "ls -t /media/fat/screenshots/NES/*-$tag.png 2>/dev/null | head -1")
+  remote=$($SSH "root@$NEWMISTER_IP" "ls /media/fat/screenshots/NES/*-$tag.png 2>/dev/null | head -1")
   [ -n "$remote" ] && scp -q -o BatchMode=yes -o IdentitiesOnly=yes -i "$HOME/.ssh/id_rsa" "root@$NEWMISTER_IP:$remote" "$1" && $SSH "root@$NEWMISTER_IP" "rm -f '$remote'"
 }
 
@@ -189,6 +214,14 @@ void_row() { # $1 row, $2 seed, $3 arm, $4 reason
     "$(date -Is)" "$2" "$3" "$4" > "$tmp" && mv "$tmp" "$1"
   note "row VOID seed=$2 arm=$3 reason=$4"
 }
+
+# ---- library mode -----------------------------------------------------------
+# The on-box gate scripts (oldbox_gates.sh) need the SAME env gates, identity
+# checks and hardware helpers as the run itself. Sourcing this file with
+# SILEVAL_LIB_ONLY=1 gives them exactly that and stops here, so there is ONE
+# implementation of "how this lane touches a box" rather than two that
+# "should agree" (measurement rule 3).
+[ -n "${SILEVAL_LIB_ONLY:-}" ] && return 0
 
 # ---- main: ABBA over the registered seed list --------------------------------
 i=0
