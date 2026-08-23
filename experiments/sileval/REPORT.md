@@ -111,3 +111,20 @@ ledger. Prereg timeline shifts ~8 h; nothing else changes.
 - 4 stale `misterclaw-mcp --host MiSTer` processes from OTHER sessions (Aug 19,
   pts/9,12,15,17) resolve by mDNS name — with the old box off, "MiSTer" may now
   resolve to the NEW box. Not this lane's processes; flagged to team-lead.
+
+## Ledger close (2026-08-22 ~23:55 EDT, sileval-fable lane)
+Final new-box A/B ledger: 410 rows = 255 OK (126 complete pairs = population A)
++ 154 boot-motion VOIDs (the 20:55-22:24 contention storm; seeds retryable but
+now moot) + 1 conflated ssh-fail VOID (fixed in 8894c55). Interim instrument
+check at the registered n=120 threshold: 4,589/4,589 samples decode, 0
+unreadable (run pooled-only; no arm split viewed by this lane). Population B
+DECLINED per the close-out (discordance 2.70% [1.55,4.65] => OR>=4 floor);
+E1/E4a/E2 verdicts live in the close-out documents, which supersede this
+lane's runbook plans. out/ARMED REMOVED — no driver may touch a box again
+without a fresh registration and a fresh arm.
+
+CONTEXT NOTE for the record: this lane's session lost several hours of context
+(compaction) spanning the evening analysis; everything above the close-out
+docs' authority was reconstructed from the git record before any action, and
+the only tonight-action this lane took post-loss was read-only (ledger tally +
+pooled coverage check) plus this disarm.
