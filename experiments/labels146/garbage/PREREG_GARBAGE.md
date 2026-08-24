@@ -330,3 +330,34 @@ launches only after stage 1 completes on blackmage)
   list ⇒ STOP and report. Cross-box pooling is licensed by the byte-equal
   gate (md5 c44b478cb077ac98728d349648594396 both boxes) — any NEW box or a
   resync at a different commit re-runs that gate first.
+
+## AMENDMENT A5 (2026-08-24, dated BEFORE re-adjudication; team-lead ruling
+after the control killed-mutant)
+
+The A2/FIT_CONFIG condition (b) shuffle-fit control is DEFECTIVE-BY-
+CONSTRUCTION AT THE OPERATING POINT (rule 16): within-state permutation
+preserves state means, so the control retains the features' between-state
+channel and — measured by synthetic killed-mutant on the real matrix, real
+pipeline (mutant_shuffle_control.py, out/mutant_shuffle.log) — TIES the full
+fit even when labels carry GENUINE within-state feature signal at the
+realistic size (true within-rho ~0.35: diff −0.0023, CI [−0.0065, +0.0022];
+first discrimination only at ~0.56). The observed condition-(b) tie therefore
+carried no information about feature legitimacy. The original **NO PASS
+under A2-as-registered STANDS ON THE RECORD** and is reported alongside the
+A5 verdict in every future readout. No third bite.
+
+Condition (b) is REPLACED for the single A5 re-adjudication by two nulls:
+- (b-i) ACROSS-STATE permutation null: labels permuted across the entire
+  training population (destroying state means too), identical pipeline,
+  scored on true held-out labels — must collapse toward rho ≈ 0 (artifact
+  floor; if it does not, the pipeline manufactures signal and NOTHING
+  passes).
+- (b-ii) MATCHED-NOISE-FEATURE control: the identical pipeline with the
+  three candidate columns each replaced by a global seeded permutation of
+  itself (marginal distribution preserved, board relation destroyed;
+  champ_value stays real), trained on TRUE labels — 20 draws (seeds
+  5000..5019), per-state noise rho = mean over draws. PASS ⇔ paired
+  per-state (real − noise) held-out within-state rho > 0 with bootstrap 95%
+  CI excluding 0 (10,000 resamples, seed 146) AND (b-i) collapses.
+Condition (a) (beat champion-value, CI excluding 0) is unchanged and its
+existing PASS carries over unchanged from the same fit.
