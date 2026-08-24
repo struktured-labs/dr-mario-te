@@ -8,3 +8,30 @@
 {"id": "D_g3_d4", "void": "unreadable", "detail": "3", "stratum": "D", "cpu_s": 0.8}
 {"id": "D_g3_d2", "void": "unreadable", "detail": "6", "stratum": "D", "cpu_s": 0.8}
 {"id": "D_g3_d1", "void": "unreadable", "detail": "8", "stratum": "D", "cpu_s": 0.8}
+{"id": "A_37987_slice_s014", "void": "settle", "detail": "None", "stratum": "A", "cpu_s": 0.6}
+{"id": "A_14293_ship_s005", "void": "tile", "detail": "(10, 2, '0xf0')", "stratum": "A", "cpu_s": 0.7}
+{"id": "A_37987_slice_s012", "void": "settle", "detail": "None", "stratum": "A", "cpu_s": 0.7}
+{"id": "A_17791_ship_s001", "void": "tile", "detail": "(5, 3, '0xf0')", "stratum": "A", "cpu_s": 0.7}
+{"id": "A_40457_slice_s003", "void": "settle", "detail": "None", "stratum": "A", "cpu_s": 0.0}
+{"id": "A_14293_slice_s005", "void": "tile", "detail": "(5, 0, '0xf1')", "stratum": "A", "cpu_s": 0.7}
+{"id": "A_40457_slice_s001", "void": "tile", "detail": "(8, 4, '0xf2')", "stratum": "A", "cpu_s": 0.0}
+{"id": "A_17791_slice_s001", "void": "tile", "detail": "(5, 3, '0xf0')", "stratum": "A", "cpu_s": 0.8}
+{"id": "A_47469_ship_s013", "void": "settle", "detail": "None", "stratum": "A", "cpu_s": 0.0}
+{"id": "A_50405_ship_s009", "void": "settle", "detail": "None", "stratum": "A", "cpu_s": 0.0}
+{"id": "A_52953_ship_s004", "void": "settle", "detail": "None", "stratum": "A", "cpu_s": 0.0}
+{"id": "B_12286_ship_s012_s009", "void": "tile", "detail": "(9, 3, '0xf2')", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_16102_slice_s017_s015", "void": "tile", "detail": "(5, 4, '0xf2')", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_41426_slice_s018_s017", "void": "tile", "detail": "(10, 5, '0xf1')", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_41426_slice_s018_s015", "void": "settle", "detail": "None", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_42058_ship_s012_s010", "void": "settle", "detail": "None", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_42058_ship_s012_s009", "void": "mode", "detail": "7", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_44650_ship_s012_s011", "void": "settle", "detail": "None", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_44650_ship_s012_s010", "void": "settle", "detail": "None", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_44650_ship_s012_s009", "void": "mode", "detail": "7", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_44650_ship_s015_s012", "void": "mode", "detail": "8", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_44650_slice_s012_s011", "void": "settle", "detail": "None", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_44650_slice_s012_s009", "void": "mode", "detail": "7", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_44650_slice_s015_s013", "void": "settle", "detail": "None", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_44650_slice_s015_s012", "void": "mode", "detail": "8", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_50261_ship_s010_s009", "void": "settle", "detail": "None", "stratum": "B", "cpu_s": 0.0}
+{"id": "B_52861_ship_s010_s008", "void": "tile", "detail": "(4, 4, '0xf1')", "stratum": "B", "cpu_s": 0.0}
