@@ -19,13 +19,22 @@ g_stranded mold, computed on the candidate's RESULTING board.
      g_attack = Σ_{viruses v} min(3, |largest 4-connected component of
      same-color non-virus cells orthogonally adjacent to v|).
 
-(iii) **g_construct** (construction-capital — partial progress toward each
-      clear; the stall's missing gradient):
+(iii) **g_construct** (construction-capital — partial MULTI-STEP progress
+      toward each clear; the stall's missing gradient, SHARPENED by the
+      epic32 bookend: the winning move there was a single-step capture on a
+      sorted column — already priced by the current evaluator's clear search
+      — while the stall's missing move was a multi-step build; the feature
+      must therefore value exactly the staged-but-unfinished regime):
       For each virus v of color k and each axis (row/col), consider the ≤4
-      4-cell windows through v along that axis that fit the board; a window
-      containing a virus of another color is DEAD (scores nothing); live
-      window score = count of color-k cells in it (v included).
-      g_construct = Σ_v [ max live-window score over both axes − 1 ] ∈ [0,3n].
+      4-cell windows through v along that axis that fit the board. A window
+      is LIVE iff every cell is color-k or EMPTY (any other-color cell, pill
+      or virus, kills it — a mixed plug is dead). Live-window score s =
+      count of color-k cells in it (v included, so s ≥ 1).
+      g_construct = Σ_v [ best live-window score over both axes == 2 ]
+      = the COUNT of viruses with staged multi-step construction: a clean
+      window holding exactly v + one built matching cell, ≥2 placements from
+      clearing. s=3 (single-step capture) is INTENTIONALLY EXCLUDED as
+      already-priced; s=1 (no progress) scores 0.
 
 ## Fit model
 
@@ -60,7 +69,21 @@ before the fit runs."
   (b) rho_full > rho_shufflefit. Anything else = NO PASS; per-feature
   coefficients and ablations are then diagnostic only.
 
-## Inventory it fits on (filled at C-deep analyze)
+## Inventory it fits on (C-deep analyze, 2026-08-24)
 
-- states / candidate-rows / claims per stratum: <FILL>
-- tile/settle/mode void counts (travel with all totals): <FILL>
+| stratum | states | candidate rows | claims | calib rho | champ_surv mean |
+|---|---|---|---|---|---|
+| C (mid, k=30-50) | 75 | 1,746 | 4 | 0.634 | 7.05 |
+| **Cdeep (k=8-20)** | **1,200** | **25,254** | **269 (22.4%/state)** | 0.515 | 5.40 |
+| A (silicon pop-A) | 34 | 835 | 1 | 0.735 | 7.24 |
+| B (silicon corpus) | 35 | 912 | 0 | 0.689 | 7.77 |
+
+Total 229,976 forks banked. Primary fit population {C ∪ Cdeep}: 1,275
+states / 27,000 candidate rows / 273 claims. Side population {A ∪ B}: 69
+states / 1,747 rows / 1 claim. MIMIC FAIL_NO_CLAIMS at full n; shuffle dose
+384 claims (count is not quality — validation discriminates).
+VOIDS (travel with every total, deduped by id): A tile 5 + settle 6;
+B tile 4 + settle 7 + mode 5; C/Cdeep 0 of 300 games (replay aborts 0);
+D unreadable 6 (v1 round). The ≥150-claim SECONDARY bar is met on claims
+COUNT (269 fresh k≥8); its Fisher/rescue/calibration halves await the
+forced-move validation run (not yet scheduled — team-lead's call).
