@@ -2,3 +2,9 @@
 {"id": "A_14293_slice_s005", "void": "tile", "detail": "(5, 0, '0xf1')", "stratum": "A", "cpu_s": 1.9}
 {"id": "B_12286_ship_s012_s009", "void": "tile", "detail": "(9, 3, '0xf2')", "stratum": "B", "cpu_s": 0.0}
 {"id": "B_16102_slice_s017_s015", "void": "tile", "detail": "(5, 4, '0xf2')", "stratum": "B", "cpu_s": 0.0}
+{"id": "D_g3_d5", "void": "unreadable", "detail": "8", "stratum": "D", "cpu_s": 0.7}
+{"id": "D_g3_d0", "void": "unreadable", "detail": "8", "stratum": "D", "cpu_s": 0.7}
+{"id": "D_g3_d3", "void": "unreadable", "detail": "3", "stratum": "D", "cpu_s": 0.7}
+{"id": "D_g3_d4", "void": "unreadable", "detail": "3", "stratum": "D", "cpu_s": 0.8}
+{"id": "D_g3_d2", "void": "unreadable", "detail": "6", "stratum": "D", "cpu_s": 0.8}
+{"id": "D_g3_d1", "void": "unreadable", "detail": "8", "stratum": "D", "cpu_s": 0.8}
