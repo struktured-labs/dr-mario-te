@@ -85,8 +85,8 @@ def play_l20(seed, arm, wc=None, wa=None):
             "inj": ninj["n"], "trace": trace}
 
 
-def play_l11_clean(seed, arm):
-    """One clean L11 game, no injection (guard)."""
+def play_l11_clean(seed, arm, wc=None, wa=None):
+    """One clean L11 game, no injection (guard / stage-A screen)."""
     import oracle_arm as OA
     import refit_candidate as RC
     import labelcore as LC
@@ -104,10 +104,11 @@ def play_l11_clean(seed, arm):
             from fb import FB
             fb = FB.from_board(env.board)
             col, vir = RS.board_flat_from_fb(fb)
+            kw = {} if wc is None else {"wc": wc, "wa": wa}
             vals = RC.champ_values_refit(
                 col, vir, int(env.cur.a), int(env.cur.b),
                 int(env.nxt.a), int(env.nxt.b),
-                C["w"], C["fl"], C["wt"], C["ws"])
+                C["w"], C["fl"], C["wt"], C["ws"], **kw)
         a = OA._champ_action(vals, OA.CHAMP_ORDER)
         if a is None:
             res = "topout"
