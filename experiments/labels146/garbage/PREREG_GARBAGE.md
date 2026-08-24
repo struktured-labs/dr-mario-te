@@ -361,3 +361,41 @@ Condition (b) is REPLACED for the single A5 re-adjudication by two nulls:
   CI excluding 0 (10,000 resamples, seed 146) AND (b-i) collapses.
 Condition (a) (beat champion-value, CI excluding 0) is unchanged and its
 existing PASS carries over unchanged from the same fit.
+
+## ROUND-3 REGISTRATION (H15c, 2026-08-24, BEFORE any stage-A game; team-lead
+authorization: "the last round of this integration family")
+
+Direction fixed: D = −252.611·g_center + 18.361·g_attack (the FE-bridge
+ratio). Candidate family: val = sealed H12 value + λ·D. Round-1's λ=1 is
+NOT in the grid (already measured: guard TRIP +39.6pp, primary +49.2pp
+worse). Ancestry: the 3-line fit ledger, the round-1 ledger, and the round-2
+monotone-criterion finding travel with every readout, linked to
+dr-mario-stage2-shippable-lut (same lesson: offline superiority does not
+survive playing the policy).
+
+STAGE A — GAME-SCREENED DOSE SELECTION (EXPLORATORY, no inferential claims):
+- Grid (frozen from out/h15c_parity.log): λ ∈ {0.0389 (structural parity:
+  within-state sd of λ·D == sd of the shipped ws=20·g_stranded term, 18.4
+  value units), 0.0585, 0.0880, 0.1325, 0.1994, 0.3} — 6 log-spaced points.
+- Per λ: 20 clean L11 pairs (seeds 38000..38038 even) + 40 pressured L20
+  pairs (seeds 40000..40078 even); same seeds across λ (CRN across the grid).
+- CLEAN SCREEN: B clears ≥ 18/20, else the λ is dead.
+- SELECTION: best (most negative) pressured d among clean-surviving λ.
+- PROGRAM RULE (binding): if no λ both passes the clean screen AND shows
+  pressured d < 0 at screen level, the linear-refit door CLOSES — no round 4
+  of this family; campaign yield stands (features-for-prediction, methods
+  corpus, label bank); effort re-routes to the other registered doors.
+
+STAGE B — ONE confirmatory A/B at the selected λ ONLY (form committed NOW;
+only λ's value fills in post-screen — no post-screen design freedom):
+- Arms: A = certified H12; B = H15c(λ_selected). Sheet mutants first
+  (m-ident, m-dose0, m-swap, pressure-live), then:
+- PRIMARY: 600 L20 pairs, seeds 42000..43198 even (reserved now), paired
+  McNemar one-sided α=0.05, RUNNER-LEVEL futility interims at n=200/400 on
+  ascending-seed prefixes (in-process; a STOP halts the run AND stops the
+  guard unit).
+- GUARD: 1,000 clean L11 pairs, seeds 44000..45998 even (reserved now), trip
+  rule unchanged (d > +1.0pp OR one-sided 95% LB > 0 ⇒ automatic
+  NO-PROMOTION, readout led by the trip).
+- All seed blocks disjoint from: bank 30000-32998, round-1 34000-35198 and
+  36000-37998, stage A 38000-38038/40000-40078, H14 reserve 53100-59999.
