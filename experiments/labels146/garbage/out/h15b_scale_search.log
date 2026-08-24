@@ -1,0 +1,14 @@
+states: train=881 held=319
+lambda=0: train_rho=0.2553
+lambda=0.0001: train_rho=0.2556
+lambda=0.000316228: train_rho=0.2556
+lambda=0.001: train_rho=0.2558
+lambda=0.00316228: train_rho=0.2564
+lambda=0.01: train_rho=0.2588
+lambda=0.0316228: train_rho=0.2656
+lambda=0.1: train_rho=0.2785
+lambda=0.316228: train_rho=0.2947
+lambda=1: train_rho=0.3062
+SELECTED lambda* = 1 (train rho 0.3062)
+HELD-OUT: rho(lambda*)=0.3365  rho(0)=0.2867  gain=+0.0498 CI95[+0.0271,+0.0723] n=319
+sanity: lambda->0 recovers champion ranking by construction (rho(0) IS the champion ranking)
