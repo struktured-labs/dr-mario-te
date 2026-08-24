@@ -1,0 +1,1 @@
+{"seed": 36132, "A": {"seed": 36132, "arm": "A", "res": "clear", "fail": false, "pills": 89}, "B": {"seed": 36132, "arm": "B", "res": "topout", "fail": true, "pills": 252}, "cpu_s": 44.4}
