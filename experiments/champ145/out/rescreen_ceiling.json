@@ -1,0 +1,71 @@
+{
+ "n_games": 1500,
+ "n_fail_games": 739,
+ "n_ply": 364052,
+ "n_ply_in_fail_games": 182328,
+ "variants": {
+  "v1": {
+   "open_rate": 0.5032,
+   "tie_dose_of_all": 0.0257,
+   "increment_tie_over_v1": 0.0,
+   "increment_tie_plies": 0,
+   "tie_dose_in_fail_games": 0.0252,
+   "games_with_v2only_tie": 0,
+   "divergence_ceiling": 0.0
+  },
+  "v2@10": {
+   "open_rate": 0.982,
+   "tie_dose_of_all": 0.0327,
+   "increment_tie_over_v1": 0.007,
+   "increment_tie_plies": 2537,
+   "tie_dose_in_fail_games": 0.0327,
+   "games_with_v2only_tie": 1019,
+   "divergence_ceiling": 0.6793
+  },
+  "v2@11": {
+   "open_rate": 0.9574,
+   "tie_dose_of_all": 0.0324,
+   "increment_tie_over_v1": 0.0066,
+   "increment_tie_plies": 2418,
+   "tie_dose_in_fail_games": 0.0325,
+   "games_with_v2only_tie": 978,
+   "divergence_ceiling": 0.652
+  },
+  "v2@12": {
+   "open_rate": 0.888,
+   "tie_dose_of_all": 0.0317,
+   "increment_tie_over_v1": 0.0059,
+   "increment_tie_plies": 2165,
+   "tie_dose_in_fail_games": 0.0319,
+   "games_with_v2only_tie": 897,
+   "divergence_ceiling": 0.598
+  },
+  "v2@13": {
+   "open_rate": 0.8074,
+   "tie_dose_of_all": 0.0307,
+   "increment_tie_over_v1": 0.0049,
+   "increment_tie_plies": 1796,
+   "tie_dose_in_fail_games": 0.0311,
+   "games_with_v2only_tie": 770,
+   "divergence_ceiling": 0.5133
+  },
+  "v2@14": {
+   "open_rate": 0.725,
+   "tie_dose_of_all": 0.0297,
+   "increment_tie_over_v1": 0.004,
+   "increment_tie_plies": 1446,
+   "tie_dose_in_fail_games": 0.0301,
+   "games_with_v2only_tie": 633,
+   "divergence_ceiling": 0.422
+  },
+  "always": {
+   "open_rate": 1.0,
+   "tie_dose_of_all": 0.033,
+   "increment_tie_over_v1": 0.0072,
+   "increment_tie_plies": 2635,
+   "tie_dose_in_fail_games": 0.0328,
+   "games_with_v2only_tie": 1048,
+   "divergence_ceiling": 0.6987
+  }
+ }
+}
