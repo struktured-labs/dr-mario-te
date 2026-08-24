@@ -102,7 +102,7 @@ def main():
             voids[r["id"]] = r
 
     print(f"=== analyze_garbage ({args.which}) — report-only ===")
-    for stratum in "ABC":
+    for stratum in ("A", "B", "C", "Cdeep"):
         rs = [r for r in rows if r["stratum"] == stratum]
         if not rs:
             print(f"stratum {stratum}: 0 rows")
