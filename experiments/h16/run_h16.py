@@ -279,11 +279,13 @@ def run_stage(stage, workers, null_num, null_den):
                         os.system("systemctl --user stop drm-h16-guard "
                                   "2>/dev/null")
                         ex.shutdown(wait=False, cancel_futures=True)
-                        return
+                        sys.exit(3)     # FUTILITY_STOP: chain must not run e2
     done = sum(os.path.exists(seg_path(outdir, s)) for s in seeds)
     print(f"[h16:{stage}] ledger {done}/{len(seeds)}", flush=True)
     print(f"{stage.upper()}_OK" if done == len(seeds)
           else f"{stage.upper()}_INCOMPLETE", flush=True)
+    if done != len(seeds):
+        sys.exit(4)                     # incomplete: chain must not advance
 
 
 # ---------------------------------------------------------------- analyze

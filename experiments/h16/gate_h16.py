@@ -12,8 +12,10 @@ Runs on the house gate seeds 40000..40011 (reserved for gates, never scored
                    (bursty counter: H16 count > H12 count > 0, same seed).
   S4 m-swap        scorer negation: score_pairs(d) == -score_pairs(swapped).
   S5 m-nodedup     population mutant: dedup width < raw width on a real
-                   fired double-capsule state; board_key collision must trip
-                   the never-same-board assert.
+                   fired double-capsule state; independent pairwise-planes
+                   duplicate checker (positive-controlled on the raw set) —
+                   AMENDED 2026-08-24: the registered collision mutant was
+                   equivalent-surviving (see s5_nodedup docstring).
   S6 m-cooldown    no_cooldown adjudications grow (bank prediction ~3.5x);
                    require pooled ratio > 1.8 and report the measured value.
   S7 verdict-gate  score_pairs + trip rule driven with synthetic tables
@@ -68,12 +70,22 @@ def _play_star(args):
 def s1_s2_s6(workers):
     """One parallel pass: base/nf/true/nocool on every gate seed."""
     from concurrent.futures import ProcessPoolExecutor
-    tasks = [(k, s) for s in GATE_SEEDS
-             for k in ("base", "nf", "true", "nocool")]
-    res = {}
+    bank = os.path.join(OUT, "gates")
+    os.makedirs(bank, exist_ok=True)
+    tasks, res = [], {}
+    for s in GATE_SEEDS:
+        for k in ("base", "nf", "true", "nocool"):
+            pth = os.path.join(bank, f"{k}_{s}.json")
+            if os.path.exists(pth):
+                res[(k, s)] = json.load(open(pth))
+            else:
+                tasks.append((k, s))
     with ProcessPoolExecutor(max_workers=workers) as ex:
         for r in ex.map(_play_star, tasks):
             res[(r["kind"], r["seed"])] = r
+            with open(os.path.join(bank,
+                                   f"{r['kind']}_{r['seed']}.json"), "w") as fh:
+                json.dump(r, fh)
             print(f"  [{r['kind']}] seed={r['seed']} res={r['res']} "
                   f"plies={r['n_plies']} adj={r['h16_adjudications']} "
                   f"ovr={r['h16_overrides']} secs={r['secs']}", flush=True)
@@ -145,11 +157,30 @@ def s4_swap():
 
 
 def s5_nodedup():
+    """Population mutant (gate-standard #7) with corrected operationalization.
+
+    The registered 'board_key collision must trip the never-same-board
+    assert' mutant is EQUIVALENT-SURVIVING: a colliding key MERGES into the
+    existing entry, so the output-uniqueness assert structurally cannot fire
+    (triage rule: equivalent? -> yes -> replace the check, not the mutant).
+    Corrected check, same property, independent implementation:
+      (a) dedup-off population GROWS on a fired double-capsule state;
+      (b) an INDEPENDENT pairwise-planes comparator finds ZERO duplicate
+          resulting boards in the dedup'd set, and
+      (c) the SAME comparator finds >0 duplicates in the raw set — the
+          positive control proving the comparator can detect what it claims.
+    """
     import oracle_arm as OA
     import labelcore as LC
     C, bmodel = OA.init_rig("lulu", level=20)
-    hit = tripped = False
-    grew = 0
+
+    def dup_pairs(ents):
+        planes = [e["planes"] for e in ents]
+        return sum(1 for i in range(len(planes))
+                   for j in range(i + 1, len(planes))
+                   if planes[i] == planes[j])
+
+    hit = grew = dedup_clean = raw_dups = 0
     for seed in GATE_SEEDS[:6]:
         env = OA.make_env(seed, 20, max_pills=400)
         for ply in range(400):
@@ -158,21 +189,12 @@ def s5_nodedup():
             H = OA.heights(env.board.color)
             dsh = int(max(H[3], H[4]))
             if dsh >= HA.TRIGGER_DSH and int(env.cur.a) == int(env.cur.b):
-                hit = True
+                hit += 1
                 dd = LC.enumerate_candidates(env, dedup=True)
                 raw = LC.enumerate_candidates(env, dedup=False)
-                if len(raw) > len(dd):
-                    grew += 1
-                # board_key collision must trip the never-same-board assert
-                orig = LC.board_key
-                try:
-                    LC.board_key = lambda c1, v1, n: "collide"
-                    try:
-                        LC.enumerate_candidates(env, dedup=True)
-                    except AssertionError:
-                        tripped = True
-                finally:
-                    LC.board_key = orig
+                grew += int(len(raw) > len(dd))
+                dedup_clean += int(dup_pairs(dd) == 0)
+                raw_dups += int(dup_pairs(raw) > 0)
                 break
             vals = LC.compute_vals(env, C["w"], C["fl"], C["wt"], C["ws"])
             a = OA._champ_action(vals, OA.CHAMP_ORDER)
@@ -181,11 +203,12 @@ def s5_nodedup():
             r, _v = OA._advance(env, a, C, seed, bmodel)
             if r is not None:
                 break
-        if hit and grew and tripped:
+        if hit >= 3:
             break
-    ok = hit and grew > 0 and tripped
-    print(f"[S5 m-nodedup] fired double-capsule state found={hit} "
-          f"raw>dedup on {grew} state(s), collision-assert tripped={tripped}: "
+    ok = hit >= 1 and grew == hit and dedup_clean == hit and raw_dups == hit
+    print(f"[S5 m-nodedup] fired double-capsule states={hit}, "
+          f"raw>dedup on {grew}, dedup duplicate-free {dedup_clean}, "
+          f"raw-set duplicates found (positive control) {raw_dups}: "
           f"{'PASS' if ok else 'FAIL'}", flush=True)
     return ok
 

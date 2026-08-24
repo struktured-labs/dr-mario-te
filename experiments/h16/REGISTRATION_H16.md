@@ -299,6 +299,14 @@ actually runs — the sheet drives H16Arm through `run_h16.py`'s own path)
    screened population grows to the raw legal-slot count on the same
    boards; the never-same-board assert must trip on a constructed
    duplicate.
+   **AMENDMENT A1 (2026-08-24, before any endpoint row):** the constructed
+   collision mutant is EQUIVALENT-SURVIVING — a colliding board_key MERGES
+   into the existing entry, so the output-uniqueness assert structurally
+   cannot fire. Per the gate standard's triage (equivalent? -> replace the
+   check), the sheet instead verifies the property directly: an INDEPENDENT
+   pairwise-planes comparator finds zero duplicates in the dedup'd set and
+   >0 in the raw set (the positive control proving the comparator
+   discriminates). Growth clause unchanged.
 6. **m-cooldown**: cooldown disabled => adjudications/game grows by ~3.5x
    (bank-predicted 29.0/8.3) on the sheet seeds — the budget model is live.
 7. **pressure-live**: injection counters > 0 in BOTH the game path and the
