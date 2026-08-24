@@ -87,3 +87,14 @@ B tile 4 + settle 7 + mode 5; C/Cdeep 0 of 300 games (replay aborts 0);
 D unreadable 6 (v1 round). The ≥150-claim SECONDARY bar is met on claims
 COUNT (269 fresh k≥8); its Fisher/rescue/calibration halves await the
 forced-move validation run (not yet scheduled — team-lead's call).
+
+## SPLIT-DEFECT AMENDMENT (2026-08-24, dated BEFORE any fit score exists)
+
+The registered rule "held out ⇔ seed % 4 == 3" is INOPERATIVE for C/Cdeep:
+bank seeds are all EVEN (seed space 2k≡2k+1), so seed % 4 ∈ {0,2} and the
+rule holds out ZERO states. The fit ABORTED on the empty held-out set before
+computing any score (no label content was seen by any fit; the timing is the
+crash traceback in out/fit_readout.log). AMENDED RULE, unified across
+populations and equally deterministic: held out ⇔ crc32(key) % 4 == 3 where
+key = str(seed) for C/Cdeep and the source row name for A/B (unchanged
+construction for A/B). No other part of the config changes.
