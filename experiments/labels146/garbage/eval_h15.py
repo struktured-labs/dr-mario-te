@@ -124,6 +124,14 @@ def play_l11_clean(seed, arm):
 
 
 # ------------------------------------------------------------- workers
+def _b0(seed):
+    return play_l20(seed, "B", wc=0, wa=0)
+
+
+def _a20(seed):
+    return play_l20(seed, "A")
+
+
 def _pair_l20(seed):
     t0 = time.time()
     a = play_l20(seed, "A")
@@ -175,8 +183,8 @@ def sheet(workers):
 
     # m-ident: A vs A — zero discordance, and pressure fired
     with ProcessPoolExecutor(max_workers=workers) as ex:
-        r1 = list(ex.map(play_l20, seeds, ["A"] * 20))
-        r2 = list(ex.map(play_l20, seeds, ["A"] * 20))
+        r1 = list(ex.map(_a20, seeds))
+        r2 = list(ex.map(_a20, seeds))
     disc = sum(x["fail"] != y["fail"] for x, y in zip(r1, r2))
     tr_eq = all(x["trace"] == y["trace"] for x, y in zip(r1, r2))
     inj = sum(x["inj"] for x in r1)
@@ -188,10 +196,8 @@ def sheet(workers):
           f"{'PASS' if inj > 0 else 'FAIL'}", flush=True)
 
     # m-dose0: B at zero dose vs A — byte-identical traces
-    def b0(s):
-        return play_l20(s, "B", wc=0, wa=0)
     with ProcessPoolExecutor(max_workers=workers) as ex:
-        rb = list(ex.map(b0, seeds))
+        rb = list(ex.map(_b0, seeds))
     same = all(x["trace"] == y["trace"] and x["res"] == y["res"]
                for x, y in zip(r1, rb))
     ok &= same
