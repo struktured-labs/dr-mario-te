@@ -1,4 +1,5 @@
-"""refit_candidate.py — the refit candidate (design note approved lineage:
+"""refit_candidate.py — H15, the refit candidate (team-lead naming: successor
+lineage, honest numbering; design note approved lineage:
 A5-corrected PASS licenses BUILDING; promotion rides on the fresh registered
 A/B and nothing here).
 
@@ -28,6 +29,7 @@ sys.path.insert(0, HERE)
 import numpy as np
 import fit_garbage as F          # single source for the feature definitions
 
+NAME = "H15"
 W_GCENTER = -252.611
 W_GATTACK = +18.361
 FROZEN = ("variant=winner ws=20 wt=0 level=20 depth=3 order=champ "
