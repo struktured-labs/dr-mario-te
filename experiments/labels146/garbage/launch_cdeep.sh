@@ -1,6 +1,12 @@
 #!/bin/bash
-# C-deep chain: resync redmage at current commit, re-run the cross-box gate
-# (registered rule: resync at a new commit re-gates), then launch BOTH boxes.
+# ⛔ DISARMED 2026-08-24 ~01:30 EDT (team-lead reassignment order): the
+# redmage C-deep half (266 games) was REASSIGNED to blackmage while redmage
+# was suspended. This script must NEVER fire drm-cdeep-red — a woken redmage
+# becoming a second writer would violate one-writer-per-seed. Kept for the
+# provisioning/regate recipe only. If redmage returns it takes OTHER work
+# (autopsy backlog) after its own gate re-check — never C-deep.
+echo "DISARMED: redmage C-deep half reassigned to blackmage 2026-08-24; see OPS_LOG.md" >&2
+exit 2
 set -eo pipefail
 HERE="$(dirname "$(readlink -f "$0")")"
 cd "$HERE"
