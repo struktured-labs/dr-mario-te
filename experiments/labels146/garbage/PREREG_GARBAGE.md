@@ -305,3 +305,28 @@ attack-capital, (iii) construction-capital.
 Clarification of A3.1 recorded with it: a `null` cur/nxt field is equivalent
 to an omitted one (VOID class `pills`), and the reader treats it so — void,
 never fabricate, never crash.
+
+## C-DEEP REGISTRATION (2026-08-24 ~00:15 EDT, BEFORE any C-deep label exists;
+launches only after stage 1 completes on blackmage)
+
+- Window: end−k, k ∈ {8, 12, 16, 20} (A2 secondary route), stratum label
+  `Cdeep`, same label protocol as stratum C (replay-gated walk, true stream,
+  dist injection, N=8, H=25).
+- Universe + box assignment: the committed split lists (629dbd5) — 533 topout
+  games (n_plies ≥ 40, excluding labels-146's 20 seeds and stage-1's 25),
+  blackmage `cdeep_split_blackmage.txt` (267) / redmage `cdeep_split_redmage.txt`
+  (266), one writer per seed, identity-keyed segments.
+- SIZING: first **150 games per box** in list order = 300 games, 1,200 states
+  ≈ 222k forks (≈ 44 cpu-h at the 0.718 prior; 1.11 cpu-s/fork measured on
+  redmage uncontended). EXTENSION RULE (mechanical): if fresh §5 claims < 150
+  when both boxes complete, extend by the next 50 games per box, repeat until
+  ≥150 claims or the universe is exhausted. No window changes, no re-sampling.
+- Claims per §5; forced-move validation per §7 (arm A banked outcome, arm B
+  gated replay + forced claimed action + true injection); the A2 bar restated:
+  ≥150 fresh k≥8 claims, Fisher one-sided p<0.05, rescue−break ≥ 0.15,
+  positive calibration slope — SECONDARY/confirmatory; the A2 PRIMARY
+  promotion gate remains the feature fit.
+- Rule-15 thresholds: >10% of replays aborting at the gate in either box's
+  list ⇒ STOP and report. Cross-box pooling is licensed by the byte-equal
+  gate (md5 c44b478cb077ac98728d349648594396 both boxes) — any NEW box or a
+  resync at a different commit re-runs that gate first.

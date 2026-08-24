@@ -94,8 +94,8 @@ def work_import(src):
             "forks": forks, "cpu_s": round(time.time() - t0, 1)}
 
 
-def work_seed_C(seed, ks):
-    """One stratum C banked seed: gated replay + labels at each (k, ply)."""
+def work_seed_C(seed, ks, stratum="C"):
+    """One banked seed: gated replay + labels at each (k, ply)."""
     t0 = time.time()
     C, bmodel = LC.init_rig()
     rows, game = LC.load_bank_game(seed)
@@ -110,7 +110,7 @@ def work_seed_C(seed, ks):
                 continue
             ents = LC.label_state(env, C, bmodel, seed, ply, G.N_SAMPLES, G.H)
             forks += sum(len(e["surv"]) for e in ents)
-            out = {"id": f"C_{seed}_k{k}", "stratum": "C", "seed": seed,
+            out = {"id": f"C_{seed}_k{k}", "stratum": stratum, "seed": seed,
                    "ply": ply, "k": k, "H": G.H, "N": G.N_SAMPLES,
                    "vir": row["vir"], "dsh": row["dsh"], "maxh": row["maxh"],
                    "a": row["a"], "vals": row["vals"], "champ_slot": row["a"],
@@ -122,8 +122,61 @@ def work_seed_C(seed, ks):
         res = stop.value
     assert res == game["res"], (seed, res, game["res"])
     assert got == len(ks), (seed, got, len(ks))
-    return {"id": f"C_{seed}", "stratum": "C", "rows": got, "forks": forks,
+    return {"id": f"C_{seed}", "stratum": stratum, "rows": got, "forks": forks,
             "cpu_s": round(time.time() - t0, 1)}
+
+
+CDEEP_KS = (8, 12, 16, 20)      # C-DEEP REGISTRATION
+CDEEP_GAMES = 150               # per box, first-N in list order
+
+
+def targets_cdeep(box, n_games=CDEEP_GAMES):
+    """[(seed, [(k, ply)...])...] from this box's committed split list."""
+    path = os.path.join(HERE, f"cdeep_split_{box}.txt")
+    seeds = [int(x) for x in open(path).read().split()][:n_games]
+    out = []
+    for seed in seeds:
+        _, game = LC.load_bank_game(seed)
+        assert game["res"] == "topout" and game["n_plies"] >= 40, seed
+        out.append((seed, [(k, game["n_plies"] - k) for k in CDEEP_KS]))
+    return out
+
+
+def main_cdeep(box, workers):
+    os.makedirs(LABELS, exist_ok=True)
+    ts = targets_cdeep(box)
+    items = [(seed, ks) for seed, ks in ts
+             if not all(os.path.exists(os.path.join(
+                 LABELS, f"C_{seed}_k{k}.jsonl.gz")) for k, _ in ks)]
+    reg = sum(len(ks) for _, ks in ts)
+    print(f"[harvest:cdeep-{box}] games={len(ts)} states={reg} "
+          f"todo={len(items)} workers={workers}", flush=True)
+    from concurrent.futures import ProcessPoolExecutor, as_completed
+    t0, aborts = time.time(), 0
+    with ProcessPoolExecutor(max_workers=workers) as ex:
+        futs = {ex.submit(work_seed_C, s, ks, "Cdeep"): s for s, ks in items}
+        for i, f in enumerate(as_completed(futs), 1):
+            try:
+                r = f.result()
+            except LC.ReplayMismatch as ex_:
+                aborts += 1
+                print(f"[harvest] {i}/{len(items)} seed={futs[f]} "
+                      f"REPLAY_ABORT {ex_}", flush=True)
+                continue
+            print(f"[harvest] {i}/{len(items)} {r['id']} rows={r['rows']} "
+                  f"forks={r['forks']} cpu_s={r['cpu_s']} "
+                  f"wall={time.time()-t0:.0f}s", flush=True)
+    have = sum(os.path.exists(os.path.join(LABELS, f"C_{s}_k{k}.jsonl.gz"))
+               for s, ks in ts for k, _ in ks)
+    print(f"[ledger] Cdeep-{box}: labeled {have}/{reg} "
+          f"replay_aborts={aborts}/{len(ts)}", flush=True)
+    if aborts > 0.10 * len(ts):
+        print("HARVEST_STOP_RULE15 — replay-abort rate over threshold",
+              flush=True)
+    elif have == reg:
+        print("HARVEST_OK", flush=True)
+    else:
+        print("HARVEST_INCOMPLETE", flush=True)
 
 
 def _worker(item):
@@ -136,12 +189,16 @@ def _worker(item):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", dest="which",
-                    choices=("pilot", "campaign", "d"), required=True)
+                    choices=("pilot", "campaign", "d",
+                             "cdeep-blackmage", "cdeep-redmage"),
+                    required=True)
     ap.add_argument("--workers", type=int, default=8)
     args = ap.parse_args()
 
     if args.which == "d":
         return main_d(args.workers)
+    if args.which.startswith("cdeep-"):
+        return main_cdeep(args.which.split("-", 1)[1], args.workers)
 
     os.makedirs(LABELS, exist_ok=True)
     A, B = targets_AB(args.which)
