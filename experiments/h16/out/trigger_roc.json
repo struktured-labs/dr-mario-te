@@ -1,0 +1,161 @@
+{
+ "composition": {
+  "A": {
+   "n": 34,
+   "claims": 1
+  },
+  "B": {
+   "n": 35,
+   "claims": 0
+  },
+  "C_k30": {
+   "n": 25,
+   "claims": 2
+  },
+  "C_k40": {
+   "n": 25,
+   "claims": 0
+  },
+  "C_k50": {
+   "n": 25,
+   "claims": 2
+  },
+  "Cdeep_k12": {
+   "n": 300,
+   "claims": 73
+  },
+  "Cdeep_k16": {
+   "n": 300,
+   "claims": 65
+  },
+  "Cdeep_k20": {
+   "n": 300,
+   "claims": 47
+  },
+  "Cdeep_k8": {
+   "n": 300,
+   "claims": 84
+  }
+ },
+ "roc": {
+  "10": {
+   "catch_claims": 1.0,
+   "catch_deep_claims": 1.0,
+   "fire_deathpath_all": 1.0,
+   "fire_mid_healthy": 0.9655
+  },
+  "11": {
+   "catch_claims": 1.0,
+   "catch_deep_claims": 1.0,
+   "fire_deathpath_all": 0.9933,
+   "fire_mid_healthy": 0.9483
+  },
+  "12": {
+   "catch_claims": 1.0,
+   "catch_deep_claims": 1.0,
+   "fire_deathpath_all": 0.9758,
+   "fire_mid_healthy": 0.8448
+  },
+  "13": {
+   "catch_claims": 1.0,
+   "catch_deep_claims": 1.0,
+   "fire_deathpath_all": 0.9067,
+   "fire_mid_healthy": 0.7414
+  },
+  "14": {
+   "catch_claims": 0.9818,
+   "catch_deep_claims": 0.9814,
+   "fire_deathpath_all": 0.7975,
+   "fire_mid_healthy": 0.6034
+  }
+ },
+ "cmp_dsh12_catch": 0.989,
+ "cmp_h12gate_catch": 0.9963,
+ "rank_coverage": {
+  "2": 0.0511,
+  "3": 0.1423,
+  "4": 0.2263,
+  "5": 0.2774,
+  "6": 0.3613,
+  "8": 0.4781,
+  "10": 0.573
+ },
+ "gap_median": 405.0,
+ "gap_frac_le_eps2": 0.0,
+ "bank_games": {
+  "n": 1500,
+  "cleared": 761,
+  "topout": 576,
+  "plies": 364052,
+  "mean_plies": 242.70133333333334
+ },
+ "fire": {
+  "10": {
+   "all": 0.9516,
+   "cleared": 0.9192
+  },
+  "11": {
+   "all": 0.9089,
+   "cleared": 0.8552
+  },
+  "12": {
+   "all": 0.8168,
+   "cleared": 0.7367
+  },
+  "13": {
+   "all": 0.6597,
+   "cleared": 0.5579
+  },
+  "14": {
+   "all": 0.489,
+   "cleared": 0.3857
+  }
+ },
+ "lead": {
+  "10": {
+   "1-5": 1.0,
+   "6-10": 1.0,
+   "11-15": 1.0,
+   "16-25": 0.9986,
+   "26-40": 0.9905
+  },
+  "11": {
+   "1-5": 1.0,
+   "6-10": 0.9983,
+   "11-15": 0.9944,
+   "16-25": 0.9875,
+   "26-40": 0.9803
+  },
+  "12": {
+   "1-5": 0.9972,
+   "6-10": 0.9851,
+   "11-15": 0.9747,
+   "16-25": 0.9566,
+   "26-40": 0.9328
+  },
+  "13": {
+   "1-5": 0.9792,
+   "6-10": 0.9354,
+   "11-15": 0.9108,
+   "16-25": 0.863,
+   "26-40": 0.795
+  },
+  "14": {
+   "1-5": 0.9358,
+   "6-10": 0.8382,
+   "11-15": 0.7816,
+   "16-25": 0.7094,
+   "26-40": 0.6232
+  }
+ },
+ "budget": {
+  "12": {
+   "fires_per_game": 198.24,
+   "forks_per_fire": 40
+  },
+  "13": {
+   "fires_per_game": 160.11,
+   "forks_per_fire": 40
+  }
+ }
+}
