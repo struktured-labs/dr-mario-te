@@ -155,6 +155,12 @@ scope note, not a lost-prize accounting.
 - CRN keying: `fseed = dist_seed(seed, ply, sample)`, samples 0-1 screen,
   2-7 confirm — candidate-independent, so CRN holds across candidates
   (the bank's own construction).
+- **Estimate, not promise (lead rider, 2026-08-24):** the 65% claim-recovery,
+  the false-override rates, and the adjudications/game figure are ON-BANK
+  estimates over H12's state distribution; the on-policy-blindness lesson
+  applies to them directionally, and the trial itself is the off-policy
+  test. The conservative knee bounds the downside either way — an
+  off-policy shortfall is measured reality, not a harness fault.
 
 ## 4. Decision rule (registered exactly) and its simulated operating point
 
