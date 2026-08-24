@@ -287,3 +287,21 @@ combo-liquidation and the pre-death tower runs.
 6. Stratum D is its own population: never pooled with A/B/C statistics; it
    harvests after stage 1 as boards arrive (identity-keyed segments make
    arrival order safe).
+
+## AMENDMENT A4 (2026-08-23 evening, BEFORE the feature fit runs; team-lead
+directive on the proven stall mechanism)
+
+Registered feature-fit candidate (iii): **CONSTRUCTION-CAPITAL** — partial
+progress toward clearing each remaining virus (same-colour adjacency /
+step-distance to isolated or buried viruses). Mechanistic rationale on
+record: the current evaluator has no gradient for a 2-3 pill build whose
+payoff lands at or past the horizon, so reachable rescues are never assembled
+(g_stranded family; tonight's proven stall — 72 s flatline at 4 viruses in
+col 7 under a garbage plug, ~35 placement groups in cols 0-6, zero touching
+col 7 — is its purest expression). The A2 primary endpoint's candidate set is
+now three, all dated pre-fit: (i) center-column clearability, (ii)
+attack-capital, (iii) construction-capital.
+
+Clarification of A3.1 recorded with it: a `null` cur/nxt field is equivalent
+to an omitted one (VOID class `pills`), and the reader treats it so — void,
+never fabricate, never crash.

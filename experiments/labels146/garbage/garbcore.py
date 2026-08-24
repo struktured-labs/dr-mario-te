@@ -277,8 +277,8 @@ def read_d_row(rec):
     nvir = sum(1 for v in nes if (v >> 4) == 0xD)
     if nvir != int(rec["hud_virus"]):                   # G-I2'
         raise ImportVoid("counter", (nvir, rec["hud_virus"]))
-    if "cur" not in rec or "nxt" not in rec:
-        raise ImportVoid("pills", "absent")
+    if rec.get("cur") is None or rec.get("nxt") is None:
+        raise ImportVoid("pills", "absent")   # null == omitted (A3.1 spec)
     cur, nxt = tuple(rec["cur"]), tuple(rec["nxt"])
     if not all(0 <= c <= 2 for c in cur + nxt):
         raise ImportVoid("pills", (cur, nxt))
