@@ -34,7 +34,7 @@ target mismatch, which is why this arm re-fits on `prog`.
 ## 2. DESIGN
 
 **Generate fresh certified-H12 games** (`h12_true_m0.5_e0.0`, tie_margin 0.5, trigger_eps 0.0),
-provenance ON, L20 lulu home regime, on **seeds disjoint from the labels-146 bank, from every
+provenance ON, L20 drlulu home regime, on **seeds disjoint from the labels-146 bank, from every
 Stage-2 corpus seed, and from the H14 endpoint block** — asserted at startup, not commented.
 For every flip ply record H12's `trt_action`, the champion's `base_action`, `cands`, `labels`,
 `margin_sum`, **and the post-placement board for each candidate** (see §2.1).

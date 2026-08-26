@@ -1150,7 +1150,7 @@ whether controls can fail.** Caught only because its result contradicted mine.
 # ★★★ SUBSTITUTION ARM — FINAL RESULT (run complete, 1,666/1,666)
 
 **Population:** 41,063 discriminating champion-value tie groups over **1,665 seeds** · 70,074 tie
-plies of which **29,011 degenerate (41.4%)**, excluded per Amendment 5 · cap 400 · L20 lulu ·
+plies of which **29,011 degenerate (41.4%)**, excluded per Amendment 5 · cap 400 · L20 drlulu ·
 seeds 33000-36332, stream-key disjoint · 71,740 records verified identical remote and local.
 
 ## 1. CONTROL PANEL FIRST — all five land where construction demands
