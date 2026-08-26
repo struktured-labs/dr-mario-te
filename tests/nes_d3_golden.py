@@ -24,7 +24,7 @@ from test_incremental import g_readiness_ext
 WIN = 30000   # firmware 16-bit-fitting win bonus (dominates max-non-win ~16600, +imm < 32767)
 DISC_SHIFT = None   # temporal discount: val = imm1 + leaf1 + ((best2-leaf1) >> DISC_SHIFT).
                     # None = off (classic). 1 = d=0.5 (fixes dual-end park pathology; +14% solo efficiency).
-EXCAV_HANG = False  # post-clear-gravity terms (wife/user-coached): excavation readiness +
+EXCAV_HANG = False  # post-clear-gravity terms (drlulu/struktured-coached): excavation readiness +
                     # hanging-half potential. Firmware add-on family (no RTL change).
 EXCAV_HANG_PLY1 = False  # SHIP form of the above: apply the excav+hang terms ONLY to the
                     # resolved ply-1 board b1 (not every leaf), added AFTER the DISC_SHIFT

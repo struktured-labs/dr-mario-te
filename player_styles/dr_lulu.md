@@ -54,7 +54,7 @@ beat it in ways the lab never produced.
 
 ## Evidence
 
-- `experiments/rtl_chain/field_evidence_wife_KO_20260801.pdf` — the first Stomper KO
+- `experiments/rtl_chain/field_evidence_drlulu_KO_20260801.pdf` — the first Stomper KO
   (X on P2's bottle, virus dance, 10|10 board state).
 - Photo archive: 205-file series (Pixel, 2026-08-01 evening) + W-screen burst
   (25–07 KO, three crowns) + 47 s film-study clip. Ingested from Google Photos zips.
