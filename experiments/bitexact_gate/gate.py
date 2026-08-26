@@ -267,11 +267,70 @@ def gate_pairs(args):
 
 
 # ---------------------------------------------------------------- o4 mapping
+# Link high-nibbles, per linkcorpus.to_nes: {unlinked: 0x8, UP: 0x5, DOWN: 0x4,
+# LEFT: 0x7, RIGHT: 0x6}. 0x8 and 0x4 are the two spellings this corpus uses for an
+# UNLINKED pill cell; 0x5/0x6/0x7 are genuine pair links.
+_TRUE_LINK_HI = (0x50, 0x60, 0x70)
+
+
+def _norm_unlinked(board):
+    """Collapse the two spellings of an unlinked pill cell (0x8x and 0x4x) onto one.
+
+    `arrays_to_nes` renders every non-virus pill as 0x4x because the compact (col, vir)
+    representation has no link plane to render from. The corpus spells the same cells
+    0x8x. Both mean "unlinked pill of colour c" -- and the LEAF agrees, since it reads
+    colour from the low nibble and virus from a 0xD0 high nibble, ignoring the rest. So
+    the high nibble here carries no information the compact oracle is being tested on,
+    and collapsing it compares the thing that actually differs: occupancy and colour.
+    """
+    return [x if (x == 0xFF or (x & 0xF0) == 0xD0) else (0x40 | (x & 0x0F))
+            for x in board]
+
+
+def _assert_no_true_links(recs):
+    """Hard-stop if a record carries a REAL pair link (0x5x/0x6x/0x7x).
+
+    That is the case where the compact oracle genuinely cannot represent the board, and
+    normalising would paper over a real divergence rather than an encoding difference.
+    This corpus has none (measured: parent high-nibbles are exactly {0x40, 0x80, 0xD0,
+    0xF0}); `gate.py linknode` is the level that owns link-aware mechanics.
+    """
+    n = sum(1 for r in recs
+            for b in (r[0], r[11])
+            for x in b if (x & 0xF0) in _TRUE_LINK_HI)
+    if n:
+        raise RuntimeError(
+            "%d cells carry a REAL pair link (0x5x/0x6x/0x7x) in the compact node corpus. "
+            "_expand_core cannot represent those, and normalising the high nibble would "
+            "hide a genuine mechanics divergence. Use gate.py linknode for link-aware "
+            "mechanics, or regenerate this corpus without links." % n)
+
+
 def recover_o4_map(verbose=False):
     """Empirically recover RTL a_o4 <-> fast_sim variant from the pinned node
-    corpus (mechanics are eval-independent, so the old corpus is authoritative)."""
+    corpus (mechanics are eval-independent, so the old corpus is authoritative).
+
+    ★ The corpus was regenerated at fd8e495 (R47 brain) from 250 cases to 436, and 169 of
+    those spell unlinked pill cells 0x8x where `arrays_to_nes` renders 0x4x. Compared raw,
+    NO permutation is perfect (best (2,3,0,1) at 162 bad) -- which reads as mechanics
+    drift and is not: collapsing the two spellings makes (2,3,0,1) uniquely perfect across
+    ALL 436, next best 151.
+
+    ⚠ CORRECTION (2026-08-09). An earlier version of this function FILTERED those 169 out
+    and justified it as "the compact oracle cannot represent the link plane". That reached
+    the right map for the wrong reason: this corpus contains NO pair links at all (parent
+    high-nibbles are exactly {0x40, 0x80, 0xD0, 0xF0}) and 0x8x means UNLINKED, not linked.
+    The mismatch was never about links -- it was two spellings of the same unlinked cell.
+    Filtering also threw away 39% of the evidence and narrowed the separation from 151 to
+    70. Normalising uses every record and compares what actually differs; the true-link
+    assertion below is what guards the case filtering was wrongly claiming to guard.
+    """
     pinned = os.path.join(QA_COPRO, "leafeval_node_cases.txt")
     recs = _load_pairs(pinned)
+    _assert_no_true_links(recs)
+    if len(recs) < 100:
+        raise RuntimeError(
+            "only %d node cases -- too few to pin a 4-element o4 map." % len(recs))
     ccol = np.empty(NCELL, dtype=np.int8); cvir = np.empty(NCELL, dtype=np.int8)
     perfect = []
     for perm in itertools.permutations(range(4)):
@@ -282,18 +341,24 @@ def recover_o4_map(verbose=False):
                                           ccol, cvir)
             if int(ok) != legal:
                 ok_all = False; break
+            # child is only defined when the placement is legal -- _expand_core leaves
+            # ccol/cvir untouched otherwise, so comparing them on an illegal record reads
+            # stale buffer contents and manufactures "occupancy differences" that are not
+            # real. (Measured: all 7 records that looked like mechanics divergence were
+            # legal=0.)
             if legal and (int(nv) != vir or int(ncells) != cells
-                          or arrays_to_nes(ccol, cvir) != child):
+                          or _norm_unlinked(arrays_to_nes(ccol, cvir))
+                          != _norm_unlinked(child)):
                 ok_all = False; break
         if ok_all:
             perfect.append(perm)
     if verbose:
-        print("o4->variant maps reproducing all %d pinned node cases: %s"
-              % (len(recs), perfect))
+        print("o4->variant maps reproducing all %d node cases (unlinked-spelling "
+              "normalised): %s" % (len(recs), perfect))
     if not perfect:
-        raise RuntimeError("NO o4->variant mapping reproduces the pinned node corpus "
+        raise RuntimeError("NO o4->variant mapping reproduces the %d node cases "
                            "-- _expand_core mechanics differ from RTL; gate cannot "
-                           "trust its pair oracles")
+                           "trust its pair oracles" % len(recs))
     if (0, 1, 2, 3) in perfect:
         return (0, 1, 2, 3), perfect
     if len(perfect) > 1:

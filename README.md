@@ -16,27 +16,6 @@ auto-navigates into a VS-CPU match and lets the coprocessor drive a player — n
 no host PC in the loop. It is a self-running demo of an expectimax search running on silicon
 alongside the game it is playing.
 
-## Current champion status — 2026-08-11
-
-The north star is not a simulator score: it is **best-in-the-world play under original-NES
-rules and real-time execution**. Dr. Lulu is the current on-prem human milestone, not the
-definition of success. The project is close, but the present cart still makes occasional
-obvious, locally myopic moves that keep it below that bar.
-
-| Track | Evidence-backed state |
-| --- | --- |
-| **v8 REMATCH cart** | Shipped, gated and hardware-faithful (`c0082cb34259007854120d3d4ab9fa27`). It adds crash hardening and execution fidelity; it does **not** claim a strength gain over the champion Dr. Lulu has already beaten. |
-| **Exact policy fidelity** | Full firmware co-sim matches 19/19 decisions and all 542/542 legal-candidate values, in debug and non-debug builds. |
-| **Learned evaluator** | Stage-2 is **NO_GO**. Its −0.80 pp dies-ahead estimate crossed zero, and a dose-matched shuffled-label null did just as well. Changing 1.8% of plies reshuffled roughly 20% of outcomes: churn was real, direction was not. |
-| **`d_spawn_h` tie resolver** | **NO_GO** at N=9,000: dies-ahead became 0.200 pp worse, 95% paired CI [+0.022, +0.378], p=0.03846. It will not be swept on those seeds. |
-| **Next strength probe** | A narrow K4 spawn-lane penalty only after garbage actually lands now has an independently validated, distinct-state dose-matched null. Its preregistered N=9,000 endpoint is the current test; no result is claimed here before it completes. |
-| **Pocket θ400** | A full clean seed-8 fit passes at 18,262/18,480 ALMs (218 free), +1.682 ns setup slack, with both 16,384-byte firmware-content proofs exact. Hardware runtime/value A/B is still required. |
-| **Seed-30011 freeze** | Pre-existing, deterministic, and reproduced at identical frames on the unhardened cart. It is not a v8 regression; the current pause-vs-wedge discriminator remains unresolved. |
-
-Promotion now requires converging evidence: fewer identifiable blunders, no broad clean-play
-regression, improvement over a dose-matched label-blind null, stronger opponent results, and
-hardware-representative execution. Offline AUC or a py65-only win is not enough.
-
 ## Milestone — depth-3 on hardware at ~1 second per move
 
 The AI runs a **depth-3 expectimax search** (current pill + preview pill known, third pill
@@ -90,10 +69,8 @@ The AI itself crossed from "solver with pause privileges" to **honest real-time 
   with a driver-drawn STUDY pause overlay: both previews and the letters survive the pause
   in 1P and 2P because the driver, not the evacuated ROM tail, owns those OAM slots.
 
-One canonical RTL source (`fpga/copro/`) feeds both platforms: the Pocket tree vendors it
-via `fpga/copro/sync_to_pocket.sh`. Platform images may intentionally carry different,
-byte-proved firmware variants (for example θ150 and θ400); manifests identify the exact
-firmware instead of assuming one `copro_rom.hex` ships everywhere.
+One canonical source (`fpga/copro/`) feeds both platforms: the Pocket tree vendors the RTL
+via `fpga/copro/sync_to_pocket.sh`, and one `copro_rom.hex` firmware ships everywhere.
 
 ## Milestone 3 — "Combo Stomper": a chain-building champion, and a self-healing cart
 
@@ -127,9 +104,8 @@ simulates the defect rather than asserting the guard exists:
   rest of the human tempo gap is routing, not gate latency: ~52.5 f/pill is irreducible
   for this executor (settle + DAS steer + slam descent).
 
-**Updated 2026-08-11: the tuck enumerator is ported, wired, RTL-verified, and the θ400
-Pocket image now fits cleanly — but value is still unproven on Pocket hardware.** The v3
-offline proof (−10.0 pills at L11, L20 clear rate 96.2%→99.2%,
+**Latest (2026-08-05): the tuck enumerator is ported, wired and RTL-verified — awaiting its
+silicon A/B.** The v3 offline proof (−10.0 pills at L11, L20 clear rate 96.2%→99.2%,
 p=0.039) converged on a **TE-free BFS enumerator** (512 states, one 64-byte visited plane),
 now running as real 6502 firmware on the coprocessor: bit-exact against its Python
 reference (0/1490 corpus candidates), ~1 frame per board at the copro's clock, 58% of its
@@ -139,12 +115,8 @@ only express 45% of reachable tuck placements, and a tier sweep priced the recov
 100% of them for ~1.1 KB. Against today's shipped vocabulary it cuts bad-ends 19→11 and
 lifts clear rate 68.3%→81.7% (n=60, p=0.077 — directional, not yet conclusive), and it
 changes real decisions on real RTL (4/12 boards, reproduced across two independent build
-paths). The large offline headline does not transfer automatically: the closest
-cart-executor value measurement is −4.16 pills. The Pocket θ400 build has passed fit,
-timing, synthesis-MIF and post-fit-netlist proofs; runtime play and a Pocket-specific A/B
-remain open. A proposed approach-column fall-budget guard returned mechanism **NO_GO**:
-the old final-column mutant removed the same four observed mislands, so that stream could
-not discriminate the predicates.
+paths). The candidate image is built; a timing-closure seed sweep and the on-hardware A/B
+are the open work.
 
 **Also 2026-08-05 — a fidelity caveat worth stating plainly:** py65 (the CPU simulator most
 offline experiments run through) agrees with the real RTL on only ~13% of *base-search*
@@ -214,30 +186,35 @@ they are mirrored into a local `NES_MiSTer` checkout for Quartus synthesis.
 
 ## Known open items
 
-- **Root-action tucks (v3) — Pocket fit is proved; runtime/value is not.** The firmware,
-  CANDLIST wiring, tier-3 vocabulary, RTL evidence, and θ400 Pocket clean fit are in (see
-  “Updated” above). What remains is hardware runtime confirmation and the on-hardware
-  comparison against the shipped brain. The leaf-gated shortcut was
+- **Root-action tucks (v3) — ported; silicon A/B is what's left.** The firmware, the
+  CANDLIST wiring, the tier-3 vocabulary and the RTL evidence are all in (see "Latest"
+  above); what remains is a timing-closure seed sweep on the candidate core and the
+  on-hardware comparison against the shipped brain. The leaf-gated shortcut was
   empirically refuted (+7.11 pills *worse*) — cross-column reach scored at full depth is
-  the only design that survives. The fall-budget sensor rewrite needs a stream containing
-  predicate-discriminating events before another value arm is justified.
-- **Soak-rig display wedge (test harness only, not yet a play defect)** — the old “within
-  6–30 minutes” claim is retracted. Both endpoints came from a watchdog now proven to fire
-  on healthy play; 30 minutes was its rate limiter and 6 minutes was near its configured
-  threshold floor. The only screenshot-confirmed recurrence interval is about 65 minutes.
-  The v8 seed-30011 hold also reproduces on the unhardened cart at identical frames, but
-  `srchGapMax=1199` cannot distinguish a pause from a wedge. Auto-reboot remains disabled
-  until a killed-mutant discriminator works; recovery is operator-driven.
+  the only design that survives.
+- **Soak-rig display wedge (test harness only, not a play defect)** — continuous CPU-vs-CPU
+  autonav play wedges the MiSTer's display path. ⚠ **RETRACTED: "within 6–30 minutes."** Both
+  endpoints came from the old `busy_frac/consec` watchdog, which is now proven to fire on
+  demonstrably healthy play; "30 min" is literally its `MIN_REBOOT_GAP=1800` rate limiter and
+  "6 min" is near its `CONSEC_NEEDED×INTERVAL=180 s` floor. The only screenshot-confirmed
+  recurrence interval on record is ~65 min (freeze #7 → #8). See
+  `experiments/freeze5_blackscreen/WEDGE_PROBE.md`, "RE-DERIVATION (2026-08-10)".
+  Elimination chain: our own capture traffic, the strand20 brain, the MiSTer framework, and
+  the copro RTL are each exonerated by *screenshot* ground truth; the same copro core running
+  a plain human-play cart survived 47+ minutes (3 screenshots + a motion check — that one
+  holds). ⚠ Two chain rows do **not** hold: "our own IPC exonerated" and "an idle box
+  exonerated" were both read off the retracted watchdog. The trigger is most likely the CvC
+  driver's own autonav loop — software that only the test harness runs. Recovery is
+  operator-driven (auto-reboot disabled, and it must stay disabled until the frame-progress
+  watchdog replaces the discriminator). A pacing fix in the nav loop is the likely cure.
 - **Cascade-resolve in the search: tested, rejected** — a full chained resolve halved solo
   clear-rate chasing combos into topouts; the capped resolve is the better player. (The
   *eval-side* chain credit is a different mechanism — that one ships in Combo Stomper.)
 - **Personality knobs** — style presets (aggression, chain appetite, tempo) as first-class
   cart options for the final release build.
-- **Next programs** — finish the ideal oracle-ceiling calibration; evaluate the
-  post-landed-garbage response against its matched null; prove θ400 runtime on Pocket; and
-  continue expert-player data work (DRMC footage → state/move pairs). Learned evaluators
-  do not receive another dies-ahead arm until the oracle establishes that root re-ranking
-  has measurable endpoint headroom.
+- **Next programs** — expert player data (DRMC tournament footage → (state, move) pairs;
+  the board OCR machinery exists and a first corpus run is done), player-style dossiers,
+  and an NNUE-style learned eval in the idle DSP blocks.
 
 Resolved since the last README revision, kept for the record: the v4 AB-cart stall family
 is closed (a chain of driver defects, each reproduced and gated — see the `DRNAVESC` /

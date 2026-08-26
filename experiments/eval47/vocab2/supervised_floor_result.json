@@ -1,0 +1,77 @@
+{
+  "prereg": "PREREG_SUPERVISED_FLOOR.md",
+  "n_fatal": 7868,
+  "n_ctrl": 11207,
+  "n_train": 13251,
+  "n_hold": 5824,
+  "arms": {
+    "CHAMPION EVAL (actual, hand-tuned)": {
+      "auc": 0.9255043826319815,
+      "spearman": 0.7491391249227399,
+      "lift_top1pct": 2.4491169049621533,
+      "pauc_fpr10": 0.75742062932267
+    },
+    "SPAWN alone (best single term)": {
+      "auc": 0.8915304032877822,
+      "spearman": 0.7868390840530292,
+      "lift_top1pct": 2.4491169049621533,
+      "pauc_fpr10": 0.7605153547682934
+    },
+    "d_spawn_h alone (unclipped)": {
+      "auc": 0.900697870585251,
+      "spearman": 0.757293076182552,
+      "lift_top1pct": 2.4491169049621533,
+      "pauc_fpr10": 0.7579417049398945
+    },
+    "linear, 11 hand features": {
+      "auc": 0.9403866887816353,
+      "spearman": 0.8091194798048206,
+      "lift_top1pct": 2.4491169049621533,
+      "pauc_fpr10": 0.9035622047136478
+    },
+    "linear, 11 + d_spawn_h": {
+      "auc": 0.9457534670304112,
+      "spearman": 0.8151106177985048,
+      "lift_top1pct": 2.4491169049621533,
+      "pauc_fpr10": 0.9074574585079811
+    },
+    "linear, ALL features": {
+      "auc": 0.9329302603140138,
+      "spearman": 0.8318015326523284,
+      "lift_top1pct": 2.4491169049621533,
+      "pauc_fpr10": 0.9272546710096957
+    },
+    "GBM, ALL features (ceiling)": {
+      "auc": 0.95586191940669,
+      "spearman": 0.8312714850201184,
+      "lift_top1pct": 2.4491169049621533,
+      "pauc_fpr10": 0.9260001845120219
+    }
+  },
+  "primary": {
+    "best": "GBM, ALL features (ceiling)",
+    "diff": 0.057189577406306674,
+    "lo": 0.02485393288244138,
+    "hi": 0.0951040887822374,
+    "verdict": "JUSTIFIES stage 2"
+  },
+  "context_dspawnh_minus_spawn": {
+    "diff": 0.009181200101983984,
+    "lo": -0.0114772857962246,
+    "hi": 0.030859487360342303
+  },
+  "vs_champion_eval": {
+    "best": {
+      "diff": 0.0308073971824938,
+      "lo": 0.0016258784540801737,
+      "hi": 0.063773324390857
+    },
+    "linear11_dsh": {
+      "diff": 0.020650916579568232,
+      "lo": -0.014723756500594478,
+      "hi": 0.05943739092078851
+    }
+  },
+  "shuffled_control_auc": 0.462606375755985,
+  "shuffled_control_pass": true
+}

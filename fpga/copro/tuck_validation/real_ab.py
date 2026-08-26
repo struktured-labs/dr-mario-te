@@ -6,12 +6,25 @@ the descent under three descriptors and report where the capsule actually lands 
 the column the search scored.
 
   raw    -- the trigger row exactly as the firmware publishes it (board row, 0 = top)
-  15-r   -- the same row converted into $0386 units (pill Y, 0 = floor)
+  15-r   -- the same row pre-converted into $0386 units (pill Y, 0 = floor)
   none   -- descriptor suppressed
 
-The driver used here has the h2_start invalidation moved after the pend/delay early-outs;
-without that fix the descriptor is wiped before mv_p2 reads it and all three arms are
-identical (that is defect 2, demonstrated separately).
+★★ ARM LABELS ARE RELATIVE TO THE DRIVER OF THE DAY -- READ THIS BEFORE QUOTING NUMBERS.
+
+When this was written the driver compared the published row against $0386 directly, so
+"raw" was the defective path and "15-r" modelled the D1 fix.  BOTH D1 AND D2 HAVE SINCE
+SHIPPED in driver-nav: the latch now computes `TUCK_R2 = 15 - W_TROW` itself, and the
+invalidation moved after the pend/delay early-outs.  Against that driver this harness
+DOUBLE-CONVERTS, and the two arms trade places:
+
+    "raw"  -> driver converts once  -> CORRECT trigger  == the SHIPPED path
+    "15-r" -> driver converts back  -> the un-converted (pre-D1) behaviour
+
+The signature is unmistakable: the raw and 15-r rows swap wholesale between runs.  Do not
+read the row labels as verdicts; read which conversion the driver performs, then decide
+which row is the shipped one.  A harness that pre-applies a fix its consumer later adopts
+does not fail, it silently relabels -- the same producer/consumer drift this directory was
+built to catch, turned on itself.
 """
 import os, sys, csv
 

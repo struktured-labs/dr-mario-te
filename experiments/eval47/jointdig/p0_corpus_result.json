@@ -1,0 +1,25 @@
+{
+ "seeds": 120,
+ "decisions": 16139,
+ "outcomes": {
+  "clear": 114,
+  "topout": 1,
+  "stall": 5
+ },
+ "log": {
+  "p0_any_decisions": 2918,
+  "p0_danger_decisions": 2403,
+  "p0_instant_decisions": 2189,
+  "p0_any_taken": 2090,
+  "p0_danger_taken": 1278,
+  "p0_instant_taken": 968,
+  "completions_checked": 2080,
+  "completions_done": 399
+ },
+ "instead": {
+  "vert": 298,
+  "horiz": 530
+ },
+ "danger_h": 6,
+ "config": "wt0_ws20_drip_L11"
+}

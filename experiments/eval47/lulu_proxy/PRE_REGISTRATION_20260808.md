@@ -98,3 +98,40 @@ exists to kill. Amended BEFORE the measured runs:
    inspectable exactly where the primary endpoint is decided.
 
 Endpoints, arms, H sweep, timeout, seeds, and gate are unchanged.
+
+## AMENDMENT 2 — 2026-08-08 (during gating; still BEFORE any measured run —
+## `results/` held only the excluded n<=12 smokes when this was written)
+
+The gate demanded (task spec) that every striker release be shown to have
+happened at defender height >= H **and after banking >= 1 tick**. The
+original placement loop ran EARN then RELEASE inside the same placement, so
+a volley could be released at age 0 — numerically indistinguishable from an
+"ignores the bank, fires immediately" mutant, which makes the bank
+unfalsifiable. Changed:
+
+1. RELEASE is now evaluated BEFORE the earn step. A volley earned at
+   placement p is eligible from p+1; minimum bank age is 1 tick by
+   construction. Release policy (all-banked-at-trigger), predicate
+   (h >= H), timeout (9), and the earn draws are otherwise untouched — the
+   earn rng is `Random(seed*1000+pills)` re-seeded per call, so re-ordering
+   does not perturb a single random number.
+2. `release_log` now carries `age_newest`; `check_release_log` asserts
+   `age_newest >= MIN_BANK_TICKS(1)` on every release, in addition to the
+   height/timeout justification.
+3. New non-equivalent mutants added and demonstrated to die:
+   `inverted_lt` (the literal inversion, fire iff h < H) and
+   `ignores_bank` (drop at earn, never bank). The pre-existing `inverted`
+   (h<=2) and `random` (p=0.15) mutants and the blind control's log are
+   still checked.
+4. New gates with their own kills: `check_pairing` (same seed => same virus
+   layout md5, same capsule stream, same banked volley sequence; mutant =
+   game seed +2, chosen over +1 because 2k and 2k+1 are the SAME game) and
+   `check_matched_volume` (per-seed volley count + total garbage cells
+   identical striker vs control; mutant = schedule builder that drops the
+   largest volley).
+5. Regression control: blind-bursty through the NEW play() must reproduce
+   `pressure_rig.play()`'s bursty arm field-for-field on 20 seeds; the same
+   comparison against the old rig at ws=0 must FAIL (comparator kill).
+
+Runner: `run_gate.py`. Endpoints, arms, H sweep, timeout, and seeds are
+still unchanged.

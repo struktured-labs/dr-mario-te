@@ -78,61 +78,6 @@ TK2_TMPL, TK2_TMPH = 0x7F, 0x80               # gate-compare scratch
 # prior build in this file's history).
 THETA = int(os.environ.get("DRCOPRO_TUCKV3_THETA", "150"))
 
-# DEBUG-ONLY readout of the quality gate's own two operands. The gate compares
-# D_V1 (a candidate's ply-2 score) against TK2_BBV + THETA, and both live in copro
-# zero page where nothing outside the copro can see them -- so "the gate never
-# rejects anything" (measured invariant across THETA 150..20000 and -30000, two
-# corpora) has several possible mechanisms that are indistinguishable from outside.
-# These builds make the operands readable by REPURPOSING the four readback mailbox
-# bytes, which costs no RTL change (CoproDrMario's xlate table decodes exactly nine
-# cart bytes; everything above $5088 aliases to one scratch byte).
-#
-#   1 -> $5085/$5086 = TK2_BBV (base best, gate reference)
-#        $5087/$5088 = D_BV at exit (best over base and every COMMITTED tuck)
-#   2 -> $5085/$5086 = TK2_BBV
-#        $5087/$5088 = max D_V1 over ALL candidates, taken BEFORE the gate, so it
-#                      is visible whether or not the gate would have admitted it
-#
-# Mode 2 reuses TK2_APP/TK2_TRIG as the running max and suppresses the commit
-# path's writes to them; that destroys the tuck descriptor, which is why these are
-# measurement builds only and must never be flashed. Default 0 keeps the shipped
-# build byte-identical (asserted by build_dbgpub.sh against 5d010f62).
-#   3 -> $5085/$5086 = TK2_BBV (as in modes 1 and 2)
-#        $5087        = occupied-cell count of the board handed to the ply-1 leaf
-#        $5088        = virus count of that same board
-#        both for the candidate that COMMITTED
-# Mode 3 exists because the leaf reports WIN on boards carrying 44-48 viruses. Since the
-# base search reads the same LEV_WIN_R on the same boards and correctly sees no win, the
-# fault is in the tuck path's leaf setup; these counts say whether the board reaching the
-# leaf is the tuck board at all.
-DBGPUB = int(os.environ.get("DRCOPRO_TUCKV3_DBGPUB", "0"))
-
-# Mode-3 scratch. 0x7C is the only free byte in tuck_v3's own $70-$80 window; 0x81 is
-# tuck_bfs's BFS_Y, which is safe to borrow here because tuck_bfs runs to completion
-# (tuck_bfs -> translate -> tuck_root_extension) before tre_loop starts, so its scratch is
-# dead. Debug builds only -- nothing here is emitted at DBGPUB=0.
-DBG_OCC, DBG_VIR = 0x7C, 0x81
-
-# Candidate FIX for the spurious-WIN defect: drop tuck_slot0_inject's CMD 2, which
-# overwrites the just-uploaded board with an uninitialised dpram region (see the comment
-# at the emit site). Default 0 keeps the shipped build byte-identical; this is a
-# behaviour change and must be measured before it is proposed, not after.
-FIXSLOT = os.environ.get("DRCOPRO_TUCKV3_FIXSLOT", "0") == "1"
-
-# TUCK-ISOLATING CONTROL. Forces the candidate list empty at the top of
-# tuck_root_extension, so the loop falls straight through to tre_done: TK2_BKIND stays 0,
-# the descriptor publishes 0xFF, and D_BC/D_BO are left exactly as the base search wrote
-# them. It answers a question the 2x2 cannot. `fix_drop` is incoherent by construction,
-# so every tier-3-vs-base comparison so far measures TIER-3-PLUS-EXECUTOR AS A PACKAGE,
-# not tucks. If this image agrees with the base champion decision-for-decision, it
-# isolates the tuck contribution; if it does NOT, the tier-3 image diverges from base for
-# reasons that have nothing to do with tucks, and every tier-3-vs-base number in the
-# project inherits that.
-# ⚠ VALIDATE WITH decide_compare BEFORE SPENDING GAMES. That check cannot lose: either we
-# gain a validated control, or we find the divergence -- and the second outcome is the
-# more important one and costs one RTL decision per board instead of 55 games.
-NOSCAN = os.environ.get("DRCOPRO_TUCKV3_NOSCAN", "0") == "1"
-
 # orient (H/V/RH/RV) -> o4 (test_depth2.py's convention: 0-1 vertical, 2-3 horizontal).
 # Derivation + self-check: fpga/copro/tuck_validation/tuck_orient_map.py (qa-harness).
 O4_TABLE = [2, 1, 3, 0]      # index by H=0,V=1,RH=2,RV=3
@@ -534,18 +479,8 @@ def emit_tuck_slot0_inject(a, eh_terms_scan_addr, d_l1l, d_l1h, board=CUR, dest_
     a.label("tsi_up")
     a.ins16("LDA_absX", board); a.ins16("STA_absX", LEV_BOARD)
     a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "tsi_up")
-    if not FIXSLOT:
-        # ⚠ THIS PAIR IS THE DEFECT. LeafEval.sv:47 documents wslot 0 as CUR, not a slot:
-        # a host write with wslot==0 goes straight into `bcell` (line 386) and the slot
-        # dpram is written ONLY when wslot!=0 (line 177, `sl_we`). So the 128-byte upload
-        # above has ALREADY put the tuck board in CUR -- and this CMD 2 then overwrites it
-        # with dpram region 0, which nothing ever fills. The LEAF that follows scans that
-        # uninitialised region, finds no virus, and latches win <= !anyvir = 1.
-        # Measured consequence: every tuck candidate scores D_I1 + WIN on boards holding
-        # 44-48 viruses. The base search is immune because it uploads to slot 1 and copies
-        # from slot 1.
-        a.ins("LDA_imm", 0); a.ins16("STA_abs", LEV_A_SL)
-        a.ins("LDA_imm", 2); a.ins16("STA_abs", LEV_CMD); _e_poll(a)
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", LEV_A_SL)
+    a.ins("LDA_imm", 2); a.ins16("STA_abs", LEV_CMD); _e_poll(a)
     a.ins("LDA_imm", 1); a.ins16("STA_abs", LEV_CMD); _e_poll(a)
     a.ins16("LDA_abs", LEV_SCO); a.ins("STA_zp", d_l1l)
     a.ins16("LDA_abs", LEV_SCO + 1); a.ins("STA_zp", d_l1h)
@@ -662,21 +597,9 @@ def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
     a.raw(*O4_TABLE)
 
     a.label("tuck_root_extension")
-    if NOSCAN:
-        # Empty the candidate list the translate step just built. tre_loop's first
-        # compare (TP_IDX=0 vs TS_CNT=0) then fails BCC and jumps straight to tre_done,
-        # so nothing is scored, nothing commits, and D_BC/D_BO keep the base search's
-        # placement. Overriding TS_CNT here rather than skipping the enumerator keeps
-        # the change inside this file -- build_copro_d3.py is shared and stays untouched.
-        a.ins("LDA_imm", 0); a.ins16("STA_abs", TS_CNT)
     a.ins("LDA_zp", D_BVL); a.ins("STA_zp", TK2_BBVL)
     a.ins("LDA_zp", D_BVH); a.ins("STA_zp", TK2_BBVH)
     a.ins("LDA_imm", 0); a.ins("STA_zp", TK2_BKIND)
-    if DBGPUB == 2:
-        a.ins("LDA_imm", 0x00); a.ins("STA_zp", TK2_APP)     # running max D_V1 = -32768
-        a.ins("LDA_imm", 0x80); a.ins("STA_zp", TK2_TRIG)
-    elif DBGPUB == 3:                                        # 0xFF/0xFF = nothing committed
-        a.ins("LDA_imm", 0xFF); a.ins("STA_zp", TK2_APP); a.ins("STA_zp", TK2_TRIG)
     a.ins("LDA_imm", 0); a.ins("STA_zp", TP_IDX)
 
     a.label("tre_loop")
@@ -697,35 +620,11 @@ def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
     a.jsr("tuck_cell_prep")
     a.jsr("land_place_at")
     a.jsr(resolve_capped_addr)         # raw address (cross-image into the search's own code)
-    if DBGPUB == 3:
-        # Count occupied cells in the board about to be handed to the leaf, and count the
-        # VIRUSES in it separately. The leaf reports WIN on boards carrying 44-48 viruses,
-        # so either the board reaching it is not this board, or the win flag is not this
-        # board's. These two numbers tell those apart without disassembling anything.
-        a.ins("LDA_imm", 0); a.ins("STA_zp", DBG_OCC); a.ins("STA_zp", DBG_VIR)
-        a.ins("LDX_imm", 0)
-        a.label("tre_cnt")
-        a.ins16("LDA_absX", CUR); a.ins("CMP_imm", EMPTY); a.br("BEQ", "tre_cnx")
-        a.ins("INC_zp", DBG_OCC)
-        a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BNE", "tre_cnx")
-        a.ins("INC_zp", DBG_VIR)
-        a.label("tre_cnx")
-        a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "tre_cnt")
     a.jsr("tuck_imm1")
     a.ins16("LDA_abs", TI1L); a.ins("STA_zp", D_I1L)
     a.ins16("LDA_abs", TI1H); a.ins("STA_zp", D_I1H)
     a.jsr("tuck_slot0_inject")
     a.jsr("tuck_ply2_score")
-
-    if DBGPUB == 2:
-        # running max BEFORE the gate: signed 16-bit (max - D_V1), BPL => max wins
-        a.ins("LDA_zp", TK2_APP); a.ins("SEC"); a.ins("SBC_zp", D_V1L)
-        a.ins("LDA_zp", TK2_TRIG); a.ins("SBC_zp", D_V1H)
-        a.br("BVC", "tre_dbgs"); a.ins("EOR_imm", 0x80); a.label("tre_dbgs")
-        a.br("BPL", "tre_dbgn")
-        a.ins("LDA_zp", D_V1L); a.ins("STA_zp", TK2_APP)
-        a.ins("LDA_zp", D_V1H); a.ins("STA_zp", TK2_TRIG)
-        a.label("tre_dbgn")
 
     a.ins("CLC"); a.ins("LDA_zp", TK2_BBVL); a.ins("ADC_imm", THETA & 0xFF); a.ins("STA_zp", TK2_TMPL)
     a.ins("LDA_zp", TK2_BBVH); a.ins("ADC_imm", (THETA >> 8) & 0xFF); a.ins("STA_zp", TK2_TMPH)
@@ -746,12 +645,8 @@ def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
     a.ins("LDX_zp", TP_ORIENT); _lda_absx_label(a, "tuck_o4_table"); a.ins("STA_zp", D_BO)
     a.ins("LDA_zp", D_BC); a.ins16("STA_abs", S_BEST_C)
     a.ins("LDA_zp", D_BO); a.ins16("STA_abs", S_BEST_O)
-    if DBGPUB == 3:                    # mode 3 latches THIS candidate's board census
-        a.ins("LDA_zp", DBG_OCC); a.ins("STA_zp", TK2_APP)
-        a.ins("LDA_zp", DBG_VIR); a.ins("STA_zp", TK2_TRIG)
-    elif DBGPUB != 2:                  # mode 2 owns TK2_APP/TK2_TRIG as the running max
-        a.ins("LDA_zp", TP_APPROACH); a.ins("STA_zp", TK2_APP)
-        a.ins("LDA_zp", TP_TRIGGER); a.ins("STA_zp", TK2_TRIG)
+    a.ins("LDA_zp", TP_APPROACH); a.ins("STA_zp", TK2_APP)
+    a.ins("LDA_zp", TP_TRIGGER); a.ins("STA_zp", TK2_TRIG)
     a.ins("LDA_imm", 1); a.ins("STA_zp", TK2_BKIND)
 
     a.label("tre_next")
@@ -765,13 +660,4 @@ def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
     a.ins("LDA_zp", TK2_APP); a.ins16("STA_abs", TUCK_COL)
     a.ins("LDA_zp", TK2_TRIG); a.ins16("STA_abs", TUCK_ROW)
     a.label("tre_ret")
-    if DBGPUB:
-        # D_BC/D_BO, NOT S_BEST_C/S_BEST_O: build_copro_d3's stub copies the zero-page
-        # pair into the mailbox unconditionally after this routine returns, so a write
-        # to S_BEST_* here would be overwritten a few instructions later.
-        a.ins("LDA_zp", TK2_BBVL); a.ins("STA_zp", D_BC)
-        a.ins("LDA_zp", TK2_BBVH); a.ins("STA_zp", D_BO)
-        lo, hi = (TK2_APP, TK2_TRIG) if DBGPUB in (2, 3) else (D_BVL, D_BVH)
-        a.ins("LDA_zp", lo); a.ins16("STA_abs", TUCK_COL)
-        a.ins("LDA_zp", hi); a.ins16("STA_abs", TUCK_ROW)
     a.ins("RTS")
