@@ -117,3 +117,24 @@ on this cart must be checked against the f%30==1 discriminator before blaming a 
 - Site 2's end-to-end pause hazard (see above) and site 3's liveness (see above).
 - DRPRESTART stays 0 pending #136's latency verdict.
 - DRUNPAUSE on a HUMAN cart is deliberately not emitted (HUMAN_P1 already passes through).
+
+## Addendum 2026-08-26 — silicon pairing evidence landed; NOT_CLEARED sentinel resolved STALE
+
+The first "Not proven" item above is now closed. Team-lead's soak on bluemage
+(10.42.0.225, mgl `dblcanon_hardened_soak.mgl`, launched 2026-08-26 02:51) ran the
+byte-exact `hardened-all-20260819.nes` (70a857cc, md5-verified on the card by this lane,
+read-only) on `_Console/NES_theta400dblcanon_20260819.rbf` (974de3ed, firmware b03a586e)
+for **12+ hours, games cycling, no freeze** — the DBLCANON-core pairing this sheet listed
+as untested. Soak log: `dr-mario-rl/tmp/soak/soak.log`.
+
+The `NOT_CLEARED.txt` sentinel this lane flagged beside that RBF was **stale**: the
+sentinel's own named next step (frame-dense probe) ran Aug 19-25 pre-registered and
+returned CLOSED-BENIGN — k_strict violations 0/39,667, published-vs-stored discordance
+0/300,867, killed-mutant control 99.1%; the "1 of 54 survivor" was a one-hook
+spawn-boundary sampling artifact against an acceptance bar unmeetable by construction
+(memory: dr-mario-dblcanon-driver-closed-benign). Both boxes now carry
+`NES_theta400dblcanon_20260819.CLEARED.txt`; the old sentinel is retired beside it as
+`.superseded`, not deleted.
+
+Still open from the original list: site 2's end-to-end pause hazard, site 3 (NAVESC)
+liveness, DRPRESTART (still 0 in 70a857cc), and DRUNPAUSE-on-HUMAN (deliberate).
