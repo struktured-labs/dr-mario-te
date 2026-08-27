@@ -36,8 +36,11 @@ OUT = os.path.join(HERE, "out", "labels_m1")
 BLOCK = {"L20": list(range(17700, 19100, 2)),     # 700 streams
          "L11M": list(range(19100, 19900, 2))}    # 400 streams
 RESERVE = list(range(19900, 20900, 2))            # 500, untouched
-SMOKE = {s: BLOCK[s][:2] for s in BLOCK}
-CAMPAIGN = {s: BLOCK[s][2:] for s in BLOCK}
+# A2 (2026-08-26): smoke extended 2 -> 4 seeds/stratum after smoke #1 banked
+# zero overrides in 4 games (no positive WHETHER record; R50's
+# show-me-it-can-fire standard). Smoke seeds stay excluded from endpoints.
+SMOKE = {s: BLOCK[s][:4] for s in BLOCK}
+CAMPAIGN = {s: BLOCK[s][4:] for s in BLOCK}
 assert not (set(BLOCK["L20"]) & set(BLOCK["L11M"]))
 assert all(x % 2 == 0 for s in BLOCK for x in BLOCK[s])
 LEVEL = {"L20": 20, "L11M": 11}
@@ -144,7 +147,11 @@ def load_segments(stratum, include_smoke=False):
 def crn_rho(records, shuffle=False, rng=None):
     """Within-state Pearson across shortlist candidates: sum(s2[0:3]) vs
     sum(s2[3:6]); weighted mean over non-degenerate states with >=3 short
-    candidates. The shuffle mutant permutes s2 vectors across candidates."""
+    candidates. The shuffle mutant permutes the SECOND half-sums
+    independently of the first — permuting whole s2 vectors was proven
+    VACUOUS in smoke #1 (identical rho 0.926: a whole-vector permutation
+    preserves the within-candidate half-to-half pairing the statistic
+    measures; the control retained the channel it must destroy)."""
     num = den = used = 0.0
     for rec in records:
         for adj in rec["adjudications"]:
@@ -154,10 +161,11 @@ def crn_rho(records, shuffle=False, rng=None):
             if len(sh) < 3:
                 continue
             s2s = [list(c["s2"]) for c in sh]
-            if shuffle:
-                rng.shuffle(s2s)
             a = np.array([sum(v[0:3]) for v in s2s], float)
             b = np.array([sum(v[3:6]) for v in s2s], float)
+            if shuffle:
+                idx = np.array(rng.sample(range(len(b)), len(b)))
+                b = b[idx]
             if a.std() == 0 or b.std() == 0:
                 continue
             r = float(np.corrcoef(a, b)[0, 1])
@@ -247,9 +255,16 @@ def stage_smoke(workers):
     allrecs = recs["L20"] + recs["L11M"]
     ok &= gate_crn(allrecs, "smoke")
     import random as _r
-    rho_s, n_s = crn_rho(allrecs, shuffle=True, rng=_r.Random(7))
-    mut_ok = (n_s < 10) or (abs(rho_s) < 0.2)
-    print(f"[m1-gate] G-mutant-shuffle states={n_s} rho={rho_s:.3f} "
+    # R38a: a shuffled control is itself a random variable — 20 draws, not 1
+    draws = [crn_rho(allrecs, shuffle=True, rng=_r.Random(1000 + i))
+             for i in range(20)]
+    n_s = draws[0][1]
+    rhos = [d[0] for d in draws if d[0] == d[0]]
+    mean_rho = float(np.mean(rhos)) if rhos else float("nan")
+    sd_rho = float(np.std(rhos)) if rhos else float("nan")
+    mut_ok = (n_s < 10) or (abs(mean_rho) < 0.2)
+    print(f"[m1-gate] G-mutant-shuffle states={n_s} null-rho "
+          f"mean={mean_rho:.3f} sd={sd_rho:.3f} (20 draws) "
           f"verdict={'OK' if mut_ok else 'FAIL'}", flush=True)
     ok &= mut_ok
     # G-pressure-live (gate_h16 S3 pattern: count injections for one seed)
