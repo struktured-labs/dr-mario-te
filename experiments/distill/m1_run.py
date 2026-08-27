@@ -46,7 +46,7 @@ assert all(x % 2 == 0 for s in BLOCK for x in BLOCK[s])
 LEVEL = {"L20": 20, "L11M": 11}
 MAX_PILLS = 400
 GATE_EVERY = 200
-CRN_BAR = 0.5
+CRN_BAR = 0.18          # A4: 0.6 x known-good-bank same-form 0.300
 TIER_EUR = 6.0
 CPX62_EUR_H = 0.2452
 CPX62_THREADS = 16
@@ -149,31 +149,36 @@ def load_segments(stratum, include_smoke=False):
 
 # ------------------------------------------------------------------- G-CRN
 def crn_rho(records, shuffle=False, rng=None):
-    """Within-state Pearson across shortlist candidates: sum(s2[0:3]) vs
-    sum(s2[3:6]); weighted mean over non-degenerate states with >=3 short
-    candidates. The shuffle mutant permutes the SECOND half-sums
-    independently of the first — permuting whole s2 vectors was proven
-    VACUOUS in smoke #1 (identical rho 0.926: a whole-vector permutation
-    preserves the within-candidate half-to-half pairing the statistic
-    measures; the control retained the channel it must destroy)."""
+    """A4 (2026-08-27) — FULL-WIDTH screen-half CRN calibration: Pearson of
+    s1[0] vs s1[1] across ALL dedup'd candidates, weighted over non-degenerate
+    states. REPLACES the shortlist confirm-half statistic, which was proven
+    MIS-SCOPED on the known-good labels146 bank: the shortlist is pre-selected
+    BY screen survival (range restriction) and the campaign population is
+    saturation-heavy, so the old statistic read 0.222 on the very bank whose
+    certified full-width 4v4 rho is 0.66-0.72, and ~0.1 in-campaign — it
+    measured its own selection, not label quality (both strata BLOCKed on it,
+    journals 00:18/00:44). Bar derived on the independent known-good bank:
+    same-form (1v1 full-width) rho there = 0.300 (n=799; non-saturated 0.301)
+    => CRN_BAR = 0.6 x 0.300 = 0.18. Campaign segments read 0.355 (L20) /
+    0.435 (L11M) on this form — above the reference. The shuffle mutant
+    permutes fork-1 values independently across candidates."""
     num = den = used = 0.0
     for rec in records:
         for adj in rec["adjudications"]:
             if adj["degenerate"]:
                 continue
-            sh = [c for c in adj["cands"] if "s2" in c]
-            if len(sh) < 3:
+            cands = adj["cands"]
+            if len(cands) < 3:
                 continue
-            s2s = [list(c["s2"]) for c in sh]
-            a = np.array([sum(v[0:3]) for v in s2s], float)
-            b = np.array([sum(v[3:6]) for v in s2s], float)
+            a = np.array([c["s1"][0] for c in cands], float)
+            b = np.array([c["s1"][1] for c in cands], float)
             if shuffle:
                 idx = np.array(rng.sample(range(len(b)), len(b)))
                 b = b[idx]
             if a.std() == 0 or b.std() == 0:
                 continue
             r = float(np.corrcoef(a, b)[0, 1])
-            w = len(sh) - 2
+            w = len(cands) - 2
             num += r * w
             den += w
             used += 1
@@ -183,6 +188,8 @@ def crn_rho(records, shuffle=False, rng=None):
 def gate_crn(records, tag):
     rho, n = crn_rho(records)
     verdict = "OK" if (n < 10 or (rho == rho and rho >= CRN_BAR)) else "BLOCK"
+    if rho == rho and rho > 0.8 and n >= 10:
+        verdict = "INVESTIGATE-HIGH"      # R53: implausibly good for 1-fork halves
     print(f"[m1-gate] G-CRN {tag} states={n} rho={rho:.3f} bar={CRN_BAR} "
           f"verdict={verdict}", flush=True)
     return verdict == "OK"
