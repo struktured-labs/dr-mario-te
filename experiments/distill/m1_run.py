@@ -83,8 +83,12 @@ def freeze_meta(outdir, meta):
     if os.path.exists(path):
         old = json.load(open(path))
         for d in (old, frozen):
-            d.pop("started", None)
-            d.pop("workers", None)
+            # run-scoped fields, not part of the code/settings freeze (the
+            # smoke and campaign stages share an outdir but not a seed list —
+            # comparing them killed both launch units, journal 23:19:23)
+            for k in ("started", "workers", "seeds_lo", "seeds_hi",
+                      "n_seeds", "hostname"):
+                d.pop(k, None)
         if old != frozen:
             raise RuntimeError("refusing to resume under changed code")
         return
