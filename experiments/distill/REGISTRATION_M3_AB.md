@@ -1,0 +1,207 @@
+# REGISTRATION M3 — on-policy A/B of the distilled danger guard
+distill-coproc lane · **DRAFT 2026-08-28 · HELD FOR TEAM-LEAD SIGN-OFF ·
+NOTHING LAUNCHED · NO SEEDS CLAIMED**
+
+Implements DESIGN.md §D under the R1 riders. Two dependencies are open and
+named in §8 — this document is complete enough to review and to argue with,
+and it is **not** launchable until they close.
+
+---
+
+## 0. Status and proof of timing (R28)
+
+At the time of writing: **M2's verdict does not exist** (A5 PHASE 1 is running;
+the only fit reading in existence is the pre-A5 BETWEEN at held-danger n=93).
+**No guard `g` has been fitted on the enlarged bank.** Every bar in §3 and §4
+is therefore derived on reference data that predates the object it will judge,
+which is the whole point of R62 — and the derivations are in
+`scratch/fvr_bar.py` and `scratch/fvr_ref.py`, recomputable.
+
+DESIGN.md §E sequences M3 drafting after A5's L11M ceiling re-measure. That
+re-measure has **not** run. This draft is written now because the team-lead
+asked for it and because the two riders required real derivation work; §8
+records what must land before launch.
+
+---
+
+## 1. Arms, baseline, endpoint
+
+- **A (baseline) = champion-const.** The software mirror of what the chip
+  plays. This is the baseline the guard replaces, per
+  [[dr-mario-score-against-the-baseline-you-replace]]. **H16 is the TEACHER
+  and the reference ceiling, never the baseline** — scoring against H16 would
+  measure a different question and would be the error that killed a signed-off
+  arm for EUR 0.
+- **B (candidate) = champion-const + the frozen distilled guard.** Guard
+  constants hash-pinned in the runtime manifest; both arms fork-free.
+- **PRIMARY endpoint**: failure (topout | stall) rate on **L20 honest-lulu**,
+  paired seeds, **McNemar exact one-sided; GO iff p < 0.05 AND d < 0.**
+  L20 keeps comparability with H16's own registration and every banked
+  reference number.
+- No autopromote. Verdict counts by **direct file count**, never by a printed
+  prefix (the H16 verdict-night rule).
+
+## 2. Power and N — effect chosen first, N follows (R45/R47)
+
+ψ prior 0.08 from H16's realized 7% discordance; the guard's dose runs hotter.
+MDE quoted at **80% power = 2.8·SE**, not 1.96·SE — the error A5's own sizing
+made and that this lane has now paid for twice.
+
+| MDE @80% | N pairs | note |
+|---|---|---|
+| −1.34pp (50% of H16's effect) | ~3,500 | minimum honest run |
+| **−1.09pp** | **~6,000** | **recommended** |
+| −1.00pp | ~7,900 | seed-space heavy |
+
+Achieved MDE is recomputed from realized discordance and **travels with the
+verdict**. ⚠ **N is an owner-visible seed-space decision** — only ~13,781
+streams remain free and the recommended N consumes a large share. The block is
+registered at launch via `tools/seed_registry.py`, never before.
+
+**Futility interims**: wired IN the runner, **recurring** at n=1,500 / 3,000
+(never one-shot — R55), greppable stat+decision line, able to stop the unit.
+Futility-only: there is **no efficacy stopping rule**, so a CI excluding zero
+at an interim is not a GO.
+
+## 3. RIDER (a) — THE FALSE-VETO CEILING, STATED NUMERICALLY
+
+**Definition.** A *false veto* is the guard overriding at a state the teacher
+itself calls non-danger: `champ_s2 >= 5` (the champion's own pick survives ≥5
+of 6 confirm forks). **H16 has FVR = 0 on this population by construction** —
+its rule requires `champ_s2 <= 3` — so every false veto is pure distillation
+error, not inherited from the teacher.
+
+**FVR = (# non-danger states where the guard overrides) / (# non-danger
+states)**, measured on the **held-out** M1 bank, reported with a seed-clustered
+CI.
+
+**Derivation of the bar (reference data only — no fitted guard involved).**
+The cost of a false veto was measured directly: at each non-danger state,
+force a veto to the deployed fallback (best non-champion candidate by the
+champion's own value ordering) and read the realized eval-half survival loss.
+
+| L20 non-danger reference (n = 2,914) | |
+|---|---|
+| harm per forced veto | **−0.0491** eval-half surv pts (0–3 scale) |
+| forced vetoes costing **nothing** | **89.4%** |
+| fully saturated states (all candidates identical) | 49.9% |
+
+(L11M, n=1,772: harm −0.0277, 93.6% cost nothing, 65.7% saturated. **False
+vetoes are cheap because survival saturates off the danger set** — the same
+saturation finding that makes H16 coherent, now working in the guard's favour.)
+
+Net per-ply survival effect = `d·capture − nd·FVR·harm`, with the population
+fractions `d = 0.0984`, `nd = 0.8124` measured on the same bank:
+
+| capture | break-even FVR |
+|---|---|
+| at the signed GO bar (0.129) | **31.8%** |
+| at the KILL line (0.099) | 24.4% |
+| at today's point estimate (0.0645) | 15.9% |
+
+> ### **CEILING: FVR ≤ 0.106 (10.6%) on held-out non-danger states.**
+> Derived as the FVR at which the guard still keeps **≥ 2/3 of its gain** at
+> the signed GO bar (break-even 31.8% × 1/3). Stated before any guard exists.
+
+Two-sided reporting (R53): the break-even is reported alongside, so a reader
+can see both that the ceiling has 3× margin and that a guard near break-even
+would be net-useless rather than merely imperfect. **A guard that clears the
+M2 GO bar but exceeds FVR 10.6% is NOT promoted** — it is reported as
+"captures the verdict, cannot be deployed at this operating point", and the
+operating point is re-tuned on TRAIN only and re-scored once.
+
+⚠ **Scope of this bar (R24 — state what the check does not cover):** it is a
+*survival* accounting. It does **not** price tempo/progress cost, and 49.9% of
+its population is saturated on survival while progress is non-saturating. The
+quantity that actually gates promotion is the §1 primary endpoint plus the §5
+clean guard rider; FVR is the *pre-registered exposure ceiling*, not a
+substitute for either.
+
+## 4. RIDER (b) — g's OWN CONTRIBUTION TO SILICON CATCH ⚠ THIS IS NEARLY BINDING
+
+M0's gate was "the trigger catches ≥ 2/3 of the silicon death class". The
+deployed object is the **composite trigger × g**, so the catch requirement
+must bind on the composite and g needs its own measured gate, never an
+assumption riding on E-M1a's 63/63.
+
+```
+composite catch = trigger catch × P(g fires | death state)
+wide12 raw catch on the M0 silicon corpus = 21/31 = 0.677   (CI [0.50, 0.81])
+M0 gate                                   = 0.667
+⇒ g must fire on ≥ 0.667/0.677 = 98.4% of the death states the trigger catches
+⇒ headroom = 0.33 of 31 corpus deaths — effectively ZERO
+```
+
+**⚠ FLAGGED FOR DECISION, NOT SLID.** Applying M0's own 2/3 bar to the
+composite leaves g essentially no room to miss a single death state. Three
+honest dispositions, and the choice is the team-lead's:
+
+1. **Recall-first operating point.** Tune g's threshold for near-total recall
+   on the death class and spend the resulting false positives against the §3
+   FVR budget. Coherent *only if* the measured FVR at that threshold still
+   clears 10.6% — this is a measurable question, answered on the bank, before
+   any M3 game is played.
+2. **Re-derive the composite bar explicitly**, acknowledging that 2/3 was
+   calibrated for a trigger alone and that the corpus CI is [0.50, 0.81] —
+   i.e. the raw trigger's own margin over the bar is not statistically real.
+   A registration amendment with its own reference derivation. **Not a slide.**
+3. **Accept a mechanism gap**: report composite catch honestly and let the §1
+   primary decide, with the silicon claim explicitly withheld.
+
+My recommendation is **1, with 2 held in reserve** — but I am not choosing it
+unilaterally, because option 2 changes a bar.
+
+## 5. Guard rider (clean play) and the mutant sheet
+
+- **GUARD**: 1,000 clean L11 pairs. **Trip iff d > +1.0pp or 95% LB > 0 ⇒
+  NO PROMOTION.** Activity counters ship with every number (R26): override
+  count on the pressured sheet must be > 0 (a null A/B is uninformative unless
+  the treatment is proven active — R26), and the clean-play override *rate* is
+  the number quoted, not the failure comparison, since with ~0 failures in
+  both arms the statistical half has no power (the H16 guard-arm lesson).
+- **Mutants, all green before e1**: `m-neverfire` ⇒ bit-identity with arm A
+  **plus a liveness check** · `m-ident` · `m-swap` · **dose-matched
+  label-shuffle guard at the matched realized override rate must NOT read GO**
+  · R51/52 explicit + counted degeneracy filter · R53 two-sided plausibility
+  bands on every gate statistic · at-cap fraction **per arm** as a primary
+  diagnostic with a length-matched sensitivity arm (differential censoring).
+- **Verdict script is an instrument**: driven by synthetic tables on both sides
+  of every threshold, including one built against each banned amendment, and
+  shown to stay **silent** on the benign states, before real data exists
+  (R21/R28-corollary). The A5 battery `test_fit2_gates.py` is the template.
+
+## 6. Spawn-plug suite (pre-registered mechanism secondary, design-gate only)
+
+The 2 owner-match death boards + loss-corpus competitive losses + pop-A
+pre-death states. The guard must veto the fatal placement on a pre-registered
+fraction, **and** a matched healthy-tall control set must show false-veto below
+§3's bound — the half that can fail. Passing never substitutes for the primary;
+**failing it while the primary passes is a reportable mechanism gap**, not a
+quiet footnote.
+
+## 7. Secondary (silicon-facing, reported with honest power, NOT gated)
+
+600 L11-MED pressured pairs — the regime the chip actually dies in. Reported
+with its achieved MDE. ⚠ Its interpretation depends on A5's L11M ceiling
+re-measure (§8).
+
+## 8. WHAT MUST CLOSE BEFORE THIS IS LAUNCHABLE
+
+1. **M2 must return a GO.** A KILL or a BETWEEN does not license M3 — the
+   off-policy screen can only kill, never promote, and a BETWEEN at the
+   enlarged n is a pre-registered STOP, not a licence.
+2. **A5's L11M ceiling re-measure** (DESIGN.md §E sequencing rule). If L11M's
+   ceiling stays at zero, §7's secondary is measuring a regime where the
+   teacher's verdict is not distillable at this dose, and that must be said in
+   the registration rather than discovered in the readout.
+3. **The §4 disposition** — the team-lead's choice among the three options.
+4. **Seed block**: registry-checked and registered at launch, with N as an
+   explicit owner decision (§2).
+5. **The fitted guard frozen and hash-pinned**, with its FVR measured on
+   held-out data and reported against §3 **before** any game is played.
+
+---
+
+**Nothing in this document has been launched. No seeds are claimed. No bar
+signed off elsewhere has been changed here; §4 names a bar that may need
+re-derivation and explicitly refuses to move it unilaterally.**

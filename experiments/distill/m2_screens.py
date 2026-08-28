@@ -182,17 +182,22 @@ def held(seed):
     return binascii.crc32(str(seed).encode()) % 4 == 0
 
 
-def assemble(stratum):
+def assemble(stratum, src=None):
+    """src defaults to the base bank dir; pass '<S>_backfill' for A5 segments.
+    Rows carry `origin` and `to_end` (= n_plies - ply), the A5 amendment's
+    stratification variable."""
+    src = src or stratum
     feats = {}
-    for f in glob.glob(os.path.join(FOUT, stratum, "seed_*.json.gz")):
+    for f in glob.glob(os.path.join(FOUT, src, "seed_*.json.gz")):
         r = json.load(_gzip.open(f, "rt"))
         if r["replay_gate"] == "PASS":
             feats[r["seed"]] = r["feats"]
     rows = []
-    for f in sorted(glob.glob(os.path.join(OUT, stratum, "seed_*.json.gz"))):
+    for f in sorted(glob.glob(os.path.join(OUT, src, "seed_*.json.gz"))):
         r = json.load(_gzip.open(f, "rt"))
         if r["smoke"] or r["seed"] not in feats:
             continue
+        n_plies = r["game"]["n_plies"]
         for a in r["adjudications"]:
             if a["degenerate"]:
                 continue
@@ -214,7 +219,8 @@ def assemble(stratum):
                 "dec": np.array([sum(c["s2"][0:3]) for c in sh], float),
                 "ev": np.array([sum(c["s2"][3:6]) for c in sh], float),
                 "val": np.array([c["val"] for c in sh], float),
-                "danger": a["champ_s2"] <= 3})
+                "danger": a["champ_s2"] <= 3,
+                "origin": src, "to_end": n_plies - a["ply"]})
     return rows
 
 
@@ -310,6 +316,22 @@ def stage_fit():
         return sgn * X[:, j]
 
     tau_l, m_l = fit_grid(tr, g_lin)
+    # Freeze the fitted artifacts so the PRE-A5 guard can be re-evaluated
+    # unchanged on the enlarged held-out set (A5 amendment sec 5.1 arm F).
+    # Written only if absent: the frozen reference must be the pre-A5 one,
+    # and a later re-run must not silently overwrite it (R29 — a swap is
+    # visible only against history).
+    frz = os.path.join(HERE, "out", "m2_fit_frozen.json")
+    if not os.path.exists(frz):
+        json.dump({"note": "PRE-A5 L20 fit; frozen reference for arm F",
+                   "feats": list(FEATS), "mu": mu.tolist(), "sd": sd.tolist(),
+                   "wq": [int(x) for x in wq], "tau": float(tau_l),
+                   "m": float(m_l), "n_train": len(tr), "n_held": len(ho),
+                   "n_held_danger": len(ho_d),
+                   "feat1": {"name": n1, "sgn": int(s1_), "tau": float(t1),
+                             "m": float(m1)}},
+                  open(frz, "w"), indent=1)
+        print(f"[m2-fit] froze pre-A5 artifacts -> {frz}", flush=True)
     print(f"[m2-fit] g_lin int8 weights: "
           f"{dict(zip(FEATS, [int(x) for x in wq]))} tau={tau_l:.1f} "
           f"m={m_l:.1f}", flush=True)
@@ -332,6 +354,234 @@ def stage_fit():
               flush=True)
 
 
+
+
+# ============================================================ A5 re-fit (fit2)
+# REGISTRATION_A5_BACKFILL.md sec 5. Bars UNCHANGED: danger GO >= 0.129 with
+# clustered CI LB > 0.099; KILL if UB < 0.099. Statistic, ruler (eval-half
+# s2[3:6]), decision shape and seed-clustered bootstrap are stage_fit's.
+#
+# Five arms, all emitted together, verdict gated by P and S1 jointly so the
+# oversampling cannot manufacture either outcome:
+#   P  post-stratified pooled (PRIMARY, gates)   S1 pooled unweighted (co-gates)
+#   S2 base-only (continuity, does NOT gate)     D  backfill-only (diagnostic)
+#   F  frozen PRE-A5 g_lin on the enlarged held set (isolates added evaluation
+#      precision from added training data — sec 4's confound)
+BUCKETS = ((0, 10), (10, 20), (20, 30), (30, 10 ** 9))
+
+
+def bucket(to_end):
+    for i, (lo, hi) in enumerate(BUCKETS):
+        if lo <= to_end < hi:
+            return i
+    raise ValueError(to_end)
+
+
+def dedup(base_rows, bf_rows):
+    """Base and backfill re-adjudicate the SAME (seed, ply) states: backfill
+    covers every trigger ply in the final 30, and the base bank's surviving
+    (unthinned) trigger states in that window are a subset. Fork seeds are
+    dist_seed(seed, ply, s) — identical inputs, so the duplicates are EXACT.
+    Pooling without dedup would double-weight exactly the death-window states
+    A5 is adding, which is the opposite of the density correction.
+
+    Returns (rows, report). Duplicates are ALSO the strongest available
+    format/label-identity check (sec 3): the two producers' s2 vectors must
+    agree bit-for-bit, which the height-trace replay gate cannot see."""
+    seen = {(r["seed"], r["ply"]): r for r in base_rows}
+    kept, dup, mismatch = [], 0, []
+    for r in bf_rows:
+        k = (r["seed"], r["ply"])
+        b = seen.get(k)
+        if b is None:
+            kept.append(r)
+            continue
+        dup += 1
+        if not (np.array_equal(b["s2full"], r["s2full"])
+                and np.array_equal(b["ev"], r["ev"])
+                and b["ci"] == r["ci"] and b["danger"] == r["danger"]):
+            mismatch.append(k)
+    return base_rows + kept, {"dup": dup, "mismatch": mismatch,
+                              "bf_new": len(kept), "bf_total": len(bf_rows)}
+
+
+def _gain(r, score_fn, tau, m, ruler="ev"):
+    g = score_fn(r["X"])
+    order = sorted(range(len(g)), key=lambda i: (-g[i], -r["val"][i]))
+    best = order[0]
+    pick = r["ci"]
+    fired = 0
+    if g[r["ci"]] <= tau and g[best] - g[r["ci"]] >= m and best != r["ci"]:
+        pick, fired = best, 1
+    return r[ruler][pick] - r[ruler][r["ci"]], fired
+
+
+def poststrat(rows, score_fn, tau, m, dens, ruler="ev"):
+    """sum_b P_base(b) * mean_rows_in_b(gain), renormalised over occupied
+    buckets. `dens` is the BASE bank's danger-state position density — a
+    design property (position, not outcome), so estimating it on the full
+    base bank rather than its held-out slice leaks nothing."""
+    acc = {}
+    for r in rows:
+        g, _ = _gain(r, score_fn, tau, m, ruler)
+        acc.setdefault(bucket(r["to_end"]), []).append(g)
+    num = den = 0.0
+    for b, gs in acc.items():
+        num += dens[b] * float(np.mean(gs))
+        den += dens[b]
+    return num / den if den else float("nan")
+
+
+def plain(rows, score_fn, tau, m, ruler="ev"):
+    gs = [_gain(r, score_fn, tau, m, ruler) for r in rows]
+    if not gs:
+        return float("nan"), 0.0
+    return (float(np.mean([g for g, _ in gs])),
+            float(np.mean([f for _, f in gs])))
+
+
+def boot_ci(rows, est, b=2000, seed=23):
+    """Seed-clustered bootstrap of `est` (a callable over a row list)."""
+    by = {}
+    for r in rows:
+        by.setdefault(r["seed"], []).append(r)
+    keys = list(by)
+    if len(keys) < 2:
+        return float("nan"), float("nan")
+    rng = random.Random(seed)
+    out = []
+    for _ in range(b):
+        draw = []
+        for _ in keys:
+            draw.extend(by[keys[rng.randrange(len(keys))]])
+        v = est(draw)
+        if v == v:
+            out.append(v)
+    if not out:
+        return float("nan"), float("nan")
+    return float(np.percentile(out, 2.5)), float(np.percentile(out, 97.5))
+
+
+GO_BAR, LB_BAR, FLOOR = 0.129, 0.099, 0.069
+
+
+def _verdict(cap, lo, hi):
+    if cap >= GO_BAR and lo > LB_BAR:
+        return "GO"
+    if hi < LB_BAR:
+        return "KILL"
+    return "BETWEEN"
+
+
+def stage_fit2():
+    stratum = "L20"
+    base = assemble(stratum)
+    bf = assemble(stratum, f"{stratum}_backfill")
+    rows, rep = dedup(base, bf)
+    print(f"[fit2] base={len(base)} backfill={rep['bf_total']} "
+          f"dup=(seed,ply) {rep['dup']} new={rep['bf_new']} "
+          f"pooled={len(rows)}", flush=True)
+    if rep["mismatch"]:
+        print(f"[fit2] ⚠⚠ LABEL-IDENTITY GATE FAIL on {len(rep['mismatch'])} "
+              f"duplicate states, e.g. {rep['mismatch'][:5]} — the two "
+              f"producers disagree; STOP", flush=True)
+        return 3
+    if rep["dup"]:
+        print(f"[fit2] LABEL-IDENTITY GATE PASS: {rep['dup']} duplicate "
+              f"(seed,ply) states agree bit-for-bit across producers",
+              flush=True)
+
+    # base danger position density (design property; full base bank)
+    dens = {i: 0.0 for i in range(len(BUCKETS))}
+    for r in base:
+        if r["danger"]:
+            dens[bucket(r["to_end"])] += 1
+    tot = sum(dens.values())
+    dens = {k: v / tot for k, v in dens.items()}
+    print(f"[fit2] base danger position density (plies-to-end "
+          f"{[b[0] for b in BUCKETS]}): "
+          f"{ {k: round(v, 3) for k, v in dens.items()} }", flush=True)
+
+    tr = [r for r in rows if not held(r["seed"])]
+    ho = [r for r in rows if held(r["seed"])]
+    ho_d = [r for r in ho if r["danger"]]
+    base_hod = [r for r in base if held(r["seed"]) and r["danger"]]
+    bf_hod = [r for r in ho_d if r["origin"].endswith("_backfill")]
+    print(f"[fit2] train={len(tr)} (danger {sum(r['danger'] for r in tr)}) "
+          f"held={len(ho)} HELD-DANGER={len(ho_d)} "
+          f"(base {len(base_hod)} + backfill-new {len(bf_hod)})", flush=True)
+
+    # ---- re-fit g_lin on the pooled TRAIN rows (same recipe as stage_fit)
+    y = np.concatenate([r["s2full"] for r in tr])
+    Xall = np.vstack([r["X"] for r in tr])
+    mu, sd = Xall.mean(0), Xall.std(0) + 1e-9
+    Xz = (Xall - mu) / sd
+    w = np.linalg.solve(Xz.T @ Xz + 10.0 * np.eye(len(FEATS)), Xz.T @ y)
+    wq = np.round(w / np.abs(w).max() * 63).astype(int)
+
+    def g_lin(X):
+        return ((X - mu) / sd) @ wq
+    tau_l, m_l = fit_grid(tr, g_lin)
+    print(f"[fit2] g_lin(A5) int8: "
+          f"{dict(zip(FEATS, [int(x) for x in wq]))} tau={tau_l:.1f} "
+          f"m={m_l:.1f}", flush=True)
+
+    # ---- arm F: the FROZEN pre-A5 guard, unchanged
+    frz = json.load(open(os.path.join(HERE, "out", "m2_fit_frozen.json")))
+    fmu = np.array(frz["mu"]); fsd = np.array(frz["sd"])
+    fwq = np.array(frz["wq"])
+    assert frz["feats"] == list(FEATS), "frozen fit used a different menu"
+
+    def g_frozen(X):
+        return ((X - fmu) / fsd) @ fwq
+    print(f"[fit2] arm F uses FROZEN pre-A5 weights (n_held_danger at "
+          f"freeze={frz['n_held_danger']}) tau={frz['tau']:.1f} "
+          f"m={frz['m']:.1f}", flush=True)
+
+    verdicts = {}
+    for gname, fn, tau, m in (("g_lin(A5)", g_lin, tau_l, m_l),
+                              ("g_lin(FROZEN)", g_frozen, frz["tau"],
+                               frz["m"])):
+        for arm, rws, weighted in (
+                ("P  poststrat-pooled", ho_d, True),
+                ("S1 pooled-unweighted", ho_d, False),
+                ("S2 base-only", base_hod, False),
+                ("D  backfill-only", bf_hod, False)):
+            if not rws:
+                print(f"[fit2] {gname:14s} {arm:22s} VOID (n=0)", flush=True)
+                continue
+            if weighted:
+                est = lambda rr, fn=fn, tau=tau, m=m: poststrat(
+                    rr, fn, tau, m, dens)
+                cap = est(rws)
+                dose = plain(rws, fn, tau, m)[1]
+            else:
+                est = lambda rr, fn=fn, tau=tau, m=m: plain(
+                    rr, fn, tau, m)[0]
+                cap, dose = plain(rws, fn, tau, m)
+            lo, hi = boot_ci(rws, est)
+            v = _verdict(cap, lo, hi)
+            verdicts[(gname, arm[:2].strip())] = v
+            print(f"[fit2] {gname:14s} {arm:22s} n={len(rws):4d} "
+                  f"capture={cap:+.4f} CI[{lo:+.4f},{hi:+.4f}] "
+                  f"dose={dose:.3f} -> {v}", flush=True)
+
+    p = verdicts.get(("g_lin(A5)", "P")); s1 = verdicts.get(("g_lin(A5)", "S1"))
+    final = p if p == s1 else "BETWEEN"
+    print(f"[fit2] === REGISTERED VERDICT (sec 5.2: P and S1 must agree) === "
+          f"P={p} S1={s1} -> {final}", flush=True)
+    if p != s1:
+        print(f"[fit2] P and S1 DISAGREE — the density weighting is "
+              f"load-bearing; that disagreement IS the finding, no verdict "
+              f"is claimed (sec 5.2)", flush=True)
+    if final == "BETWEEN":
+        print(f"[fit2] sec 5.2 pre-registered consequence: a BETWEEN at the "
+              f"enlarged n is a STOP on M2's fit question, NOT a third "
+              f"back-fill — n was not the binding constraint.", flush=True)
+    return 0
+
+
 if __name__ == "__main__":
     stage = sys.argv[1] if len(sys.argv) > 1 else "instruments"
-    {"instruments": stage_instruments, "fit": stage_fit}[stage]()
+    {"instruments": stage_instruments, "fit": stage_fit,
+     "fit2": stage_fit2}[stage]()

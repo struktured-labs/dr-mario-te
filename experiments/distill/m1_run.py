@@ -196,8 +196,12 @@ def gate_crn(records, tag):
 
 
 # ------------------------------------------------------------------ stages
-def status(line):
-    with open(os.path.join(HERE, "out", "STATUS"), "w") as fh:
+def status(line, name="STATUS"):
+    """`name` separates concurrent arms: two units sharing one STATUS file
+    means a DONE from one overwrites a RUNNING from the other, and rule 10's
+    "one cat distinguishes running/stalled/done" stops holding. The A5 arms
+    run concurrently, so they each get their own."""
+    with open(os.path.join(HERE, "out", name), "w") as fh:
         fh.write(line + "\n")
     print(line, flush=True)
 
@@ -408,21 +412,65 @@ def stage_analyze():
 
 
 # -------------------------------------------------- A5 danger back-fill
+# A5 amendment REGISTRATION_A5_BACKFILL.md (2026-08-28) sec 1: the approved
+# text named "the 63 banked topout games", which is L11M's topout count, but
+# the M2 fit is L20-only (m2_screens.assemble("L20")) and the held-danger
+# n=93 that binds it is L20's. Run on L11M alone this stage adds ZERO rows to
+# the bank the fit reads. The stage is therefore parameterised by stratum:
+#   L20  (254 topout games) — the pivotal arm, enlarges the M2 danger bank
+#   L11M ( 63 topout games) — re-measures the L11M INSTRUMENT (danger n 55)
 BF_WINDOW = 30
-BF_OUT = os.path.join(OUT, "L11M_backfill")
+
+
+def bf_dir(stratum, design="backfill"):
+    return os.path.join(OUT, f"{stratum}_{design}")
+
+
+def held_seed(seed):
+    """The M2 fit's held-out rule (m2_screens.held), duplicated here on
+    purpose: the runner must select the SAME games the fit will evaluate, and
+    a drifting second definition is rule 3's two-implementations defect. The
+    assertion below makes drift loud instead of silent."""
+    import binascii
+    return binascii.crc32(str(seed).encode()) % 4 == 0
+
+
+def _assert_split_agrees():
+    import importlib
+    m2 = importlib.import_module("m2_screens")
+    bad = [x for x in range(17700, 19100, 2) if m2.held(x) != held_seed(x)]
+    assert not bad, f"held-out split DRIFTED from m2_screens on {bad[:5]}"
+
+
+# A5 game-selection designs (amendment rev 2026-08-28, measured sizing):
+#   topout : the originally-approved set — games whose result was a topout.
+#            ⚠ conditions the evaluation population on the game's OUTCOME,
+#            which the deployed guard cannot see. Kept only for reproducing
+#            the approved arm; NOT the recommended design.
+#   held   : PHASE 1 — every held-out game. A census of held-out trigger
+#            states: no outcome selection, no position-density distortion,
+#            and train is untouched so the fitted guard does not change.
+#   train  : PHASE 2 — the complement, to enlarge the FIT's training set.
+SELECT = {
+    "topout": lambda r: r["game"]["res"] == "topout",
+    "held": lambda r: held_seed(r["seed"]),
+    "train": lambda r: not held_seed(r["seed"]),
+    "all": lambda r: True,
+}
 
 
 def _bf_work(item):
     seed, window_start, banked_trace = item
     import oracle_arm as OA
+    stratum = _W["stratum"]
     t0 = time.monotonic()
-    arm = MH.M1HarvestArm("L11M", seed, mode="backfill",
+    arm = MH.M1HarvestArm(stratum, seed, mode="backfill",
                           window_start=window_start)
     row = OA.play_one(seed, arm, _W["C"], _W["bmodel"], max_pills=MAX_PILLS)
     if arm.trace != banked_trace:
         return {"seed": seed, "replay_gate": "FAIL",
                 "n_replay": len(arm.trace), "n_banked": len(banked_trace)}
-    rec = MH.game_record(seed, "L11M", row, arm, smoke=False)
+    rec = MH.game_record(seed, stratum, row, arm, smoke=False)
     rec["backfill"] = True
     rec["window_start"] = window_start
     rec["replay_gate"] = "PASS"
@@ -430,68 +478,214 @@ def _bf_work(item):
     return rec
 
 
-def stage_backfill(workers):
-    """A5 (approved 2026-08-28): adjudicate ALL trigger plies in the final
-    BF_WINDOW plies of every banked L11M topout game. No thinning/cap.
+# --------------------------------------------- A5 format-identity gate (sec 3)
+# "Reuse m1_harvest's producer path so labels are format-identical to the
+# existing bank (verify by hash/schema, don't assume)" — team-lead. Asserts
+# structure against the BASE bank rather than against a written-down
+# expectation, so it cannot go stale the way a hard-coded hash does (R60).
+BF_EXTRA_KEYS = {"backfill", "window_start", "replay_gate"}
+
+
+def gate_format_identity(stratum, design="backfill"):
+    base = load_segments(stratum)
+    bf = []
+    d = bf_dir(stratum, design)
+    for f in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+        if f.endswith(".json.gz"):
+            bf.append(json.load(gzip.open(os.path.join(d, f), "rt")))
+    if not base or not bf:
+        print(f"[a5-format] {stratum} VOID base={len(base)} backfill={len(bf)}"
+              " — gate cannot run on an empty side", flush=True)
+        return 3
+
+    def adj_keys(recs):
+        k, ck = set(), set()
+        for r in recs:
+            for a in r["adjudications"]:
+                k |= set(a)
+                for c in a["cands"]:
+                    ck |= set(c)
+        return k, ck
+
+    fails = []
+    for r in bf:
+        if r.get("schema") != MH.SCHEMA:
+            fails.append(f"schema {r.get('schema')!r} seed={r['seed']}")
+    top_base = set().union(*(set(r) for r in base))
+    top_bf = set().union(*(set(r) for r in bf))
+    if top_bf != top_base | BF_EXTRA_KEYS:
+        fails.append(f"top-level keys differ: backfill-only="
+                     f"{sorted(top_bf - top_base)} missing="
+                     f"{sorted(top_base - top_bf)}")
+    ab, cb = adj_keys(base)
+    af, cf = adj_keys(bf)
+    if af != ab:
+        fails.append(f"adjudication keys differ: only-bf={sorted(af - ab)} "
+                     f"only-base={sorted(ab - af)}")
+    if cf != cb:
+        fails.append(f"candidate keys differ: only-bf={sorted(cf - cb)} "
+                     f"only-base={sorted(cb - cf)}")
+    cls = {tuple(a["classes"]) for r in bf for a in r["adjudications"]}
+    if cls - {("backfill",)}:
+        fails.append(f"unexpected classes in backfill: {sorted(cls)}")
+
+    # ---- the producer hash, and the check that ADJUDICATES it (R60).
+    # A hash mismatch is a claim about the WORLD, not proof of corruption:
+    # m1_harvest.py legitimately gained the backfill BRANCH after the base
+    # bank was frozen, so the hash MUST differ and a bare hash gate would
+    # fail forever while proving nothing about the labels.
+    # The discriminator is behavioural and far stronger: backfill re-
+    # adjudicates (seed, ply) states the base bank already holds, and the
+    # fork seeds are dist_seed(seed, ply, s) — identical inputs. If the label
+    # path moved, those shared states DIVERGE. So:
+    #   labels agree on >= MIN_SHARED shared states -> producer verified
+    #   hash differs and NOTHING is shared          -> UNADJUDICATED, fail
+    # This tests the defect, not the proxy ([[test-defect-not-fix]]).
+    MIN_SHARED = 5
+    base_meta = json.load(open(os.path.join(OUT, stratum, "META.json")))
+    want = base_meta["runtime_manifest"]["files"]["m1_harvest"]["sha256"]
+    got = runtime_manifest()["files"]["m1_harvest"]["sha256"]
+    idx = {(r["seed"], a["ply"]): a for r in base
+           for a in r["adjudications"]}
+    shared = diverged = 0
+    examples = []
+    for r in bf:
+        for a in r["adjudications"]:
+            b = idx.get((r["seed"], a["ply"]))
+            if b is None:
+                continue
+            shared += 1
+            strip = lambda d: {k: v for k, v in d.items() if k != "classes"}
+            if strip(a) != strip(b):
+                diverged += 1
+                examples.append((r["seed"], a["ply"]))
+    if diverged:
+        fails.append(f"LABEL DIVERGENCE on {diverged}/{shared} shared "
+                     f"(seed,ply) states, e.g. {examples[:3]} — the producer "
+                     f"path MOVED behaviourally")
+    elif shared < MIN_SHARED:
+        fails.append(f"producer UNADJUDICATED: hash "
+                     f"{'differs' if want != got else 'matches'} and only "
+                     f"{shared} shared states (<{MIN_SHARED}) — not enough "
+                     f"overlap to verify the label path behaviourally")
+    print(f"[a5-format] {stratum} producer base={want[:12]} now={got[:12]} "
+          f"{'(hash MOVED — expected, backfill branch added)' if want != got else '(hash identical)'}"
+          f" | shared states={shared} diverged={diverged}", flush=True)
+    for line in fails:
+        print(f"[a5-format] {stratum} FAIL: {line}", flush=True)
+    print(f"[a5-format] {stratum} base_games={len(base)} bf_games={len(bf)} "
+          f"bf_states={sum(len(r['adjudications']) for r in bf)} "
+          f"producer_sha={got[:12]} -> "
+          f"{'PASS' if not fails else 'FAIL'}", flush=True)
+    return 0 if not fails else 3
+
+
+def stage_backfill(stratum, workers, limit=None, select="held",
+                   window=None, design=None):
+    """A5 (amendment REGISTRATION_A5_BACKFILL.md): adjudicate ALL trigger
+    plies in the final BF_WINDOW plies of every banked topout game of
+    `stratum`. No thinning/cap/quota classes.
     REPLAY GATE per game: the replayed height trace must equal the banked
     trace exactly, else nothing banks and the game is reported FAILED —
     champion-const determinism is asserted, not assumed. Segments land in a
-    SEPARATE dir; the density rider travels in META."""
+    SEPARATE dir; the density rider travels in META.
+    `select` picks the game set (SELECT above) and `window` the ply window
+    (None = the whole game, i.e. a census of that set's trigger states).
+    `limit` runs the smoke prefix (sec 3: 4 games before the full spend)."""
+    if design is None:
+        design = (f"unthin_{select}" if window is None
+                  else f"w{window}_{select}")
     import multiprocessing as mp
-    base = load_segments("L11M")
-    topo = [(r["seed"], max(0, r["game"]["n_plies"] - BF_WINDOW),
+    _assert_split_agrees()
+    out = bf_dir(stratum, design)
+    base = load_segments(stratum)
+    keep = SELECT[select]
+    topo = [(r["seed"],
+             0 if window is None else max(0, r["game"]["n_plies"] - window),
              r["heights_trace"])
-            for r in base if r["game"]["res"] == "topout"]
-    os.makedirs(BF_OUT, exist_ok=True)
-    meta = {"stage": "A5_backfill", "window": BF_WINDOW, "schema": MH.SCHEMA,
+            for r in base if keep(r)]
+    topo.sort()
+    n_all = len(topo)          # META must describe the ARM, not the smoke
+    if limit:
+        topo = topo[:limit]
+    os.makedirs(out, exist_ok=True)
+    meta = {"stage": "A5_backfill", "stratum": stratum, "design": design,
+            "select": select, "window": window, "schema": MH.SCHEMA,
             "density_rider": ("death-window oversampled BY DESIGN vs the "
                               "base bank; consumers stratify/weight, never "
-                              "pool silently"),
-            "n_games": len(topo), "hostname": os.uname().nodename}
-    mpth = os.path.join(BF_OUT, "META.json")
+                              "pool silently. Measured on the base bank's own "
+                              "late-trigger states: danger|non-degenerate "
+                              "0.310 (L20) / 0.072 (L11M) vs 0.161 / 0.034 "
+                              "over ALL trigger states => L20 death window is "
+                              "1.9x danger-enriched. 100% of backfill states "
+                              "are trigger-class and lie in the final "
+                              "30 plies; there is NO backfill counterpart to "
+                              "the random-quota (trigger-independent) sample. "
+                              "The seed-keyed train/held split means backfill "
+                              "enlarges TRAIN as well as HELD, so a re-fit "
+                              "changes the fitted guard, not only its "
+                              "evaluation precision."),
+            "n_games": n_all, "hostname": os.uname().nodename}
+    mpth = os.path.join(out, "META.json")
     if not os.path.exists(mpth):
         json.dump(meta | {"runtime_manifest": runtime_manifest()},
                   open(mpth, "w"), indent=1)
     todo = [t for t in topo if not os.path.exists(
-        os.path.join(BF_OUT, f"seed_{t[0]:06d}.json.gz"))]
-    status(f"STATUS: RUNNING {os.getpid()} {BF_OUT} todo={len(todo)}"
-           f"/{len(topo)}")
+        os.path.join(out, f"seed_{t[0]:06d}.json.gz"))]
+    sname = f"STATUS.a5_{stratum}_{design}"
+    status(f"STATUS: RUNNING {os.getpid()} {out} todo={len(todo)}"
+           f"/{len(topo)}", sname)
     fails = 0
     done = 0
-    with mp.Pool(workers, initializer=_winit, initargs=("L11M",)) as pool:
+    with mp.Pool(workers, initializer=_winit, initargs=(stratum,)) as pool:
         for rec in pool.imap_unordered(_bf_work, todo):
             done += 1
             if rec.get("replay_gate") != "PASS":
                 fails += 1
-                print(f"[m1-backfill] REPLAY GATE FAIL seed={rec['seed']} "
-                      f"replay={rec.get('n_replay')} "
+                print(f"[m1-backfill] {stratum} REPLAY GATE FAIL "
+                      f"seed={rec['seed']} replay={rec.get('n_replay')} "
                       f"banked={rec.get('n_banked')} — NOT banked",
                       flush=True)
                 continue
-            p = os.path.join(BF_OUT, f"seed_{rec['seed']:06d}.json.gz")
+            p = os.path.join(out, f"seed_{rec['seed']:06d}.json.gz")
             tmp = p + ".tmp"
             with gzip.open(tmp, "wt") as fh:
                 json.dump(rec, fh)
             os.replace(tmp, p)
             if done % 10 == 0 or done == len(todo):
-                print(f"[m1-backfill] {done}/{len(todo)} replay-fails={fails}",
-                      flush=True)
-    status(f"STATUS: DONE {BF_OUT} games={len(topo)-fails} fails={fails}")
+                print(f"[m1-backfill] {stratum} {done}/{len(todo)} "
+                      f"replay-fails={fails}", flush=True)
+    status(f"STATUS: DONE {out} games={len(topo)-fails} fails={fails}", sname)
     return 0 if fails == 0 else 3
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("stage", choices=("smoke", "l20", "l11m", "analyze",
-                                      "backfill"))
+                                      "backfill", "a5format"))
     ap.add_argument("--workers", type=int, default=8)
+    ap.add_argument("--stratum", choices=("L20", "L11M"),
+                    help="A5 backfill stratum (required for backfill/a5format)")
+    ap.add_argument("--limit", type=int, default=None,
+                    help="A5 smoke prefix: first N games only")
+    ap.add_argument("--select", choices=tuple(SELECT), default="held",
+                    help="A5 game set (default held = PHASE 1)")
+    ap.add_argument("--window", type=int, default=None,
+                    help="A5 ply window from game end; omit for whole-game")
+    ap.add_argument("--design", default=None, help="output dir suffix")
     a = ap.parse_args()
     if a.stage == "smoke":
         sys.exit(stage_smoke(a.workers))
     if a.stage == "analyze":
         sys.exit(stage_analyze())
+    if a.stage == "a5format":
+        assert a.stratum, "--stratum required"
+        sys.exit(gate_format_identity(a.stratum, a.design or
+                                      f"unthin_{a.select}"))
     if a.stage == "backfill":
-        sys.exit(stage_backfill(a.workers))
+        assert a.stratum, "--stratum required (A5 amendment sec 1)"
+        sys.exit(stage_backfill(a.stratum, a.workers, a.limit,
+                                a.select, a.window, a.design))
     stratum = {"l20": "L20", "l11m": "L11M"}[a.stage]
     run_stratum(stratum, a.workers, CAMPAIGN[stratum])
 
