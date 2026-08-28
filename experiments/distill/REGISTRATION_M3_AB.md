@@ -34,7 +34,7 @@ records what must land before launch.
   arm for EUR 0.
 - **B (candidate) = champion-const + the frozen distilled guard.** Guard
   constants hash-pinned in the runtime manifest; both arms fork-free.
-- **PRIMARY endpoint**: failure (topout | stall) rate on **L20 honest-lulu**,
+- **PRIMARY endpoint**: failure (topout | stall) rate on **L20 honest-drlulu**,
   paired seeds, **McNemar exact one-sided; GO iff p < 0.05 AND d < 0.**
   L20 keeps comparability with H16's own registration and every banked
   reference number.
@@ -194,7 +194,7 @@ re-measure (§8).
    ceiling stays at zero, §7's secondary is measuring a regime where the
    teacher's verdict is not distillable at this dose, and that must be said in
    the registration rather than discovered in the readout.
-3. **The §4 disposition** — the team-lead's choice among the three options.
+3. ~~The §4 disposition~~ — **CLOSED 2026-08-28: DECOMPOSE. See the ruling section at the end of this document.**
 4. **Seed block**: registry-checked and registered at launch, with N as an
    explicit owner decision (§2).
 5. **The fitted guard frozen and hash-pinned**, with its FVR measured on

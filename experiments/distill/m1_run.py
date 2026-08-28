@@ -659,10 +659,92 @@ def stage_backfill(stratum, workers, limit=None, select="held",
     return 0 if fails == 0 else 3
 
 
+# ------------------------------------------- A5 PHASE-1 top-up (fresh games)
+# Team-lead ruling 2026-08-28: spend the lane's OWN reserve (19900-20898,
+# registered to this lane at M1 launch and never played) rather than claim a
+# fresh 700-seed block from the commons. Its 128 held-hashed seeds take the
+# held-out census from 119 to ~212 contributing games => 87% KILL power, at
+# ZERO cost to the free pool. The fresh block 24996..26394 is NOT approved.
+#
+# These seeds have never been played, so there is no banked trace and the
+# replay gate cannot run here. ⚠ The integrity check is NOT skipped, it MOVES:
+# m2_features replays every census game with its own gate before deriving
+# features, and a game whose replay diverges contributes no features and is
+# therefore excluded from the fit. Champion-const determinism is still
+# asserted, one stage later, by the consumer that would be corrupted by it.
+RESERVE_LO, RESERVE_HI = 19900, 20898
+
+
+def census_seeds():
+    return [s for s in range(RESERVE_LO, RESERVE_HI + 2, 2) if held_seed(s)]
+
+
+def _census_work(seed):
+    import oracle_arm as OA
+    stratum = _W["stratum"]
+    t0 = time.monotonic()
+    arm = MH.M1HarvestArm(stratum, seed, mode="backfill", window_start=0)
+    row = OA.play_one(seed, arm, _W["C"], _W["bmodel"], max_pills=MAX_PILLS)
+    rec = MH.game_record(seed, stratum, row, arm, smoke=False)
+    rec["backfill"] = True
+    rec["window_start"] = 0
+    rec["replay_gate"] = "N/A_FRESH"     # never silently "PASS"
+    rec["census_fresh"] = True
+    rec["secs"] = round(time.monotonic() - t0, 2)
+    return rec
+
+
+def stage_census(stratum, workers, limit=None):
+    """Play the reserve's held-hashed seeds as FRESH census games: every
+    trigger ply adjudicated, no thinning, no cap, no quota classes — the same
+    population PHASE 1 enumerates, on games that did not exist in the bank."""
+    import multiprocessing as mp
+    _assert_split_agrees()
+    out = bf_dir(stratum, "census_fresh")
+    seeds = census_seeds()
+    assert all(held_seed(x) for x in seeds), "non-held seed in the census set"
+    if limit:
+        seeds = seeds[:limit]
+    os.makedirs(out, exist_ok=True)
+    meta = {"stage": "A5_census_fresh", "stratum": stratum,
+            "reserve": [RESERVE_LO, RESERVE_HI], "n_seeds": len(census_seeds()),
+            "selection": "crc32(str(seed))%4==0 (m2_screens.held), even seeds",
+            "schema": MH.SCHEMA,
+            "integrity": ("no banked trace exists, so the replay gate cannot "
+                          "run at this stage; m2_features replay-gates every "
+                          "game before deriving features and a divergent game "
+                          "contributes none, so it cannot enter the fit"),
+            "authority": ("team-lead ruling 2026-08-28: spend the lane's own "
+                          "reserve, no new block claimed; fresh block "
+                          "24996..26394 NOT approved"),
+            "hostname": os.uname().nodename}
+    mpth = os.path.join(out, "META.json")
+    if not os.path.exists(mpth):
+        json.dump(meta | {"runtime_manifest": runtime_manifest()},
+                  open(mpth, "w"), indent=1)
+    todo = [x for x in seeds if not os.path.exists(
+        os.path.join(out, f"seed_{x:06d}.json.gz"))]
+    sname = f"STATUS.a5_{stratum}_census_fresh"
+    status(f"STATUS: RUNNING {os.getpid()} {out} todo={len(todo)}"
+           f"/{len(seeds)}", sname)
+    done = 0
+    with mp.Pool(workers, initializer=_winit, initargs=(stratum,)) as pool:
+        for rec in pool.imap_unordered(_census_work, todo):
+            done += 1
+            p = os.path.join(out, f"seed_{rec['seed']:06d}.json.gz")
+            with gzip.open(p + ".tmp", "wt") as fh:
+                json.dump(rec, fh)
+            os.replace(p + ".tmp", p)
+            if done % 10 == 0 or done == len(todo):
+                print(f"[m1-census] {stratum} {done}/{len(todo)}", flush=True)
+    status(f"STATUS: DONE {out} games={len(seeds)}", sname)
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("stage", choices=("smoke", "l20", "l11m", "analyze",
-                                      "backfill", "a5format"))
+                                      "backfill", "a5format", "census"))
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--stratum", choices=("L20", "L11M"),
                     help="A5 backfill stratum (required for backfill/a5format)")
@@ -682,6 +764,9 @@ def main():
         assert a.stratum, "--stratum required"
         sys.exit(gate_format_identity(a.stratum, a.design or
                                       f"unthin_{a.select}"))
+    if a.stage == "census":
+        assert a.stratum, "--stratum required"
+        sys.exit(stage_census(a.stratum, a.workers, a.limit))
     if a.stage == "backfill":
         assert a.stratum, "--stratum required (A5 amendment sec 1)"
         sys.exit(stage_backfill(a.stratum, a.workers, a.limit,

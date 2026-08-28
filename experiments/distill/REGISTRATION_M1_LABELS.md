@@ -13,7 +13,7 @@ One bank, two consumers, registered in advance:
 No promotion evidence comes from this bank; it licenses M2's screens only.
 
 ## 2. Position source (on-policy for the baseline being replaced)
-Champion-const games (the chip's software mirror), honest-lulu bursty,
+Champion-const games (the chip's software mirror), honest-drlulu bursty,
 provenance ON, `max_pills=400`, per-seed atomic + resumable segments.
 - **Stratum L20** (teacher-comparability): ~700 games at L20.
 - **Stratum L11M** (silicon regime): ~400 games at L11-MED.
@@ -52,7 +52,7 @@ from measured s/fork and still STOPs if over tier.
 
 ## 4. Labels (the promoted teacher's exact tribunal semantics)
 Per adjudicated state: enumerate dedup'd-by-board candidates; SCREEN 2 CRN
-forks x ALL; CONFIRM 6 fresh forks x top-8 (+ champion's entry); H=25; lulu
+forks x ALL; CONFIRM 6 fresh forks x top-8 (+ champion's entry); H=25; drlulu
 injection live in forks; CRN keys `dist_seed(seed, ply, sample)` samples 0-7.
 Banked per candidate: per-fork `surv` AND `prog` (8 each), H12 value, slots.
 Banked per state: champion pick, the WHETHER verdict under the promoted rule

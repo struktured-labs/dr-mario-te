@@ -426,3 +426,57 @@ of exactly what the census enumerates. Consequences:
    (The team-lead's "lead with base-only" rider was set against the W=30
    design's 1.9x danger enrichment, which the census does not have. Flagged for
    ruling rather than assumed.)
+
+---
+
+# REVISION 4 — 2026-08-28. Rulings recorded. The top-up spends the lane's OWN reserve.
+
+**R4.1 — SEED RULING: spend the reserve, claim nothing from the commons.**
+Team-lead ruling. The PHASE-1 top-up takes the **128 held-hashed seeds** of
+`19900–20898` — this lane's own M1 reserve, registered at M1 launch and
+verified never played (the highest banked seed anywhere is 19898). That lifts
+the held-out census from 119 to ~212 contributing games ⇒ **87% KILL power**,
+at **zero cost to the free pool**.
+
+The fresh block `24996..26394` **is NOT approved and stays unclaimed**; the
+earlier fresh-seed approval is superseded.
+
+⚠ **Why the fresh option was worse than it looked:** the registry allocates
+*contiguous blocks* and only ~25% of any block hashes to held-out, so buying
+175 held-hashed seeds means claiming a **700-seed block — 5.1% of the free
+pool, not the 1.3% the approval was reasoned on.** Paying 700 streams for 4
+points of power on a *screen* is the wrong side of the trade being reserved
+for M3's on-policy A/B (~6,000 pairs), which is the decision that deserves the
+commons.
+
+**The reserve is SPENT, not borrowed.** It was held as M1's reserve, M1 is
+closed, and it is being spent on M1's own follow-up measurement — the purpose
+it was held for. `tools/seed_registry.py` now records it as consumed rather
+than available, so the block reads correctly to the next lane.
+
+Receipts: `--check 19900 500 2` → FAIL, 500 keys, all self-collision against
+this lane's own entry — **a receipt of ownership, not a blocker**.
+`--check 24996 700 2` → PASS (left unclaimed, and re-verified PASSing after
+the registry edit, so the edit did not break the tool).
+
+**R4.2 — the top-up is FRESH GAMES, so the replay gate MOVES rather than
+vanishing.** These seeds have never been played, so there is no banked trace to
+compare against and `stage_census` records `replay_gate: "N/A_FRESH"` — never a
+silent `"PASS"`. The integrity check is not skipped, it is **relocated**:
+`m2_features` replay-gates every census game before deriving features, and a
+game whose replay diverges contributes no features and therefore **cannot enter
+the fit**. Champion-const determinism is still asserted, one stage later, by
+the consumer that a violation would corrupt.
+
+**R4.3 — §6(a) RULING: the base-only requirement is REVERSED for PHASE 1.**
+The gating arm is the **pooled census**; base-only is the continuity check; all
+three arms still reported, with the class-composition table printed beside the
+verdict. The original rider was derived against the W=30 design's 1.9× danger
+enrichment, which the census does not have — and gating on base-only (n=93,
+UB 0.1305) could not have returned a KILL by construction.
+
+**R4.4 — the M3 §4 ruling (DECOMPOSE) is recorded in
+`REGISTRATION_M3_AB.md`**, closing its §8 item 3. Method banked as R70, the
+**perfect-imitation test**: before gating a distillation, score the *teacher*
+against your own gate; if a bit-perfect copy fails, the gate is measuring
+something other than the student.

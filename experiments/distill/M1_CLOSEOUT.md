@@ -18,7 +18,7 @@ L11M 0.407-0.414 (n=655) — stable, 2x the 0.18 bar all night.
 - **E-M1d yield**: L20 4,889 states (danger 384, overrides 153, degenerate
   1,302) · L11M 3,802 states (danger 58, overrides 21, degenerate 1,901).
   **L11M danger = 58 < the 300 shortfall threshold — the M2 effective-n rider
-  FIRES for L11M.** Cause is mostly base-rate, not the cap: L11M-lulu fails
+  FIRES for L11M.** Cause is mostly base-rate, not the cap: L11M-drlulu fails
   only 63/396 = 16% of games (vs L20 ~39%); cap_hits median 0/game.
 
 ## The cross-regime tension (the honest finding; do not resolve silently)
@@ -31,7 +31,7 @@ selection):
 | core13 | 61/63 | 0.099 ok | 9/31 = 29% |
 | dsh13 | 57/63 | 0.045 ok | 9/31 = 29% |
 **The silicon corpus wants threshold 12 (its 20.4 s window under-reads, and
-catch collapses at 13); the lab-lulu false-fire ceiling wants >= 13. No single
+catch collapses at 13); the lab-drlulu false-fire ceiling wants >= 13. No single
 threshold passes both as measured.** Candidate resolutions for team-lead:
 - **R1 (lane recommendation): split the roles.** wide12 stays the LABELING
   trigger (its job was catch; E-M1a maxed; the bank is built). The DEPLOYED

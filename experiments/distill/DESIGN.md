@@ -71,11 +71,11 @@ split-sample plateau at k≈4) · any RTL change (+231 ALM broke timing).
 
 ## B. Label generation plan
 - **Source policy**: champion-const trajectories (the baseline's own states —
-  where the guard must first act), L20 honest-lulu bursty, max_pills=400
+  where the guard must first act), L20 honest-drlulu bursty, max_pills=400
   (cap-mismatch memory), + an L11-MED pressured stratum (the silicon regime).
   Strata never pooled.
 - **Teacher dose**: full promoted-H16 tribunal semantics per adjudicated state
-  — screen 2×ALL dedup'd candidates + confirm 6×top-8(+champ), H=25, lulu
+  — screen 2×ALL dedup'd candidates + confirm 6×top-8(+champ), H=25, drlulu
   injection, CRN dist_seed keys; bank surv AND prog per fork per candidate
   (prog is free — h16_arm already computes and discards it).
 - **State selection**: trigger plies with cooldown DISABLED for labelling
@@ -127,7 +127,7 @@ split-sample plateau at k≈4) · any RTL change (+231 ALM broke timing).
 commit records data-absence, R28)
 - **Arms**: A = champion-const · B = champion-const + fitted guard (frozen
   constants, hash-pinned). Both fork-free ⇒ ~12–25 core-s/pair.
-- **PRIMARY**: failure (topout|stall) rate, L20 honest-lulu, paired seeds,
+- **PRIMARY**: failure (topout|stall) rate, L20 honest-drlulu, paired seeds,
   McNemar exact one-sided, **GO iff p<0.05 AND d<0**. L20 keeps comparability
   with H16's own registration and every banked reference number.
 - **Power (R45/R47 — effect chosen first, N follows; ψ prior 0.08 from H16's
