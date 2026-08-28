@@ -205,3 +205,67 @@ re-measure (§8).
 **Nothing in this document has been launched. No seeds are claimed. No bar
 signed off elsewhere has been changed here; §4 names a bar that may need
 re-derivation and explicitly refuses to move it unilaterally.**
+
+---
+
+# APPENDED CORRECTION — 2026-08-28, §4 rider (b). Nothing launched.
+
+**§4's arithmetic was wrong and its conclusion is superseded.** Appended, not
+edited: the document is evidence of what was believed when (R25).
+
+**The error.** §4 read "g must fire on ≥98.4% of the death states the trigger
+catches". **98.4% is a per-LOSS quantity, not per-state** — M0's catch is
+*per-loss ANY-fire*, so the guard gets several chances per loss. The M0 corpus
+banks **32 fired boards across 21 caught losses = 1.52 chances/loss**, which
+converts the 98.4% per-loss requirement to a **per-state action rate of 93.4%**.
+
+**The finding this exposes — the gate would reject the teacher.** Measured on
+the M1 bank, **H16 overrides on 153/353 = 43.3% of L20 danger states**, and
+even at `champ_s2 = 0` (the champion's pick dies in all six forks) it stands
+**63.6%** of the time — because its rule requires `best_s2 − champ_s2 ≥ 3`,
+i.e. a materially better alternative must exist. Standing on a lost board is
+correct behaviour, not a miss. Therefore:
+
+```
+g == H16 exactly       -> per-state action 0.433
+P(acts >=once/loss, corpus cadence k=1.52) = 0.579
+composite corpus catch = 0.677 x 0.579     = 0.392   vs the 0.667 bar -> FAILS
+```
+
+**A guard reproducing the promoted champion bit-for-bit fails the gate**, which
+would demand g be **2.2x more aggressive than the object it distills**.
+
+**Why: the gate reads the instrument's cadence, not the guard.**
+
+| cadence | chances/loss | P(teacher-perfect g acts) | composite |
+|---|---|---|---|
+| M0 corpus (20.4 s samples) | 1.52 | 0.579 | **0.392** |
+| deployment, conservative | 8 | 0.989 | 0.670 |
+| deployment (~20 fired plies) | 20 | 1.000 | 0.677 |
+
+At deployment cadence a teacher-perfect g recovers the trigger's own catch and
+**passes**. ⇒ **The M0 corpus structurally cannot measure this quantity.** Two
+of our rules at once: R62 (2/3 was derived for a *static trigger's per-loss
+any-fire on 20.4 s samples*; the composite is a *per-ply gated action*) and
+"a counter's WINDOW is part of its definition". M0's own caveat 3 already
+scoped its gate to the trigger — *"Catch != save … that is M2/M3's question"*.
+Rider (b) extended a trigger gate onto an action quantity; the extension is
+the entire bind.
+
+**RECOMMENDATION (supersedes §4's three options): DECOMPOSE, don't compose.**
+1. Keep M0's 2/3 gate on the **trigger**, where it was derived and is
+   measurable (provisionally passed at 21/31).
+2. Give **g its own bar on the ACTION question**, derived on reference data for
+   the statistic actually computed: g's recall against **the teacher's own
+   overrides** on held-out danger states. The teacher's 43.3% is the reference,
+   not a target to exceed.
+3. **REPORT** the composite with its cadence stated; **do not gate on it**.
+4. Keep the **spawn-plug suite (§6)** as the mechanism check, where "did it
+   refuse the fatal placement" is answerable per-placement.
+
+⚠ Standing context: the trigger's own pass is knife-edge — **21/31, 95% CI
+[50%, 81%], spanning the bar** ("CONSISTENT with ≥2/3, not established").
+The composite was being asked to clear a bar its own input clears by one loss.
+
+**AWAITING TEAM-LEAD RULING. This is a design change, not a threshold change,
+which is why the lane is not making it.**

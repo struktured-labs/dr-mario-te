@@ -389,3 +389,40 @@ stratum (R2.3); a file hash for label behaviour (R67); one regime's cost
 constant for another's (R66); held-out DANGER STATES for held-out CLUSTERS
 (R64); and a topout filter for "states where the guard matters" (the outcome
 selection R1.1 removed). Five instances, one shape.
+
+---
+
+# REVISION 3 — 2026-08-28. The census has NO composition difference. Measured.
+
+Rev 1 argued PHASE 1 removes the position-density distortion but noted one
+residual difference: the census covers **trigger** plies only, while the base
+bank also carries band / healthy / random quota states. **Measured, that
+difference is zero where it matters.**
+
+| class | all states | danger | **held-danger** |
+|---|---|---|---|
+| trigger | 2,161 | 348 | **93** |
+| band | 877 | 0 | 0 |
+| healthy | 279 | 0 | 0 |
+| random | 267 | 5 | 0 |
+| band+random | 3 | 0 | 0 |
+
+**All 93 held-out danger states are trigger-class (100%).** Non-trigger states
+contribute 5 of 353 danger states overall (1.4%) and **0 of the held-danger
+set**. The reason is structural, not luck: `band` is `dsh ∈ [10,12]`, below the
+trigger, and `healthy` is defined as non-danger — so the danger population *is*
+the trigger population.
+
+⇒ **PHASE 1's pooled held-danger set is a strict superset of the base one, in
+the same class, at the same positions.** Base-only is a uniform ~12% subsample
+of exactly what the census enumerates. Consequences:
+1. The §5.1 post-stratification (arm P) is **provably inert** here, not merely
+   observed to be small — it is retained as a robustness display, and its
+   agreement with S1 is a check on the machinery rather than a correction.
+2. **Base-only cannot be the gating arm under PHASE 1.** It estimates the
+   identical estimand from 12% of the data, and at n=93 its UB is 0.1305, so it
+   **cannot return a KILL by construction** — gating on it would void the A5
+   spend. Reported as the continuity check; the census gates.
+   (The team-lead's "lead with base-only" rider was set against the W=30
+   design's 1.9x danger enrichment, which the census does not have. Flagged for
+   ruling rather than assumed.)
