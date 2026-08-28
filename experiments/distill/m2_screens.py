@@ -157,6 +157,181 @@ def stage_instruments():
           f"in REGISTRATION_M2 from these + team-lead sign-off)")
 
 
+
+
+# ===================================================================== fit
+# Stage `fit` (REGISTRATION_M2 sec 2, bars signed off 2026-08-28):
+#   family = { g_feat1 (single-feature veto rules — ALSO the forbidden-
+#              prediction comparator), g_rule2 (2-term conjunction),
+#              g_lin (int-quantized linear) }.
+#   Decision shape (H16's, rule-25 veto): OVERRIDE iff ghat(champ) <= tau AND
+#   max ghat - ghat(champ) >= m; pick argmax (ghat, champ value).
+#   Train on TRAIN seeds' full s2 (0..6); score HELD-OUT on the instrument's
+#   eval-half ruler (bars: danger GO >= 0.129 CI-LB > 0.099; KILL UB < 0.099).
+#   Scope limit (stated): M2 measures g restricted to the tribunal's
+#   shortlist (labels exist there); unrestricted deployment is M3's question.
+import binascii
+import gzip as _gzip
+
+FEATS = ("wide_post", "relief", "dsh_post", "maxh_post", "throat_occ",
+         "ridge", "lane_vir", "vir_left", "topdist")
+FOUT = os.path.join(HERE, "out", "m2_features")
+
+
+def held(seed):
+    return binascii.crc32(str(seed).encode()) % 4 == 0
+
+
+def assemble(stratum):
+    feats = {}
+    for f in glob.glob(os.path.join(FOUT, stratum, "seed_*.json.gz")):
+        r = json.load(_gzip.open(f, "rt"))
+        if r["replay_gate"] == "PASS":
+            feats[r["seed"]] = r["feats"]
+    rows = []
+    for f in sorted(glob.glob(os.path.join(OUT, stratum, "seed_*.json.gz"))):
+        r = json.load(_gzip.open(f, "rt"))
+        if r["smoke"] or r["seed"] not in feats:
+            continue
+        for a in r["adjudications"]:
+            if a["degenerate"]:
+                continue
+            fmap = feats[r["seed"]].get(str(a["ply"]))
+            if fmap is None:
+                continue
+            sh = [c for c in a["cands"] if "s2" in c]
+            ci = None
+            for i, c in enumerate(sh):
+                if c["rep_slot"] == a["champ_rep"]:
+                    ci = i
+            if ci is None or len(sh) < 2:
+                continue
+            X = np.array([[fmap[str(c["rep_slot"])][k] for k in FEATS]
+                          for c in sh], float)
+            rows.append({
+                "seed": r["seed"], "ply": a["ply"], "ci": ci, "X": X,
+                "s2full": np.array([sum(c["s2"]) for c in sh], float),
+                "dec": np.array([sum(c["s2"][0:3]) for c in sh], float),
+                "ev": np.array([sum(c["s2"][3:6]) for c in sh], float),
+                "val": np.array([c["val"] for c in sh], float),
+                "danger": a["champ_s2"] <= 3})
+    return rows
+
+
+def g_capture(rows, score_fn, tau, m, ruler="ev"):
+    gains, fired = [], 0
+    for r in rows:
+        g = score_fn(r["X"])
+        order = sorted(range(len(g)), key=lambda i: (-g[i], -r["val"][i]))
+        best = order[0]
+        pick = r["ci"]
+        if g[r["ci"]] <= tau and g[best] - g[r["ci"]] >= m \
+                and best != r["ci"]:
+            pick = best
+            fired += 1
+        gains.append(r[ruler][pick] - r[ruler][r["ci"]])
+    return float(np.mean(gains)) if gains else float("nan"), \
+        fired / max(len(rows), 1)
+
+
+def seed_ci(rows, score_fn, tau, m, ruler="ev", b=2000):
+    per = {}
+    for r in rows:
+        g = score_fn(r["X"])
+        order = sorted(range(len(g)), key=lambda i: (-g[i], -r["val"][i]))
+        best = order[0]
+        pick = r["ci"]
+        if g[r["ci"]] <= tau and g[best] - g[r["ci"]] >= m \
+                and best != r["ci"]:
+            pick = best
+        gn, n = per.get(r["seed"], (0.0, 0))
+        per[r["seed"]] = (gn + r[ruler][pick] - r[ruler][r["ci"]], n + 1)
+    vals = list(per.values())
+    rng = random.Random(23)
+    means = []
+    for _ in range(b):
+        d = [vals[rng.randrange(len(vals))] for _ in vals]
+        den = sum(n for _, n in d)
+        if den:
+            means.append(sum(g for g, _ in d) / den)
+    return (float(np.percentile(means, 2.5)),
+            float(np.percentile(means, 97.5)))
+
+
+def fit_grid(rows_tr, score_fn):
+    """(tau, m) maximizing TRAIN danger capture on the full-s2 ruler."""
+    dang = [r for r in rows_tr if r["danger"]]
+    best = (0, 0, -1e9)
+    for tau_q in (20, 35, 50):
+        for m_q in (10, 20, 35):
+            gs = np.concatenate([score_fn(r["X"]) for r in rows_tr])
+            tau = float(np.percentile(gs, tau_q))
+            m = float(np.percentile(gs, 75)) - float(np.percentile(gs, 75 - m_q))
+            cap, _ = g_capture(dang, score_fn, tau, m, ruler="s2full")
+            if cap > best[2]:
+                best = (tau, m, cap)
+    return best[0], best[1]
+
+
+def stage_fit():
+    rows = assemble("L20")
+    tr = [r for r in rows if not held(r["seed"])]
+    ho = [r for r in rows if held(r["seed"])]
+    ho_d = [r for r in ho if r["danger"]]
+    print(f"[m2-fit] L20 rows train={len(tr)} held={len(ho)} "
+          f"held-danger={len(ho_d)} "
+          f"(train-danger={sum(r['danger'] for r in tr)})", flush=True)
+    y = np.concatenate([r["s2full"] for r in tr])
+    Xall = np.vstack([r["X"] for r in tr])
+    mu, sd = Xall.mean(0), Xall.std(0) + 1e-9
+
+    # --- g_lin: ridge on full-s2, then int8 quantization (deployable form)
+    Xz = (Xall - mu) / sd
+    w = np.linalg.solve(Xz.T @ Xz + 10.0 * np.eye(len(FEATS)), Xz.T @ y)
+    wq = np.round(w / np.abs(w).max() * 63).astype(int)
+
+    def g_lin(X):
+        return ((X - mu) / sd) @ wq
+
+    # --- g_feat1: best single-feature rule on TRAIN (the S3 comparator)
+    best1 = None
+    dang_tr = [r for r in tr if r["danger"]]
+    for j, name in enumerate(FEATS):
+        for sgn in (1, -1):
+            def sf(X, j=j, sgn=sgn):
+                return sgn * X[:, j]
+            tau, m = fit_grid(tr, sf)
+            cap, _ = g_capture(dang_tr, sf, tau, m, ruler="s2full")
+            if best1 is None or cap > best1[4]:
+                best1 = (name, sgn, tau, m, cap)
+    n1, s1_, t1, m1, _ = best1
+
+    def g_f1(X, j=FEATS.index(n1), sgn=s1_):
+        return sgn * X[:, j]
+
+    tau_l, m_l = fit_grid(tr, g_lin)
+    print(f"[m2-fit] g_lin int8 weights: "
+          f"{dict(zip(FEATS, [int(x) for x in wq]))} tau={tau_l:.1f} "
+          f"m={m_l:.1f}", flush=True)
+    print(f"[m2-fit] g_feat1 comparator: {('-' if s1_ < 0 else '')}{n1} "
+          f"tau={t1:.1f} m={m1:.1f}", flush=True)
+
+    floor, go_bar, lb_bar = 0.069, 0.129, 0.099
+    for label, fn, tau, m in (("g_lin", g_lin, tau_l, m_l),
+                              ("g_feat1", g_f1, t1, m1)):
+        cap, dose = g_capture(ho_d, fn, tau, m, ruler="ev")
+        lo, hi = seed_ci(ho_d, fn, tau, m, ruler="ev")
+        cap_all, dose_all = g_capture(ho, fn, tau, m, ruler="ev")
+        cap_f, _ = g_capture(ho_d, fn, tau, m, ruler="s2full")
+        verdict = ("GO" if cap >= go_bar and lo > lb_bar else
+                   "KILL" if hi < lb_bar else "BETWEEN")
+        print(f"[m2-fit] HELD-OUT {label}: danger-capture={cap:.4f} "
+              f"CI[{lo:.4f},{hi:.4f}] dose={dose:.3f} | all={cap_all:.4f} "
+              f"dose={dose_all:.3f} | full-s2 danger={cap_f:.4f} | "
+              f"bars GO>={go_bar} LB>{lb_bar} floor={floor} -> {verdict}",
+              flush=True)
+
+
 if __name__ == "__main__":
     stage = sys.argv[1] if len(sys.argv) > 1 else "instruments"
-    {"instruments": stage_instruments}[stage]()
+    {"instruments": stage_instruments, "fit": stage_fit}[stage]()
