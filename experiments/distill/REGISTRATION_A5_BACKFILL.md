@@ -328,3 +328,64 @@ rule, the §5.3 scope limits, and the pre-registered "a BETWEEN at the enlarged
 n is a STOP, not a third back-fill". The held/train split rule is
 **unchanged** and was not re-chosen after seeing any result — `m1_run`
 asserts at launch that its copy still agrees with `m2_screens.held`.
+
+---
+
+# REVISION 2 — 2026-08-28, cost only. No bar, estimand or design changes.
+
+**R2.1 — THE FIRM PRICE, measured in-regime.** R1.2 replaced the original
+cost model with `0.227 s/fork` measured on the A5 **smoke**, which ran the
+W=30 **death-window** design. PHASE 1 forks whole-game. **That correction was
+itself a regime transfer — the error R1.2 was written about — and it was the
+wrong one of the two.**
+
+Constants now measured on PHASE 1's own banked games:
+
+> **0.805 s/fork · 95 forks/adjudication · 16.1 s/game replay**
+
+The replay figure comes from PHASE 1 games with **zero** trigger plies — the
+degenerate case is the clean intercept measurement. Two independent methods
+agree: fork-count projection **100 core-h**, observed completion rate (6 games
+/ 20 min / 12 workers) **~115 core-h**.
+
+⚠ **0.805 sits next to the ORIGINAL campaign regression's 0.869**, so the
+campaign constant was approximately right for whole-game work all along and
+R1.2's "5x cheaper" was an over-correction off three games of the cheapest
+possible work. The death-window smoke was the outlier regime, not the campaign.
+The single 3.17 s/fork reading was a worker's **first** game, carrying rig
+initialisation — early-sample cost readings run high.
+
+| filed | figure | fault |
+|---|---|---|
+| §2 | A5 approved, 120 core-h | campaign constant + fitted intercept absorbing fixed cost |
+| R1.2 | PHASE 1, 24 core-h | death-window constant on whole-game work |
+| **R2.1** | **PHASE 1, 100 core-h** | **in-regime, two methods agreeing** |
+
+| option | core-h | wall @12w | held games | KILL power |
+|---|---|---|---|---|
+| **PHASE 1** | **100** | 8.3 h | 119 | 63% |
+| L11M arm | 37 | 3.0 h | — | instrument |
+| PHASE 1 + 175 fresh held-hashed | 208 | 17.3 h | 246 | 91% |
+| PHASE 2 (un-thin train) | **333** | 27.7 h | — | fit convergence |
+
+**R2.2 — PHASE 2 IS CONDITIONAL, and that is now worth 333 core-h.** Its only
+job is Rule 1's corollary: *a KILL from a label-starved fit is not licensed,
+while a GO from one would be stronger*. **It is therefore needed only if PHASE
+1 returns a KILL.** Sequencing it after PHASE 1 is not tidiness — it can save
+the entire spend. It will not be started before PHASE 1 reports.
+
+**R2.3 — the pipeline defect this revision's validation caught.**
+`m2_features.py` inferred the rig level as `20 if src == "L20" else 11`, an
+exact string match, so every A5 segment (`L20_unthin_held`) was replayed at
+**L11** while its labels came from L20 — features derived from a different game
+and joined by `(seed, ply)` without complaint. **The replay gate failed 3/3 and
+banked nothing.** Fixed to a stratum-prefix test with an assert on unknown
+prefixes. Found only because the downstream chain was exercised on the first
+3 banked games instead of waiting for all 173.
+
+**R2.4 — the recurring shape, named once.** Every A5 defect this pass was a
+**PROXY standing in for the PROPERTY it represents**: the exact string for the
+stratum (R2.3); a file hash for label behaviour (R67); one regime's cost
+constant for another's (R66); held-out DANGER STATES for held-out CLUSTERS
+(R64); and a topout filter for "states where the guard matters" (the outcome
+selection R1.1 removed). Five instances, one shape.
