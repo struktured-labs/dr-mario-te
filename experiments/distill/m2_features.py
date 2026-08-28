@@ -143,5 +143,11 @@ def run(src, level, workers):
 if __name__ == "__main__":
     src = sys.argv[1] if len(sys.argv) > 1 else "L20"
     workers = int(sys.argv[2]) if len(sys.argv) > 2 else 8
-    level = 20 if src == "L20" else 11
+    # Derive the level from the STRATUM PREFIX, not an exact match: the A5
+    # segment dirs are "L20_unthin_held" / "L11M_backfill", and `src == "L20"`
+    # silently rigged every A5 segment at L11. Caught only because the replay
+    # gate failed 3/3 — a proxy (the exact string) standing in for a property
+    # (the stratum), which is today's recurring defect.
+    assert src.startswith(("L20", "L11M")), f"cannot infer level from {src!r}"
+    level = 20 if src.startswith("L20") else 11
     sys.exit(run(src, level, workers))

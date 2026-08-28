@@ -473,10 +473,18 @@ def _verdict(cap, lo, hi):
     return "BETWEEN"
 
 
-def stage_fit2():
+def stage_fit2(srcs=None):
+    """srcs: A5 segment dirs to pool in (default the PHASE 1 census).
+    Named explicitly rather than globbed: which segments enter the fit is a
+    registration fact, not a directory-listing accident."""
     stratum = "L20"
+    srcs = srcs or ["L20_unthin_held"]
     base = assemble(stratum)
-    bf = assemble(stratum, f"{stratum}_backfill")
+    bf = []
+    for sd in srcs:
+        got = assemble(stratum, sd)
+        print(f"[fit2] segment {sd}: {len(got)} rows", flush=True)
+        bf += got
     rows, rep = dedup(base, bf)
     print(f"[fit2] base={len(base)} backfill={rep['bf_total']} "
           f"dup=(seed,ply) {rep['dup']} new={rep['bf_new']} "
@@ -583,5 +591,7 @@ def stage_fit2():
 
 if __name__ == "__main__":
     stage = sys.argv[1] if len(sys.argv) > 1 else "instruments"
-    {"instruments": stage_instruments, "fit": stage_fit,
-     "fit2": stage_fit2}[stage]()
+    if stage == "fit2":
+        stage_fit2(sys.argv[2:] or None)
+    else:
+        {"instruments": stage_instruments, "fit": stage_fit}[stage]()
