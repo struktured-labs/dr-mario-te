@@ -407,15 +407,91 @@ def stage_analyze():
     return 0
 
 
+# -------------------------------------------------- A5 danger back-fill
+BF_WINDOW = 30
+BF_OUT = os.path.join(OUT, "L11M_backfill")
+
+
+def _bf_work(item):
+    seed, window_start, banked_trace = item
+    import oracle_arm as OA
+    t0 = time.monotonic()
+    arm = MH.M1HarvestArm("L11M", seed, mode="backfill",
+                          window_start=window_start)
+    row = OA.play_one(seed, arm, _W["C"], _W["bmodel"], max_pills=MAX_PILLS)
+    if arm.trace != banked_trace:
+        return {"seed": seed, "replay_gate": "FAIL",
+                "n_replay": len(arm.trace), "n_banked": len(banked_trace)}
+    rec = MH.game_record(seed, "L11M", row, arm, smoke=False)
+    rec["backfill"] = True
+    rec["window_start"] = window_start
+    rec["replay_gate"] = "PASS"
+    rec["secs"] = round(time.monotonic() - t0, 2)
+    return rec
+
+
+def stage_backfill(workers):
+    """A5 (approved 2026-08-28): adjudicate ALL trigger plies in the final
+    BF_WINDOW plies of every banked L11M topout game. No thinning/cap.
+    REPLAY GATE per game: the replayed height trace must equal the banked
+    trace exactly, else nothing banks and the game is reported FAILED —
+    champion-const determinism is asserted, not assumed. Segments land in a
+    SEPARATE dir; the density rider travels in META."""
+    import multiprocessing as mp
+    base = load_segments("L11M")
+    topo = [(r["seed"], max(0, r["game"]["n_plies"] - BF_WINDOW),
+             r["heights_trace"])
+            for r in base if r["game"]["res"] == "topout"]
+    os.makedirs(BF_OUT, exist_ok=True)
+    meta = {"stage": "A5_backfill", "window": BF_WINDOW, "schema": MH.SCHEMA,
+            "density_rider": ("death-window oversampled BY DESIGN vs the "
+                              "base bank; consumers stratify/weight, never "
+                              "pool silently"),
+            "n_games": len(topo), "hostname": os.uname().nodename}
+    mpth = os.path.join(BF_OUT, "META.json")
+    if not os.path.exists(mpth):
+        json.dump(meta | {"runtime_manifest": runtime_manifest()},
+                  open(mpth, "w"), indent=1)
+    todo = [t for t in topo if not os.path.exists(
+        os.path.join(BF_OUT, f"seed_{t[0]:06d}.json.gz"))]
+    status(f"STATUS: RUNNING {os.getpid()} {BF_OUT} todo={len(todo)}"
+           f"/{len(topo)}")
+    fails = 0
+    done = 0
+    with mp.Pool(workers, initializer=_winit, initargs=("L11M",)) as pool:
+        for rec in pool.imap_unordered(_bf_work, todo):
+            done += 1
+            if rec.get("replay_gate") != "PASS":
+                fails += 1
+                print(f"[m1-backfill] REPLAY GATE FAIL seed={rec['seed']} "
+                      f"replay={rec.get('n_replay')} "
+                      f"banked={rec.get('n_banked')} — NOT banked",
+                      flush=True)
+                continue
+            p = os.path.join(BF_OUT, f"seed_{rec['seed']:06d}.json.gz")
+            tmp = p + ".tmp"
+            with gzip.open(tmp, "wt") as fh:
+                json.dump(rec, fh)
+            os.replace(tmp, p)
+            if done % 10 == 0 or done == len(todo):
+                print(f"[m1-backfill] {done}/{len(todo)} replay-fails={fails}",
+                      flush=True)
+    status(f"STATUS: DONE {BF_OUT} games={len(topo)-fails} fails={fails}")
+    return 0 if fails == 0 else 3
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("stage", choices=("smoke", "l20", "l11m", "analyze"))
+    ap.add_argument("stage", choices=("smoke", "l20", "l11m", "analyze",
+                                      "backfill"))
     ap.add_argument("--workers", type=int, default=8)
     a = ap.parse_args()
     if a.stage == "smoke":
         sys.exit(stage_smoke(a.workers))
     if a.stage == "analyze":
         sys.exit(stage_analyze())
+    if a.stage == "backfill":
+        sys.exit(stage_backfill(a.workers))
     stratum = {"l20": "L20", "l11m": "L11M"}[a.stage]
     run_stratum(stratum, a.workers, CAMPAIGN[stratum])
 

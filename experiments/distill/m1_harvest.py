@@ -75,11 +75,21 @@ def stratum_fire(stratum, tv):
 
 
 class M1HarvestArm(OracleArm):
-    def __init__(self, stratum, seed, **kw):
+    def __init__(self, stratum, seed, mode="campaign", window_start=None,
+                 **kw):
+        # mode="backfill" (A5, approved 2026-08-28): adjudicate EVERY trigger
+        # ply with ply >= window_start — no thinning, no cap, no
+        # band/healthy/random. Density rider: backfill segments oversample
+        # the death window BY DESIGN and are banked separately; consumers
+        # must stratify/weight, never pool silently with the base bank.
+        assert mode in ("campaign", "backfill")
+        assert (window_start is not None) == (mode == "backfill")
         kw.setdefault("label_mode", "const")
         kw.setdefault("provenance", False)
         super().__init__(**kw)
         assert self.label_mode == "const"
+        self.mode = mode
+        self.window_start = window_start
         self.stratum = stratum
         self.seed = seed
         self.trace = []                  # per-ply [8 heights]
@@ -101,6 +111,14 @@ class M1HarvestArm(OracleArm):
         self.trace.append(Hl)
         tv = trig_vals(Hl)
         fire, band = stratum_fire(self.stratum, tv)
+        if self.mode == "backfill":
+            if fire and ply >= self.window_start:
+                rec = self._tribunal(env, seed, C, bmodel, w, fl, wt, ws,
+                                     ply, tv, ["backfill"])
+                if rec is not None:
+                    self.adjs.append(rec)
+                    self.counters["trigger"] += 1
+            return super().choose(env, seed, C, bmodel, w, fl, wt, ws, ply)
         classes = []
         if fire:
             if self.thin_rng.random() < THIN_P[self.stratum]:
