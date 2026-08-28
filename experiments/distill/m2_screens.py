@@ -219,7 +219,7 @@ def assemble(stratum, src=None):
                 "dec": np.array([sum(c["s2"][0:3]) for c in sh], float),
                 "ev": np.array([sum(c["s2"][3:6]) for c in sh], float),
                 "val": np.array([c["val"] for c in sh], float),
-                "danger": a["champ_s2"] <= 3,
+                "danger": a["champ_s2"] <= 3, "classes": list(a["classes"]),
                 "origin": src, "to_end": n_plies - a["ply"]})
     return rows
 
@@ -281,6 +281,20 @@ def fit_grid(rows_tr, score_fn):
 
 def stage_fit():
     rows = assemble("L20")
+    # Composition of the two populations, printed BESIDE the verdict rather
+    # than asserted in a report (#24's mechanism: the gap travels with the
+    # number). PHASE 1's census covers TRIGGER plies only; the base bank also
+    # carries band/healthy/random quota states. Measured 2026-08-28: 100% of
+    # held-danger is trigger-class, because `band` is dsh in [10,12] (below
+    # the trigger) and `healthy` is defined non-danger — so the danger
+    # population IS the trigger population and the two arms are the same
+    # class. If that ever stops being true, this line says so.
+    cls = {}
+    for r in base:
+        if r["danger"] and held(r["seed"]):
+            k = ("trigger" if "trigger" in r["classes"]
+                 else "+".join(sorted(r["classes"])) or "unclassed")
+            cls[k] = cls.get(k, 0) + 1
     tr = [r for r in rows if not held(r["seed"])]
     ho = [r for r in rows if held(r["seed"])]
     ho_d = [r for r in ho if r["danger"]]
@@ -510,6 +524,20 @@ def stage_fit2(srcs=None):
           f"{[b[0] for b in BUCKETS]}): "
           f"{ {k: round(v, 3) for k, v in dens.items()} }", flush=True)
 
+    # Composition of the two populations, printed BESIDE the verdict rather
+    # than asserted in a report (#24's mechanism: the gap travels with the
+    # number). PHASE 1's census covers TRIGGER plies only; the base bank also
+    # carries band/healthy/random quota states. Measured 2026-08-28: 100% of
+    # held-danger is trigger-class, because `band` is dsh in [10,12] (below
+    # the trigger) and `healthy` is defined non-danger — so the danger
+    # population IS the trigger population and the two arms are the same
+    # class. If that ever stops being true, this line says so.
+    cls = {}
+    for r in base:
+        if r["danger"] and held(r["seed"]):
+            k = ("trigger" if "trigger" in r["classes"]
+                 else "+".join(sorted(r["classes"])) or "unclassed")
+            cls[k] = cls.get(k, 0) + 1
     tr = [r for r in rows if not held(r["seed"])]
     ho = [r for r in rows if held(r["seed"])]
     ho_d = [r for r in ho if r["danger"]]
@@ -517,7 +545,11 @@ def stage_fit2(srcs=None):
     bf_hod = [r for r in ho_d if r["origin"].endswith("_backfill")]
     print(f"[fit2] train={len(tr)} (danger {sum(r['danger'] for r in tr)}) "
           f"held={len(ho)} HELD-DANGER={len(ho_d)} "
-          f"(base {len(base_hod)} + backfill-new {len(bf_hod)})", flush=True)
+          f"(base {len(base_hod)} + census-new {len(bf_hod)})", flush=True)
+    print(f"[fit2] SCOPE: the census enumerates TRIGGER plies; base also holds "
+          f"band/healthy/random quota states. Base held-danger by class: "
+          f"{cls} — if non-trigger is nonzero the two arms are NOT the same "
+          f"population and base-only stops being a subsample.", flush=True)
 
     # ---- re-fit g_lin on the pooled TRAIN rows (same recipe as stage_fit)
     y = np.concatenate([r["s2full"] for r in tr])
