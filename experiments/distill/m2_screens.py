@@ -589,9 +589,111 @@ def stage_fit2(srcs=None):
     return 0
 
 
+# ================================================= A5 instrument re-measure
+# `stage_instruments` above produced the SIGNED bars and is left byte-untouched
+# (R29: freeze the reference; a swap is only visible against history). This is
+# a separate stage for the A5-enlarged bank — its job is the L11M question the
+# M2 instruments memo left open: is "the teacher's verdict is not distillable
+# at L11M" a program finding, or an n=55 artifact?
+def merge_records(base_recs, bf_recs):
+    """Union adjudications per seed, deduped by ply. Base and back-fill
+    re-adjudicate shared (seed, ply) states with identical fork seeds, so the
+    duplicates must agree exactly — checked, not assumed."""
+    by = {r["seed"]: dict(r, adjudications=list(r["adjudications"]))
+          for r in base_recs}
+    dup = 0
+    mism = []
+    for r in bf_recs:
+        tgt = by.get(r["seed"])
+        if tgt is None:
+            by[r["seed"]] = dict(r, adjudications=list(r["adjudications"]))
+            continue
+        have = {a["ply"]: a for a in tgt["adjudications"]}
+        for a in r["adjudications"]:
+            b = have.get(a["ply"])
+            if b is None:
+                tgt["adjudications"].append(a)
+            else:
+                dup += 1
+                strip = lambda d: {k: v for k, v in d.items()
+                                   if k != "classes"}
+                if strip(a) != strip(b):
+                    mism.append((r["seed"], a["ply"]))
+    return list(by.values()), dup, mism
+
+
+def _instr_report(tag, recs):
+    views = {}
+    for r in recs:
+        vs = []
+        for a in r["adjudications"]:
+            if a["degenerate"]:
+                continue
+            v = state_view(a)
+            if v is not None:
+                vs.append((v, a["champ_s2"] <= 3))
+        views[r["seed"]] = vs
+    allv = [v for vs in views.values() for v, _ in vs]
+    dangv = [v for vs in views.values() for v, d in vs if d]
+    if not allv:
+        print(f"[instr2] {tag}: VOID (no states)", flush=True)
+        return
+    ceil_all, dose_all = capture(allv)
+    ceil_d, dose_d = capture(dangv) if dangv else (float("nan"), 0.0)
+    fl = [capture(allv, permute_rng=random.Random(3000 + i))[0]
+          for i in range(20)]
+    fld = ([capture(dangv, permute_rng=random.Random(3000 + i))[0]
+            for i in range(20)] if dangv else [float("nan")])
+    hr_a = ceil_all - np.mean(fl)
+    hr_d = ceil_d - np.mean(fld)
+    print(f"[instr2] {tag}: states={len(allv)} danger={len(dangv)}", flush=True)
+    print(f"[instr2] {tag}: ALL     ceiling={ceil_all:+.4f} "
+          f"floor={np.mean(fl):+.4f}+/-{np.std(fl):.4f} "
+          f"HEADROOM={hr_a:+.4f} dose={dose_all:.3f}", flush=True)
+    print(f"[instr2] {tag}: DANGER  ceiling={ceil_d:+.4f} "
+          f"floor={np.mean(fld):+.4f}+/-{np.std(fld):.4f} "
+          f"HEADROOM={hr_d:+.4f} dose={dose_d:.3f}", flush=True)
+    # R19: state the n beside the direction, and refuse a direction when the
+    # headroom is inside the floor's own spread
+    verdict = ("USABLE" if hr_d > 2 * np.std(fld) else
+               "NO MEASURED HEADROOM" if hr_d <= 0 else
+               "INSIDE THE FLOOR'S OWN SPREAD — no direction claimed")
+    print(f"[instr2] {tag}: DANGER verdict -> {verdict} "
+          f"(n={len(dangv)})", flush=True)
+
+
+def stage_instruments2(argv):
+    stratum = argv[0] if argv else "L11M"
+    srcs = argv[1:] or [f"{stratum}_backfill"]
+    base = load(stratum)
+    bf = []
+    for sd in srcs:
+        got = load(sd)
+        print(f"[instr2] segment {sd}: {len(got)} games", flush=True)
+        bf += got
+    merged, dup, mism = merge_records(base, bf)
+    print(f"[instr2] {stratum} base_games={len(base)} +bf_games={len(bf)} "
+          f"-> merged={len(merged)} shared_states={dup} diverged={len(mism)}",
+          flush=True)
+    if mism:
+        print(f"[instr2] ⚠⚠ LABEL DIVERGENCE {mism[:5]} — STOP", flush=True)
+        return 3
+    _instr_report(f"{stratum} BASE-ONLY (reference, unchanged)", base)
+    _instr_report(f"{stratum} POOLED (base + A5)", merged)
+    print(f"[instr2] ⚠ the pooled population OVERSAMPLES the death window by "
+          f"design; the two readings are reported side by side and the "
+          f"BASE-ONLY row is the one comparable to the signed M2 instruments.",
+          flush=True)
+    return 0
+
+
+# NOTE: keep this dispatch LAST. Appending a new stage after it makes the
+# block reference a name defined below it -> NameError at import (hit twice).
 if __name__ == "__main__":
     stage = sys.argv[1] if len(sys.argv) > 1 else "instruments"
     if stage == "fit2":
         stage_fit2(sys.argv[2:] or None)
+    elif stage == "instruments2":
+        sys.exit(stage_instruments2(sys.argv[2:]))
     else:
         {"instruments": stage_instruments, "fit": stage_fit}[stage]()
