@@ -269,3 +269,80 @@ The composite was being asked to clear a bar its own input clears by one loss.
 
 **AWAITING TEAM-LEAD RULING. This is a design change, not a threshold change,
 which is why the lane is not making it.**
+
+---
+
+# §4.R2 — THE ACTION BAR: RECIPE AND SPLIT, PRE-COMMITTED TOGETHER
+
+Team-lead ruling 2026-08-28. The **method** is registered here; the **number**
+is computed once on the enlarged bank before the fit runs. The split is
+pre-committed in the same sentence as the recipe so the two cannot drift apart:
+
+> **`g`'s action bar is `floor + 0.30 × (ceiling − floor)` on the statistic
+> `recall = P(g fires | the TEACHER fires)` over danger states — with the
+> ceiling, the floor and therefore the bar DERIVED ON THE TRAIN SPLIT, and the
+> guard JUDGED ON THE HELD-OUT SPLIT.**
+
+Definitions, fixed now:
+- **target** ("the teacher fires") = the half-scaled promoted rule on the
+  **eval** half `s2[3:6]`; **predictor** = the same rule on the **dec** half
+  `s2[0:3]`. Predictor and target never share a fork.
+- **CEILING** = the tribunal predicting *itself* across those independent
+  halves. **FLOOR** = the same predictor with dec-half sums permuted across
+  candidates within state, 20 draws.
+- **Precision and dose are reported beside recall, always** — a recall bar
+  alone is gameable by an always-fire decider (R53).
+- Producer: `scratch/m3_action_instruments.py`.
+
+**Why the split had to be pinned now, not later.** Today's candidate bars at
+0.30 of headroom are **train 0.2581 / held 0.1763 / full 0.2422** — a ~46%
+spread that is pure researcher choice. Deferring the *number* is correct
+(the floor is population-dependent and the bank is still growing); deferring
+the *split* would have handed back everything the deferral buys. TRAIN is also
+the more conservative of the two live options and keeps the bar structurally
+independent of the evaluation it gates.
+
+### ★★★ Context every downstream number must be read against (R72)
+
+> **You cannot distil past the teacher's own self-agreement, and H16 reproduces
+> only 36.7% of its own verdicts across independent fork halves** (precision
+> 0.377, against a dose-matched shuffle floor of 0.2115 ± 0.0314).
+
+Read every agreement figure in this registration against **0.37, not 1.0**.
+This also retro-justifies the §4 DECOMPOSE ruling twice over: a gate demanding
+**93.4%** action from a student of a **37%-self-consistent** teacher was
+unreachable **by construction**, not by difficulty.
+
+---
+
+# §7 REVISED — THE REGIME-TRANSFER QUESTION IS PART OF THE REGISTRATION, NOT A FOLLOW-UP
+
+**⚠⚠ THE CHIP PLAYS L11-MED. THIS GUARD IS DISTILLED AT L20.** A GO at L20 is
+therefore **not** a licence to ship — it crosses exactly the regime boundary
+that two independent instruments now say is hostile, and it is the same shape
+as M0's finding that H16's *trigger* does not transfer to the silicon death
+regime (dsh≥13 catching only 9/31 there).
+
+**Program finding, on two independent statistics** (both on banked L11M data):
+
+| statistic | ceiling | floor | headroom |
+|---|---|---|---|
+| capture (M2 instruments) | −0.036 | +0.021 | **−0.057** |
+| action recall (§4.R2) | 0.125 | 0.1875 | **−0.0625** |
+
+**In both, the ceiling sits BELOW its own floor.** Two statistics built on
+different halves of the label, agreeing, is what promotes this from a small-n
+suspicion to a finding. The running A5 L11M arm may still move it and is
+reported honestly either way — but the deployment consequence is written down
+**now**, before any GO exists to create pressure on it:
+
+> **REGISTERED CONSEQUENCE: if PHASE 1 returns a GO at L20, the next question
+> is NOT "ship it" — it is "does it transfer to the regime the silicon
+> actually plays". No silicon claim is licensed by an L20 GO alone.** M3's §7
+> L11-MED secondary is the first evidence on that question and is reported
+> with its achieved power; it does not settle it.
+
+⚠ And if the L11M ceiling stays below its floor at the enlarged n, the honest
+statement is about **the teacher, not the student**: *the teacher's own verdict
+does not self-transfer at L11M at this dose*, which means there is no target to
+distil there — a fact about H16 and the label budget, not a failure of `g`.

@@ -61,6 +61,10 @@ def collect(stratum, split="train"):
             out.append((dec, ev, val, ci, r["seed"]))
     return out
 
+# PRE-COMMITTED SPLIT (team-lead ruling 2026-08-28): the bar is DERIVED ON
+# TRAIN and the guard is JUDGED ON HELD-OUT. The held row below is printed as a
+# transparency check ONLY and must never be used to set the bar — choosing the
+# split after seeing the bank is the degree of freedom this pinning removes.
 for stratum, split in (("L20","train"), ("L20","held"), ("L11M","train")):
     S = collect(stratum, split)
     stratum = f"{stratum}/{split}"
@@ -97,7 +101,7 @@ for stratum, split in (("L20","train"), ("L20","held"), ("L11M","train")):
     if hr > 2 * f_sd:
         for frac, lab in ((0.30, "0.30 of headroom (matches the M2 GO bar's construction)"),
                           (0.50, "0.50 of headroom")):
-            print(f"   -> candidate BAR at {lab}: recall >= {f_rec + frac*hr:.4f}")
+            print(f"   -> BAR (TRAIN-DERIVED ONLY) at {lab}: recall >= {f_rec + frac*hr:.4f}")
     else:
         print(f"   -> NO USABLE HEADROOM: cannot set a recall bar on this "
               f"stratum (headroom inside 2sd of the floor)")
