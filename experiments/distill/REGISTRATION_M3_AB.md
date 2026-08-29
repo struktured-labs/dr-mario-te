@@ -1,4 +1,34 @@
 # REGISTRATION M3 — on-policy A/B of the distilled danger guard
+
+> # ⛔ READ THIS BLOCK BEFORE ANY OTHER LINE OF THIS FILE
+>
+> **THIS DOCUMENT IS APPEND-ONLY (R25). THE FRONT IS THE OLDEST TEXT; THE
+> BINDING TEXT IS AT THE END.** Reading front-to-back will hand you numbers
+> that were retracted later in the same file. That is not hypothetical — on
+> 2026-08-29 a reader took §2's seed figure from line 61, signed off, and put a
+> **21x-wrong number in front of the owner**; the section that voided it sits at
+> line 488, and line 44 contains a forward pointer that was not followed.
+>
+> **Build the void list from this table FIRST, then read the body.**
+>
+> | superseded / void | replaced by | what changed |
+> |---|---|---|
+> | §1 PRIMARY endpoint (failure rate) | **S1.1** | death property ⇒ demoted to SECONDARY; primary is now decision-property |
+> | §1 "both arms fork-free, ~12-25 core-s/pair" | **S1.7(b)** | FALSE for a decision endpoint ⇒ ≈195 core-h |
+> | **§2 power table (~6,000 pairs, MDE −1.09pp)** | **S1.3 + S1.7(a)** | ⚠ **VOID.** It sized the now-SECONDARY endpoint. Real demand ≈ **286 pairs ≈ 2.1%** of free streams, NOT 44% |
+> | §4 rider (b) "g must fire on ≥98.4%" | **the §4 CORRECTION + §4.R1-R5** | arithmetic error (per-loss vs per-state) ⇒ ruling is DECOMPOSE; composite is reported, never gated |
+> | §6(a) "lead with base-only" | **S7.5 / A5 rev 3** | REVERSED: the pooled census gates; base-only is the continuity check |
+> | §7 "L11M not distillable" (two-instrument finding) | **S7.1** | RETRACTED — n=55 composition artifact; pooled n=531 gives +0.209 USABLE |
+> | §7 transfer clause (one leg) | **S7.2 / S7.3** | now TWO legs: regime gap **and** software-executor death-class gap (R81) |
+> | §8 item 2 (L11M re-measure) | **CLOSED**, see S7.1 | the arm ran 63/63 |
+>
+> **Live sections, in force:** S1.1, S1.2, S1.4-S1.8, S7.1-S7.5, §3, §4.R1-R5,
+> §5, §6. **Bars are UNCHANGED throughout** — nothing above relaxed a criterion.
+>
+> ⚠ **Internal-consistency check that needs no access to this file:** if two
+> quoted figures' ratio is absurd, they come from different generations. The
+> owner-facing error was caught exactly that way — "~6,000 pairs" was paired
+> with "~195 core-h", but a 6,000-pair labelled arm is ~4,000 core-h.
 distill-coproc lane · **DRAFT 2026-08-28 · HELD FOR TEAM-LEAD SIGN-OFF ·
 NOTHING LAUNCHED · NO SEEDS CLAIMED**
 
