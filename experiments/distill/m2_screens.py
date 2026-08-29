@@ -487,6 +487,31 @@ def _verdict(cap, lo, hi):
     return "BETWEEN"
 
 
+def segment_completeness(srcs):
+    """banked vs expected per segment dir, read from each META.
+
+    ★ The H16 verdict-night lesson, applied before it can bite: an analyzer
+    that silently scores whatever happens to be on disk will hand you a
+    confident verdict on a partial arm. That lane's `analyze()` printed a
+    PREFIX as if it were the banked count and the resulting status line
+    invited the reader to pick between "futility stop" and "incomplete".
+    So: ALWAYS print banked AND expected, and never let an incomplete bank
+    emit the words REGISTERED VERDICT.
+    """
+    rows = []
+    for sd in srcs:
+        d = os.path.join(OUT, sd)
+        banked = len([f for f in os.listdir(d)
+                      if f.startswith("seed_")]) if os.path.isdir(d) else 0
+        exp = None
+        mp = os.path.join(d, "META.json")
+        if os.path.exists(mp):
+            m = json.load(open(mp))
+            exp = m.get("n_games", m.get("n_seeds"))
+        rows.append((sd, banked, exp))
+    return rows
+
+
 def stage_fit2(srcs=None):
     """srcs: A5 segment dirs to pool in (default the PHASE 1 census).
     Named explicitly rather than globbed: which segments enter the fit is a
@@ -499,6 +524,13 @@ def stage_fit2(srcs=None):
         got = assemble(stratum, sd)
         print(f"[fit2] segment {sd}: {len(got)} rows", flush=True)
         bf += got
+    comp = segment_completeness(srcs)
+    incomplete = [r for r in comp if r[2] is None or r[1] < r[2]]
+    for sd, banked, exp in comp:
+        print(f"[fit2] segment {sd}: banked={banked}/"
+              f"{exp if exp is not None else '?'}"
+              f"{'  <-- INCOMPLETE' if (exp is None or banked < exp) else ''}",
+              flush=True)
     rows, rep = dedup(base, bf)
     print(f"[fit2] base={len(base)} backfill={rep['bf_total']} "
           f"dup=(seed,ply) {rep['dup']} new={rep['bf_new']} "
@@ -608,6 +640,16 @@ def stage_fit2(srcs=None):
 
     p = verdicts.get(("g_lin(A5)", "P")); s1 = verdicts.get(("g_lin(A5)", "S1"))
     final = p if p == s1 else "BETWEEN"
+    if incomplete:
+        miss = ", ".join(f"{sd} {b}/{e if e is not None else '?'}"
+                         for sd, b, e in incomplete)
+        print(f"[fit2] *** NOT A VERDICT — BANK INCOMPLETE: {miss} ***\n"
+              f"[fit2] *** the arms above are still running or short; these "
+              f"numbers are a PROVISIONAL READ on a partial bank and must not "
+              f"be quoted as the registered result (R49) ***", flush=True)
+        print(f"[fit2] provisional P={p} S1={s1} (would read {final})",
+              flush=True)
+        return 4
     print(f"[fit2] === REGISTERED VERDICT (sec 5.2: P and S1 must agree) === "
           f"P={p} S1={s1} -> {final}", flush=True)
     if p != s1:
@@ -724,7 +766,10 @@ def stage_instruments2(argv):
 if __name__ == "__main__":
     stage = sys.argv[1] if len(sys.argv) > 1 else "instruments"
     if stage == "fit2":
-        stage_fit2(sys.argv[2:] or None)
+        # exit code must carry the gate: 0 = registered verdict printed,
+        # 4 = bank incomplete (provisional read only). A gate that cannot
+        # stop a caller is not a gate (R43a).
+        sys.exit(stage_fit2(sys.argv[2:] or None) or 0)
     elif stage == "instruments2":
         sys.exit(stage_instruments2(sys.argv[2:]))
     else:
