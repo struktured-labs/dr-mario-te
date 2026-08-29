@@ -198,6 +198,7 @@ def assemble(stratum, src=None):
         if r["smoke"] or r["seed"] not in feats:
             continue
         n_plies = r["game"]["n_plies"]
+        g_res, g_vl = r["game"]["res"], r["game"]["viruses_left"]
         for a in r["adjudications"]:
             if a["degenerate"]:
                 continue
@@ -220,7 +221,8 @@ def assemble(stratum, src=None):
                 "ev": np.array([sum(c["s2"][3:6]) for c in sh], float),
                 "val": np.array([c["val"] for c in sh], float),
                 "danger": a["champ_s2"] <= 3, "classes": list(a["classes"]),
-                "origin": src, "to_end": n_plies - a["ply"]})
+                "origin": src, "to_end": n_plies - a["ply"],
+                "g_res": g_res, "g_vl": g_vl})
     return rows
 
 
@@ -637,6 +639,39 @@ def stage_fit2(srcs=None):
             print(f"[fit2] {gname:14s} {arm:22s} n={len(rws):4d} "
                   f"capture={cap:+.4f} CI[{lo:+.4f},{hi:+.4f}] "
                   f"dose={dose:.3f} -> {v}", flush=True)
+
+    # ---- S7.4 DEATH-CLASS HETEROGENEITY (R81). REPORTED, NEVER GATING.
+    # The M1 rig is the SOFTWARE executor (oracle_arm has no exec_mode), whose
+    # topouts are last-virus deaths, while silicon dies mid-game. L20's topouts
+    # are mixed (35% at >=20 viruses left), so we can ask whether capture
+    # differs by the death class of the source game.
+    # ⚠ This conditions on an outcome the deployed guard CANNOT observe — the
+    # same defect removed from A5's design — so it is a diagnostic only and is
+    # never allowed near the verdict (same posture as the composite catch).
+    def death_class(r):
+        if r["g_res"] != "topout":
+            return "no-topout"
+        v = r["g_vl"]
+        return ("last-virus(<=3)" if v <= 3 else
+                "mid(4-19)" if v < 20 else "silicon-like(>=20)")
+    print(f"[fit2] --- S7.4 death-class heterogeneity (DIAGNOSTIC, NOT A GATE; "
+          f"conditions on an outcome the guard cannot see) ---", flush=True)
+    for lab, fn, tau, m in (("g_lin(A5)", g_lin, tau_l, m_l),):
+        buckets = {}
+        for r in ho_d:
+            buckets.setdefault(death_class(r), []).append(r)
+        for k in sorted(buckets):
+            rr = buckets[k]
+            cap, dose = plain(rr, fn, tau, m)
+            lo, hi = boot_ci(rr, lambda x, fn=fn, tau=tau, m=m:
+                             plain(x, fn, tau, m)[0]) if len(rr) >= 5 \
+                else (float("nan"), float("nan"))
+            print(f"[fit2]   {lab} {k:20s} n={len(rr):4d} capture={cap:+.4f} "
+                  f"CI[{lo:+.4f},{hi:+.4f}] dose={dose:.3f}", flush=True)
+        print(f"[fit2]   read: if capture on silicon-like(>=20) tracks the "
+              f"others, the software-rig concern does not bite on THIS "
+              f"statistic; if it is materially lower, the guard is learning "
+              f"the last-virus class.", flush=True)
 
     p = verdicts.get(("g_lin(A5)", "P")); s1 = verdicts.get(("g_lin(A5)", "S1"))
     final = p if p == s1 else "BETWEEN"
