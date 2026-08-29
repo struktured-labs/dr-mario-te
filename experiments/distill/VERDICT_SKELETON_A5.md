@@ -9,6 +9,27 @@ is filled from a command's output, not from recollection.
 
 ---
 
+## 0. STAGE COMPLETE ≠ VERDICT — say which, in the heading
+
+⚠ **A segment's ETA was delivered to the owner as the verdict's** ("around
+5 am" for what was only the held arm ending). The `fit2` completeness gate
+already enforces the distinction in code — it prints
+`*** NOT A VERDICT — BANK INCOMPLETE ***` and exits 4 — **and the prose must
+match the gate.**
+
+| what happened | what it is called | may it be quoted? |
+|---|---|---|
+| PHASE 1 (held census) finishes | **STAGE COMPLETE — L20 held arm** | ❌ no number from it |
+| reserve census finishes | **STAGE COMPLETE — reserve census** | ❌ |
+| `fit2` prints `REGISTERED VERDICT` on a complete bank | **THE VERDICT** | ✅ |
+| L11M instrument arm | **its own arm, own bars** | ✅ (already read) |
+
+**Never put a stage-complete time and the word "verdict" in the same sentence.**
+An ETA is always quoted "at the observed rate" and re-derived at report time
+(`scratch/eta.py`), never repeated from an earlier message.
+
+---
+
 ## 1. R81 EXECUTOR CAVEAT — ITS OWN SENTENCE, NOT A FOOTNOTE
 
 > **The M1 rig is the SOFTWARE executor.** `oracle_arm.py` contains zero
