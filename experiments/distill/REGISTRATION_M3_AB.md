@@ -346,3 +346,81 @@ reported honestly either way — but the deployment consequence is written down
 statement is about **the teacher, not the student**: *the teacher's own verdict
 does not self-transfer at L11M at this dose*, which means there is no target to
 distil there — a fact about H16 and the label budget, not a failure of `g`.
+
+---
+
+# ⚠⚠ §7 SUPERSEDED — 2026-08-29. Two corrections. Appended, never edited (R25).
+
+## S7.1 — THE "L11M NOT DISTILLABLE" PROGRAM FINDING IS RETRACTED
+
+The §7 table above reported L11M as showing no headroom on two independent
+statistics, with both ceilings below their own floors. **The completed A5 L11M
+arm (63/63, 0 replay failures, format gate PASS on 105 shared states, 0
+diverged) reverses the capture reading:**
+
+| L11M danger states | n | ceiling | floor | headroom | verdict |
+|---|---|---|---|---|---|
+| base only (what §7 reported) | 55 | −0.036 | +0.021 | **−0.057** | no headroom |
+| **pooled (base + A5)** | **531** | **+0.301** | +0.093 | **+0.209** | **USABLE** |
+
+**+0.209 is comparable to L20's +0.200.** Decomposed, because n *and*
+population both moved:
+
+| population | n danger | headroom |
+|---|---|---|
+| base, **outside** the death window | 35 | −0.146 |
+| base, **inside** the death window | 20 | +0.085 (no direction claimable) |
+| backfill, death window | 491 | **+0.230** |
+
+Inside the death window, base and backfill share the **sign**, and only n
+separates "no direction" from "usable". The original n=55 verdict pooled 20
+death-window states with 35 negative outside-window ones, and the outside
+states dominated a tiny sample. ⇒ **At L11M the distillable signal is
+concentrated in the death window — where a danger guard acts — and "not
+distillable" was a composition artifact, not a property.**
+
+## S7.2 — R81: THE M1 RIG IS THE SOFTWARE EXECUTOR
+
+Confirmed two ways: **`oracle_arm.py` contains zero `exec_mode` occurrences** —
+there is no firmware executor on the path any M1 game took — and viruses-left
+at topout:
+
+| | n | median | ≤3 viruses | ≥20 (silicon-like) |
+|---|---|---|---|---|
+| **L11M** (E-M1a's stratum) | 63 | **2** | **77.8%** | 7.9% |
+| **L20** (this fit's stratum) | 254 | 9 | 28.7% | **35.0%** |
+| real-firmware reference | | 35-36 | 1.7-2.6% | |
+| software-lab reference | | 2 | 59.6% | |
+
+> **E-M1a's 63/63 catch and its 191-ply median lead were validated on the
+> LAST-VIRUS death class, not the midgame class the silicon exhibits.** Catch,
+> lead, and E-M1b's false-fire rate all describe a population the deployed
+> guard will not meet. This is stated in the verdict, not after it.
+
+**M0 is unaffected** — it used the banked silicon loss corpus, not a lab rig.
+
+⚠ **S7.1 INHERITS S7.2.** The L11M headroom is measured on those same 63 topout
+games, 77.8% of which are last-virus deaths. It establishes distillability *in
+the death window of software-executor last-virus deaths*; it does **not**
+establish it for the midgame class the chip dies in, and must not be quoted as
+if it did.
+
+## S7.3 — THE REGISTERED CONSEQUENCE, NOW WITH TWO LEGS
+
+> **An L20 GO licenses NO silicon claim, for two INDEPENDENT reasons:
+> (a) the L20 → L11-MED regime gap (M0: H16's trigger catches only 9/31 of the
+> silicon death class), and (b) the software-executor → real-firmware DEATH-CLASS
+> gap (this section). Either alone would block the inference; both hold.**
+
+## S7.4 — DEATH-CLASS HETEROGENEITY DIAGNOSTIC (reported, NEVER gating)
+
+L20's topouts are genuinely mixed — **35.0% are silicon-like (≥20 viruses
+left)**, so ~89 silicon-class deaths are already banked in the stratum this fit
+uses. The verdict therefore reports capture split by the death class of the
+game each danger state came from.
+
+⚠ **This conditions on an outcome the deployed guard cannot observe** — the
+exact defect removed from A5's design — so it is a **diagnostic that is reported
+and never gates**, in the same posture as the composite catch (§4.R3). Its value
+is that it is the cheapest available evidence on whether the software-rig
+concern actually bites, on data already banked.
