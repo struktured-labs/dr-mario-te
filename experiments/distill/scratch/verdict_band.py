@@ -10,6 +10,38 @@ The four terms, and which one actually dominates:
   2 forks per ply     95.0 +/- 8.1, used as EXACT before
   3 census ply count  +/-sqrt(n)*sd                            <- what I had
   4 12->15 scaling    1.25 naive .. 1.36 under-capacity (flat prior)
+
+⚠⚠ SECOND CORRECTION, and it is the MIRROR of the first. I applied sqrt(n) to
+the census ply count (a per-game quantile applied to a 122-game sum assumes
+PERFECT CORRELATION) and then charged a SINGLE-HOUR throughput SD across a
+~10 h projection WITHOUT the same correction — which assumes every hour is high
+or low TOGETHER. Same correlation assumption, opposite direction, same analysis.
+⇒ CORRELATION STRUCTURE HAS TO BE ASKED ABOUT EVERY TERM, not just the one that
+  looked suspicious.
+
+Measured on this arm (SD of per-hour rates by window length):
+    1 h windows  SD 12,619 (CV 0.37)
+    2 h windows  SD  6,891 (CV 0.20)      ratio 0.55, vs 0.71 for independent
+  => collapses AT LEAST as fast as independent noise. Two reasons:
+     (a) A REAL TREND: +4,326 forks/h per hour, r = +0.64, explaining 41% of
+         the hour-to-hour variance. Throughput RISES as the arm reaches bigger
+         games, because per-fork cost falls with amortisation. A KNOWN TREND
+         MUST BE MODELLED, NOT CHARGED TO VARIANCE — doing so makes a band
+         useless while the quantity is actually forecastable.
+     (b) A MEASUREMENT ARTIFACT: a game's whole fork count is attributed to its
+         COMPLETION INSTANT though the work spanned 25-60 min, so short windows
+         are lumpy BY CONSTRUCTION and their SD overstates real variation.
+  SD about the TREND is 9,682, and over an 8 h horizon the uncertainty on the
+  MEAN RATE is 9,682/sqrt(8) = 3,423 -> ~8%, NOT the 37% first charged.
+
+⚠ The trend cannot extrapolate freely: it is driven by amortisation, which
+  bottoms out. Best-decile per-fork cost 0.643 s => a hard ceiling of ~67,000
+  forks/h at 12 workers. Current ~41,000 is 62% of it.
+
+FOR ANYONE SIZING WORK ON THIS BOX: expect ~40-45k forks/h at 12 workers rising
+toward a ~67k ceiling, with ~8% uncertainty on a multi-hour mean. Do NOT
+provision against the raw 44% hour-to-hour spread — most of it is a trend plus
+completion lumpiness.
 Monte Carlo rather than a linear error budget, because the terms MULTIPLY.
 
 ⚠ It also corrects a subtler error: the earlier PHASE 1 ETA used the LAST
