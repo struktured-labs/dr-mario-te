@@ -46,6 +46,16 @@ def eta(d, total):
               (f"   ETA {hhmm(now + rem / r * 3600, now)}"
                f"{'' if rem / r < 24 else f'  (+{rem / r:.0f} h!)'}"
                if rem > 0 else "  DONE"))
+    # ⚠⚠ A games/h ETA is BIASED OPTIMISTIC for an imap_unordered pool.
+    # Cheap games complete FIRST by construction, so the remaining pool is
+    # enriched for expensive ones and games/h keeps falling — the extrapolation
+    # is systematically early and gets worse as the arm progresses. Measured on
+    # PHASE 1: forks/game by completion third = 1291 / 2138 / 2883 (+111%
+    # slope), and the games/h ETA read 05:06-05:24 where the workload-based one
+    # read 05:37. Use scratch/eta_workload.py for anything owner-facing.
+    print(f"  ⚠ games/h assumes remaining games cost the same as completed "
+          f"ones. For an imap_unordered arm they do NOT (cheap games finish "
+          f"first) — this ETA runs EARLY. Cross-check with workload/forks.")
     # a stalled producer makes every rate above a lie about the future
     if (now - ts[-1]) / 60 > 45:
         print(f"  ⚠ newest segment is {(now-ts[-1])/60:.0f} min old — the rate "
