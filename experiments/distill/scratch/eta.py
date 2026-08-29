@@ -21,8 +21,20 @@ def eta(d, total):
         return
     now, n = time.time(), len(ts)
     rem = total - n
-    hhmm = lambda t: datetime.datetime.fromtimestamp(t).strftime("%H:%M")
+    def hhmm(t, ref=None):
+        """⚠ %H:%M ALONE WRAPS THE DATE. First version of this file printed a
+        13-DAY census ETA as '02:32', which reads as ninety minutes away. Show
+        the date whenever the result is not today — a plausible wrong answer is
+        worse than an absurd one (R61)."""
+        dt = datetime.datetime.fromtimestamp(t)
+        if ref is not None and dt.date() != datetime.datetime.fromtimestamp(ref).date():
+            return dt.strftime("%a %d %H:%M")
+        return dt.strftime("%H:%M")
     span = (ts[-1] - ts[0]) / 3600
+    if n < 5:
+        print(f"  ⚠ only {n} segments — the 'overall' rate below spans "
+              f"{span:.1f} h and is NOT a throughput estimate (a resumed arm "
+              f"carries its smoke game's old mtime into the span)")
     print(f"{os.path.basename(d)}: banked {n}/{total}  remaining {rem}  "
           f"newest {hhmm(ts[-1])} ({(now-ts[-1])/60:.1f} min ago)")
     rates = [("overall", n / span)]
@@ -31,7 +43,9 @@ def eta(d, total):
             rates.append((f"last {k}", k / ((ts[-1] - ts[-1 - k]) / 3600)))
     for lab, r in rates:
         print(f"  {lab:>8}: {r:5.1f} games/h" +
-              (f"   ETA {hhmm(now + rem / r * 3600)}" if rem > 0 else "  DONE"))
+              (f"   ETA {hhmm(now + rem / r * 3600, now)}"
+               f"{'' if rem / r < 24 else f'  (+{rem / r:.0f} h!)'}"
+               if rem > 0 else "  DONE"))
     # a stalled producer makes every rate above a lie about the future
     if (now - ts[-1]) / 60 > 45:
         print(f"  ⚠ newest segment is {(now-ts[-1])/60:.0f} min old — the rate "
