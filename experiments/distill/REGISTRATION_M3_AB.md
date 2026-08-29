@@ -34,10 +34,7 @@ records what must land before launch.
   arm for EUR 0.
 - **B (candidate) = champion-const + the frozen distilled guard.** Guard
   constants hash-pinned in the runtime manifest; both arms fork-free.
-- ~~**PRIMARY endpoint**: failure (topout | stall) rate on **L20 honest-drlulu**,~~
-  **⚠ DEMOTED TO SECONDARY 2026-08-29 — it is a DEATH property and R81 says the
-  software rig's death class is not silicon's. See §S1.1 at the end of this file.**
-  Original text retained:  failure (topout | stall) rate on **L20 honest-drlulu**,
+- **PRIMARY endpoint**: failure (topout | stall) rate on **L20 honest-drlulu**,
   paired seeds, **McNemar exact one-sided; GO iff p < 0.05 AND d < 0.**
   L20 keeps comparability with H16's own registration and every banked
   reference number.
@@ -521,3 +518,63 @@ L20→L11-MED regime gap and the software-executor→real-firmware death-class g
 — no reader should be able to.
 
 **A GO in M3 licenses M4. It licenses nothing on silicon by itself.**
+
+---
+
+# S1.6 — THE CHAIN (team-lead reframe, belongs beside S1.2's cost)
+
+S1.2 states what M3 can no longer establish. This states what it *does*
+establish, and why the program is coherent rather than dodging its own question:
+
+> **M3 asks whether the STUDENT faithfully reproduces the TEACHER'S judgment on
+> its own live firing set. Whether the teacher's judgment is worth having is a
+> SEPARATE question, already partly answered.**
+
+| link | claim | where it is measured | status |
+|---|---|---|---|
+| teacher is **valuable** | H16 beats champion-const under pressure | H16's own registered trial | **DONE**: d = −2.67pp, CI [−4.67, −0.50], p = 0.0098 |
+| student is **faithful** | g reproduces the teacher's verdict on-policy | **M3** | this registration |
+| composite **works on the target** | trigger × g helps on silicon | **M4** | not licensed by M3 |
+
+Each link is measured where it *can* be measured. ★ And the middle link is the
+one **only M3 can supply**: the substitution closure established that a decider
+chooses its own trigger set, so off-policy capture is an upper bound and M2 can
+only kill. **Recall and false-veto on the guard's ACTUAL LIVE FIRING SET is
+evidence no offline screen can produce.** Demoting the outcome endpoint pointed
+the milestone at the thing it was uniquely able to measure.
+
+# S1.7 — ⚠ TWO CONSEQUENCES OF THE RULING, MEASURED
+
+## (a) M3'S SEED DEMAND COLLAPSES — ~286 pairs, not ~6,000
+
+The superseded §2 table sized a per-GAME outcome endpoint. The new primary is a
+per-PLY decision rate, so the arithmetic changes entirely. Yields measured on
+the banked L20 campaign, corrected for the campaign's 12% trigger thinning:
+**25.9 trigger states, 4.17 danger states and 1.80 teacher-fires per game.**
+
+| endpoint half | target | states needed | games (design effect 3) |
+|---|---|---|---|
+| recall vs teacher (p≈0.30) | SE < 0.050 | 252 | 140 |
+| recall, tighter | SE < 0.035 | 514 | **286** |
+| false-veto rate (p≈0.10) | SE < 0.020 | 675 | 31 |
+
+**Binding half ≈ 286 pairs — 21× less than the superseded 6,000, i.e. ~2.1% of
+the free commons rather than ~44%.** ⚠ Preliminary: the registered numbers are
+computed on the enlarged bank before the run and stated as POWER at the effects
+that matter, never as bare n (R47, and the §4.R2 precedent).
+
+## (b) ⚠ M3 IS NO LONGER FORK-FREE — §1's cost basis is void too
+
+§1 recorded "Both arms fork-free ⇒ ~12-25 core-s/pair". **True for a
+failure-rate endpoint; false for a decision endpoint.** Recall is
+`P(g fires | the TEACHER fires)`, so the teacher's verdict must be known at the
+guard's on-policy states — which means running the tribunal there. At ~95 forks
+× ~1.0 s ≈ 95 s per adjudicated trigger ply, and 25.9 trigger plies/game,
+that is ≈ **195 core-h for a 286-game labelled arm**.
+
+★ **Structural consequence worth stating plainly: the decision-property primary
+makes M3 resemble M1 — a labelling campaign over the guard's ON-POLICY
+trajectories — far more than a game A/B.** That is exactly the shape DESIGN.md
+already contemplated as its single pre-declared **DAgger round** (relabel on
+guard-on trajectories), so the ruling has moved M3 toward a structure this
+program had already reasoned about, not away from one.
