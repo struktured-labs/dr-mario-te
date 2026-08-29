@@ -34,7 +34,10 @@ records what must land before launch.
   arm for EUR 0.
 - **B (candidate) = champion-const + the frozen distilled guard.** Guard
   constants hash-pinned in the runtime manifest; both arms fork-free.
-- **PRIMARY endpoint**: failure (topout | stall) rate on **L20 honest-drlulu**,
+- ~~**PRIMARY endpoint**: failure (topout | stall) rate on **L20 honest-drlulu**,~~
+  **⚠ DEMOTED TO SECONDARY 2026-08-29 — it is a DEATH property and R81 says the
+  software rig's death class is not silicon's. See §S1.1 at the end of this file.**
+  Original text retained:  failure (topout | stall) rate on **L20 honest-drlulu**,
   paired seeds, **McNemar exact one-sided; GO iff p < 0.05 AND d < 0.**
   L20 keeps comparability with H16's own registration and every banked
   reference number.
@@ -424,3 +427,97 @@ exact defect removed from A5's design — so it is a **diagnostic that is report
 and never gates**, in the same posture as the composite catch (§4.R3). Its value
 is that it is the cheapest available evidence on whether the software-rig
 concern actually bites, on data already banked.
+
+---
+
+# ⚠⚠ §1/§2 SUPERSEDED — 2026-08-29. THE BASELINE RULING. Appended, never edited.
+
+Team-lead ruling. **The two laws were never in conflict; they apply to
+different halves of the rig.**
+
+> The **COPROCESSOR mirrors the software champion's DECISION** — same
+> evaluator, same ranking. So for any endpoint that is a property of
+> **decisions**, champion-const-on-software is a faithful mirror and **is the
+> baseline being replaced**.
+> The **CART FIRMWARE, not the coprocessor, performs EXECUTION** — and R81
+> says execution determines the death class. So for any endpoint that is a
+> property of **outcomes reached through execution**, the software rig is
+> measuring a different world.
+
+## S1.1 — THE PRIMARY ENDPOINT CHANGES. THE BASELINE DOES NOT.
+
+**Baseline stays champion-const-on-software** (§1 unchanged on that point).
+
+**⚠ §1's primary endpoint — "failure (topout | stall) rate" — is a DEATH
+property and is hereby DEMOTED TO SECONDARY**, carrying the executor caveat.
+Under R81 the software rig's topouts are last-virus deaths while silicon dies
+mid-game, so a failure-rate primary would have been measuring the wrong world
+with full statistical ceremony.
+
+> **NEW PRIMARY (decision-property, measured ON-POLICY at the guard's own
+> firing set): the paired decision-quality endpoint —
+> (i) RECALL against the teacher's own overrides ≥ the §4.R2 bar, AND
+> (ii) FALSE-VETO RATE ≤ 0.106 (§3).**
+> Two-sided by construction (R53): (i) alone is gameable by an always-fire
+> decider, (ii) alone by a never-fire one. Both must hold.
+
+★ **On-policy is what makes this worth running at all.** The substitution
+closure established that *a decider chooses its own trigger set, so off-policy
+capture is an upper bound*. M2 can therefore only kill. Measuring recall and
+false-veto **on the guard's actual live firing set** is precisely the thing the
+offline screen cannot deliver — so M3 still contributes the evidence only M3
+can contribute, even with the outcome endpoint demoted.
+
+## S1.2 — ⚠ THE HONEST COST OF THIS RULING, STATED PLAINLY
+
+**M3 can no longer establish that the guard HELPS.** It can establish that the
+guard *acts defensibly* — firing where the teacher fires, not firing where it
+should not. Whether that translates into fewer deaths is an **outcome**
+question, and this rig cannot answer it for the executor the chip uses.
+
+Nobody should read a decision-endpoint GO as "the guard works". It means "the
+guard's decisions survive on-policy scrutiny against the baseline it replaces".
+
+## S1.3 — ⚠ §2's POWER TABLE IS VOID AS WRITTEN
+
+§2 sized ~6,000 pairs for MDE −1.09pp on the **failure-rate** endpoint. That
+endpoint is now **secondary**, so the table sizes a secondary and must not be
+quoted as sizing the trial. The new primary is a **per-ply decision rate**, not
+a per-game outcome, with different variance and clustering.
+
+Per the §4.R2 precedent: **the METHOD is registered here, the NUMBERS are
+computed on the enlarged bank before the run** — sizing for both halves,
+stated as POWER at the true-effect values that matter, never as bare n.
+
+## S1.4 — NARROW REAL-FIRMWARE TRANSFER CHECK (added, not a relocation)
+
+A full A/B at real-firmware rates is unaffordable: **1,413 s median per game**
+(endgame lane's measurement), so buying power at that rate would be the worst
+spend in the program. This program's own pattern applies — cheap-and-wide for
+the primary, expensive-and-narrow for transfer.
+
+**Registered size: 30 games per arm.** It answers exactly one question: *does
+the guard's veto behaviour differ between software-executor and real-firmware
+games?*
+
+| games/arm | core-h | wall @6w | MDE (80%) on a ~4% veto rate |
+|---|---|---|---|
+| 20 | 15.7 | 2.6 h | 2.24 pp |
+| **30** | **23.6** | **3.9 h** | **1.83 pp (≈0.5× relative)** |
+| 60 | 47.1 | 7.9 h | 1.29 pp |
+
+> ⚠ **HONEST POWER: at 30/arm this sees only a LARGE difference — roughly a
+> 46% relative change in veto rate or bigger. A null here is NOT evidence of
+> transfer**; it is evidence against a gross difference only, and must be
+> reported in those words. (Clustering by game is priced in at a design effect
+> of 4.)
+
+## S1.5 — ★ SAY THE QUIET PART: M3 IS A SCREEN, NOT THE FINAL WORD
+
+**The deployment test is M4 on silicon.** M3 is the best affordable screen,
+with a stated and measured transfer gap. Framing it as the verdict would be
+indefensible, and with §7 now carrying **two independent transfer gaps** — the
+L20→L11-MED regime gap and the software-executor→real-firmware death-class gap
+— no reader should be able to.
+
+**A GO in M3 licenses M4. It licenses nothing on silicon by itself.**
