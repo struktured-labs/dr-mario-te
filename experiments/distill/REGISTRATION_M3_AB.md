@@ -249,6 +249,7 @@ re-derivation and explicitly refuses to move it unilaterally.**
 ---
 
 # APPENDED CORRECTION — 2026-08-28, §4 rider (b). Nothing launched.
+<!-- VOIDS: §4 rider (b) per-state arithmetic | BY: §4.R1-R5 | STALE: 98.4% of the death states -->
 
 **§4's arithmetic was wrong and its conclusion is superseded.** Appended, not
 edited: the document is evidence of what was believed when (R25).
@@ -392,6 +393,7 @@ distil there — a fact about H16 and the label budget, not a failure of `g`.
 # ⚠⚠ §7 SUPERSEDED — 2026-08-29. Two corrections. Appended, never edited (R25).
 
 ## S7.1 — THE "L11M NOT DISTILLABLE" PROGRAM FINDING IS RETRACTED
+<!-- VOIDS: §7 'L11M not distillable' two-instrument finding | BY: S7.1 | STALE: L11M not distillable; not distillable at L11M -->
 
 The §7 table above reported L11M as showing no headroom on two independent
 statistics, with both ceilings below their own floors. **The completed A5 L11M
@@ -482,6 +484,7 @@ different halves of the rig.**
 > measuring a different world.
 
 ## S1.1 — THE PRIMARY ENDPOINT CHANGES. THE BASELINE DOES NOT.
+<!-- VOIDS: §1 primary endpoint = failure (topout|stall) rate | BY: S1.1 | STALE: PRIMARY endpoint: failure -->
 
 **Baseline stays champion-const-on-software** (§1 unchanged on that point).
 
@@ -516,6 +519,7 @@ Nobody should read a decision-endpoint GO as "the guard works". It means "the
 guard's decisions survive on-policy scrutiny against the baseline it replaces".
 
 ## S1.3 — ⚠ §2's POWER TABLE IS VOID AS WRITTEN
+<!-- VOIDS: §2 power table (failure-rate endpoint) | BY: S1.7a | STALE: 6,000 pairs; ~6,000; 44% of the; -1.09pp; MDE −1.09pp -->
 
 §2 sized ~6,000 pairs for MDE −1.09pp on the **failure-rate** endpoint. That
 endpoint is now **secondary**, so the table sizes a secondary and must not be
@@ -604,6 +608,7 @@ computed on the enlarged bank before the run and stated as POWER at the effects
 that matter, never as bare n (R47, and the §4.R2 precedent).
 
 ## (b) ⚠ M3 IS NO LONGER FORK-FREE — §1's cost basis is void too
+<!-- VOIDS: §1 'both arms fork-free' cost basis | BY: S1.7b | STALE: 12-25 core-s/pair; both arms fork-free -->
 
 §1 recorded "Both arms fork-free ⇒ ~12-25 core-s/pair". **True for a
 failure-rate endpoint; false for a decision endpoint.** Recall is

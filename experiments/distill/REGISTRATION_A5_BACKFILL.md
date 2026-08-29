@@ -253,6 +253,7 @@ The bars in §5 are **unchanged**. Nothing below relaxes a criterion; the
 design change makes the estimand *stricter*, not looser.
 
 ## R1.1 — THE SIZING WAS ON THE WRONG AXIS (the material one)
+<!-- VOIDS: §2 sizing by held-danger STATES | BY: R1.1 (PHASE 1) | STALE: clearing at 1.40; 1.40x; ~273 held-out danger; n=273 -->
 
 §2 sized A5 by the number of held-out DANGER STATES. **The M2 CI is
 seed-clustered, and back-fill adds states to games that already contribute —
@@ -297,6 +298,7 @@ powered against capture ≤0.032 and 52% at the floor, i.e. decisive against
 "this guard is worthless" and weak only in the narrow band just below the bar.
 
 ## R1.2 — THE COST MODEL WAS 3.8-5x TOO HIGH
+<!-- VOIDS: §2 cost model 369+0.869*forks | BY: R2.1 | STALE: 0.869; 120 core-h; 190 core-h -->
 
 §2's `secs = 369 + 0.869*forks` was regressed on M1 **campaign** games and
 applied to **back-fill** games — a different regime. Smoke actuals: 7,120
@@ -355,6 +357,8 @@ asserts at launch that its copy still agrees with `m2_screens.held`.
 ---
 
 # REVISION 2 — 2026-08-28, cost only. No bar, estimand or design changes.
+
+<!-- VOIDS: R1.2's 0.227 s/fork (death-window regime) | BY: R2.1 | STALE: 0.227 s/fork; 24 core-h -->
 
 **R2.1 — THE FIRM PRICE, measured in-regime.** R1.2 replaced the original
 cost model with `0.227 s/fork` measured on the A5 **smoke**, which ran the
@@ -490,6 +494,8 @@ silent `"PASS"`. The integrity check is not skipped, it is **relocated**:
 game whose replay diverges contributes no features and therefore **cannot enter
 the fit**. Champion-const determinism is still asserted, one stage later, by
 the consumer that a violation would corrupt.
+
+<!-- VOIDS: §5.1 base-only-leads / arm-P-as-sole-primary | BY: R4.3 | STALE: lead with base-only -->
 
 **R4.3 — §6(a) RULING: the base-only requirement is REVERSED for PHASE 1.**
 The gating arm is the **pooled census**; base-only is the continuity check; all
