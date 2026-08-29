@@ -198,8 +198,10 @@ re-measure (§8).
 1. **M2 must return a GO.** A KILL or a BETWEEN does not license M3 — the
    off-policy screen can only kill, never promote, and a BETWEEN at the
    enlarged n is a pre-registered STOP, not a licence.
-2. **A5's L11M ceiling re-measure** (DESIGN.md §E sequencing rule). If L11M's
-   ceiling stays at zero, §7's secondary is measuring a regime where the
+2. ~~**A5's L11M ceiling re-measure**~~ **— CLOSED 2026-08-29.** The arm ran
+   (63/63, zero replay failures) and **REVERSED** the premise: see S7.1.
+   The launch checklist must not stall on this. Original text:
+   If L11M's ceiling stays at zero, §7's secondary is measuring a regime where the
    teacher's verdict is not distillable at this dose, and that must be said in
    the registration rather than discovered in the readout.
 3. ~~The §4 disposition~~ — **CLOSED 2026-08-28: DECOMPOSE. See the ruling section at the end of this document.**
@@ -628,3 +630,56 @@ shared description is exactly what would let the circularity survive review.
 ★ Same circularity R72 warns about, one level up: R72 says you cannot distil past
 the teacher's own self-agreement; this says you cannot *measure* the student on
 the data you used to *make* it.
+
+---
+
+# S7.5 — THE PRIMARY STAYS L20. Asked, argued, answered.
+
+S7.1 reversed the premise §7 was written under: L11M pooled danger headroom is
+**+0.209**, comparable to L20's +0.200, so L11M is no longer the undistillable
+regime that made L20 the only available home for the primary. **The question
+was therefore properly raised: should the primary move to the regime the chip
+actually plays? Ruling: NO. L20 stands.** Recorded here so the next reader sees
+it was asked and answered rather than never considered.
+
+**1. The guard is FITTED on L20.** `m2_screens.stage_fit2` calls
+`assemble("L20")`; the trained object is an L20 artifact. Evaluating it on
+L11M would be a **REGIME-TRANSFER test, not the faithfulness test M3 is
+registered to ask** — it would conflate "does the student reproduce the
+teacher" with "does an L20-trained student survive a regime change", and a
+failure would be unattributable between them. M3's primary must isolate
+faithfulness; transfer is §7's separate, explicitly-registered question.
+
+**2. Both bars are derived on L20 reference data** — §3's false-veto ceiling
+(harm per forced veto measured on the L20 bank) and §4.R2's action bar
+(pre-committed to the **L20 train split**). Applying an L20-derived bar to an
+L11M population is **exactly R62** — an imported bar calibrated for someone
+else's statistic. Switching the population would require re-deriving both, at
+which point it is not a switch, it is a different milestone.
+
+**3. ★ L11M's headroom sits precisely where R81 says the death class is
+WRONG.** S7.1's +0.209 is measured in the **death window of the 63 backfill
+topout games — 77.8% last-virus deaths** (S7.2). Moving the primary to L11M
+would move it **ONTO the executor problem, not away from it**: it would buy the
+regime the chip plays at the cost of the death class the chip exhibits. That is
+a worse trade than the one it was meant to fix.
+
+## The selection hazard, named rather than waved past
+Moving a primary endpoint's population after seeing a result that makes the
+alternative look better is the shape of a post-hoc choice, and it deserves to
+be argued.
+
+**The premise update is legitimate in itself**: S7.1 is an *instrument*
+measurement — does learnable signal exist in the label bank — not an outcome of
+the A/B being designed, so it is not selection on the endpoint.
+
+**But the decisive test is stronger than that, and it is checkable: would the
+same decision follow WITHOUT the new information?** Yes. Reasons 1 and 2 are
+structural facts about where the guard is fitted and where the bars were
+derived; they held before S7.1 existed and are untouched by it. **The premise
+update is therefore not load-bearing on this decision**, which is what makes
+the timing harmless rather than merely defensible.
+
+⇒ **L20 stands. §7's registered consequence is unchanged: an L20 GO licenses
+no silicon claim, and the transfer question is answered by M4, not by relocating
+M3's primary.**
