@@ -1,5 +1,28 @@
 # AMENDMENT A5 — DANGER BACK-FILL (registered 2026-08-28, distill-coproc lane)
 
+> # ⛔ READ THIS BLOCK BEFORE ANY OTHER LINE OF THIS FILE
+>
+> **APPEND-ONLY (R25): the front is the oldest text, the binding text is at the
+> end.** Four revisions follow the original §§1-5, and each supersedes numbers
+> above it. Build the void list here FIRST.
+>
+> | superseded / void | replaced by | what changed |
+> |---|---|---|
+> | §2 sizing (held-danger STATES; "1.40x clears it") | **R1.1** | ⚠ wrong AXIS — the CI is seed-CLUSTERED. Real power **34%**, not 80%; the signed n=273 was the **50%** point |
+> | §3 procedure (W=30 window, **topout-only** games) | **R1.1 (PHASE 1)** | superseded: outcome selection + density distortion. Now a whole-game census of **held-out** games |
+> | §2 cost model (`369 + 0.869·forks`) | **R1.2 → R2.1** | ⚠ TWICE wrong. R1.2 over-corrected to 0.227 (death-window). **Firm: 0.805 s/fork, PHASE 1 ≈ 100 core-h** |
+> | §4 density rider (1.9x enrichment correction) | **R3** | the census has **NO composition difference** — 100% of held-danger is trigger-class ⇒ post-stratification is provably inert |
+> | §5.1 arm P as PRIMARY / base-only leading | **R4.3** | the **pooled census GATES**; base-only is the continuity check |
+> | §2 "no new seeds" for the top-up | **R4.1** | the top-up SPENDS this lane's own reserve (19900-20898, 128 held-hashed seeds). Registry records it CONSUMED |
+>
+> **UNCHANGED THROUGHOUT — the bars.** GO ≥0.129 with clustered CI LB >0.099;
+> KILL if UB <0.099. No revision relaxed a criterion; R1.1 made the estimand
+> *stricter*.
+>
+> ⚠ **The L11M arm is scoped separately (§1, §5.3): it re-measures the L11M
+> INSTRUMENT and does NOT contribute to the M2 fit verdict.** Its result (a
+> retraction) lives in `REGISTRATION_M3_AB.md` S7.1.
+
 Amends `REGISTRATION_M1_LABELS.md` (label production) and
 `REGISTRATION_M2_SCREENS.md` (the fit that consumes it). Approved in principle
 by the team-lead 2026-08-28 with a power calc and a density rider; **this
