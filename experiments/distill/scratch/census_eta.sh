@@ -28,26 +28,59 @@ worker_count() {
 while [ "$(worker_count)" != "15" ]; do sleep 60; done
 T0=$(date +%s)
 N0=$(ls $D | grep -c '^seed_')
-say "census now at 15 workers; baseline ${N0}/128 at $(date +%H:%M:%S)"
+F0=$($PY - "$D" <<'PYX'
+import glob,gzip,json,sys
+print(sum(json.load(gzip.open(f,"rt"))["counters"]["tribunal_forks"]
+          for f in glob.glob(sys.argv[1]+"/seed_*.json.gz")))
+PYX
+)
+say "census at 15 workers; baseline ${N0}/128 games, ${F0} forks"
 sleep 1800
-N1=$(ls $D | grep -c '^seed_'); T1=$(date +%s)
-H=$(python3 -c "print(($T1-$T0)/3600)")
-$PY - "$N0" "$N1" "$H" <<'PYEOF'
-import sys, datetime, time
-n0, n1, h = int(sys.argv[1]), int(sys.argv[2]), float(sys.argv[3])
-done, rate = n1 - n0, (n1 - n0) / h
-print(f"=== MEASURED CENSUS RATE AT 15 WORKERS ===")
-print(f"  {done} games in {h*60:.0f} min = {rate:.1f} games/h")
-if done < 3:
-    print(f"  ⚠ only {done} games in the window — too few to quote a rate (R49)."
-          f" Re-measure over a longer window before telling anyone a time.")
-else:
-    rem = 128 - n1
-    eta = time.time() + rem / rate * 3600
-    dt = datetime.datetime.fromtimestamp(eta)
-    print(f"  banked {n1}/128, remaining {rem}")
-    print(f"  ETA at the OBSERVED rate: {dt.strftime('%a %d %H:%M')} local"
-          f"  (+{rem/rate:.1f} h)")
-    print(f"  team-lead's modelled figure was 11:30-12:30 local")
-    print(f"  => {'AGREES with the projection' if 11 <= dt.hour <= 13 else 'DIVERGES from the projection — correct it with the owner'}")
-PYEOF
+T1=$(date +%s)
+$PY - "$D" "$F0" "$T0" "$T1" <<'PYX'
+"""⚠ REWRITTEN TO A WORKLOAD BASIS. The first version measured GAMES/HOUR over
+30 minutes — the exact method shown biased for an imap_unordered pool, applied
+at the point of MAXIMUM bias (the first 30 min returns the cheapest games), and
+piped into an owner-facing ETA that compared itself to a projection built with
+the same bias. Biased confirming biased reads as corroboration.
+
+⚠ Forks/h is not bias-free either, but it errs the OTHER way and that is the
+safe direction: per-fork cost FALLS as games get bigger (measured: 2.29 s/fork
+at 253 forks/game vs 0.92 at 5495, slope 7.6 SE), so a rate measured on early
+SMALL games understates later throughput. This ETA therefore runs LATE, not
+early."""
+import glob, gzip, json, sys, time, datetime, os
+import numpy as np
+D, F0, T0, T1 = sys.argv[1], float(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4])
+recs = glob.glob(D + "/seed_*.json.gz")
+F1 = sum(json.load(gzip.open(f, "rt"))["counters"]["tribunal_forks"] for f in recs)
+hrs = (T1 - T0) / 3600
+dF, n = F1 - F0, len(recs)
+print("=== MEASURED CENSUS THROUGHPUT AT 15 WORKERS (workload basis) ===")
+print(f"  {dF:,.0f} forks in {hrs*60:.0f} min = {dF/hrs:,.0f} forks/h "
+      f"({n}/128 games banked)")
+if dF < 20000:
+    print(f"  ⚠ only {dF:,.0f} forks in the window — too little to quote a rate.")
+    raise SystemExit(0)
+BASE = "/home/struktured/projects/dr-mario-distill-wt/experiments/distill/out/labels_m1/L20"
+tp = []
+for f in sorted(glob.glob(BASE + "/seed_*.json.gz")):
+    r = json.load(gzip.open(f, "rt"))
+    if r["smoke"]:
+        continue
+    tp.append(sum(1 for _p, h in enumerate(r["heights_trace"])
+                  if max(h[3], h[4]) >= 13))
+tp = np.array(tp, float)
+left = 128 - n
+tot, se = left * tp.mean(), np.sqrt(left) * tp.std(ddof=1)
+rate = dF / hrs
+fmt = lambda t: datetime.datetime.fromtimestamp(t).strftime("%a %d %H:%M")
+now = time.time()
+print(f"  remaining {left} games: {tot:,.0f} +/- {se:,.0f} trigger plies "
+      f"(ESTIMATED — these seeds were unplayed, no traces)")
+for lab, t in (("-1 SE", tot - se), ("CENTRAL", tot), ("+1 SE", tot + se)):
+    print(f"    {lab:>8}  census done {fmt(now + t*95.0/rate*3600)}")
+print("  (⚠ errs LATE: rate measured on early SMALL games, which have the")
+print("   WORST per-fork throughput. Team-lead's 11:30-12:30 projection used")
+print("   worker-min/GAME from the cheap end and is optimistic by ~1.5x.)")
+PYX
