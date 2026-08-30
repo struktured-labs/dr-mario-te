@@ -40,7 +40,8 @@ G3's lethal family (the horizontals, which DO fire on that parent) is covered.
 Search-region free space (to TUCK_BFS_ROM $9000, the binding bound): 1,463 B.
 DRVETO=1 adds +179 B (search 2,633 -> 2,812 B) -> 1,284 B remain.  Cycle adds:
 one 128-cell scan per search + ~50 instructions per root candidate ~ <10k
-cycles/search @ 85.9 MHz -- negligible.
+cycles/search = ~116 us @ 85.9 MHz -- negligible (review nit fixed: an earlier
+report quoted 70 us for the same 10k cycles; 10k/85.9e6 is ~116 us).
 
 ## Gates
 - `DRVETO=0` byte-identity: `build_dbgpub.py` under the FW_RECIPES
@@ -68,3 +69,32 @@ py65-gate scope note: the gate builds USE_DELTA=False (attach_engine_emu has
 no CMD-6/7); the ship hex is the delta build.  The DRVETO emissions are
 byte-identical in both variants and the root-replay site is CMD-4 in both;
 delta-vs-base equivalence is covered by the existing co-sim battery.
+
+## CLOSEOUT 2026-08-30 (supersedes "Not run here" above)
+Adversarial review verdict: APPROVE, no code defect; all demanded fixes applied
+here.  The two formerly-outstanding gates have now RUN:
+
+- **Zero-harm replay (workflow gate 4): PASS** -- `gate_zero_harm.py`
+  (ZERO_HARM_RESULT.txt).  The banked 700-game farm (admission 100%, 116,458
+  plies) replayed against the SHIPPING predicate `veto_plug` itself + the
+  firmware's exact rv/win/virf conditions, on the chosen move: **2 fires, BOTH
+  terminal topouts** (c1_L11_bursty s30152 ply 162/162; c5_L20_bursty s32148
+  ply 314/314), **0 non-terminal fires**, 0 divergences from the s16 analytic
+  predicate, 0 recorded plies with a plugged parent.  The widened horizontal
+  arm and the fo<=2 insurance arm changed nothing on the corpus -- the
+  pre-implementation witness carries over to the real implementation.
+- **Quartus compile (workflow gate 5):** see COMPILE_RESULT.md (pinned SEED 13,
+  ship_build.sh route, fw-in-image bijection vs 3 controls incl. the 2-byte
+  theta control).
+- Review should-fix DONE: `s20t3_th400dblcanon` (b03a586e) and
+  `s20t3_th400dblcanon_veto1` (47edb895) are now REGISTERED in
+  experiments/cosim_farm/FW_RECIPES.json and /mnt/data/drmario_cosim/fw/
+  RECIPES.json, with RECIPE.json sidecars next to both artifacts
+  (fw/th400canon/, fw/th400dblcanon_veto1/ -- the latter holds a byte-verified
+  copy of veto1.hex).  Nits fixed: cycle-math above; gate_drveto.py's faithful-
+  sim fallback no longer hardcodes one spelling of the rl worktree path.
+- Still NOT validated by anything here: on-silicon counterfactual rescue (the
+  py65 DRVETO=0 arm never chose the fatal move -- softer leaf than the RTL
+  chain leaf), delta-vs-base equivalence beyond the existing co-sim battery,
+  VS-mode catch under garbage, and live-fire behaviour under a real soak.
+  Deployment is a separate team-lead decision; nothing was deployed.

@@ -1,9 +1,10 @@
+# RERUN 2026-08-30 closeout (post review-fix: FSIM fallback + registry); supersedes the 8/30 build-day run -- same verdicts, same kill signatures (old run in git history)
 ======================================================================
 GATE DRVETO -- real 6502 firmware under py65 vs bit-exact mirror
 ======================================================================
   A identity  : PASS (ON+suppressed == OFF)
 
-=== REAL  (std=24 synth=42 decisions)
+=== REAL  (std=36 synth=42 decisions)
   B bind        : PASS (search 2483B -> 2662B, +179B)
   C parity std  : PASS (0 mismatches)
   C parity synth: PASS (0 mismatches: [])
@@ -13,7 +14,7 @@ GATE DRVETO -- real 6502 firmware under py65 vs bit-exact mirror
   E fires       : PASS (mirror fired 84x, ON!=OFF on 2 synth decisions)
   F note-A      : PASS (plugged parent still decides)
 
-=== M1_fobound  (std=8 synth=14 decisions)
+=== M1_fobound  (std=12 synth=14 decisions)
   B bind        : PASS (search 2483B -> 2669B, +186B)
   C parity std  : PASS (0 mismatches)
   C parity synth: FAIL (1 mismatches: ['FORCED_FO3'])
@@ -23,21 +24,21 @@ GATE DRVETO -- real 6502 firmware under py65 vs bit-exact mirror
   E fires       : PASS (mirror fired 28x, ON!=OFF on 1 synth decisions)
   F note-A      : PASS (plugged parent still decides)
 
-=== M2_ocand  (std=8 synth=14 decisions)
+=== M2_ocand  (std=12 synth=14 decisions)
   B bind        : PASS (search 2483B -> 2662B, +179B)
   C parity std  : FAIL (1 mismatches)
   C parity synth: FAIL (1 mismatches: ['RV_clear_c3'])
-  C flag-set    : FAIL (1 synth + 5 std firing-set mismatches: ['RV_clear_c3'])
+  C flag-set    : FAIL (1 synth + 7 std firing-set mismatches: ['RV_clear_c3'])
   C exp-fire    : PASS (0 cases fired!=expected: [])
   D control     : PASS (0 FIRE-FREE std boards where ON != OFF)
   E fires       : PASS (mirror fired 28x, ON!=OFF on 1 synth decisions)
   F note-A      : PASS (plugged parent still decides)
 
-=== M3_inert  (std=8 synth=14 decisions)
+=== M3_inert  (std=12 synth=14 decisions)
   B bind        : PASS (search 2483B -> 2539B, +56B)
   C parity std  : FAIL (1 mismatches)
   C parity synth: PASS (0 mismatches: [])
-  C flag-set    : FAIL (8 synth + 5 std firing-set mismatches: ['V_fo2_c3', 'V_fo2_c4', 'H_min1_c3', 'H_min2_c34', 'H_min1_c2', 'H_min1_c45'])
+  C flag-set    : FAIL (8 synth + 9 std firing-set mismatches: ['V_fo2_c3', 'V_fo2_c4', 'H_min1_c3', 'H_min2_c34', 'H_min1_c2', 'H_min1_c45'])
   C exp-fire    : PASS (0 cases fired!=expected: [])
   D control     : PASS (0 FIRE-FREE std boards where ON != OFF)
   E fires       : FAIL (mirror fired 28x, ON!=OFF on 0 synth decisions)

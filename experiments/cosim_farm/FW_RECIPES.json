@@ -2,24 +2,160 @@
   "_note": "Build recipes for every firmware arm in this directory, each VERIFIED to reproduce its md5 on 2026-08-07. These were recovered by exhaustive knob sweep: the arms were originally built with no provenance record, and DRFIX=1 / DRCOPRO_TUCK=1 are not guessable from the arm names. Build with experiments/cosim_farm/build_dbgpub.py <out.hex>, which pins the emitter modules to the worktree (a plain build resolves tuck_v3 from a SIBLING worktree -- see that file's docstring).",
   "_common": "All builds are dbg_build.py's `all 0` config: USE_DELTA=True, DEBUG_VAL1=False.",
   "arms": {
-    "s20b":       {"md5": "e970e9ab", "env": {"DRSTRAND": "20", "DRCHAIN": "180", "DRCOPRO_ARM": "1", "DRFIX": "1", "DRCOPRO_TUCK": "1"},
-                   "note": "2x2 arm A. DRCOPRO_TUCK=1 is v1's descriptor emitter; tuck_scan.py has ZERO STA_zp instructions and never writes D_BC/D_BO, so the PLACEMENT is the base search's. Clean base for any drop-mode comparison."},
-    "pre20":      {"md5": "f4b6dfbf", "env": {"DRCHAIN": "180", "DRCOPRO_ARM": "1", "DRFIX": "1", "DRCOPRO_TUCK": "1"},
-                   "note": "s20b with DRSTRAND unset = pre-#47 transfer arm. Also the hex committed on branch cosim-farm."},
-    "s20t3":      {"md5": "5d010f62", "env": {"DRSTRAND": "20", "DRCHAIN": "180", "DRCOPRO_ARM": "1", "DRFIX": "1", "DRCOPRO_TUCKBFS": "1", "DRCOPRO_TUCKBFS_TIER3": "1"},
-                   "note": "2x2 arms B and D. theta defaults to 150."},
-    "s20t3flash": {"md5": "12a0906b", "env": {"DRCOPRO_TUCKBFS": "1", "DRCOPRO_TUCKBFS_TIER3": "1"},
-                   "note": "The image embedded in the only timing-closed tier-3 rbf. CONFIRMS the documented confound: it lacks DRSTRAND=20, DRCHAIN=180, DRCOPRO_ARM=1 and DRFIX=1, so it is NOT s20t3."},
-    "s20t3_th250":   {"md5": "c439e631", "env_extra": {"DRCOPRO_TUCKV3_THETA": "250"}, "base": "s20t3"},
-    "s20t3_th400":   {"md5": "bbe3ef6d", "env_extra": {"DRCOPRO_TUCKV3_THETA": "400"}, "base": "s20t3"},
-    "s20t3_th600":   {"md5": "ec08cb8d", "env_extra": {"DRCOPRO_TUCKV3_THETA": "600"}, "base": "s20t3"},
-    "s20t3_th5000":  {"md5": "e2797c1a", "env_extra": {"DRCOPRO_TUCKV3_THETA": "5000"}, "base": "s20t3"},
-    "s20t3_th20000": {"md5": "61611ad1", "env_extra": {"DRCOPRO_TUCKV3_THETA": "20000"}, "base": "s20t3"},
-    "s20t3_th35536": {"md5": "a86778f7", "env_extra": {"DRCOPRO_TUCKV3_THETA": "35536"}, "base": "s20t3", "note": "35536 = -30000 as an unsigned 16-bit literal (0x8AD0)."},
-    "s20t3_th60000": {"md5": "f54734aa", "env_extra": {"DRCOPRO_TUCKV3_THETA": "60000"}, "base": "s20t3"},
-    "dbg_ctl0":   {"md5": "5d010f62", "env_extra": {"DRCOPRO_TUCKV3_DBGPUB": "0"}, "base": "s20t3", "note": "Byte-identical to s20t3 -- the guard proving DBGPUB does not leak into the shipped build."},
-    "dbg_pub1":   {"md5": "aa554395", "env_extra": {"DRCOPRO_TUCKV3_DBGPUB": "1"}, "base": "s20t3", "note": "MEASUREMENT ONLY, never flash: mailbox carries TK2_BBV and exit D_BV instead of a placement/descriptor."},
-    "dbg_pub2":   {"md5": "751d3c48", "env_extra": {"DRCOPRO_TUCKV3_DBGPUB": "2"}, "base": "s20t3", "note": "MEASUREMENT ONLY, never flash: mailbox carries TK2_BBV and max D_V1 over all candidates; also destroys the descriptor by reusing TK2_APP/TK2_TRIG."},
-    "agree_l11":  {"md5": "e970e9ab", "note": "Copy of s20b used by the agreement gate."}
+    "s20b": {
+      "md5": "e970e9ab",
+      "env": {
+        "DRSTRAND": "20",
+        "DRCHAIN": "180",
+        "DRCOPRO_ARM": "1",
+        "DRFIX": "1",
+        "DRCOPRO_TUCK": "1"
+      },
+      "note": "2x2 arm A. DRCOPRO_TUCK=1 is v1's descriptor emitter; tuck_scan.py has ZERO STA_zp instructions and never writes D_BC/D_BO, so the PLACEMENT is the base search's. Clean base for any drop-mode comparison."
+    },
+    "pre20": {
+      "md5": "f4b6dfbf",
+      "env": {
+        "DRCHAIN": "180",
+        "DRCOPRO_ARM": "1",
+        "DRFIX": "1",
+        "DRCOPRO_TUCK": "1"
+      },
+      "note": "s20b with DRSTRAND unset = pre-#47 transfer arm. Also the hex committed on branch cosim-farm."
+    },
+    "s20t3": {
+      "md5": "5d010f62",
+      "env": {
+        "DRSTRAND": "20",
+        "DRCHAIN": "180",
+        "DRCOPRO_ARM": "1",
+        "DRFIX": "1",
+        "DRCOPRO_TUCKBFS": "1",
+        "DRCOPRO_TUCKBFS_TIER3": "1"
+      },
+      "note": "2x2 arms B and D. theta defaults to 150."
+    },
+    "s20t3flash": {
+      "md5": "12a0906b",
+      "env": {
+        "DRCOPRO_TUCKBFS": "1",
+        "DRCOPRO_TUCKBFS_TIER3": "1"
+      },
+      "note": "The image embedded in the only timing-closed tier-3 rbf. CONFIRMS the documented confound: it lacks DRSTRAND=20, DRCHAIN=180, DRCOPRO_ARM=1 and DRFIX=1, so it is NOT s20t3."
+    },
+    "s20t3_th250": {
+      "md5": "c439e631",
+      "env_extra": {
+        "DRCOPRO_TUCKV3_THETA": "250"
+      },
+      "base": "s20t3"
+    },
+    "s20t3_th400": {
+      "md5": "bbe3ef6d",
+      "env_extra": {
+        "DRCOPRO_TUCKV3_THETA": "400"
+      },
+      "base": "s20t3"
+    },
+    "s20t3_th600": {
+      "md5": "ec08cb8d",
+      "env_extra": {
+        "DRCOPRO_TUCKV3_THETA": "600"
+      },
+      "base": "s20t3"
+    },
+    "s20t3_th5000": {
+      "md5": "e2797c1a",
+      "env_extra": {
+        "DRCOPRO_TUCKV3_THETA": "5000"
+      },
+      "base": "s20t3"
+    },
+    "s20t3_th20000": {
+      "md5": "61611ad1",
+      "env_extra": {
+        "DRCOPRO_TUCKV3_THETA": "20000"
+      },
+      "base": "s20t3"
+    },
+    "s20t3_th35536": {
+      "md5": "a86778f7",
+      "env_extra": {
+        "DRCOPRO_TUCKV3_THETA": "35536"
+      },
+      "base": "s20t3",
+      "note": "35536 = -30000 as an unsigned 16-bit literal (0x8AD0)."
+    },
+    "s20t3_th60000": {
+      "md5": "f54734aa",
+      "env_extra": {
+        "DRCOPRO_TUCKV3_THETA": "60000"
+      },
+      "base": "s20t3"
+    },
+    "dbg_ctl0": {
+      "md5": "5d010f62",
+      "env_extra": {
+        "DRCOPRO_TUCKV3_DBGPUB": "0"
+      },
+      "base": "s20t3",
+      "note": "Byte-identical to s20t3 -- the guard proving DBGPUB does not leak into the shipped build."
+    },
+    "dbg_pub1": {
+      "md5": "aa554395",
+      "env_extra": {
+        "DRCOPRO_TUCKV3_DBGPUB": "1"
+      },
+      "base": "s20t3",
+      "note": "MEASUREMENT ONLY, never flash: mailbox carries TK2_BBV and exit D_BV instead of a placement/descriptor."
+    },
+    "dbg_pub2": {
+      "md5": "751d3c48",
+      "env_extra": {
+        "DRCOPRO_TUCKV3_DBGPUB": "2"
+      },
+      "base": "s20t3",
+      "note": "MEASUREMENT ONLY, never flash: mailbox carries TK2_BBV and max D_V1 over all candidates; also destroys the descriptor by reusing TK2_APP/TK2_TRIG."
+    },
+    "agree_l11": {
+      "md5": "e970e9ab",
+      "note": "Copy of s20b used by the agreement gate."
+    },
+    "s20t3_th400dblcanon": {
+      "md5": "b03a586e",
+      "env": {
+        "DRSTRAND": "20",
+        "DRCHAIN": "180",
+        "DRCOPRO_ARM": "1",
+        "DRFIX": "1",
+        "DRCOPRO_TUCKBFS": "1",
+        "DRCOPRO_TUCKBFS_TIER3": "1",
+        "DRCOPRO_TUCKV3_FIXSLOT": "1",
+        "DRCOPRO_TUCKV3_THETA": "400",
+        "DRDBLCANON": "1"
+      },
+      "note": "theta400 (f78f1e93 family, FIXSLOT included) + DRDBLCANON=1 (#123). THE dblcanon demo arm; in rbfs theta400dblcanon-seed13 (974de3ed) and theta400dblcanon-c0pin-seed13 (4bcd7428). Recipe VERIFIED 2026-08-30: build_dbgpub.py under this env reproduces b03a586e byte-exactly.",
+      "verified": "2026-08-30",
+      "builder": "build_dbgpub.py (pins emitter, asserts __file__)"
+    },
+    "s20t3_th400dblcanon_veto1": {
+      "md5": "47edb895",
+      "md5_full": "47edb8952dd3ae10e26c980eda405fd0",
+      "env": {
+        "DRSTRAND": "20",
+        "DRCHAIN": "180",
+        "DRCOPRO_ARM": "1",
+        "DRFIX": "1",
+        "DRCOPRO_TUCKBFS": "1",
+        "DRCOPRO_TUCKBFS_TIER3": "1",
+        "DRCOPRO_TUCKV3_FIXSLOT": "1",
+        "DRCOPRO_TUCKV3_THETA": "400",
+        "DRDBLCANON": "1",
+        "DRVETO": "1"
+      },
+      "note": "s20t3_th400dblcanon + DRVETO=1 (spawn-plug veto, variant a+). DRVETO=0 under the same env is byte-identical b03a586e. Gates: dr-mario-tempo-wt/experiments/drveto/ (branch drveto).",
+      "verified": "2026-08-30",
+      "builder": "build_dbgpub.py (pins emitter, asserts __file__)"
+    }
   }
 }

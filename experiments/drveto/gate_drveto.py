@@ -392,9 +392,15 @@ def run_gate(n, mutant=None, verbose=True, fast=False):
     restore = apply_mutant(D3, mutant)
     checks = {}
     from test_search_d3 import make_fewlegal
-    FSIM = os.environ.get(
-        "DRM_FAITHFUL_SIM",
-        "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim")
+    FSIM = os.environ.get("DRM_FAITHFUL_SIM")
+    if not FSIM:
+        for cand in ("/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim",
+                     "/home/struktured/projects/dr-mario-rl/.claude/worktrees/faithful-sim"):
+            if os.path.isdir(os.path.join(cand, "src")):
+                FSIM = cand
+                break
+        else:
+            raise SystemExit("faithful-sim worktree not found; set DRM_FAITHFUL_SIM")
     for p in (os.path.join(FSIM, "src"), os.path.join(FSIM, "tmp")):
         if p not in sys.path:
             sys.path.insert(0, p)

@@ -1,4 +1,6 @@
-$ python gate_owner_boards.py   (2026-08-30, dr-mario-mods venv py65)
+$ python gate_owner_boards.py   (2026-08-30 closeout rerun, dr-mario-mods venv py65, exit 0)
+# reproduces the build-day run line-for-line (full sweep: G2 1 capsule x 3 next-pills x 4 seeds;
+# G3 3 capsules x 3 next-pills x 4 seeds; parity + flag-set + no-plug + decision-exists per combo)
   geometry: G2 fatal vertical col3 (o4=0): FIRES
   geometry: G2 fatal vertical col3 (o4=1): FIRES
   geometry: G3 fatal vertical col3 fo==1 (o4=0, non-generable): FIRES
@@ -11,5 +13,3 @@ $ python gate_owner_boards.py   (2026-08-30, dr-mario-mods venv py65)
 
 OWNER-BOARD GATE: PASS -- predicate fires on both parents, firmware ==
 mirror on both, and the DRVETO=1 decision never plugs the throat.
-(Full sweep: G2 1 capsule x 3 next-pills x 4 seeds; G3 3 capsules x 3 next-pills
-x 4 seeds; parity + flag-set + no-plug + decision-exists held for every combo.)

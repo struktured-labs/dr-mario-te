@@ -1,0 +1,14 @@
+$ python gate_zero_harm.py   (2026-08-30 closeout, dr-mario-mods venv, exit 0)
+
+banked corpus rows (extension excluded): 700
+replay: ok=700 mismatch=0 error=0 admission=100.0% (bar 95%)
+plies scored: 116458
+veto_plug-vs-s16-analytic divergences on recorded moves: 0
+recorded plies with parent (0,3)/(0,4) occupied: 0
+
+== FIRES of the SHIPPING predicate on the chosen move: 2 (0.0017% of plies) ==
+  arm=c1_L11_bursty seed=30152 ply 162/162: TERMINAL-topout cleared=False plugged_after=True parent_plug=False
+  arm=c5_L20_bursty seed=32148 ply 314/314: TERMINAL-topout cleared=False plugged_after=True parent_plug=False
+
+non-terminal fires (must be 0): 0
+ZERO-HARM GATE: PASS
