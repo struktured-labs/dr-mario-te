@@ -149,6 +149,10 @@ def build_image(board, cA, cB, nA, nB):
     # depends on that). NOT "DRCANON" -- that name is already in use as a path to
     # the canonical worktree in four files, and setting it to 1 would break them.
     D3.DBLCANON = int(os.environ.get("DRDBLCANON", "0"))
+    # Spawn-plug veto, variant (a+) (env DRVETO, default 0 = byte-identical firmware --
+    # the b03a586e identity gate depends on that). See tests/test_search_d3.py veto_plug/
+    # _e_veto_flag and experiments/drveto/gate_drveto.py for the spec + killed-mutant gate.
+    D3.DRVETO = int(os.environ.get("DRVETO", "0"))
     import nes_d3_golden as _G
     _G.DISC_SHIFT = 1            # golden must match for the py65 gate
     _G.EXCAV_HANG_PLY1 = True    # golden must match for the py65 gate

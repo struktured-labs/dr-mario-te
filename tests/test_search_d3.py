@@ -62,6 +62,101 @@ DBLCANON = 0                   # #123 double-capsule orient canonicalisation (se
                                # build_copro_d3 from env DRDBLCANON). 0 emits NOTHING ->
                                # byte-identical firmware.  See _e_dblcanon for what it does
                                # and why it is at the PUBLISH site and not in the p0 loop.
+DRVETO = 0                     # spawn-plug veto, variant (a+) (set by build_copro_d3 from
+                               # env DRVETO). 0 emits NOTHING -> byte-identical firmware (the
+                               # b03a586e byte-identity gate depends on that). Penalise any
+                               # root candidate whose no-clear resolution leaves a cell in
+                               # (row0,col3)/(row0,col4) -- the ROM's only loss condition --
+                               # while viruses remain. Spec + gates: experiments/drveto/.
+D_VETO, D_VIRF = 0xB4, 0xB5    # DRVETO zp: per-candidate veto flag (root-replay -> o_cand)
+                               # + per-search viruses-remain flag. $B4-$C9 is unclaimed by
+                               # every module in this build (D_* end $72; tuck_v3 $70-$80;
+                               # tuck_bfs $81-$96; translate $97-$A8; tier3 $A9-$B3;
+                               # primitives scratch $CA-$F1).
+_VETO_SUPPRESS = False         # TEST-ONLY (gate identity check): True suppresses all three
+                               # DRVETO emissions even with DRVETO=1. Never set by any build.
+_VETO_AT_OCAND = False         # TEST-ONLY (gate mutant M2, the C1 trap): True moves the
+                               # predicate evaluation to o_cand, where LEV_RVC/LEV_WIN_R are
+                               # STALE. Exists so the gate can PROVE the trap is real and
+                               # that its own parity check catches it. Never set by any build.
+VETO_PENALTY = 20000           # subtracted at o_cand with 16-bit signed SATURATION (clamp
+                               # -32767 on overflow) -- a vetoed candidate loses to any
+                               # plausible legit score, order among vetoed candidates is
+                               # preserved, and no wrap can flip a vetoed move to the top.
+                               # Same scale family DRSTRAND already argued safe (<24480).
+
+
+def veto_plug(board, o4, col):
+    """DRVETO geometry arm, in Python: the SPEC the 6502 in `_e_veto_flag` implements.
+
+    True iff the placement of (o4, col) on `board` (parent, NES bytes, $FF empty)
+    puts -- or finds -- a cell in (row0,col3)/(row0,col4):
+      * parent already occupies (0,3)/(0,4) (note A: every candidate fires; the
+        PENALTY form keeps the argmax total so a clearing candidate, which is
+        never vetoed, floats to the top if one exists);
+      * VERTICAL in col 3/4 with fo <= 2 (fo==2 -> halves at rows 0-1; fo==1 ->
+        bottom half at row 0, top half discarded above the bottle -- silicon-
+        verified on G3 even though this enumerator never generates it, see R29);
+      * HORIZONTAL whose span (col, col+1) covers col 3 or 4, resting at row 0
+        (min fo == 1).  Spans 2-3 and 4-5 plug (0,3)/(0,4) exactly as 3-4 does.
+    rv_cells==0 / win==0 / viruses-remain are NOT here -- they come from the
+    engine result regs + parent scan and are tested separately at the root-replay
+    site (C1: the regs are stale by o_cand).  Lives in this module for the same
+    reason `canon_o4` does: this is the only file a gate can import and be sure
+    which tree it got.
+    """
+    E = 0xFF
+    if board[3] != E or board[4] != E:
+        return True
+    if o4 & 2:                                    # horizontal (a_o4[1], LeafEval.sv S_FO1)
+        if col < 2 or col > 4:
+            return False
+        if board[col] != E or board[col + 1] != E:
+            return False                          # row 0 blocked -> illegal, never a candidate
+        return board[8 + col] != E or board[9 + col] != E     # min(fo)==1 -> rests at row 0
+    if col not in (3, 4):                         # vertical
+        return False
+    return board[col] != E or board[8 + col] != E or board[16 + col] != E   # fo <= 2
+
+
+def veto_val(val):
+    """The o_cand penalty, in Python: 16-bit signed subtract with saturation."""
+    t = val - VETO_PENALTY
+    return t if t >= -32768 else -32767
+
+
+def _e_veto_flag(a):
+    """DRVETO root-replay-site read (C1): the CMD-4 NODE for THIS root candidate has
+    just run, so LEV_RVC/LEV_WIN_R are the candidate's own values -- by o_cand the
+    ply-2 loop has issued ~32 more LeafEval commands and they are someone else's.
+    Stash the verdict in D_VETO; the penalty applies at o_cand. Clobbers A,X."""
+    a.ins("LDA_imm", 0); a.ins("STA_zp", D_VETO)
+    a.ins16("LDA_abs", LEV_WIN_R); a.br("BNE", "vt_no")      # candidate wins -> never veto
+    a.ins16("LDA_abs", LEV_RVC); a.br("BNE", "vt_no")        # resolution clears -> conservative skip
+    a.ins("LDA_zp", D_VIRF); a.br("BEQ", "vt_no")            # no viruses on parent -> skip
+    a.ins16("LDA_abs", LIVE + 3); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")   # parent plugs (0,3)
+    a.ins16("LDA_abs", LIVE + 4); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")   # parent plugs (0,4)
+    a.ins("LDA_zp", D_O1); a.ins("AND_imm", 0x02); a.br("BNE", "vt_h")
+    a.ins("LDA_zp", D_C1); a.ins("CMP_imm", 3); a.br("BEQ", "vt_v")   # vertical: col 3/4 only
+    a.ins("CMP_imm", 4); a.br("BEQ", "vt_v")
+    a.jmp("vt_no")
+    a.label("vt_v")                                          # fo(col) <= 2: any of rows 0-2 occupied
+    a.ins("LDX_zp", D_C1)
+    a.ins16("LDA_absX", LIVE); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")
+    a.ins16("LDA_absX", LIVE + 8); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")
+    a.ins16("LDA_absX", LIVE + 16); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")
+    a.jmp("vt_no")
+    a.label("vt_h")                                          # span (col,col+1) covers col 3/4?
+    a.ins("LDA_zp", D_C1); a.ins("CMP_imm", 2); a.br("BCC", "vt_no")
+    a.ins("CMP_imm", 5); a.br("BCS", "vt_no")
+    a.ins("TAX")
+    a.ins16("LDA_absX", LIVE); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_no")       # row0 blocked -> illegal
+    a.ins16("LDA_absX", LIVE + 1); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_no")
+    a.ins16("LDA_absX", LIVE + 8); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")  # min(fo)==1
+    a.ins16("LDA_absX", LIVE + 9); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")
+    a.jmp("vt_no")
+    a.label("vt_yes"); a.ins("LDA_imm", 1); a.ins("STA_zp", D_VETO)
+    a.label("vt_no")
 
 
 def canon_o4(o4, cA, cB):
@@ -420,6 +515,19 @@ def _emit_search_d3_engine(a):
     # tie-break seed (same as soft build)
     a.ins16("LDA_abs", S_CA); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("STA_zp", D_SEED)
     a.ins16("LDA_abs", S_CB); a.ins("AND_imm", 0xF0); a.ins("ORA_zp", D_SEED); a.ins("STA_zp", D_SEED)
+    if DRVETO and not _VETO_SUPPRESS:
+        # DRVETO: viruses-remain flag, once per search from the untouched root at LIVE
+        # ($0500). Redundant with LEV_WIN_R when rv_cells==0 (no clear + parent viruses
+        # -> win==0), but the spec names the condition and it costs one scan per search.
+        a.ins("LDA_imm", 0); a.ins("STA_zp", D_VIRF)
+        a.ins("LDX_imm", 0)
+        a.label("vt_vs")
+        a.ins16("LDA_absX", LIVE); a.ins("CMP_imm", 0xFF); a.br("BEQ", "vt_vn")
+        a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BNE", "vt_vn")
+        a.ins("LDA_imm", 1); a.ins("STA_zp", D_VIRF); a.jmp("vt_ve")
+        a.label("vt_vn")
+        a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "vt_vs")
+        a.label("vt_ve")
     # upload LIVE ($0500) -> engine slot 1
     a.ins("LDA_imm", 1); a.ins16("STA_abs", LEV_WSLOT)
     a.ins("LDX_imm", 0)
@@ -479,6 +587,8 @@ def _emit_search_d3_engine(a):
     _e_copy(a, 1, True)
     _e_node(a, D_O1, D_C1, S_CA, S_CB)
     a.ins16("LDA_abs", LEV_IMM); a.ins("STA_zp", D_I1L); a.ins16("LDA_abs", LEV_IMM + 1); a.ins("STA_zp", D_I1H)
+    if DRVETO and not _VETO_SUPPRESS and not _VETO_AT_OCAND:
+        _e_veto_flag(a)          # C1: read rv_cells/win HERE, while they are this candidate's
     if DRSTRAND:
         # #47: the engine's working board holds the RESOLVED ROOT CHILD right here
         # (CMD-4 NODE just ran). CMD 8 counts its stranded halves -- read-only, touches
@@ -612,6 +722,21 @@ def _emit_search_d3_engine(a):
                 a.ins("LDA_zp", D_P1H); a.ins("ADC_imm", 0); a.ins("STA_zp", D_P1H)
         a.ins("SEC"); a.ins("LDA_zp", D_V1L); a.ins("SBC_zp", D_P1L); a.ins("STA_zp", D_V1L)
         a.ins("LDA_zp", D_V1H); a.ins("SBC_zp", D_P1H); a.ins("STA_zp", D_V1H)
+    if DRVETO and not _VETO_SUPPRESS:
+        if _VETO_AT_OCAND:
+            _e_veto_flag(a)      # TEST-ONLY M2: the C1 trap made real -- stale reads
+        # DRVETO penalty (note A: penalty, never removal -- a fully-plugged parent still
+        # picks a move, and un-vetoed clearing candidates outrank every vetoed one).
+        # 16-bit signed subtract, SATURATING at -32767 so no wrap can promote a vetoed
+        # candidate past the argmax. Mirrored bit-for-bit by veto_val().
+        a.ins("LDA_zp", D_VETO); a.br("BEQ", "vt_np")
+        a.ins("SEC")
+        a.ins("LDA_zp", D_V1L); a.ins("SBC_imm", VETO_PENALTY & 0xFF); a.ins("STA_zp", D_V1L)
+        a.ins("LDA_zp", D_V1H); a.ins("SBC_imm", (VETO_PENALTY >> 8) & 0xFF)
+        a.br("BVC", "vt_st")
+        a.ins("LDA_imm", 0x01); a.ins("STA_zp", D_V1L); a.ins("LDA_imm", 0x80)
+        a.label("vt_st"); a.ins("STA_zp", D_V1H)
+        a.label("vt_np")
     if DEBUG_VAL1:                                    # dump (C1,O1,V1L,V1H,B2L,B2H) at
                                                         # ring[D_J1*8] (pre-jitter), PLUS
                                                         # (I1L,I1H,L1L,L1H,ADL,ADH) at
