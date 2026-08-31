@@ -26,7 +26,10 @@ ARMS = {"proph": "drmario_prophcvc_f2a16c00.nes",
 BASE = os.path.dirname(os.path.abspath(__file__))
 CSVP = os.path.join(BASE, "ab_samples.csv")
 TMPPNG = os.path.join(BASE, ".poll.png")
-POLL_S = 15
+# 10 s: the round-end state we score must be seen BEFORE the death, and the ssh
+# round trip is ~5 s, so this is close to the practical floor. Faster would
+# also write >600 PNGs/hour to the SD card for little extra resolution.
+POLL_S = 10
 BLOCK_S = int(os.environ.get("BLOCK_MIN", "30")) * 60
 
 

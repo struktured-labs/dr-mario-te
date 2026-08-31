@@ -19,12 +19,29 @@ the weak native d1 AI so its board is systematically fuller -- the rule would ha
 called nearly every round TOPOUT_P1 while reflecting the skill gap, not deaths.
 ⚠ AND WHY THROAT ALONE IS NOT ENOUGH: the ACTIVE CAPSULE spawns in exactly those
 cells, so throat-occupied fires on ordinary mid-round spawn frames (measured: a
-healthy P2 with 23 viruses read throat=True). PLUGGED therefore requires the
-throat AND a real stack in the top three rows; a lone spawning capsule is ~2 cells.
-Both rules were fixed BEFORE any round was scored (R28).
+healthy P2 with 23 viruses read throat=True).
+
+⚠⚠ RULE REVISION, DECLARED IN THE OPEN (2026-09-01, after n=1 transition, i.e.
+effectively pre-data, and for a MECHANICAL reason -- not because the first result
+displeased me). The registered rule required the THROAT occupied. The first real
+transition showed why that cannot work: the throat is occupied only in the ~2.13 s
+between the plug and the field wipe, while the last pre-reset SAMPLE is up to a
+poll interval earlier. That round was an obvious P1 topout -- P1 sat on 44 viruses
+with 8 of the 24 top-three-row cells occupied while P2 had 1 cell and 12 viruses
+left -- and the throat rule scored it AMBIGUOUS. Scoring every round AMBIGUOUS is
+an instrument that cannot fire (R92), which is the failure this whole exercise
+exists to avoid.
+REVISED RULE: near-death = TOPCELLS >= NEARDEATH_MIN, i.e. a stack standing in the
+top three rows. Unlike the throat that state persists for many seconds before the
+topout, so a poll can see it; and unlike whole-board FILL it is specific to being
+near the ceiling rather than to being behind on viruses. The loser is the seat
+that is near death when the other is not; both or neither -> AMBIGUOUS.
+Threshold fixed by construction, not tuned: 6 of the 24 cells in rows 0-2 = a
+quarter of the danger zone, comfortably above a 2-cell spawning capsule.
 """
 RESET_MIN = 40          # a reset goes to the level's virus count (48 at L11)
 TOPCELLS_MIN = 4        # occupied cells in rows 0-2 that mean "stack", not "capsule"
+NEARDEATH_MIN = 6       # of 24 cells in rows 0-2; see the RULE REVISION note
 
 
 def transitions(series):
@@ -49,8 +66,9 @@ def transitions(series):
 
 
 def plugged(throat, topcells):
-    """The ROM's loss condition, guarded against the spawning capsule."""
-    return bool(throat) and topcells >= TOPCELLS_MIN
+    """Near-death: a stack standing in the top three rows. The throat corroborates
+    but is NOT required -- it is only occupied in the last ~2 s (see RULE REVISION)."""
+    return topcells >= NEARDEATH_MIN or (bool(throat) and topcells >= TOPCELLS_MIN)
 
 
 def _classify(start_t, end_t, prev):

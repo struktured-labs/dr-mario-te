@@ -68,6 +68,15 @@ check("both plugged -> AMBIGUOUS", one(20, 30, PLUG, PLUG) == "AMBIGUOUS")
 check("neither plugged at the last sample -> AMBIGUOUS", one(20, 30, NOPLUG, NOPLUG) == "AMBIGUOUS")
 check("a SPAWNING CAPSULE in the throat is NOT a plug (the trap)",
       one(20, 30, NOPLUG, CAPSULE) == "AMBIGUOUS")
+# the RULE REVISION: near-death must be visible WITHOUT the throat, because the
+# throat is only occupied in the ~2.13 s a poll cannot be relied on to catch.
+STACK = (0, 8)          # tall stack in rows 0-2, throat not (yet) occupied
+check("tall top-rows stack with NO throat -> still a topout (revision)",
+      one(44, 12, STACK, NOPLUG) == "TOPOUT_P1")
+check("the revision did NOT make the spawn capsule a plug",
+      rounds.plugged(1, 2) is False)
+check("a 5-cell stack is below the near-death bar", rounds.plugged(0, 5) is False)
+check("a 6-cell stack meets it", rounds.plugged(0, 6) is True)
 
 print("\n" + ("INSTRUMENT VALIDATION: ALL PASS" if ok else "INSTRUMENT VALIDATION: FAILED"))
 raise SystemExit(0 if ok else 1)
