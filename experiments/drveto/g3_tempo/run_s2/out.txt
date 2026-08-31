@@ -1,0 +1,4 @@
+CASE parent_s1A_p2 final=0,1 done=1 b4zero=26 b4one=4 cmd4viol=0 pubs=0:0:0:s:1403792;0:1:0:s:5440815;0:1:1:p:33172629; clocks=33172800 doneclk=33172635 timeout=0
+CASE parent_s2A_p0 final=2,3 done=1 b4zero=26 b4one=4 cmd4viol=0 pubs=0:0:0:s:1079472;3:1:0:s:4232092;2:3:0:s:9671931;2:3:1:p:24922235; clocks=24922560 doneclk=24922241 timeout=0
+CASE parent_s3A_p1 final=2,0 done=1 b4zero=26 b4one=4 cmd4viol=0 pubs=2:0:0:s:1276651;2:0:1:p:34127361; clocks=34127520 doneclk=34127367 timeout=0
+CASE parent_s4A_p2 final=2,2 done=1 b4zero=26 b4one=4 cmd4viol=0 pubs=0:0:0:s:1296842;3:1:0:s:7989507;2:2:0:s:13502405;2:2:1:p:31095074; clocks=31095360 doneclk=31095080 timeout=0

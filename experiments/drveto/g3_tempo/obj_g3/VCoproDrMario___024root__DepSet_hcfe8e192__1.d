@@ -1,0 +1,3 @@
+VCoproDrMario___024root__DepSet_hcfe8e192__1.o: \
+ VCoproDrMario___024root__DepSet_hcfe8e192__1.cpp VCoproDrMario__pch.h \
+ VCoproDrMario___024root.h
