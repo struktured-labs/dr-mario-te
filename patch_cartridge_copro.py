@@ -252,6 +252,64 @@ REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
 # resets the count. Unbrick without this flag: cycle menu.rbf then load_core (BRAM re-init).
 BUSYESC = _os.environ.get("DRBUSYESC", "0") == "1"
 BUSYSKP = 0x6192                                   # consecutive-bail counter (after DRSTALLWD's $6191)
+# ==================== DRPROPH (Fix B): P2 SPAWN-PLUG PROPHYLACTIC ====================
+# Default OFF -> byte-identical carts (gate 1). The human-facing spawn-plug suicide class is
+# DRIVER TEMPO, not search choice ([[dr-mario-spawnplug-verdict]] repro verdict): a capsule
+# that spawns AT REST on a throat ledge (min(fo(c3),fo(c4)) <= 2) locks on the first blocked
+# gravity tick -- W = speedCounterTable+1 frames, NO lock delay, lateral motion never resets
+# it (G3 tier-1, MEASURED) -- while the answer path's first press lands ~11 f after window
+# open (settle 7.5 f + pub ~1.5 f + adopt/press): too late for every fo=1 ledge in the death
+# regime (W=8-10). The prophylactic replaces EXACTLY the driver's two no-answer no-button
+# states with a directed escape pulse:
+#   TRIGGER (proph_trigger, JSR'd from the new-P2-pill edge in dispatch): scan the LIVE board
+#     $0500 cols 3/4 for first-occupied row (empties are $FF or $00, both -- the DISTGATE/
+#     TUCKGUARD dual-encoding rule); if min(fo3,fo4) <= 2, direction = the DEEPER-fo throat
+#     side (the capsule falls INTO the deep side; ties -> LEFT), eligible only if its gate
+#     cells (rows 0-1 of the adjacent pass column, c2 left / c5 right) are free; if the deep
+#     side's gate is blocked the other side is tried; both blocked -> PROPH_DIR=0, stand
+#     aside (DISTGATE's own conceded floor). Because the trigger is JSR'd from inside
+#     dispatch it inherits the go_ai mode gate ($0046==4 AND $04!=0) and the fc_clear
+#     pre-empt: it can never fire in menus/intro/stage-clear/1P (gate 5).
+#   PULSE (proph_pulse, JSR'd from the act_p2 settle guard and nf2_hold): AMENDMENT A -- fire
+#     from the FIRST hook after detection, i.e. DURING the DELAY2 settle window (the
+#     as-specced PEND2==0 gating measured +0 rescues in-regime; it is kept buildable only as
+#     the 'late' mutant). AMENDMENT B -- PULSE the direction 1 frame on / 1 frame off, never
+#     hold: each on-frame writes held=0 (the rotate-press edge idiom) so every on-frame is a
+#     fresh press edge -> 1 column / 2 frames (rom_pulse.json edges t=1,3,5), which rescues
+#     the 2-edge classes (B34, the G2/G3 shapes) that held-DAS provably cannot reach
+#     in-regime, and never carries a held direction across the spawn boundary (E7 edge-burn:
+#     a carried hold costs 16 f for its first move). The on/off phase is keyed to the GAME
+#     frame counter $43's parity (latched at detect into PROPH_DIR bit 2), NOT to a hook
+#     count: both hook passes of a frame agree on $43, so the press always survives the
+#     ROM's two-pass AND regardless of which pass detected the spawn.
+#   STOP: structural. The pulse lives ONLY in the two no-answer paths; the first valid
+#     mailbox publication takes the anytime adopt path and normal steering resumes with zero
+#     handover code (retarget-on-valid). The trigger rewrites PROPH_DIR on every new pill and
+#     the go_ai cold-init clears it, so no stale direction survives a spawn or a match
+#     boundary. Writes $F6/$F8 only -- no timer (MIN_THINK/WDOG/DELAY/SLAM) is touched.
+# G3 tier-1 projection this build must reproduce (gate 2, killed-mutant standard): death
+# regime W=8-10 win zone 66.7% (+28/42 beyond the 12/42 the answer already saves), ZERO
+# band-(i) regressions, 2/42 unsavable (synth_none).
+PROPH = _os.environ.get("DRPROPH", "0") == "1"
+# ---- TEST-ONLY MUTANTS (DRPROPH_MUT; the DRROTDIR_MUT precedent -- buildable solely so the
+# g3 behavioral gate can demonstrate each amendment is load-bearing. NEVER ship one):
+#   hold     -- Amendment B violated: direction written as a plain HELD latch ($F8 left to
+#               the game -> one edge then the 16 f DAS engage; the P1WIGGLE idiom). Must
+#               LOSE the 2-edge classes the pulse rescues.
+#   late     -- Amendment A violated: the settle-guard site keeps the no-button state, so
+#               the first press waits for PEND2==0 (the as-specced timing). Must drop to
+#               ~+0 in-regime.
+#   wrongdir -- direction inverted at press time (EOR #$03). Must fail the eligibility
+#               cases (a press toward a blocked gate is refused by the ROM; gateblk class).
+PROPH_MUT = (_os.environ.get("DRPROPH_MUT", "none") if PROPH else "none")
+# PROPH_DIR $61C6 -- head of the $61C6-$61FF free run (PRG_RAM_MAP.md; deriver re-run with
+# this allocation). ⚠ NOT $6172: that is SLAM_ARM, LIVE on this lineage. Layout: bits 0-1 =
+# direction (B_LEFT $02 / B_RIGHT $01; 0 = inactive), bit 2 = $43 parity latched at detect
+# (the pulse's frame-phase key). Absolute stores only -- no indexed writer, exact ownership.
+# The trigger parks fo3 here for one CMP as scratch before the final store: single writer,
+# single reader (proph_pulse, later in the SAME hook), so no torn state is observable even
+# across an absorbed NMI overrun (DRRTIVEC RTIs back into the computation).
+PROPH_DIR = 0x61C6
 # ==================== NMI-OVERRUN SILICON HAZARDS (both trace-proven 2026-08-09) ====================
 # Two INDEPENDENT ways a long NMI hook kills the cart. Mapper 100 routes PRG banking to upstream
 # MMC1.sv, so both are identical on MiSTer and Pocket silicon. Ship them TOGETHER (see the
@@ -1841,6 +1899,8 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", PEND1); a.ins16("STA_abs", PEND2)
         a.ins16("STA_abs", DELAY1); a.ins16("STA_abs", DELAY2)
         a.ins16("STA_abs", LASTY1); a.ins16("STA_abs", LASTY2)
+        if PROPH:
+            a.ins16("STA_abs", PROPH_DIR)   # A==0: no stale direction survives a match boundary
         if COLDINIT:
             # SOFT-RELAUNCH stall (P2.2 mechanism): PRG-RAM persists across a core relaunch, so a
             # stale ARMED2=1 makes handle() wait on a copro that is not searching -- the FIRST pill
@@ -2216,6 +2276,14 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", ARMED2); a.br("BEQ", "p2_lockok")
         a.ins("LDA_imm", 0); a.ins16("STA_abs", SLAM_ARM)
         a.label("p2_lockok")
+    if PROPH:
+        # DRPROPH TRIGGER (flag block above). JSR'd (3 B) so the BCC/BEQ no_p2_new span above
+        # stays short; body lives with proph_pulse past freeze_pending (JSR-only territory).
+        # Runs in BOTH new-pill branches (normal and prestart-owned): a prestart with its
+        # answer already published never pulses (PEND2==0 -> settle guard open, ARMED2==0),
+        # while a still-armed prestart pulses until its first publication -- exactly the
+        # no-answer window the fix owns. A/X/Y are dead here (reloaded below).
+        a.jsr("proph_trigger")
     a.label("no_p2_new")
     a.ins16("LDA_abs", 0x0386); a.ins16("STA_abs", LASTY2)
     if PRESTART:
@@ -2456,6 +2524,99 @@ def build_main(level=11, speed=1):
     a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
     a.label("fp_done")
     a.ins("RTS")
+
+    if PROPH:
+        # ---- proph_trigger (DRPROPH; JSR-only territory; see the flag block) --------------
+        # in: none (reads $0500 live board + $43). out: PROPH_DIR = dir|parity or 0.
+        for col, tag in ((3, "3"), (4, "4")):
+            if tag == "3":
+                a.label("proph_trigger")
+            a.ins("LDY_imm", 0); a.ins("LDX_imm", col)
+            a.label(f"pf_s{tag}")                       # fo(col): first-occupied row, 0..16
+            a.ins16("LDA_absX", 0x0500)
+            a.br("BEQ", f"pf_e{tag}")                   # $00 = empty
+            a.ins("CMP_imm", 0xFF); a.br("BNE", f"pf_d{tag}")   # occupied -> fo found
+            a.label(f"pf_e{tag}")
+            a.ins("INY")
+            a.ins("TXA"); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAX")
+            a.ins("CPX_imm", 128); a.br("BCC", f"pf_s{tag}")
+            a.label(f"pf_d{tag}")
+            if tag == "3":
+                a.ins("TYA"); a.ins("PHA")              # fo3 -> stack
+        a.ins("PLA"); a.ins("TAX")                      # X = fo3, Y = fo4
+        a.ins("CPX_imm", 3); a.br("BCC", "pf_arm")      # fo3 <= 2 -> throat ledge
+        a.ins("CPY_imm", 3); a.br("BCC", "pf_arm")      # fo4 <= 2 -> throat ledge
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PROPH_DIR)   # no threat -> inactive
+        a.ins("RTS")
+        a.label("pf_arm")
+        # direction: the DEEPER-fo side (ties -> LEFT). No A<->Y compare on 6502: park fo3
+        # in PROPH_DIR for one CMP (scratch note in the flag block).
+        a.ins("TXA"); a.ins16("STA_abs", PROPH_DIR)     # scratch: fo3
+        a.ins("TYA"); a.ins16("CMP_abs", PROPH_DIR)     # fo4 vs fo3
+        a.br("BEQ", "pf_tryL")                          # tie -> LEFT
+        a.br("BCS", "pf_tryR")                          # fo4 > fo3 -> RIGHT side deeper
+        a.label("pf_tryL")                              # gate cells: rows 0-1 of c2
+        a.ins16("LDA_abs", 0x0502); a.br("BEQ", "pf_L1"); a.ins("CMP_imm", 0xFF); a.br("BNE", "pf_LtoR")
+        a.label("pf_L1")
+        a.ins16("LDA_abs", 0x050A); a.br("BEQ", "pf_Lok"); a.ins("CMP_imm", 0xFF); a.br("BNE", "pf_LtoR")
+        a.label("pf_Lok")
+        a.ins("LDA_imm", B_LEFT); a.jmp("pf_store")
+        a.label("pf_LtoR")                              # left gate blocked -> right eligible?
+        a.ins16("LDA_abs", 0x0505); a.br("BEQ", "pf_LR1"); a.ins("CMP_imm", 0xFF); a.br("BNE", "pf_none")
+        a.label("pf_LR1")
+        a.ins16("LDA_abs", 0x050D); a.br("BEQ", "pf_LRok"); a.ins("CMP_imm", 0xFF); a.br("BNE", "pf_none")
+        a.label("pf_LRok")
+        a.ins("LDA_imm", B_RIGHT); a.jmp("pf_store")
+        a.label("pf_tryR")                              # gate cells: rows 0-1 of c5
+        a.ins16("LDA_abs", 0x0505); a.br("BEQ", "pf_R1"); a.ins("CMP_imm", 0xFF); a.br("BNE", "pf_RtoL")
+        a.label("pf_R1")
+        a.ins16("LDA_abs", 0x050D); a.br("BEQ", "pf_Rok"); a.ins("CMP_imm", 0xFF); a.br("BNE", "pf_RtoL")
+        a.label("pf_Rok")
+        a.ins("LDA_imm", B_RIGHT); a.jmp("pf_store")
+        a.label("pf_RtoL")                              # right gate blocked -> left eligible?
+        a.ins16("LDA_abs", 0x0502); a.br("BEQ", "pf_RL1"); a.ins("CMP_imm", 0xFF); a.br("BNE", "pf_none")
+        a.label("pf_RL1")
+        a.ins16("LDA_abs", 0x050A); a.br("BEQ", "pf_RLok"); a.ins("CMP_imm", 0xFF); a.br("BNE", "pf_none")
+        a.label("pf_RLok")
+        a.ins("LDA_imm", B_LEFT); a.jmp("pf_store")
+        a.label("pf_none")                              # both gates blocked -> stand aside
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PROPH_DIR)
+        a.ins("RTS")
+        a.label("pf_store")                             # A = direction; latch $43 parity in bit 2
+        a.ins16("STA_abs", PROPH_DIR)
+        a.ins("LDA_zp", 0x43); a.ins("AND_imm", 0x01); a.ins("ASL_A"); a.ins("ASL_A")
+        a.ins16("ORA_abs", PROPH_DIR); a.ins16("STA_abs", PROPH_DIR)
+        a.ins("RTS")
+
+        # ---- proph_pulse (DRPROPH; JSR-only territory; see the flag block) ----------------
+        # Called from EXACTLY the two no-answer paths (act_p2 settle guard, nf2_hold), which
+        # today write the no-button state; both callers JMP act_p1 right after. Inactive ->
+        # the byte-equivalent no-button writes. Active -> press on frames whose $43 parity
+        # matches the latched bit 2 (1 f on / 1 f off), held FORCED 0 on press frames so each
+        # is a fresh edge. $F8 is used as intra-hook scratch for the parity compare -- both
+        # exits overwrite it with the value the ROM's post-read derivation actually sees.
+        a.label("proph_pulse")
+        a.ins16("LDA_abs", PROPH_DIR); a.br("BNE", "prp_act")
+        a.ins("LDA_imm", 0); a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8)   # inactive = today's state
+        a.ins("RTS")
+        a.label("prp_act")
+        if PROPH_MUT == "hold":
+            # MUTANT hold: Amendment B violated -- plain held latch, $F8 left to the game.
+            a.ins("AND_imm", 0x03); a.ins("STA_zp", 0xF6)
+            a.ins("RTS")
+        else:
+            a.ins("AND_imm", 0x04); a.ins("STA_zp", 0xF8)       # scratch: latched parity << 2
+            a.ins("LDA_zp", 0x43); a.ins("AND_imm", 0x01); a.ins("ASL_A"); a.ins("ASL_A")
+            a.ins("CMP_zp", 0xF8); a.br("BEQ", "prp_on")
+            a.ins("LDA_imm", 0); a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8)   # off-frame: release
+            a.ins("RTS")
+            a.label("prp_on")
+            a.ins("LDA_imm", 0); a.ins("STA_zp", 0xF8)          # held := 0 -> this press is an EDGE
+            a.ins16("LDA_abs", PROPH_DIR); a.ins("AND_imm", 0x03)
+            if PROPH_MUT == "wrongdir":
+                a.ins("EOR_imm", 0x03)                          # MUTANT: inverted direction
+            a.ins("STA_zp", 0xF6)
+            a.ins("RTS")
 
     if PRESTART:
         # ================= DRPRESTART: garbage-window prestart (P2) =================
@@ -2968,10 +3129,15 @@ def build_main(level=11, speed=1):
         # no candidate published yet. FAIRNESS: under ROTFIX the capsule keeps FALLING under
         # live gravity (no pin) -- we only WITHHOLD steering until there is a move to make.
         # DRROTFIX=0 keeps the legacy brief freeze (byte-identical to the deployed carts).
-        a.ins("LDA_imm", 0)
-        if not ROTFIX:
-            a.ins16("STA_abs", GRAV_P2)
-        a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
+        if PROPH and ROTFIX:
+            # DRPROPH: the mid-search no-answer window (mailbox invalid, ~1.5 f) -- pulse
+            # instead of no-button; the first valid pub above takes the adopt path (retarget).
+            a.jsr("proph_pulse"); a.jmp("act_p1")
+        else:
+            a.ins("LDA_imm", 0)
+            if not ROTFIX:
+                a.ins16("STA_abs", GRAV_P2)
+            a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
         if RELATCH:
             # RE-LATCH-ON-CHANGE (DRRELATCH -- see the flag comment above). Reached only with
             # ROT_DONE2 latched. The COLUMN was already refined above (TGT_C2 <- $616D, the
@@ -3006,7 +3172,13 @@ def build_main(level=11, speed=1):
         # PEND2 is handled by freeze_pending (deployed; the ~3-frame settle sits inside the spawn
         # no-fall window) -- we do NOT pin GRAV_P2 here (fairness: no extra world-stop).
         a.ins16("LDA_abs", PEND2); a.br("BEQ", "act_p2_go")
-        a.ins("LDA_imm", 0); a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
+        if PROPH and PROPH_MUT != "late":
+            # DRPROPH AMENDMENT A: the DELAY2 settle window is the win zone -- pulse from the
+            # FIRST hook after detect instead of the no-button state (waiting for PEND2==0 is
+            # the as-specced timing, kept buildable only as the 'late' mutant: measured +0).
+            a.jsr("proph_pulse"); a.jmp("act_p1")
+        else:
+            a.ins("LDA_imm", 0); a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
         a.label("act_p2_go")
         if SLAM:
             # ARGMAX-STABILITY TRACKER (past the PEND settle guard, so no stale-target counting):

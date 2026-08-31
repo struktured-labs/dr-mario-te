@@ -1,0 +1,9 @@
+== GATE 2 VERDICT (death-regime band W=8-10; n=42) ==
+ REAL classifier W10: (i)12 (ii)+28 (iii)2 [tier-1 projection: 12/+28/2] OK
+ REAL classifier W8: (i)12 (ii)+28 (iii)2 [tier-1 projection: 12/+28/2] OK
+ REAL closed loop: survived 37/42 (control 3/42), rescues +34, regressions 0 OK
+ M-hold: loses 7/7 pulse-win-zone 2-edge cases, (ii)+21 KILLED
+ M-late: (ii)+0 KILLED (as-specced timing = +0)
+ M-wrongdir: fails 8/8 eligibility cases, (ii)+0 KILLED
+
+GATE2: PASS

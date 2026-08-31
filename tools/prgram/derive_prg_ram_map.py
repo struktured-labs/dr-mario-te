@@ -245,6 +245,10 @@ CONFIGS = {
     "prespipe-p1slice": dict(DRPRESPIPE=1, DRPRESPIPE_Q=3, DRSTARTGUARD=1, DRP1NATIVE=1,
                              DRP1SLICE=1, DRHUMAN=0, DRPOCKET=0, DRMMC1RST=1, DRRTIVEC=1,
                              DRFCGATE=1, DRBUILDID=0),
+    # Fix B: DRPROPH=1 on the human-cart shape (DRHUMAN=1 is the ship class the flag targets)
+    # -- the config that makes PROPH_DIR ($61C6) show its writers. Absolute stores only.
+    "proph-human": dict(DRPROPH=1, DRHUMAN=1, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1,
+                        DRBUILDID=0),
 }
 
 
