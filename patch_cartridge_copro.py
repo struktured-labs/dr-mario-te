@@ -119,6 +119,10 @@ NAV_STABLE, NAV_1P = 0x6174, 0x6175
 # silicon, so div2 froze identically; SEI can't help -- NMI is non-maskable). A BUSY latch in free PRG-RAM
 # ($6176-$6185) makes the trampoline bail on re-entry BEFORE the bank switch (a re-entrant _sel would corrupt
 # the interrupted invocation's bank). Byte-exact for the build_main goldens -- the guard is in the trampoline.
+#   ⚠ THE BUSY GUARD DOES NOT COVER THE OVERRUN NMI. It is reached only through the $FF54
+#   trampoline; the 6502 takes an NMI by loading PC straight from $FFFA, executing NOT ONE BYTE
+#   of $FF54. See DRRTIVEC below -- this comment used to claim the overrun case "is exactly the
+#   re-entrancy below", which is FALSE and is hazard 1.
 BUSY = 0x6176
 DWELL_CNT, DWELL_LAST = 0x6177, 0x6178
 # ---- TUCK EXECUTOR (DRTUCK=1, default OFF -> every existing cart stays byte-identical) ----
@@ -135,7 +139,15 @@ DWELL_CNT, DWELL_LAST = 0x6177, 0x6178
 TUCK_C2 = 0x6179   # approach column for the in-flight P2 capsule; 0xFF = no tuck this pill
 TUCK_R2 = 0x617A   # steer to the FINAL column once pill Y <= this ($0386 counts UP from the floor)
 EFF_C2  = 0x617B   # effective target column this hook (approach or final)
-W_TCOL, W_TROW = 0x5087, 0x5088   # copro publishes the tuck descriptor here (0xFF = none)   # TITLE DWELL: frames dwelt at the title + last frameCounter($43) seen
+# W_TCOL/W_TROW -- the copro publishes the tuck descriptor at offsets $87/$88 of P2'S OWN
+# window, so the cart address depends on where P2's window sits: DRPOCKET=1 single-window
+# carts read $5087/$5088 (byte-identical to the historical hardcode every prior DRTUCK
+# validation ran under), but MiSTer dual-window carts talk to P2 at $5200 -- and the winner
+# single-copro core STRIPS the $5000-$51FF decode entirely, so a hardcoded $5087 read there
+# is OPEN BUS = $50, the same undecoded-address failure the published-column sanity guard
+# below documents. Derived from W2_BASE after it is set (it depends on DRPOCKET); the
+# executor is only emitted behind DRTUCK=1, so DRTUCK=0 carts are byte-identical either way.
+# TITLE DWELL: frames dwelt at the title + last frameCounter($43) seen
 # DRP1WIGGLE (see below): per-pill alternating direction latch for the P1 spectator wiggle.
 # 0 = hold LEFT this pill, 1 = hold RIGHT. Toggled on the P1 new-pill edge. $617C is the next
 # free PRG-RAM byte (BUSY..$6185 is the free window; $6186+ is the DRPROBE ring header).
@@ -215,6 +227,15 @@ SWD_S0, SWD_S1, SWD_S2 = 0x618D, 0x618E, 0x618F      # snapshot: $0385 / $0386 /
                                                       # DRPROBE/DRTRACE ring header at $6186-$618C)
 SWD_CTL, SWD_CTH = 0x6190, 0x6191                    # 16-bit stuck-hook counter
 TUCK = _os.environ.get("DRTUCK", "0") == "1"   # tuck executor (see TUCK_C2 above)
+# DRTUCKGUARD (task #102, default OFF -> byte-inert; requires DRTUCK). Cart-side fall-budget veto
+# on the tuck descriptor: refuse an approach column whose remaining fall cannot pay for the
+# lateral trip to the final column. See the adoption site for the mechanism and the numbers.
+# ⚠ $61B9/$61BA are the first two bytes of the $61B9-$61FF free run in PRG_RAM_MAP.md. Reach
+# checked: the guard's only indexed access is `LDA $0500,X`, a READ of the playfield -- it adds
+# no indexed WRITER, so it cannot widen anyone else's reachable span.
+TUCKGUARD = TUCK and _os.environ.get("DRTUCKGUARD", "0") == "1"
+TG_NEED = 0x61B9   # |approach - final| + 2, the fall this tuck must be able to pay for
+TG_OFF  = 0x61BA   # walking board offset while counting free rows below the trigger
 REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
 # DRBUSYESC (default OFF -- ship classes opt in): stale-BUSY escape for the re-entrancy guard.
 # SILICON BRICK 2026-08-02: BUSY lives in sticky PRG-RAM (FPGA BRAM survives load_core). The
@@ -231,6 +252,99 @@ REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
 # resets the count. Unbrick without this flag: cycle menu.rbf then load_core (BRAM re-init).
 BUSYESC = _os.environ.get("DRBUSYESC", "0") == "1"
 BUSYSKP = 0x6192                                   # consecutive-bail counter (after DRSTALLWD's $6191)
+# ==================== NMI-OVERRUN SILICON HAZARDS (both trace-proven 2026-08-09) ====================
+# Two INDEPENDENT ways a long NMI hook kills the cart. Mapper 100 routes PRG banking to upstream
+# MMC1.sv, so both are identical on MiSTer and Pocket silicon. Ship them TOGETHER (see the
+# CO-DEPENDENCE note under DRMMC1RST) -- either one alone leaves a live crash path.
+#
+# HAZARD 1 -- UNGUARDED VECTOR RE-ENTRY (DRRTIVEC).  An invocation that overruns the whole frame is
+# still running when the next vblank NMI fires. The 6502 loads PC straight from $FFFA; with the
+# DRIVER bank mapped, $C000-$FFFF is PRG index 3, whose vector bytes are expand_prg.py's verbatim
+# copy of the base game's ($8005/$8035). $8005 in the DRIVER bank is not the game's NMI handler --
+# it is main's DRDISTGATE dist_table, seven 2-byte non-branching zero-page ALU ops that fall through
+# into main at $8013 with NO control flow to escape. So the NMI re-enters driver main with the BUSY
+# guard bypassed (the guard is three instructions inside the $FF54 trampoline, and the vector does
+# not execute one byte of it), and act_done's terminal RTS pops the NMI frame as an address:
+# PC = ((pushed PCL) << 8 | pushed P) + 1, an effectively uniform 64K jump. Trace witness:
+# prestart_gate/pilot/probe7.log froze at f=231 with the PC ring ending ... 8B26 (act_done RTS) 0BA6
+# (RAM). Measured rate during live play: 2 events in ~299 frames = 0.67%, ~1 per 2.5 s.
+#
+# HAZARD 2 -- MMC1 SHIFT-REGISTER INTERLEAVE (DRMMC1RST).  MMC1 has ONE 5-bit shift register shared
+# by all four registers; the register a sequence lands in is chosen by A14/A13 of its FIFTH write.
+# The base game clocks a 5-write $DFFF (CHR1) sequence from the MAIN loop every frame
+# ($89C9 -> $B8F4, the virus blink); the trampoline clocks two 5-write $FFF0 (PRG) sequences per
+# hook, 2 hooks/frame, all inside the NMI. An NMI landing mid-$DFFF leaves k bits already shifted
+# in, so _sel(2) completes with mixed bits: k=1,2,3,4 -> prg_bank 5,9,17,1, and every one of those
+# resolves (32KB mode prgsel = {prg_bank[3:1], A14}, masked &3 for a 4-bank ROM) to PRG index 0 =
+# THE BASE GAME at $8000. The trampoline's very next instruction is JSR $8000, base $8000 is
+# `LDX #$00; JMP $8036`, and $8036 runs the RAM-clear loop = full wipe of $0000-$06FF. BUSY lives at
+# $6176 in PRG-RAM, which that loop does not touch, so BUSY stays latched and every later hook bails
+# forever: title screen + dead driver + surviving nametable fragments. Trace witness:
+# prestart_gate/dbg7/interleave.log f=517 `C01 C00 C00 C00 | NMI | P02 P01 P00 P00 P00`, and the
+# 2026-08-09 Pocket field event at t=85.60s (COMMENTARY_TRANSCRIPT.md) is exactly this end-state.
+#
+# DRRTIVEC (default OFF -> every existing cart rebuilds byte-identical): give the DRIVER UNIT its
+# own NMI/IRQ vectors so an overrun NMI is absorbed instead of re-entering main. Cost: one skipped
+# GAME NMI per overrun (stale OAM for a frame, one missed $43 tick, one dropped sound tick) -- at
+# the measured 0.67% that is well inside the tempo noise the driver already tolerates, and a skipped
+# frame beats a KIL. RTI also pops exactly the 3 bytes the NMI pushed, so shielded overruns are
+# stack-NEUTRAL; today's path leaks one byte per event and walks S downward.
+#
+# ⚠ WHY THIS IS NOT THE OBVIOUS "point $FFFA at an RTI in the driver bank".  That design is a BRICK
+# the moment DRMMC1RST also ships, and the two fixes are meant to ship together:
+#   MMC1.sv:110 `control <= control | 5'b0_11_00` -- a bit-7 (reset) write FORCES PRG mode 3, which
+#   HARD-FIXES $C000-$FFFF to the LAST bank = index 3, permanently, for the base game too. Today
+#   that is inert only because expand_prg.py makes index 3 a byte-exact duplicate of index 1. The
+#   instant index 3's vectors differ, every ordinary game NMI vectors into the driver's stub while
+#   the BASE bank is mapped low -- and driver-bank $A02E is $00 in base bank 0, i.e. BRK, whose IRQ
+#   vector is the same stub: an unbreakable BRK loop on the first NMI after the first hook.
+# So the shield is BANK-DISCRIMINATING and lives in the SHARED high half (bank 1, therefore present
+# in index 1 AND index 3 identically):
+#     $CEEC  48         PHA           ; v6e: A MUST be preserved -- see below
+#     $CEED  AD 2E A0   LDA $A02E     ; probe the currently-mapped LOW bank
+#     $CEF0  C9 40      CMP #$40      ; $40 only in the DRIVER bank (base bank 0 is $00 -- asserted)
+#     $CEF2  D0 03      BNE $CEF7
+#     $CEF4  68         PLA           ; driver bank mapped => absorb the overrun NMI, A intact
+#     $CEF5  40         RTI
+#     $CEF6  40         RTI           ; <- IRQ vector target; IRQ pushes no A, so a bare RTI is right
+#     $CEF7  68         PLA
+#     $CEF8  4C 05 80   JMP $8005     ; base bank mapped => the game's own NMI, A intact
+# ⚠ THE PHA/PLA IS NOT COSMETIC (v6e, found after c-v8ship 087ff959 had already been gated): the
+# original shield probed with LDA and then JMP'd into the game's NMI handler, which opens PHA and
+# closes PLA -- so it dutifully saved and restored the value the shield had just destroyed, and the
+# interrupted main-loop code resumed with a wrong accumulator on EVERY NMI the shield handled. The
+# multi-match gate passed that cart with numbers identical to the unhardened build, because match
+# counts and abort counts cannot see a corrupted register. Guard registers you touch, and gate the
+# guard with a check that reads the register.
+# Only index 3's four vector bytes are repointed; index 1's are untouched, so with DRMMC1RST OFF the
+# game's NMI path is bit-for-bit today's (index 3 is only mapped while prg_bank=2, i.e. only inside
+# a driver invocation). With DRMMC1RST ON, mode 3 puts index 3 at $C000 permanently and the probe is
+# what keeps the game alive -- it costs the game NMI 11 cycles and a JMP.
+# $CEEC-$CEFC is FREE_SPACE_MAP.md's 17-byte SHARED-FREE run; re-derived here with a fresh
+# RB6C2_PRINT walker (tmp/hazfix/print_walk.py): all 21 tables terminate at or before $CEBA, the
+# walker's positive controls ($BC26, $C0A9, $C0EF) come back TOUCHED, and $CEEC-$CEFC has zero
+# absolute/indexed operand references anywhere in the 32KB.
+RTIVEC = _os.environ.get("DRRTIVEC", "0") == "1"
+RTIVEC_PROBE = 0xA02E        # FREE_SPACE_MAP SHARED-FREE run $A02E-$A03D; $00 in base bank 0
+RTIVEC_MAGIC = 0x40          # value written there in the DRIVER bank -- doubles as a bare RTI
+NMI_SHIELD_CPU = 0xCEEC      # bank 1 (shared high half) -- in unit 0 AND unit 1
+# DRMMC1RST (default OFF -> every existing cart rebuilds byte-identical): write the MMC1 reset bit
+# ($80, bit 7) before EVERY emitter-side 5-write serial sequence, making each sequence SELF-ALIGNING
+# regardless of a half-finished main-thread sequence. +5 B / +6 cy per sequence, 4 sequences per
+# frame = +24 cy = 0.081% of a 29,780-cycle frame.
+# RESIDUAL, stated honestly: when a hook does land mid-$DFFF the main loop's remaining writes now
+# complete against a re-zeroed counter, so THAT frame's CHR1 select is lost -- one frame of frozen
+# virus blink. It self-heals on the next hook. Graphics-only and bounded to a frame, versus a RAM
+# wipe. Do NOT "optimise" this into `INC $FFF0`: the reset only fires if the written byte has bit 7
+# SET, and an RMW writes back what it read -- the ROM byte at $FFF0 is $1C, so `INC $FFF0` would
+# shift a ZERO into the register and make the corruption worse, silently.
+# ⚠ CO-DEPENDENCE (do not land these independently): the reset permanently forces PRG mode 3, so
+# $C000-$FFFF becomes index 3 for the base game too. That is safe ONLY because DRRTIVEC's shield is
+# bank-discriminating; a plain-RTI index-3 vector plus this flag is an instant brick. Conversely
+# DRRTIVEC alone leaves hazard 2 live -- dbg7 logged TITLEFALL f=518 WITH the emulator NMI shield
+# armed. A green ram_exec=false does not mean the field bug is fixed.
+MMC1RST = _os.environ.get("DRMMC1RST", "0") == "1"
+# ====================================================================================================
 # DRDISTGATE (REVIEW #6.2 / task #49 follow-on -- see CART_FIX_REPORT.md; REVIEW-driven change,
 # authorized explicitly, not a flag toggle): $6193 is the next free PRG-RAM byte (past BUSYSKP).
 # DG_BUDGET = scratch (max DAS-reachable columns this hook); EFF_DIST2 = the distance-clamped
@@ -266,6 +380,88 @@ WEAVE_LIM = int(_os.environ.get("DRWEAVELIM", "40"))   # hook-cycles of no-move 
 # and a MINIMUM-THINK gate (no lateral/orient commit until DONE or MIN_THINK hooks of search).
 # DRROTFIX=0 reproduces the pre-fidelity byte-exact emission (A/B + regression parity).
 ROTFIX = _os.environ.get("DRROTFIX", "1") != "0"
+# DRROTDIR (default OFF, task #114): shortest-direction rotation. The rotation pre-phase has only
+# ever pressed A (= DEC $A5 = CCW at $8E2B), so reaching game orient 1 from spawn costs THREE
+# rotations where B (= INC $A5 = CW, same handler) reaches it in one. Requires ROTFIX because the
+# pre-phase it edits only exists there; DRROTDIR=0 rebuilds byte-exact (every add is guarded).
+# ⚠ default MUST stay off until gated -- a default-on flag decouples artifact from recipe
+# ([[pocket-rbf-md5-gate-unsound]]).
+ROTDIR = (_os.environ.get("DRROTDIR", "0") != "0") and ROTFIX
+# DRROTDIR_MUT: test-only deliberate defects for PREREG_ROTDIR's killed-mutant table.
+# "none" (default) is the real fix. Any other value builds a cart that MUST fail the prereg.
+#   m1  press B on delta 3 instead of delta 1   (direction inverted)
+#   m2b press B UNCONDITIONALLY                 (passes the win, must FAIL the delta-3 control)
+#   m3b mark B already-held ($F8=$40)           (kills the press edge on the FIRST press)
+#   m4  CMP #$05, so the B branch is unreachable (POPULATION mutant: pressB must stay 0)
+# ⚠ m2 and m3 are RETIRED and kept only so this note is auditable. BOTH WERE DEAD ON ARRIVAL,
+# and the data said so before any verdict was read (measured 2026-08-19):
+#   m2 ("delta computed as ($03A5 - TGT_O2) & 3, CMP #1") is ALGEBRAICALLY EQUIVALENT TO m1 --
+#     (cur-tgt)&3 == 1 is exactly (tgt-cur)&3 == 3. Different bytes, different md5, IDENTICAL
+#     behaviour: all 6 cells matched m1 to the last digit.
+#   m3 ("omit the STA $F8 on the B path") is UNKILLABLE BY CONSTRUCTION on the only arm that
+#     exercises B: delta 1 needs exactly ONE press, and the frame before it the driver was not
+#     pressing, so $F8 is already 0 and the omitted clear is never reached. m3's 6 cells matched
+#     the REAL FIX to the last digit. This is the "wrong observable" case, not a wrong mutant --
+#     m3b tests the same property (is the edge armed?) with an observable that can fail.
+ROTDIR_MUT = _os.environ.get("DRROTDIR_MUT", "none")
+if ROTDIR_MUT not in ("none", "m1", "m2", "m2b", "m3", "m3b", "m4"):
+    raise SystemExit(f"DRROTDIR_MUT must be none|m1|m2|m2b|m3|m3b|m4 (got {ROTDIR_MUT!r})")
+if ROTDIR_MUT != "none" and not ROTDIR:
+    raise SystemExit("DRROTDIR_MUT set but DRROTDIR is off -- the mutant would be a silent no-op")
+
+# ---- HARDENED-CART TRIO (tasks #129/#133/#134, each default OFF -> byte-identical) ----
+# DRVERFIX (#129): 3-byte STOCK-ROM fix. checkVerMatch's vertical colour-chain scan steps the
+# field index by +8 and tests for the bottom with AND #$F8 / BEQ -- zero only for indices 0..7,
+# i.e. it terminates by WRAPPING PAST 255, reading the 128 bytes AFTER the field on the way. If
+# that trailing region shares the chain's colour nibble the wrapped index is written back into
+# fieldPos and the scan restarts forever (the #129 soak wedge -- stock Nintendo code, byte-
+# identical in vanilla drmario.nes; the horizontal twin is correctly bounded). The GAME OVER /
+# STAGE CLEAR text boxes write $8D/$8F/$EF straight into the field, so colour-$F chains are
+# ROUTINELY armed at every match end. Fix: replace the wrap test with a real bound of identical
+# length -- AND #$F8 / BEQ -> CMP #$80 / BCS (branch target byte untouched). Verified offline
+# (tempo-wt tmp/wedge129): kills all known hangs; 4000/4000 random legal-colour boards leave a
+# byte-identical field; also stops the vertical CLEAR loop ever writing past the field (removes
+# the wedge's persistence mechanism, not just the hang). Applied by anchor match, never by
+# pinned offset (#120 gate rot).
+VERFIX = _os.environ.get("DRVERFIX", "0") == "1"
+# DRUNPAUSE (#133): a P1-driven cart is UNPAUSABLE -- the P1 executor rewrites $F5 (the raw P1
+# latch at hook time; the ROM derives pressed/held from it AFTER the hook) every hook from a
+# vocabulary {none,right,left,down,A} with no START, and it runs before the stock edge-detect,
+# so the pause loop's exact-compare $F5==$10 at $97D6 can never be satisfied: one stray START
+# (human, script, or nav glitch) soft-locks the cart permanently. Fix: restore STOCK START
+# semantics for P1 -- at the top of act_p1, if the raw latch has bit 4 set, write $F5 = $10
+# (pure START, the exact byte both the pause entry and the pause exit compare against) and skip
+# the synthesized command for that hook. With no controller attached the raw latch is 0 and the
+# path never fires, so soak behaviour is unchanged; with one, START pauses AND unpauses exactly
+# as on the stock ROM. Not emitted on DRHUMAN carts (P1 is already a passthrough there).
+UNPAUSE = _os.environ.get("DRUNPAUSE", "0") == "1"
+# DRSTARTGUARD (#134): guard the driver's START injection sites against landing on a match
+# frame. The #131 lesson: gating a press on the mode read at HOOK time does not protect against
+# the SAME frame's main loop advancing 8->4 and running the play input handler on the injected
+# byte -- any mode-gated input arm must exclude the PREDECESSOR mode too. Sites:
+#   1. autonav inject() -- skip the store when live $0046 reads 4 (the match frame) or 8 (its
+#      predecessor; 8->4 transits within one frame). Structurally unreachable today (dispatch
+#      only reaches inject from modes 0/1/7, and a menu-mode poke is re-read from hardware the
+#      next frame) -- this makes it STRUCTURAL rather than incidental.
+#   2. fc_clear stage-clear dismiss -- fires at mode==4 by design (RB337's blocking wait holds
+#      $0046==4), but the state's FIRST hooks can still be inside a live play frame; require the
+#      full-clear state to persist FC_STAB_K hooks before the first press. The wait lasts
+#      seconds, so a ~4-hook arm delay cannot miss the dismiss (it can shift dismiss timing by
+#      up to one 32-hook press window -- a tempo effect; see d131-wedge-discriminator-f30).
+#   3. DRNAVESC -- already excludes mode 8 (intro hands-off) and fires only after ESC_N hooks of
+#      a completely frozen ($0046,$F8,$0386) state, so it cannot land on a live-play or transit
+#      frame by construction; at a frozen mode 4 its exact-$10 own-the-frame write is the
+#      UNPAUSE idiom (recovery, not hazard). No code change -- documented + gated as-is.
+STARTGUARD = _os.environ.get("DRSTARTGUARD", "0") == "1"
+FC_STAB = 0x61C4      # DRSTARTGUARD site 2: hooks the full-clear state has persisted
+                      # (RELOCATED 2026-08-20 from $61BB, which DRP1SLICE's SL_PH also
+                      # claims -- the deriver's declared view kept one symbol per address
+                      # and could not report the share; now the dup-declared check catches
+                      # it. First byte of the $61C4+ free run in PRG_RAM_MAP.md; cleared
+                      # every go_ai play hook, so a stale/garbage boot value only skips the
+                      # arm delay once -- the pre-fix behaviour -- and never blocks a press)
+FC_STAB_K = 4         # hooks (~2 frames at the 2-hook/frame play cadence) before the press
+
 # minimum-think gate: hooks of search (WDOG2) the driver waits before committing laterally /
 # locking orient. ~5 hooks/frame. Default 25 (~5f). Was 90 (~18f), a guard against the shallow-argmax
 # slam back when searches were slow; with K_OPEN=255 (wait-for-DONE) + RECOMMIT (orient re-open at DONE
@@ -420,8 +616,13 @@ assert not (P1WIGGLE and HUMAN_P1), (
 # over-long invocation eats the main loop's share of the 29780-cycle frame rather than
 # corrupting the display; vblank is NOT the budget. Measured: the driver is ~400 cyc/hook
 # (p95 460), and one d1 search is 16-23k cyc ONCE PER PILL. So this costs about one hitched
-# frame per P1 pill (~1 in 200 at L11), and the only dangerous case -- overrunning a WHOLE
-# frame, so the next NMI re-enters -- is already caught by the BUSY guard.
+# frame per P1 pill (~1 in 200 at L11), and the only dangerous case is overrunning a WHOLE
+# frame, so the next NMI re-enters.
+#   ⚠ CORRECTION 2026-08-09: this line used to end "-- is already caught by the BUSY guard."
+#   That is FALSE and was hazard 1. An overrun NMI loads PC from $FFFA and executes NOT ONE
+#   BYTE of the $FF54 trampoline where the guard lives, so it re-enters main UNGUARDED. Only
+#   DRRTIVEC closes it; on a cart built without that flag this cost paragraph understates the
+#   risk. See the NMI-OVERRUN SILICON HAZARDS block near DRBUSYESC.
 #
 # ★ THE TWO-PASS AND, which is the one real trap. getInputs calls the hook twice and ANDs the
 # two $F5 values, so BOTH passes of a frame must leave the SAME byte or the input vanishes
@@ -437,9 +638,57 @@ assert not (P1NATIVE and P1WIGGLE), (
     "DRP1NATIVE=1 and DRP1WIGGLE=1 are mutually exclusive: both replace act_p1 outright, so "
     "one would silently win. Pick the P1 personality you want.")
 P1_OWNED = P1WIGGLE or P1NATIVE   # act_p1 is replaced; the copro P1 path is not used at all
+# DRP1SLICE=1 (default OFF -> byte-identical; requires DRP1NATIVE): #126 enforcement (b) for
+# the P1 native search. The unsliced search runs all 15 placements + the colour-swap re-eval
+# synchronously inside ONE hook -- sound cycle bound 90,012, adversarially measured 26,398,
+# live-measured 19,818 (tools/nmi126/NMI126_BOUND_REPORT.md) -- which can push the whole NMI
+# past the 29,780-cycle frame on tall same-colour tower boards (the near-death regime).
+# Sliced: a PRG-RAM state machine runs ONE column-step per hook (a step = one v_loop or
+# h_loop iteration = at most one eval_pair; the spec ceiling was two, but two steps in both
+# hooks of a frame pushes the census same-frame pair bound to 36k > the 29,780 frame --
+# one step keeps the whole frame provably inside budget). 8 V + 7 H + 1 swap step finish in
+# <=16 hooks = 8 frames, and the result publishes to P1AI_C/P1AI_O exactly as before. Loop BODIES are verbatim transcriptions of the v18 AI's
+# (tests/test_p1slice.py holds whole-chain argmax equivalence against the unsliced search,
+# with zp scratch deliberately clobbered between ticks -- the game owns those bytes between
+# NMIs, so everything cross-step lives in PRG-RAM and is restored per tick).
+# Two documented behaviour deltas, both bounded and spectator-grade:
+#   * the publish can land on hook 1 of a frame, so that frame's two $F5 passes may differ
+#     and the AND eats ONE input frame per pill (the press retries next frame);
+#   * the board can change mid-search (a volley landing on P1), so early steps may have seen
+#     the older board -- inconsistency window <=4 frames, same class as anytime steering.
+P1SLICE = _os.environ.get("DRP1SLICE", "0") == "1"
+assert not (P1SLICE and not P1NATIVE), (
+    "DRP1SLICE=1 without DRP1NATIVE=1 is refused: there is no P1 native search to slice.")
+# state machine, allocated from the PRG_RAM_MAP free run $61BB-$61FF:
+SL_PH  = 0x61BB   # phase: 0 idle, 1 vertical pass, 2 horizontal pass, 3 swap+publish
+SL_COL = 0x61BC   # resume column for the current pass
+SL_BEST = 0x61BD  # persisted Z_BEST  ($01)
+SL_TGT = 0x61BE   # persisted Z_TARGET($00)
+SL_ORI = 0x61BF   # persisted Z_BORIENT($DA)
+SL_OFA = 0x61C0   # persisted best-cell offsets ($D0/$D1, the swap re-eval's input)
+SL_OFB = 0x61C1
 RECOMMIT = (MATURE
             and (not NO_FREEZE or _os.environ.get("DRRECOMMIT_NOFREEZE", "0") == "1")
             and (_os.environ.get("DRRECOMMIT", "1") != "0"))
+# DRRELATCH=1 (default OFF -- v6c candidate): RE-LATCH-ON-CHANGE, the classes-b/c/d fix from the
+# execution-fidelity census (wf_5583bec4-ed9, 2026-08-09; see the census memory note + the flip-arm
+# harness mesen_copro_qa/census/census_run_flip.lua). RECOMMIT (above) re-opens the orient latch
+# exactly ONCE, at DONE, inside handle() -- it fully covers stable commits (0/2644 in the census
+# stable arm). But the live-publish path (nf2_* in act, below) refreshes the COLUMN from the
+# running-best mailbox EVERY hook while the orient stays feasibility-locked, so when the copro's
+# running best FLIPS mid-pill (congested boards) the driver adopts the post-flip COLUMN (922/922
+# in the flip arm) yet keeps the PRE-flip ORIENTATION (112/922 stale adoptions) -> true backward
+# horizontals at the correct column, plus real nonsensical verticals. RELATCH extends RECOMMIT's
+# one-shot into on-change: whenever the live-published MAPPED orient differs from the latched
+# TGT_O2 AND rotation is still safe (BOARD_Y $0386 >= CROSS_LOWY; $0386 counts UP from the floor,
+# so >= means still high), adopt the new orient and re-open ROT_DONE2 -- act_p2's existing
+# pre-phase then rotates toward it and re-latches through the normal p2_commit think gate (the
+# SLAM stability counter resets automatically via LAST_ORI2, so a flip also re-earns its
+# confidence). Below the line the committed orient is KEPT -- the CROSS_LOWY no-backwards-lock
+# invariant, verbatim from RECOMMIT/ROTFIX, is preserved unconditionally. Gated on ROTFIX (the
+# orient latch this re-opens only exists under ROTFIX). DRRELATCH=0 rebuilds byte-exact (nothing
+# emitted; verified in tests/test_relatch.py + the v6b manifest replay).
+RELATCH = ROTFIX and (_os.environ.get("DRRELATCH", "0") == "1")
 # DRDISTGATE=1 (default OFF -- candidate, not yet A/B'd on silicon; see task #49's
 # CART_FIX_REPORT.md and REVIEW #6.2 in dr-mario-qa-wt/experiments/eval47/PAIR_LATCH_AUDIT.md):
 # neither COLGATE/RECOMMIT/SLAM reasons about *distance* -- how many columns the search's target
@@ -516,14 +765,60 @@ RECOMMIT = (MATURE
 # under the corrected numbers, not 96 -- worth a follow-up re-audit of that earlier "physically
 # infeasible" conclusion, not done here (task #49's ORIGINAL increment is already committed/pushed;
 # flagging rather than silently rewriting it).
+#
+# ★★ SURFACE-RELATIVE REBUILD (2026-08-09, v6c acceptance follow-on -- wf_c6d25d83 forensics).
+# The FIRST DISTGATE indexed the budget by $0386 DIRECTLY -- but $0386 is FLOOR-relative Y
+# (counts UP from the floor, memory dr-mario-savestate-layout), i.e. "rows until the BOTTLE
+# FLOOR", not "rows until the capsule actually locks". On a filled board (height h >= 12, the
+# census defect regime) the capsule locks at HIGH $0386 (>= h), so DIST_TABLE[$0386] with the
+# corrected constants saturates at 7 = the whole board width and the gate NEVER RESTRICTS in
+# exactly the regime it exists for: acceptance census 2026-08-09 measured class-a 29/1038
+# pill-for-pill IDENTICAL to the gate-OFF arm (h>=12: 29/307 = 9.45%) -- FAILED VACUOUSLY.
+# The rebuild indexes by SURFACE-RELATIVE REMAINING FALL: how many rows the capsule can still
+# fall before reaching the STACK SURFACE, scanned from the live board the driver already owns
+# ($0500, the same bytes it uploads to the copro). Constants and DIST_TABLE are UNCHANGED --
+# only the table INDEX changed. Signal choice (CONSTRAINT, documented per the rebuild spec):
+#   remaining fall = (rows strictly below the capsule's row that are fully EMPTY across the
+#   column span [min(PX2,target)..max(PX2,target)]), i.e. fall to the MAX SURFACE EN ROUTE,
+#   endpoints inclusive. Chosen over "target column's surface only" because a taller pillar
+#   BETWEEN the capsule and the target catches the capsule first -- target-only would promise
+#   fall time the capsule does not have (unsafe, over-budgets). Chosen over a whole-board max
+#   because columns outside the travel span cannot intercept (over-restricts, no safety gain).
+#   Conservative residual: a pillar past the CLAMPED column still shrinks the budget (span is
+#   computed against the RAW target) -- costs optimality only, never promises the unreachable.
+#   NOT modeled (capsule treated as a point at ($0385,$0386), consistent with every other user
+#   of the pose in this driver): the horizontal partner column PX2+1 and the vertical second
+#   half; empty cells are $FF *or* $00 (tile-encoding, same normalization rule as the _start
+#   upload loop) and anything else reads as stack.
+# Scan cost is bounded by DIST_SCANCAP (below): the table saturates at its max value by index
+# DIST_SCANCAP, so scanning more than DIST_SCANCAP empty rows cannot change the budget --
+# worst case 3 rows x 8 columns = 24 cell reads per hook at the default constants.
+# DRDIST_FLOORREL=1 re-emits the ORIGINAL floor-relative index ($0386 -> table, no board scan).
+# It exists ONLY as the killed mutant for tests/test_task49_distgate.py (house gate standard:
+# the old defective indexing must demonstrably FAIL the new tests). NEVER ship it.
 # DRDISTGATE=0 rebuilds byte-exact (nothing emitted; verified in tests/test_task49_distgate.py).
 DISTGATE = _os.environ.get("DRDISTGATE", "0") == "1"
+DIST_FLOORREL = _os.environ.get("DRDIST_FLOORREL", "0") == "1"   # TEST-ONLY mutant, see above
 DIST_DASEDGE = int(_os.environ.get("DRDIST_DASEDGE", "12"))
 DIST_GRAVROW = int(_os.environ.get("DRDIST_GRAVROW", "30"))
-DIST_TABLE_LEN = 16   # BOARD_Y ($0386) row-space; 16 covers the full playfield height with margin
+DIST_TABLE_LEN = 16   # index space is ROWS OF REMAINING FALL (0..15); 16 covers the playfield
 DIST_TABLE = bytes(
     0 if y == 0 else max(1, min(7, (y * DIST_GRAVROW) // DIST_DASEDGE))
     for y in range(DIST_TABLE_LEN))
+# First index at which DIST_TABLE reaches its own maximum (table is monotone nondecreasing by
+# construction). Scanning deeper than this many empty rows cannot change the budget, so the
+# 6502 board scan caps its row count here. max(1,...) guards a degenerate all-flat override.
+DIST_SCANCAP = max(1, next(i for i in range(DIST_TABLE_LEN)
+                           if DIST_TABLE[i] == DIST_TABLE[DIST_TABLE_LEN - 1]))
+# Surface-scan scratch (PRG-RAM $61B1-$61B7: first free bytes past DRSTUDY2P's S2P_TTL at
+# $61B0; next allocation is the trace ring at $6200). All are per-hook scratch, no state
+# carried across hooks.
+DG_YC   = 0x61B1   # $0386 clamped to 0..15 (defensive: table/row math assumes row-space)
+DG_FALL = 0x61B2   # scanned remaining-fall rows (the new DIST_TABLE index)
+DG_N    = 0x61B3   # rows left to scan = min(DG_YC, DIST_SCANCAP)
+DG_OFF  = 0x61B4   # current row's board offset (row*8 + DG_LO)
+DG_LO, DG_HI = 0x61B5, 0x61B6   # column span [min(PX2,target) .. max(PX2,target)]
+DG_CSPAN = 0x61B7  # span width DG_HI-DG_LO+1 (1..8), inner-loop counter reload value
 # DRNAVFIX=1 (default): STABILITY-GATED AUTONAV. The canonical an_title fires START the instant $04!=0;
 # a cold-boot garbage-nonzero $04 (title fade-in, before menu-init) then STARTs into a 1P game. DRNAVFIX
 # withholds START until VS-CPU-armed ($04!=0 AND $0727==2) has held for NAV_M consecutive hooks -- the
@@ -559,6 +854,12 @@ NAV_M = int(_os.environ.get("DRNAV_M", "24"))
 # touches $0727/$04, so a direct write == the toggle end-state) with ZERO window latency, holds a short
 # NAV_M4 confirm, then STARTs -- beating the fast advance. DRNAV_V4=0 -> old v3 (leaky toggle + force).
 NAV_V4 = NAVFIX and (_os.environ.get("DRNAV_V4", "1") != "0")
+# DRFCGATE=1 (default OFF, byte-neutral when off): narrow the v4 full-clear gate from mode>=4 to
+# mode==4 exactly. See the fc_no site for the mechanism -- mode 8 (the two-bottle intro) passes
+# mode>=4 with VCOUNT still 0 and VSEEN inherited, so fc_clear false-fires there and the intro can
+# never hand off to play. Independent of DRHOLDBOARD: HOLDBOARD is what leaves MATCH_ACTIVE set
+# after a match, but ANY path that does so arms the same dead-cart loop.
+FCGATE = _os.environ.get("DRFCGATE", "0") == "1"
 NAV_M4 = int(_os.environ.get("DRNAV_M4", "4"))    # title hooks (2,1) held before START (short: beat the advance)
 # DRNAV_HOLD (default ON with V4): reset waitFrames ($51)=0 each title hook so the attract demo NEVER trips
 # (labeled-disasm confirmed: base $98FE does inc $51 / cmp #$08 / beq @toDemo, and @toDemo forces
@@ -618,6 +919,10 @@ W2_BASE = 0x5200
 if _os.environ.get("DRPOCKET", "0") == "1":
     assert _os.environ.get("DRHUMAN", "0") == "1", "DRPOCKET requires DRHUMAN=1 (single window)"
     W2_BASE = 0x5000
+# TUCK descriptor lives at offsets $87/$88 of P2's OWN copro window (see the W_TCOL comment
+# at the TUCK EXECUTOR block above): $5087/$5088 on DRPOCKET single-window carts (unchanged
+# vs the historical hardcode), $5287/$5288 on dual-window MiSTer carts.
+W_TCOL, W_TROW = W2_BASE + 0x87, W2_BASE + 0x88
 # if a pill sits still this many frames (while not search-frozen), force DOWN to unstick
 STUCK_LIM = 60        # 1s -- continuous holds again; if truly stuck kick fast to unpark
 # copro window (mapper 100)
@@ -646,10 +951,156 @@ B_SEL, B_START, B_LEFT, B_RIGHT = 0x20, 0x10, 0x02, 0x01
 # existing BUSY-guard (DRBUSYESC) already covers the rare case this pushes a hook past budget.
 HOLDBOARD = _os.environ.get("DRHOLDBOARD", "0") == "1"
 HOLDBOARD_F = int(_os.environ.get("DRHOLDBOARD_F", "600"))   # CvC safety cap: ~10s at 60fps
+# DRHOLDONCE (default OFF -> every existing cart rebuilds byte-identical): arm the final-board
+# hold ONCE per match-end instead of once per hook while (virus==0 && VSEEN) stays true. See the
+# fc_clear arm site for the measured thrash this removes. $61B8 is the first byte past the
+# DRDISTGATE scratch ($61B1-$61B7) and below the DRTRACE/DRPROBE ring at $6200.
+# ⚠ "No absolute store lands there" is NOT sufficient -- a byte-level reach census found ONE
+# indexed writer that could in principle cover it: DRPRESTART's `STA PRE_LND,X` (base $61A1, so
+# X>=0x17 would hit $61B8). VERIFIED BOUNDED rather than assumed: X is loaded from PRE_N, PRE_N is
+# zeroed before the settle scan and INC'd at most once per column, and the scan terminates on
+# `PRE_COL == 8` -- so X is 0..7 at the store and it reaches at most $61A8, 15 bytes clear of the
+# latch. Filler is not proof of free, and neither is the absence of an ABSOLUTE store.
+HOLDONCE = _os.environ.get("DRHOLDONCE", "0") == "1"
+HOLD_ONCE = 0x61B8                         # !=0: this match-end's hold has already been armed
 HOLD_ACTIVE = 0x6195                       # PRG-RAM: !=0 while the final board is held
 HOLD_LASTCLK = 0x6196                      # last-seen $43 clock byte (edge-detect real frames)
 HOLD_CNT = 0x6197                          # 16-bit ($6197 lo, $6198 hi): frames held so far
 HOLD_BUF1, HOLD_BUF2 = 0x6300, 0x6400      # 256B mirrors of $0400 (P1) / $0500 (P2) playfields
+
+# ---- DRPRESTART=1 (default OFF -> byte-identical when unset): GARBAGE-WINDOW PRESTART ----
+# Today the ONLY search trigger is the new-pill Y edge ($0306/$0386 rising) + a 15-hook settle,
+# so the entire VS garbage window -- W = 264 - 16*h frames, h = stack height of the shallowest
+# garbage-hit column (ROM-derived, emulator-verified 8/8: empty 264 f, stack 6 168 f, stack 13
+# 56 f, stack 15 24 f) -- is DEAD TIME, and the answer lands ~150 frames after spawn while the
+# capsule is already falling at 13 f/row. DRPRESTART reclaims that window: it detects the
+# garbage release, PROJECTS the settled post-garbage board in 6502, uploads the projection and
+# GOes immediately, so the search overlaps the fall animation instead of following it.
+#
+# ★ THE TRIGGER, and why this edge and not another (read from the Rev0 disassembly, not assumed;
+#   `checkReleaseAttack` $9C01 -- the Nostaljipi listing is Rev A and sits $1A higher at $9C1B):
+#   attacks are buffered in the ATTACKER's OWN slot and consumed by the VICTIM.
+#   `checkReleaseAttack` runs with currentP = the RECEIVER and indexes `p1_attackSize,X` with
+#   X = otherPlayerRAM_addrOffset[currentP] = {p1($04): $80, p2($05): $00}.
+#   => P2's INCOMING volley is buffered at $0318 (p1_attackSize) / $0329 (p1_attackColors);
+#      P1's incoming volley is at $0398 / $03A9. That is the reverse of the naive reading and
+#      is the single easiest thing to get backwards here.
+#   The routine writes every garbage cell into row 0 of the receiver's field via
+#   `sta (currentP_fieldPointer),Y` (pointer lo = $00, hi = currentP = $04/$05 => $0400/$0500 + Y)
+#   and only THEN does `sta p1_attackSize,X` with A=0. The clear is the LAST write, so
+#   "incoming attackSize went nonzero -> 0" observed from the NMI hook is a RELEASE-COMPLETE
+#   edge by construction: every garbage byte is already in RAM when we see it. An NMI landing
+#   mid-routine sees the size still nonzero and simply waits for the next hook. No torn read is
+#   possible. (The alternative edges -- nextAction==pillPlaced, or diffing row 0 -- are both
+#   ambiguous with the ordinary pill-lock path; this one has exactly one writer.)
+#
+# ★ THE PROJECTION. RAM does NOT hold the settled board during the animation: post-garbage
+#   gravity is 16 FRAMES PER ROW (`checkDrop` $8C94 is gated on status==$FF, the nametable
+#   row-render cursor, so a full 16-row re-render must complete between sweeps), so a driver
+#   that uploads $0500 at the release frame uploads garbage FLOATING AT ROW 0 -- measured
+#   elsewhere in this project as ~1/3 of deliveries instantly topping out the receiver. The
+#   6502 must settle it itself. The settle is exact and cheap because of one invariant:
+#   ** the pre-garbage board is already settled, so the ONLY unsupported cells are the garbage
+#      singles, and they are all in row 0. ** So: for each column 0..7, if row 0 holds a
+#   `singleHalfPill` ($80 | colour -- the exact tile checkReleaseAttack writes), slide it down
+#   to rest on the first occupied cell. Nothing else can move.
+#   Consequences worth stating, because they remove bail cases the naive design needs:
+#     - We never have to work out WHICH row-0 cells are the garbage. A pre-existing settled
+#       single at row 0 has support at row 1, so its slide distance is 0 = a no-op.
+#     - Linked halves / viruses at row 0 are skipped by the $80 type test, and they are settled,
+#       so skipping them is correct rather than merely safe.
+#     - The garbage columns are {c,c+4} (size 2), {c,c+2,c+4} (size 3), {c,c+2,c+4,c+6} (size 4)
+#       -- NEVER horizontally adjacent -- so the landed cells cannot interact with each other.
+#   We deliberately do NOT reproduce the game's frameCounter column derivation (c =
+#   frameCounter & 3 or & 1): reading row 0 gives us the columns AND the colours directly, and
+#   it cannot drift from the frameCounter value that was live at the release instant.
+#
+# ★ THE PILL COLOURS ARE ONE STEP AHEAD OF THE NORMAL PATH -- the part that is easy to miss.
+#   At prestart time `generateNextPill` has NOT yet run for the capsule we are searching for, so
+#   the normal mailbox sources are stale by one: $0381/$0382 still hold the capsule that just
+#   LOCKED. The capsule that will actually spawn is the current PREVIEW ($039A/$039B), and the
+#   one after it is `pillsReserve[$03A7]` -- the whole 128-capsule stream is plain RAM at $0780,
+#   and the counter has not been incremented yet. `colorCombination_left/right` are
+#   [0,0,0,1,1,1,2,2,2] / [0,1,2,0,1,2,0,1,2], i.e. exactly (val/3, val%3), so the driver
+#   computes them with a 3-iteration subtract loop instead of reaching into a ROM data table
+#   from a bank it does not map. Feeding the stale pair here would be strictly WORSE than the
+#   idle baseline (misinformed lookahead measured at +6.2 pills vs +0.17 for perfect knowledge).
+#
+# ★ BAILS (each falls back to today's exact behaviour -- we simply never GO, and since a real
+#   `_start` rewrites all 128 window bytes there is no residue to undo):
+#     - a settled garbage cell completes a 4-in-a-row (cascades are NOT resolved in 6502);
+#     - a $B0 (clearing) or $F0 (just-emptied) tile is seen in a scanned column = the field is
+#       mid-animation and the "already settled" invariant does not hold;
+#     - a search is already in flight (ARMED != 0) or queued (PEND != 0) -- re-GOing a running
+#       copro is the GO-storm re-entrancy family and is not worth the window;
+#     - a SECOND volley arrives before the spawn (P1 can attack again while the first volley is
+#       still animating): the projection is now stale, so we INVALIDATE -- tear down the
+#       in-flight prestart (armed/wdog cleared, so its DONE is never read) and let the spawn
+#       edge run a normal search on the live board.
+# ★ SCOPE: P2 ONLY, deliberately. P2 is the copro AI on every shipping cart class (CvC leaves
+#   P1 to the wiggle/native/idle paths, DRHUMAN gives P1 to a human, DRPOCKET has ONE window and
+#   assigns it to P2), and on the deployed core $5000 is undecoded so handle(1) has only ever
+#   published open-bus. Mirroring this for P1 is a parameterisation exercise, not a design one,
+#   but it would double the emitted routine for a side no cart searches with.
+PRESTART = _os.environ.get("DRPRESTART", "0") == "1"
+PRE_ATK2 = 0x0318                       # P2's INCOMING volley = p1_attackSize (see the derivation above)
+# PRG-RAM: $6199-$61AF is free (past DRHOLDBOARD's HOLD_CNT hi at $6198, below the
+# DRTRACE/DRPROBE ring at $6200); PRE_BUF sits at $6500, clear of HOLD_BUF1/2 ($6300/$6400).
+PRE_LAST2 = 0x6199                      # last-seen $0318, latched every play hook (release edge detect)
+PRE_ACT2 = 0x619A                       # !=0: a prestarted search owns the NEXT P2 spawn
+PRE_PREV, PRE_CUR = 0x619B, 0x619C      # trigger scratch: previous / current incoming attack size
+PRE_COL, PRE_CELL, PRE_OFF, PRE_N = 0x619D, 0x619E, 0x619F, 0x61A0   # settle scratch
+PRE_LND = 0x61A1                        # $61A1-$61A8: board offsets of the settled cells
+PRE_I, PRE_RUN, PRE_MC, PRE_SOFF = 0x61A9, 0x61AA, 0x61AB, 0x61AC    # match-scan scratch
+PRE_TMP, PRE_MIN, PRE_MAX = 0x61AD, 0x61AE, 0x61AF
+PRE_BUF = 0x6500                        # 128B projected board ($6500-$657F)
+# DRPRESPIPE=1 (default OFF -> byte-identical; requires DRPRESTART): #126 enforcement (b) for
+# the prestart release edge. The synchronous pre_tick does copy + orphan guard + settle + match
+# scan + upload + GO in ONE hook -- sound bound 22,724 for the routine, 27,960 for the hook,
+# 35,687 for the release frame > the 29,780-cycle frame (NMI126_BOUND_REPORT.md verdict 4; the
+# mixed8 state proves PRE_N=8 is ROM-reachable, so the analyzer cannot tighten below the frame).
+# Pipelined: the release-edge hook keeps the DETECT + SNAPSHOT COPY (the copy must not slip a
+# hook -- garbage falls a row per 16 frames and the settle scan keys on row 0), then a PRG-RAM
+# phase byte advances one phase per hook: ph1 orphan+settle, ph2 match records 0-3, ph3 match
+# records 4-7 + upload + GO. GO lands exactly 3 hooks (1.5 frames) after the edge, of a 24-264
+# frame lead. Hooks run 2/frame, so two ADJACENT phases share a frame -- the match scan (11,715
+# sound) is split across ph2/ph3 precisely so every adjacent-phase pair certifies under 29,780
+# (tests/test_prespipe.py G4 asserts all pairs). Mid-pipeline the world can move; every phase
+# entry re-checks and ABANDONS WHOLE (spec: the PRE_ACT2-teardown semantics) on any of:
+#   * PRE_CUR != 0 -- a second volley was buffered; also swallow its future release edge
+#     (PP_SWAL), because the synchronous path would have torn down AT that edge and started
+#     nothing (its PRE_ACT2 would still be set from the commit the pipeline hasn't reached);
+#   * PEND2/ARMED2 != 0 -- the P2 lock edge fired (spawn is coming) or a search started; the
+#     pill falls back to the ordinary spawn-edge path. Behaviour delta vs ship: a lock edge
+#     inside the 3-hook window aborts a prestart the synchronous path would have delivered.
+# Commit-time reads of the preview colours ($039A/$039B/$03A7) are safe under these aborts:
+# generateNextPill runs at spawn, and any spawn is preceded by the lock edge setting PEND2,
+# which aborts the pipeline before a stale read.
+PRESPIPE = _os.environ.get("DRPRESPIPE", "0") == "1"
+assert not (PRESPIPE and not PRESTART), (
+    "DRPRESPIPE=1 without DRPRESTART=1 is refused: there is no prestart release path to pipeline.")
+# Allocated from the PRG_RAM_MAP free run at $61C2+ -- deliberately CLEAR of the $61BB
+# claimants (SL_PH..SL_OFB/DRP1SLICE at $61BB-$61C1; FC_STAB/DRSTARTGUARD ALSO claimed $61BB
+# until 2026-08-20, when it was relocated to $61C4 -- collision fixed, deriver now checks). All other cross-hook
+# state (PRE_I/PRE_COL/PRE_N/PRE_LND/PRE_BUF) is already PRG-RAM and persists for free.
+# PRESPIPE_Q = match records per match phase (see the driver comment). DEFAULT 3 (team-lead
+# ruling 2026-08-20): 4 hooks = 2.0 frames, sound margin 4,926. Q=4 gives the spec's original
+# 3-hook / 1.5-frame shape but its 1,154-cycle margin rests on a MEASURED-not-bounded game
+# head (2,040) plus an estimated eps (300) -- the certificate shape this week taught us to
+# distrust -- while 0.5 frame of a >=24-frame lead is noise. Any Q in 1..8 is legal and the
+# census + gate certify whatever is set: the knob does not get to bypass the certificate,
+# it only chooses which certificate you are asking for.
+PRESPIPE_Q = int(_os.environ.get("DRPRESPIPE_Q", "3"))
+assert 1 <= PRESPIPE_Q <= 8, "DRPRESPIPE_Q must be 1..8 (there are at most 8 settle records)"
+PP_NM = -(-8 // PRESPIPE_Q)             # match phases needed to cover 8 records (ceil)
+PP_PH = 0x61C2                          # pipeline phase: 0 idle, 1 orphan+settle, 2 match 0-3, 3 match 4-7+commit
+PP_SWAL = 0x61C3                        # !=0: swallow the NEXT release edge (post-abort teardown parity)
+PP_RAN = 0x61C5                         # #140 phase/slice interlock: pre_tick sets it on ANY pipeline-work
+                                        # hook (edge family incl. swallow/teardown, every phase, bail,
+                                        # commit); act_p1's slice dispatch reads it and skips the tick, then
+                                        # clears it unconditionally at p1s_idle (same-hook semantics, no
+                                        # staleness). $61C4 is FC_STAB; $61C5 is the next free byte per
+                                        # PRG_RAM_MAP.md. Emitted only on PRESPIPE+P1SLICE images.
 
 # DRBUILDID=1 (task: "which brain am I fighting", default ON for human-profile carts): stamp a
 # short build tag onto the settings screen ("2 PLAYER GAME" row 25, columns 6-14) -- the exact
@@ -831,7 +1282,30 @@ OLD_STUDY_BLOB_EVAC_V2 = bytes.fromhex("A9808542" "20F688" "60") + b"\xFF" * 44 
 # the repointed draw call needs a safe target, nothing more) and the DRIVER draws the letters
 # too: tiles/X are static (probe-dumped), Y is mode-correct ($0F in 1P per the original
 # design, $08 in 2P clear of the header). One writer, zero races, slots 32-40 driver-owned.
-STUDY_BLOB_EVAC = b"\x60" + b"\xFF" * 51
+OLD_STUDY_BLOB_EVAC_V3 = b"\x60" + b"\xFF" * 51   # EVAC v3: bare RTS (the leak-era part1)
+# EVAC v4 (STUDY2P leak fix, 2026-08-08 field defect "flickers + STUDY on top in play"): the
+# s2p driver block drew STUDY + previews at visible Y on EVERY play hook, betting the game's
+# OAM rebuild would overwrite them -- but in VS play the game owns ZERO sprites and R8712 only
+# pads from the sprite high-water mark, so nothing ever cleaned slots 32-40 and the letters
+# rendered over live play continuously (Mesen: ~35k/35k play frames on the byte-exact field
+# cart 3e7c6ed9). Fix = give the s2p block a real pause detector. MEASURED call pattern of
+# this blob on that cart (two independent instrumented runs, exec counter at $D2CC):
+#   - exactly 1 call per UNPAUSED play frame (35,080/35,082; the misses are single-frame,
+#     at the mode-8 -> 4 transition), from the repointed draw site on the frame path;
+#   - ZERO calls while the real pause loop spins ($978E ticking 1/frame);
+#   - ZERO calls in menus / title / intro.
+# (The older "the pause loop re-runs the draw every spin frame" note above described the
+# probe-era standalone behaviour; on this copro cart the pause spin provably never reaches it.)
+# So part1 is a PLAY-FRAME HEARTBEAT: it tops up S2P_TTL every live frame, and the s2p hook
+# (2x/frame in NMI, which keeps running during the pause spin) decrements it. TTL drains to 0
+# only when the frame path stops calling us -- i.e. a mode-4 blocking wait: the pause loop
+# (draw STUDY: that IS the feature) or STAGE CLEAR's own wait (excluded via HOLD_ACTIVE).
+S2P_TTL = 0x61B0      # PRG-RAM heartbeat TTL ($6199-$61AF = DRPRESTART; $6200 = trace ring)
+S2P_TTL_N = 4         # top-up: 2 hook-decs/frame vs max measured heartbeat gap = 1 frame
+STUDY_BLOB_EVAC = (bytes([0xA9, S2P_TTL_N,                      # LDA #S2P_TTL_N
+                          0x8D, S2P_TTL & 0xFF, S2P_TTL >> 8,   # STA S2P_TTL
+                          0x60])                                # RTS
+                   + b"\xFF" * 46)                              # pad the audited 52 B run
 
 
 class StudyPatchError(Exception):
@@ -864,7 +1338,7 @@ def apply_study_pause(rom, evac=False):
         targets = [
             (STUDY_BLOB_CPU, STUDY_BLOB_EVAC, 52,
              [OLD_STUDY_BLOB_V2, OLD_STUDY_BLOB_V3, OLD_STUDY_BLOB_V31, STUDY_BLOB,
-              OLD_STUDY_BLOB_EVAC_V82, OLD_STUDY_BLOB_EVAC_V2]),
+              OLD_STUDY_BLOB_EVAC_V82, OLD_STUDY_BLOB_EVAC_V2, OLD_STUDY_BLOB_EVAC_V3]),
         ]
     else:
         targets = [
@@ -973,7 +1447,15 @@ def build_main(level=11, speed=1):
         a.raw(*DIST_TABLE)
         a.label("dist_table_end")
     # PRG-RAM power-on init (SDRAM boots as garbage): magic byte at NAV_MAGIC
-    a.ins16("LDA_abs", NAV_MAGIC); a.ins("CMP_imm", 0xA5); a.br("BEQ", "inited")
+    a.ins16("LDA_abs", NAV_MAGIC); a.ins("CMP_imm", 0xA5)
+    if PRESTART or STUDY2P:
+        # DRPRESTART's two extra init stores push this skip past the +-127 relative-branch range
+        # (measured: 128; STUDY2P's S2P_TTL store adds 3 more). Invert-and-JMP, the same idiom
+        # the TUCK/nf2_untorn sites use -- gated so a build with both knobs off keeps the
+        # original short branch and stays byte-identical.
+        a.br("BNE", "do_init"); a.jmp("inited"); a.label("do_init")
+    else:
+        a.br("BEQ", "inited")
     a.ins("LDA_imm", 0xA5); a.ins16("STA_abs", NAV_MAGIC)
     a.ins("LDA_imm", 0); a.ins16("STA_abs", ARMED); a.ins16("STA_abs", NAV_T)
     a.ins16("STA_abs", STK1); a.ins16("STA_abs", STK2); a.ins16("STA_abs", MATCH_ACTIVE)
@@ -993,6 +1475,22 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", NAV_STABLE); a.ins16("STA_abs", NAV_1P)   # A==0: nav stability + 1P diag latch
     if NAVDWELL:
         a.ins16("STA_abs", DWELL_CNT); a.ins16("STA_abs", DWELL_LAST)   # A==0: title-dwell fresh at power-on
+    if PRESTART:
+        # A==0. PRE_ACT2 boot-garbage would be catastrophic in exactly the DRHUMAN-PEND1 way: a
+        # nonzero value makes the FIRST spawn edge believe a prestart already owns the pill, so it
+        # never sets PEND2 and the capsule falls with no search behind it.
+        a.ins16("STA_abs", PRE_ACT2); a.ins16("STA_abs", PRE_LAST2)
+        if PRESPIPE:
+            # A==0. PP_PH boot-garbage would dispatch a phase against an un-copied PRE_BUF on
+            # the first play hook; PP_SWAL garbage would eat the first real release edge.
+            a.ins16("STA_abs", PP_PH); a.ins16("STA_abs", PP_SWAL)
+            if P1SLICE:
+                a.ins16("STA_abs", PP_RAN)   # interlock latch exists only on combined images
+    if STUDY2P:
+        # A==0. Boot-garbage S2P_TTL is only a bounded nuisance (a nonzero value decays 2/frame
+        # while blanking, the safe direction), but init it with the rest of the sticky-PRG-RAM
+        # class so the first-ever pause is answerable immediately.
+        a.ins16("STA_abs", S2P_TTL)
     if COLDINIT:
         a.ins16("STA_abs", LASTY1); a.ins16("STA_abs", LASTY2)   # A==0: no suppressed first edge from garbage
         a.ins16("STA_abs", PEND1); a.ins16("STA_abs", PEND2)
@@ -1158,12 +1656,38 @@ def build_main(level=11, speed=1):
         # STUDY letters now -- probe round 2 proved the pause loop re-runs the draw call EVERY
         # spin frame, so any preview part1 wrote would stomp this block's writes each frame.
         # The driver therefore owns slots 37-40 outright: 1P layout when $0727==1, 2P when ==2.
-        # Invisible in play (the game's OAM rebuild runs after this hook); owns the pause.
         # entry: the block is >127B, out of relative-branch range -- short-branch over a JMP.
         a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BEQ", "s2p_go")
         a.jmp("s2p_no")
         a.label("s2p_go")
-        # STUDY letters (part1 is a bare RTS now -- EVAC v3): tiles/X static per the probe's
+        # ---- PAUSE GATE (leak fix; see the EVAC v4 comment at STUDY_BLOB_EVAC). The old block
+        # drew unconditionally on every mode-4 hook, betting "the game's OAM rebuild runs after
+        # this hook" -- FALSE in VS play (game sprite count 0, R8712 only pads from the sprite
+        # high-water mark), so STUDY+previews rendered over live play on ~every frame (the
+        # 2026-08-08 Pocket field defect). Now part1 ($D2CC) tops up S2P_TTL once per UNPAUSED
+        # play frame and this hook decrements it: TTL>0 = live play -> blank slots 32-40 and
+        # skip; TTL==0 = the frame path stopped in a mode-4 blocking wait = the pause loop ->
+        # draw. MATCH_ACTIVE!=0 excludes the first play hook of a match (heartbeat not yet
+        # started); HOLD_ACTIVE!=0 excludes STAGE CLEAR's own mode-4 blocking wait while the
+        # final board is held (drawing STUDY over the held board would be a new artifact).
+        a.ins16("LDA_abs", S2P_TTL); a.br("BEQ", "s2p_stale")
+        a.ins16("DEC_abs", S2P_TTL)
+        a.jmp("s2p_blank")
+        a.label("s2p_stale")
+        a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BEQ", "s2p_blank")
+        if HOLDBOARD:
+            a.ins16("LDA_abs", HOLD_ACTIVE); a.br("BNE", "s2p_blank")
+        a.jmp("s2p_draw")
+        a.label("s2p_blank")
+        # Single owner of slots 32-40 in play: park them offscreen (Y=$FF) every hook, so a
+        # pause's own draws (and any boot garbage in the shadow) are cleaned the moment play
+        # resumes -- there is no other cleaner (that absence is the root cause).
+        a.ins("LDA_imm", 0xFF)
+        for slot in range(32, 41):
+            a.ins16("STA_abs", 0x0200 + slot * 4)
+        a.jmp("s2p_no")
+        a.label("s2p_draw")
+        # STUDY letters (part1 is the heartbeat now -- EVAC v4): tiles/X static per the probe's
         # OAM dump, attr 0; Y is mode-correct below ($0F in 1P, STUDY_2P_Y in 2P).
         for slot, (tile, x) in zip((32, 33, 34, 35, 36),
                                    ((0x0D, 0x70), (0xA0, 0x78), (0x0C, 0x80),
@@ -1215,7 +1739,17 @@ def build_main(level=11, speed=1):
         # FALSE-fires, injects START, and RTSs -- SKIPPING the autonav entirely -> the title advances to a
         # 1P game (nbPlayers never gets set to 2). Gate it to play/post (mode>=4) so it can never fire in the
         # menus. py65-confirmed: inherited MATCH_ACTIVE=1 -> nbPlayers stays 1 (1P); gated -> autonav runs -> VS.
-        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BCC", "fc_no")
+        # DRFCGATE (2026-08-09): mode>=4 is TOO WIDE -- mode 8 is the two-bottle INTRO, and 8>=4
+        # passes. During the intro the board is still being built, so VCOUNT reads 0 while VSEEN
+        # is inherited from the previous match -> fc_clear FALSE-FIRES on every hook and the intro
+        # can never hand off to play. Measured: once MATCH_ACTIVE survives a match, the cart loops
+        # 0->1->2->3->8->0 forever and never reaches mode 4 again -- dead until a power cycle.
+        # STAGE CLEAR, the state this gate exists to dismiss, is a blocking wait that holds
+        # $0046 == 4 throughout (RB24F_CHECK_WIN, per the disassembly), so mode==4 EXACTLY is the
+        # correct gate and loses no coverage. BCC->BNE is the same instruction width, so
+        # DRFCGATE=0 stays byte-identical to the pre-fix build.
+        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04)
+        a.br("BNE" if FCGATE else "BCC", "fc_no")
     a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BEQ", "fc_no")
     a.ins16("LDA_abs", VCOUNT_P1); a.br("BNE", "fc_chk2")
     a.ins16("LDA_abs", VSEEN1); a.br("BNE", "fc_clear")     # P1==0 counts only if it was ever >0
@@ -1230,20 +1764,51 @@ def build_main(level=11, speed=1):
         # below. Idempotent: only the FIRST such hook actually arms. Does NOT touch MATCH_ACTIVE
         # (fc_clear's own gate depends on it staying set for the whole wait -- clearing it here
         # would make the NEXT hook fall through to go_ai's match-START init mid-STAGE-CLEAR).
+        # ⚠ DRHOLDONCE (default OFF -> byte-inert): the HOLD_ACTIVE guard below is idempotent only
+        # WHILE THE HOLD IS UP. The moment the human's START releases it, HOLD_ACTIVE goes 0 while
+        # (virus==0 && VSEEN) is still true, so the very next hook re-arms -- and because STAGE
+        # CLEAR is a blocking wait that keeps $0046 == 4, all of that happens INSIDE LIVE PLAY.
+        # Measured on v8plain-hb1 with the release press supplied: 23 of 25 arms in mode 4,
+        # thrashing (arm f2635 rel f2641, arm f2643 rel f2644, arm f2646 rel f2651, ...), costing
+        # 3 completed matches and 23 searches per 18,000 frames against 20 and 155 at HOLDBOARD=0.
+        # HOLD_ONCE latches "this match-end has already been served". It is cleared only on the
+        # go_ai play path, which cannot run during the clear (fc_clear owns the frame and RTSs),
+        # so it survives the whole STAGE CLEAR wait and resets when real play resumes.
+        if HOLDONCE:
+            a.ins16("LDA_abs", HOLD_ONCE); a.br("BNE", "hb_fc_armed")
         a.ins16("LDA_abs", HOLD_ACTIVE); a.br("BNE", "hb_fc_armed")
         a.ins("LDA_imm", 1); a.ins16("STA_abs", HOLD_ACTIVE)
+        if HOLDONCE:
+            a.ins16("STA_abs", HOLD_ONCE)          # A still 1: one arm per match-end
         a.ins("LDA_imm", 0); a.ins16("STA_abs", HOLD_CNT); a.ins16("STA_abs", HOLD_CNT + 1)
         a.ins("LDA_zp", 0x43); a.ins16("STA_abs", HOLD_LASTCLK)
         a.label("hb_fc_armed")
+    if STARTGUARD:
+        # #134 site 2: the full-clear state's FIRST hooks can still be inside a live play frame
+        # (the pause check reachable on the injected byte); require the state to persist
+        # FC_STAB_K hooks before the first press. RB337's blocking wait holds mode 4 for
+        # seconds, so the arm delay cannot miss the dismiss. FC_STAB is cleared every go_ai
+        # play hook, so it counts THIS match-end's fc hooks only.
+        a.ins16("LDA_abs", FC_STAB); a.ins("CMP_imm", FC_STAB_K); a.br("BCS", "fcg_ok")
+        a.ins16("INC_abs", FC_STAB); a.jmp("fc_ret")
+        a.label("fcg_ok")
     a.ins16("LDA_abs", NAV_T); a.ins("AND_imm", 0x1F); a.ins("CMP_imm", 4); a.br("BCS", "fc_ret")
     if not HUMAN_P1:
         # $F5 is P1's controller latch. On a HUMAN_P1 cart P1 is a PERSON, so injecting
         # START here presses the human's button for them (spec P0.4). The human dismisses
         # their own STAGE CLEAR; the AI is P2 and never needed this.
+        a.label("fc_press")             # gate instrumentation anchor (the actual press store)
         a.ins("LDA_imm", B_START); a.ins("STA_zp", 0xF5)    # inject START to dismiss STAGE CLEAR
     a.label("fc_ret"); a.ins("RTS")
     a.label("fc_no")
-    a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BNE", "not_play")
+    a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04)
+    if PRESTART:
+        # DRPRESTART's per-match init sits inside the go_ai block this branch skips over, which
+        # takes the span past +-127 on the DRCOLDINIT arms (measured: 138). Invert-and-JMP; gated
+        # so a DRPRESTART=0 build keeps the original short branch and stays byte-identical.
+        a.br("BEQ", "is_play"); a.jmp("not_play"); a.label("is_play")
+    else:
+        a.br("BNE", "not_play")
     a.ins("LDA_zp", 0x04); a.br("BNE", "go_ai")            # $04 != 0 -> VS-CPU AI
     if NAVFIX:
         # DIAGNOSTIC: play-mode with $04==0 AND $0727==1 = a 1P game or the attract demo = the nav
@@ -1253,6 +1818,10 @@ def build_main(level=11, speed=1):
         a.label("np_1p_done")
     a.ins("RTS")
     a.label("go_ai")
+    if STARTGUARD:
+        # #134 site 2 reset: any hook that reaches live-play dispatch proves we are NOT in the
+        # full-clear wait, so the fc arm counter starts from zero at every match end.
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", FC_STAB)
     if MATURE:
         # EXPLICIT GAME-START INIT: on the first play frame of a match (MATCH_ACTIVE still 0), disarm
         # the slam -- the first pill has no prior search latency, and the cold $5200 window holds no
@@ -1283,11 +1852,43 @@ def build_main(level=11, speed=1):
                 a.ins16("STA_abs", ARMED); a.ins16("STA_abs", WDOG); a.ins16("STA_abs", WDOGH1)
                 a.ins16("STA_abs", WRETRY)
         a.label("ga_cold_ok")
+    if PRESTART:
+        # PER-MATCH re-init (own block, not folded into the COLDINIT one above, which is gated on
+        # `COLDINIT or not NO_FREEZE` and so is absent from anytime carts). PRG-RAM persists across
+        # a core relaunch and across matches, so a PRE_ACT2 left set by an aborted match would
+        # silently swallow the next match's first search. PRE_LAST2 is seeded from the LIVE counter
+        # rather than zeroed so a stale nonzero value cannot manufacture a phantom release edge.
+        a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_pre_ok")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_ACT2)
+        if PRESPIPE:
+            # A==0. Same persistence argument as PRE_ACT2: a pipeline aborted by a match end
+            # would otherwise resume phases against a dead board next match; a stale swallow
+            # would eat the new match's first release edge.
+            a.ins16("STA_abs", PP_PH); a.ins16("STA_abs", PP_SWAL)
+            if P1SLICE:
+                a.ins16("STA_abs", PP_RAN)   # interlock latch exists only on combined images
+        a.ins16("LDA_abs", PRE_ATK2); a.ins16("STA_abs", PRE_LAST2)
+        a.label("ga_pre_ok")
+    if STUDY2P:
+        # PER-MATCH: pre-arm the pause-gate heartbeat on the first play hook (the same hook
+        # sets MATCH_ACTIVE below, and s2p runs BEFORE this point in the hook). Without this,
+        # hook #2 of the first play frame sees MATCH_ACTIVE=1 with the $D2CC heartbeat not yet
+        # started (it first runs in this frame's MAIN LOOP, after the NMI) -> a 1-frame STUDY
+        # flash at round start (measured: exactly 1 frame in a 32.4k-frame soak, f=234).
+        a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "s2p_ma_ok")
+        a.ins("LDA_imm", S2P_TTL_N); a.ins16("STA_abs", S2P_TTL)
+        a.label("s2p_ma_ok")
     if USE_SEEDS:
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_on")  # first play frame of this match:
         a.ins16("LDA_abs", NAV_T); a.ins("ORA_imm", 0x01); a.ins16("STA_abs", SEED1)   # root seed
         a.ins("EOR_imm", 0xA4); a.ins16("STA_abs", SEED2)       # bit0 kept -> both odd, distinct
         a.label("ga_on")
+    if HOLDONCE:
+        # DRHOLDONCE reset. This runs on the go_ai play path, which fc_clear pre-empts (it owns the
+        # frame and RTSs), so it CANNOT run during the STAGE CLEAR wait -- the latch survives the
+        # whole clear and only resets once real play is actually running again. That is what makes
+        # the arm fire once per match-END rather than once per hook.
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", HOLD_ONCE)
     a.ins("LDA_imm", 1); a.ins16("STA_abs", MATCH_ACTIVE)   # play started -> arm full-clear detect
     a.ins16("LDA_abs", VCOUNT_P1); a.br("BEQ", "ga_v2"); a.ins("LDA_imm", 1); a.ins16("STA_abs", VSEEN1)
     a.label("ga_v2")
@@ -1384,9 +1985,21 @@ def build_main(level=11, speed=1):
     # marks the button already-held and zeroes the edge (the original injection bug).
     # Window (NAV_T & $1F) < 4: pressed ~1 frame in ~6 (hook ~5 calls/frame), then released.
     def inject(bits):
+        a.label("inj_guard")            # gate instrumentation anchor (labels emit no bytes)
+        if STARTGUARD:
+            # #134 site 1: never let an injected press be live on a frame whose main loop can
+            # run the play input handler -- mode 4 is the match frame itself, and mode 8 is its
+            # PREDECESSOR (the 8->4 transit happens later in the SAME frame, after this hook --
+            # the #131 lesson). Re-read the LIVE mode at the store, not any cached copy.
+            a.ins16("LDA_abs", 0x0046)
+            a.ins("CMP_imm", 0x04); a.br("BEQ", "inj_skip")
+            a.ins("CMP_imm", 0x08); a.br("BEQ", "inj_skip")
+        a.label("inj_sta")              # gate instrumentation anchor (the actual press store)
         a.ins("LDA_imm", bits); a.ins("STA_zp", 0xF5)
         a.ins16("STA_abs", 0x6148)                          # DBG: last injected
         a.ins16("INC_abs", 0x614B)                          # DBG: inject count
+        if STARTGUARD:
+            a.label("inj_skip")
     a.label("autonav")
     a.ins16("LDA_abs", 0x0046)
     if NAV_V4:
@@ -1499,6 +2112,7 @@ def build_main(level=11, speed=1):
         # human IS P1 and navigates for themselves -- injecting here fights them for control
         # (measured 7/40 hooks). Leave an_st_go as a bare RTS so the nav path is inert.
         inject(B_START)
+    a.label("an_st_ret")                # gate instrumentation anchor (both inject paths converge here)
     # NOTE: do NOT re-arm DWELL_CNT here. This runs on the FIRST hook that injects START, so the
     # next hook of the SAME press window re-enters the dwell hold and RTSes before inject() --
     # the press lasts one hook. The game ANDs TWO raw passes of $F5, so a 1-hook press can never
@@ -1575,9 +2189,22 @@ def build_main(level=11, speed=1):
     a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", LASTY1)
     a.ins16("LDA_abs", 0x0386); a.ins16("CMP_abs", LASTY2)
     a.br("BCC", "no_p2_new"); a.br("BEQ", "no_p2_new")
+    if PRESTART:
+        # A prestart already owns this capsule: its search was launched against the PROJECTED
+        # post-garbage board with THIS capsule's colours, so queueing a second one would either
+        # double-search the same pill or (worse) re-GO a copro that is still running -- the
+        # GO-storm re-entrancy family. Skip PEND2/DELAY2 only; every other per-pill reset below
+        # still runs. When the prestart has already DONE'd, PEND2==0 also means act_p2's settle
+        # guard opens on the FIRST hook of the fall, which is the whole point: the answer is
+        # already published in TGT_C2/TGT_O2 instead of arriving ~7.5 frames + a search later.
+        a.ins16("LDA_abs", PRE_ACT2); a.br("BNE", "p2_pre_own")
     a.ins("LDA_imm", 1); a.ins16("STA_abs", PEND2)
     a.ins("LDA_imm", 15); a.ins16("STA_abs", DELAY2)        # ~3 frames settle before upload
+    if PRESTART:
+        a.label("p2_pre_own")
     a.ins("LDA_imm", 0)
+    if PRESTART:
+        a.ins16("STA_abs", PRE_ACT2)                        # A==0: consumed (or was never set)
     a.ins16("STA_abs", WRETRY2 if WRETRY_FIX else WRETRY)   # FIX(B): reset P2's latch per P2 pill (was WRETRY=P1)
     if ROTFIX:
         a.ins16("STA_abs", ROT_DONE2)                       # A==0 here: new P2 pill -> re-enter pre-phase
@@ -1591,6 +2218,10 @@ def build_main(level=11, speed=1):
         a.label("p2_lockok")
     a.label("no_p2_new")
     a.ins16("LDA_abs", 0x0386); a.ins16("STA_abs", LASTY2)
+    if PRESTART:
+        # Runs BEFORE handle(2) so a prestart issued this hook starts its watchdog on this hook,
+        # exactly as a normal `_start` does. Body lives past freeze_pending (JSR-only territory).
+        a.jsr("pre_tick")
 
     # ---- stagnation detect: pill not moving while not search-frozen -> count up ----
     def stagnate(px, py, sx, sy, cnt, armed, pend, tag):
@@ -1661,6 +2292,51 @@ def build_main(level=11, speed=1):
             # or fires at the wrong point in the fall (dr-mario-tuck-executor-gap D1).
             a.ins("LDA_imm", 15); a.ins("SEC"); a.ins16("SBC_abs", W_TROW)
             a.ins16("STA_abs", TUCK_R2)
+            if TUCKGUARD:
+                # ---- DRTUCKGUARD (task #102): CART-SIDE FALL-BUDGET VETO --------------------
+                # The executor is blameless -- 23/23 tucks completed whenever the descriptor left
+                # room to move. The harm is entirely in the DESCRIPTOR: tuck-v1 (what the Pocket
+                # core publishes) scans r = fc..ra with ra = first_occ(approach)-1, so it can put
+                # the trigger at EXACTLY the approach column's resting row -> zero remaining fall
+                # -> DRDISTGATE clamps the lateral move to nothing -> the capsule STRANDS in the
+                # approach column. Measured 4/4 on engaged pills.
+                #
+                # Refuse an approach whose remaining fall cannot pay for the lateral trip:
+                #     free rows strictly below the trigger, in the FINAL column
+                #         >=  |approach - final| + 2
+                # One row per column of travel is the DAS-free lower bound; +2 is the margin every
+                # one of the 23 completions had. A veto sets TUCK_C2 <- $FF, which the executor
+                # already reads as "no tuck" and steers straight to the final column -- i.e. the
+                # exact pre-tuck behaviour, so a veto can never be worse than not tucking.
+                #
+                # Makes ANY descriptor stream safe (v1, v3, or a future firmware whose selection
+                # we do not control) -- strictly more robust than fixing selection in firmware.
+                # Straight-line, ZERO _sel calls (the executor adds no bank traffic and that
+                # property must survive), one bounded 16-row loop, one indexed READ.
+                a.ins16("LDA_abs", TUCK_C2); a.ins("CMP_imm", 0xFF); a.br("BEQ", "tg_ok")
+                a.ins16("LDA_abs", TUCK_C2); a.ins("SEC"); a.ins16("SBC_abs", tgt_c)
+                a.br("BCS", "tg_abs")
+                a.ins("EOR_imm", 0xFF); a.ins("CLC"); a.ins("ADC_imm", 1)
+                a.label("tg_abs")
+                a.ins("CLC"); a.ins("ADC_imm", 2); a.ins16("STA_abs", TG_NEED)
+                a.ins("LDA_imm", 15); a.ins("SEC"); a.ins16("SBC_abs", TUCK_R2)
+                a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+                a.ins("CLC"); a.ins16("ADC_abs", tgt_c); a.ins16("STA_abs", TG_OFF)
+                a.ins("LDY_imm", 0)
+                a.label("tg_lp")
+                a.ins16("LDA_abs", TG_OFF); a.ins("CLC"); a.ins("ADC_imm", 8)
+                a.ins16("STA_abs", TG_OFF)
+                a.ins("CMP_imm", 128); a.br("BCS", "tg_done")      # past the floor
+                a.ins("TAX"); a.ins16("LDA_absX", 0x0500)
+                a.br("BEQ", "tg_free")                             # $00 = empty
+                a.ins("CMP_imm", 0xFF); a.br("BNE", "tg_done")     # occupied -> stop
+                a.label("tg_free")
+                a.ins("INY"); a.jmp("tg_lp")
+                a.label("tg_done")
+                # no CPY_abs in this assembler's table -- move the count into A and CMP.
+                a.ins("TYA"); a.ins16("CMP_abs", TG_NEED); a.br("BCS", "tg_ok")
+                a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", TUCK_C2)   # VETO -> straight to final
+                a.label("tg_ok")
         a.ins16("LDA_abs", wor); a.ins("CMP_imm", 0xFF); a.br("BNE", f"{L}_map")
         a.ins("LDA_imm", 3); a.jmp(f"{L}_pst")
         a.label(f"{L}_map")
@@ -1698,6 +2374,12 @@ def build_main(level=11, speed=1):
         a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
         if MATURE and idx == 2:
             a.ins16("STA_abs", SLAM_ARM)                       # A==0: search timed out (slowest) -> disarm
+        if PRESTART and idx == 2:
+            # A==0. A timed-out prestart published nothing, so it must not go on owning the next
+            # spawn -- otherwise the spawn edge would skip PEND2 and the capsule would steer to
+            # the PREVIOUS pill's target. (The ~4-minute timeout cannot fire inside a <=264-frame
+            # garbage window, so this is insurance against the retry path, not a live case.)
+            a.ins16("STA_abs", PRE_ACT2)
         a.ins16("LDA_abs", wretry); a.br("BEQ", f"{L}_rt"); a.jmp(f"{L}_done"); a.label(f"{L}_rt")
         a.ins("LDA_imm", 1); a.ins16("STA_abs", wretry); a.ins16("STA_abs", pend)
         a.jmp(f"{L}_done")
@@ -1775,6 +2457,446 @@ def build_main(level=11, speed=1):
     a.label("fp_done")
     a.ins("RTS")
 
+    if PRESTART:
+        # ================= DRPRESTART: garbage-window prestart (P2) =================
+        # Emitted here because everything past `jmp("act")` above is reachable only by JSR.
+        # See the DRPRESTART flag comment for the trigger derivation, the settle invariant,
+        # the one-step-ahead colour sourcing, and the bail list.
+
+        # ---- pre_run: 4-in-a-row scanner along one axis -----------------------------------
+        # in : PRE_MC = colour (0..2), PRE_MIN = first offset, PRE_MAX = last offset (inclusive),
+        #      PRE_TMP = step (1 = along a row, 8 = down a column)
+        # out: PRE_MC = $FF iff a run of 4 was found (sentinel doubles as the return flag, so the
+        #      caller needs no extra byte and the routine can bail out of its own loop early).
+        # A cell participates iff its LOW nibble equals the colour -- viruses ($D0|c) and every
+        # pill-half type ($40..$A0 | c) all match on colour exactly as the game's own scan does,
+        # and $FF (empty) is excluded for free because its low nibble is $F, never 0..2.
+        a.label("pre_run")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_RUN)
+        a.ins16("LDA_abs", PRE_MIN); a.ins16("STA_abs", PRE_SOFF)
+        a.label("pr_l")
+        a.ins16("LDX_abs", PRE_SOFF)
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0x0F)
+        a.ins16("CMP_abs", PRE_MC); a.br("BNE", "pr_rst")
+        a.ins16("INC_abs", PRE_RUN)
+        a.ins16("LDA_abs", PRE_RUN); a.ins("CMP_imm", 4); a.br("BCC", "pr_nx")
+        a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", PRE_MC); a.ins("RTS")
+        a.label("pr_rst")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_RUN)
+        a.label("pr_nx")
+        a.ins16("LDA_abs", PRE_SOFF); a.ins16("CMP_abs", PRE_MAX); a.br("BEQ", "pr_end")
+        a.ins("CLC"); a.ins16("ADC_abs", PRE_TMP); a.ins16("STA_abs", PRE_SOFF)
+        a.jmp("pr_l")
+        a.label("pr_end")
+        a.ins("RTS")
+
+        # ---- pre_tick: called once per play hook ------------------------------------------
+        a.label("pre_tick")
+        a.ins16("LDA_abs", PRE_ATK2); a.ins16("STA_abs", PRE_CUR)
+        a.ins16("LDA_abs", PRE_LAST2); a.ins16("STA_abs", PRE_PREV)
+        a.ins16("LDA_abs", PRE_CUR); a.ins16("STA_abs", PRE_LAST2)   # latch for the next hook
+        if PRESPIPE:
+            # Pipeline active -> the whole idle/edge path is skipped this hook; the latch above
+            # still ran, so pp_disp's abort checks see a FRESH PRE_CUR. (census scenario handles:
+            # 'into pp_disp' isolates the edge hook; 'into ppd_skip' forces a phase hook.)
+            a.ins16("LDA_abs", PP_PH); a.br("BEQ", "ppd_skip")
+            if P1SLICE:
+                a.ins("LDA_imm", 1); a.ins16("STA_abs", PP_RAN)   # interlock: phase/bail/commit hook
+            a.jmp("pp_disp")
+            a.label("ppd_skip")
+        a.ins16("LDA_abs", PRE_CUR); a.br("BEQ", "pt_zero")
+        a.ins("RTS")                                    # still buffered: not released yet
+        a.label("pt_zero")
+        a.ins16("LDA_abs", PRE_PREV); a.br("BNE", "pt_edge")
+        a.ins("RTS")                                    # was already 0: no edge
+        a.label("pt_edge")
+        # --- RELEASE EDGE: every garbage byte is already in $0500 row 0 (the size clear is the
+        #     LAST write checkReleaseAttack performs, so this observation cannot be torn).
+        if PRESPIPE and P1SLICE:
+            a.ins("LDA_imm", 1); a.ins16("STA_abs", PP_RAN)       # interlock: edge-hook family
+        if PRESPIPE:
+            # Post-abort teardown parity: an abort that saw a SECOND volley buffered set
+            # PP_SWAL; consume that volley's edge here exactly as the synchronous teardown
+            # would have (it would have found PRE_ACT2 still set and started nothing).
+            a.ins16("LDA_abs", PP_SWAL); a.br("BEQ", "pp_nsw")
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", PP_SWAL)
+            a.ins("RTS")
+            a.label("pp_nsw")
+        a.ins16("LDA_abs", PRE_ACT2); a.br("BEQ", "pt_try")
+        # SECOND VOLLEY before the spawn: the projection we already searched is stale. Tear the
+        # in-flight prestart down -- with ARMED2 cleared, handle(2) routes to `_start` and never
+        # reads the copro's (now meaningless) DONE, and the next real GO resets the copro anyway.
+        # The spawn edge then behaves exactly as it does today.
+        a.ins("LDA_imm", 0)
+        a.ins16("STA_abs", PRE_ACT2); a.ins16("STA_abs", ARMED2)
+        a.ins16("STA_abs", WDOG2); a.ins16("STA_abs", WDOGH2)
+        a.ins("RTS")
+        a.label("pt_try")
+        a.ins16("LDA_abs", ARMED2); a.br("BEQ", "pt_g1")
+        a.ins("RTS")                                    # a search is already running -> never re-GO
+        a.label("pt_g1")
+        a.ins16("LDA_abs", PEND2); a.br("BEQ", "pt_g2")
+        a.ins("RTS")                                    # a search is already queued -> leave it
+        a.label("pt_g2")
+
+        # ---- copy $0500 -> PRE_BUF, normalising $00 -> $FF (same reason as _start's loop:
+        #      the copro parser treats only $FF as empty and a $00 cell reads as a phantom pill)
+        a.ins("LDX_imm", 0)
+        a.label("pt_cp")
+        a.ins16("LDA_absX", 0x0500); a.br("BNE", "pt_cpnz")
+        a.ins("LDA_imm", 0xFF)
+        a.label("pt_cpnz")
+        a.ins16("STA_absX", PRE_BUF)
+        a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "pt_cp")
+        if PRESPIPE:
+            # Edge hook ends with the snapshot taken; the orphan guard opens phase 1 next hook.
+            a.ins("LDA_imm", 1); a.ins16("STA_abs", PP_PH)
+            a.ins("RTS")
+            a.label("pp_ph1")
+
+        # ---- orphan guard (MUST run as a separate pass, before anything moves) --------------
+        # checkReleaseAttack writes row 0 with a plain `sta` and no occupancy test, so a volley
+        # can DESTROY one half of a capsule locked at the top and leave its partner pointing at a
+        # cell that is now a garbage single. That state is outside both models: the faithful sim's
+        # `_bodies()` follows the link non-reciprocally and glues the orphan to the GARBAGE, then
+        # drops the two as a rigid pair (its own comment calls the case "shouldn't happen" -- the
+        # unconditional row-0 write is exactly what makes it happen); the ROM's `checkDrop` instead
+        # walks LEFT from a rightHalfPill looking for a leftHalfPill and, once the neighbour has
+        # itself fallen away, keeps walking off the end of the row. Measured 15/200 divergences,
+        # 100% of them this case and nothing else. Neither model is trustworthy here, so we BAIL --
+        # and we bail on ALL of them, including the ~40/200 where the two happen to agree, because
+        # agreeing by luck is not a reason to trust a projection.
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_COL)
+        a.label("pt_og")
+        a.ins16("LDX_abs", PRE_COL)
+        a.ins16("LDA_absX", PRE_BUF); a.ins("CMP_imm", 0xFF); a.br("BEQ", "pt_og_r1")
+        a.ins("AND_imm", 0xF0)
+        a.ins("CMP_imm", 0x60); a.br("BNE", "pt_og_n60")      # leftHalf: rightHalf must be at c+1
+        a.ins16("LDA_abs", PRE_COL); a.ins("CMP_imm", 7); a.br("BEQ", "pt_og_bail")
+        a.ins16("LDX_abs", PRE_COL); a.ins("INX")
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0xF0)
+        a.ins("CMP_imm", 0x70); a.br("BNE", "pt_og_bail")
+        a.jmp("pt_og_r1")
+        a.label("pt_og_n60")
+        a.ins("CMP_imm", 0x70); a.br("BNE", "pt_og_n70")      # rightHalf: leftHalf must be at c-1
+        a.ins16("LDA_abs", PRE_COL); a.br("BEQ", "pt_og_bail")
+        a.ins16("LDX_abs", PRE_COL); a.ins("DEX")
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0xF0)
+        a.ins("CMP_imm", 0x60); a.br("BNE", "pt_og_bail")
+        a.jmp("pt_og_r1")
+        a.label("pt_og_n70")
+        a.ins("CMP_imm", 0x40); a.br("BNE", "pt_og_n40")      # topHalf: bottomHalf must be below
+        a.ins16("LDA_abs", PRE_COL); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAX")
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0xF0)
+        a.ins("CMP_imm", 0x50); a.br("BNE", "pt_og_bail")
+        a.jmp("pt_og_r1")
+        a.label("pt_og_n40")
+        a.ins("CMP_imm", 0x50); a.br("BEQ", "pt_og_bail")     # bottomHalf at row 0: partner off-board
+        a.ins("CMP_imm", 0x90); a.br("BEQ", "pt_og_bail")     # middleVer/middleHor: 3+ cell capsules
+        a.ins("CMP_imm", 0xA0); a.br("BEQ", "pt_og_bail")     # are outside this projection's model
+        a.label("pt_og_r1")
+        # row 1: a bottomHalf here is the other way the same overwrite shows up (a VERTICAL
+        # capsule occupying rows 0-1 whose top half was the cell the volley landed on).
+        a.ins16("LDA_abs", PRE_COL); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAX")
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0xF0)
+        a.ins("CMP_imm", 0x50); a.br("BNE", "pt_og_nx")
+        a.ins16("LDX_abs", PRE_COL)
+        a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0xF0)
+        a.ins("CMP_imm", 0x40); a.br("BEQ", "pt_og_nx")
+        a.label("pt_og_bail")
+        a.jmp("pt_bail")
+        a.label("pt_og_nx")
+        a.ins16("INC_abs", PRE_COL)
+        a.ins16("LDA_abs", PRE_COL); a.ins("CMP_imm", 8); a.br("BEQ", "pt_settle")
+        a.jmp("pt_og")
+        a.label("pt_settle")
+
+        # ---- settle: slide every row-0 singleHalfPill down onto the stack -------------------
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_N); a.ins16("STA_abs", PRE_COL)
+        a.label("pt_col")
+        a.ins16("LDX_abs", PRE_COL)
+        a.ins16("LDA_absX", PRE_BUF); a.ins("CMP_imm", 0xFF); a.br("BEQ", "pt_ncol")
+        a.ins16("STA_abs", PRE_CELL)
+        a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0x80); a.br("BEQ", "pt_drop")
+        a.jmp("pt_ncol")            # linked half / virus: already settled, and never garbage
+        a.label("pt_drop")
+        a.ins("TXA"); a.ins16("STA_abs", PRE_OFF)       # landing offset, starts at row 0
+        a.label("pt_dn")
+        a.ins16("LDA_abs", PRE_OFF); a.ins("CLC"); a.ins("ADC_imm", 8)
+        a.ins("CMP_imm", 128); a.br("BCS", "pt_land")   # next row is off the floor -> rest here
+        a.ins("TAX")
+        a.ins16("LDA_absX", PRE_BUF); a.ins("CMP_imm", 0xFF); a.br("BEQ", "pt_fall")
+        # occupied -- but first reject the two MID-ANIMATION tile types. $FF was peeled off above,
+        # which matters: $FF & $F0 == $F0 would otherwise trip the just-emptied test on every
+        # empty cell.
+        a.ins("AND_imm", 0xF0)                          # (invert-and-JMP: pt_bail is out of branch range)
+        a.ins("CMP_imm", 0xB0); a.br("BNE", "pt_nb0")   # clearedPillOrVirus: clear still animating
+        a.jmp("pt_bail")
+        a.label("pt_nb0")
+        a.ins("CMP_imm", 0xF0); a.br("BNE", "pt_nf0")   # fieldPosJustEmptied: ditto
+        a.jmp("pt_bail")
+        a.label("pt_nf0")
+        a.jmp("pt_land")
+        a.label("pt_fall")
+        a.ins("TXA"); a.ins16("STA_abs", PRE_OFF)
+        a.jmp("pt_dn")
+        a.label("pt_land")
+        a.ins16("LDA_abs", PRE_OFF); a.ins16("CMP_abs", PRE_COL); a.br("BEQ", "pt_rec")
+        a.ins16("LDX_abs", PRE_COL); a.ins("LDA_imm", 0xFF); a.ins16("STA_absX", PRE_BUF)
+        a.ins16("LDX_abs", PRE_OFF); a.ins16("LDA_abs", PRE_CELL); a.ins16("STA_absX", PRE_BUF)
+        a.label("pt_rec")
+        # Record it even when it did not move: a column already full to row 0 leaves the garbage
+        # AT row 0, and that cell still has to pass the match check.
+        a.ins16("LDX_abs", PRE_N)
+        a.ins16("LDA_abs", PRE_OFF); a.ins16("STA_absX", PRE_LND)
+        a.ins16("INC_abs", PRE_N)
+        a.label("pt_ncol")
+        a.ins16("INC_abs", PRE_COL)
+        a.ins16("LDA_abs", PRE_COL); a.ins("CMP_imm", 8)
+        a.br("BEQ", "pp_s_done" if PRESPIPE else "pt_match")
+        a.jmp("pt_col")
+        if PRESPIPE:
+            # Phase 1 ends: seed the resumable match index (the synchronous path zeroes it at
+            # pt_match's head; here it must survive the hook boundary in PRG-RAM).
+            a.label("pp_s_done")
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_I)
+            a.ins("LDA_imm", 2); a.ins16("STA_abs", PP_PH)
+            a.ins("RTS")
+
+        # ---- match check: bail if any settled cell completes a 4-run ------------------------
+        # Cascades are explicitly NOT resolved in 6502; a match means the board the game will
+        # actually spawn onto is not the board we projected, so we hand the pill back to the
+        # ordinary spawn-edge path.
+        # ONE SOURCE OF TRUTH for the per-record computation: both arms emit these bytes from
+        # the same helper, so the pipelined arm cannot drift from the synchronous one by a
+        # hand transcription (rule 11: the input a fix depends on must not be re-typed).
+        # Only the CONTROL FLOW around it differs -- the synchronous arm jumps straight to
+        # pt_bail on a 4-run, the pipelined arm returns with PRE_MC == $FF for its driver.
+        def emit_pre_record(lbl_col, on_match):
+            a.ins16("LDX_abs", PRE_I)
+            a.ins16("LDA_absX", PRE_LND); a.ins16("STA_abs", PRE_OFF)
+            a.ins16("LDX_abs", PRE_OFF)
+            a.ins16("LDA_absX", PRE_BUF); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", PRE_MC)
+            a.ins16("LDA_abs", PRE_OFF); a.ins("AND_imm", 0xF8); a.ins16("STA_abs", PRE_MIN)  # row scan
+            a.ins("CLC"); a.ins("ADC_imm", 7); a.ins16("STA_abs", PRE_MAX)
+            a.ins("LDA_imm", 1); a.ins16("STA_abs", PRE_TMP)
+            a.jsr("pre_run")
+            # A row match leaves PRE_MC == $FF, which is NOT a colour: the column scan must not
+            # be entered with it as pre_run's input, so the early-out is load-bearing in both arms.
+            a.ins16("LDA_abs", PRE_MC); a.ins("CMP_imm", 0xFF); a.br("BNE", lbl_col)
+            on_match()
+            a.label(lbl_col)
+            a.ins16("LDA_abs", PRE_OFF); a.ins("AND_imm", 0x07); a.ins16("STA_abs", PRE_MIN)  # col scan
+            a.ins("CLC"); a.ins("ADC_imm", 120); a.ins16("STA_abs", PRE_MAX)
+            a.ins("LDA_imm", 8); a.ins16("STA_abs", PRE_TMP)
+            a.jsr("pre_run")
+
+        if not PRESPIPE:
+            a.label("pt_match")
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", PRE_I)
+            a.label("pt_mchk")
+            a.ins16("LDA_abs", PRE_I); a.ins16("CMP_abs", PRE_N); a.br("BCC", "pt_mgo")
+            a.jmp("pt_commit")
+            a.label("pt_mgo")
+            emit_pre_record("pt_mv", lambda: a.jmp("pt_bail"))
+            a.ins16("LDA_abs", PRE_MC); a.ins("CMP_imm", 0xFF); a.br("BNE", "pt_mnx")
+            a.jmp("pt_bail")
+            a.label("pt_mnx")
+            a.ins16("INC_abs", PRE_I)
+            a.jmp("pt_mchk")
+        else:
+            # ---- pipelined match scan: one record subroutine, quota-bounded drivers ---------
+            # PRESPIPE_Q records per match phase. The pair -- not the phase -- is the real
+            # constraint (two hooks run per NMI), and the TOTAL work is fixed, so the worst
+            # adjacent pair shrinks only by adding phases, never by rebalancing between two:
+            #   Q=3 (DEFAULT) -> 4 hooks (2.0 frames), margin 4,926
+            #   Q=4 -> 3 hooks (1.5 frames), the spec's original budget, margin 1,154
+            # The quota is on the INDEX, not on PRE_N, so the pipeline is a FIXED number of
+            # hooks whatever PRE_N is -- a latency the gate asserts exactly.
+            a.label("pp_rec")
+            emit_pre_record("pp_rcol", lambda: a.ins("RTS"))   # PRE_MC == $FF: caller bails
+            a.ins("RTS")
+
+            def match_driver(head, quota, done):
+                a.label(head)
+                if quota is not None:
+                    a.ins16("LDA_abs", PRE_I); a.ins("CMP_imm", quota); a.br("BCS", done)
+                a.ins16("LDA_abs", PRE_I); a.ins16("CMP_abs", PRE_N); a.br("BCS", done)
+                a.jsr("pp_rec")
+                a.ins16("LDA_abs", PRE_MC); a.ins("CMP_imm", 0xFF); a.br("BNE", f"{head}_nx")
+                a.jmp("pt_bail")                                # 4-run: hand the pill back
+                a.label(f"{head}_nx")
+                a.ins16("INC_abs", PRE_I)
+                a.jmp(head)
+
+            # Phases 2..(1+PP_NM) are the match phases; the last one falls into commit.
+            # (No separate phase label on a driver head: a head carrying two labels makes the
+            # census bound key depend on emission order -- the driver head IS the entry.)
+            for k in range(PP_NM):
+                ph = 2 + k
+                last = (k == PP_NM - 1)
+                quota = None if last else (k + 1) * PRESPIPE_Q
+                match_driver(f"pp_m{ph}", quota, f"pp_m{ph}_done")
+                a.label(f"pp_m{ph}_done")
+                if last:
+                    a.jmp("pt_commit")
+                else:
+                    a.ins("LDA_imm", ph + 1); a.ins16("STA_abs", PP_PH)
+                    a.ins("RTS")
+
+        # ---- commit: upload the projection, fill the mailbox, GO ----------------------------
+        a.label("pt_commit")
+        a.ins("LDX_imm", 0)
+        a.label("pt_up")
+        a.ins16("LDA_absX", PRE_BUF); a.ins16("STA_absX", W2_BASE)
+        a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "pt_up")
+        # cA/cB = the PREVIEW ($039A/$039B) -- the capsule that will actually spawn, since
+        # generateNextPill has not run yet -- carrying the tie-break seed nibbles exactly as
+        # handle()'s colour loop does.
+        a.ins16("LDA_abs", SEED2)
+        a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+        a.ins16("STA_abs", TMPSEED)
+        a.ins16("LDA_abs", 0x039A); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED)
+        a.ins16("STA_abs", W2_BASE + 0x80)
+        a.ins16("LDA_abs", SEED2); a.ins("AND_imm", 0xF0); a.ins16("STA_abs", TMPSEED)
+        a.ins16("LDA_abs", 0x039B); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED)
+        a.ins16("STA_abs", W2_BASE + 0x81)
+        # nA/nB = colorCombination_{left,right}[pillsReserve[p2_pillsCounter]] = (val/3, val%3).
+        # The reserve is 128 bytes of plain RAM at $0780 and the counter has NOT been incremented
+        # for the upcoming spawn, so this is the capsule after the one we are searching for. The
+        # tables live in a ROM bank the driver does not map, hence the 3-iteration divide (reserve
+        # values are 0..8 by construction: generatePillsReserve reduces mod 9).
+        a.ins16("LDX_abs", 0x03A7)
+        a.ins16("LDA_absX", 0x0780)
+        a.ins("LDX_imm", 0)
+        a.label("pt_dv")
+        a.ins("CMP_imm", 3); a.br("BCC", "pt_dvd")
+        a.ins("SEC"); a.ins("SBC_imm", 3); a.ins("INX")
+        a.jmp("pt_dv")
+        a.label("pt_dvd")
+        a.ins16("STA_abs", PRE_TMP)                                   # remainder = nB
+        a.ins("TXA"); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", W2_BASE + 0x82)
+        a.ins16("LDA_abs", PRE_TMP); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", W2_BASE + 0x83)
+        a.ins16("STA_abs", W2_BASE + 0x84)      # GO: any write to +$84 pulses reset + clears DONE
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", ARMED2); a.ins16("STA_abs", PRE_ACT2)
+        a.ins("LDA_imm", 0)
+        a.ins16("STA_abs", PEND2); a.ins16("STA_abs", WDOG2); a.ins16("STA_abs", WDOGH2)
+        # WRETRY2 is deliberately left alone: it is a once-per-PILL latch and this search belongs
+        # to a pill that has not spawned yet (same reasoning as WRETRY_FIX's dropped clear).
+        a.label("pt_bail")
+        if PRESPIPE:
+            # THE single pipeline exit. Every terminal path -- commit (falls through from
+            # above), 4-run bail, orphan bail, mid-animation bail, and pp_abort -- passes
+            # here, so clearing the phase in one place is what makes "no path leaves the
+            # machine armed" checkable by inspection rather than by enumeration.
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", PP_PH)
+        a.ins("RTS")
+
+    if PRESTART and PRESPIPE:
+        # ---- pipeline dispatcher: runs INSTEAD of the idle/edge path while PP_PH != 0 ------
+        a.label("pp_disp")
+        # ABORT CHECKS, re-evaluated at EVERY phase entry (the world moves between hooks):
+        # (1) a second volley is buffered -> the projection under construction is stale.
+        #     Swallow that volley's own release edge as well, because the synchronous path
+        #     reaching it would have found PRE_ACT2 set (its commit already done) and torn
+        #     down without starting anything -- so ship also gets no search for volley 2.
+        a.ins16("LDA_abs", PRE_CUR); a.br("BEQ", "pp_d1")
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", PP_SWAL)
+        a.jmp("pt_bail")
+        a.label("pp_d1")
+        # (2) the P2 lock edge fired (spawn imminent) or a search is already running: the
+        #     ordinary spawn-edge path owns this capsule now.
+        a.ins16("LDA_abs", PEND2); a.br("BEQ", "pp_d2")
+        a.jmp("pt_bail")
+        a.label("pp_d2")
+        a.ins16("LDA_abs", ARMED2); a.br("BEQ", "pp_d3")
+        a.jmp("pt_bail")
+        a.label("pp_d3")
+        a.ins16("LDA_abs", PP_PH)
+        for ph in range(1, 2 + PP_NM):
+            a.ins("CMP_imm", ph); a.br("BNE", f"pp_d3_{ph}")
+            a.jmp("pp_ph1" if ph == 1 else f"pp_m{ph}")
+            a.label(f"pp_d3_{ph}")
+        a.jmp("pt_bail")                        # out-of-range phase byte: disarm, never dispatch
+
+    if P1NATIVE and P1SLICE:
+        # ================= DRP1SLICE: the sliced P1 search (JSR-only zone) =================
+        # One TICK = restore cross-step state from PRG-RAM into the v18 AI's zp scratch,
+        # run TWO column-steps, save the state back. The zp bytes are the game's between
+        # NMIs, so nothing cross-step may live there (tests/test_p1slice.py clobbers them
+        # between ticks to prove it). Step bodies are VERBATIM transcriptions of the v18
+        # v_loop / h_loop iteration bodies (patch_vs_cpu.build_v18_ai); the swap step tail-
+        # calls the existing swap_eval and publishes.
+        _p1lab = build_p1_native()[1]
+        _LAND, _EVAL = _p1lab["land_col"], _p1lab["eval_pair"]
+        a.label("p1s_tick")
+        a.ins16("LDA_abs", SL_BEST); a.ins("STA_zp", 0x01)     # Z_BEST
+        a.ins16("LDA_abs", SL_TGT); a.ins("STA_zp", 0x00)      # Z_TARGET
+        a.ins16("LDA_abs", SL_ORI); a.ins("STA_zp", 0xDA)      # Z_BORIENT
+        a.ins16("LDA_abs", SL_OFA); a.ins("STA_zp", 0xD0)      # best OFFA (swap input)
+        a.ins16("LDA_abs", SL_OFB); a.ins("STA_zp", 0xD1)      # best OFFB
+        a.ins16("LDA_abs", SL_COL); a.ins("STA_zp", 0x6B)      # Z_COL
+        a.ins16("LDA_abs", 0x0301); a.ins("ORA_imm", 0x4C); a.ins("STA_zp", 0xD2)  # tiles,
+        a.ins16("LDA_abs", 0x0302); a.ins("ORA_imm", 0x4C); a.ins("STA_zp", 0xD3)  # as search_entry
+        a.jsr("p1s_one")
+        a.ins("LDA_zp", 0x01); a.ins16("STA_abs", SL_BEST)
+        a.ins("LDA_zp", 0x00); a.ins16("STA_abs", SL_TGT)
+        a.ins("LDA_zp", 0xDA); a.ins16("STA_abs", SL_ORI)
+        a.ins("LDA_zp", 0xD0); a.ins16("STA_abs", SL_OFA)
+        a.ins("LDA_zp", 0xD1); a.ins16("STA_abs", SL_OFB)
+        a.ins("LDA_zp", 0x6B); a.ins16("STA_abs", SL_COL)
+        a.ins("RTS")
+
+        a.label("p1s_one")                       # one column-step, dispatched on phase
+        a.ins16("LDA_abs", SL_PH)
+        a.ins("CMP_imm", 1); a.br("BEQ", "p1s_v")
+        a.ins("CMP_imm", 2); a.br("BEQ", "p1s_h")
+        a.ins("CMP_imm", 3); a.br("BEQ", "p1s_sw")
+        a.ins("RTS")
+
+        a.label("p1s_v")                         # == one v_loop iteration ==
+        a.ins("LDX_zp", 0x6B); a.jsr(_LAND); a.br("BCS", "p1s_vnext")
+        a.ins("LDA_zp", 0x6F); a.br("BEQ", "p1s_vnext")        # no room above (orig: BNE/JMP)
+        a.ins("LDA_zp", 0x6E); a.ins("SEC"); a.ins("SBC_imm", 0x08); a.ins("STA_zp", 0x6D)
+        a.ins("DEC_zp", 0x6F)
+        a.ins("LDA_imm", 0x01); a.ins("STA_zp", 0xD9)
+        a.jsr(_EVAL)
+        a.label("p1s_vnext")
+        a.ins("INC_zp", 0x6B); a.ins("LDA_zp", 0x6B); a.ins("CMP_imm", 0x08)
+        a.br("BCC", "p1s_vret")
+        a.ins("LDA_imm", 2); a.ins16("STA_abs", SL_PH)         # -> H pass
+        a.ins("LDA_imm", 0); a.ins("STA_zp", 0x6B)
+        a.label("p1s_vret"); a.ins("RTS")
+
+        a.label("p1s_h")                         # == one h_loop iteration ==
+        a.ins("LDX_zp", 0x6B); a.jsr(_LAND); a.br("BCS", "p1s_hnext")
+        a.ins("LDA_zp", 0x6E); a.ins("STA_zp", 0x6D)
+        a.ins("LDA_zp", 0x6F); a.ins("PHA")
+        a.ins("INC_zp", 0x6B); a.ins("LDX_zp", 0x6B); a.jsr(_LAND); a.ins("DEC_zp", 0x6B)
+        a.br("BCS", "p1s_hpull")
+        a.ins("PLA"); a.ins("CMP_zp", 0x6F); a.br("BCC", "p1s_hleft")
+        a.ins("LDA_zp", 0x6F)
+        a.label("p1s_hleft"); a.ins("STA_zp", 0x6F)
+        a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+        a.ins("CLC"); a.ins("ADC_zp", 0x6B); a.ins("STA_zp", 0x6D)
+        a.ins("CLC"); a.ins("ADC_imm", 0x01); a.ins("STA_zp", 0x6E)
+        a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xD9)
+        a.jsr(_EVAL)
+        a.jmp("p1s_hnext")
+        a.label("p1s_hpull"); a.ins("PLA")
+        a.label("p1s_hnext")
+        a.ins("INC_zp", 0x6B); a.ins("LDA_zp", 0x6B); a.ins("CMP_imm", 0x07)
+        a.br("BCC", "p1s_hret")
+        a.ins("LDA_imm", 3); a.ins16("STA_abs", SL_PH)         # -> swap+publish
+        a.label("p1s_hret"); a.ins("RTS")
+
+        a.label("p1s_sw")                        # == swap re-eval + publish ==
+        a.jsr(P1SWAP_CPU)                        # v18's search_done tail-call, as a JSR
+        a.ins("LDA_zp", 0x00); a.ins16("STA_abs", P1AI_C)
+        a.ins("LDA_zp", 0xDA); a.ins16("STA_abs", P1AI_O)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", SL_PH)         # idle until the next spawn
+        a.ins("RTS")
+
     # (time-shared d_start / start_p1 / start_p2 removed: handle() above starts each player's
     #  search on its own copro.)
 
@@ -1782,7 +2904,14 @@ def build_main(level=11, speed=1):
     a.label("act")
     a.jsr("freeze_pending")
     # P2 first (only if we're not currently freezing it)
-    a.ins16("LDA_abs", ARMED2); a.br("BEQ", "act_p2")      # not searching P2 -> steer it
+    a.ins16("LDA_abs", ARMED2)
+    if RELATCH:
+        # far branch: the RELATCH block below pushes act_p2 past +-127. Invert-and-JMP, the same
+        # idiom as nf2_untorn / the TUCK {L}_wdone_ok fix ("rel too far"). Gated so DRRELATCH=0
+        # keeps the ORIGINAL short branch and stays byte-identical.
+        a.br("BNE", "act_p2_armd"); a.jmp("act_p2"); a.label("act_p2_armd")
+    else:
+        a.br("BEQ", "act_p2")                              # not searching P2 -> steer it
     if NO_FREEZE or ROTFIX:
         # ANYTIME (NO_FREEZE, or ANY ROTFIX shipping cart): refresh TGT from the LIVE mailbox and keep
         # steering during the search -- NEVER pin GRAV_P2 while ARMED (the fairness rework). The legacy
@@ -1816,7 +2945,9 @@ def build_main(level=11, speed=1):
             # FEASIBILITY-GATED retarget: refine the ORIENT only while pre-phase (orient not yet
             # committed). Once ROT_DONE2 latches, keep the committed orient so a late candidate
             # cannot rotate a low/flush capsule and lock it backwards.
-            a.ins16("LDA_abs", ROT_DONE2); a.br("BNE", "nf2_col_only")
+            # (DRRELATCH re-routes the latched case to nf2_rl_chk below: same lock by default,
+            #  but a CHANGED published orient may re-open it while still above CROSS_LOWY.)
+            a.ins16("LDA_abs", ROT_DONE2); a.br("BNE", "nf2_rl_chk" if RELATCH else "nf2_col_only")
             # MAP copro orient -> game orient here, exactly as handle() does at DONE
             # ({0:3,1:1,2:0,3:2}; 0xFF already peeled off to nf2_hold). The live mailbox is
             # copro-space; storing it UNMAPPED made the orient-lock freeze a wrong-game orient,
@@ -1841,6 +2972,30 @@ def build_main(level=11, speed=1):
         if not ROTFIX:
             a.ins16("STA_abs", GRAV_P2)
         a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
+        if RELATCH:
+            # RE-LATCH-ON-CHANGE (DRRELATCH -- see the flag comment above). Reached only with
+            # ROT_DONE2 latched. The COLUMN was already refined above (TGT_C2 <- $616D, the
+            # untorn snapshot); decide whether the latched ORIENT may follow the flip too.
+            a.label("nf2_rl_chk")
+            # Safety line FIRST: below CROSS_LOWY a rotation can lock the capsule backwards, so
+            # keep the committed orient unconditionally (the no-backwards-lock invariant).
+            a.ins16("LDA_abs", 0x0386); a.ins("CMP_imm", CROSS_LOWY); a.br("BCS", "nf2_rl_hi")
+            a.jmp("act_p2")                              # low -> keep committed orient, column-only
+            a.label("nf2_rl_hi")
+            # MAP copro orient -> game orient ({0:3,1:1,2:0,3:2}), same table as nf2_o*/handle();
+            # 0xFF ("no result") never reaches here -- it was peeled off to nf2_hold above. The
+            # comparison MUST be in game space: TGT_O2 is stored MAPPED (8d7ba75).
+            a.ins16("LDA_abs", 0x616C)
+            a.ins("CMP_imm", 0); a.br("BNE", "nf2_rl1"); a.ins("LDA_imm", 3); a.jmp("nf2_rlst")
+            a.label("nf2_rl1"); a.ins("CMP_imm", 1); a.br("BNE", "nf2_rl2"); a.ins("LDA_imm", 1); a.jmp("nf2_rlst")
+            a.label("nf2_rl2"); a.ins("CMP_imm", 2); a.br("BNE", "nf2_rl3"); a.ins("LDA_imm", 0); a.jmp("nf2_rlst")
+            a.label("nf2_rl3"); a.ins("LDA_imm", 2)
+            a.label("nf2_rlst"); a.ins16("CMP_abs", TGT_O2); a.br("BNE", "nf2_rl_go")
+            a.jmp("act_p2")                              # published orient unchanged -> keep latch
+            a.label("nf2_rl_go")
+            a.ins16("STA_abs", TGT_O2)                   # adopt the POST-flip orientation ...
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", ROT_DONE2)   # ... re-open: act_p2 rotates,
+            a.jmp("act_p2")                              # then re-latches via p2_commit's gate
     else:
         a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)       # searching P2 -> freeze + skip steer
         a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8); a.jmp("act_p1")
@@ -1889,6 +3044,37 @@ def build_main(level=11, speed=1):
         #  That is the feasibility lock -- a late candidate can't re-rotate a low/flush capsule.)
         a.ins16("LDA_abs", ROT_DONE2); a.br("BNE", "mv_p2")           # committed -> column only
         a.ins16("LDA_abs", 0x03A5); a.ins16("CMP_abs", TGT_O2); a.br("BEQ", "p2_orient_ok")
+        if ROTDIR:
+            # DRROTDIR: SHORTEST-DIRECTION rotation. The executor has always pressed only A, and
+            # A is DEC $A5 in the ROM ($8E2B), so the orient ring is walked one way only: from
+            # spawn (game orient 0) target 3 costs 1 rotation, 2 costs 2, and **1 costs 3**. B is
+            # INC $A5 in the same handler, so the far side is one press away.
+            #   delta = (TGT_O2 - $03A5) & 3, and delta != 0 here (the CMP above peeled that off)
+            #   delta 1 -> B (CW, 1 press)      delta 3 -> A (CCW, 1 press)
+            #   delta 2 -> 2 presses either way; keep A so the 180 path is bit-for-bit the old one
+            # Measured cost of the old behaviour (constant-orient ladder, paired seeds, cart
+            # 9fefaedb): 77.79 / 78.99 / 80.48 / 81.07 f/pill at 0/1/2/3 CCW rotations = ~1.09
+            # frames per rotation. So this is worth ~2.2 f/pill on the delta-1 orient and nothing
+            # on the other three -- which is exactly what makes it gateable: three arms MUST NOT
+            # move.
+            # ---- TEST-ONLY MUTANTS (DRROTDIR_MUT). Same precedent as DRDIST_FLOORREL above:
+            # kept buildable solely so PREREG_ROTDIR's mutant table can be demonstrated to FAIL
+            # (killed-mutant discipline). NEVER ship a cart with DRROTDIR_MUT != none.
+            if ROTDIR_MUT == "m2":            # RETIRED, EQUIVALENT TO m1 -- see below
+                a.ins16("LDA_abs", 0x03A5); a.ins("SEC"); a.ins16("SBC_abs", TGT_O2)
+            else:
+                a.ins16("LDA_abs", TGT_O2); a.ins("SEC"); a.ins16("SBC_abs", 0x03A5)
+            a.ins("AND_imm", 0x03)
+            if ROTDIR_MUT != "m2b":           # m2b: press B UNCONDITIONALLY (no delta test)
+                _mcmp = {"m1": 0x03, "m2": 0x01, "m4": 0x05}.get(ROTDIR_MUT, 0x01)
+                a.ins("CMP_imm", _mcmp); a.br("BNE", "p2_rot_ccw")    # delta 2 or 3 -> A (CCW)
+            if ROTDIR_MUT == "m3b":           # m3b: mark B ALREADY-HELD -> the press edge is dead
+                a.ins("LDA_imm", 0x40); a.ins("STA_zp", 0xF8)
+            elif ROTDIR_MUT != "m3":          # m3: RETIRED, UNKILLABLE -- see below
+                a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)         # edge (held=0) so B rotates,
+            a.ins("LDA_imm", 0x40); a.ins("STA_zp", 0xF6); a.jmp("act_p1")   # B = CW = INC $A5
+            if ROTDIR_MUT != "m2b":
+                a.label("p2_rot_ccw")
         a.ins("LDA_imm", 0x00); a.ins("STA_zp", 0xF8)                # edge (held=0) so A rotates,
         a.ins("LDA_imm", 0x80); a.ins("STA_zp", 0xF6); a.jmp("act_p1")   # under live gravity, no pin
         a.label("p2_orient_ok")                                       # orient reached; think gate:
@@ -1930,20 +3116,74 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", EFF_C2)
     _EC = EFF_C2 if TUCK else TGT_C2
     if DISTGATE:
-        # DRDISTGATE (see the flag comment above; REVIEW #6.2): clamp _EC to the columns that are
-        # DAS-reachable from PX2 ($0385) given the remaining fall budget (BOARD_Y=$0386), instead
-        # of steering toward a target that will never arrive in time. Substituting EFF_DIST2 for
-        # _EC here means EVERYTHING below (alignment check, WEAVE steering, dn_p2's confidence
-        # gate) is unchanged code, now just reading a distance-bounded target.
-        #   budget = DIST_TABLE[min(BOARD_Y, DIST_TABLE_LEN-1)]
-        a.ins16("LDA_abs", 0x0386)
-        a.ins("CMP_imm", DIST_TABLE_LEN)
-        a.br("BCC", "dg_yok")
-        a.ins("LDA_imm", DIST_TABLE_LEN - 1)
-        a.label("dg_yok")
-        a.ins("TAX")
-        a.ins16("LDA_absX", DIST_TABLE_ADDR)
-        a.ins16("STA_abs", DG_BUDGET)
+        # DRDISTGATE (see the flag comment above; REVIEW #6.2 + the SURFACE-RELATIVE REBUILD
+        # note): clamp _EC to the columns that are DAS-reachable from PX2 ($0385) given the
+        # remaining fall budget, instead of steering toward a target that will never arrive in
+        # time. Substituting EFF_DIST2 for _EC here means EVERYTHING below (alignment check,
+        # WEAVE steering, dn_p2's confidence gate) is unchanged code, now just reading a
+        # distance-bounded target.
+        #   budget = DIST_TABLE[remaining_fall]  where remaining_fall = fully-empty rows
+        #   strictly below the capsule across the span [min(PX2,_EC)..max(PX2,_EC)] of the LIVE
+        #   board $0500 (capped at DIST_SCANCAP -- deeper rows can't change the budget). $0386
+        #   counts UP from the floor, so board row = 15 - $0386 and "below" = higher offsets.
+        if DIST_FLOORREL:
+            # ---- TEST-ONLY MUTANT (DRDIST_FLOORREL=1): the ORIGINAL, census-refuted floor-
+            # relative index, budget = DIST_TABLE[min($0386, len-1)]. Kept buildable solely so
+            # tests/test_task49_distgate.py can demonstrate the old indexing FAILS the new
+            # tests (killed-mutant discipline). NEVER ship this arm.
+            a.ins16("LDA_abs", 0x0386)
+            a.ins("CMP_imm", DIST_TABLE_LEN)
+            a.br("BCC", "dg_yok")
+            a.ins("LDA_imm", DIST_TABLE_LEN - 1)
+            a.label("dg_yok")
+            a.ins("TAX")
+            a.ins16("LDA_absX", DIST_TABLE_ADDR)
+            a.ins16("STA_abs", DG_BUDGET)
+        else:
+            # ---- surface-relative remaining fall (the shipping arm) ----
+            # DG_YC = min($0386, 15) -- defensive clamp, the row math below assumes 0..15
+            a.ins16("LDA_abs", 0x0386); a.ins("CMP_imm", 16); a.br("BCC", "dg_yok")
+            a.ins("LDA_imm", 15)
+            a.label("dg_yok"); a.ins16("STA_abs", DG_YC)
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", DG_FALL)
+            # rows to scan: DG_N = min(DG_YC, DIST_SCANCAP); 0 -> capsule at the floor, no scan
+            a.ins16("LDA_abs", DG_YC); a.ins("CMP_imm", DIST_SCANCAP); a.br("BCC", "dg_nok")
+            a.ins("LDA_imm", DIST_SCANCAP)
+            a.label("dg_nok"); a.ins16("STA_abs", DG_N)
+            a.ins("CMP_imm", 0); a.br("BEQ", "dg_scand")
+            # span [DG_LO..DG_HI] = [min(PX2,_EC)..max(PX2,_EC)] -- the RAW target's span (see
+            # the flag comment: en-route max, endpoints inclusive)
+            a.ins16("LDA_abs", _EC); a.ins16("CMP_abs", 0x0385); a.br("BCS", "dg_spr")
+            a.ins16("STA_abs", DG_LO)
+            a.ins16("LDA_abs", 0x0385); a.ins16("STA_abs", DG_HI); a.jmp("dg_spd")
+            a.label("dg_spr")
+            a.ins16("STA_abs", DG_HI)
+            a.ins16("LDA_abs", 0x0385); a.ins16("STA_abs", DG_LO)
+            a.label("dg_spd")
+            a.ins16("LDA_abs", DG_HI); a.ins("SEC"); a.ins16("SBC_abs", DG_LO)
+            a.ins("CLC"); a.ins("ADC_imm", 1); a.ins16("STA_abs", DG_CSPAN)
+            # first row below the capsule: row = (15 - DG_YC) + 1 = 16 - DG_YC; offset = row*8
+            # + DG_LO. DG_YC >= 1 here, so row <= 15 and offset <= 120+DG_LO <= 127: no carry.
+            a.ins("LDA_imm", 16); a.ins("SEC"); a.ins16("SBC_abs", DG_YC)
+            a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+            a.ins("CLC"); a.ins16("ADC_abs", DG_LO); a.ins16("STA_abs", DG_OFF)
+            a.label("dg_row")
+            a.ins16("LDA_abs", DG_OFF); a.ins("TAX")           # X walks the row's span cells
+            a.ins16("LDY_abs", DG_CSPAN)                       # Y = cells left in this row
+            a.label("dg_cell")
+            a.ins16("LDA_absX", 0x0500)
+            a.br("BEQ", "dg_ce")                               # $00 = empty (tile-encoding)
+            a.ins("CMP_imm", 0xFF); a.br("BNE", "dg_scand")    # not $FF either -> STACK: stop,
+            a.label("dg_ce")                                   #   DG_FALL is final
+            a.ins("INX"); a.ins("DEY"); a.br("BNE", "dg_cell")
+            a.ins16("INC_abs", DG_FALL)                        # whole row empty -> 1 more row of fall
+            a.ins16("DEC_abs", DG_N); a.br("BEQ", "dg_scand")  # scanned enough (cap/floor reached)
+            a.ins16("LDA_abs", DG_OFF); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins16("STA_abs", DG_OFF)
+            a.jmp("dg_row")
+            a.label("dg_scand")
+            a.ins16("LDA_abs", DG_FALL); a.ins("TAX")          # DG_FALL <= DIST_SCANCAP < len
+            a.ins16("LDA_absX", DIST_TABLE_ADDR)
+            a.ins16("STA_abs", DG_BUDGET)
         #   direction: _EC (target) vs PX2 -- unsigned CMP is safe, both are 0..7
         a.ins16("LDA_abs", _EC); a.ins16("CMP_abs", 0x0385); a.br("BCS", "dg_right")
         # --- LEFTWARD: target < PX2. EFF = max(target, floor) where floor = max(0, PX2-budget) ---
@@ -2010,6 +3250,18 @@ def build_main(level=11, speed=1):
     a.ins("LDY_imm", 0x04)
     a.label("st_p2"); a.ins("STY_zp", 0xF6)
     a.label("act_p1")
+    if UNPAUSE and not HUMAN_P1:
+        # #133 fix: restore STOCK START semantics for P1. $F5 still holds the ROM's raw pad
+        # read at this point (the hook runs inside the read routine, before the edge-detect,
+        # and nothing upstream of act_p1 writes $F5 on the go_ai path), so bit 4 here is a REAL
+        # controller START. Write $F5 = $10 exactly -- the byte the pause loop's exact-compare
+        # at $97D6 requires -- and skip the synthesized command for this hook. Both hook passes
+        # of a held press take this path, so the value survives the ROM's two-pass AND; the
+        # ROM's own pressed/held derivation then gives a proper edge (pause on press, unpause
+        # on re-press). With no controller attached bit 4 is never set and this is dead code.
+        a.ins("LDA_zp", 0xF5); a.ins("AND_imm", 0x10); a.br("BEQ", "unp_no")
+        a.ins("LDA_imm", 0x10); a.ins("STA_zp", 0xF5); a.jmp("act_done")
+        a.label("unp_no")
     if HUMAN_P1:
         a.jmp("act_done")                                   # human P1: never touch $F5/$F7/GRAV_P1
     elif P1WIGGLE:
@@ -2031,13 +3283,46 @@ def build_main(level=11, speed=1):
         # RISEN above the last Y we saw, i.e. a new capsule spawned. Hook 1 of a frame does the
         # search and then stores the key; hook 2 finds the key equal, skips, and reuses the same
         # P1AI_C/P1AI_O -- so both passes write an IDENTICAL $F5 and survive the AND.
-        a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", P1AI_Y)
-        a.br("BCC", "p1n_nosearch"); a.br("BEQ", "p1n_nosearch")
-        a.jsr(build_p1_native()[1]["search_entry"])          # JSR the mirrored search (abs)
-        a.ins("LDA_zp", 0x00); a.ins16("STA_abs", P1AI_C)   # Z_TARGET -> ours NOW ($00 is
-        a.ins("LDA_zp", 0xDA); a.ins16("STA_abs", P1AI_O)   # CTRL_exp1, rewritten every read)
-        a.label("p1n_nosearch")
-        a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", P1AI_Y)
+        if P1SLICE:
+            # spawn edge ARMS the sliced search instead of running it; the tick below then
+            # advances it two column-steps per hook until the swap step publishes.
+            a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", P1AI_Y)
+            a.br("BCC", "p1s_noarm"); a.br("BEQ", "p1s_noarm")
+            a.ins("LDA_imm", 1); a.ins16("STA_abs", SL_PH)          # phase = V pass
+            a.ins("LDA_imm", 0)
+            a.ins16("STA_abs", SL_COL); a.ins16("STA_abs", SL_BEST)
+            a.ins16("STA_abs", SL_ORI); a.ins16("STA_abs", SL_OFA); a.ins16("STA_abs", SL_OFB)
+            a.ins("LDA_imm", 3); a.ins16("STA_abs", SL_TGT)         # search_entry's defaults
+            a.label("p1s_noarm")
+            a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", P1AI_Y)
+            a.ins16("LDA_abs", SL_PH); a.br("BEQ", "p1s_idle")
+            if PRESPIPE:
+                # #140 PHASE/SLICE INTERLOCK: on a combined DRPRESPIPE+DRP1SLICE image a
+                # hook can otherwise carry BOTH a pp phase (~10.7k) and a slice tick
+                # (~6k), and the sound census pair bound goes to 35.8k > 29,780 (OVER by
+                # ~6k -- the pairing neither lane's certificate covered). pre_tick sets
+                # PP_RAN on EVERY pipeline-work hook (edge family incl. swallow/
+                # teardown, every phase, bail, commit); the tick is skipped on those
+                # hooks, and p1s_idle clears the latch unconditionally after the read
+                # (same-hook semantics: no staleness, and a garbage boot value self-
+                # heals in one hook). Cost: the spectator-side search stalls <= PP_NM+2
+                # hooks (~2 frames) per volley; the P1 executor keeps steering from the
+                # previous target meanwhile (anytime-steering class, same as the
+                # slice's own drift window). Labeled so gates verify it from the IR.
+                a.label("p1s_ppguard")
+                a.ins16("LDA_abs", PP_RAN); a.br("BNE", "p1s_idle")
+            a.jsr("p1s_tick")
+            a.label("p1s_idle")
+            if PRESPIPE:
+                a.ins("LDA_imm", 0); a.ins16("STA_abs", PP_RAN)   # consume the latch every hook
+        else:
+            a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", P1AI_Y)
+            a.br("BCC", "p1n_nosearch"); a.br("BEQ", "p1n_nosearch")
+            a.jsr(build_p1_native()[1]["search_entry"])          # JSR the mirrored search (abs)
+            a.ins("LDA_zp", 0x00); a.ins16("STA_abs", P1AI_C)   # Z_TARGET -> ours NOW ($00 is
+            a.ins("LDA_zp", 0xDA); a.ins16("STA_abs", P1AI_O)   # CTRL_exp1, rewritten every read)
+            a.label("p1n_nosearch")
+            a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", P1AI_Y)
         # ORIENT phase: press A until the capsule matches the searched orientation. $F7 is
         # cleared first so each hook reads as a FRESH press edge -- without that, held==raw
         # from the previous hook makes pressed==0 and rotation stops after one step. (This is
@@ -2102,6 +3387,15 @@ def build_p1_native():
 
 
 def _sel(w, value):
+    if MMC1RST:
+        # HAZARD 2 (see the DRMMC1RST flag block): MMC1 has ONE shift register shared by all four
+        # registers and the base game clocks a 5-write $DFFF sequence from the MAIN loop every
+        # frame. An NMI landing mid-sequence makes this PRG sequence complete with mixed bits ->
+        # unit 0 maps -> the JSR $8000 below hits the base soft-entry -> full RAM wipe with BUSY
+        # latched. A bit-7 write re-zeros the shift counter, so the sequence below is self-aligning
+        # no matter how many bits the interrupted main-thread sequence had already shifted in.
+        w.ins("LDA_imm", 0x80)
+        w.ins("STA_abs", PRG_REG & 0xFF, (PRG_REG >> 8) & 0xFF)
     w.ins("LDA_imm", value)
     for i in range(5):
         w.ins("STA_abs", PRG_REG & 0xFF, (PRG_REG >> 8) & 0xFF)
@@ -2172,6 +3466,24 @@ def main():
               f"(search_entry ${p1lab['search_entry']:04X}), swap_eval {len(p1swap)} B at "
               f"${P1SWAP_CPU:04X}; handle(1) dropped, soft-drop stripped")
 
+    if RTIVEC:
+        # DRRTIVEC part 1 of 3 -- the DRIVER-BANK PROBE BYTE. The shield in the shared high half
+        # decides "is the driver bank mapped low?" by reading this address: $40 here, $00 in base
+        # bank 0. Value $40 is itself an RTI, so even a stray vector straight to $A02E is inert.
+        _probe = RTIVEC_PROBE - UNIT1_CPU
+        assert UNIT1_CPU + len(unit1) <= RTIVEC_PROBE, (
+            f"driver body reaches ${UNIT1_CPU + len(unit1):04X}, colliding with the DRRTIVEC probe "
+            f"byte at ${RTIVEC_PROBE:04X}")
+        if P1NATIVE:
+            assert P1SWAP_CPU + len(p1swap) <= RTIVEC_PROBE, (
+                f"P1 swap_eval reaches ${P1SWAP_CPU + len(p1swap):04X}, colliding with the DRRTIVEC "
+                f"probe byte at ${RTIVEC_PROBE:04X}")
+        assert bank[_probe] == 0, (
+            f"DRRTIVEC probe site ${RTIVEC_PROBE:04X} is not free in the driver bank "
+            f"(holds {bank[_probe]:#04x})")
+        bank[_probe] = RTIVEC_MAGIC
+        print(f"DRRTIVEC: driver-bank probe ${RTIVEC_PROBE:04X} <- {RTIVEC_MAGIC:#04x}")
+
     wrap = build_wrapper(main_cpu)
     print(f"trampoline: {len(wrap)} B at ${WRAP_CPU:04X}")
     assert WRAP_CPU + len(wrap) <= 0xFFD2, "wrapper overflows the dead-v17 window"
@@ -2188,6 +3500,22 @@ def main():
     rom[BLOB_FILE:BLOB_FILE + 5] = bytes([0x85, 0xF6, 0x4C, 0x54, 0xFF])
     print("blob head repointed: STA $F6; JMP $FF54 (every frame, all modes)")
 
+    if VERFIX:
+        # #129 stock-ROM fix (see the DRVERFIX flag block). Anchor = checkVerMatch's row step
+        # (LDA $5A / CLC / ADC #$08 / STA $5A / LDA $5A) plus the unbounded wrap test
+        # (AND #$F8 / BEQ). Located by content, verified unique, originals asserted before any
+        # write; the BEQ's target byte is untouched (same branch, real bound).
+        _vf_anchor = bytes.fromhex("a55a186908855aa55a29f8f0")
+        _vf_i = rom.find(_vf_anchor)
+        assert _vf_i >= 0, "DRVERFIX: checkVerMatch anchor not found in base image"
+        assert rom.find(_vf_anchor, _vf_i + 1) < 0, "DRVERFIX: checkVerMatch anchor not unique"
+        _vf_off = _vf_i + 9                                  # the AND #$F8 / BEQ opcode bytes
+        assert bytes(rom[_vf_off:_vf_off + 3]) == bytes.fromhex("29f8f0"), \
+            "DRVERFIX: unexpected bytes at edit site"
+        rom[_vf_off:_vf_off + 3] = bytes.fromhex("c980b0")   # CMP #$80 / BCS (same length+target)
+        print(f"DRVERFIX: checkVerMatch vertical scan bounded "
+              f"(AND #$F8/BEQ -> CMP #$80/BCS) at file offset 0x{_vf_off:04X}")
+
     if STUDY:
         # v8.2 EVAC: keep part1 ($D2CC STUDY + P1 preview, RTS), drop the 2P tail, and restore the 4
         # tail sites to their pre-study (vanilla) bytes so the title/settings/$A346 printing tables +
@@ -2199,6 +3527,63 @@ def main():
             rom[o:o + len(orig)] = orig
         print(f"DRSTUDY v8.2 EVAC: part1-only ($D2CC RTS); tail $9FF8/$A371/$BE56/$BC26 -> base; {n} edit(s)")
 
+    if RTIVEC:
+        # DRRTIVEC part 2 of 3 -- the BANK-DISCRIMINATING NMI SHIELD, emitted into BANK 1, i.e. the
+        # high half, which expand_prg.py duplicates into PRG index 1 AND index 3. Putting it in the
+        # SHARED half (rather than index 3 only) is what makes the fix survive DRMMC1RST forcing PRG
+        # mode 3: in mode 3 the base game itself runs with index 3 at $C000, so the shield must give
+        # the RIGHT answer for both banks, not just ours. See the DRRTIVEC flag block.
+        _b1 = 0x4010                                   # file offset of CPU $C000 in the 2-bank image
+        _sh = _b1 + (NMI_SHIELD_CPU - 0xC000)
+        _base_nmi = rom[_b1 + 0x3FFA] | (rom[_b1 + 0x3FFB] << 8)
+        _base_irq = rom[_b1 + 0x3FFE] | (rom[_b1 + 0x3FFF] << 8)
+        assert _base_nmi == 0x8005 and _base_irq == 0x8035, (
+            f"base vectors moved (NMI ${_base_nmi:04X} IRQ ${_base_irq:04X}); the shield hard-codes "
+            "the game's NMI entry and assumes its IRQ handler is a bare RTI")
+        assert rom[0x10 + (0x8035 - 0x8000)] == 0x40, (
+            "base IRQ handler $8035 is not a bare RTI, so pointing the driver unit's IRQ vector at "
+            "the shield's RTI byte is no longer semantics-preserving")
+        assert rom[0x10 + (RTIVEC_PROBE - 0x8000)] != RTIVEC_MAGIC, (
+            f"base bank 0 holds {RTIVEC_MAGIC:#04x} at ${RTIVEC_PROBE:04X} -- the probe cannot tell "
+            "the two banks apart any more")
+        # FREE_SPACE_MAP.md SHARED-FREE run $CEEC-$CEFC (17 B, 0 refs, past every RB6C2_PRINT
+        # table -- all 21 terminate at or before $CEBA). Filler is NOT proof of free, so this
+        # asserts the map's run rather than "it looked like padding".
+        assert all(b in (0x00, 0xFF) for b in rom[_sh:_b1 + (0xCEFC - 0xC000) + 1]), (
+            f"${NMI_SHIELD_CPU:04X}-$CEFC is not filler any more -- someone else allocated it")
+        # ⚠ v6e A-CLOBBER FIX. The first shield DESTROYED THE ACCUMULATOR: it opened with
+        # `LDA $A02E` and fell through to `JMP $8005`, so the game's NMI handler -- which opens
+        # PHA and closes PLA -- pushed and faithfully restored the ALREADY-CORRUPTED A, and the
+        # interrupted main-loop code resumed with a wrong accumulator, silently, on every NMI the
+        # shield handled. It only bites when DRMMC1RST is also on (mode 3 hard-fixes $C000-$FFFF
+        # to index 3, whose NMI vector IS the shield) -- i.e. exactly the shipping combination.
+        # Multi-match gates could not see it: match counts and abort counts are insensitive to a
+        # corrupted register. Save/restore A around the probe on BOTH exits. No flag save needed --
+        # NMI hardware pushes P and RTI restores it. 15 B, still inside the 17-byte free run.
+        #   $CEEC 48        PHA
+        #   $CEED AD 2E A0  LDA $A02E
+        #   $CEF0 C9 40     CMP #$40
+        #   $CEF2 D0 03     BNE $CEF7
+        #   $CEF4 68        PLA        ; driver bank mapped: absorb this NMI, A intact
+        #   $CEF5 40        RTI
+        #   $CEF6 40        RTI        ; <- IRQ vector target (IRQ pushes no A, so bare RTI)
+        #   $CEF7 68        PLA        ; base bank mapped: hand to the game, A intact
+        #   $CEF8 4C 05 80  JMP $8005
+        shield = bytes([0x48,                                          # PHA
+                        0xAD, RTIVEC_PROBE & 0xFF, RTIVEC_PROBE >> 8,  # LDA $A02E
+                        0xC9, RTIVEC_MAGIC,                            # CMP #$40
+                        0xD0, 0x03,                                    # BNE -> the PLA/JMP tail
+                        0x68,                                          # PLA
+                        0x40,                                          # RTI (overrun absorbed)
+                        0x40,                                          # RTI <- IRQ vector target
+                        0x68,                                          # PLA
+                        0x4C, _base_nmi & 0xFF, _base_nmi >> 8])       # JMP $8005
+        assert NMI_SHIELD_CPU + len(shield) - 1 <= 0xCEFC, "shield overruns the $CEEC free run"
+        rom[_sh:_sh + len(shield)] = shield
+        RTIVEC_RTI_CPU = NMI_SHIELD_CPU + 10           # the IRQ-path RTI inside the shield
+        print(f"DRRTIVEC: NMI shield {len(shield)} B at ${NMI_SHIELD_CPU:04X} (shared high half), "
+              f"RTI at ${RTIVEC_RTI_CPU:04X}")
+
     tmp = OUT + ".2bank"
     open(tmp, "wb").write(rom)
     expand(tmp, OUT, new_bank_bytes=bytes(bank))
@@ -2207,6 +3592,27 @@ def main():
     out = bytearray(open(OUT, "rb").read())
     out[6] = (out[6] & 0x0F) | 0x40      # mapper 100 = 0x64
     out[7] = (out[7] & 0x0F) | 0x60
+    if RTIVEC:
+        # DRRTIVEC part 3 of 3 -- repoint the DRIVER UNIT's vectors. Index 3 is unit 1's high half
+        # (expand_prg.py's second copy of orig bank 1); index 1 is unit 0's and is LEFT ALONE, so a
+        # DRMMC1RST=0 cart's ordinary game NMI is bit-for-bit unchanged -- index 3 is only mapped
+        # while prg_bank=2, i.e. only inside a driver invocation.
+        _i3 = 0x10 + 3 * 0x4000
+        _i1 = 0x10 + 1 * 0x4000
+        assert out[_i3 + 0x3FFA:_i3 + 0x3FFC] == bytes([0x05, 0x80]), "unit-1 NMI vector is not $8005"
+        assert out[_i3 + 0x3FFE:_i3 + 0x4000] == bytes([0x35, 0x80]), "unit-1 IRQ vector is not $8035"
+        assert out[_i3 + 0x3FFC:_i3 + 0x3FFE] == bytes([0x00, 0xFF]), "unit-1 RESET vector is not $FF00"
+        # $FFFC/$FFFD (RESET) IS DELIBERATELY LEFT ALONE. MMC1 powers up in PRG mode 3, so at cold
+        # boot $C000-$FFFF IS index 3 regardless of the PRG register -- expand_prg.py's docstring
+        # depends on exactly that to boot. Repointing RESET bricks power-on.
+        _rti = NMI_SHIELD_CPU + 10          # v6e: IRQ-path RTI moved by the PHA/PLA fix
+        out[_i3 + 0x3FFA], out[_i3 + 0x3FFB] = NMI_SHIELD_CPU & 0xFF, NMI_SHIELD_CPU >> 8
+        out[_i3 + 0x3FFE], out[_i3 + 0x3FFF] = _rti & 0xFF, _rti >> 8
+        assert out[_i1:_i1 + 0x4000] != out[_i3:_i3 + 0x4000], "DRRTIVEC did not change index 3"
+        _delta = sum(1 for a, b in zip(out[_i1:_i1 + 0x4000], out[_i3:_i3 + 0x4000]) if a != b)
+        assert _delta == 4, f"index 1 and index 3 differ in {_delta} bytes, expected exactly the 4 vector bytes"
+        print(f"DRRTIVEC: unit-1 vectors NMI->${NMI_SHIELD_CPU:04X} IRQ->${_rti:04X} "
+              f"(RESET untouched; unit-0 vectors untouched; idx1 vs idx3 delta = {_delta} B)")
     open(OUT, "wb").write(out)
     print(f"wrote {OUT} (mapper 100, AUTO-NAV VS-CPU L11, FPGA coprocessor)")
 
