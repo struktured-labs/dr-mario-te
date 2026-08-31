@@ -81,17 +81,40 @@ def geometry(fo):
     def side(a, b):        # capsule cells after one edge -> cols (a,b)
         if fo[a] <= r or fo[b] <= r: return False          # move blocked
         return fo[a] > r + 1 and fo[b] > r + 1             # falls after the edge
+    periods = max(1, min(fo[3], fo[4]))    # gravity periods before lock (rom_fo2.json:
+    #   fo=1 -> lock at W; fo=2 -> drop at ~W, lock at ~2W-1)
+    def edges_needed(cols_seq):
+        # walk outward; edge k lands the capsule on cols (a,b); un-ledged when both
+        # below-cells open; each intermediate move must be legal (dest col open at r)
+        for k, (a, b) in enumerate(cols_seq, 1):
+            if fo[b if b > a else a] <= r and k == 1 and False:
+                pass
+            if fo[a] <= r or fo[b] <= r:
+                return None                     # move blocked
+            if fo[a] > r + 1 and fo[b] > r + 1:
+                return k
+        return None
+    eL = edges_needed([(2, 3), (1, 2), (0, 1)])
+    eR = edges_needed([(4, 5), (5, 6), (6, 7)])
+    best = min([e for e in (eL, eR) if e], default=None)
     return dict(rest_row=r, one_edge_L=side(2, 3), one_edge_R=side(4, 5),
-                spawn_rest=min(fo[3], fo[4]) <= 2)
+                edges_L=eL, edges_R=eR, edges_min=best,
+                periods=periods, spawn_rest=min(fo[3], fo[4]) <= 2)
 
 def classify(pub_f, geo, W):
-    press_deadline = W - PRESS_DEADLINE_OFF
+    W_eff = geo["periods"] * W - (geo["periods"] - 1)
+    press_deadline = W_eff - PRESS_DEADLINE_OFF
     steer_press = T_GO + pub_f + T_ADOPT
     one_edge = geo["one_edge_L"] or geo["one_edge_R"]
     tier1 = steer_press <= press_deadline                      # (i) answer beats window
+    # (band note: if the answer's orient != spawn orient the act_p2 pre-phase
+    #  rotates first, ~+2f -- reported via tier1_rot in the caller)
     fixb_spec = one_edge and FIXB_SPEC_PRESS <= press_deadline
     fixb_amend = one_edge and FIXB_AMEND_PRESS <= press_deadline
-    return tier1, fixb_spec, fixb_amend
+    em = geo["edges_min"]
+    # pulsed edges land at t = 2k-1 (rom_pulse.json: 1,3,5); start ~+1f after detect
+    fixb_pulse = em is not None and (2 * em - 1) + FIXB_AMEND_PRESS - 1 <= press_deadline
+    return tier1, fixb_spec, fixb_amend, fixb_pulse
 
 def main():
     runs = parse_runs()
@@ -118,15 +141,20 @@ def main():
     for label, W in REGIMES:
         n = len(rows)
         t1 = sum(classify(w["pub_f"], w, W)[0] for w in rows)
+        t1r = sum(classify(w["pub_f"] + 2.0, w, W)[0] for w in rows)  # +2f rotate pre-phase
         fs = sum(classify(w["pub_f"], w, W)[1] and not classify(w["pub_f"], w, W)[0]
                  for w in rows)
         fa = sum(classify(w["pub_f"], w, W)[2] and not classify(w["pub_f"], w, W)[0]
                  for w in rows)
+        fp = sum(classify(w["pub_f"], w, W)[3] and not classify(w["pub_f"], w, W)[0]
+                 for w in rows)
         none_a = n - t1 - fa
-        table[label] = dict(W=W, n=n, i_answer=t1, ii_fixb_spec=fs, ii_fixb_amend=fa,
-                            iii_nothing_amend=none_a)
-        print(f"{label:22s} W={W:2d}: (i) answer-in-time {t1}/{n}  "
-              f"(ii) FixB-spec +{fs}  FixB-amended +{fa}  (iii) left {none_a}")
+        none_p = n - t1 - fp
+        table[label] = dict(W=W, n=n, i_answer=t1, i_answer_rot=t1r, ii_fixb_spec=fs,
+                            ii_fixb_amend=fa, ii_fixb_pulse=fp,
+                            iii_nothing_amend=none_a, iii_nothing_pulse=none_p)
+        print(f"{label:22s} W={W:2d}: (i) answer {t1}/{n} (rot {t1r})  (ii) spec +{fs} | "
+              f"amend-hold +{fa} | amend-PULSE +{fp}  (iii) left {none_p}")
     json.dump(dict(rows=rows, table=table), open(os.path.join(HERE, "margins.json"), "w"),
               indent=1, default=lambda o: bool(o))
     print("\nwrote margins.json")

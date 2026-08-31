@@ -1,0 +1,115 @@
+[
+ {
+  "name": "pulse_ledge_ups0",
+  "ups": 0,
+  "edges": [
+   1,
+   3,
+   5
+  ],
+  "lock_t": 259,
+  "final_y": 3,
+  "throat_free": true,
+  "escaped": true
+ },
+ {
+  "name": "pulse_B34f1_ups0",
+  "ups": 0,
+  "edges": [
+   1,
+   3,
+   5
+  ],
+  "lock_t": 199,
+  "final_y": 6,
+  "throat_free": true,
+  "escaped": true
+ },
+ {
+  "name": "pulse_B34f1_ups10",
+  "ups": 10,
+  "edges": [
+   1,
+   3,
+   5
+  ],
+  "lock_t": 99,
+  "final_y": 6,
+  "throat_free": true,
+  "escaped": true
+ },
+ {
+  "name": "hold_B34f1_ups10",
+  "ups": 10,
+  "edges": [
+   1
+  ],
+  "lock_t": 9,
+  "final_y": 15,
+  "throat_free": false,
+  "escaped": false
+ },
+ {
+  "name": "pulse_g3shape_ups5",
+  "ups": 5,
+  "edges": [
+   1,
+   3,
+   5
+  ],
+  "lock_t": 194,
+  "final_y": 3,
+  "throat_free": true,
+  "escaped": true
+ },
+ {
+  "name": "pulse_g3shape_ups10",
+  "ups": 10,
+  "edges": [
+   1,
+   3,
+   5
+  ],
+  "lock_t": 129,
+  "final_y": 3,
+  "throat_free": true,
+  "escaped": true
+ },
+ {
+  "name": "hold_g3shape_ups10",
+  "ups": 10,
+  "edges": [
+   1
+  ],
+  "lock_t": 9,
+  "final_y": 15,
+  "throat_free": false,
+  "escaped": false
+ },
+ {
+  "name": "pulse_g2shape_ups10",
+  "ups": 10,
+  "edges": [
+   1,
+   3,
+   5
+  ],
+  "lock_t": 29,
+  "final_y": 13,
+  "throat_free": true,
+  "escaped": true
+ },
+ {
+  "name": "pulse_far_traverse_ups0",
+  "ups": 0,
+  "edges": [
+   1,
+   3,
+   5
+  ],
+  "lock_t": 259,
+  "final_y": 3,
+  "throat_free": true,
+  "escaped": true
+ }
+]

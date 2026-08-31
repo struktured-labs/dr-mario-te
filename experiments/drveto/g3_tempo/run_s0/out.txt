@@ -2,3 +2,10 @@ CASE parent_s1A_p0 final=2,0 done=1 b4zero=26 b4one=4 cmd4viol=0 pubs=2:0:0:s:14
 CASE parent_s1B_p1 final=2,1 done=1 b4zero=26 b4one=4 cmd4viol=0 pubs=2:1:0:s:1379840;2:1:1:p:30867012; clocks=30867360 doneclk=30867018 timeout=0
 CASE parent_s2A_p2 final=2,2 done=1 b4zero=26 b4one=4 cmd4viol=0 pubs=1:0:0:s:1388987;2:0:0:s:2742416;1:1:0:s:5580698;2:2:0:s:12896409;2:2:1:p:33811558; clocks=33811680 doneclk=33811564 timeout=0
 CASE parent_s4A_p0 final=3,1 done=1 b4zero=26 b4one=4 cmd4viol=0 pubs=0:0:0:s:1095893;3:0:0:s:4309255;3:1:0:s:8566929;3:1:1:p:25027262; clocks=25027680 doneclk=25027268 timeout=0
+CASE g2_p1 final=1,2 done=1 b4zero=20 b4one=2 cmd4viol=0 pubs=1:2:0:s:1534106;1:2:0:p:29579695; clocks=29580000 doneclk=29579701 timeout=0
+CASE g3_p2 final=6,1 done=1 b4zero=22 b4one=4 cmd4viol=0 pubs=6:1:0:s:1512860;6:1:1:p:28731411; clocks=28731840 doneclk=28731417 timeout=0
+CASE synth_L4f1_p0 final=5,0 done=1 b4zero=28 b4one=4 cmd4viol=0 pubs=2:0:0:s:1136545;3:0:0:s:2242517;5:0:0:s:3355669;5:0:1:p:29928165; clocks=29928480 doneclk=29928171 timeout=0
+CASE synth_L4f2_p0 final=3,0 done=1 b4zero=30 b4one=2 cmd4viol=0 pubs=2:0:0:s:1205088;3:0:0:s:2377935;5:0:0:s:3557500;2:2:0:p:38506094;3:1:0:p:40862496;3:0:0:p:42047558;3:0:0:p:42047641; clocks=42048000 doneclk=42047647 timeout=0
+CASE synth_L4f1_gateblk_p0 final=5,0 done=1 b4zero=22 b4one=4 cmd4viol=0 pubs=3:0:0:s:925689;5:0:0:s:1836258;5:0:1:p:18950704; clocks=18950880 doneclk=18950710 timeout=0
+CASE synth_B34f2_p0 final=5,1 done=1 b4zero=30 b4one=4 cmd4viol=0 pubs=2:0:0:s:1220550;5:1:0:s:5960618;5:1:1:p:33958456; clocks=33958560 doneclk=33958462 timeout=0
+CASE synth_L4f1_shallow_p0 final=5,0 done=1 b4zero=28 b4one=4 cmd4viol=0 pubs=5:0:0:s:1160389;5:0:1:p:29766553; clocks=29766720 doneclk=29766559 timeout=0
