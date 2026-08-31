@@ -79,6 +79,11 @@ _VETO_AT_OCAND = False         # TEST-ONLY (gate mutant M2, the C1 trap): True m
                                # predicate evaluation to o_cand, where LEV_RVC/LEV_WIN_R are
                                # STALE. Exists so the gate can PROVE the trap is real and
                                # that its own parity check catches it. Never set by any build.
+_VETO_PUB_MUTANT = False       # TEST-ONLY (gate mutant M4, the FIX-A hole made real): True
+                               # drops the anytime publish suppression, reproducing the
+                               # pre-Fix-A emitter -- a vetoed running best IS stored to
+                               # S_BEST_C/O mid-search. The mailbox-trajectory gate must
+                               # kill this build. Never set by any build.
 VETO_PENALTY = 20000           # subtracted at o_cand with 16-bit signed SATURATION (clamp
                                # -32767 on overflow) -- a vetoed candidate loses to any
                                # plausible legit score, order among vetoed candidates is
@@ -767,6 +772,23 @@ def _emit_search_d3_engine(a):
     a.ins("LDA_zp", D_C1); a.ins("STA_zp", D_BC); a.ins("LDA_zp", D_O1); a.ins("STA_zp", D_BO)
     if DBLCANON:
         _e_dblcanon(a, "e")          # #123: before BOTH the anytime mailbox and the final D_BO
+    if DRVETO and not _VETO_SUPPRESS and not _VETO_PUB_MUTANT:
+        # FIX A (anytime publish suppression, 2026-08-30): a vetoed running best is
+        # NEVER stored to the live mailbox. Without this, iteration 1 always beats
+        # the $8000 sentinel, so a vetoed pass-0 argmax IS handed to the pre-DONE
+        # driver (mailbox invalid=$FF until the first store; DRSLAM/MIN_THINK act on
+        # the interim answer) -- the exact lethal-interim hole the vetog1 delta audit
+        # found. Skipping the store keeps the mailbox at $FF (or at the last unvetoed
+        # best); the INTERNAL best (D_BV*/D_BC/D_BO) still updates, so the final
+        # answer -- published unconditionally by the stub at DONE -- is unchanged:
+        # penalty-not-removal (note A) is preserved, and on an all-vetoed board the
+        # vetoed best still reaches the driver at o_done via that stub store.
+        # (The spec's "while ... no unvetoed candidate has yet been published"
+        # conjunct is subsumed: a vetoed candidate can only become the running best
+        # after an unvetoed one has been published if it out-margins the penalty
+        # (~20000 units); suppressing the store in that corner too is the strictly
+        # safer direction and is what the trajectory gate asserts.)
+        a.ins("LDA_zp", D_VETO); a.br("BNE", "s_next")
     a.ins("LDA_zp", D_BC); a.ins16("STA_abs", S_BEST_C)     # ANYTIME: live-publish running best
     a.ins("LDA_zp", D_BO); a.ins16("STA_abs", S_BEST_O)
     a.label("s_next")

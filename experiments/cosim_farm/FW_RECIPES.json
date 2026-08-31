@@ -156,6 +156,25 @@
       "note": "s20t3_th400dblcanon + DRVETO=1 (spawn-plug veto, variant a+). DRVETO=0 under the same env is byte-identical b03a586e. Gates: dr-mario-tempo-wt/experiments/drveto/ (branch drveto).",
       "verified": "2026-08-30",
       "builder": "build_dbgpub.py (pins emitter, asserts __file__)"
+    },
+    "s20t3_th400dblcanon_veto2fixa": {
+      "md5": "a2b2e4ac",
+      "md5_full": "a2b2e4ac056df06a89c1e3acecbfa2ee",
+      "env": {
+        "DRSTRAND": "20",
+        "DRCHAIN": "180",
+        "DRCOPRO_ARM": "1",
+        "DRFIX": "1",
+        "DRCOPRO_TUCKBFS": "1",
+        "DRCOPRO_TUCKBFS_TIER3": "1",
+        "DRCOPRO_TUCKV3_FIXSLOT": "1",
+        "DRCOPRO_TUCKV3_THETA": "400",
+        "DRDBLCANON": "1",
+        "DRVETO": "1"
+      },
+      "note": "s20t3_th400dblcanon_veto1 + FIX A (anytime publish suppression: a vetoed running best is never stored to S_BEST_C/O mid-search; final answer byte-identical; +4 B). Emitter flag-free -- Fix A rides DRVETO=1. Gates: dr-mario-tempo-wt/experiments/drveto/ G2 gate_mailbox_traj.py + g1_cosim/ (branch drveto). DRVETO=0 under the same env is byte-identical b03a586e.",
+      "verified": "2026-08-30",
+      "builder": "build_dbgpub.py (pins emitter, asserts __file__)"
     }
   }
 }
