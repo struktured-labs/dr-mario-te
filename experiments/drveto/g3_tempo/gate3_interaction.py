@@ -79,7 +79,9 @@ def diff(c0, c1):
 
 def run(k_inject, verbose=False):
     p1name = os.environ.get("G3_P1", "proph1")
-    carts = {n: load_cart(os.path.join(ROOT, "tmp", "proph", f + ".nes"))
+    # G3_DIR: cart directory. tmp/proph = the human-cart arms, tmp/proph_cvc = the CvC soak arms.
+    g3dir = os.environ.get("G3_DIR", os.path.join(ROOT, "tmp", "proph"))
+    carts = {n: load_cart(os.path.join(g3dir, f + ".nes"))
              for n, f in (("proph0", "proph0"), ("proph1", p1name))}
     for c in carts.values(): paint(c, threat=True)
     fails, trace = [], []

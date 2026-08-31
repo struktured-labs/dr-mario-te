@@ -1860,10 +1860,13 @@ def build_main(level=11, speed=1):
     a.label("fc_ret"); a.ins("RTS")
     a.label("fc_no")
     a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04)
-    if PRESTART:
+    if PRESTART or PROPH:
         # DRPRESTART's per-match init sits inside the go_ai block this branch skips over, which
         # takes the span past +-127 on the DRCOLDINIT arms (measured: 138). Invert-and-JMP; gated
         # so a DRPRESTART=0 build keeps the original short branch and stays byte-identical.
+        # DRPROPH joins the gate for the SAME span: its PROPH_DIR cold-init store adds 3 B, which
+        # on a DRPRESTART=0 CvC arm (the hardened 70a857cc flag set) takes the span to exactly 130.
+        # A DRPRESTART=1 arm already long-branches, which is why the human cart never saw it.
         a.br("BEQ", "is_play"); a.jmp("not_play"); a.label("is_play")
     else:
         a.br("BNE", "not_play")

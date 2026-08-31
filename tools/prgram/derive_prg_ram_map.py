@@ -249,6 +249,13 @@ CONFIGS = {
     # -- the config that makes PROPH_DIR ($61C6) show its writers. Absolute stores only.
     "proph-human": dict(DRPROPH=1, DRHUMAN=1, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1,
                         DRBUILDID=0),
+    # Fix B on the CvC soak shape (the hardened 70a857cc flag set): DRHUMAN=0 + DRP1NATIVE=1 +
+    # DRSTARTGUARD=1 + DRPRESTART=0. Distinct from proph-human on the byte dimension -- this is
+    # the config where FC_STAB ($61C4) and PROPH_DIR ($61C6) are both live, and it is the arm
+    # that actually soaks on silicon.
+    "proph-cvc": dict(DRPROPH=1, DRHUMAN=0, DRP1NATIVE=1, DRP1SLICE=0, DRPOCKET=0,
+                      DRSTARTGUARD=1, DRPRESTART=0, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1,
+                      DRBUILDID=0),
 }
 
 

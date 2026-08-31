@@ -279,6 +279,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--builds", default="proph0,real,hold,late,wrongdir")
     ap.add_argument("--out", default=os.path.join(HERE, "gate2_results.json"))
+    # cart directory: the human-cart arms live in tmp/proph; the CvC soak arms (the hardened
+    # 70a857cc flag set) in tmp/proph_cvc. Same five filenames either way.
+    ap.add_argument("--dir", default=os.path.join(ROOT, "tmp", "proph"))
     args = ap.parse_args()
     BUILDS = {"proph0": "proph0.nes", "real": "proph1.nes", "hold": "proph1_hold.nes",
               "late": "proph1_late.nes", "wrongdir": "proph1_wrongdir.nes"}
@@ -288,7 +291,7 @@ def main():
     nav()
     results = {}
     for b in args.builds.split(","):
-        cart = os.path.join(ROOT, "tmp", "proph", BUILDS[b])
+        cart = os.path.join(args.dir, BUILDS[b])
         rows = {}
         for name in sorted(cases):
             if name not in runs or not runs[name]["pubs"]:

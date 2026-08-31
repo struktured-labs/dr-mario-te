@@ -60,7 +60,9 @@ def state(cpu):
     return (tuple(cpu.mem[0:0x100]), tuple(cpu.mem[0x200:0x800]),
             tuple(cpu.mem[0x6000:0x8000]))
 
-CARTS = {f: os.path.join(ROOT, "tmp", "proph", f + ".nes") for f in ("proph0", "proph1")}
+# G3_DIR: cart directory. tmp/proph = the human-cart arms, tmp/proph_cvc = the CvC soak arms.
+G3_DIR = os.environ.get("G3_DIR", os.path.join(ROOT, "tmp", "proph"))
+CARTS = {f: os.path.join(G3_DIR, f + ".nes") for f in ("proph0", "proph1")}
 fails = []
 neg_cases = ([("mode%d" % md, md, 1, 5) for md in (0, 1, 2, 3, 7, 8)]
              + [("mode4_p04_0", 4, 0, 5), ("mode4_fcclear", 4, 1, 0)])
