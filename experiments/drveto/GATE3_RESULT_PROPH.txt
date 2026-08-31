@@ -1,0 +1,28 @@
+== GATE 3 (DRPROPH): interaction traces -- 2026-08-31, reviewer re-run ==
+Rig: experiments/drveto/g3_tempo/gate3_interaction.py (py65 open-loop lockstep
+pair, proph0 vs proph1, identical mirrored game state; valid mailbox injected
+mid-pulse at go+k, k=1..6 -- both frame parities, both hook passes).
+
+A  TIMER INTEGRITY: full-state diff (zp, $0200-$07FF, $6000-$7FFF; stack page
+   excluded as layout) EMPTY outside {$F6,$F8,PROPH_DIR} on EVERY hook of every
+   run (140 hooks x 6 injections). DELAY2/WDOG2/WDOGH2/STABLE_CT2/ROT_DONE2/
+   TGT_C2/TGT_O2/GRAV_P2(freeze_pending pin)/DISTGATE scratch untouched.
+   (NAVESC is compiled OUT on the DRHUMAN class -- GATE_HUMAN H2b -- vacuous.)
+B1 AMENDMENTS LIVE: settle+nf2_hold pulse = B_LEFT on latched-parity frames,
+   $F8 forced 0 (fresh edge), release on off-frames; proph0 = no-button.
+B2 RETARGET HANDOVER: from the first hook the adopt path sees a valid mailbox,
+   proph1 $F6/$F8 == proph0 byte-for-byte to the end of the pill. PASS k=1..6.
+B3 NO DOUBLE-INPUT: per-frame two-pass AND never yields LEFT|RIGHT or a
+   direction+rotate hybrid. Worst case traced (k=3): passA pulses $02, passB
+   adopts and writes $00 -> frame ANDs to 0 (one lost frame, degrade-to-ship).
+C  LIFECYCLE: benign respawn rewrites PROPH_DIR to 0 at the detect hook; no
+   pulse between DONE-adopt and the next detect.
+INSTRUMENT KILLED-MUTANT CHECK: G3_P1=proph1_hold FAILS (B1: off-frames still
+   pressing = held latch), G3_P1=proph1_late FAILS (B1: no settle-window press),
+   real arm PASSES. The instrument can see both amendment violations.
+GATE3: PASS (real), instrument non-vacuous.
+Residual (INFERRED, bounded): a stale-direction pulse can span an UNDETECTED
+same-Y respawn (prev pill locked at spawn row + survived + mailbox still
+invalid) -- the triple conjunction is the parked/WDOG class where the shipping
+cart writes no-button; gate2_pr.json shows ZERO real-arm survivors lock at
+y=15 on the n=42 bank, so no measured path reaches it.
