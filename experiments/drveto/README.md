@@ -137,8 +137,13 @@ Case 1 -- an unvetoed candidate exists (the common fired case).
   patch_cartridge_copro.py dn_p2), and every firing-set placement is
   PROVABLY FATAL-AT-NEXT-SPAWN by the (a+) construction -- acting on it is a
   certain loss when it locks.  Fixed: the driver sees $FF, i.e. its documented
-  no-result path (the state every search starts in): no slam target, park/weave
-  at natural gravity, retarget on the first valid store.
+  no-result path (the state every search starts in): `CMP #$FF -> nf2_hold`
+  (patch_cartridge_copro.py:1793, emitted act path; :257 comment) = steer
+  nothing this hook, NO gravity pin under ROTFIX, capsule falls naturally,
+  retarget on the first valid store.  MEASURED from code, this session.  Note
+  the window does consume fall budget -- but on the killer class (spawn-at-rest,
+  min-fo<=2 under cols 3-4) the budget is already ~0 and a lock-in-place IS the
+  throat, i.e. the same cells the suppressed interim would have plugged.
   - The slam hazard is one-directional: only the unfixed arm can commit a
     provably-fatal move during the window.  Removing it cannot create a loss
     that the unfixed arm avoids, because the unfixed arm's extra behaviour IS
