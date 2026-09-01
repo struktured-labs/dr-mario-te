@@ -119,3 +119,56 @@ py65 d3 bridge** (`planner_bridge.py`) — a stronger P2 producing more silicon-
 *before* falling back on stop-and-report. **Cost, stated honestly: d3 in py65 is far slower
 than 310 deaths/hour, so it trades abundance for fidelity**, and the subsampling design above
 depends on abundance.
+
+---
+
+## AMENDMENT 2, 2026-09-01T22:05Z — the silicon TARGETS are video-derived. Two-stage plan, registered before Stage 1 reports.
+
+### The asymmetry
+
+Mesen's five matching features are computed from the **RAM board at the latched death** —
+ground truth. But **the SILICON death geometry being matched TO was extracted from VIDEO**, by
+the same adjudicator whose reliability is the entire open question. So Stage 1 matches
+**RAM-truth features against possibly-wrong targets**.
+
+Two ways it bites, the second worse:
+1. features read off a correctly-identified death frame may be noisy (rescale, decode) —
+   tolerable;
+2. **if the video picked the wrong frame or the wrong death**, the board itself is wrong, not
+   just its features — and the confusion cells (45%/20%, 53%/87%) say that happens often. The
+   target population would then partly not exist.
+
+### ⚠ VERIFIED, NOT ASSUMED: THE SEAT LOG DOES **NOT** CARRY THE MATCHING FEATURES
+
+Checked against the emitted helper rather than promised. The latch stores exactly four bytes:
+
+| byte | content | is it a matching feature? |
+|---|---|---|
+| `SEAT_T1` `$61C7` | P1 throat occupied (boolean) | ✗ — this is `fo==0`, **not the `fo` value** |
+| `SEAT_T2` `$61C8` | P2 throat occupied (boolean) | ✗ — same |
+| `SEAT_V1` `$61C9` | P1 virus count (BCD) | — |
+| `SEAT_V2` `$61CA` | P2 virus count (BCD) | ✓ viruses-left band |
+
+**1 of the 5 features is carried.** `fo3`/`fo4` (a ledge at row 1 or 2 reads throat=0),
+top-three-row cell count, and the c2/c5 gate states are **all absent**.
+
+⇒ **Stage 2 is therefore NOT "re-match RAM-truth to RAM-truth". It is "EXTEND THE LATCH".**
+That is a build change requiring its own gates and ruling — not something Stage 2 can assume.
+
+**Extension cost, scoped honestly:** ~3 more bytes (`fo3`/`fo4` packed, top-cell count, gate
+bits) into the free run `$61C7-$61FF` (57 B, ample). ⚠ But `fo` needs a **column scan**, not a
+constant-time test, so it costs more than the current +148 cycles. Precedent exists and is
+bounded: `proph_trigger` already scans `fo3`/`fo4` and its `pf_s3`/`pf_s4` loop bounds are
+registered in the #126 census, so the cost is measurable by the existing gate rather than
+unknown.
+
+### The two-stage plan (fixed NOW, so a Stage-2 disagreement cannot be recast as a refinement)
+
+* **STAGE 1 (proceeding):** match against video-derived silicon targets. **The limitation goes
+  in the LEADING SENTENCE of the result, not the limitations section: "silicon targets are
+  video-derived and inherit that instrument's error."**
+* **STAGE 2 (blocked on a latch extension + ruling):** re-match RAM-truth to RAM-truth and
+  report whether the confusion matrix changes.
+  * **agreement** ⇒ the video-derived targets were good enough, said with evidence;
+  * **disagreement** ⇒ that difference **is itself a measurement of the video instrument's
+    error**, which is the question this whole lane exists to answer.
