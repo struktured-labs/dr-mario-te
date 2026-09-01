@@ -553,3 +553,29 @@ was computed from blind quantities before any outcome was seen. The aggravating 
 overrun happened because **I was idle for seven hours on a running experiment**, and an
 automated watcher I had armed did fire — I simply was not there to act on it. The rig also
 burned bluemage for those hours to no protocol purpose.
+
+### Fourth blinding-adjacent event, disclosed for completeness
+
+When the floor cleared at 03:03Z, `analyze_ab.py`'s gate opened as designed and
+**auto-printed a poll-based contrast**. So an outcome-bearing quantity was on screen
+*before* T_stop was computed.
+
+**Stated plainly, both halves:**
+
+> A poll-based contrast was auto-printed at floor-clear and was visible before truncation
+> was computed. **T_stop has ZERO degrees of freedom** — it is "the first instant both arms
+> have >=120 rounds", fully determined by the rule and by round counts alone — **so knowing
+> an outcome cannot have influenced it.** Let the reader judge rather than omitting it
+> because we judged it harmless.
+
+⚠ Arguably this is **not a leak at all**: the gate is *designed* to open at the floor, and
+the floor had cleared. **The defect is narrower and is a design note for the handoff:**
+
+> **The floor gate evaluated against the LIVE file, not against the truncated, in-protocol
+> dataset — so it unblinded on data that later proved out-of-protocol. A floor gate should
+> evaluate against the in-protocol dataset.**
+
+The auto-printed figure was the **poll** endpoint, which the pre-registration excludes (the
+poll over-flagged champion deaths 25% of the time). It is not quoted anywhere, not even as
+colour, because doing so would put a number in circulation that the pre-registration
+explicitly excluded.
