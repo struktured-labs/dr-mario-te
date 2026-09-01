@@ -501,3 +501,55 @@ progress-to-floor, liveness — all monotone nuisance counters whose deltas are 
 primary on the ADDRESSABLE stratum as a rate per round, and report with per-arm exclusions
 and reload counts, the n bought against the n needed (120 floor / 186 conservative target),
 the effect estimate with its CI regardless of n, and the disclosure in the form above.
+
+---
+
+## AMENDMENT 7 — PROTOCOL DEVIATION: THE RUN OVERRAN ITS STOP BY ~7.5 HOURS
+
+### What happened
+
+The pre-registered stop was **>=120 rounds/arm OR the 6 h clock, whichever came FIRST**.
+The floor was reached at **2026-09-01T03:03:06Z**. The collector kept running until it was
+shut down at **10:21:51Z** — roughly **7 hours 19 minutes past the stop**. I did not wake
+to report; the team lead's independent clock watcher caught it.
+
+### Why truncation was mandatory, and why it is legitimate here
+
+Analysing everything collected "up to now" would silently redefine the stopping rule as
+*whenever someone happened to look* — the exact data-dependent stop the pre-registration
+exists to prevent. And once a full-file result has been seen, any later decision to trim is
+unfalsifiably post-hoc.
+
+**T_stop was determined BLIND and BEFORE anything was unblinded**, using round counts only
+— a quantity the Amendment 6 admission criterion permits (its delta is a denominator):
+
+* noproph reached 120 rounds at **02:47:17Z**; proph reached 120 at **03:03:06Z**;
+* earliest instant BOTH arms were at the floor: **T_stop = 2026-09-01T03:03:06Z**;
+* binding arm of the rule: **the FLOOR**, which fell 3h16m before the 6 h clock (06:19:00Z).
+
+### Truncation applied
+
+| | retained (in protocol) | discarded (out of protocol) |
+|---|---|---|
+| noproph | **128 rounds** | 325 rounds |
+| proph | **120 rounds** | 380 rounds |
+| samples | 696 | 1,939 |
+
+noproph retains 128 rather than exactly 120 because T_stop is set by the *later* arm; it
+had accrued 8 more rounds while proph caught up. That is the rule as written and is not
+adjusted.
+
+The post-T_stop data (705 rounds) is **OUT OF PROTOCOL**. It is not pooled into the
+primary and is not used as a robustness check, since a "robustness check" on
+out-of-protocol data is a second analysis that could be mistaken for the result. It may be
+reported only as an explicitly-labelled exploratory addendum.
+
+### Disclosure
+
+**This is a protocol deviation and is disclosed on the same footing as the blinding
+leaks.** The mitigating facts, stated without minimising the failure: the stopping rule is
+data-independent, the truncation point was fixed by that rule rather than chosen, and it
+was computed from blind quantities before any outcome was seen. The aggravating fact: the
+overrun happened because **I was idle for seven hours on a running experiment**, and an
+automated watcher I had armed did fire — I simply was not there to act on it. The rig also
+burned bluemage for those hours to no protocol purpose.

@@ -7,7 +7,8 @@ import adjudicate as A, eligibility as E, rounds
 # hands over the endpoint numerator per arm just as surely as printing the rate.
 UNBLIND = "--unblind" in sys.argv
 
-rows = list(csv.DictReader(open("ab_samples_L20.csv")))
+rows = [r for f in ("ab_samples_L20_seg1_TRUNC.csv", "ab_samples_L20_TRUNC.csv")
+        if os.path.exists(f) for r in csv.DictReader(open(f))]
 blocks = {}
 for r in rows:
     blocks.setdefault((r["arm"], r["block"]), []).append(

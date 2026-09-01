@@ -15,7 +15,7 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 #   * the outage-spanning round is excluded by Amendment 3's reload rule, unchanged.
 # Labelled post-leak because it was written after the R49 glance. It is an accounting
 # rule about an interruption and does not touch the contrast.
-SEGMENTS = ["ab_samples_L20_seg1.csv", "ab_samples_L20.csv"]
+SEGMENTS = ["ab_samples_L20_seg1_TRUNC.csv", "ab_samples_L20_TRUNC.csv"]
 rows = []
 for _i, _f in enumerate(SEGMENTS):
     _p = os.path.join(BASE, _f)
