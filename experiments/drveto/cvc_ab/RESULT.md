@@ -1,112 +1,83 @@
-# DRPROPH CvC L20 A/B — RESULT
+# DRPROPH CvC L20 A/B — THE RUN PRODUCED NO USABLE ESTIMATE. AN AUDIT OF WHY.
 
-**STATUS: INDETERMINATE (COMPROMISED). Not a GO. Not a null. Nothing to act on.**
+**This document is an INSTRUMENT AUDIT, not a result with caveats. There is no usable estimate
+of DRPROPH's effect in this run, in either direction, and no number in it should be quoted as
+one. The experimental question is OPEN and will be answered by a RE-RUN once the instrument is
+trustworthy.**
 
-**T_stop 2026-09-01T03:03:06Z**, floor arm binding, truncated blind before unblinding.
-Regime: **L20, CvC, start-of-round pile-up population (82-83 viruses left of 84), distinct
-from the banked L20 farm's median 41 left.**
-
----
-
-## ⚠⚠ THE LEADING CANDIDATE EXPLANATION: DRPROPH MAY BE CAUSING DEATHS
-
-Stripped of strata, **the treated arm had MORE champion deaths per round than the control:**
-
-| arm | rounds | ALL video-confirmed champion deaths | rate |
-|---|---|---|---|
-| noproph (control) | 128 | 22 | **0.1719** |
-| proph (treated) | 120 | 28 | **0.2333** |
-
-d = **+0.0615**, 95% CI [−0.0385, +0.1615] (contains zero).
-
-And the entire divergence between that and the favourable stratified primary below is the
-**13 UNADDRESSABLE deaths that exist ONLY in the treated arm** (control has zero).
-
-**One hypothesis fits every number here, and it is not the comfortable one: DRPROPH's
-lateral push may be shoving capsules INTO the gate column** — converting deaths it could
-have helped into deaths it cannot, and adding some that would not have happened at all.
-That single mechanism explains, simultaneously:
-* the 0-vs-13 UNADDRESSABLE asymmetry (the treatment creates blocked gates),
-* the higher total champion-death rate in the treated arm,
-* and the favourable-looking stratified primary (the deaths it "removes" from ADDRESSABLE
-  reappear as UNADDRESSABLE).
-
-**It is not established. It is also not less likely than the benign reading.** The
-alternative is a stratifier/adjudicator defect (see the two artifacts below). Both are live.
+Read the three sentences under "How much to trust this" before anything else.
 
 ---
 
-## The pre-registered primary — and why it CANNOT carry the verdict
+## What the run actually produced — the durable output
 
-ADDRESSABLE champion deaths per completed round, video-confirmed:
+The instrument findings, not the effect estimate:
 
-| arm | rounds | ADDRESSABLE | rate | exclusions | reloads |
-|---|---|---|---|---|---|
-| noproph | 128 | 22 | 0.1719 | 0 | 0 |
-| proph | 120 | 15 | 0.1250 | 0 | 0 |
+1. **The poll and the video are BOTH pixel-based and neither can arbitrate the other.** They
+   disagree in both directions at arm-dependent rates: the poll over-flags champion deaths 45%
+   (control) / 20% (treated), and MISSES 53% / 87%. There was no ground truth in the
+   measurement system.
+2. **The video adjudicator's "validated 8/8" does NOT cover DRPROPH=1 arms** — that validation
+   ran on non-pulsing footage, and the detector's test is a persistence HOLD.
+3. **The observer contaminated the observed.** The A/B poller wrote screenshots into the very
+   directory `freeze_watch` hashes to detect a frozen screen, manufacturing **nine hourly
+   "freezes"** (intervals alternating 60.57/61.57 min), with **zero in the 11.7 h after the
+   poller stopped**. Only the interval structure betrayed it.
+4. **A stale cache hid two in-window reloads from the primary.** `refresh=False` fetched only
+   when the cache was absent; it was written once at 21:17Z with 5 events and never updated.
+   **The code was correct and the data was old**, so nothing failed and nothing looked wrong.
+5. **DRSEATLOG now exists and is gated** — a cart-side latch recording the ROM's own loss
+   condition every hook, independent of pixels, with its transition-sampling mutant killed
+   10/10. It is what makes a trustworthy re-run possible.
 
-d = −0.0469, 95% CI [−0.1350, +0.0413]. Relative rate 0.73 (gated prediction 0.333).
-**CI contains zero AND contains the gated effect.** n bought 128/120 — **120 floor MET,
-186 conservative target NOT met.**
+**That list is worth more than the number would have been.**
 
-### ⚠ THIS ESTIMAND IS INVALID BY CONSTRUCTION — a pre-registration defect
+## How much to trust this document
 
-Conditioning on ADDRESSABLE is **conditioning on a POST-TREATMENT VARIABLE** if the
-treatment can move stratum membership. **The 0-vs-13 split is direct evidence that it can.**
-A stratum the treatment can alter is a **collider**, not a refinement, and conditioning on
-it induces exactly the spurious favourable association seen above.
+* **One blinding leak exposed the full per-arm contrast at ~40% of target N to both analysts.**
+* **The run overran its stop by 7.5 h and was truncated blind** at T_stop 03:03:06Z (705
+  out-of-protocol rounds discarded).
+* **A stale cache hid two in-window reloads from the primary**, so the first report's "zero
+  reloads, zero exclusions" was false; corrected denominators are noproph 128 → **124**, proph
+  120.
 
-This is a **design defect in the pre-registration**, not a surprise in the data. The
-stratification was approved on the assumption that eligibility is a property of the BOARD
-and therefore pre-treatment. **That assumption was never verified and is false whenever the
-mechanism's own action can alter the gates.**
+Smaller items, enumerated rather than counted: two further blinding leaks (a cosmetic gate that
+printed its inputs; a pooled tally reconstructable by repetition), and one blinding-adjacent
+floor-gate event. **Damage bounded and the argument is strong: the stopping rule was
+data-independent and the analysis pre-registered, so no decision either analyst took was
+biasable.**
 
-⇒ **STANDING RULE: before a stratum may define a primary endpoint, DEMONSTRATE IT IS
-UNAFFECTED BY TREATMENT — compare stratum proportions across arms. If they differ
-materially, the stratified estimand is a collider.**
-Here they differ maximally: 100% ADDRESSABLE in control, 54% in treated.
+## Why no estimate survives
 
----
+* **The pre-registered primary is INVALID BY CONSTRUCTION.** ADDRESSABLE is a
+  **post-treatment** stratum — the treatment's own lateral push can alter gate occupancy — so
+  conditioning on it is a **collider**. Stratum proportions differ maximally between arms
+  (100% vs 54%), and conditioning induced an association in the favourable direction.
+* **The unstratified secondary rests on an arm-dependent instrument.** Disagreement is
+  predicted by ARM even after matching on geometry (Mantel-Haenszel +0.275, CI [+0.070,
+  +0.479] by duration; +0.246, [+0.043, +0.449] by viruses-left; both R96 controls pass). The
+  asymmetry is **unexplained** — geometry does not account for it, and the pulse hypothesis was
+  tested and **not supported** (period-2 alternation is *lower* on the treated arm, 0.0030 vs
+  0.0100 median).
 
-## Second artifact: the arms have different MEASUREMENT failure rates
+### The numbers, recorded for completeness only
 
-| arm | video-confirmed | poll/video disagreements | rate |
-|---|---|---|---|
-| noproph | 22 | 18 | **45%** |
-| proph | 28 | 7 | **20%** |
+⚠ **Neither row is an estimate. Neither leaves this document.**
 
-The adjudicator fails **more than twice as often on the control arm**, and the confirmed
-sets are the numerators of every figure above. **Arm-dependent measurement invalidates the
-comparison independently of the collider problem** — if the instrument is arm-dependent,
-nothing downstream survives it. This is the first thing to investigate.
+| quantity | value | status |
+|---|---|---|
+| stratified primary (ADDRESSABLE/round) | recomputed against corrected denominators | **INVALID as an estimand — post-treatment stratum. NOT TO BE QUOTED.** |
+| unstratified (all champion deaths/round) | treated higher than control | **A BOUND AT BEST — inherits an arm-dependent instrument. NOT TO BE QUOTED.** |
 
----
+## Regime label, which rides on any future comparison
 
-## Exposure
+L20, CvC, start-of-round pile-up population (82-83 viruses left of 84) — **distinct from the
+banked L20 farm's median 41 left**. On silicon P2 is the copro champion; any emulator
+substitute must reproduce that or say it does not.
 
-**74% (37/50)** ADDRESSABLE, pooled. Third movement of this figure from an UNCHANGED
-scorer: **80% (4/5) → 56% (5/9) → 74% (37/50)**. Quote it with the count, always.
+## What the re-run needs
 
-## Order of work (not started; the write-up comes first)
-
-1. **Adjudicator asymmetry** (45% vs 20%) — arm-dependent measurement; if real, nothing
-   downstream survives.
-2. **Stratum endogeneity** (0 vs 13) — is DRPROPH filling the gate column, or is the
-   stratifier treatment-dependent?
-
-Both use banked footage. No new silicon time.
-
-## Protocol deviations and disclosures
-
-* **Overrun:** ran ~7h19m past its stop; truncated blind at T_stop from round counts alone.
-  705 out-of-protocol rounds discarded — not pooled, not used as a robustness check.
-* **Blinding: three leaks. The material one exposed the full per-arm contrast at ~40% of
-  target N to both analysts and is disclosed at that strength**; a third was negligible
-  (one round, zero deaths). **Fixes 1 and 2 were themselves the sources of leaks 2 and 3.**
-  A fourth, blinding-adjacent: the floor gate auto-printed a poll-based contrast before
-  truncation was computed — T_stop has zero degrees of freedom, so it cannot have been
-  influenced. Design note: **a floor gate should evaluate against the in-protocol dataset,
-  not the live file.**
-* **Bounded damage, at full strength:** the stopping rule is data-independent and the
-  analysis pre-registered, so no decision either analyst could take was biasable.
-* The **poll endpoint is quoted nowhere** — it over-flags champion deaths.
+A **game-state arbiter** that does not share the pixel failure mode. DRSEATLOG supplies the seat;
+its **latch extension** (specced, gated behind a 38 h / k ≤ 3 soak bar) would supply the death
+geometry. Until then the video detector's arm-dependent error is uncharacterised, and any A/B
+built on it inherits that error.
