@@ -80,19 +80,36 @@ Scanning `H` and `k_max` for P(pass | baseline) ≥ 0.75 **and** power ≥ 0.70:
 **No (H, k) pair under 72 h achieves both a low false-alarm rate and 80% power against a
 doubling.** That is a property of the event frequency, not of the design.
 
-### THE RULE (choose the practical window, state its limit)
+### THE RULE — 38 h / k <= 3 (team-lead ruling; the longer bar is FREE POWER)
 
-> **PASS when `H ≥ 24` accumulated soak hours with `k ≤ 2` freeze/reload events.**
-> P(pass | unchanged rate) = **0.79**; power vs a doubling = **0.61**; power vs a tripling =
-> **0.85**.
+> **PASS when `H >= 38` accumulated soak hours with `k <= 3` freeze/reload events.**
+> P(pass | unchanged rate) = **0.76**; power vs a **DOUBLING** = **0.73**; vs a tripling, higher.
 
-**A pass is therefore evidence against a TRIPLING, and only weak evidence against a doubling.
-It is NOT a safety claim.** If a doubling must be excluded, the window is 38 h with k ≤ 3 —
-available by extending the same soak, since exposure accumulates rather than resetting.
+**Why the longer bar rather than 24 h / k <= 2** (which leaves doubling power at 0.61 — a ~40%
+chance of missing a doubled freeze rate): **the extra 14 hours cost nothing we need.** The soak
+runs **unattended**, wall clock is the only input and it accrues while every other lane
+proceeds; **the extension is not on the critical path** (Stage 1 runs without it, the expo does
+not depend on it, the tap-out priority does not depend on it); and 38 h from the 21:49:54Z start
+lands **~2026-09-03 12:00Z**, clear of Sept 12. Buying doubling coverage with calendar time we
+already hold is free power.
+
+If the extension later becomes urgent, the weaker 24 h / k <= 2 bar may be taken — but **only as
+an explicit, recorded RISK ACCEPTANCE**, never by default.
+
+### ⚠ HOW TO LABEL A PASS
+
+**A pass is a RISK ACCEPTANCE, not a safety demonstration.** Write it exactly this way:
+
+> *"Evidence against a tripling; at 38 h also against a doubling. Anything subtler is beyond
+> what 3 events in 45.6 h can resolve."*
+
+★ **The durable artifact here is the negative result about the TEST ITSELF: no (H, k) pair under
+72 h achieves both a low false-alarm rate and 80% power against a doubling.** That tells the next
+person not to hunt for a cleverer design — **the limit is the EVENT FREQUENCY, not the test.**
 
 `k` counts `RELOADED` lines in `freeze_watch.log` within the window, the same structural source
-Amendment 3 of the A/B prereg uses. Report `H`, `k`, the expected `λH`, and which of the two
-windows was reached.
+Amendment 3 of the A/B prereg uses. Report `H`, `k`, the expected `lambda*H`, and the window
+reached.
 
 ## SOAK BAR THAT UNLOCKS THE BUILD — fixed NOW, before the soak produces it
 
