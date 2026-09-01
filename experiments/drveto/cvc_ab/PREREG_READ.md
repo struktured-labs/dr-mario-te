@@ -210,3 +210,63 @@ scoring later — nothing is lost, it is only deferred.
    totals near-certain.
 5. **State what n the clock actually bought next to the n it needed** (against both 120
    and 186), in the headline of any result.
+
+---
+
+## AMENDMENT 3, 2026-09-01T01:20Z — reload accounting. Decided blind to the contrast.
+
+A freeze fired at 01:13:12Z and freeze_watch auto-reloaded at **01:13:37Z, 23 minutes
+into the noproph block**. Same legitimacy basis as Amendment 2: this is an **accounting
+rule about a nuisance EVENT**, the treatment contrast is not used to decide it, and it is
+recorded before the stop.
+
+### The hazard
+
+The round boundary rule is "any INCREASE in virus count". **A core reload produces exactly
+that**, so a freeze+reload is indistinguishable from a round end. Left alone it fabricates
+a boundary, inflating the denominator of whichever arm froze and biasing that arm's
+per-round death rate **DOWNWARD**. The arm that froze is **noproph — the control** — so
+this error direction makes DRPROPH look *worse*, not better. It is still a corrupted
+denominator and is excluded either way.
+
+### RULE (in force)
+
+1. **Rounds whose `[start,end]` interval spans a `RELOADED` timestamp are EXCLUDED**,
+   identified structurally from `freeze_watch.log` (a real event boundary per R95, never
+   a heuristic on the virus series). `reloads.py` parses those timestamps.
+2. **The round immediately following a reload is also excluded** (partial, corrupt
+   duration).
+3. **Exclusions are reported per arm** with every result.
+4. **Freeze/reload counts are reported PER ARM as a secondary.** Unequal freeze rates
+   make the denominators non-comparable, and that asymmetry is itself a finding about the
+   builds; it does not get to stay invisible.
+
+### What actually happened to the data, measured
+
+The freeze did **not** fabricate a boundary in the banked series, for a reason worth
+recording: during the frozen interval the poller's samples came back with **unreadable
+counters** (`p1`/`p2` empty, 01:12:18Z-01:13:11Z), and unreadable samples are skipped as
+gaps by construction — so no spurious INCREASE was ever seen. The reload timestamp lies
+**after the last banked sample**, so zero rounds required exclusion from segment 1.
+The rule stands for the rest of the run regardless.
+
+### ⚠ THE CONTROLLER DIED ON THE FREEZE — the more serious defect
+
+`sample()` let a `subprocess.TimeoutExpired` escape when ssh blocked against the frozen,
+mid-reload box. The exception killed the loop and **the noproph arm silently stopped
+accumulating for ~5 minutes**. A soak controller that cannot survive the exact event it
+exists to observe is a worse bug than the accounting one. Fixed: every remote call now
+degrades to a gap and never raises, the arm-switch assert became a retry-then-warn, and
+the sample loop has an outer guard. Restarted on the **noproph** arm so the interrupted
+arm continues; the pre-outage series is banked separately as `ab_samples_L20_seg1.csv`
+and the segments are not silently concatenated.
+
+### ⚠ AND AN R49 LEAK OF MY OWN, disclosed
+
+`analyze_ab.py` printed both arms' rates side by side as soon as both existed — a partial
+comparison the pre-registration forbids, and **I saw it** (33 vs 51 rounds, both far below
+the 120 floor; the script's own verdict line read UNDERPOWERED). It is not used, not
+reported, and carries no weight in anything downstream. The fix is structural rather than
+a resolution to be careful: **the script now WITHHOLDS the contrast until every arm clears
+the floor**, printing per-arm descriptive counts only. Discipline that lives only in the
+analyst's head is not discipline.

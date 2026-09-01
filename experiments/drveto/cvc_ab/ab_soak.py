@@ -42,7 +42,18 @@ BLOCK_S = int(os.environ.get("BLOCK_MIN", "30")) * 60
 
 
 def sh(cmd, timeout=60):
-    return subprocess.run(["ssh", HOST, cmd], capture_output=True, text=True, timeout=timeout)
+    """⚠ NEVER RAISES. The 2026-09-01T01:13Z freeze killed this controller with an
+    unhandled subprocess.TimeoutExpired out of sample(): ssh blocked while the box was
+    frozen and mid-reload, the exception escaped the loop, and the noproph arm silently
+    stopped accumulating for ~5 minutes. A soak controller must survive the exact event
+    it exists to observe, so every remote call degrades to a gap instead of an exit."""
+    try:
+        return subprocess.run(["ssh", HOST, cmd], capture_output=True, text=True,
+                              timeout=timeout)
+    except Exception as e:                      # timeout, ssh death, anything
+        class _R:
+            returncode, stdout, stderr = 1, "", str(e)
+        return _R()
 
 
 def log(msg):
@@ -62,7 +73,17 @@ def set_arm(arm):
        "'    <file delay=\"2\" type=\"f\" index=\"1\" path=\"%s\"/>' "
        "'</mistergamedescription>' > %s; chmod 755 %s" % (RBF, cart, MGL, MGL))
     got = sh("cat %s" % MGL).stdout
-    assert cart in got, "mgl did not take the arm cart: %r" % got
+    if cart not in got:                          # do not die mid-soak; retry once
+        log("mgl write did not take (%r); retrying once" % got[:80])
+        time.sleep(5)
+        sh("printf '%%s\\n' '<mistergamedescription>' "
+           "'    <rbf>%s</rbf>' "
+           "'    <file delay=\"2\" type=\"f\" index=\"1\" path=\"%s\"/>' "
+           "'</mistergamedescription>' > %s; chmod 755 %s" % (RBF, cart, MGL, MGL))
+        got = sh("cat %s" % MGL).stdout
+        if cart not in got:
+            log("ARM SWITCH FAILED for %s -- continuing so the soak survives; this block "
+                "is suspect and must be excluded" % arm)
     sh("echo 'load_core /media/fat/menu.rbf' > /dev/MiSTer_cmd"); time.sleep(12)
     sh("echo 'load_core %s' > /dev/MiSTer_cmd" % MGL); time.sleep(20)
     note("AB BLOCK arm=%s cart=%s" % (arm, cart))
@@ -102,7 +123,10 @@ def main():
             t_end = time.time() + BLOCK_S
             n = bad = 0
             while time.time() < t_end:
-                s = sample()
+                try:
+                    s = sample()
+                except Exception as e:           # belt and braces: a gap, never an exit
+                    log("sample raised %r -- treating as a gap" % e); s = None
                 if s is None or not s.get("ok"):
                     bad += 1
                 else:

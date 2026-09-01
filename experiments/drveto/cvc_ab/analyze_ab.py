@@ -1,9 +1,9 @@
 """Analyse the DRPROPH CvC A/B: round records per arm, tally, and a rate test."""
 import csv, math, os, sys
-import rounds
+import rounds, reloads
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-rows = list(csv.DictReader(open(os.path.join(BASE, "ab_samples.csv"))))
+rows = list(csv.DictReader(open(os.path.join(BASE, "ab_samples_L20_seg1.csv"))))
 print("samples: %d" % len(rows))
 if not rows:
     raise SystemExit(0)
@@ -20,9 +20,16 @@ for r in rows:
          int(r["throat_p1"]), int(r["throat_p2"]),
          int(r["topcells_p1"]), int(r["topcells_p2"])))
 
+RELOADS = reloads.reload_epochs()
+print("reload events known: %d (excluded structurally from freeze_watch.log)\n" % len(RELOADS))
 per_arm = {}
+excl_by_arm = {}
 for (arm, b), series in sorted(blocks.items(), key=lambda kv: (kv[0][1], kv[0][0])):
-    recs = rounds.transitions(series)
+    recs_all = rounds.transitions(series)
+    recs, dropped = reloads.drop_reload_rounds(recs_all, RELOADS)
+    excl_by_arm[arm] = excl_by_arm.get(arm, 0) + len(dropped)
+    for dd in dropped:
+        print("      ⚠ EXCLUDED round end t=%.0f  dur=%5.1fs  %s" % (dd["end"], dd["dur_s"], dd["excluded"]))
     per_arm.setdefault(arm, {"rounds": [], "secs": 0.0, "samples": 0})
     per_arm[arm]["rounds"] += recs
     per_arm[arm]["secs"] += series[-1][0] - series[0][0]
@@ -34,6 +41,12 @@ for (arm, b), series in sorted(blocks.items(), key=lambda kv: (kv[0][1], kv[0][0
         print("      round end t=%.0f  dur=%5.1fs  last %s/%s  ->  %s"
               % (rr["end"], rr["dur_s"], rr["last_p1"], rr["last_p2"], rr["outcome"]))
 
+print("\nreload events per arm (reported secondary -- unequal freeze rates make the")
+print("denominators non-comparable, and that asymmetry is itself a finding):")
+for arm in sorted(per_arm):
+    n = sum(1 for e in RELOADS
+            for (a, b), ser in blocks.items() if a == arm and ser[0][0] <= e <= ser[-1][0])
+    print("   %-9s reloads=%d  rounds excluded=%d" % (arm, n, excl_by_arm.get(arm, 0)))
 print("\n%-9s %-8s %-8s %-9s %s" % ("arm", "hours", "rounds", "rounds/h", "tally"))
 for arm, d in sorted(per_arm.items()):
     h = d["secs"] / 3600
@@ -50,7 +63,19 @@ for arm, d in per_arm.items():
     k[arm] = (x, n)
     print("  %-9s %3d / %3d = %.3f   (ambiguous %d, excluded)" % (arm, x, n, x / n if n else 0, amb))
 
-if len(k) == 2 and all(n for _, n in k.values()):
+# ---- R49 GATE: refuse the contrast below the pre-registered floor ----------------
+# ⚠ This script previously PRINTED the two arms' rates side by side the moment both
+# existed, which is exactly the partial comparison PREREG_READ.md forbids. The gate is
+# the fix; the discipline cannot live only in the analyst's head.
+FLOOR = 120
+_short = {a: len(d["rounds"]) for a, d in per_arm.items() if len(d["rounds"]) < FLOOR}
+if _short:
+    print("\n-- CONTRAST WITHHELD (R49 / PREREG_READ.md) ------------------------------")
+    for a, n in sorted(_short.items()):
+        print("   %-9s %d rounds -- below the %d-round floor for a primary verdict" % (a, n, FLOOR))
+    print("   Per-arm descriptive counts above are labelled by arm. No comparison, no")
+    print("   direction, and no GO/NO-GO until every arm clears the floor.")
+elif len(k) == 2 and all(n for _, n in k.values()):
     (x1, n1), (x2, n2) = k["noproph"], k["proph"]
     p1, p2 = x1 / n1, x2 / n2
     p = (x1 + x2) / (n1 + n2)
