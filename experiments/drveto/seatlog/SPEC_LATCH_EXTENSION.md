@@ -96,16 +96,37 @@ already hold is free power.
 If the extension later becomes urgent, the weaker 24 h / k <= 2 bar may be taken — but **only as
 an explicit, recorded RISK ACCEPTANCE**, never by default.
 
-### ⚠ HOW TO LABEL A PASS
+### ⚠ HOW TO LABEL A PASS — relabelled 2026-09-01 after λ was corrected
 
-**A pass is a RISK ACCEPTANCE, not a safety demonstration.** Write it exactly this way:
+**The bar stays at 38 h / k ≤ 3. It is relabelled, not extended.**
 
-> *"Evidence against a tripling; at 38 h also against a doubling. Anything subtler is beyond
-> what 3 events in 45.6 h can resolve."*
+> **PASS = evidence against a TRIPLING (power 0.82) and against a 5× (0.99). A DOUBLING WOULD
+> LIKELY GO UNDETECTED (power 0.52). This is a deliberate RISK ACCEPTANCE: at this rate a
+> doubling is operationally indistinguishable — 0.8 vs 0.4 expected freezes per 8-hour booth
+> day, each auto-recovering in ~30 s — and buying doubling-detection costs 72 h and a 29%
+> false-alarm rate. NOT a safety demonstration.**
 
-★ **The durable artifact here is the negative result about the TEST ITSELF: no (H, k) pair under
-72 h achieves both a low false-alarm rate and 80% power against a doubling.** That tells the next
-person not to hunt for a cleverer design — **the limit is the EVENT FREQUENCY, not the test.**
+Operating characteristics at the **corrected** λ = 0.0498/h:
+
+| H | k ≤ | pass \| null | power ×2 | power ×3 | power ×5 |
+|---|---|---|---|---|---|
+| **38** | **3** | **0.876** | 0.523 | **0.818** | 0.985 |
+| 48 | 3 | 0.781 | 0.703 | 0.927 | 0.998 |
+| 72 | 4 | 0.709 | 0.842 | 0.982 | 1.000 |
+
+**The decision is operational, not statistical: catch a GROSS regression — the kind that makes
+the demo unusable — and accept that a doubling is not a meaningful harm here.**
+
+⚠ **RECORD THE DIRECTION: correcting λ made the baseline RARER (0.0658 → 0.0498/h), which made
+the test WEAKER** (doubling power 0.73 → 0.52). Rarer events are harder to detect multipliers
+on. **Finding the artifact improved our knowledge and degraded our instrument — both true at
+once**, and nobody should read the correction as good news for the bar.
+
+### PERIODIC-EVENT EXCLUSION (structural, kept even though the known source is stopped)
+
+An event is excluded from `k` if it sits in a chain of **≥3 consecutive inter-event intervals
+within ±5% of their median**. This is a **timing property, not a judgement about cause**, so it
+holds regardless of what produced the run.
 
 `k` counts `RELOADED` lines in `freeze_watch.log` within the window, the same structural source
 Amendment 3 of the A/B prereg uses. Report `H`, `k`, the expected `lambda*H`, and the window
