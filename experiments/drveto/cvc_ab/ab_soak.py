@@ -21,10 +21,18 @@ import virus_ocr
 HOST = "bluemage"
 MGL = "/media/fat/dblcanon_ab_soak.mgl"
 RBF = "_Console/NES_theta400dblcanon_veto2fixa_20260830"
-ARMS = {"proph": "drmario_prophcvc_f2a16c00.nes",
-        "noproph": "drmario_cvc_noproph_858990bf.nes"}
+# L20 arms. The L11 pair established that the champion seat is NEVER pressured in
+# CvC (0 of 56 samples in the near-death band, max 2 top cells vs P1's 16), because a
+# native-d1 P1 clears almost nothing and so sends almost no garbage. L20 supplies the
+# pressure from the BOARD instead of from an opponent: the dealt layout starts at 84
+# viruses rather than 48. Level is a single-byte build knob -- L11 vs L20 differ in
+# exactly ONE byte, the level immediate -- so it is provably the only variable.
+ARMS = {"proph": "drmario_prophcvc_L20_9e1dfc46.nes",
+        "noproph": "drmario_cvc_noproph_L20_6e657dc8.nes"}
+ARMS_L11 = {"proph": "drmario_prophcvc_f2a16c00.nes",
+            "noproph": "drmario_cvc_noproph_858990bf.nes"}
 BASE = os.path.dirname(os.path.abspath(__file__))
-CSVP = os.path.join(BASE, "ab_samples.csv")
+CSVP = os.path.join(BASE, "ab_samples_L20.csv")
 TMPPNG = os.path.join(BASE, ".poll.png")
 # 10 s: the round-end state we score must be seen BEFORE the death, and the ssh
 # round trip is ~5 s, so this is close to the practical floor. Faster would
