@@ -68,3 +68,32 @@ intermediate level (the ROM clamp is 20, so 15/16 are reachable) is considered -
 for the MECHANICAL reason that boards must be playable enough for an escape to exist,
 never because a level produced a nicer number. That distinction goes in the record if
 the move is made.
+
+---
+
+## RESULT UPDATE 2026-09-01T00:45Z — exposure corrected DOWN at larger n
+
+Re-scored with the same code path after more proph-arm deaths accumulated:
+
+| | n=5 (first report) | n=9 (current) |
+|---|---|---|
+| ADDRESSABLE | 4 | 5 |
+| UNADDRESSABLE | 1 | 4 |
+| OTHER | 0 | 0 |
+| **EXPOSURE** | **80%** | **56%** |
+
+**The 80% figure is superseded.** Nothing changed in the scorer; the first estimate was
+small-n optimism. Treat any exposure number below roughly n=10 as provisional.
+
+The direction still refutes the viruses-left proxy (which pointed at "largely
+unaddressable"), but 56% is materially less favourable than 80% and it makes the target N
+larger, so the correction is load-bearing rather than cosmetic.
+
+⚠ **POLL/VIDEO DISAGREEMENT IS WORSE THAN FIRST REPORTED: 3 of 12 poll-flagged champion
+deaths (25%) were wrong** — two were really TOPOUT_P1, one had no plug hold at all. The
+poll systematically OVER-FLAGS champion deaths (raw poll rate 13/43 rounds), which is
+exactly why the pre-registered endpoint is video-confirmed. The poll is the INDEX.
+
+R95 note: every one of the 9 scored deaths passed the span review (holds 19-40 frames =
+1.9-4.0 s against the ~2.13 s game-over display, parent frame walked back 1 frame). The
+gate did not have to reject anything, which is what a healthy span check looks like.
