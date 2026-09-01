@@ -60,13 +60,30 @@ fit that run; a 4-byte latch plus an 8-entry ring (32 B) does, if history is wan
 produce a new file`**, so the save-state path is suspect on this rig.
 
 Options, none yet validated:
-* **(a) render it on screen** — draw the 4 bytes into an unused HUD region and let the
-  EXISTING video decoder read them. Ironic but sound: the pixels would then carry a
-  cart-computed *fact* rather than a pixel *inference*, and the decoder's job drops from
-  "infer a death" to "read 4 digits", which it already does reliably for the virus counters.
-  **This is the recommended option** — it needs no new channel and reuses a validated reader.
-* (b) fix/verify the save-state path — unknown cost, currently failing.
-* (c) a new UART/BoardTap channel — heavier, and there is a banked UART collision hazard.
+* **(a) ⚠ DIRECT PPU WRITES FROM THE HOOK — DO NOT. Checked, and the file answers it.**
+  The `0x37CF` hook runs **AFTER every PPU write in the NMI** (`render_*`, PPUSCROLL); the
+  emitter states outright that **"vblank is NOT the budget"**. That placement is *why* an
+  over-long hook cannot corrupt the display — it eats the main loop's share instead. But
+  that argument covers **CPU work only**. By the time the hook runs, vblank is essentially
+  spent, so **new PPU writes issued there would land outside it and corrupt rendering** —
+  and the hook fires **twice per frame** (the two-pass AND), so it would do so twice.
+  **The team lead's question was well-founded and this path is rejected.**
+
+* **(a′) ★ WRITE THE VALUE INTO OAM SHADOW AND LET THE GAME'S OWN RENDERER DRAW IT —
+  RECOMMENDED, AND ALREADY SHIPPED AS A PRECEDENT.** `DRSTUDYCOUNTS` **already does exactly
+  this**: it redraws the VIRUS and LEVEL counters by writing tile indices into the shadow-OAM
+  buffer at **`$0200 + slot*4 + 1`** (and attrs at `+2`, x at `+3`), using slots 32-40. The
+  hook writes **RAM only**; the game's existing render path DMAs it. **No PPU access from
+  the hook, no vblank dependency, and a shipped, working template in the same file.**
+  ⚠ Constraints inherited from that precedent: OAM real estate in slots 32-40 is **already
+  owned by STUDYCOUNTS/STUDY2P**, so a new field needs its own slots; and the base pause path
+  blanks shadow-OAM, which is the leak DRSTUDYCOUNTS was written to clean.
+* **(b) LATCH TO PRG-RAM ONLY, read back out-of-band** — the honest fallback. The arbiter
+  corpus needs only **~20-50 deaths**, not continuous telemetry, so a slower or semi-manual
+  readback is acceptable. This removes the display dependency entirely and is the lowest-risk
+  option if (a′)'s OAM slots prove contested.
+* (c) fix/verify the save-state path — unknown cost, currently failing on this rig.
+* (d) a new UART/BoardTap channel — heavier, and there is a banked UART collision hazard.
 
 ## 4. BYTE COST
 
@@ -105,13 +122,21 @@ What could destabilise:
 * **the latch runs every hook**, so a bug is continuous rather than rare — which cuts both
   ways: it would show up immediately in a soak rather than hiding.
 
+★ **AND THE DESIGN'S BEST PROPERTY, stated explicitly: a defect that fires EVERY HOOK is
+LOUD.** The latch runs continuously, so a bug shows up immediately in a soak rather than
+hiding in a rare path. **After a night of quiet failures — a wipe that would have logged
+plausible garbage, a gate that printed its own inputs, a detector validated in the wrong
+regime — loud is exactly what we want.** This cuts in the design's favour and is a reason to
+prefer it over anything sampled.
+
 **How it would be caught:** the existing pre-push hazard suite (`test_rtivec`, `test_mmc1rst`,
 `test_rtivec_aclobber`, `test_prg_ram_map`, `test_combo_cart`) plus a soak on the CvC pairing
 watched by `freeze_watch`, compared against the banked freeze rate rather than against zero.
 
 ## RECOMMENDATION
 
-Approve the **latch + on-screen readback (option a)** variant. It avoids the save-state
+Approve the **latch + OAM-shadow readback (option a′)** variant, with **(b) PRG-RAM-only
+as the fallback** if the OAM slots prove contested. It avoids the save-state
 dependency, reuses a validated reader, and its failure mode is loud. The measurement lane
 stays blocked until something arbitrates, and this is the only candidate that supplies truth
 on silicon rather than characterising an instrument.
