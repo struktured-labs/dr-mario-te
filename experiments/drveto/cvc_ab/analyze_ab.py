@@ -3,7 +3,27 @@ import csv, math, os, sys
 import rounds, reloads
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-rows = list(csv.DictReader(open(os.path.join(BASE, "ab_samples_L20_seg1.csv"))))
+# ---- SEGMENT POOLING RULE (written 2026-09-01T01:30Z, POST-LEAK per Amendment 4) ----
+# The controller died on the 01:13Z freeze and was restarted, splitting the L20 series
+# into ab_samples_L20_seg1.csv (pre-outage) and ab_samples_L20.csv (post). Rule, written
+# rather than decided in the moment:
+#   * segments are POOLED PER ARM -- they are the same cart, core and level, and the
+#     outage is an interruption in observation, not a change in condition;
+#   * a segment boundary is treated as a BLOCK boundary, so no round is ever inferred
+#     across it. This is automatic: the restart begins a fresh (arm, block) key, and the
+#     transition detector only ever joins samples within one key;
+#   * the outage-spanning round is excluded by Amendment 3's reload rule, unchanged.
+# Labelled post-leak because it was written after the R49 glance. It is an accounting
+# rule about an interruption and does not touch the contrast.
+SEGMENTS = ["ab_samples_L20_seg1.csv", "ab_samples_L20.csv"]
+rows = []
+for _i, _f in enumerate(SEGMENTS):
+    _p = os.path.join(BASE, _f)
+    if not os.path.exists(_p):
+        continue
+    for _r in csv.DictReader(open(_p)):
+        _r["block"] = "s%d_%s" % (_i, _r["block"])      # segment-qualified block key
+        rows.append(_r)
 print("samples: %d" % len(rows))
 if not rows:
     raise SystemExit(0)

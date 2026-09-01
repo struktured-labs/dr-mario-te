@@ -309,3 +309,19 @@ what it showed, and why the design bounds the damage. Specifically to be stated:
 * the fix was structural (the contrast is now withheld until every arm clears the floor),
   not a resolution to be more careful;
 * every rule written after 01:20Z is labelled as post-leak.
+
+### Rule written 2026-09-01T01:30Z — POST-LEAK, per Amendment 4: SEGMENT POOLING
+
+Situation not covered by the pre-registration: the controller's death at the 01:13Z
+freeze split the L20 series into two files. Rule, written down rather than resolved on
+judgment, and labelled post-leak because it was written after the R49 glance:
+
+* **Segments are POOLED PER ARM.** Same cart, same core, same level — the outage is an
+  interruption in *observation*, not a change in *condition*.
+* **A segment boundary is treated as a BLOCK boundary**, so no round is ever inferred
+  across it. This is structural rather than a promise: the restart begins a fresh
+  `(arm, block)` key and the transition detector only joins samples within one key.
+* **The outage-spanning round is excluded** by Amendment 3's reload rule, unchanged.
+
+It is an accounting rule about an interruption; it does not touch the contrast, and it
+was applied identically to both arms.
