@@ -82,47 +82,63 @@ if __name__ == "__main__":
         print("%-14s %s" % (k, v))
 
 
-def find_death(epoch, pre=35, post=8, fps=10, tag="dz"):
-    """Locate the DEATH itself, not the reset.
+def find_death(epoch, pre=20, post=8, fps=10, tag="dz"):
+    """Locate the DEATH that ends the round the poll indexed at `epoch`.
 
-    Signature: the losing seat holds THROAT-OCCUPIED, with its virus counter
-    frozen, for the whole game-over display -- measured 3.0 s on both adjudicated
-    deaths. A spawning capsule sits in the throat for a fraction of a second, so a
-    SUSTAINED hold cannot be mimicked.
+    Signature: the losing seat holds THROAT-OCCUPIED, counter still legible, for the
+    whole game-over display -- measured 2.4-4.4 s. A spawning capsule sits in the
+    throat for a fraction of a second, so a SUSTAINED hold cannot be mimicked.
 
     ⚠ DURATION IS THE DISCRIMINATOR, NOT THE CELL COUNT. My first cut also required
-    topcells >= 6 (borrowed from the poll rule) and MISSED a real death whose stack
-    was narrow: P1 held a plugged throat for 3.0 s at topcells = 5 and the function
-    returned NO_PLUG_HOLD_FOUND. The cell-count bar exists in the poll rule only
-    because the poll has no duration to work with -- a single 10 s sample cannot
-    tell a 0.2 s capsule from a 3 s plug. Video can, so it should key on the thing
-    that actually separates them. Bar set at 1.0 s: 3x the longest a spawn capsule
-    can sit in the throat before gravity moves it, and 1/3 of the observed hold.
+    topcells >= 6, borrowed from the poll rule, and MISSED a real death whose stack
+    was narrow (3.9 s hold at topcells 4). The cell bar exists in the poll rule only
+    because a 10 s sample has no duration to reason with; video has duration, so it
+    keys on that. Bar 1.0 s = 3x the longest a capsule sits in the throat.
+
+    ⚠⚠ AND THE SEARCH MUST BE BOUNDED BY THE RESET. At L20 rounds run 13-27 s, so any
+    window wide enough to contain the boundary also contains NEIGHBOURING rounds.
+    "Longest hold in the window" returned the wrong round's death (a TOPOUT_P1 for a
+    round the poll indexed as a P2 boundary); "last hold in the window" then picked up
+    the NEW round's brief post-reset spawn touches. The correct frame is: find the
+    RESET (counts jump up), then take the last qualifying hold strictly BEFORE it.
     """
     frames = cut_and_extract(epoch, pre=pre, post=post, fps=fps, tag=tag)
     reads = [(t, p, vid_ocr.read_frame(p)) for t, p in frames]
+
+    # locate the reset: a jump UP in either counter, scanning from the end backwards
+    # so we take the boundary nearest the requested epoch.
+    def legible(r):
+        return r.get("ok") and r.get("p1") is not None and r.get("p2") is not None
+    idx = [i for i, (_, _, r) in enumerate(reads) if legible(r)]
+    reset_i = None
+    for a, b in zip(idx, idx[1:]):
+        if reads[b][2]["p1"] > reads[a][2]["p1"] or reads[b][2]["p2"] > reads[a][2]["p2"]:
+            reset_i = b
+    limit = reset_i if reset_i is not None else len(reads)
+
     best = None
     for seat in ("p1", "p2"):
-        run_start, run_len = None, 0
-        for i, (t, p, r) in enumerate(reads):
-            plugged = (r.get("ok") and r.get("throat_" + seat)
-                       and r.get(seat) is not None)      # counter still legible = not yet wiped
-            if plugged:
+        run_start = None
+        for i in range(limit):
+            r = reads[i][2]
+            held = (r.get("ok") and r.get("throat_" + seat) and r.get(seat) is not None)
+            if held:
                 if run_start is None:
                     run_start = i
-                run_len = i - run_start + 1
-                if best is None or run_len > best[2]:
-                    best = (seat, run_start, run_len)
+                n = i - run_start + 1
+                if best is None or run_start > best[1] or (run_start == best[1] and n > best[2]):
+                    best = (seat, run_start, n)
             else:
-                run_start, run_len = None, 0
+                run_start = None
     if best is None or best[2] < fps * 1.0:
         return {"verdict": "NO_PLUG_HOLD_FOUND", "n_frames": len(reads),
+                "reset_found": reset_i is not None,
                 "longest_hold_s": round((best[2] if best else 0) / float(fps), 2)}
     seat, i0, n = best
     t0, p0, r0 = reads[i0]
     return {"verdict": "TOPOUT_" + seat.upper(),
             "hold_s": round(n / float(fps), 2),
             "death_t": t0.strftime("%H:%M:%S.%f")[:-4] + "Z",
-            "frame": p0,
-            "read": r0,
-            "topcells": r0.get("topcells_" + seat)}
+            "frame": p0, "read": r0,
+            "topcells": r0.get("topcells_" + seat),
+            "viruses_left": r0.get(seat)}
