@@ -139,3 +139,74 @@ needs answered.
 Recorded here so that building it after a null is visibly the registered plan rather than
 a post-hoc rescue of a disappointing outcome. Tonight's evidence budget goes to completed
 rounds instead.
+
+---
+
+## AMENDMENT 2, 2026-09-01T00:55Z — RE-SIZE. Still zero noproph deaths in existence.
+
+### Why changing a stopping rule here is legitimate, recorded so it is auditable
+
+Changing a stopping rule after seeing data is normally forbidden. Three properties make
+this the exception, and all three are checkable after the fact:
+
+1. **Exposure is a NUISANCE PARAMETER, not the treatment contrast.** What was
+   re-estimated is the event RATE (how often an ADDRESSABLE champion death occurs at
+   all), never the difference between arms.
+2. **Zero noproph data exists.** The contrast is entirely unobserved, so no stopping
+   decision can possibly have been informed by it.
+3. **The re-size runs AGAINST my own interest** — it makes the experiment longer and
+   harder. That is the direction that cannot be gamed.
+
+The correction that forced it (same code path, more deaths):
+
+| | n=5 | n=9 |
+|---|---|---|
+| ADDRESSABLE | 4 | 5 |
+| UNADDRESSABLE | 1 | 4 |
+| **exposure** | **80%** | **56%** |
+
+### The sizing, verified independently
+
+Measured on the proph (TREATED) arm: 5 ADDRESSABLE deaths / 43 rounds =
+**0.116 per round**.
+
+* **Conservative (the plan is sized against this):** treat the observed rate as if it
+  were the control rate — i.e. assume the mechanism is weak — and require power to detect
+  a 66.7% drop from it, 0.116 -> 0.039. **n = 186 rounds per arm.**
+* For contrast only, the arithmetically exact reading of a rate measured on the treated
+  arm: if the gated 66.7% rescue is real, the control rate is 0.348 and detecting
+  0.348 vs 0.116 needs only **n = 51 per arm**. Not used for sizing — it assumes the
+  answer.
+
+The original **60-round floor gives ~7 events per arm and is ~3x too small.** At that N
+the design would most likely return a null that means nothing, and Amendment A would then
+misread it as "not enough time" when it actually meant "not enough rounds".
+
+### FEASIBILITY — answered NOW, not at the stop
+
+**Yes, comfortably.** Rounds run at 103/h (measured). With alternating blocks each arm
+gets half the clock, so **6 h yields ~309 rounds per arm** — clear of the 120 floor and
+clear of the 186 conservative target.
+
+⚠ **My earlier cost estimate was wrong in the safe direction: a video pass takes 10.9 s
+measured, not the 1-2 minutes this document first claimed.** At 12 poll-flagged deaths
+per 43 rounds, 6 h implies ~86 candidates per arm, ~172 total, ~32 minutes of processing.
+**Video confirmation is not the bottleneck.**
+
+The real constraint is that the soak runs unattended but the ANALYSIS requires an
+operator. If the session ends before the stop, the banked CSV and footage still support
+scoring later — nothing is lost, it is only deferred.
+
+### Amended stopping rule
+
+1. **The 6-hour clock is the binding constraint**, not a round floor. Blocks keep
+   alternating as now.
+2. **Floor for a PRIMARY verdict: 120 completed rounds per arm.** Below that the contrast
+   is reported as **UNDERPOWERED-DESCRIPTIVE** and a GO/NO-GO is refused — an explicit
+   third outcome, registered now rather than invented at the stop.
+3. **The effect estimate is reported with a confidence interval regardless of n.** A wide
+   CI containing both zero and the gated 66.7% is an honest, useful result; "null" is not.
+4. **Analyse RATE PER ROUND, never raw counts.** Alternating blocks make unequal round
+   totals near-certain.
+5. **State what n the clock actually bought next to the n it needed** (against both 120
+   and 186), in the headline of any result.
