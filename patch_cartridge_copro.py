@@ -310,6 +310,36 @@ PROPH_MUT = (_os.environ.get("DRPROPH_MUT", "none") if PROPH else "none")
 # single reader (proph_pulse, later in the SAME hook), so no torn state is observable even
 # across an absorbed NMI overrun (DRRTIVEC RTIs back into the computation).
 PROPH_DIR = 0x61C6
+# ==================== DRSEATLOG: WHICH SEAT TOPPED OUT (owner-approved 2026-09-01) ====================
+# WHY: the DRPROPH A/B could not be measured because BOTH death instruments are pixel-based
+# (the MiSTer framebuffer poll and the OBS video). They share a failure mode, disagree in both
+# directions at ARM-DEPENDENT rates (poll over-flags 45%/20%, MISSES 53%/87%), and neither can
+# arbitrate the other. The GAME knows who died: the ROM has exactly ONE loss condition -- cells
+# (0,3)/(0,4) of a seat's board occupied at pill throw. This records it, independent of pixels.
+#
+# ⚠⚠ THE TRAP THIS DESIGN EXISTS TO AVOID -- LATCH, NEVER SAMPLE AT THE BOUNDARY.
+# RB337_STAGE_CLEAR/TOP_7 destroy $0400/$0500 SYNCHRONOUSLY at match end, before the hook can
+# react to the same frame's transition (this is why DRHOLDBOARD exists, and DRHOLDBOARD=0 on the
+# shipped arm). Sampling at the play->not_play edge therefore reads a WIPED board and logs
+# plausible-looking garbage. So the latch is written EVERY hook while mode==4, and at match end
+# it already holds the last live values. The `transition` mutant below does the wrong thing on
+# purpose and MUST fail the gate -- if the gate cannot kill it, the gate is not testing this.
+#
+# ★ AND THE PROPERTY THAT MAKES THIS DESIGN PREFERABLE: the latch runs EVERY HOOK, so a defect
+# is CONTINUOUS rather than rare -- it surfaces immediately in a soak instead of hiding in a
+# seldom-taken path. After a run whose failures were all quiet, LOUD is what we want.
+#
+# Cost: ~48 B, RAM writes only. NO PPU access -- the 0x37CF hook runs AFTER every PPU write in
+# the NMI ("vblank is NOT the budget") and fires TWICE per frame, so a PPU write here would land
+# outside vblank and corrupt rendering. Readback follows the DRSTUDYCOUNTS precedent instead:
+# values go to PRG-RAM, and (optionally, later) to shadow-OAM for the game's own renderer to DMA.
+SEATLOG = _os.environ.get("DRSEATLOG", "0") == "1"
+# TEST-ONLY mutant (never ship): `transition` samples at the play->not_play edge instead of
+# latching during play -- the exact defect above. The gate MUST kill it.
+SEATLOG_MUT = (_os.environ.get("DRSEATLOG_MUT", "none") if SEATLOG else "none")
+# $61C7-$61CA, from the documented free run $61C7-$61FF (57 B) -- clear of PROPH_DIR ($61C6)
+# and of the DRPROBE ring header at $6186+.
+SEAT_T1, SEAT_T2, SEAT_V1, SEAT_V2 = 0x61C7, 0x61C8, 0x61C9, 0x61CA
 # ==================== NMI-OVERRUN SILICON HAZARDS (both trace-proven 2026-08-09) ====================
 # Two INDEPENDENT ways a long NMI hook kills the cart. Mapper 100 routes PRG banking to upstream
 # MMC1.sv, so both are identical on MiSTer and Pocket silicon. Ship them TOGETHER (see the
@@ -1430,6 +1460,25 @@ def apply_study_pause(rom, evac=False):
 
 
 def build_main(level=11, speed=1):
+    def _seat_latch(tag):
+        """Latch both seats' throat occupancy + BCD virus counts. RAM only, no PPU."""
+        for base, dest, sfx in ((0x0400, SEAT_T1, "1"), (0x0500, SEAT_T2, "2")):
+            # throat = cells (0,3)/(0,4); a cell is EMPTY iff $00 or $FF (dual-encoding rule)
+            a.ins16("LDA_abs", base + 3); a.br("BEQ", f"sl_{tag}{sfx}_c4")
+            a.ins("CMP_imm", 0xFF); a.br("BNE", f"sl_{tag}{sfx}_occ")
+            a.label(f"sl_{tag}{sfx}_c4")
+            a.ins16("LDA_abs", base + 4); a.br("BEQ", f"sl_{tag}{sfx}_emp")
+            a.ins("CMP_imm", 0xFF); a.br("BEQ", f"sl_{tag}{sfx}_emp")
+            a.label(f"sl_{tag}{sfx}_occ")
+            a.ins("LDA_imm", 1); a.br("BNE", f"sl_{tag}{sfx}_st")   # A=1 -> always taken
+            a.label(f"sl_{tag}{sfx}_emp")
+            a.ins("LDA_imm", 0)
+            a.label(f"sl_{tag}{sfx}_st")
+            a.ins16("STA_abs", dest)
+        a.ins16("LDA_abs", VCOUNT_P1); a.ins16("STA_abs", SEAT_V1)
+        a.ins16("LDA_abs", VCOUNT_P2); a.ins16("STA_abs", SEAT_V2)
+
+
     a = Asm6502(UNIT1_CPU)
 
     if TRACE:
@@ -1959,6 +2008,10 @@ def build_main(level=11, speed=1):
     a.label("ga_vd")
     a.jmp("dispatch")
     a.label("not_play")
+    if SEATLOG and SEATLOG_MUT == "transition":
+        # MUTANT ONLY -- the defect the gate must catch: by here RB337_STAGE_CLEAR/TOP_7 have
+        # already wiped $0400/$0500, so this latches a dead board.
+        _seat_latch("t")
     if HOLDBOARD:
         # ARM (set-final / topout path): a topout leaves VCOUNT nonzero for the losing player, so
         # fc_clear's virus==0 check never fires -- L46_TOP_STATE instead transitions 4->5->7
@@ -2293,6 +2346,12 @@ def build_main(level=11, speed=1):
         # Runs BEFORE handle(2) so a prestart issued this hook starts its watchdog on this hook,
         # exactly as a normal `_start` does. Body lives past freeze_pending (JSR-only territory).
         a.jsr("pre_tick")
+
+
+    if SEATLOG and SEATLOG_MUT != "transition":
+        # CORRECT SITE: every play hook. dispatch is reached only on the go_ai path (mode==4
+        # AND $04!=0), so the boards are LIVE here and the latch always holds last-live values.
+        _seat_latch("d")
 
     # ---- stagnation detect: pill not moving while not search-frozen -> count up ----
     def stagnate(px, py, sx, sy, cnt, armed, pend, tag):

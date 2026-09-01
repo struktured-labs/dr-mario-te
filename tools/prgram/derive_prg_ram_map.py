@@ -256,6 +256,12 @@ CONFIGS = {
     "proph-cvc": dict(DRPROPH=1, DRHUMAN=0, DRP1NATIVE=1, DRP1SLICE=0, DRPOCKET=0,
                       DRSTARTGUARD=1, DRPRESTART=0, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1,
                       DRBUILDID=0),
+    # DRSEATLOG (owner-approved 2026-09-01): the config that makes SEAT_T1/T2/V1/V2
+    # ($61C7-$61CA) show their writers. Combined with DRPROPH so the deriver sees the
+    # $61C6 neighbour and would catch an overlap.
+    "seatlog-cvc": dict(DRSEATLOG=1, DRPROPH=1, DRHUMAN=0, DRP1NATIVE=1, DRPOCKET=0,
+                        DRSTARTGUARD=1, DRPRESTART=0, DRMMC1RST=1, DRRTIVEC=1,
+                        DRFCGATE=1, DRBUILDID=0),
 }
 
 
