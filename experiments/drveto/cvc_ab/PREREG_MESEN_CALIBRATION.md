@@ -77,3 +77,45 @@ Both are rebuilt against this pipeline's own data; the silicon controls do not c
 Banked data and Mesen only. **No silicon, nothing on rivalmage, nothing rebuilt.** Mesen is
 **single-instance** — only one driver at a time; confirm nothing else is attached before
 launching. The seat-log spec remains a decision document pending the owner's ruling.
+
+---
+
+## AMENDMENT 1, 2026-09-01T21:55Z — GENERATE WIDE, THEN SUBSAMPLE. Rule fixed BEFORE any detector output exists.
+
+At registration of this amendment **no Mesen frame has been scored by the adjudicator**. The
+matching rule below is therefore corpus CONSTRUCTION, fixed in advance — choosing it after
+seeing error rates would be selecting the calibration set on the outcome (R93's cousin).
+
+### Why the design changes
+
+Measured death rate in Mesen: **8 deaths / 5,611 frames ≈ 310 deaths per hour.** That
+abundance means the corpus does not have to be Mesen's marginal distribution reweighted; it
+can be **selected** from a large pool to match silicon. **Matching by selection from a large
+pool beats matching by reweighting a small one.**
+
+### The matching rule (FIXED NOW)
+
+1. Generate **>= 300 champion deaths per arm** with RAM ground truth.
+2. For each, compute the five features from the **RAM board at the latched death**: `fo3`,
+   `fo4`, occupied cells in rows 0-2, which gates (c2 / c5 rows 0-1) are blocked, and
+   viruses-left band.
+3. **Nearest-neighbour subsample without replacement**: for every silicon death, take the
+   Mesen death minimising normalised distance over those five features; discard the rest.
+4. **REPORT: per-feature distribution overlap of the matched corpus, AND the number of
+   candidates discarded to achieve it.** ⚠ A match requiring >90% discard is itself evidence
+   the populations differ and must be reported as such, not buried as a selection detail.
+5. Only then run the adjudicator.
+
+### Escalation, registered in advance
+
+⚠ **THE SEAT INVERSION IS THE REAL TRANSFER RISK, and the virus count is only its symptom.**
+On the silicon CvC cart **P2 is the COPRO CHAMPION**. In Mesen **P2 is a Lua "emptiest column,
+vertical" heuristic** — the seat that carries the strongest brain on silicon carries the
+weakest one here, which is why 7 of 8 deaths land on it. **The death boards are produced by a
+different QUALITY OF PLAY in the same seat.**
+
+**If matching fails, or requires discarding most of the pool, the registered escalation is the
+py65 d3 bridge** (`planner_bridge.py`) — a stronger P2 producing more silicon-like boards —
+*before* falling back on stop-and-report. **Cost, stated honestly: d3 in py65 is far slower
+than 310 deaths/hour, so it trades abundance for fidelity**, and the subsampling design above
+depends on abundance.
