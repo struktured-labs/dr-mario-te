@@ -456,3 +456,48 @@ clock), so no one can act on it; both arms remain far below the floor; nothing i
 invalidated. **The write-up now discloses THREE leaks as three**, each with its cause, and
 including that fixes 1 and 2 were themselves the sources of leaks 2 and 3. A reader needs
 that chain to judge whether this fix is real.
+
+---
+
+## DISCLOSURE, FINAL FORM — report by MAGNITUDE, not by count
+
+⚠ "Three leaks disclosed as three" is correct bookkeeping and **misleading as a summary**,
+because the three are not comparable. A reader who counts to three and stops will
+**understate leak 2 and overstate leak 3**.
+
+| leak | what was actually exposed | magnitude |
+|---|---|---|
+| 1 + 2 | **both arms' endpoint rates** — 0.294 (51 rounds) vs 0.319 (47 rounds), the full contrast at ~40% of target N, seen by **both analysts** | **MATERIAL** |
+| 3 | +1 AMBIGUOUS round and **zero** champion deaths, over ~2 min of one arm | negligible |
+
+**THE REQUIRED FORM, to appear in the write-up:**
+
+> Three blinding leaks occurred. **The material one exposed the full per-arm contrast at
+> roughly 40% of target N to both analysts, and is disclosed at that strength**; a third
+> was negligible (one round, zero deaths). Fixes 1 and 2 were themselves the sources of
+> leaks 2 and 3.
+>
+> **The damage is bounded, and that argument is strong: the stopping rule is
+> data-independent (>=120 rounds/arm or the 6 h clock) and the analysis is pre-registered,
+> so there is no decision either analyst can take that the knowledge could bias.**
+
+Both halves are true at once: **the disclosure is serious and the result is sound.**
+
+⚠ **IF THIS IS EVER SHORTENED, KEEP THE MAGNITUDE AND DROP THE COUNT — never the reverse.**
+A tidy enumeration must not do the work of an honest magnitude.
+
+## AUDIT CLOSED 2026-09-01T01:45Z
+
+No further audit passes and **no further changes to the analysis path before the stop**
+unless something actually breaks. The search for ever-smaller reconstructable paths does
+not terminate on its own, returns are diminishing, and every further change touches a
+RUNNING experiment. Any further path found is **written down for the handoff, not patched
+mid-run**.
+
+Emitted set below the floor is final: rounds, hours, reloads, exclusions per arm,
+progress-to-floor, liveness — all monotone nuisance counters whose deltas are denominators.
+
+**At the stop:** run `--unblind` (stamped to `UNBLIND_LOG.txt`), compute the pre-registered
+primary on the ADDRESSABLE stratum as a rate per round, and report with per-arm exclusions
+and reload counts, the n bought against the n needed (120 floor / 186 conservative target),
+the effect estimate with its CI regardless of n, and the disclosure in the form above.
