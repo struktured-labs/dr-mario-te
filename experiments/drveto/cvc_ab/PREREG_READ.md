@@ -386,3 +386,73 @@ materially different disclosure from one:
 Both are stated with the bounded-damage reasoning **and** with the fact that the first fix
 was cosmetic, since that is the part a reader needs in order to judge whether the second
 fix is real.
+
+---
+
+## AMENDMENT 6, 2026-09-01T01:40Z — THIRD R49 LEAK: a pooled tally read TWICE
+
+### The defect
+
+The Amendment 5 fix admitted "the outcome tally **pooled across arms**" as safe. Pooled at
+a **single instant** it genuinely is. But **the arms alternate in 30-minute blocks and only
+one arm is live at a time**, so
+
+```
+tally(end of a block) − tally(start of that block)  =  that ARM's deaths, exactly
+```
+
+**Blinding was defeated by REPETITION, not by a missing suppression** — and a status
+command is precisely the thing that gets run repeatedly. This is the same failure a level
+deeper: version 1 leaked because a *quantity* was printed; version 2 leaked because a
+*time series* of a "safe" quantity is not safe when the design partitions time by arm.
+
+### IT ACTUALLY HAPPENED — disclosed with the readings
+
+I emitted the pooled tally **twice**, both inside the noproph block:
+
+| reading | AMBIGUOUS | TOPOUT_P1 | TOPOUT_P2 |
+|---|---|---|---|
+| first run (~01:31Z) | 58 | 12 | 31 |
+| second run (~01:33Z) | 59 | 12 | 31 |
+
+Differenced, that discloses: **over ~2 minutes of the noproph block, noproph accrued
++1 AMBIGUOUS round and ZERO champion deaths.** One round's worth of single-arm
+information. Small, but it is exactly the forbidden quantity and it is disclosed on the
+same footing as the other two. The second reading was also quoted in a message to the team
+lead.
+
+### ADMISSION CRITERION (the general rule, now stated explicitly)
+
+> **A quantity may be printed below the floor only if ITS TIME-DERIVATIVE is also
+> uninformative about the endpoint** — not merely if it looks aggregated.
+
+* **passes** — rounds per arm, hours per arm, reloads per arm, exclusions per arm,
+  progress-to-floor, controller liveness / last-sample time. Their deltas are denominators
+  and nuisance counts, carrying no death information.
+* **fails** — any outcome count, pooled or per-arm. Its delta is a single-arm numerator.
+
+### STRENGTHENED AUDIT TEST
+
+Not *"can a reader compute the withheld quantity from this output?"* but:
+
+> **"Can a reader compute it from this output TOGETHER WITH ANY OTHER OUTPUT THIS TOOL HAS
+> EVER PRODUCED, INCLUDING EARLIER RUNS OF ITSELF?"**
+
+**Blinding is a property of the whole output history, not of a single invocation.**
+
+### Fixes applied
+
+* `analyze_ab.py` — the pooled outcome tally is **withheld**; the blinded report now emits
+  only the passing set above.
+* `stratify.py` — **gated whole** below the floor rather than field-by-field. Suppressing
+  its `arm=` column was never enough: run it twice across a block and the *new* deaths that
+  appear all belong to whichever arm was live, and which arm that was is knowable from the
+  clock.
+
+### Disposition
+
+Bounded as before — the stopping rule is data-independent (>=120 rounds/arm or the 6 h
+clock), so no one can act on it; both arms remain far below the floor; nothing is
+invalidated. **The write-up now discloses THREE leaks as three**, each with its cause, and
+including that fixes 1 and 2 were themselves the sources of leaks 2 and 3. A reader needs
+that chain to judge whether this fix is real.

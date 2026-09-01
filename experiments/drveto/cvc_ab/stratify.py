@@ -23,6 +23,26 @@ for (arm, b), ser in sorted(blocks.items(), key=lambda kv: kv[0][1]):
     for rec in rounds.transitions(ser):
         if rec["outcome"] == "TOPOUT_P2":
             deaths.append((arm, rec["end"], rec["last_p2"]))
+# ⚠⚠ REFUSES TO RUN BELOW THE FLOOR. This is an ANALYSIS tool, not a status tool, and
+# it has the same repetition leak as a pooled tally: run it twice across a block and the
+# NEW deaths that appear all belong to the arm that was live -- a single-arm numerator,
+# recovered by differencing two runs. Suppressing the arm column does not help, because
+# WHICH ARM WAS LIVE is knowable from the clock. Gate the whole tool instead.
+FLOOR = 120
+_rounds = {}
+for (a, b), ser in blocks.items():
+    _rounds[a] = _rounds.get(a, 0) + len(rounds.transitions(ser))
+if not UNBLIND and any(n < FLOOR for n in _rounds.values()):
+    print("STRATIFY WITHHELD -- below the %d-round floor (%s)." % (
+        FLOOR, ", ".join("%s %d" % kv for kv in sorted(_rounds.items()))))
+    print("Re-running this across a block boundary and differencing recovers the live")
+    print("arm's death counts, so the tool is gated whole rather than field-by-field.")
+    print("Use --unblind at the stop; its use is stamped into UNBLIND_LOG.txt.")
+    raise SystemExit(0)
+if UNBLIND:
+    import datetime as _dt
+    open("UNBLIND_LOG.txt", "a").write("%s  stratify --unblind; rounds=%s\n" % (
+        _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), _rounds))
 print("champion deaths indexed by the poll: %d\n" % len(deaths))
 
 tally = {}

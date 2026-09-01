@@ -105,14 +105,26 @@ if _below and not UNBLIND:
                 for (a, b), ser in blocks.items() if a == arm and ser[0][0] <= e <= ser[-1][0])
         print("%-9s %-8.2f %-8d %-10d %d"
               % (arm, per_arm[arm]["secs"] / 3600, _n_rounds[arm], n, excl_by_arm.get(arm, 0)))
-    pooled = {}
-    for d in per_arm.values():
-        for r in d["rounds"]:
-            pooled[r["outcome"]] = pooled.get(r["outcome"], 0) + 1
-    print("\noutcome tally, POOLED ACROSS ARMS (per-arm counts are withheld: with rounds")
-    print("per arm already shown, a per-arm count would be the endpoint one division away):")
-    for k in sorted(pooled):
-        print("   %-14s %d" % (k, pooled[k]))
+    # ⚠⚠ THE POOLED TALLY IS WITHHELD TOO. Pooled at ONE instant it is uninformative,
+    # but the arms ALTERNATE IN BLOCKS and only one arm is live at a time, so
+    #     tally(end of a block) - tally(start of that block) = that ARM's deaths, exactly.
+    # Blinding is defeated by REPETITION, not by a missing suppression, and a status
+    # command is precisely what gets run repeatedly.
+    #
+    # ADMISSION CRITERION for anything printed below the floor (the general rule this
+    # taught): a quantity is safe only if ITS TIME-DERIVATIVE IS ALSO UNINFORMATIVE about
+    # the endpoint -- not merely if it looks aggregated. Rounds, hours, reloads and
+    # exclusions per arm all pass: their deltas are denominators and nuisance counts, with
+    # no death information. Any outcome count, pooled or not, FAILS: its delta is a
+    # single-arm numerator.
+    #
+    # STRENGTHENED AUDIT TEST: not "can a reader compute the withheld quantity from this
+    # output?" but "can a reader compute it from this output TOGETHER WITH ANY OTHER
+    # OUTPUT THIS TOOL HAS EVER PRODUCED, INCLUDING EARLIER RUNS OF ITSELF?" Blinding is
+    # a property of the whole output history, not of a single invocation.
+    print("\noutcome tallies (pooled OR per-arm) are WITHHELD below the floor: the arms")
+    print("alternate in blocks, so differencing two readings of a POOLED tally recovers a")
+    print("single arm's deaths exactly. Safe-to-print here = its DELTA is also uninformative.")
     print("\nprogress to floor: " + ", ".join(
         "%s %d/%d" % (a, _n_rounds[a], FLOOR) for a in sorted(_n_rounds)))
     print("No endpoint rate, no comparison, no direction, no GO/NO-GO until every arm")
