@@ -92,3 +92,50 @@ spawn-to-lock will be decoded and the active capsule's column tracked:
 Reported as a split with its own denominator. ⚠ Stated in advance: at L20 the lock
 window is ~8-10 frames (~0.15 s), so INDETERMINATE may dominate; if it does, that is
 reported as an instrument limit, **not** converted into evidence for either branch.
+
+---
+
+## AMENDMENT, 2026-09-01T00:45Z — still before the noproph arm started
+
+Two additions on the team lead's ruling. Both are registered **before any noproph death
+exists**, and both constrain how a result will be READ rather than how it is collected.
+
+### A. What a NULL would mean — fixed now so the reading cannot drift
+
+The video shows the fatal capsule is visible in the throat for **ZERO frames before it
+locks** at 60 fps (2/2 deaths), with `fo3 == 1` on every scored death. The capsule
+spawns already at rest and locks with no observable travel. **DRPROPH's entire working
+headroom is therefore the lock window itself — roughly 8-10 frames at L20.**
+
+⇒ **A null in this A/B would mean "there is not enough TIME", NOT "the veto logic is
+wrong."** Those imply completely different repairs: an earlier trigger edge (act on the
+PREVIOUS pill, before the ledge that causes the at-rest spawn is built) versus a better
+direction choice. The direction logic is not what a null here would indict, and it will
+not be described as such.
+
+### B. L20 is a CONSERVATIVE regime for DRPROPH — the evidence is asymmetric
+
+If the mechanism's headroom is the lock window, and higher levels shorten that window
+(faster gravity), then L20 gives DRPROPH **less** time to act than L11 does. Therefore:
+
+* **a POSITIVE result at L20 is STRONG evidence** — the mechanism worked despite the
+  least favourable timing, and L11 play would give it more room, not less;
+* **a NULL at L20 is WEAK evidence about L11 play** — it is consistent with "insufficient
+  time at L20 specifically", and does not establish that the mechanism fails where the
+  window is longer.
+
+This asymmetry is stated in advance so that a null cannot be reported as a general
+refutation, and rides alongside the standing regime label.
+
+### C. The PROPH_DIR / press-stream instrument is a PRE-COMMITTED FOLLOW-UP, not a rescue
+
+The FIRED_AND_FAILED vs NEVER_ENGAGED split came back INDETERMINATE and cannot be
+resolved from footage; it needs the emitted `PROPH_DIR` byte or the `$F5`/`$F8` press
+stream. **It is deliberately NOT being built now.** The A/B answers the program's actual
+question without it, and if the A/B is positive the split is spend on a question nobody
+needs answered.
+
+**It is hereby pre-committed as the FIRST FOLLOW-UP, conditional on a NULL result.**
+Recorded here so that building it after a null is visibly the registered plan rather than
+a post-hoc rescue of a disappointing outcome. Tonight's evidence budget goes to completed
+rounds instead.

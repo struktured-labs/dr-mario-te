@@ -56,5 +56,8 @@ def parent_board(frames, hold_start, seat="p2"):
         a = np.array(Image.open(frames[i]).convert("RGB")).astype(int)
         g = _grid(a, seat)
         if g[0][3] <= OCC and g[0][4] <= OCC:
-            return i, g
-    return None, None
+            # R95: report how far back the parent search had to walk. A parent frame
+            # many seconds before the death is not this pill's parent board.
+            return i, g, {"parent_index": i, "walked_back_frames": hold_start - i}
+    return None, None, {"parent_index": None, "walked_back_frames": hold_start + 1,
+                        "warning": "no clear-throat frame in the window"}

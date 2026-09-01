@@ -130,15 +130,35 @@ def find_death(epoch, pre=20, post=8, fps=10, tag="dz"):
                     best = (seat, run_start, n)
             else:
                 run_start = None
+    # ---- R95: the SPAN is part of the output and is reviewed BEFORE the verdict ----
+    # A windowing criterion must say what window it chose. The bug this rule exists for
+    # returned a confident verdict off a 462-frame (7.7 s) "lock window" that was really
+    # the game-over hold -- and nothing in Dr. Mario locks in 7.7 s, so the span alone
+    # was the tell, with no domain knowledge required.
+    span = {"window_frames": len(reads),
+            "window_s": round(len(reads) / float(fps), 2),
+            "reset_frame_index": reset_i,
+            "reset_found": reset_i is not None,
+            "search_limit_index": limit,
+            "hold_start_index": best[1] if best else None,
+            "hold_frames": best[2] if best else 0,
+            "hold_s": round((best[2] if best else 0) / float(fps), 2)}
+    # physical sanity: the game-over display is ~2.13 s (endLevel_delay 128 f). A "hold"
+    # several times that is not a lock, it is the post-death screen or a decode latch.
+    span["span_plausible"] = span["hold_s"] <= 5.0
+    if not span["span_plausible"]:
+        span["span_warning"] = ("hold %.2f s exceeds the ~2.13 s game-over display -- "
+                                "this span is NOT a lock; review before trusting the verdict"
+                                % span["hold_s"])
+
     if best is None or best[2] < fps * 1.0:
-        return {"verdict": "NO_PLUG_HOLD_FOUND", "n_frames": len(reads),
-                "reset_found": reset_i is not None,
-                "longest_hold_s": round((best[2] if best else 0) / float(fps), 2)}
+        return {"verdict": "NO_PLUG_HOLD_FOUND", "span": span}
     seat, i0, n = best
     t0, p0, r0 = reads[i0]
     return {"verdict": "TOPOUT_" + seat.upper(),
-            "hold_s": round(n / float(fps), 2),
+            "hold_s": span["hold_s"],
             "death_t": t0.strftime("%H:%M:%S.%f")[:-4] + "Z",
             "frame": p0, "read": r0,
             "topcells": r0.get("topcells_" + seat),
-            "viruses_left": r0.get(seat)}
+            "viruses_left": r0.get(seat),
+            "span": span}
