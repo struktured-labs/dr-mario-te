@@ -1,6 +1,11 @@
 """Score every champion death into the pre-registered strata (PREREG_STRATA.md)."""
 import csv, glob, os, sys
+import sys
 import adjudicate as A, eligibility as E, rounds
+
+# ⚠ BLINDED BY DEFAULT. Printing each death with its ARM, or strata per arm,
+# hands over the endpoint numerator per arm just as surely as printing the rate.
+UNBLIND = "--unblind" in sys.argv
 
 rows = list(csv.DictReader(open("ab_samples_L20.csv")))
 blocks = {}
@@ -30,8 +35,8 @@ for i, (arm, ep, vleft) in enumerate(deaths):
         tally["SPAN_REJECT"] = tally.get("SPAN_REJECT", 0) + 1
         continue
     if d.get("verdict") != "TOPOUT_P2":
-        print("  %s arm=%-8s epoch=%.0f  video says %s -- SKIPPED (poll/video disagree)"
-              % (tag, arm, ep, d.get("verdict")))
+        print("  %s %sepoch=%.0f  video says %s -- SKIPPED (poll/video disagree)"
+              % (tag, ("arm=%-8s " % arm) if UNBLIND else "", ep, d.get("verdict")))
         tally["DISAGREE"] = tally.get("DISAGREE", 0) + 1
         continue
     frames = sorted(glob.glob(os.path.join(os.path.dirname(d["frame"]), tag + "_*.png")))
@@ -43,13 +48,17 @@ for i, (arm, ep, vleft) in enumerate(deaths):
         continue
     ev = E.evaluate(grid)
     tally[ev["stratum"]] = tally.get(ev["stratum"], 0) + 1
-    print("  %s arm=%-8s v_left=%-3s hold=%-4ss span[win=%ss hold=%sf back=%sf] "
+    print("  %s %sv_left=%-3s hold=%-4ss span[win=%ss hold=%sf back=%sf] "
           "fo3=%-2d fo4=%-2d trig=%-5s gateL=%-5s gateR=%-5s dir=%-5s -> %s"
-          % (tag, arm, vleft, d["hold_s"], sp.get("window_s"), sp.get("hold_frames"),
-             pspan.get("walked_back_frames"), ev["fo3"], ev["fo4"], ev["trigger"],
-             ev["gate_l"], ev["gate_r"], ev["direction"], ev["stratum"]))
+          % (tag, ("arm=%-8s " % arm) if UNBLIND else "", vleft, d["hold_s"],
+             sp.get("window_s"), sp.get("hold_frames"), pspan.get("walked_back_frames"),
+             ev["fo3"], ev["fo4"], ev["trigger"], ev["gate_l"], ev["gate_r"],
+             ev["direction"], ev["stratum"]))
 
-print("\nSTRATA (pre-registered):", tally)
+print("\nSTRATA (pre-registered), POOLED ACROSS ARMS unless --unblind:", tally)
+if not UNBLIND:
+    print("Per-arm strata are WITHHELD below the floor -- see PREREG_READ.md. The arm")
+    print("column is suppressed for the same reason: it is the endpoint numerator.")
 n = sum(v for k, v in tally.items() if k in ("ADDRESSABLE", "UNADDRESSABLE", "OTHER"))
 if n:
     a = tally.get("ADDRESSABLE", 0)

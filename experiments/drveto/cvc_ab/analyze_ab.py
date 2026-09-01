@@ -54,12 +54,19 @@ for (arm, b), series in sorted(blocks.items(), key=lambda kv: (kv[0][1], kv[0][0
     per_arm[arm]["rounds"] += recs
     per_arm[arm]["secs"] += series[-1][0] - series[0][0]
     per_arm[arm]["samples"] += len(series)
-    print("  block %-2s %-8s samples=%-4d span=%5.1f min  transitions=%d %s"
-          % (b, arm, len(series), (series[-1][0] - series[0][0]) / 60, len(recs),
-             rounds.tally(recs) or ""))
-    for rr in recs:
-        print("      round end t=%.0f  dur=%5.1fs  last %s/%s  ->  %s"
-              % (rr["end"], rr["dur_s"], rr["last_p1"], rr["last_p2"], rr["outcome"]))
+    # ⚠ BLINDED: the per-block tally and the per-round outcome lines are per-ARM
+    # outcome counts -- exactly the endpoint numerator. Below the floor they print
+    # transitions only, with no outcome breakdown.
+    if "--unblind" in sys.argv:
+        print("  block %-6s %-8s samples=%-4d span=%5.1f min  transitions=%d %s"
+              % (b, arm, len(series), (series[-1][0] - series[0][0]) / 60, len(recs),
+                 rounds.tally(recs) or ""))
+        for rr in recs:
+            print("      round end t=%.0f  dur=%5.1fs  last %s/%s  ->  %s"
+                  % (rr["end"], rr["dur_s"], rr["last_p1"], rr["last_p2"], rr["outcome"]))
+    else:
+        print("  block %-6s %-8s samples=%-4d span=%5.1f min  rounds=%d"
+              % (b, arm, len(series), (series[-1][0] - series[0][0]) / 60, len(recs)))
 
 print("\nreload events per arm (reported secondary -- unequal freeze rates make the")
 print("denominators non-comparable, and that asymmetry is itself a finding):")
@@ -67,42 +74,70 @@ for arm in sorted(per_arm):
     n = sum(1 for e in RELOADS
             for (a, b), ser in blocks.items() if a == arm and ser[0][0] <= e <= ser[-1][0])
     print("   %-9s reloads=%d  rounds excluded=%d" % (arm, n, excl_by_arm.get(arm, 0)))
-print("\n%-9s %-8s %-8s %-9s %s" % ("arm", "hours", "rounds", "rounds/h", "tally"))
-for arm, d in sorted(per_arm.items()):
-    h = d["secs"] / 3600
-    print("%-9s %-8.2f %-8d %-9.1f %s"
-          % (arm, h, len(d["rounds"]), len(d["rounds"]) / h if h else 0, rounds.tally(d["rounds"])))
-
-# the endpoint: champion-seat (P2) topouts per round
-print("\n-- ENDPOINT: P2 (champion) topouts per completed round --")
-k = {}
-for arm, d in per_arm.items():
-    n = len(d["rounds"])
-    x = sum(1 for r in d["rounds"] if r["outcome"] == "TOPOUT_P2")
-    amb = sum(1 for r in d["rounds"] if r["outcome"] == "AMBIGUOUS")
-    k[arm] = (x, n)
-    print("  %-9s %3d / %3d = %.3f   (ambiguous %d, excluded)" % (arm, x, n, x / n if n else 0, amb))
-
-# ---- R49 GATE: refuse the contrast below the pre-registered floor ----------------
-# ⚠ This script previously PRINTED the two arms' rates side by side the moment both
-# existed, which is exactly the partial comparison PREREG_READ.md forbids. The gate is
-# the fix; the discipline cannot live only in the analyst's head.
 FLOOR = 120
-_short = {a: len(d["rounds"]) for a, d in per_arm.items() if len(d["rounds"]) < FLOOR}
-if _short:
-    print("\n-- CONTRAST WITHHELD (R49 / PREREG_READ.md) ------------------------------")
-    for a, n in sorted(_short.items()):
-        print("   %-9s %d rounds -- below the %d-round floor for a primary verdict" % (a, n, FLOOR))
-    print("   Per-arm descriptive counts above are labelled by arm. No comparison, no")
-    print("   direction, and no GO/NO-GO until every arm clears the floor.")
-elif len(k) == 2 and all(n for _, n in k.values()):
-    (x1, n1), (x2, n2) = k["noproph"], k["proph"]
-    p1, p2 = x1 / n1, x2 / n2
-    p = (x1 + x2) / (n1 + n2)
-    se = math.sqrt(p * (1 - p) * (1 / n1 + 1 / n2))
-    if se:
-        z = (p1 - p2) / se
-        print("\n  noproph %.3f  vs  proph %.3f   d=%+.3f  z=%.2f  (R47 bar: |d| >= 2.8*SE = %.3f)"
-              % (p1, p2, p2 - p1, z, 2.8 * se))
-        print("  VERDICT: %s" % ("SIGNAL" if abs(z) >= 2.8 else
-                                 "UNDERPOWERED / no effect at this N -- do not read a direction"))
+UNBLIND = "--unblind" in sys.argv
+_n_rounds = {a: len(d["rounds"]) for a, d in per_arm.items()}
+_below = [a for a, n in _n_rounds.items() if n < FLOOR]
+
+if UNBLIND:
+    with open(os.path.join(BASE, "UNBLIND_LOG.txt"), "a") as _f:
+        _f.write("%s  --unblind used; rounds=%s\n" % (
+            __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+            .strftime("%Y-%m-%dT%H:%M:%SZ"), _n_rounds))
+    print("\n⚠ --unblind USED. Stamped into UNBLIND_LOG.txt.")
+
+if _below and not UNBLIND:
+    # ---- BLINDED REPORT -----------------------------------------------------------
+    # ⚠ WHY THIS IS SHAPED LIKE THIS: the previous "gate" printed each arm's endpoint
+    # rate on adjacent lines under a WITHHELD heading. Two per-arm rates side by side
+    # IS the contrast -- subtraction is not a barrier -- and it leaked twice, the second
+    # time to the team lead. A gate that withholds a LABEL while printing its INPUTS is
+    # a label, not a gate.
+    # TEST APPLIED TO EVERY LINE BELOW: could a reader who cannot see the withheld
+    # quantity still COMPUTE it from what is printed? If yes, it does not get printed.
+    # So: rounds per arm YES (a progress figure, needed to know when to stop);
+    #     per-arm death COUNTS NO (rounds + count = the rate, one division away).
+    # Outcome tallies are therefore POOLED ACROSS ARMS below the floor.
+    print("\n== BLINDED PROGRESS REPORT (below the %d-round floor) ==" % FLOOR)
+    print("%-9s %-8s %-8s %-10s %s" % ("arm", "hours", "rounds", "reloads", "rounds excluded"))
+    for arm in sorted(per_arm):
+        n = sum(1 for e in RELOADS
+                for (a, b), ser in blocks.items() if a == arm and ser[0][0] <= e <= ser[-1][0])
+        print("%-9s %-8.2f %-8d %-10d %d"
+              % (arm, per_arm[arm]["secs"] / 3600, _n_rounds[arm], n, excl_by_arm.get(arm, 0)))
+    pooled = {}
+    for d in per_arm.values():
+        for r in d["rounds"]:
+            pooled[r["outcome"]] = pooled.get(r["outcome"], 0) + 1
+    print("\noutcome tally, POOLED ACROSS ARMS (per-arm counts are withheld: with rounds")
+    print("per arm already shown, a per-arm count would be the endpoint one division away):")
+    for k in sorted(pooled):
+        print("   %-14s %d" % (k, pooled[k]))
+    print("\nprogress to floor: " + ", ".join(
+        "%s %d/%d" % (a, _n_rounds[a], FLOOR) for a in sorted(_n_rounds)))
+    print("No endpoint rate, no comparison, no direction, no GO/NO-GO until every arm")
+    print("clears the floor. Re-run with --unblind only at the stop; its use is stamped.")
+else:
+    # ---- UNBLINDED: at the stop, or explicitly requested --------------------------
+    print("\n%-9s %-8s %-8s %-9s %s" % ("arm", "hours", "rounds", "rounds/h", "tally"))
+    for arm, d in sorted(per_arm.items()):
+        h = d["secs"] / 3600
+        print("%-9s %-8.2f %-8d %-9.1f %s"
+              % (arm, h, len(d["rounds"]), len(d["rounds"]) / h if h else 0,
+                 rounds.tally(d["rounds"])))
+    print("\n-- ENDPOINT: P2 (champion) topouts per completed round --")
+    k = {}
+    for arm, d in per_arm.items():
+        n = len(d["rounds"]); x = sum(1 for r in d["rounds"] if r["outcome"] == "TOPOUT_P2")
+        amb = sum(1 for r in d["rounds"] if r["outcome"] == "AMBIGUOUS")
+        k[arm] = (x, n)
+        print("  %-9s %3d / %3d = %.3f   (ambiguous %d)" % (arm, x, n, x / n if n else 0, amb))
+    if len(k) == 2 and all(n for _, n in k.values()):
+        (x1, n1), (x2, n2) = k["noproph"], k["proph"]
+        p1, p2 = x1 / n1, x2 / n2
+        p = (x1 + x2) / (n1 + n2)
+        se = math.sqrt(p * (1 - p) * (1 / n1 + 1 / n2))
+        if se:
+            z = (p1 - p2) / se
+            print("\n  noproph %.3f vs proph %.3f  d=%+.3f  z=%.2f  (R47 bar 2.8*SE=%.3f)"
+                  % (p1, p2, p2 - p1, z, 2.8 * se))

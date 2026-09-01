@@ -325,3 +325,64 @@ judgment, and labelled post-leak because it was written after the R49 glance:
 
 It is an accounting rule about an interruption; it does not touch the contrast, and it
 was applied identically to both arms.
+
+---
+
+## AMENDMENT 5, 2026-09-01T01:35Z — SECOND R49 LEAK, through a COSMETIC gate
+
+### What happened
+
+The floor gate added in Amendment 3 **suppressed the comparison LINE while printing both
+arms' endpoint rates on adjacent lines**, under a heading that said the contrast was
+WITHHELD. Two per-arm rates side by side **is** the contrast; subtraction is not a barrier.
+The team lead ran the script to find a stop signal and saw them. Reported at 15/51 and
+15/47 — both far below the floor.
+
+**A gate that withholds a LABEL while printing its INPUTS is a label, not a gate.**
+
+This is the second leak through the same defect, and the first one I fixed "structurally"
+was the one that created it. The audit test that should have been applied to the fix, and
+is now applied to every script touching this data:
+
+> **Could a reader who cannot see the withheld quantity still COMPUTE it from what IS
+> printed?** If yes, it is not withheld.
+
+### Same defect found in two more places by that test
+
+* `analyze_ab.py`'s **per-block detail lines** printed a per-arm outcome tally
+  (`{'TOPOUT_P2': 8, ...}`) and every round's outcome with its arm — the endpoint
+  numerator, handed over directly.
+* `stratify.py` printed **`arm=` on every death** and its strata, which is the ADDRESSABLE
+  numerator per arm.
+
+### The fix (structural, and audited this time)
+
+Below the floor, output is limited to quantities from which the endpoint **cannot** be
+reconstructed:
+* **allowed** — rounds per arm, hours per arm, reloads per arm, exclusions per arm,
+  progress-to-floor, and the outcome tally **POOLED ACROSS ARMS**;
+* **withheld** — every per-arm death count, every per-arm rate, the arm column on
+  individual deaths, and per-arm strata.
+
+Rounds per arm stay visible because stopping requires them and, on their own, they yield
+nothing; the moment a per-arm death count joins them the endpoint is one division away,
+so per-arm counts are pooled instead. `--unblind` exists for the stop and **stamps its use
+into `UNBLIND_LOG.txt`** with a timestamp and the round counts at the time.
+
+### Disposition
+
+Damage bounded by the same argument as before, and it still holds: **the stopping rule is
+data-independent** (>=120 rounds/arm or the 6 h clock), so neither of us can act on what we
+saw. Both arms were far below the floor. Nothing is invalidated.
+
+### MANDATORY IN THE WRITE-UP — now TWO leaks, disclosed as two
+
+A reader is entitled to both, because two independent leaks through one defect is a
+materially different disclosure from one:
+1. **~01:20Z, to the analyst** — the script printed the contrast outright; 33 vs 51 rounds.
+2. **~01:35Z, to the team lead** — the "fixed" gate printed both arms' rates adjacently;
+   15/51 and 15/47. Disclosed by the team lead at the moment it happened.
+
+Both are stated with the bounded-damage reasoning **and** with the fact that the first fix
+was cosmetic, since that is the part a reader needs in order to judge whether the second
+fix is real.
