@@ -270,3 +270,42 @@ reported, and carries no weight in anything downstream. The fix is structural ra
 a resolution to be careful: **the script now WITHHOLDS the contrast until every arm clears
 the floor**, printing per-arm descriptive counts only. Discipline that lives only in the
 analyst's head is not discipline.
+
+---
+
+## AMENDMENT 4, 2026-09-01T01:25Z — obligations created BY the leak
+
+Recorded because the leak in Amendment 3 changes what I am allowed to do for the rest of
+the run, not merely what happened.
+
+### Why the leak's damage is bounded — the reasoning, so it is not mistaken for luck
+
+**A peek can only bias a study through a decision it is able to influence.** The stopping
+rule here is **data-independent** (>=120 rounds/arm, or a 6 h clock) and the analysis is
+pre-registered. No interim value can move either. The glance therefore had nothing to act
+on. That is the pre-registration doing its job, and it is the reason for having written it
+before running anything.
+
+### THE RESIDUAL RISK IS REAL: I now know the direction
+
+Every remaining judgment call — exclusions, scoring edge cases, which frames adjudicate,
+how a malformed sample is treated — **must be made by a WRITTEN RULE, not by discretion.**
+
+**If a situation arises that this pre-registration does not cover: write the rule down,
+state explicitly that it was written after the leak, and then apply it.** Do not resolve
+it on judgment in the moment. A rule written after a peek and labelled as such is
+auditable; a judgment call made after a peek is not.
+
+### MANDATORY IN THE FINAL WRITE-UP
+
+The leak is disclosed **in the write-up itself**, not only in a commit log. A reader
+assessing the result is entitled to know that the analyst saw a partial contrast, when,
+what it showed, and why the design bounds the damage. Specifically to be stated:
+
+* `analyze_ab.py` printed both arms' rates side by side as soon as both existed, and I
+  saw it, at 33 vs 51 rounds — both far below the 120-round floor;
+* it was not used and carries no weight downstream;
+* the stopping rule is data-independent, so the peek had no decision to influence;
+* the fix was structural (the contrast is now withheld until every arm clears the floor),
+  not a resolution to be more careful;
+* every rule written after 01:20Z is labelled as post-leak.
