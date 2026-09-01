@@ -16,7 +16,9 @@ for r in rows:
         (float(r["t_epoch"]),
          int(r["p1"]) if r["p1"] not in ("", "None") else None,
          int(r["p2"]) if r["p2"] not in ("", "None") else None,
-         float(r["fill_p1"]), float(r["fill_p2"])))
+         float(r["fill_p1"]), float(r["fill_p2"]),
+         int(r["throat_p1"]), int(r["throat_p2"]),
+         int(r["topcells_p1"]), int(r["topcells_p2"])))
 
 per_arm = {}
 for (arm, b), series in sorted(blocks.items(), key=lambda kv: (kv[0][1], kv[0][0])):
@@ -28,6 +30,9 @@ for (arm, b), series in sorted(blocks.items(), key=lambda kv: (kv[0][1], kv[0][0
     print("  block %-2s %-8s samples=%-4d span=%5.1f min  transitions=%d %s"
           % (b, arm, len(series), (series[-1][0] - series[0][0]) / 60, len(recs),
              rounds.tally(recs) or ""))
+    for rr in recs:
+        print("      round end t=%.0f  dur=%5.1fs  last %s/%s  ->  %s"
+              % (rr["end"], rr["dur_s"], rr["last_p1"], rr["last_p2"], rr["outcome"]))
 
 print("\n%-9s %-8s %-8s %-9s %s" % ("arm", "hours", "rounds", "rounds/h", "tally"))
 for arm, d in sorted(per_arm.items()):
