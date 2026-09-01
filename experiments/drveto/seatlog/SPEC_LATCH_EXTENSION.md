@@ -55,21 +55,45 @@ guessing — reuse those bounds; do not invent new ones.
 6. **Ground-truth agreement in Mesen** as the shipped latch had: cart-latched geometry must
    equal Lua-computed geometry from the live boards, on >= 10 deaths.
 
+## SOAK BAR THAT UNLOCKS THE BUILD — ACCUMULATED EXPOSURE, fixed before the hours accrue
+
+⚠ **CORRECTION to my first draft, which was self-contradictory.** I wrote both *"a freeze
+resets the bar"* and *"one event is consistent with the banked rate"*. **Both cannot hold.**
+At 0.79 expected events per 12 h the modal outcome is 0 or 1, so discarding all accumulated
+exposure because one occurred throws away good evidence for an event the null predicts — and
+with P(clean 12 h)=0.45 it would take ~2.2 attempts of up to 12 h each, stalling the build for
+days on a rate that never changed.
+
+⇒ **The rule is ACCUMULATED EXPOSURE + a rate comparison. A freeze CONTRIBUTES data rather
+than erasing it.** Total soak hours `H`, total freeze/reload events `k`, compared against the
+banked λ = 3/45.6 = **0.0658/h**.
+
+### ⚠ WHAT THIS EVENT RATE CAN AND CANNOT RESOLVE — computed, not asserted
+
+Scanning `H` and `k_max` for P(pass | baseline) ≥ 0.75 **and** power ≥ 0.70:
+
+| target | smallest workable window |
+|---|---|
+| detect a **DOUBLING** | **H = 38 h**, fail if k > 3 (pass 0.76, power 0.73) |
+| detect a **TRIPLING** | **H = 14 h**, fail if k > 1 (pass 0.76, power 0.76) |
+
+**No (H, k) pair under 72 h achieves both a low false-alarm rate and 80% power against a
+doubling.** That is a property of the event frequency, not of the design.
+
+### THE RULE (choose the practical window, state its limit)
+
+> **PASS when `H ≥ 24` accumulated soak hours with `k ≤ 2` freeze/reload events.**
+> P(pass | unchanged rate) = **0.79**; power vs a doubling = **0.61**; power vs a tripling =
+> **0.85**.
+
+**A pass is therefore evidence against a TRIPLING, and only weak evidence against a doubling.
+It is NOT a safety claim.** If a doubling must be excluded, the window is 38 h with k ≤ 3 —
+available by extending the same soak, since exposure accumulates rather than resetting.
+
+`k` counts `RELOADED` lines in `freeze_watch.log` within the window, the same structural source
+Amendment 3 of the A/B prereg uses. Report `H`, `k`, the expected `λH`, and which of the two
+windows was reached.
+
 ## SOAK BAR THAT UNLOCKS THE BUILD — fixed NOW, before the soak produces it
 
-**Banked freeze rate for this pairing: λ = 3 events / 45.6 bounded hours = 0.066/h**, i.e. an
-expected clean stretch of ~15 h. So a few quiet hours mean nothing, and the bar must be stated
-against that rate rather than against zero.
 
-> **BAR: 12 continuous clean hours of the DRSEATLOG soak on bluemage, with freeze/reload count
-> compared against the banked rate — not against zero.**
-
-Justification, so the number is not negotiated later: 12.2 h gives **80% power against a
-DOUBLING** of the freeze rate (`P(0 freezes | 2λ) ≤ 0.20`). ⚠ And the honest converse, stated
-now: **P(0 freezes | UNCHANGED rate) over 12 h is 0.45**, so **a clean 12 h is NOT strong
-evidence of safety** — it is evidence against a *gross* regression only. Anything subtler needs
-~16 h (50% worsening) or the rate simply cannot be resolved at this event frequency.
-
-**If a freeze occurs inside the window, the bar resets and the build waits** — with the caveat
-that a single freeze is also consistent with the banked rate, so one event is not by itself
-evidence DRSEATLOG caused it. Report the interval and compare.
