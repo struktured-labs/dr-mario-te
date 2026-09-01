@@ -80,3 +80,49 @@ if __name__ == "__main__":
     a = adjudicate(ep, tag=sys.argv[2] if len(sys.argv) > 2 else "adj")
     for k, v in a.items():
         print("%-14s %s" % (k, v))
+
+
+def find_death(epoch, pre=35, post=8, fps=10, tag="dz"):
+    """Locate the DEATH itself, not the reset.
+
+    Signature: the losing seat holds THROAT-OCCUPIED, with its virus counter
+    frozen, for the whole game-over display -- measured 3.0 s on both adjudicated
+    deaths. A spawning capsule sits in the throat for a fraction of a second, so a
+    SUSTAINED hold cannot be mimicked.
+
+    ⚠ DURATION IS THE DISCRIMINATOR, NOT THE CELL COUNT. My first cut also required
+    topcells >= 6 (borrowed from the poll rule) and MISSED a real death whose stack
+    was narrow: P1 held a plugged throat for 3.0 s at topcells = 5 and the function
+    returned NO_PLUG_HOLD_FOUND. The cell-count bar exists in the poll rule only
+    because the poll has no duration to work with -- a single 10 s sample cannot
+    tell a 0.2 s capsule from a 3 s plug. Video can, so it should key on the thing
+    that actually separates them. Bar set at 1.0 s: 3x the longest a spawn capsule
+    can sit in the throat before gravity moves it, and 1/3 of the observed hold.
+    """
+    frames = cut_and_extract(epoch, pre=pre, post=post, fps=fps, tag=tag)
+    reads = [(t, p, vid_ocr.read_frame(p)) for t, p in frames]
+    best = None
+    for seat in ("p1", "p2"):
+        run_start, run_len = None, 0
+        for i, (t, p, r) in enumerate(reads):
+            plugged = (r.get("ok") and r.get("throat_" + seat)
+                       and r.get(seat) is not None)      # counter still legible = not yet wiped
+            if plugged:
+                if run_start is None:
+                    run_start = i
+                run_len = i - run_start + 1
+                if best is None or run_len > best[2]:
+                    best = (seat, run_start, run_len)
+            else:
+                run_start, run_len = None, 0
+    if best is None or best[2] < fps * 1.0:
+        return {"verdict": "NO_PLUG_HOLD_FOUND", "n_frames": len(reads),
+                "longest_hold_s": round((best[2] if best else 0) / float(fps), 2)}
+    seat, i0, n = best
+    t0, p0, r0 = reads[i0]
+    return {"verdict": "TOPOUT_" + seat.upper(),
+            "hold_s": round(n / float(fps), 2),
+            "death_t": t0.strftime("%H:%M:%S.%f")[:-4] + "Z",
+            "frame": p0,
+            "read": r0,
+            "topcells": r0.get("topcells_" + seat)}
