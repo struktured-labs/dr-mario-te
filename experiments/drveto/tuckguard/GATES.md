@@ -60,3 +60,32 @@ deriver config so `TG_NEED $61B9` and `TG_OFF $61BA` show their writers.
 ⚠ A veto reverts to pre-tuck behaviour, so it **can never be worse than not tucking** — but that
 is an argument from the code, **not evidence**. The A/B still has to show it HELPS.
 **Safe-by-construction must not slide into assumed-beneficial.**
+
+## PROPAGATION AUDIT of the census-harness bug — no gate passed that should have failed
+
+The team lead asked the right question: not *"is this build fine"* but *"what else was censused
+with the wrong pairing, and could any gate have PASSED that should have FAILED."*
+
+**1. Which builds used which pairing.** Verified from the manifests, not assumed:
+
+| build | `DRPRESPIPE` | correct pairing | what was used |
+|---|---|---|---|
+| DRPROPH CvC | absent (=0) | cross product | cross product ✓ |
+| **DRSEATLOG** (shipped, soaking) | absent (=0) | cross product | cross product ✓ |
+| DRTUCKGUARD (Childproof) | **1** | pipelined | cross product ✗ → **corrected** |
+
+**Only the tuckguard census was mismatched, and it was caught.** DRSEATLOG's numbers came from a
+non-pipelined CvC config where the cross product IS correct — verified rather than assumed,
+since it is a shipped build currently soaking.
+
+**2. ★ THE ERROR IS ONE-WAY — established, not hoped.** The pipelined pair set is a strict
+**SUBSET** of the cross product, so `max(superset) ≥ max(subset)`: a cross-product harness on a
+pipelined cart is **always PESSIMISTIC and fails safe**. And the reverse cannot mis-score
+silently — on a non-pipelined image `prespipe_scenarios()` returns `{}`, the pair list is empty
+and `max()` **raises**. ⇒ **No gate can have PASSED that should have FAILED.**
+
+**3. The structural guard** (`tools/nmi126/frame_budget.py`): callers declare the expected
+pipeline mode and the module **REFUSES on a mismatch** rather than scoring the wrong way — the
+same principle as the census's own undeclared-loop refusal that caught `tg_lp`. Verified: it
+reproduces 25,464 / 26,466 for the pipelined arms, and **raises** when handed the wrong
+expectation.
