@@ -65,6 +65,12 @@ LOOP_BOUNDS = {
     # span 16); worst = 16 iterations. Termination needs (MAX-MIN)%step==0,
     # which every emitted caller satisfies by construction.
     "pr_l": 16,
+    # DRTUCKGUARD (task #102) free-row counter. TG_OFF starts at
+    # (15 - TUCK_R2)*8 + final_col and advances by exactly 8 per iteration, exiting
+    # at >=128 (past the floor). A board index is 0..127, so with step 8 the loop
+    # can execute at most 16 times regardless of the start row -- and TUCK_R2 is a
+    # board row 0..15, so the start is already inside the window. Bound 16.
+    "tg_lp": 16,
     # ================= v18 P1 AI ($9000) =================
     # land_col row scan: Y = col(0-7), +8 per iter, exits at Y>=0x80 -> <=16.
     "lc_scan": 16,

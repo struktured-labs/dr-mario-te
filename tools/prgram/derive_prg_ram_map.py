@@ -259,6 +259,9 @@ CONFIGS = {
     # DRSEATLOG (owner-approved 2026-09-01): the config that makes SEAT_T1/T2/V1/V2
     # ($61C7-$61CA) show their writers. Combined with DRPROPH so the deriver sees the
     # $61C6 neighbour and would catch an overlap.
+    # DRTUCKGUARD: the config that makes TG_NEED ($61B9) / TG_OFF ($61BA) show their writers.
+    "tuckguard-human": dict(DRTUCKGUARD=1, DRTUCK=1, DRHUMAN=1, DRMMC1RST=1, DRRTIVEC=1,
+                            DRFCGATE=1, DRBUILDID=0),
     "seatlog-cvc": dict(DRSEATLOG=1, DRPROPH=1, DRHUMAN=0, DRP1NATIVE=1, DRPOCKET=0,
                         DRSTARTGUARD=1, DRPRESTART=0, DRMMC1RST=1, DRRTIVEC=1,
                         DRFCGATE=1, DRBUILDID=0),

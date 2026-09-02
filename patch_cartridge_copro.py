@@ -234,6 +234,16 @@ TUCK = _os.environ.get("DRTUCK", "0") == "1"   # tuck executor (see TUCK_C2 abov
 # checked: the guard's only indexed access is `LDA $0500,X`, a READ of the playfield -- it adds
 # no indexed WRITER, so it cannot widen anyone else's reachable span.
 TUCKGUARD = TUCK and _os.environ.get("DRTUCKGUARD", "0") == "1"
+# TEST-ONLY mutants (never ship). Chosen for THIS mechanism's own failure mode -- a recycled
+# mutant would pass trivially and prove nothing (R96). They fail in OPPOSITE directions, which
+# is what makes the gate two-sided:
+#   approachcol -- count free rows in the APPROACH column instead of the FINAL one. The whole
+#                  insight is that the budget must be measured where the capsule must FALL after
+#                  moving. Below the trigger the approach column is occupied (that is why the
+#                  capsule rests there), so this OVER-VETOES: tucks collapse toward zero.
+#   nomargin    -- drop the +2 margin that every one of the 23 completions had. This UNDER-VETOES:
+#                  marginal descriptors are admitted and stranding returns.
+TUCKGUARD_MUT = (_os.environ.get("DRTUCKGUARD_MUT", "none") if TUCKGUARD else "none")
 TG_NEED = 0x61B9   # |approach - final| + 2, the fall this tuck must be able to pay for
 TG_OFF  = 0x61BA   # walking board offset while counting free rows below the trigger
 REENTRY_GUARD = _os.environ.get("DRREENTRY", "1") != "0"
@@ -2448,10 +2458,14 @@ def build_main(level=11, speed=1):
                 a.br("BCS", "tg_abs")
                 a.ins("EOR_imm", 0xFF); a.ins("CLC"); a.ins("ADC_imm", 1)
                 a.label("tg_abs")
-                a.ins("CLC"); a.ins("ADC_imm", 2); a.ins16("STA_abs", TG_NEED)
+                a.ins("CLC"); a.ins("ADC_imm", 0 if TUCKGUARD_MUT == "nomargin" else 2)
+                a.ins16("STA_abs", TG_NEED)
                 a.ins("LDA_imm", 15); a.ins("SEC"); a.ins16("SBC_abs", TUCK_R2)
                 a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
-                a.ins("CLC"); a.ins16("ADC_abs", tgt_c); a.ins16("STA_abs", TG_OFF)
+                # MUTANT approachcol: scan the APPROACH column (TUCK_C2) rather than the final
+                # column (tgt_c) -- the wrong place to measure the fall budget.
+                a.ins("CLC"); a.ins16("ADC_abs", TUCK_C2 if TUCKGUARD_MUT == "approachcol" else tgt_c)
+                a.ins16("STA_abs", TG_OFF)
                 a.ins("LDY_imm", 0)
                 a.label("tg_lp")
                 a.ins16("LDA_abs", TG_OFF); a.ins("CLC"); a.ins("ADC_imm", 8)
