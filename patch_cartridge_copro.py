@@ -1272,6 +1272,10 @@ def _bid_tile(ch):
 #   verified. $D2CC-$D2FF must be confirmed dead in any deployed binary before surgical patching.
 STUDY = _os.environ.get("DRSTUDY", "1" if HUMAN_P1 else "0") != "0"
 STUDY2P = STUDY and _STUDY2P_ENV                     # driver-side 2P pause tail (see DRSTUDY2P above)
+# DRSTUDY2P_INV=1 (default OFF -> byte-identical): invert the pause-detector polarity for lineages
+# where the $D2CC heartbeat runs during the PAUSE spin instead of during play (measured on the
+# human/TE cart 2026-09-03; see the s2p block). Requires DRSTUDY2P.
+S2P_INV = STUDY2P and _os.environ.get("DRSTUDY2P_INV", "0") == "1"
 # Anchor on the pause loop's START/$F7 check (LDA $F5;CMP #$10;BEQ;LDA $F7;CMP #$F0;BEQ) —
 # these bytes are NEVER touched by the edits, so the locator stays valid + idempotent even
 # after patching (all 5 edits sit just before/after this window, never inside it).
@@ -1787,10 +1791,22 @@ def build_main(level=11, speed=1):
         # draw. MATCH_ACTIVE!=0 excludes the first play hook of a match (heartbeat not yet
         # started); HOLD_ACTIVE!=0 excludes STAGE CLEAR's own mode-4 blocking wait while the
         # final board is held (drawing STUDY over the held board would be a new artifact).
-        a.ins16("LDA_abs", S2P_TTL); a.br("BEQ", "s2p_stale")
-        a.ins16("DEC_abs", S2P_TTL)
-        a.jmp("s2p_blank")
-        a.label("s2p_stale")
+        if S2P_INV:
+            # ---- DRSTUDY2P_INV (2026-09-03, MEASURED on the human/TE lineage, Mesen exec counter at
+            # $D2CC): on THIS lineage the $D2CC heartbeat fires ZERO times per play frame and ONCE
+            # PER FRAME while the pause loop spins -- the exact INVERSE of the EVAC v4 measurement
+            # (taken on cart 3e7c6ed9). Result on the shipped cart: S2P_TTL sat at 4 for the whole
+            # pause, the block took s2p_blank every hook, and slots 32-40 carried correct tiles/X
+            # with Y=$FF -- the user-reported "next pill missing" in STUDY. Same detector, opposite
+            # polarity: TTL>0 now means PAUSED (draw); TTL==0 means live play (blank). The BEQ
+            # precedes the DEC so TTL can never wrap below 0 during play.
+            a.ins16("LDA_abs", S2P_TTL); a.br("BEQ", "s2p_blank")
+            a.ins16("DEC_abs", S2P_TTL)
+        else:
+            a.ins16("LDA_abs", S2P_TTL); a.br("BEQ", "s2p_stale")
+            a.ins16("DEC_abs", S2P_TTL)
+            a.jmp("s2p_blank")
+            a.label("s2p_stale")
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BEQ", "s2p_blank")
         if HOLDBOARD:
             a.ins16("LDA_abs", HOLD_ACTIVE); a.br("BNE", "s2p_blank")
