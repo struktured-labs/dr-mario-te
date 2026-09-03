@@ -3704,9 +3704,58 @@ def build_wrapper(main_cpu):
     return w.assemble()
 
 
+# ==================== SUPPRESSED-FLAG GUARD (2026-09-03) ====================
+# A flag can be REQUESTED (env var set) and still emit NOTHING because its emission is gated on
+# another flag. The DRFLAGSNAPSHOT faithfully reports what was ASKED FOR, not what was EMITTED, so
+# such a build looks correct in every log and ships without the feature. Measured instances:
+# DRSTUDYCOUNTS=1 with DRSTUDY=0 (emitted zero bytes; shipped 2026-09-03 as d07d6329 and reported
+# "fixed"), and the months of "study mode fixed" builds that never carried the fix. This guard
+# REFUSES the build by default and names the suppressed flag and its gate. DRALLOW_GATED=1 to
+# override deliberately (it is printed loudly so the override is itself visible in the log).
+_GATED_FLAGS = (
+    # (requested flag env, its gate env, human reason)
+    ("DRSTUDYCOUNTS", "DRSTUDY",    "STUDY counter redraw is emitted only inside `if STUDY and STUDYCOUNTS`"),
+    ("DRSTUDY2P",     "DRSTUDY",    "STUDY2P = STUDY and env; the 2P pause tail needs STUDY"),
+    ("DRSTUDY2P_INV", "DRSTUDY2P",  "S2P_INV = STUDY2P and env"),
+    ("DRTUCKGUARD",   "DRTUCK",     "TUCKGUARD = TUCK and env; the guard vetoes a descriptor the tuck executor must exist to publish"),
+    ("DRCOLGATE",     "DRROTFIX",   "COLGATE = ROTFIX and env"),
+    ("DRRELATCH",     "DRROTFIX",   "RELATCH = ROTFIX and env"),
+    ("DRNAV_V4",      "DRNAVFIX",   "NAV_V4 = NAVFIX and env"),
+    ("DRNAV_HOLD",    "DRNAV_V4",   "NAV_HOLD = NAV_V4 and env"),
+    ("DRNAVDWELL",    "DRNAV_V4",   "NAVDWELL = NAV_V4 and env"),
+    ("DRSEATLOG_MUT", "DRSEATLOG",  "the mutant selector is consulted only when SEATLOG is on"),
+)
+def _on(env, default="0"):
+    v = _os.environ.get(env)
+    return (v if v is not None else default) not in ("0", "", "none", "NONE")
+def _check_gated_flags():
+    bad = []
+    for flag, gate, why in _GATED_FLAGS:
+        if _os.environ.get(flag) is None:
+            continue                       # not requested at all -> nothing to suppress
+        if not _on(flag):
+            continue                       # requested OFF -> fine
+        # the gate's default is the emitter's own default for that knob; approximate it as "1"
+        # for the always-on fixes (ROTFIX/NAVFIX/NAV_V4) and "0" otherwise, matching the defs above
+        gate_default = "1" if gate in ("DRROTFIX", "DRNAVFIX", "DRNAV_V4") else "0"
+        if not _on(gate, gate_default):
+            bad.append((flag, gate, why))
+    if not bad:
+        return
+    for flag, gate, why in bad:
+        print(f"##SUPPRESSED-FLAG## {flag}={_os.environ.get(flag)!r} requested but {gate} is OFF -> "
+              f"it will emit NOTHING ({why})")
+    if _os.environ.get("DRALLOW_GATED", "0") == "1":
+        print("##SUPPRESSED-FLAG## DRALLOW_GATED=1 set: proceeding anyway (this override is deliberate and visible)")
+        return
+    raise SystemExit(
+        "REFUSING TO BUILD: a requested flag is suppressed by its gate and would ship silently absent. "
+        "Enable the gate, drop the flag, or set DRALLOW_GATED=1 to override on purpose.")
+
 def main():
     import os
     global OUT
+    _check_gated_flags()
     level = int(os.environ.get("DRLEVEL", "11"))
     speed = int(os.environ.get("DRSPEED", "1"))
     if level != 11 or speed != 1:
