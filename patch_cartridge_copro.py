@@ -3713,32 +3713,30 @@ def build_wrapper(main_cpu):
 # REFUSES the build by default and names the suppressed flag and its gate. DRALLOW_GATED=1 to
 # override deliberately (it is printed loudly so the override is itself visible in the log).
 _GATED_FLAGS = (
-    # (requested flag env, its gate env, human reason)
-    ("DRSTUDYCOUNTS", "DRSTUDY",    "STUDY counter redraw is emitted only inside `if STUDY and STUDYCOUNTS`"),
-    ("DRSTUDY2P",     "DRSTUDY",    "STUDY2P = STUDY and env; the 2P pause tail needs STUDY"),
-    ("DRSTUDY2P_INV", "DRSTUDY2P",  "S2P_INV = STUDY2P and env"),
-    ("DRTUCKGUARD",   "DRTUCK",     "TUCKGUARD = TUCK and env; the guard vetoes a descriptor the tuck executor must exist to publish"),
-    ("DRCOLGATE",     "DRROTFIX",   "COLGATE = ROTFIX and env"),
-    ("DRRELATCH",     "DRROTFIX",   "RELATCH = ROTFIX and env"),
-    ("DRNAV_V4",      "DRNAVFIX",   "NAV_V4 = NAVFIX and env"),
-    ("DRNAV_HOLD",    "DRNAV_V4",   "NAV_HOLD = NAV_V4 and env"),
-    ("DRNAVDWELL",    "DRNAV_V4",   "NAVDWELL = NAV_V4 and env"),
-    ("DRSEATLOG_MUT", "DRSEATLOG",  "the mutant selector is consulted only when SEATLOG is on"),
+    # (requested flag, its gate, the requested flag's OWN default, gate's default, reason)
+    # Only DEFAULT-OFF flags are checked: setting a default-off flag =1 is a deliberate enable,
+    # so suppressing it silently is the bug. A default-ON flag (e.g. DRSTUDY2P) carried in a
+    # snapshot is NOT a deliberate deviation and must NOT trip this guard (that broke every build).
+    ("DRSTUDYCOUNTS", "DRSTUDY",   "0", "0", "STUDY counter redraw is emitted only inside `if STUDY and STUDYCOUNTS`"),
+    ("DRSTUDY2P_INV", "DRSTUDY2P", "0", "1", "S2P_INV = STUDY2P and env"),
+    ("DRTUCKGUARD",   "DRTUCK",    "0", "0", "TUCKGUARD = TUCK and env; guard vetoes a descriptor the tuck executor must publish"),
+    ("DRRELATCH",     "DRROTFIX",  "0", "1", "RELATCH = ROTFIX and env"),
+    ("DRNAV_HOLD",    "DRNAV_V4",  "1", "1", "NAV_HOLD = NAV_V4 and env"),   # default-ON -> never trips
+    ("DRSEATLOG_MUT", "DRSEATLOG", "none", "0", "the mutant selector is consulted only when SEATLOG is on"),
 )
-def _on(env, default="0"):
+def _on(env, default):
     v = _os.environ.get(env)
     return (v if v is not None else default) not in ("0", "", "none", "NONE")
 def _check_gated_flags():
     bad = []
-    for flag, gate, why in _GATED_FLAGS:
-        if _os.environ.get(flag) is None:
-            continue                       # not requested at all -> nothing to suppress
-        if not _on(flag):
-            continue                       # requested OFF -> fine
-        # the gate's default is the emitter's own default for that knob; approximate it as "1"
-        # for the always-on fixes (ROTFIX/NAVFIX/NAV_V4) and "0" otherwise, matching the defs above
-        gate_default = "1" if gate in ("DRROTFIX", "DRNAVFIX", "DRNAV_V4") else "0"
-        if not _on(gate, gate_default):
+    for flag, gate, flag_default, gate_default, why in _GATED_FLAGS:
+        if flag_default != "0":            # only deliberate enables of default-OFF flags matter
+            continue
+        if _os.environ.get(flag) is None:  # not in the env at all -> nothing requested
+            continue
+        if not _on(flag, flag_default):    # requested OFF -> fine
+            continue
+        if not _on(gate, gate_default):    # gate is off -> the flag emits nothing
             bad.append((flag, gate, why))
     if not bad:
         return
@@ -3746,11 +3744,11 @@ def _check_gated_flags():
         print(f"##SUPPRESSED-FLAG## {flag}={_os.environ.get(flag)!r} requested but {gate} is OFF -> "
               f"it will emit NOTHING ({why})")
     if _os.environ.get("DRALLOW_GATED", "0") == "1":
-        print("##SUPPRESSED-FLAG## DRALLOW_GATED=1 set: proceeding anyway (this override is deliberate and visible)")
+        print("##SUPPRESSED-FLAG## DRALLOW_GATED=1 set: proceeding anyway (deliberate, visible)")
         return
     raise SystemExit(
-        "REFUSING TO BUILD: a requested flag is suppressed by its gate and would ship silently absent. "
-        "Enable the gate, drop the flag, or set DRALLOW_GATED=1 to override on purpose.")
+        "REFUSING TO BUILD: a requested default-off flag is suppressed by its gate and would ship "
+        "silently absent. Enable the gate, drop the flag, or set DRALLOW_GATED=1 to override.")
 
 def main():
     import os
