@@ -650,6 +650,20 @@ COLDINIT = _os.environ.get("DRCOLDINIT", "0") == "1"
 # game's own draw during play, and re-fills after the pause blank. Values/layout measured
 # (study_viruscount_probe.lua): tile IS the digit, Y=$BF/$2B, X=6E/76/83/8B + 6D/75/84/8C.
 STUDYCOUNTS = _os.environ.get("DRSTUDYCOUNTS", "0") == "1"
+# DRJUNKCOUNT=1 (measurement, default OFF -> byte-identical): count P2's NON-VIRUS occupied cells
+# (junk = accumulated pill material not yet cleared) each PLAY hook and render 3 decimal digits to
+# OAM slots 8/9/10 so a screenshot reads the exact number on real silicon (no CV). RAM/OAM-shadow
+# only, no PPU. Virus cells have high nibble $D (D0/D1/D2, empirically verified from a game-start
+# board dump); empty = $00 or $FF; junk = any other occupied cell. The 128-cell board scan is
+# AMORTIZED 2x64 across hooks (a single 128-cell scan overruns the NMI budget -> mode $FF crash).
+# ⚠ STATUS (see memory dr-mario-junkcount-cart-status): cycle-safe + byte-identical when off, but the
+# OAM digit sprites DO NOT render during silicon play (unresolved) -> PARKED; superseded by a video CV
+# reader. Kept in-tree because the crash-fix + scan are sound and it is off by default.
+JUNKCOUNT = _os.environ.get("DRJUNKCOUNT", "0") == "1"
+JUNK_CNT  = 0x61CB   # published full-board junk count (persists; rendered every hook)
+JUNK_ACC  = 0x61CC   # in-progress 2-phase scan accumulator
+JUNK_PH   = 0x61CD   # scan phase (0 = cells 0-63, 1 = cells 64-127)
+JC_TMP    = 0x61CE   # digit-split scratch (must not clobber the published JUNK_CNT)
 # DRSTUDY2P (task #39, default ON where STUDY is on): the copro carts ship the STUDY pause
 # in v8.2 EVAC form -- part1 only, the 2P tail parts dropped because their base-ROM homes
 # caused the $BC26 KIL and the $BE56 level-select garble, and the fixed bank has exactly ONE
@@ -2314,6 +2328,68 @@ def build_main(level=11, speed=1):
             a.ins16("STA_abs", 0x0200 + sa * 4 + 2); a.ins16("STA_abs", 0x0200 + sb * 4 + 2)
             a.ins("LDA_imm", xa); a.ins16("STA_abs", 0x0200 + sa * 4 + 3)
             a.ins("LDA_imm", xb); a.ins16("STA_abs", 0x0200 + sb * 4 + 3)
+    if JUNKCOUNT:
+        # DRJUNKCOUNT: P2 non-virus occupied (junk) count -> 3 decimal digits at OAM slots 8/9/10,
+        # so a silicon screenshot reads the exact number (no CV). Play-gated ($0046==4).
+        # AMORTIZED across 2 hooks: 64 cells/hook (phase 0 = cells 0-63, phase 1 = 64-127), which
+        # covers the full 128-cell P2 board every 2 hooks. A single 128-cell scan overruns the NMI
+        # cycle budget and crashes to mode $FF (measured in Mesen: N<=64 clean, N=128 -> mode 255);
+        # 64/hook is well under (the HOLDBOARD 256-cell copy runs in this same hook on other builds).
+        # Junk changes slowly (a pill lands every ~1-2 s) so a <=2-frame publish lag is invisible.
+        # Cells: virus = hi nibble $D (D0/D1/D2); empty = $00 or $FF; junk = anything else occupied.
+        # RAM: JUNK_CNT persists the last full-board count (rendered every hook); JUNK_ACC accumulates
+        # the in-progress scan; JUNK_PH is the phase; JC_TMP is the digit-split scratch (the split must
+        # NOT clobber the published JUNK_CNT, which phase-0 hooks still render).
+        # play gate: invert-and-JMP so the skip clears the whole amortized block (> the +-127 branch reach)
+        a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x04); a.br("BEQ", "jc_on"); a.jmp("jc_off"); a.label("jc_on")
+        a.ins16("LDA_abs", JUNK_PH); a.br("BNE", "jc_ph1")
+        # -- phase 0: reset accumulator, scan cells 0..63 --
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", JUNK_ACC)
+        a.ins("LDX_imm", 0)
+        a.label("jc_lp0")
+        a.ins("LDA_absX", 0x0500); a.br("BEQ", "jc_nx0")
+        a.ins("CMP_imm", 0xFF); a.br("BEQ", "jc_nx0")
+        a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BEQ", "jc_nx0")   # virus -> skip
+        a.ins16("INC_abs", JUNK_ACC)
+        a.label("jc_nx0")
+        a.ins("INX"); a.ins("CPX_imm", 0x40); a.br("BNE", "jc_lp0")
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", JUNK_PH)       # next hook -> phase 1
+        a.jmp("jc_render")
+        # -- phase 1: scan cells 64..127, then publish the full-board total --
+        a.label("jc_ph1")
+        a.ins("LDX_imm", 0x40)
+        a.label("jc_lp1")
+        a.ins("LDA_absX", 0x0500); a.br("BEQ", "jc_nx1")
+        a.ins("CMP_imm", 0xFF); a.br("BEQ", "jc_nx1")
+        a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BEQ", "jc_nx1")   # virus -> skip
+        a.ins16("INC_abs", JUNK_ACC)
+        a.label("jc_nx1")
+        a.ins("INX"); a.ins("CPX_imm", 0x80); a.br("BNE", "jc_lp1")
+        a.ins16("LDA_abs", JUNK_ACC); a.ins16("STA_abs", JUNK_CNT)  # publish full-board count
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", JUNK_PH)            # back to phase 0
+        # -- render JUNK_CNT (last published full count) as 3 decimal digits --
+        # split into hundreds (X) then tens (X)/ones (A). CMP sets carry so SBC needs no SEC.
+        a.label("jc_render")
+        a.ins16("LDA_abs", JUNK_CNT); a.ins("LDX_imm", 0)
+        a.label("jc_h"); a.ins("CMP_imm", 100); a.br("BCC", "jc_hd")
+        a.ins("SBC_imm", 100); a.ins("INX"); a.jmp("jc_h")
+        a.label("jc_hd")
+        a.ins16("STA_abs", JC_TMP)                              # remainder after hundreds (SCRATCH, not JUNK_CNT)
+        a.ins("TXA"); a.ins16("STA_abs", 0x0200 + 8*4 + 1)     # hundreds tile (slot 8, below high-water)
+        a.ins16("LDA_abs", JC_TMP); a.ins("LDX_imm", 0)
+        a.label("jc_t"); a.ins("CMP_imm", 10); a.br("BCC", "jc_td")
+        a.ins("SBC_imm", 10); a.ins("INX"); a.jmp("jc_t")
+        a.label("jc_td")
+        a.ins16("STA_abs", 0x0200 + 10*4 + 1)                  # ones tile (slot 10)
+        a.ins("TXA"); a.ins16("STA_abs", 0x0200 + 9*4 + 1)     # tens tile (slot 9)
+        # Y, attr=1, X spread for the 3 digit sprites. Placed MID-SCREEN over the centre divider
+        # (Y=$70, X=$70/$78/$80) so nothing (score box, bottle, top-edge clip) can hide them --
+        # this is the silicon "does the block run + does tile-N render" test position.
+        for _sl, _x in ((8, 0x70), (9, 0x78), (10, 0x80)):
+            a.ins("LDA_imm", 0x70); a.ins16("STA_abs", 0x0200 + _sl*4)        # Y
+            a.ins("LDA_imm", 1);    a.ins16("STA_abs", 0x0200 + _sl*4 + 2)    # attr
+            a.ins("LDA_imm", _x);   a.ins16("STA_abs", 0x0200 + _sl*4 + 3)    # X
+        a.label("jc_off")
     # ---- pill-lock edge detect (both players) ----
     a.ins16("LDA_abs", 0x0306); a.ins16("CMP_abs", LASTY1)
     a.br("BCC", "no_p1_new"); a.br("BEQ", "no_p1_new")
