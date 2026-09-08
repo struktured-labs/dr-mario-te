@@ -8,7 +8,7 @@ local lf = io.open(CFG.out, "w")
 local function logf(s) if lf then lf:write(s.."\n"); lf:flush() end end
 local NES = emu.memType.nesMemory
 local function rd(a) return emu.read(a, NES, false) end
-local function wr(a,v) emu.write(a, v, NES, false) end
+local function wr(a,v) emu.write(a, v, NES) end
 local EMU = dofile("/mnt/data/drmario/pocket-copro/mesen_copro_qa/copro_emu.lua")
 local s = EMU.attach{ window=0x5200, board_src=0x0500, colA=0x0381, colB=0x0382, latency=24 }
 local SEED1,SEED2 = 0x6167,0x6168
