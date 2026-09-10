@@ -46,9 +46,7 @@ R_KNEE = 17
 R_SPAWNCOL = 18  # NEW FEATURE: early spawn-lane steering (planner's spawn_col_height)      # NONLINEAR (new): height knee above which the convex term bites      # SIMULTANEITY bonus (new): flat extra imm when a placement clears
                    # >=2 viruses at once.  Super-linear, so it rewards the combo
                    # itself rather than just raising the price of every virus.
-R_ENDK = 19      # ENDGAME REGIME SWITCH: virus-count threshold at which the late
-R_ENDH = 20      # weights engage; R_ENDH is the EXTRA height penalty below it
-NRW = 21
+NRW = 19
 
 # flags int32[3]
 FL_COLOR_AWARE = 0
@@ -131,17 +129,6 @@ def variant(name):
         w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
         w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
         w[R_SPAWNCOL] = float(name[5:])
-    elif name.startswith("winend"):
-        # ENDGAME REGIME SWITCH arm: champion 'winner' plus an EXTRA height penalty
-        # that engages only once virus_count <= K.  Motivation: 36% of all losses die
-        # ONE virus short -- an eval tuned across an 84-virus board is mistuned at 2,
-        # where the value of not-dying dominates the value of clearing.  RTL-portable
-        # as a register compare + a weight mux on the EXISTING maxh multiplier (the
-        # same shape as the reactive-garbage mode switch).  Name: winend<K>_<EXTRA_H>.
-        w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
-        w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
-        _k, _h = name[6:].split("_")
-        w[R_ENDK] = float(_k); w[R_ENDH] = float(_h)
     elif name.startswith("wincvx"):
         # NONLINEAR-IN-EXISTING-FEATURE arm: champion 'winner' + a CONVEX height
         # penalty.  The shipped leaf charges a CONSTANT w[R_MAXH]=12 per row, so
@@ -165,7 +152,7 @@ def variant(name):
 def _eval_rtl(col, vir, w, fl):
     """S_DONE2 sco (signed-16 wrap) for a non-win board. Port of leaf_r47.leaf_terms
     + _combine on (color 0..3, is_virus) flat arrays."""
-    maxh = 0; holes = 0; toprisk = 0; spawn = 0; spawncol = 0; vcount = 0
+    maxh = 0; holes = 0; toprisk = 0; spawn = 0; spawncol = 0
     buried = 0; matched = 0
     color_aware = fl[FL_COLOR_AWARE]
     nearest2 = fl[FL_NEAREST2]
@@ -183,7 +170,6 @@ def _eval_rtl(col, vir, w, fl):
                     if h > maxh:
                         maxh = h
                 if vir[idx]:
-                    vcount += 1
                     same = (curcol == cc)
                     if matched_on and same:
                         matched += 1
@@ -302,15 +288,10 @@ def _eval_rtl(col, vir, w, fl):
          - int64(w[R_POLL]) * pollution)
     if w[R_SPAWNCOL] != 0.0:
         s -= int64(w[R_SPAWNCOL]) * spawncol
-    if w[R_ENDH] != 0.0 and vcount <= int64(w[R_ENDK]):
-        s -= int64(w[R_ENDH]) * maxh
     if w[R_CVX] != 0.0:
         exc = maxh - int64(w[R_KNEE])
         if exc > 0:
             s -= int64(w[R_CVX]) * exc * exc
-    s = s & 0xFFFF
-    if s >= 0x8000:
-        s -= 0x10000
     return s
 
 
