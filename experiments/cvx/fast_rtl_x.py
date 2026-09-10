@@ -131,6 +131,16 @@ def variant(name):
         w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
         w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
         w[R_SPAWNCOL] = float(name[5:])
+    elif name == "wincombo":
+        # COMBINED arm: champion + BOTH surviving leads, which attack DIFFERENT failure
+        # paths -- spawn-lane clutter (winsc2) and late height (winend8_48).  Each alone
+        # measures ~+1.1pp, too small for an n=800 validation to resolve; together ~+2.2pp
+        # is resolvable.  ⚠ A combination needs its OWN certificate: neither single arm is
+        # licensed by this result, and additivity is an assumption being TESTED, not used.
+        w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
+        w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
+        w[R_SPAWNCOL] = 2.0
+        w[R_ENDK] = 8.0; w[R_ENDH] = 48.0
     elif name.startswith("winend"):
         # ENDGAME REGIME SWITCH arm: champion 'winner' plus an EXTRA height penalty
         # that engages only once virus_count <= K.  Motivation: 36% of all losses die
