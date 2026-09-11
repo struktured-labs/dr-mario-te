@@ -131,6 +131,33 @@ def variant(name):
         w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
         w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
         w[R_SPAWNCOL] = float(name[5:])
+    elif name == "winholes160":
+        # RUN 14 dose ladder: R_HOLES 20 -> 160.  160 = 10100000b, popcount 2, so STILL
+        # exactly cost-neutral in the RTL shift-add (as are 40 and 80).  Tests whether the
+        # monotone holes gradient keeps paying, or turns over.
+        w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
+        w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
+        w[R_HOLES] = 160.0
+    elif name == "winholes80":
+        # RUN 13: does the holes gradient keep paying past x2?  R_HOLES 20 -> 80.
+        # ⚠ 80 = 1010000b, popcount 2 -- SAME as 20 (10100b) and 40 (101000b), so it
+        # is still exactly cost-neutral in the RTL shift-add.  60 would NOT be
+        # (111100b, popcount 4), which is why the dose ladder skips it.
+        w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
+        w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
+        w[R_HOLES] = 80.0
+    elif name == "winshape":
+        # RUN 11 COMBINED POINT, built by the PRE-REGISTERED step rule in PREREG_SHAPE.md,
+        # not by picking a max.  Two of five axes passed d > 1.0*SE:
+        #   R_HOLES 20 -> 40  (d=+4.25, SE=2.08, topout 11.00 -> 6.00)
+        #   R_POLL   6 -> 12  (d=+4.00, SE=2.21, topout 11.00 -> 7.50)
+        # maxh / toprisk / spawn held at the champion value.
+        # ⚠ FREE IN SILICON: both moves are exact DOUBLINGS, so the shift-add multiplier
+        # popcount is unchanged (20=10100b/40=101000b, 6=110b/12=1100b) and the adder tree
+        # is untouched -- no new term, no third pipeline stage.  Unlike wincombo.
+        w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
+        w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
+        w[R_HOLES] = 40.0; w[R_POLL] = 12.0
     elif name.startswith("winw_"):
         # GENERIC WEIGHT-OVERRIDE arm: champion 'winner' with ONE existing constant
         # moved.  Name: winw_<reg>_<value>, reg in maxh/holes/toprisk/spawn/poll.
