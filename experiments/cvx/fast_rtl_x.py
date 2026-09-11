@@ -131,6 +131,22 @@ def variant(name):
         w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
         w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
         w[R_SPAWNCOL] = float(name[5:])
+    elif name.startswith("winw_"):
+        # GENERIC WEIGHT-OVERRIDE arm: champion 'winner' with ONE existing constant
+        # moved.  Name: winw_<reg>_<value>, reg in maxh/holes/toprisk/spawn/poll.
+        # These five are the SHAPE constants: coef-opt2 moved only the readiness/burial
+        # five, so MAXH/TOPRISK/SPAWN/HOLES/POLL still sit at their original r47 values
+        # and have NEVER been optimized -- while top-out is ~76% of remaining failure.
+        # ⚠ Perturbations are x2 / /2 on purpose: doubling or halving a constant PRESERVES
+        # its popcount, so the RTL shift-add multiplier costs exactly the same.  This whole
+        # arm family is cost-neutral in silicon -- no new term, no extra adder level, no
+        # third pipeline stage.  That is the only candidate class the timing budget allows.
+        w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
+        w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
+        _reg, _val = name[5:].rsplit("_", 1)
+        _slot = {"maxh": R_MAXH, "holes": R_HOLES, "toprisk": R_TOPRISK,
+                 "spawn": R_SPAWN, "poll": R_POLL}[_reg]
+        w[_slot] = float(_val)
     elif name == "wincombo":
         # COMBINED arm: champion + BOTH surviving leads, which attack DIFFERENT failure
         # paths -- spawn-lane clutter (winsc2) and late height (winend8_48).  Each alone

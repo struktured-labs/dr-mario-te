@@ -3,7 +3,14 @@ H16="/home/struktured/projects/dr-mario-h16-wt/experiments/h16"; CVX="/home/stru
 sys.path.insert(0,H16); import h16_arm
 sys.path.insert(0,CVX)
 FX=importlib.import_module("fast_rtl_x")          # WITH the int16 wrap (production)
-WP=importlib.import_module("wrapprobe")           # identical, wrap removed
+WP=importlib.import_module("wrapprobe")
+# STALE PROBE GUARD: wrapprobe is a COPY of fast_rtl_x with only the int16 wrap removed.
+# If fast_rtl_x gains a term and the copy is not regenerated, `raw != got` everywhere and
+# the probe reports phantom WRAPS.  Compare the two sources with the wrap line normalised.
+_a=open(FX.__file__).read().replace("    s = s & 0xFFFF\n    if s >= 0x8000:\n        s -= 0x10000\n    return s","    return s",1)
+_b=open(WP.__file__).read().replace("@njit(cache=False)","@njit(cache=True)")
+assert _a==_b, "wrapprobe.py is STALE -- regenerate it from fast_rtl_x.py before trusting any wrap count"
+assert FX.NRW==WP.NRW, f"NRW mismatch {FX.NRW} vs {WP.NRW}"           # identical, wrap removed
 R,C=FX.ROWS,FX.COLS
 rng=np.random.default_rng(20260910)
 arms=["winner","winsc2","winsc5","winsc10","winsc20"]
