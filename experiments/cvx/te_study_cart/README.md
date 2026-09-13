@@ -9,3 +9,10 @@ build_copro_branded.py never passed it. Isolated on silicon: study-only cart cle
 without footer clean. Verified on bluemage (frames here): title branded (TE mark + subtitle), settings clean,
 study pause = STUDY banner + LEVEL + VIRUS counts + preview + frozen board.
 Deployed to rivalmage as TE_HOLES80.mgl (holes80 seed-9 core + this cart).
+
+## v2 `6c3c3168` (2026-09-13): STUDY banner relocated — add `DRSTUDY_Y=0x98` to the recipe (emitter commit f5508e3)
+Owner's hotel TV trimmed the banner at the top (default Y=$08 survives only an 8-line trim). $C2 (below
+the VIRUS box) was INVISIBLE: shares scanlines with the 8 STUDYCOUNTS digit sprites (slots 8-15, Y=$BF);
+the PPU's 8-sprites-per-scanline limit drops slots 32-36. $94 rendered but touched the magnifier border;
+$98 = centred in the magnifier→VIRUS gap, verified on bluemage (frame here). One byte differs from
+`81f2e8bf`. Deployed to rivalmage as TE_HOLES80.mgl.
