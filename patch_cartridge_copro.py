@@ -1333,7 +1333,11 @@ STUDY_BLOB5_CPU = 0xBC26   # part3c (bank0; single copy, file 0x3C36) — 2P/VS 
 # STUDY at the base Y=$0F (sprite rows 16-23) overlaps it, so in 2P/VS ONLY we lift the 5 STUDY
 # letters' OAM Y to $08 (sprite rows 9-16) — clears the header (1-px gap above row 18) and stays
 # below scanline 8 (survives an NTSC top-8-line CRT trim). 1P keeps $0F (its top is clear).
-STUDY_2P_Y = 0x08
+# DRSTUDY_Y (default $08 -> byte-identical): OAM Y of the 5 STUDY letters in 2P/VS. $08 sits in the
+# 1-px gap above the header (row 18) and survives an 8-line trim, but real TVs trim more (owner's
+# hotel set, 2026-09-12: banner cut off at the top). $C2 = sprite rows 195-202, the empty centre
+# column below the VIRUS box, inside any sane overscan. X is untouched (stays centred).
+STUDY_2P_Y = int(_os.environ.get("DRSTUDY_Y", "0x08"), 0) & 0xFF
 STUDY_BLOB = bytes.fromhex(                          # part1 — exactly 52 B (fills the $D2CC run)
     "A980" "8542" "20F688"            # LDA #$80; STA $42; JSR $88F6   (STUDY -> slots 32-36)
     "AD1A03" "0960" "8D9502"          # LDA $031A; ORA #$60; STA $0295 (P1 slot37 tile = left half)
