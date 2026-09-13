@@ -138,6 +138,20 @@ def variant(name):
         w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
         w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
         w[R_HOLES] = 160.0
+    elif name == "winholes80_maxh24":
+        # (4) "not defensive enough for high columns": holes80 + R_MAXH 12->24.  Run 11 showed
+        # maxh x2 alone cut tap-out 11.0->9.0% (clear-rate neutral).  24=11000b, popcount 2 like
+        # 12 => free in silicon.  Tests whether it STACKS with holes80.
+        w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
+        w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
+        w[R_HOLES] = 80.0; w[R_MAXH] = 24.0
+    elif name == "winholes80_buried96":
+        # Reachability census (holes80, L11, owner burst model): on failed endgame boards 79% of the
+        # remaining viruses are fully BURIED, 16% tuckable, 5% open.  The endgame is a DIG problem.
+        # So price burying harder: R_BURIED 48 -> 96 (48=110000b, 96=1100000b, both popcount 2 => free).
+        w[R_VRDY] = 8.0; w[R_BURIED] = 96.0; w[R_RDYEXT] = 8.0
+        w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
+        w[R_HOLES] = 80.0
     elif name == "winholes80":
         # RUN 13: does the holes gradient keep paying past x2?  R_HOLES 20 -> 80.
         # ⚠ 80 = 1010000b, popcount 2 -- SAME as 20 (10100b) and 40 (101000b), so it
