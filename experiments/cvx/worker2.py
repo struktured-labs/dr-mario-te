@@ -4,7 +4,7 @@ sys.path.insert(0,H16); import h16_arm
 sys.path.insert(0,CVX)
 for m in ("fast_rtl_x","pressure_rig"): sys.modules.pop(m,None)
 FX=importlib.import_module("fast_rtl_x"); PR=importlib.import_module("pressure_rig")
-assert FX.NRW==21 and PR.__file__.startswith(CVX)
+assert FX.NRW==25 and PR.__file__.startswith(CVX)
 variant,lo,cnt,step,out,level,cap = sys.argv[1],int(sys.argv[2]),int(sys.argv[3]),int(sys.argv[4]),sys.argv[5],int(sys.argv[6]),int(sys.argv[7])
 PR.MAXPILLS=cap
 PR._init(level,0,20,model_kind="drip")

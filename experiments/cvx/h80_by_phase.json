@@ -1,0 +1,1 @@
+{"40+": {"holes": 25.0, "maxh": 11.0, "lane": 10.0, "edge_minus_lane": -0.5, "junk": 4.0}, "20-39": {"holes": 16.0, "maxh": 11.0, "lane": 8.0, "edge_minus_lane": -1.0, "junk": 11.0}, "9-19": {"holes": 9, "maxh": 12, "lane": 8, "edge_minus_lane": -0.5, "junk": 31}, "<=8": {"holes": 3, "maxh": 12, "lane": 8, "edge_minus_lane": -0.5, "junk": 49}}

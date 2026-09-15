@@ -48,7 +48,11 @@ R_SPAWNCOL = 18  # NEW FEATURE: early spawn-lane steering (planner's spawn_col_h
                    # itself rather than just raising the price of every virus.
 R_ENDK = 19      # ENDGAME REGIME SWITCH: virus-count threshold at which the late
 R_ENDH = 20      # weights engage; R_ENDH is the EXTRA height penalty below it
-NRW = 21
+R_LANEK = 21     # PHASE GATE (expert-tape insight): virus-count threshold for the late-game terms below
+R_LANEW = 22     # phase-gated spawn-lane carve: extra spawncol penalty when vcount <= LANEK
+R_EDGEW = 23     # phase-gated edge preference: reward edge-column mass when vcount <= LANEK
+R_HOLESREL = 24  # early-game holes RELIEF: refund this much of the holes price when vcount > LANEK
+NRW = 25
 
 # flags int32[3]
 FL_COLOR_AWARE = 0
@@ -152,6 +156,26 @@ def variant(name):
         w[R_VRDY] = 8.0; w[R_BURIED] = 96.0; w[R_RDYEXT] = 8.0
         w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
         w[R_HOLES] = 80.0
+    elif name.startswith("winh80_"):
+        # EXPERT-TAPE candidates (Nutmeg 9/13; see dr-mario-expert-tape-insights): all are
+        # WEIGHT-MUX on the existing vcount compare -- the silicon-cheap class.  Baseline
+        # winholes80 exactly when the new regs are 0.
+        #   lane<K>w<W>  : carve the spawn lane only in the danger band (experts: lane 11->6 as
+        #                  vir drops through 9-19, then relax)
+        #   edge<K>w<W>  : prefer edge-column mass in the band (experts end at edge-lane +2;
+        #                  our AI leaves cols 0/7 empty)
+        #   early<R>     : refund R of the holes price while vcount > K (experts run 2-6x our
+        #                  holes count mid-game and win on TEMPO -- holes80 may overpay early)
+        w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
+        w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0; w[R_HOLES] = 80.0
+        arg=name[7:]
+        if arg.startswith("lane"):
+            k,wt=arg[4:].split("w"); w[R_LANEK]=float(k); w[R_LANEW]=float(wt)
+        elif arg.startswith("edge"):
+            k,wt=arg[4:].split("w"); w[R_LANEK]=float(k); w[R_EDGEW]=float(wt)
+        elif arg.startswith("early"):
+            w[R_LANEK]=19.0; w[R_HOLESREL]=float(arg[5:])
+        else: raise ValueError(name)
     elif name == "winholes80":
         # RUN 13: does the holes gradient keep paying past x2?  R_HOLES 20 -> 80.
         # ⚠ 80 = 1010000b, popcount 2 -- SAME as 20 (10100b) and 40 (101000b), so it
@@ -232,7 +256,7 @@ def variant(name):
 def _eval_rtl(col, vir, w, fl):
     """S_DONE2 sco (signed-16 wrap) for a non-win board. Port of leaf_r47.leaf_terms
     + _combine on (color 0..3, is_virus) flat arrays."""
-    maxh = 0; holes = 0; toprisk = 0; spawn = 0; spawncol = 0; vcount = 0
+    maxh = 0; holes = 0; toprisk = 0; spawn = 0; spawncol = 0; vcount = 0; edgecol = 0
     buried = 0; matched = 0
     color_aware = fl[FL_COLOR_AWARE]
     nearest2 = fl[FL_NEAREST2]
@@ -271,6 +295,8 @@ def _eval_rtl(col, vir, w, fl):
                     spawn += 1
                 if (c == 3 or c == 4) and not vir[idx]:
                     spawncol += (ROWS - r)
+                if (c == 0 or c == 7) and not vir[idx]:
+                    edgecol += (ROWS - r)
             else:
                 if seen:
                     holes += 1
@@ -371,6 +397,12 @@ def _eval_rtl(col, vir, w, fl):
         s -= int64(w[R_SPAWNCOL]) * spawncol
     if w[R_ENDH] != 0.0 and vcount <= int64(w[R_ENDK]):
         s -= int64(w[R_ENDH]) * maxh
+    if w[R_LANEW] != 0.0 and vcount <= int64(w[R_LANEK]):
+        s -= int64(w[R_LANEW]) * spawncol
+    if w[R_EDGEW] != 0.0 and vcount <= int64(w[R_LANEK]):
+        s += int64(w[R_EDGEW]) * edgecol
+    if w[R_HOLESREL] != 0.0 and vcount > int64(w[R_LANEK]):
+        s += int64(w[R_HOLESREL]) * holes
     if w[R_CVX] != 0.0:
         exc = maxh - int64(w[R_KNEE])
         if exc > 0:
