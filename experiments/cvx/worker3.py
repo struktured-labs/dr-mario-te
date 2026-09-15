@@ -14,6 +14,24 @@ PR._init(level,0,20,model_kind="bursty",bursty_model_obj=BM.fit_struktured_20260
 import root_search as RS
 assert RS.FX is FX
 w,fl=FX.variant(variant)
+# STALE-JIT GUARD (the run-05 and run-18 hazard): root_search's cached _root_value can silently link
+# an OLD _eval_rtl, making every new-variant arm byte-identical to baseline (a clean false null).
+# Assert the LEAF ITSELF (same compiled object the search uses) distinguishes this variant from the
+# champion-family baseline on a synthetic low-virus board whenever the weights differ at all.
+import numpy as _np
+_w0,_f0=FX.variant("winholes80")
+if list(w)!=list(_w0):
+    _rng=_np.random.default_rng(7)
+    _diff=False
+    for _ in range(300):
+        _occ=_rng.random(FX.NCELL)<0.4
+        _col=_np.where(_occ,_rng.integers(1,4,FX.NCELL),0).astype(_np.int8)
+        _vir=_np.zeros(FX.NCELL,_np.int8)
+        _idx=_np.flatnonzero(_occ)
+        if len(_idx)>=5: _vir[_rng.choice(_idx,5,replace=False)]=1
+        if FX._eval_rtl(_col,_vir,_np.asarray(w,_np.float64),_np.asarray(fl,_np.int32))!=FX._eval_rtl(_col,_vir,_np.asarray(_w0,_np.float64),_np.asarray(_f0,_np.int32)):
+            _diff=True; break
+    assert _diff, f"variant {variant} is indistinguishable from baseline on 300 probe boards -- stale JIT cache?"
 with open(out,"w") as fh:
     for i in range(cnt):
         s=lo+i*step; PR._C["w"],PR._C["fl"]=w,fl; r=PR.play(s)
