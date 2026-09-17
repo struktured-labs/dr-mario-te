@@ -175,6 +175,9 @@ def variant(name):
             k,wt=arg[4:].split("w"); w[R_LANEK]=float(k); w[R_EDGEW]=float(wt)
         elif arg.startswith("early"):
             w[R_LANEK]=19.0; w[R_HOLESREL]=float(arg[5:])
+        elif arg.startswith("tall"):
+            # 18b travel-time arm: REWARD height late (negative ENDH) -- short drops = tempo.
+            k,wt=arg[4:].split("_"); w[R_ENDK]=float(k); w[R_ENDH]=-float(wt)
         else: raise ValueError(name)
     elif name == "winholes80":
         # RUN 13: does the holes gradient keep paying past x2?  R_HOLES 20 -> 80.

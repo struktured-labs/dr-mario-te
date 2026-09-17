@@ -23,12 +23,13 @@ _w0,_f0=FX.variant("winholes80")
 if list(w)!=list(_w0):
     _rng=_np.random.default_rng(7)
     _diff=False
-    for _ in range(300):
+    for _ in range(600):
         _occ=_rng.random(FX.NCELL)<0.4
         _col=_np.where(_occ,_rng.integers(1,4,FX.NCELL),0).astype(_np.int8)
         _vir=_np.zeros(FX.NCELL,_np.int8)
         _idx=_np.flatnonzero(_occ)
-        if len(_idx)>=5: _vir[_rng.choice(_idx,5,replace=False)]=1
+        _nv=5 if _%2==0 else 30   # probe BOTH gate regimes: a >K-gated arm differs only on high-virus boards
+        if len(_idx)>=_nv: _vir[_rng.choice(_idx,_nv,replace=False)]=1
         if FX._eval_rtl(_col,_vir,_np.asarray(w,_np.float64),_np.asarray(fl,_np.int32))!=FX._eval_rtl(_col,_vir,_np.asarray(_w0,_np.float64),_np.asarray(_f0,_np.int32)):
             _diff=True; break
     assert _diff, f"variant {variant} is indistinguishable from baseline on 300 probe boards -- stale JIT cache?"
