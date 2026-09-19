@@ -48,7 +48,7 @@ def play_vs(seed, level, wA, flA, wB, flB, wt=0, ws=20):
     S = []
     for w, fl in ((wA, flA), (wB, flB)):
         S.append({"env": _mk_env(level, seed), "w": w, "fl": fl, "t": 0.0,
-                  "pills": 0, "sent": 0, "recv": 0, "combo_events": 0})
+                  "pills": 0, "sent": 0, "recv": 0, "combo_events": 0, "mode_swaps": 0})
     rng = random.Random(seed * 77 + 5)
     while True:
         i = 0 if S[0]["t"] <= S[1]["t"] else 1
@@ -57,8 +57,24 @@ def play_vs(seed, level, wA, flA, wB, flB, wt=0, ws=20):
         if env.board.virus_count() == 0: return _fin(S, i, "clear")
         fb = FB.from_board(env.board)
         col, vir = RS.board_flat_from_fb(fb)
+        # OPPONENT CONTEXT (owner directive 9/19: "add state for p2, the entire board really").
+        # P2's board is CONSTANT for the whole search of one pill, so context enters as a per-pill
+        # weight-set selection — silicon-cheap (latched regs + compares), zero cost per leaf.
+        w_use, fl_use = me["w"], me["fl"]
+        if callable(me["w"]):
+            opp_env = op["env"]
+            opp_pills = max(1, op["pills"])
+            ctx = {"opp_combo_rate": op["combo_events"] / opp_pills,          # combos per drop
+                   "opp_send_per_combo": op["sent"] / max(1, op["combo_events"]),
+                   "opp_pace": op["t"] / opp_pills,                            # seconds per drop
+                   "own_vleft": env.board.virus_count(), "opp_vleft": opp_env.board.virus_count(),
+                   "opp_maxh": max((16 - min((r for r in range(16) if opp_env.board.color[r][c] != 0), default=16))
+                                    for c in range(8)),
+                   "own_t": me["t"], "opp_t": op["t"]}
+            w_use, fl_use, swapped = me["w"](ctx)
+            me["mode_swaps"] += int(swapped)
         a, c1b = PR._choose_base(col, vir, int(env.cur.a), int(env.cur.b),
-                                 int(env.nxt.a), int(env.nxt.b), me["w"], me["fl"], wt, ws)
+                                 int(env.nxt.a), int(env.nxt.b), w_use, fl_use, wt, ws)
         if a is None: return _fin(S, 1 - i, "opp_stuck")
         var, cc = a // 8, a % 8
         cols_involved = [cc] if var in (2, 3) else [cc, min(cc + 1, 7)]
@@ -88,4 +104,4 @@ def _fin(S, winner, how):
     return {"winner": winner, "how": how,
             "t": [round(s["t"], 1) for s in S], "pills": [s["pills"] for s in S],
             "sent": [s["sent"] for s in S], "combos": [s["combo_events"] for s in S],
-            "vleft": [s["env"].board.virus_count() for s in S]}
+            "vleft": [s["env"].board.virus_count() for s in S], "swaps": [s["mode_swaps"] for s in S]}
