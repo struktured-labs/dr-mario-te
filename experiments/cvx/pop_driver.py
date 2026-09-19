@@ -1,21 +1,22 @@
 """Generation driver: builds the job list for all UNPLAYED pairings in the pool, runs them via xargs,
 scores the pool (fictitious-play mean win rate), writes POOL.json + LEDGER.md, spawns the next gen."""
-import sys, json, os, subprocess, itertools, random, collections, glob
-sys.path.insert(0,"/home/struktured/projects/dr-mario-h16-wt/experiments/cvx")
-os.chdir("/home/struktured/projects/dr-mario-h16-wt/experiments/cvx")
-sys.argv=[sys.argv[0]]+sys.argv[1:]
+import sys, json, os, subprocess, itertools, random, collections, glob, hashlib, shlex
+H16="/home/struktured/projects/dr-mario-h16-wt/experiments/h16"; CVX="/home/struktured/projects/dr-mario-h16-wt/experiments/cvx"; E47="/home/struktured/projects/dr-mario-qa-wt/experiments/eval47"
+sys.path.insert(0,H16); import h16_arm  # noqa  (provides fast_sim_x et al.)
+sys.path.insert(0,CVX); sys.path.insert(1,E47)
+os.chdir(CVX)
 GEN=int(sys.argv[1]); N=int(sys.argv[2]); KEEP=3; CHILDREN=5
 import fast_rtl_x  # noqa
+assert fast_rtl_x.__file__.startswith(CVX)
 import population as POP
 POOL="pop/POOL.json"; os.makedirs("pop",exist_ok=True)
 pool=json.load(open(POOL)) if os.path.exists(POOL) else {"members":[], "gen":{}}
 if GEN==0 and not pool["members"]:
     for m in POP.gen0(): pool["members"].append(m); pool["gen"][POP.name(m)]=0
-def played(a,b):
-    f=f"pop/{hash((a,b))&0xffffffff:08x}.jsonl"; return f
+def pf(a,b): return f"pop/g_{hashlib.md5((a+'#'+b).encode()).hexdigest()[:10]}.jsonl"
 jobs=[]
 for ma,mb in itertools.combinations(pool["members"],2):
-    a,b=POP.name(ma),POP.name(mb); f=f"pop/g_{abs(hash(a+'#'+b))&0xffffffff:08x}.jsonl"
+    a,b=POP.name(ma),POP.name(mb); f=pf(a,b)
     if os.path.exists(f) and sum(1 for _ in open(f))>=N: continue
     jobs.append((json.dumps(ma),json.dumps(mb),f))
 print(f"gen {GEN}: pool {len(pool['members'])}, new pairings {len(jobs)} x {N} games")
@@ -25,7 +26,7 @@ with open(J,"w") as fh:
         # split each pairing into 4 shards for parallelism
         per=N//4
         for k in range(4):
-            fh.write(f"{ma!r} {mb!r} {36734+k*per*2} {per} 2 {f}.{k}\n".replace("'",'"'))
+            fh.write(f"{shlex.quote(ma)} {shlex.quote(mb)} {36734+k*per*2} {per} 2 {f}.{k}\n")
 json.dump(pool,open(POOL,"w"))
 if jobs:
     env=dict(os.environ,NUMBA_CACHE_DIR="/home/struktured/projects/dr-mario-h16-wt/tmp/nbcache_grad2")
@@ -37,7 +38,7 @@ if jobs:
 # score
 W=collections.defaultdict(lambda:[0,0])
 for ma,mb in itertools.combinations(pool["members"],2):
-    a,b=POP.name(ma),POP.name(mb); f=f"pop/g_{abs(hash(a+'#'+b))&0xffffffff:08x}.jsonl"
+    a,b=POP.name(ma),POP.name(mb); f=pf(a,b)
     if not os.path.exists(f): continue
     for l in open(f):
         r=json.loads(l)
