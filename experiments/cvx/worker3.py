@@ -20,7 +20,9 @@ w,fl=FX.variant(variant)
 # champion-family baseline on a synthetic low-virus board whenever the weights differ at all.
 import numpy as _np
 _w0,_f0=FX.variant("winholes80")
-if list(w)!=list(_w0):
+_IMM_REGS={FX.R_WVIR, FX.R_WCELLS, FX.R_WINBONUS, FX.R_VBONUS}   # imm-path weights: applied on CLEAR events, invisible to a static-board leaf probe
+_diff_regs={i for i in range(FX.NRW) if w[i]!=_w0[i]}
+if _diff_regs and not _diff_regs <= _IMM_REGS:
     _rng=_np.random.default_rng(7)
     _diff=False
     for _ in range(600):

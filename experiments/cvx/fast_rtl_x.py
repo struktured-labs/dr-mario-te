@@ -156,6 +156,17 @@ def variant(name):
         w[R_VRDY] = 8.0; w[R_BURIED] = 96.0; w[R_RDYEXT] = 8.0
         w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
         w[R_HOLES] = 80.0
+    elif name.startswith("winh80w_"):
+        # RUN 20: full constant GRADIENT under the CALIBRATED regime (bursty L11, tap-out primary).
+        # Every prior tuning of these axes ran under drip-L20 with a censoring cap; only HOLES was
+        # ever re-checked under the real objective.  One reg override on the winholes80 base;
+        # values chosen popcount-neutral (x2 or /2) so every arm costs exactly what ships.
+        w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
+        w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0; w[R_HOLES] = 80.0
+        _reg,_val=name[8:].rsplit("_",1)
+        _slot={"maxh":R_MAXH,"toprisk":R_TOPRISK,"spawn":R_SPAWN,"poll":R_POLL,"buried":R_BURIED,
+               "setup":R_SETUP,"matched":R_MATCHED,"rdyext":R_RDYEXT,"vrdy":R_VRDY,"wvir":R_WVIR,"holes":R_HOLES}[_reg]
+        w[_slot]=float(_val)
     elif name.startswith("winh80_"):
         # EXPERT-TAPE candidates (Nutmeg 9/13; see dr-mario-expert-tape-insights): all are
         # WEIGHT-MUX on the existing vcount compare -- the silicon-cheap class.  Baseline
