@@ -9,3 +9,9 @@ exhausted. Remaining playing strength lives in: SEARCH/planner (time-aware place
 routing), OPPONENT MODEL (Nutmeg send data: 6.4 volleys/min, 83% combo-linked), and REGIME breadth.
 wvir arms (imm-path) were guard-aborted in the main sweep (2nd guard blind spot: imm weights invisible
 to a static-board probe; guard now exempts R_WVIR/R_WCELLS/R_WINBONUS/R_VBONUS); rerun appended below.
+
+## wvir addendum (guard-fixed rerun, 2026-09-19): ALSO HOLDS — the sweep is complete at 11/11 axes
+wvir_90 (÷2): topout +3.50 p=0.053, clear -3.7, slower (medpills 146->160).
+wvir_360 (×2): topout +3.17 p=0.090, clear -3.0.
+180 is another two-sided pit. FINAL: 24 arms, 11 axes, zero improvements, ~half the moves harmful.
+The static leaf around this functional form is closed in every direction that is free in silicon.
