@@ -22,6 +22,41 @@ def _mk_env(level, seed):
     env.cur = env._rand_pill(); env.nxt = env._rand_pill()
     return env
 
+
+def _n_simultaneous_lines(board):
+    """Count distinct H and V runs of >=4 on the current board (pre-resolve)."""
+    g = board.color
+    n = 0
+    rows, cols = board.rows, board.cols
+    empty = 0
+    for r in range(rows):
+        c = 0
+        while c < cols:
+            v = int(g[r, c])
+            if v == empty:
+                c += 1
+                continue
+            c2 = c
+            while c2 < cols and int(g[r, c2]) == v:
+                c2 += 1
+            if c2 - c >= 4:
+                n += 1
+            c = c2
+    for c in range(cols):
+        r = 0
+        while r < rows:
+            v = int(g[r, c])
+            if v == empty:
+                r += 1
+                continue
+            r2 = r
+            while r2 < rows and int(g[r2, c]) == v:
+                r2 += 1
+            if r2 - r >= 4:
+                n += 1
+            r = r2
+    return n
+
 def _inject(board, rng, halves):
     # Reuse pressure_rig's proven injector (first-empty-row, LINK_NONE, settle) but restrict the
     # column draw to the garbage-legal set by retrying the rng seed convention is bypassed here:
@@ -41,7 +76,32 @@ def _inject(board, rng, halves):
         board.resolve()
     return placed
 
-def play_vs(seed, level, wA, flA, wB, flB, wt=0, ws=20):
+def _col_h_board(board, c):
+    color = board.color
+    rows = board.rows
+    for r in range(rows):
+        if int(color[r, c]) != 0:
+            return rows - r
+    return 0
+
+
+def _bottle_feats(board):
+    maxh = 0
+    for c in range(board.cols):
+        h = _col_h_board(board, c)
+        if h > maxh:
+            maxh = h
+    return {
+        "maxh": maxh,
+        "spawn_h": max(_col_h_board(board, 3), _col_h_board(board, 4)),
+        "fill": int(np.count_nonzero(board.color)),
+    }
+
+
+def play_vs(seed, level, wA, flA, wB, flB, wt=0, ws=0, send_rule="cells"):
+    """ws=0 matches cart DRSTRAND default. Loop gens 0-2 used ws=20.
+    send_rule: 'cells' (v1 proxy, cells>=6 -> min(4,cells//3)) or
+    'lines' (ROM-shaped: first-step simultaneous lines>=2 -> min(4, n_lines))."""
     import pressure_rig as PR
     from fb import FB
     import root_search as RS
@@ -61,20 +121,31 @@ def play_vs(seed, level, wA, flA, wB, flB, wt=0, ws=20):
         # P2's board is CONSTANT for the whole search of one pill, so context enters as a per-pill
         # weight-set selection — silicon-cheap (latched regs + compares), zero cost per leaf.
         w_use, fl_use = me["w"], me["fl"]
-        if callable(me["w"]):
-            opp_env = op["env"]
-            opp_pills = max(1, op["pills"])
-            ctx = {"opp_combo_rate": op["combo_events"] / opp_pills,          # combos per drop
-                   "opp_send_per_combo": op["sent"] / max(1, op["combo_events"]),
-                   "opp_pace": op["t"] / opp_pills,                            # seconds per drop
-                   "own_vleft": env.board.virus_count(), "opp_vleft": opp_env.board.virus_count(),
-                   "opp_maxh": max((16 - min((r for r in range(16) if opp_env.board.color[r][c] != 0), default=16))
-                                    for c in range(8)),
-                   "own_t": me["t"], "opp_t": op["t"]}
-            w_use, fl_use, swapped = me["w"](ctx)
-            me["mode_swaps"] += int(swapped)
-        a, c1b = PR._choose_base(col, vir, int(env.cur.a), int(env.cur.b),
-                                 int(env.nxt.a), int(env.nxt.b), w_use, fl_use, wt, ws)
+        opp_env = op["env"]
+        own_f = _bottle_feats(env.board)
+        opp_f = _bottle_feats(opp_env.board)
+        ctx = {"own_vleft": env.board.virus_count(), "opp_vleft": opp_env.board.virus_count(),
+               "own_t": me["t"], "opp_t": op["t"],
+               "own_maxh": own_f["maxh"], "opp_maxh": opp_f["maxh"],
+               "own_spawn_h": own_f["spawn_h"], "opp_spawn_h": opp_f["spawn_h"],
+               "own_fill": own_f["fill"], "opp_fill": opp_f["fill"],
+               "own_recv": me["recv"], "opp_recv": op["recv"]}
+        if hasattr(me["w"], "decide"):
+            a = me["w"].decide(col, vir, int(env.cur.a), int(env.cur.b),
+                               int(env.nxt.a), int(env.nxt.b), ctx)
+            c1b = None
+        else:
+            if callable(me["w"]):
+                opp_pills = max(1, op["pills"])
+                ctx.update({"opp_combo_rate": op["combo_events"] / opp_pills,
+                            "opp_send_per_combo": op["sent"] / max(1, op["combo_events"]),
+                            "opp_pace": op["t"] / opp_pills,
+                            "opp_maxh": max((16 - min((r for r in range(16) if opp_env.board.color[r][c] != 0), default=16))
+                                             for c in range(8))})
+                w_use, fl_use, swapped = me["w"](ctx)
+                me["mode_swaps"] += int(swapped)
+            a, c1b = PR._choose_base(col, vir, int(env.cur.a), int(env.cur.b),
+                                     int(env.nxt.a), int(env.nxt.b), w_use, fl_use, wt, ws)
         if a is None: return _fin(S, 1 - i, "opp_stuck")
         var, cc = a // 8, a % 8
         cols_involved = [cc] if var in (2, 3) else [cc, min(cc + 1, 7)]
@@ -84,6 +155,12 @@ def play_vs(seed, level, wA, flA, wB, flB, wt=0, ws=20):
             h = 16 - min(filled) if filled else 0
             hmax = max(hmax, h)
         me["t"] += T_LAT + FPR * max(0, 16 - hmax)
+        n_lines = 0
+        if send_rule == "lines":
+            clone = env.board.clone()
+            orient, col, pill = env._decode(int(a))
+            if clone.place_pill(pill, orient, col):
+                n_lines = _n_simultaneous_lines(clone)
         occ_before = int(np.count_nonzero(env.board.color))
         _, _, term, trunc, info = env.step(int(a))
         me["pills"] += 1
@@ -92,8 +169,13 @@ def play_vs(seed, level, wA, flA, wB, flB, wt=0, ws=20):
             return _fin(S, 1 - i, "opp_topout")
         if trunc: return _fin(S, None, "cap")
         cleared = max(0, occ_before + 2 - int(np.count_nonzero(env.board.color)))
-        if cleared >= 6:
-            halves = min(4, cleared // 3)
+        if send_rule == "lines":
+            fire = n_lines >= 2
+            halves = min(4, n_lines) if fire else 0
+        else:
+            fire = cleared >= 6
+            halves = min(4, cleared // 3) if fire else 0
+        if fire:
             me["combo_events"] += 1
             got = _inject(op["env"].board, rng, halves)
             me["sent"] += got; op["recv"] += got
