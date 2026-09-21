@@ -1,0 +1,12 @@
+{
+  "phase": "done",
+  "deadline_local": "2026-09-21T16:00:00-04:00",
+  "scheduler_id": "01a0c1d3-424a-7b91-8168-afb30d84181a",
+  "candidate": "k_clock=40",
+  "confirm": {
+    "kc40_vs_winner": "480/800=60.0%",
+    "kc40_hartford_topout": "42.8%",
+    "kc0_hartford_topout": "50.2%"
+  },
+  "notes": "CONFIRM HOLD. MORNING.md written. Python-only, no Quartus. Scheduler should delete."
+}

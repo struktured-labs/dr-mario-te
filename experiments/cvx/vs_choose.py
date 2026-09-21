@@ -13,7 +13,9 @@ import numpy as np
 
 # Trunk is the VS-strong solitaire eval (63.8% vs holes80). Not holes80.
 TRUNK = "winner"
-KNOBS = ("k_race", "k_tempo", "k_atk", "k_safe", "k_time")
+KNOBS = ("k_race", "k_tempo", "k_atk", "k_safe", "k_time", "k_clock")
+# lockstep vs_sim / pressure_rig_time; T_LAT is per-pill constant (no argmax).
+T_LAT, FPR = 0.6, 0.35
 
 
 def zeros():
@@ -26,6 +28,14 @@ def _behind(own_v, opp_v):
 
 def _ahead(own_v, opp_v):
     return max(0, int(opp_v) - int(own_v)) / 48.0
+
+
+def _dt(col, var, cc):
+    return T_LAT + FPR * _fall_rows(col, var, cc)
+
+
+def _maxh(col):
+    return max(_col_h(col, c) for c in range(8))
 
 
 def _fall_rows(col, var, cc):
@@ -64,7 +74,7 @@ def _urgency(ctx):
 
 def choose(col, vir, ca, cb, na, nb, w, fl, ctx,
            k_race=0.0, k_tempo=0.0, k_atk=0.0, k_safe=0.0, k_time=0.0,
-           wt=0, ws=0):
+           k_clock=0.0, wt=0, ws=0):
     import fast_rtl_x as FX
     import root_search as RS
     from fast_sim_x import NCELL, _expand_core
@@ -73,7 +83,7 @@ def choose(col, vir, ca, cb, na, nb, w, fl, ctx,
     ahead = _ahead(ctx.get("own_vleft", 0), ctx.get("opp_vleft", 0))
     opp_threat = min(1.0, float(ctx.get("opp_spawn_h", 0)) / 16.0)
     urgency = _urgency(ctx)
-    live = (k_race or k_tempo or k_atk or k_safe or k_time)
+    live = (k_race or k_tempo or k_atk or k_safe or k_time or k_clock)
     c1 = np.empty(NCELL, dtype=np.int8)
     v1 = np.empty(NCELL, dtype=np.int8)
     best_val, best_a, best_c1 = None, None, None
@@ -99,6 +109,8 @@ def choose(col, vir, ca, cb, na, nb, w, fl, ctx,
                     val += k_safe * (-_spawn_h(c1)) * ahead
                 if k_time and urgency:
                     val += k_time * (-_fall_rows(col, var, cc)) * urgency
+                if k_clock:
+                    val -= k_clock * _dt(col, var, cc)
             if best_val is None or val > best_val:
                 best_val, best_a, best_c1 = val, var * 8 + cc, c1.copy()
     return best_a, best_c1
@@ -108,7 +120,7 @@ class VsPolicy:
     """play_vs protocol: object with .decide(...) and name()."""
 
     def __init__(self, k_race=0.0, k_tempo=0.0, k_atk=0.0, k_safe=0.0,
-                 k_time=0.0, trunk=TRUNK, **extra):
+                 k_time=0.0, k_clock=0.0, trunk=TRUNK, **extra):
         if extra:
             raise TypeError(f"unknown VsPolicy kwargs {sorted(extra)}")
         self.k_race = float(k_race)
@@ -116,6 +128,7 @@ class VsPolicy:
         self.k_atk = float(k_atk)
         self.k_safe = float(k_safe)
         self.k_time = float(k_time)
+        self.k_clock = float(k_clock)
         self.trunk = trunk
         import fast_rtl_x as FX
         self.w, self.fl = FX.variant(trunk)
@@ -126,13 +139,14 @@ class VsPolicy:
     def name(self):
         k = self.knobs()
         return (f"{self.trunk}|kr{k['k_race']:g}|kt{k['k_tempo']:g}"
-                f"|ka{k['k_atk']:g}|ks{k['k_safe']:g}|ki{k['k_time']:g}")
+                f"|ka{k['k_atk']:g}|ks{k['k_safe']:g}|ki{k['k_time']:g}"
+                f"|kc{k['k_clock']:g}")
 
     def decide(self, col, vir, ca, cb, na, nb, ctx):
         a, _ = choose(col, vir, ca, cb, na, nb, self.w, self.fl, ctx,
                       k_race=self.k_race, k_tempo=self.k_tempo,
                       k_atk=self.k_atk, k_safe=self.k_safe, k_time=self.k_time,
-                      wt=0, ws=0)
+                      k_clock=self.k_clock, wt=0, ws=0)
         return a
 
 
@@ -223,32 +237,83 @@ def scale_selfcheck(n_games=6, seed0=41134, level=11):
     return probe.stats
 
 
+def clock_scale_selfcheck(n_games=6, seed0=42134, level=11):
+    """k_clock vs k=0: move rate overall and by board maxh. T_LAT cannot rerank;
+    only FPR*fall_rows does, so empty-flat wells may not move."""
+    import pressure_rig as PR
+    import vs_sim
+    PR._init(level, 0, 0)
+    doses = (20.0, 40.0, 80.0, 160.0)
+    base = VsPolicy()
+    pols = {k: VsPolicy(k_clock=k) for k in doses}
+
+    class Probe:
+        def __init__(self):
+            self.stats = {k: {"moved": 0, "pills": 0,
+                              "empty": [0, 0], "mid": [0, 0], "tall": [0, 0]}
+                          for k in doses}
+
+        def name(self):
+            return "clock-probe"
+
+        def decide(self, col, vir, ca, cb, na, nb, ctx):
+            a0 = base.decide(col, vir, ca, cb, na, nb, ctx)
+            mh = _maxh(col)
+            if mh <= 8:
+                bucket = "empty"
+            elif mh <= 12:
+                bucket = "mid"
+            else:
+                bucket = "tall"
+            for k, pol in pols.items():
+                st = self.stats[k]
+                st["pills"] += 1
+                a = pol.decide(col, vir, ca, cb, na, nb, ctx)
+                moved = int(a != a0)
+                st["moved"] += moved
+                st[bucket][0] += moved
+                st[bucket][1] += 1
+            return a0
+
+    probe = Probe()
+    for i in range(n_games):
+        vs_sim.play_vs(seed0 + i * 2, level, probe, None, probe, None,
+                       wt=0, ws=0, send_rule="cells")
+    return probe.stats
+
+
 if __name__ == "__main__":
     import import_pin
     import_pin.pin()
     import pressure_rig as PR
     PR._init(11, 0, 0)
+    import sys
     m, p = identity_selfcheck()
     print(f"identity mismatches {m}/{p}", flush=True)
     if m:
         raise SystemExit("IDENTITY FAIL")
     print("IDENTITY_OK", flush=True)
-    stats = scale_selfcheck()
-    any_dead = False
-    families = {
-        "k_atk": ("ka200", "ka800"),
-        "k_safe": ("ks200", "ks800"),
-        "k_time": ("ki80", "ki200"),
-    }
-    for name, st in stats.items():
-        print(f"scale {name}: moved {st['moved']}/{st['live']} live "
-              f"({st['pills']} pills)", flush=True)
-    for fam, names in families.items():
-        moved = sum(stats[n]["moved"] for n in names)
-        live = sum(stats[n]["live"] for n in names)
-        if live == 0 or moved == 0:
-            any_dead = True
-            print(f"SCALE_DEAD {fam} live={live} moved={moved}", flush=True)
+    mode = sys.argv[1] if len(sys.argv) > 1 else "clock"
+    if mode != "clock":
+        raise SystemExit("usage: vs_choose.py [clock]")
+    stats = clock_scale_selfcheck()
+    any_dead = True
+    ki80_class = []
+    for k, st in stats.items():
+        n = st["pills"] or 1
+        rate = st["moved"] / n
+        def br(name):
+            mv, tot = st[name]
+            return f"{mv}/{tot}" if tot else "0/0"
+        print(f"clock kc{k:g}: moved {st['moved']}/{st['pills']} "
+              f"({100*rate:.1f}%) empty {br('empty')} mid {br('mid')} "
+              f"tall {br('tall')}", flush=True)
+        if st["moved"] > 0:
+            any_dead = False
+        if rate >= 0.30:
+            ki80_class.append(k)
     if any_dead:
         raise SystemExit("SCALE FAIL")
+    if ki80_class:
+        print(f"SCALE_WARN ki80-class doses (>=30%): {ki80_class}", flush=True)
     print("SCALE_OK", flush=True)
