@@ -34,3 +34,8 @@ seeds 42134+ n=80 VS how={'clear': 938, 'opp_topout': 12, 'opp_crushed': 10}
 - topout  53.2%  dies-ahead 50.0%  clear  46.8%  t=567s  n=400  winner|kr0|kt0|ka0|ks0|ki0|kc50
 - topout  59.2%  dies-ahead 55.2%  clear  40.8%  t=574s  n=400  winner|kr0|kt0|ka0|ks0|ki0|kc60
 - topout  70.2%  dies-ahead 66.0%  clear  29.8%  t=522s  n=400  winner|kr0|kt0|ka0|ks0|ki0|kc80
+
+## kc40 vs winholes80 n=800 seeds 46134+ — HOLD 67.1%
+- how={'clear': 775, 'opp_topout': 18, 'opp_crushed': 7}
+- wins {'winner|kr0|kt0|ka0|ks0|ki0|kc40': 537, 'winholes80|kr0|kt0|ka0|ks0|ki0|kc0': 263}
+- 537/800=67.1% (A 271/400=67.8%, B 266/400=66.5%). Winner-vs-holes80 was 63.8% n=600 other seeds; clock did not give the race back.

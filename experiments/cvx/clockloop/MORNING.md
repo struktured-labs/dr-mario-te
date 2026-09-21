@@ -40,12 +40,17 @@ went down, not up.
 - Not a P2 brain. Still a self-board clock. dr. lulu’s timed drip is unsolved.
 - Not kc50. Chasing VS% past ~40 overdoses Hartford.
 
+## kc40 vs holes80 n=400 (owed ship gate) — HOLD
+
+Seeds 46134+, 800 games both seats. **537/800 = 67.1%** (A 271/400=67.8%,
+B 266/400=66.5%). how: clear 775, topout 18, crushed 7.
+
+Always-on winner was 63.8% vs holes80 (n=600, different seeds). Clock did
+not give that race back. Not a paired claim vs 63.8%; it is a collapse check,
+and it did not collapse.
+
 ## Next (human)
 
-1. n=400 VS **kc40 vs holes80** (owed ship gate; winner already beats holes80
-   63.8% — clock must not give that back).
-2. If that holds, MEGADOSE k_clock=40 on Mesen, then one RTL constant if it
-   still fits ALMs. Still no Quartus until that A/B.
-3. Do not run vsloop2 gen1. Do not k_hold unless kc40 vs holes80 dies.
-
-Overnight stop condition met. Scheduler should cancel.
+1. MEGADOSE k_clock=40 on Mesen. Then one RTL constant if it still fits ALMs.
+   Still no Quartus until that A/B.
+2. Do not run vsloop2 gen1. Do not chase kc50.

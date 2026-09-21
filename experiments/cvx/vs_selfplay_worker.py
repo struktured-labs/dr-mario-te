@@ -12,7 +12,8 @@ ma, mb, lo, cnt, step, out = (
     int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]), sys.argv[6],
 )
 def _pol(d):
-    return VsPolicy(**{k: d.get(k, 0.0) for k in KNOBS})
+    kw = {k: d.get(k, 0.0) for k in KNOBS}
+    return VsPolicy(trunk=d.get("trunk", "winner"), **kw)
 # each seed played BOTH seats (CRN). cnt is number of seeds, 2 rows each.
 with open(out, "w") as fh:
     for i in range(cnt):
