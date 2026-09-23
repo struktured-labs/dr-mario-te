@@ -13,7 +13,7 @@ import numpy as np
 
 # Trunk is the VS-strong solitaire eval (63.8% vs holes80). Not holes80.
 TRUNK = "winner"
-KNOBS = ("k_race", "k_tempo", "k_atk", "k_safe", "k_time", "k_clock")
+KNOBS = ("k_race", "k_tempo", "k_atk", "k_safe", "k_time", "k_clock", "k_hold")
 # lockstep vs_sim / pressure_rig_time; T_LAT is per-pill constant (no argmax).
 T_LAT, FPR = 0.6, 0.35
 
@@ -74,7 +74,7 @@ def _urgency(ctx):
 
 def choose(col, vir, ca, cb, na, nb, w, fl, ctx,
            k_race=0.0, k_tempo=0.0, k_atk=0.0, k_safe=0.0, k_time=0.0,
-           k_clock=0.0, wt=0, ws=0):
+           k_clock=0.0, k_hold=0.0, wt=0, ws=0):
     import fast_rtl_x as FX
     import root_search as RS
     from fast_sim_x import NCELL, _expand_core
@@ -83,7 +83,7 @@ def choose(col, vir, ca, cb, na, nb, w, fl, ctx,
     ahead = _ahead(ctx.get("own_vleft", 0), ctx.get("opp_vleft", 0))
     opp_threat = min(1.0, float(ctx.get("opp_spawn_h", 0)) / 16.0)
     urgency = _urgency(ctx)
-    live = (k_race or k_tempo or k_atk or k_safe or k_time or k_clock)
+    live = (k_race or k_tempo or k_atk or k_safe or k_time or k_clock or k_hold)
     c1 = np.empty(NCELL, dtype=np.int8)
     v1 = np.empty(NCELL, dtype=np.int8)
     best_val, best_a, best_c1 = None, None, None
@@ -111,6 +111,8 @@ def choose(col, vir, ca, cb, na, nb, w, fl, ctx,
                     val += k_time * (-_fall_rows(col, var, cc)) * urgency
                 if k_clock:
                     val -= k_clock * _dt(col, var, cc)
+                if k_hold:
+                    val -= k_hold * max(0, _maxh(col) - _maxh(c1))
             if best_val is None or val > best_val:
                 best_val, best_a, best_c1 = val, var * 8 + cc, c1.copy()
     return best_a, best_c1
@@ -120,7 +122,7 @@ class VsPolicy:
     """play_vs protocol: object with .decide(...) and name()."""
 
     def __init__(self, k_race=0.0, k_tempo=0.0, k_atk=0.0, k_safe=0.0,
-                 k_time=0.0, k_clock=0.0, trunk=TRUNK, **extra):
+                 k_time=0.0, k_clock=0.0, k_hold=0.0, trunk=TRUNK, **extra):
         if extra:
             raise TypeError(f"unknown VsPolicy kwargs {sorted(extra)}")
         self.k_race = float(k_race)
@@ -129,6 +131,7 @@ class VsPolicy:
         self.k_safe = float(k_safe)
         self.k_time = float(k_time)
         self.k_clock = float(k_clock)
+        self.k_hold = float(k_hold)
         self.trunk = trunk
         import fast_rtl_x as FX
         self.w, self.fl = FX.variant(trunk)
@@ -140,13 +143,13 @@ class VsPolicy:
         k = self.knobs()
         return (f"{self.trunk}|kr{k['k_race']:g}|kt{k['k_tempo']:g}"
                 f"|ka{k['k_atk']:g}|ks{k['k_safe']:g}|ki{k['k_time']:g}"
-                f"|kc{k['k_clock']:g}")
+                f"|kc{k['k_clock']:g}|kh{k['k_hold']:g}")
 
     def decide(self, col, vir, ca, cb, na, nb, ctx):
         a, _ = choose(col, vir, ca, cb, na, nb, self.w, self.fl, ctx,
                       k_race=self.k_race, k_tempo=self.k_tempo,
                       k_atk=self.k_atk, k_safe=self.k_safe, k_time=self.k_time,
-                      k_clock=self.k_clock, wt=0, ws=0)
+                      k_clock=self.k_clock, k_hold=self.k_hold, wt=0, ws=0)
         return a
 
 
