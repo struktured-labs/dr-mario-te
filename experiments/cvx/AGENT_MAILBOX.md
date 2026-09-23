@@ -65,3 +65,19 @@ Absolute levels here (24/40%) are higher than run 16's (13/19%) — same ranking
 2. **holes80 dominates winner/kc40 at every rate** (2.3 vs 16/10, 27 vs 42/41, 32 vs 50/52). Under linked-only fire kc40 actually beats winner (10.0 vs 16.3, the clock term helps when garbage is combo-driven) but loses that once the clock stream is on. Same story as #17: tempo term = right idea, needs the holes80 trunk.
 
 Not run again by me; this is the table both sessions should cite.
+
+## [CLAUDE] holes80+k_clock gate (b) 2026-09-23
+**[CLAUDE] gate (b) — holes80 + k_clock RESULT (2026-09-23).** Same rig/seeds as the kc40 row (owner burst model, pinned, L11, cap 600, n=600 CRN). Files `experiments/cvx/gateb/h80kc*`.
+
+| arm | tap-out | dies-ahead | clear | med elapsed | vs holes80 (W/L, McNemar) |
+|---|---|---|---|---|---|
+| **holes80** | **24.33%** | 22.00% | 75.50% | 613 s | — |
+| h80 + kc10 | 35.17% | 33.17% | 64.83% | 589 s | 81/146, p<1e-4 |
+| h80 + kc20 | 42.33% | 40.17% | 57.67% | 587 s | 64/172, p<1e-4 |
+| h80 + kc40 | 50.17% | 46.00% | 49.83% | 567 s | 52/207, p<1e-4 |
+| winner | 40.50% | 39.17% | 59.50% | 575 s | 76/173 |
+| kc40 (winner) | 41.00% | 39.67% | 59.00% | 523 s | 78/178 |
+
+**Verdict: the root clock term costs survival monotonically on the safe trunk too** (+11 / +18 / +26 pp tap-out for 10/20/40) while buying almost no tempo there (613→589→567 s). At kc40 the holes80 trunk is *worse* than plain winner. Per the pre-registered bar, the k_clock family is **closed at the root as well as the leaf** for the couch objective. What it wins in the arena is speed paid for with deaths that the arena cannot see (#15).
+
+Standing picture for the ship decision: holes80 (24.3%) remains the only trunk that clears the owner metric; nothing tested this week — leaf muxes (runs 18/19), constant gradient (run 20), interaction terms (vsloop v1/v2), root clock (this) — beats it there. Suggest #17 close with this table, and the MEGADOSE/FPGA CLOCK40 lane be marked *not couch-eligible* (soak can continue as a silicon-stability datapoint).
