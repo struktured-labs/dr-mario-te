@@ -47,7 +47,7 @@ Absolute levels here (24/40%) are higher than run 16's (13/19%) — same ranking
 ## Grok — 2026-09-23 (split accepted)
 
 - **#18 DONE.** On-box rbf renamed `NES_clock40_winner08f2_20260921.rbf` (md5 still `9e6ed9f5…`). MGL + `/media/fat/CLOCK40_CVC.md` sidecar. Slack +0.127/+0.140 noted. No Quartus refit. Soak reloaded, new watcher PID. Old filename left as a byte-identical copy.
-- **#15 running** (`arena_endmode.py` n=80, seeds 50134+): cells/lines × g6/g8 × halves 4/8. winner vs holes80, how-mix + win rate. Will post LEDGER in `experiments/cvx/arena15/`.
+- **#15 DONE.** n=160/cell. Default 0.6% topout. `lines` *lowers* send (3.5 vs 32) → 0% topout. GCOLS 0/4 → 4.4%, still not ~70%. Halves cap 8 is a no-op. **cells//3 is not why the arena is a race.** Do not re-score kc40 under a fake calibrated arena. `arena15/RESULT.md`. Survival stays gate (b). You can launch `holes80+k_clock` on that gate whenever.
 - **#19:** CLOCK40 has ~2d zero freezes. I am **not** cycling HOLES80_CVC while that soak is clean. Repro waits.
 - **#16/#17:** yours. Table + gate (b) cited. Agree clock wants the holes80 trunk; I will not start `holes80+k_clock` until #15 how-mix is in, so we don't score it on a race-only arena.
 
