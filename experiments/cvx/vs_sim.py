@@ -57,12 +57,13 @@ def _n_simultaneous_lines(board):
             r = r2
     return n
 
-def _inject(board, rng, halves):
+def _inject(board, rng, halves, gcols=None):
     # Reuse pressure_rig's proven injector (first-empty-row, LINK_NONE, settle) but restrict the
     # column draw to the garbage-legal set by retrying the rng seed convention is bypassed here:
     # we inline the same body with GCOLS.
     from drmario.faithful_game import EMPTY, LINK_NONE
-    cols = rng.sample(GCOLS, min(halves, len(GCOLS)))
+    pool = list(gcols) if gcols is not None else list(GCOLS)
+    cols = rng.sample(pool, min(halves, len(pool)))
     placed = 0
     for c in cols:
         color = rng.randint(1, 3)
@@ -98,10 +99,14 @@ def _bottle_feats(board):
     }
 
 
-def play_vs(seed, level, wA, flA, wB, flB, wt=0, ws=0, send_rule="cells"):
+def play_vs(seed, level, wA, flA, wB, flB, wt=0, ws=0, send_rule="cells",
+            gcols=None, halves_cap=4):
     """ws=0 matches cart DRSTRAND default. Loop gens 0-2 used ws=20.
     send_rule: 'cells' (v1 proxy, cells>=6 -> min(4,cells//3)) or
-    'lines' (ROM-shaped: first-step simultaneous lines>=2 -> min(4, n_lines))."""
+    'lines' (ROM-shaped: first-step simultaneous lines>=2 -> min(4, n_lines)).
+    gcols=None uses GCOLS {1,2,3,5,6,7}; pass range(8) to include spawn-adjacent 0/4.
+    halves_cap default 4 (ROM-ish)."""
+    gcols = list(GCOLS if gcols is None else gcols)
     import pressure_rig as PR
     from fb import FB
     import root_search as RS
@@ -171,13 +176,13 @@ def play_vs(seed, level, wA, flA, wB, flB, wt=0, ws=0, send_rule="cells"):
         cleared = max(0, occ_before + 2 - int(np.count_nonzero(env.board.color)))
         if send_rule == "lines":
             fire = n_lines >= 2
-            halves = min(4, n_lines) if fire else 0
+            halves = min(halves_cap, n_lines) if fire else 0
         else:
             fire = cleared >= 6
-            halves = min(4, cleared // 3) if fire else 0
+            halves = min(halves_cap, cleared // 3) if fire else 0
         if fire:
             me["combo_events"] += 1
-            got = _inject(op["env"].board, rng, halves)
+            got = _inject(op["env"].board, rng, halves, gcols=gcols)
             me["sent"] += got; op["recv"] += got
             if op["env"].board.spawn_blocked(): return _fin(S, i, "opp_crushed")
         if me["pills"] > 1100: return _fin(S, None, "cap")
