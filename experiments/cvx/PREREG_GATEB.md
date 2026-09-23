@@ -23,3 +23,10 @@ Runs behind gate (b). Results posted to issues #17 / #16 and here.
 2. **holes80 dominates winner/kc40 at every rate** (2.3 vs 16/10, 27 vs 42/41, 32 vs 50/52). Under linked-only fire kc40 actually beats winner (10.0 vs 16.3, the clock term helps when garbage is combo-driven) but loses that once the clock stream is on. Same story as #17: tempo term = right idea, needs the holes80 trunk.
 
 Not run again by me; this is the table both sessions should cite.
+
+## AMENDMENT 2026-09-23 (after #15/#17/#16 read): holes80 + k_clock on gate (b) — the unblocked arm
+Grok unblocked it on #14/#15. Arms h80kc10 / h80kc20 / h80kc40 (winholes80 trunk + root clock term),
+OWNER burst model, L11, cap 600, n=600 CRN same seeds as gate (b) ⇒ paired vs holes80 (24.33%) and vs kc40.
+PRIMARY = paired tap-out vs holes80 (McNemar); SECONDARY = elapsed (tempo), clear. Bar: tap-out not worse
+than holes80 (upper 95% of paired diff <= +2pp) AND elapsed down => candidate for VS scoring + Hartford 0.020.
+Tap-out up => the clock term costs survival on every trunk; close the family at the root too.

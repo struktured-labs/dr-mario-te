@@ -63,7 +63,9 @@ def play(seed, pol, model, trate=0.0, level=11, maxpills=600):
             "dies_ahead": int(res == "topout" and v_at_topout is not None and v_at_topout <= 12), "how": res}
 
 ARMS = {"winner": dict(trunk="winner", k_clock=0.0), "kc40": dict(trunk="winner", k_clock=40.0),
-        "holes80": dict(trunk="winholes80", k_clock=0.0)}
+        "holes80": dict(trunk="winholes80", k_clock=0.0),
+        "h80kc10": dict(trunk="winholes80", k_clock=10.0), "h80kc20": dict(trunk="winholes80", k_clock=20.0),
+        "h80kc40": dict(trunk="winholes80", k_clock=40.0)}
 
 if __name__ == "__main__":
     arm, model_name, trate, lo, cnt, step, out = sys.argv[1], sys.argv[2], float(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]), sys.argv[7]
