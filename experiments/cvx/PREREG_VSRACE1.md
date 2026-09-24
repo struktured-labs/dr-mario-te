@@ -26,3 +26,16 @@ chain reward — the VS-native candidate), h80chain0 (same fixpoint decider, no 
 the chain term). Same lam grid, seeds, n=300, scoring. Smoke: chain arms send ~2-3x the tiles.
 PRIMARY for 1b: h80chain180 vs holes80 win rate vs a 177-s human at lam=3.3, delta=2 (paired);
 SECONDARY: h80chain180 vs h80chain0 (chain term alone), loss_kill counts (does attacking cost survival?).
+
+## DELTA FIT (2026-09-24, from tape; recorded as SECONDARY — primary stays delta=2.0 as registered)
+Hartford Top-8, 4fps garbage arrivals x 1fps virus counters: after a hit, experts clear 1.75 viruses
+in 20 s vs 2.52 in matched same-side same-stage windows (n=181 hits, 2.29 tiles/hit) =>
+**delta = 2.65 s per tile, 95% bootstrap [0.95, 4.13]** (`tmp/tourney/delta_fit.json`). Observational
+(matched on side + virus stage); pre-registered delta=2.0 lies inside the CI. Report both.
+
+## HOLDOUT (registered 2026-09-24 ~00:45Z, before run 1/1b full results were read; only a partial
+holes80 table had been seen): replication on Hetzner rbm-train-2 (exactness gate PASSED: identical
+md5 over full game timelines for holes80 + h80chain180, seed 36734, local vs remote).
+All 7 arms, lam=3.3 only, seeds 40134.. step 2, n=200 (DECLARED REUSE, disjoint from run 1's
+36734-37332). Same scoring. PURPOSE: any run-1/1b ranking claim at the primary cell must replicate
+here in sign; a candidate is only "better than holes80" if its paired CI excludes 0 in BOTH blocks.
