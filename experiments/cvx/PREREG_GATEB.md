@@ -30,3 +30,12 @@ OWNER burst model, L11, cap 600, n=600 CRN same seeds as gate (b) ⇒ paired vs 
 PRIMARY = paired tap-out vs holes80 (McNemar); SECONDARY = elapsed (tempo), clear. Bar: tap-out not worse
 than holes80 (upper 95% of paired diff <= +2pp) AND elapsed down => candidate for VS scoring + Hartford 0.020.
 Tap-out up => the clock term costs survival on every trunk; close the family at the root too.
+
+## AMENDMENT 2026-09-24 (Claude solo): gate (b) for the Combo Stomper lineage — WHY IT WAS SHELVED
+VS-RACE run 1b (before this gate): chain180 84.3% / h80chain180 70.7% / holes80 43.0% vs a 177-s human
+at lam 6, delta 2.65. The VS-race ghost kills rarely (Poisson volleys), so SURVIVAL must be read here.
+Arms chain180, h80chain180, h80chain0 (vs_race._decider board path), OWNER burst model, L11, cap 600,
+n=600, same seeds 36734.. step 2 => paired vs holes80 24.33% / winner 40.50%.
+Bar (owner's #1 metric): a Stomper-lineage build is couch-eligible only if its tap-out is not worse than
+holes80's (paired McNemar, upper 95% of diff <= +2pp). Worse => the VS-race gain is bought with
+tap-outs and the next build must carry the chain reward WITHOUT the survival cost.

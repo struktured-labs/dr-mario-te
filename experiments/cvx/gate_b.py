@@ -11,7 +11,7 @@ import import_pin; import_pin.pin()
 import clock_play as CP
 from vs_choose import VsPolicy
 
-def play(seed, pol, model, trate=0.0, level=11, maxpills=600):
+def play(seed, pol, model, trate=0.0, level=11, maxpills=600, choose=None):
     import pressure_rig_time as PRT
     from bursty_model import inject_bursty_garbage
     from drmario.faithful_env import FaithfulDrMarioEnv
@@ -26,7 +26,8 @@ def play(seed, pol, model, trate=0.0, level=11, maxpills=600):
         if env.board.virus_count() == 0: res = "clear"; break
         fb = FB.from_board(env.board); col, vir = RS.board_flat_from_fb(fb)
         ctx["own_vleft"] = env.board.virus_count(); ctx["own_t"] = elapsed
-        a = pol.decide(col, vir, int(env.cur.a), int(env.cur.b), int(env.nxt.a), int(env.nxt.b), ctx)
+        a = (choose(env, col, vir, ctx) if choose is not None else
+             pol.decide(col, vir, int(env.cur.a), int(env.cur.b), int(env.nxt.a), int(env.nxt.b), ctx))
         if a is None: break
         var, cc = a // 8, a % 8
         cols_involved = [cc] if var in (2, 3) else [cc, min(cc + 1, 7)]
@@ -73,8 +74,12 @@ if __name__ == "__main__":
         import bursty_model as BM; model = BM.fit_struktured_20260804()
     else:
         from nutmeg_model import NutmegModel; model = NutmegModel()
-    pol = VsPolicy(**ARMS[arm])
+    if arm in ARMS:
+        pol, choose = VsPolicy(**ARMS[arm]), None
+    else:                                   # Combo Stomper lineage: board decider from vs_race
+        import vs_race
+        pol, choose = None, vs_race._decider(arm)
     with open(out, "w") as fh:
         for i in range(cnt):
-            r = play(lo + i * step, pol, model, trate=trate)
+            r = play(lo + i * step, pol, model, trate=trate, choose=choose)
             r.update({"arm": arm, "model": model_name, "trate": trate}); fh.write(json.dumps(r) + "\n"); fh.flush()
