@@ -7,13 +7,14 @@
     "blackmage": "idle (grok offline)",
     "hetzner rbm-train-2": "idle; exactness-gated mirror (vs_race/gate_b/vs_race_adaptive)"
   },
-  "quartus": "claude (solo) \u2014 only with owner ask",
+  "quartus": "claude: COMPILING childproof-chain540 in NES_MiSTer-winner (fork temporarily at 08f2343 + fw 6d13e6a1 + Childproof qsf; auto-restores to 18cf064/f78f1e93 on exit). Started 2026-09-24T22:57Z. DO NOT touch the fork.",
   "claude_running": [
-    "bluemage CHILDPROOF_CVC soak (known #131-class wedge, watcher reloads)"
+    "Quartus childproof-chain540 (~25 min)",
+    "bluemage CvC soak"
   ],
   "grok_running": [],
   "updated": {
-    "claude": "2026-09-24T12:00Z",
+    "claude": "2026-09-24T23:00Z",
     "grok": "offline since 2026-09-23T16:40Z; owner: claude takes over solo"
   }
 }
