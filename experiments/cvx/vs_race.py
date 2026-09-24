@@ -57,6 +57,11 @@ ARMS = {
     "chain180":    dict(trunk="winner", chain=180),
     "h80chain180": dict(trunk="winholes80", chain=180),
     "h80chain0":   dict(trunk="winholes80", chain=0),
+    # FIRMWARE-FAITHFUL (θ400 recipe f78f1e93: DRCHAIN=180 DRSTRAND=20, shipped in BOTH the
+    # Childproof and the TE_HOLES80 cores). Tucks/veto not modelled. Differ ONLY in the leaf's
+    # holes weight: fw_winner ≈ Childproof's brain, fw_holes80 ≈ the TE_HOLES80 brain.
+    "fw_winner":   dict(trunk="winner", chain=180, strand=20),
+    "fw_holes80":  dict(trunk="winholes80", chain=180, strand=20),
 }
 
 _CHAIN_READY = False
@@ -72,7 +77,12 @@ def _decider(arm):
         if not _CHAIN_READY:
             C.warmup_chain(topk2=8); _CHAIN_READY = True
         w, fl = FX.variant(spec["trunk"])
-        dec = C.ChainRewardD3Decider(w, fl, topk2=8, maxpass=0, w_chain=int(spec["chain"]))
+        if "strand" in spec:
+            import cascade_stranded_x as S
+            dec = S.StrandedChainD3Decider(w, fl, topk2=8, maxpass=0,
+                                           w_chain=int(spec["chain"]), ws=int(spec["strand"]))
+        else:
+            dec = C.ChainRewardD3Decider(w, fl, topk2=8, maxpass=0, w_chain=int(spec["chain"]))
         return lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt)
     pol = VsPolicy(**spec)
     return lambda env, col, vir, ctx: pol.decide(col, vir, int(env.cur.a), int(env.cur.b),
