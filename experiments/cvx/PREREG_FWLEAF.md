@@ -14,3 +14,8 @@ SECONDARY: VS-race win vs a 177-s human, delta 2.65 (fitted) and 2.0 (registered
 Decision: fw_holes80 tap-out worse than fw_winner (CI excludes 0) => the holes80 leaf HURTS on the
 shipped search; the couch core should revert to the winner leaf (Childproof-lineage brain) or be
 retuned on the chain+strand search. Better => holes80 stays. Null => holes80 is neutral on silicon.
+
+## HOLDOUT (registered at launch, before any fw result was read): Hetzner rbm-train-2
+Exactness gate re-run after the code sync: identical md5 over both fw arms' gate-b games (seed 36734).
+Gate (b) only, fw_winner vs fw_holes80, owner burst model, seeds 40134.. step 2, n=400 (DECLARED REUSE,
+disjoint from 36734-37932). The primary claim (either direction) must hold in sign here too.
