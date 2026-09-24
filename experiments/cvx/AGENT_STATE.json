@@ -1,19 +1,20 @@
 {
   "_convention": "each agent edits only its own keys; commit subject starts with [STATE]; results still go to issue #14 as [GROK]/[CLAUDE] comments",
   "boxes": {
-    "bluemage": "claude: CHILDPROOF_CVC soak (rbf cd1fa389 theta400dblcanon_veto2fixa + CvC tuckguard cart), loaded 02:04:05Z 9/24, watcher freeze_watch_cp.sh. h80 freeze repro CONFIRMED (#19).",
-    "rivalmage": "owner: TE_HOLES80.mgl (holes80 seed-9 + TE study cart) \u2014 nobody touches without owner",
-    "redmage-cpu": "free",
+    "bluemage": "claude: CHILDPROOF_CVC soak + watcher (freeze repro known; 10-s repro via PREFREEZE save-state)",
+    "rivalmage": "owner: AA_DRMARIO_WINNER.mgl STAGED (winner leaf cd1fa389 + TE study 6c3c3168), not loaded (GBC was running)",
+    "redmage-cpu": "claude: chain-dose knee screen (fw270/360/540) ~25 min",
     "blackmage": "idle (grok offline)",
     "hetzner rbm-train-2": "idle (vsrace holdout + fwleaf holdout DONE); exactness-gated mirror of vs_race/gate_b in place"
   },
   "quartus": "claude (solo) \u2014 only with owner ask",
   "claude_running": [
-    "CHILDPROOF_CVC freeze soak (bluemage)"
+    "doseknee screen",
+    "bluemage CvC soak"
   ],
   "grok_running": [],
   "updated": {
-    "claude": "2026-09-24T02:06Z",
+    "claude": "2026-09-24T10:45Z",
     "grok": "offline since 2026-09-23T16:40Z; owner: claude takes over solo"
   }
 }

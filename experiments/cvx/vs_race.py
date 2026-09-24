@@ -62,6 +62,10 @@ ARMS = {
     # holes weight: fw_winner ≈ Childproof's brain, fw_holes80 ≈ the TE_HOLES80 brain.
     "fw_winner":   dict(trunk="winner", chain=180, strand=20),
     "fw_holes80":  dict(trunk="winholes80", chain=180, strand=20),
+    # chain-dose knee on the firmware brain (winner leaf + strand20); fw_winner is the 180 point
+    "fw270":       dict(trunk="winner", chain=270, strand=20),
+    "fw360":       dict(trunk="winner", chain=360, strand=20),
+    "fw540":       dict(trunk="winner", chain=540, strand=20),
 }
 
 _CHAIN_READY = False
