@@ -6,7 +6,54 @@
 > playing as a legitimate second player on console-accurate hardware.
 >
 > Maintained by the project's AI coordinator; updated at every milestone.
-> Last update: **2026-07-19**.
+> Last full pass: **2026-07-19**. Strength-program status revised **2026-09-24**
+> from `h16-rollout-gated` tip `32ab3f30`. Numbers and file paths below are on that
+> branch. This file does not merge that branch.
+
+## Strength status — 2026-09-24
+
+Detail, tables, and per-claim citations are in the README section **Current champion
+status — 2026-09-24**. Short form:
+
+- **Standing configuration:** winner leaf (`R_HOLES=20`) + θ400 firmware
+  (`DRCHAIN=180` + `DRSTRAND=20`). Recommended for the couch core in
+  `experiments/cvx/RESULT_FWLEAF.md` (`e675fbb7`). At the branch tip the matching
+  couch image (`AA_DRMARIO_WINNER.mgl`) was staged and not loaded
+  (`experiments/cvx/AGENT_STATE.json`, `32ab3f30`).
+- **`k_clock` closed.** Race-arena holds at 60.0% vs the winner trunk (`5c9e0179`)
+  and 67.1% vs holes80 (`3395dce4`). Then MEGADOSE **FAIL** (−12.5 pp, 6/8 vs 7/8,
+  n=8; `e5c4154b`) and gate (b) shows no survival gain on the winner trunk (41.00%
+  vs 40.50% tap-out) and monotonic harm on the holes80 trunk (35.17 / 42.33 /
+  50.17% vs 24.33%; `experiments/cvx/RESULT_GATEB.md`).
+- **holes80 leaf closed on the shipped chain brain.** Pooled gate (b) tap-out
+  +2.6 pp worse than the winner leaf (n=1000, p≈0.007) and −10.7 pp in VS-race
+  (`RESULT_FWLEAF.md`). Earlier no-chain holes80 gains, including the L11 transfer
+  (`RESULT_HOLES_L11.md`), are not the ship ranking.
+- **CvC freeze classed as the #131 soak-cart artifact** (issue #19;
+  `AGENT_STATE.json` at `32ab3f30`). Couch TE cart `6c3c3168` (`DRHUMAN`) is the
+  cart the issue thread says is not exposed. No `RESULT_*.md` carries this writeup.
+- **`DRCHAIN=540` is the pending firmware candidate.** VS-race +7.3 pp on the
+  screen (n=300) and +8.5 pp on the holdout (n=200); gate (b) tap-out not worse
+  (`experiments/cvx/RESULT_DOSEKNEE.md`, `9018627d`). Awaiting an owner-approved
+  Quartus build and hardware soak. Not built in this record.
+- **Pocket θ400 runtime A/B still not run.** August fit proof stands (README,
+  `5ddc320d`). `pocket-tuck-theta400` tip is `4b542f10` (2026-08-16).
+
+### Open decisions / next hardware steps
+
+1. Owner approves or declines Quartus of `DRCHAIN=540` on the Childproof/winner
+   recipe, then soak and couch A/B against `DRCHAIN=180`.
+2. Boot the already-staged `AA_DRMARIO_WINNER.mgl` for the couch check the
+   firmware-leaf result still lists as pending.
+3. Run the Pocket θ400 runtime and value A/B, or leave it explicitly deferred.
+   September did not advance it.
+4. Do not reopen `k_clock`, the holes80 leaf on the θ400+chain brain, arena win
+   rate as the ship metric, or the CvC freeze as a core defect, without a new
+   pre-registration.
+
+Items under **Active**, **Next up**, and **Programs** were last edited 2026-07-19.
+Where they disagree with this section, this section wins. They were not re-audited
+against the September tree.
 
 ## Platform targets (both first-class)
 
@@ -47,8 +94,11 @@
 
 ## Active (in flight)
 
-- **TE v8**: unify v6 study features + v7 title branding (they collide on two
-  byte runs; relocation in progress) — supersedes both on romhacking.net.
+> Strength-program status as of 2026-09-24 is the section above, not this July list.
+
+- **TE v8.2**: shipped. See `release/RELEASE_NOTES_V8_2.md`. v9 remains a release
+  candidate (`release/RELEASE_NOTES_V9.md`), unchanged by the September strength
+  campaign.
 - **Driver rev 2**: confidence-gated slam (commit when the search's answer is
   stable, not when it's exhaustively confirmed) + speed-aware gates — closes the
   human tempo gap on obvious placements and the late-game search-vs-gravity
@@ -100,13 +150,20 @@
 
 ## Events
 
-- **Retro World Expo, Hartford CT — Sept 12–13, 2026**: Struktured Labs studio
+- **Retro World Expo, Hartford CT — Sept 12–13, 2026** (date has passed): studio
   showcase (this project + Quintra + Penta Dragon DX + Cowardly Irregular).
-  Human-vs-AI station (pending BliSSTer), demo-station capture rig doubles as
-  clean-footage collector. Same venue hosted the DrMC 2025 Connecticut Regional.
+  Couch ledgers from that weekend are on `h16-rollout-gated` (`85aec35d`). They
+  predate the 2026-09-23 firmware-leaf reversal, so they are not the standing
+  strength ranking. Same venue hosted the DrMC 2025 Connecticut Regional.
 
 ## Parked
 
 - Dual-copro parallel search (multicore) — until MiSTer controllers (BliSSTer).
 - Cascade-aware node-resolve — measured negative (chasing combos = topouts).
 - Depth-4 at current eval weights — measured negative (horizon effect).
+- **Closed in September 2026** (evidence on `h16-rollout-gated`; see the README
+  results index): `k_clock` after the race-arena holds; holes80 leaf on the
+  θ400+chain brain; static leaf gradient (11/11 axes); time-priced leaf shapes;
+  expert shape muxes; buried96; spawn-lane `winsc2`; convex height. Opponent-aware
+  chain dosing was null (`RESULT_ADAPTIVE1.md`). `DRCHAIN=540` is the dose that
+  stayed open, and it is waiting on hardware rather than on another offline arm.
