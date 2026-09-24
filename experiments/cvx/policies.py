@@ -1,8 +1,10 @@
 """Adaptive (opponent-aware) policies for the VS arena: a policy is a callable(ctx)->(w,fl,swapped)."""
 import fast_rtl_x as FX
 
-def racer(ahead_variant="winholes80", behind_variant="wincross40", margin=3):
-    """Race-aware mode switch: play safe when ahead, attack (combo credit) when behind.
+def racer(ahead_variant="winholes80", behind_variant="winner", margin=3):
+    """Race-aware mode switch: play safe (holes80) when ahead, race (winner) when behind.
+    Default behind=winner is CART-LEGAL (only R_HOLES 80→20). The old default
+    wincross40 flipped TWO registers and is not in LeafEval.sv.
     ctx deficit = own_vleft - opp_vleft (positive = losing the race)."""
     wa, fa = FX.variant(ahead_variant); wb, fb = FX.variant(behind_variant)
     state = {"last": None}

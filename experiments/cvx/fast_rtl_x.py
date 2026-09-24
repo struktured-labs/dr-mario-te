@@ -198,6 +198,14 @@ def variant(name):
         w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
         w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
         w[R_HOLES] = 80.0
+    elif name == "winh80cross40":
+        # ONE-CHANGE attack style: holes80 + R_CROSS=40, holes HELD at 80.
+        # wincross40 is winner+cross with holes=20; switching holes80↔wincross40
+        # flips TWO registers. This name is the cart-shaped attack mux.
+        w[R_VRDY] = 8.0; w[R_BURIED] = 48.0; w[R_RDYEXT] = 8.0
+        w[R_SETUP] = 32.0; w[R_MATCHED] = 48.0
+        w[R_HOLES] = 80.0
+        w[R_CROSS] = 40.0
     elif name == "winshape":
         # RUN 11 COMBINED POINT, built by the PRE-REGISTERED step rule in PREREG_SHAPE.md,
         # not by picking a max.  Two of five axes passed d > 1.0*SE:

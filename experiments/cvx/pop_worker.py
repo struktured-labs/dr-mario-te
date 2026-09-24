@@ -1,15 +1,32 @@
-import sys, json, importlib
-H16="/home/struktured/projects/dr-mario-h16-wt/experiments/h16"; CVX="/home/struktured/projects/dr-mario-h16-wt/experiments/cvx"; E47="/home/struktured/projects/dr-mario-qa-wt/experiments/eval47"
-sys.path.insert(0,H16); import h16_arm
-sys.path.insert(0,CVX); sys.path.insert(1,E47)
-for m in ("fast_rtl_x","pressure_rig"): sys.modules.pop(m,None)
-FX=importlib.import_module("fast_rtl_x"); PR=importlib.import_module("pressure_rig"); assert FX.__file__.startswith(CVX)
+"""VS pairing worker. Pins the import graph, then plays cnt games.
+
+Env:
+  VS_SEND_RULE=cells|lines   (default cells)
+  VS_WS=0                    (default 0 = cart DRSTRAND; loop gens 0-2 used 20)
+"""
+import sys, json, os
+sys.path.insert(0, "/home/struktured/projects/dr-mario-h16-wt/experiments/cvx")
+import import_pin
+loaded = import_pin.pin()
+import pressure_rig as PR
 import vs_sim, population as POP
-PR._init(11,0,20)
-ma,mb,lo,cnt,step,out=json.loads(sys.argv[1]),json.loads(sys.argv[2]),int(sys.argv[3]),int(sys.argv[4]),int(sys.argv[5]),sys.argv[6]
-with open(out,"w") as fh:
+WS = int(os.environ.get("VS_WS", "0"))
+SEND = os.environ.get("VS_SEND_RULE", "cells")
+assert SEND in ("cells", "lines")
+PR._init(11, 0, WS)
+ma, mb, lo, cnt, step, out = (
+    json.loads(sys.argv[1]), json.loads(sys.argv[2]),
+    int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]), sys.argv[6],
+)
+with open(out, "w") as fh:
     for i in range(cnt):
-        s=lo+i*step
-        wA,fA=POP.make_policy(ma); wB,fB=POP.make_policy(mb)
-        r=vs_sim.play_vs(s,11,wA,fA,wB,fB)
-        fh.write(json.dumps({"seed":s,"A":POP.name(ma),"B":POP.name(mb),"winner":r["winner"],"how":r["how"],"sent":r["sent"]})+"\n"); fh.flush()
+        s = lo + i * step
+        wA, fA = POP.make_policy(ma)
+        wB, fB = POP.make_policy(mb)
+        r = vs_sim.play_vs(s, 11, wA, fA, wB, fB, wt=0, ws=WS, send_rule=SEND)
+        fh.write(json.dumps({
+            "seed": s, "A": POP.name(ma), "B": POP.name(mb),
+            "winner": r["winner"], "how": r["how"], "sent": r["sent"],
+            "ws": WS, "send_rule": SEND,
+        }) + "\n")
+        fh.flush()

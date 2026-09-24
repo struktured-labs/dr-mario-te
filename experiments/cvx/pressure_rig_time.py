@@ -257,7 +257,9 @@ def play(seed):
                 import random as _random
                 _trng = _random.Random(seed * 1000 + env.pills_placed + 777)
                 if _trng.random() < TRATE * dt:
-                    landed += _inject_garbage(env.board, seed, env.pills_placed + 500, k=2)
+                    _x=_trng.random()   # Hartford volley-size dist (nutmeg_fit): 2:0.73 3:0.17 4:0.05 8:0.04, tail->2
+                    _k = 2 if _x<0.73 else (3 if _x<0.90 else (4 if _x<0.95 else (8 if _x>=0.96 else 2)))
+                    landed += _inject_garbage(env.board, seed, env.pills_placed + 500, k=_k)
             garbage_injected += landed
             if landed:
                 last_garbage_landed_pill = env.pills_placed

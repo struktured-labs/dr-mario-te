@@ -22,6 +22,8 @@ def name(m): return f"{m['base']}|{m['attack']}|m{m['margin']}|k{m['kill']}"
 
 def make_policy(m):
     wa, fa = FX.variant(m["base"]); wb, fb = FX.variant(m["attack"])
+    # Both triggers off => FIXED base style. The attack field is unused.
+    # So winner|wincross40|mNone|kNone == winner|winner|mNone|kNone.
     if m["margin"] is None and m["kill"] is None:
         return (wa, fa)
     state = {"last": None}
