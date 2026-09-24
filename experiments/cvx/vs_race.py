@@ -51,7 +51,32 @@ ARMS = {
     "winner":  dict(trunk="winner", k_clock=0.0),
     "kc40":    dict(trunk="winner", k_clock=40.0),
     "h80kc20": dict(trunk="winholes80", k_clock=20.0),
+    # Combo Stomper lineage (h2h_vs.py): fixpoint cascade physics + chain-depth reward
+    # `imm += w_chain*(chain-1)`. chain0 = the same fixpoint decider with no reward (lnkfix),
+    # i.e. the internal baseline that isolates the chain term.
+    "chain180":    dict(trunk="winner", chain=180),
+    "h80chain180": dict(trunk="winholes80", chain=180),
+    "h80chain0":   dict(trunk="winholes80", chain=0),
 }
+
+_CHAIN_READY = False
+
+
+def _decider(arm):
+    """Returns choose(env, col, vir, ctx) -> action for either decider family."""
+    global _CHAIN_READY
+    spec = ARMS[arm]
+    if "chain" in spec:
+        import fast_rtl_x as FX
+        import cascade_chain_x as C
+        if not _CHAIN_READY:
+            C.warmup_chain(topk2=8); _CHAIN_READY = True
+        w, fl = FX.variant(spec["trunk"])
+        dec = C.ChainRewardD3Decider(w, fl, topk2=8, maxpass=0, w_chain=int(spec["chain"]))
+        return lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt)
+    pol = VsPolicy(**spec)
+    return lambda env, col, vir, ctx: pol.decide(col, vir, int(env.cur.a), int(env.cur.b),
+                                                 int(env.nxt.a), int(env.nxt.b), ctx)
 
 
 def _volleys(seed, lam):
@@ -78,7 +103,7 @@ def play(seed, arm, lam, level=11, maxpills=600):
     from nes_pills import NesPillSource
     from fb import FB
     import root_search as RS
-    pol = VsPolicy(**ARMS[arm])
+    choose = _decider(arm)
     env = FaithfulDrMarioEnv(level=level, seed=seed, max_pills=maxpills); env.reset()
     NesPillSource(seed=seed).attach(env); env.cur = env._rand_pill(); env.nxt = env._rand_pill()
     vq = _volleys(seed, lam); vi = 0
@@ -89,7 +114,7 @@ def play(seed, arm, lam, level=11, maxpills=600):
     for _ in range(maxpills):
         fb = FB.from_board(env.board); col, vir = RS.board_flat_from_fb(fb)
         ctx["own_vleft"] = env.board.virus_count(); ctx["own_t"] = t
-        a = pol.decide(col, vir, int(env.cur.a), int(env.cur.b), int(env.nxt.a), int(env.nxt.b), ctx)
+        a = choose(env, col, vir, ctx)
         if a is None:
             how = "nomove"; break
         var, cc = a // 8, a % 8

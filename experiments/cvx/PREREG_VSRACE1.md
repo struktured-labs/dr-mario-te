@@ -16,3 +16,13 @@ loss_cap counts; break-even human pace per arm (M where win rate = 50%); sensiti
 {0,1,2,3} and sigma {0.10,0.25}. Scoring per spec: survive-but-slower and cap are LOSSES.
 This is a MEASUREMENT of the existing builds against a human-shaped racer — the instrument the program
 has lacked since 2026-08-21 — not a candidate search.
+
+## AMENDMENT 1b (registered 2026-09-24 before any run-1 result was read): Combo Stomper arms
+`vs_race.py` gained a board-decider path for the Stomper lineage (h2h_vs.py `chain<N>` arms:
+`cascade_chain_x.ChainRewardD3Decider`, fixpoint cascade physics, `imm += w_chain*(chain-1)`).
+The edit leaves the VsPolicy path bit-identical (same decide call), so in-flight run-1 workers are
+unaffected. Arms: chain180 (the shipped Stomper, winner trunk), h80chain180 (holes80 trunk + Stomper
+chain reward — the VS-native candidate), h80chain0 (same fixpoint decider, no chain reward — isolates
+the chain term). Same lam grid, seeds, n=300, scoring. Smoke: chain arms send ~2-3x the tiles.
+PRIMARY for 1b: h80chain180 vs holes80 win rate vs a 177-s human at lam=3.3, delta=2 (paired);
+SECONDARY: h80chain180 vs h80chain0 (chain term alone), loss_kill counts (does attacking cost survival?).
