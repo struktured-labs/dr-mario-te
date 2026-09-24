@@ -1,4 +1,4 @@
-"""vs_sim — offline TWO-BOARD Dr. Mario VS simulator (the self-play arena).
+"""vs_sim — offline TWO-BOARD Dr. Mario VS simulator (the self-play RACE arena).
 
 Event-driven race on the travel-time clock (dt = 0.6s + 0.35s/row of fall): whichever side's
 placement completes first acts; combos transfer garbage to the OTHER board per the extracted ROM
@@ -8,6 +8,10 @@ Line count is approximated from cleared CELLS (halves = min(4, cells//3), sent w
 refine against the disassembly before any ship-adjacent claim.
 Both sides draw the same pill stream (same seed -> same viruses + same sequence, NES VS convention).
 Win = clear all viruses; loss = spawn blocked; cap = tie on remaining viruses.
+
+This race ends CLEAR about 97-99% of the time (arena15/RESULT.md: send-rule and column
+knobs never got the end-mix near the Hartford tape). Do not rank a couch candidate by
+`play_vs` win rate. Tap-outs under human garbage are `survival_arena.py`.
 """
 import numpy as np, random
 
