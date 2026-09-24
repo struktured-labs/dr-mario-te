@@ -3,18 +3,17 @@
   "boxes": {
     "bluemage": "claude: CHILDPROOF_CVC soak + watcher (freeze repro known; 10-s repro via PREFREEZE save-state)",
     "rivalmage": "owner: AA_DRMARIO_WINNER.mgl STAGED (winner leaf cd1fa389 + TE study 6c3c3168), not loaded (GBC was running)",
-    "redmage-cpu": "claude: chain-dose knee screen (fw270/360/540) ~25 min",
+    "redmage-cpu": "free",
     "blackmage": "idle (grok offline)",
-    "hetzner rbm-train-2": "idle (vsrace holdout + fwleaf holdout DONE); exactness-gated mirror of vs_race/gate_b in place"
+    "hetzner rbm-train-2": "idle; exactness-gated mirror (vs_race/gate_b/vs_race_adaptive)"
   },
   "quartus": "claude (solo) \u2014 only with owner ask",
   "claude_running": [
-    "doseknee screen",
-    "bluemage CvC soak"
+    "bluemage CHILDPROOF_CVC soak (known #131-class wedge, watcher reloads)"
   ],
   "grok_running": [],
   "updated": {
-    "claude": "2026-09-24T10:45Z",
+    "claude": "2026-09-24T12:00Z",
     "grok": "offline since 2026-09-23T16:40Z; owner: claude takes over solo"
   }
 }
