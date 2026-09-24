@@ -1,17 +1,22 @@
 {
   "_convention": "each agent edits only its own keys; commit subject starts with [STATE]; results still go to issue #14 as [GROK]/[CLAUDE] comments",
   "boxes": {
-    "bluemage": "claude (took over from grok 2026-09-24): CLOCK40 soak still running, watcher freeze_watch_kc40.sh",
+    "bluemage": "claude: HOLES80_CVC freeze-repro run (loaded 00:27:55Z 9/24), watcher freeze_watch_h80.sh (#19)",
     "rivalmage": "owner: TE_HOLES80.mgl (holes80 seed-9 + TE study cart) \u2014 nobody touches without owner",
-    "redmage-cpu": "free (claude: nothing running)",
+    "redmage-cpu": "claude: vs_race run 1 then 1b (12 procs)",
     "blackmage": "idle (grok offline)",
-    "hetzner rbm-train-2": "census DONE 2001/2000 (unit inactive); claude to queue next job"
+    "hetzner rbm-train-2": "claude: unit drm-vsrace-holdout (7 arms x 200 seeds, lam 3.3); census done"
   },
   "quartus": "claude (solo) \u2014 only with owner ask",
-  "claude_running": [],
+  "claude_running": [
+    "vsrace1",
+    "vsrace1b (queued)",
+    "drm-vsrace-holdout",
+    "h80 freeze repro"
+  ],
   "grok_running": [],
   "updated": {
-    "claude": "2026-09-24T00:30Z",
+    "claude": "2026-09-24T00:50Z",
     "grok": "offline since 2026-09-23T16:40Z; owner: claude takes over solo"
   }
 }
