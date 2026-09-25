@@ -75,6 +75,9 @@ ARMS = {
     "sb_virus":     dict(trunk="winner", chain=540, strand=20, dig=dict(S=8, H=11, dig_nv=400)),
     "sb_all":       dict(trunk="winner", chain=540, strand=20, dig=dict(S=8, H=11, dig_chain=0, dig_sp=300, dig_hs=10, dig_nv=400)),
     "sb_all_early": dict(trunk="winner", chain=540, strand=20, dig=dict(S=5, H=10, dig_chain=0, dig_sp=300, dig_hs=10, dig_nv=400)),
+    # STEER1/STEER2: reachability-aware ROOT (cascade_reach_x) on the firmware brains
+    "fw_winner_reach": dict(trunk="winner", chain=180, strand=20, reach=True),
+    "fw540_reach":     dict(trunk="winner", chain=540, strand=20, reach=True),
 }
 
 _CHAIN_READY = False
@@ -90,6 +93,10 @@ def _decider(arm):
         if not _CHAIN_READY:
             C.warmup_chain(topk2=8); _CHAIN_READY = True
         w, fl = FX.variant(spec["trunk"])
+        if spec.get("reach"):
+            import cascade_reach_x as R
+            dec = R.ReachAwareDecider(w, fl, topk2=8, maxpass=0, w_chain=int(spec["chain"]), ws=int(spec["strand"]))
+            return lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt, k=env.pills_placed)
         if "dig" in spec:
             import cascade_dig_x as DG
             dec = DG.StallBreakerDecider(w, fl, w_chain=int(spec["chain"]), ws=int(spec["strand"]), **spec["dig"])
@@ -125,12 +132,15 @@ def _volleys(seed, lam):
         out.append((t, sz, [rng.randint(1, 3) for _ in range(4)]))
 
 
-def play(seed, arm, lam, level=11, maxpills=600):
+def play(seed, arm, lam, level=11, maxpills=600, steer=None):
     from drmario.faithful_env import FaithfulDrMarioEnv
     from nes_pills import NesPillSource
     from fb import FB
     import root_search as RS
     choose = _decider(arm)
+    if steer is not None:                      # steering-faithful execution (steer_model.py); None = unchanged
+        import steer_model as SM
+        steer.reset(seed)
     env = FaithfulDrMarioEnv(level=level, seed=seed, max_pills=maxpills); env.reset()
     NesPillSource(seed=seed).attach(env); env.cur = env._rand_pill(); env.nxt = env._rand_pill()
     vq = _volleys(seed, lam); vi = 0
@@ -144,13 +154,23 @@ def play(seed, arm, lam, level=11, maxpills=600):
         a = choose(env, col, vir, ctx)
         if a is None:
             how = "nomove"; break
+        if steer is not None:
+            ex = steer.execute(env.board.color.tolist(), int(a), env.pills_placed)
+            a_ex = ex["var"] * 8 + ex["col"]
+            straight = SM.is_straight(env.board.color, ex)
+            a = a_ex
         var, cc = a // 8, a % 8
         hmax = 0
         for tc in ([cc] if var in (2, 3) else [cc, min(cc + 1, 7)]):
             filled = [r for r in range(16) if col[r * 8 + tc] != 0]
             hmax = max(hmax, 16 - min(filled) if filled else 0)
-        pp = probe_placement(env, int(a))
-        _, _, term, trunc, info = env.step(int(a))
+        if steer is None or straight:
+            pp = probe_placement(env, int(a))
+            _, _, term, trunc, info = env.step(int(a))
+        else:
+            with SM.forced_landing(env.board, ex["cells"]):
+                pp = probe_placement(env, int(a))
+                _, _, term, trunc, info = env.step(int(a))
         f = BASE_F + SOFT_F * max(0, 15 - hmax) + CLR_F * len(pp["lines"])
         frames.append(f); t += f / FPS
         if pp["attack"]:
@@ -171,10 +191,13 @@ def play(seed, arm, lam, level=11, maxpills=600):
                 how = "clear"; break
             if env.board.spawn_blocked():
                 how = "topout"; break
-    return {"seed": seed, "arm": arm, "lam": lam, "how": how, "t_end": round(t, 2),
-            "pills": len(frames), "vleft": int(env.board.virus_count()), "sent": sent,
-            "tiles_sent": sum(s for _, s in sent), "tiles_recv": recv,
-            "mean_f": round(float(np.mean(frames)), 1) if frames else 0.0, "rev": HARNESS_REV}
+    out = {"seed": seed, "arm": arm, "lam": lam, "how": how, "t_end": round(t, 2),
+           "pills": len(frames), "vleft": int(env.board.virus_count()), "sent": sent,
+           "tiles_sent": sum(s for _, s in sent), "tiles_recv": recv,
+           "mean_f": round(float(np.mean(frames)), 1) if frames else 0.0, "rev": HARNESS_REV}
+    if steer is not None:
+        out["steer"] = dict(steer.stats)
+    return out
 
 
 def _phi_inv(u):

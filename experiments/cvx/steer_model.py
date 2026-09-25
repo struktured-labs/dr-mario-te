@@ -359,6 +359,30 @@ def straight_cells(color, var, col):
     return None if b - 1 < 0 else ((b - 1, col), (b, col))
 
 
+class forced_landing:
+    """Context manager: every resting_position() call on boards of env.board's class returns `cs` (the executed
+    landing cells) for the duration. Used so probe_placement's clone AND env.step both see a non-straight
+    landing. A vertical capsule with its top half above the field (row -1) is not representable: None."""
+
+    def __init__(self, board, cs):
+        self.cls, self.cs = type(board), cs
+
+    def __enter__(self):
+        self.orig = self.cls.resting_position
+        cs = self.cs
+        self.cls.resting_position = lambda self_, pill, o, c: (cs if cs[0][0] >= 0 else None)
+        return self
+
+    def __exit__(self, *exc):
+        self.cls.resting_position = self.orig
+        return False
+
+
+def is_straight(color, res):
+    sc = straight_cells(color, res["var"], res["col"])
+    return sc is not None and tuple(map(tuple, sc)) == tuple(map(tuple, res["cells"]))
+
+
 def place_executed(env, res):
     """Apply an executed landing through env.step so all env bookkeeping (resolve, counters, top-out,
     pill advance) stays identical. If the landing is the straight drop of (var, col) this is exactly

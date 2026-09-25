@@ -26,6 +26,9 @@ ARMS = {
     # plan for this pill (cascade_plan_x) instead of the oracle final target -- what a firmware change can deliver
     "prehold_plan":       dict(steer=dict(proph="plan", prehold=True), plan=True),
     "prehold_plan_byrot": dict(steer=dict(proph="plan", prehold=True, lat_mode="byrot"), plan=True),
+    # STEER2: dose x reach under couch steering (decider built by vs_race._decider)
+    "w180":       dict(steer=dict(proph="throat"), dec="fw_winner"),
+    "w180_reach": dict(steer=dict(proph="throat"), dec="fw_winner_reach"),
 }
 
 
@@ -60,16 +63,18 @@ def make(arm):
         dec = R.ReachAwareDecider(w, fl, topk2=8, maxpass=0, w_chain=540, ws=20)
         choose = lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt, k=env.pills_placed)
     else:
-        choose = V._decider("fw540")
+        choose = V._decider(spec.get("dec", "fw540"))
     return steer, choose
 
 
 if __name__ == "__main__":
     arm, lo, cnt, step, out = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), sys.argv[5]
+    level = int(sys.argv[6]) if len(sys.argv) > 6 else 11
     model = BM.fit_struktured_20260804()
     steer, choose = make(arm)
     with open(out, "w") as fh:
         for i in range(cnt):
-            r = G.play(lo + i * step, None, model, choose=choose, steer=steer)
+            r = G.play(lo + i * step, None, model, level=level, choose=choose, steer=steer)
             r.update({"arm": "fw540_steer_" + arm, "model": "owner", "trate": 0.0})
+            if level != 11: r["level"] = level
             fh.write(json.dumps(r) + "\n"); fh.flush()
