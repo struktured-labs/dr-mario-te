@@ -153,6 +153,11 @@ def build_image(board, cA, cB, nA, nB):
     # the b03a586e identity gate depends on that). See tests/test_search_d3.py veto_plug/
     # _e_veto_flag and experiments/drveto/gate_drveto.py for the spec + killed-mutant gate.
     D3.DRVETO = int(os.environ.get("DRVETO", "0"))
+    # Reach-root pre-filter (env DRREACH, default 0 = byte-identical firmware). The mask routine is its own
+    # image at reach_6502.REACH_ROM ($A800 = the v1 EMIT_TUCK window, never co-resident: asserted below).
+    # PAIRING: a DRREACH firmware filters only when the cart sends the DRREACHTX gravity nibbles; with an old
+    # cart it runs exactly today's search. See experiments/reach/ + h16-wt CHAIN540_REACH_BUILD.md.
+    D3.DRREACH = int(os.environ.get("DRREACH", "0"))
     import nes_d3_golden as _G
     _G.DISC_SHIFT = 1            # golden must match for the py65 gate
     _G.EXCAV_HANG_PLY1 = True    # golden must match for the py65 gate
@@ -288,6 +293,20 @@ def build_image(board, cA, cB, nA, nB):
             f"tuck_bfs overruns the free ROM window before $A800 ({len(tuck_bfs_code)}B)"
         assert 0x8000 + len(code) <= TUCK_BFS_ROM, "search overruns tuck_bfs"
 
+    reach_code = b""
+    if D3.DRREACH:
+        import reach_6502 as RC
+        assert not EMIT_TUCK, "DRREACH's mask routine lives in the v1 EMIT_TUCK window ($A800)"
+        ra = Asm6502(RC.REACH_ROM)
+        RC.emit_reach(ra, S_NA, S_NB)
+        reach_code = ra.assemble()
+        assert ra.labels["reach_mask"] == 0, "the search JSRs REACH_ROM: the entry must be its first byte"
+        assert RC.REACH_ROM + len(reach_code) <= SQ_ROM, f"reach routine overruns the SQ tables ({len(reach_code)}B)"
+        if tuck_bfs_code:
+            assert TUCK_BFS_ROM + len(tuck_bfs_code) <= RC.REACH_ROM, "tuck_bfs overruns the reach routine"
+        if tuck_v3_code:
+            assert TUCK_V3_ROM + len(tuck_v3_code) <= RC.REACH_ROM, "tuck_v3 overruns the reach routine"
+
     stub = Asm6502(STUB)
     stub.ins("SEI"); stub.ins("CLD")
     stub.ins("LDX_imm", 0xFF); stub.ins("TXS")
@@ -324,6 +343,8 @@ def build_image(board, cA, cB, nA, nB):
         img[TUCK_V3_ROM:TUCK_V3_ROM + len(tuck_v3_code)] = tuck_v3_code
     if tuck_bfs_code:
         img[TUCK_BFS_ROM:TUCK_BFS_ROM + len(tuck_bfs_code)] = tuck_bfs_code
+    if reach_code:
+        img[RC.REACH_ROM:RC.REACH_ROM + len(reach_code)] = reach_code
     for i in range(17):
         img[SQ_ROM + i] = (i * i) & 0xFF
         img[SQ_ROM + 17 + i] = (i * i) >> 8

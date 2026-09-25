@@ -1,0 +1,3 @@
+corpus/synth.jsonl
+corpus/*.log
+__pycache__/

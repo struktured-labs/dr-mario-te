@@ -1,0 +1,8 @@
+tmp/carts/couch_tx1.nes: nA block x2, nB block x2 (expect 2 each)
+GATE_REACHTX PASS
+tmp/carts/cvc_tx1.nes: nA block x1, nB block x1 (expect 1 each)
+GATE_REACHTX PASS
+tmp/carts/couch_tx0.nes: nA block x0, nB block x0 (expect 0 each)
+GATE_REACHTX PASS
+tmp/carts/cvc_tx0.nes: nA block x0, nB block x0 (expect 0 each)
+GATE_REACHTX PASS

@@ -84,6 +84,16 @@ _VETO_PUB_MUTANT = False       # TEST-ONLY (gate mutant M4, the FIX-A hole made 
                                # pre-Fix-A emitter -- a vetoed running best IS stored to
                                # S_BEST_C/O mid-search. The mailbox-trajectory gate must
                                # kill this build. Never set by any build.
+DRREACH = 0                    # reach-root pre-filter (STEER2; set by build_copro_d3 from env
+                               # DRREACH). 0 emits NOTHING -> byte-identical firmware. The mask
+                               # routine lives at fpga/copro/reach_6502.REACH_ROM ($A800); the
+                               # search JSRs it after the board upload, Pass 0 skips every legal
+                               # candidate with R_FLT && !ROK[o4*8+col], and an all-masked Pass 0
+                               # is rerun unfiltered. Spec + gates: experiments/reach/.
+_REACH_PENALTY_MUT = False     # TEST-ONLY (gate mutant): the o_cand PENALTY form instead of the
+                               # Pass-0 skip (a masked winning candidate then still outranks).
+_REACH_NOAND_MUT = False       # TEST-ONLY (gate mutant): one S_NA read site without AND #$0F --
+                               # proves the gate sees a colour read that the transport nibbles leak into.
 VETO_PENALTY = 20000           # subtracted at o_cand with 16-bit signed SATURATION (clamp
                                # -32767 on overflow) -- a vetoed candidate loses to any
                                # plausible legit score, order among vetoed candidates is
@@ -336,7 +346,10 @@ def _e_node(a, o_zp, c_zp, ca_abs, cb_abs):
     """args from zp orient/col + abs color sources (masked), CMD 4, poll."""
     a.ins("LDA_zp", o_zp); a.ins16("STA_abs", LEV_A_O4)
     a.ins("LDA_zp", c_zp); a.ins16("STA_abs", LEV_A_COL)
-    a.ins16("LDA_abs", ca_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CA)
+    a.ins16("LDA_abs", ca_abs)
+    if not (_REACH_NOAND_MUT and ca_abs == S_NA):
+        a.ins("AND_imm", 0x0F)
+    a.ins16("STA_abs", LEV_A_CA)
     a.ins16("LDA_abs", cb_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CB)
     a.ins("LDA_imm", 4); a.ins16("STA_abs", LEV_CMD)
     _e_poll(a)
@@ -355,7 +368,10 @@ def _e_dnode(a, o_zp, c_zp, ca_abs, cb_abs, rslot):
     (sco/imm/legal/win) match _e_node either way. Assumes base already latched (CMD 6) and CUR=parent."""
     a.ins("LDA_zp", o_zp); a.ins16("STA_abs", LEV_A_O4)
     a.ins("LDA_zp", c_zp); a.ins16("STA_abs", LEV_A_COL)
-    a.ins16("LDA_abs", ca_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CA)
+    a.ins16("LDA_abs", ca_abs)
+    if not (_REACH_NOAND_MUT and ca_abs == S_NA):
+        a.ins("AND_imm", 0x0F)
+    a.ins16("STA_abs", LEV_A_CA)
     a.ins16("LDA_abs", cb_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CB)
     a.ins("LDA_imm", 7); a.ins16("STA_abs", LEV_CMD); _e_poll(a)      # CMD 7 DELTA
     n = _ec[0]; _ec[0] += 1
@@ -540,10 +556,17 @@ def _emit_search_d3_engine(a):
     a.ins16("LDA_absX", LIVE); a.ins16("STA_absX", LEV_BOARD)
     a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "up_l")
     a.ins("LDA_imm", 0); a.ins16("STA_abs", LEV_WSLOT)
+    if DRREACH:
+        import reach_6502 as _RC
+        # DRREACH: build the 32-entry reach mask ONCE per search from the root at LIVE + the
+        # DRREACHTX gravity nibbles (old cart -> R_FLT = 0 -> no filtering).
+        a.jsr(_RC.REACH_ROM)
     # ---- Pass 0 ----
     if _d(DELTA_P0):
         _e_copy(a, 1, True)                               # CUR <- slot1 (root parent), once
         _e_base(a)                                        # latch base accumulators + col heights
+    if DRREACH:
+        a.label("p0_restart")                             # all-masked fallback reruns Pass 0 from here
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_T1C); a.ins("STA_zp", D_O1)
     a.label("p0_o"); a.ins("LDA_imm", 0); a.ins("STA_zp", D_C1)
     a.label("p0_c")
@@ -554,6 +577,14 @@ def _emit_search_d3_engine(a):
         _e_node(a, D_O1, D_C1, S_CA, S_CB)
     a.ins16("LDA_abs", LEV_LEGAL); a.br("BNE", "p0_leg"); a.jmp("p0_next")
     a.label("p0_leg")
+    if DRREACH and not _REACH_PENALTY_MUT:
+        # DRREACH pre-filter: a legal candidate the driver cannot land exactly never enters TK1 (so it is never
+        # replayed, scored or live-published). Skip semantics, NOT a penalty: a masked candidate that clears the
+        # last virus would still outrank unmasked ones under a -20000 o_cand penalty (+WIN 30000).
+        a.ins("LDA_zp", _RC.R_FLT); a.br("BEQ", "p0_rk")
+        a.ins("LDA_zp", D_O1); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ORA_zp", D_C1); a.ins("TAX")
+        a.ins16("LDA_absX", _RC.ROK); a.br("BNE", "p0_rk"); a.jmp("p0_next")
+        a.label("p0_rk")
     _e_score(a)
     a.ins("CLC"); a.ins16("LDA_abs", LEV_IMM); a.ins("ADC_zp", D_V3L); a.ins("STA_zp", D_KL)
     a.ins16("LDA_abs", LEV_IMM + 1); a.ins("ADC_zp", D_V3H); a.ins("STA_zp", D_KH)
@@ -566,6 +597,12 @@ def _emit_search_d3_engine(a):
     a.label("p0_oc")
     a.ins("INC_zp", D_O1); a.ins("LDA_zp", D_O1); a.ins("CMP_imm", 4); a.br("BEQ", "p0_done"); a.jmp("p0_o")
     a.label("p0_done")
+    if DRREACH and not _REACH_PENALTY_MUT:
+        # every legal candidate masked -> clear the filter and rerun Pass 0 unfiltered (= today's search)
+        a.ins("LDA_zp", _RC.R_FLT); a.br("BEQ", "p0_rkd")
+        a.ins("LDA_zp", D_T1C); a.br("BNE", "p0_rkd")
+        a.ins("LDA_imm", 0); a.ins("STA_zp", _RC.R_FLT); a.jmp("p0_restart")
+        a.label("p0_rkd")
     # ---- select loop ----
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_J1)
     a.label("s_loop")
@@ -742,6 +779,18 @@ def _emit_search_d3_engine(a):
         a.ins("LDA_imm", 0x01); a.ins("STA_zp", D_V1L); a.ins("LDA_imm", 0x80)
         a.label("vt_st"); a.ins("STA_zp", D_V1H)
         a.label("vt_np")
+    if DRREACH and _REACH_PENALTY_MUT:
+        import reach_6502 as _RC
+        a.ins("LDA_zp", _RC.R_FLT); a.br("BEQ", "rkp_n")
+        a.ins("LDA_zp", D_O1); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ORA_zp", D_C1); a.ins("TAX")
+        a.ins16("LDA_absX", _RC.ROK); a.br("BNE", "rkp_n")
+        a.ins("SEC")
+        a.ins("LDA_zp", D_V1L); a.ins("SBC_imm", VETO_PENALTY & 0xFF); a.ins("STA_zp", D_V1L)
+        a.ins("LDA_zp", D_V1H); a.ins("SBC_imm", (VETO_PENALTY >> 8) & 0xFF)
+        a.br("BVC", "rkp_st")
+        a.ins("LDA_imm", 0x01); a.ins("STA_zp", D_V1L); a.ins("LDA_imm", 0x80)
+        a.label("rkp_st"); a.ins("STA_zp", D_V1H)
+        a.label("rkp_n")
     if DEBUG_VAL1:                                    # dump (C1,O1,V1L,V1H,B2L,B2H) at
                                                         # ring[D_J1*8] (pre-jitter), PLUS
                                                         # (I1L,I1H,L1L,L1H,ADL,ADH) at

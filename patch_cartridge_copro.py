@@ -533,6 +533,22 @@ VERFIX = _os.environ.get("DRVERFIX", "0") == "1"
 # anywhere in the cart). 4 operand bytes, located by content. Silicon A/B from the same pre-freeze
 # save-state: unpatched re-froze in ~6 s on the identical frame, patched played through.
 NMITMP = _os.environ.get("DRNMITMP", "0") == "1"
+# DRREACHTX (STEER2 reach-root transport, 2026-09-25): at BOTH P2 GO paths (handle() and the DRPRESTART commit)
+# OR P2's gravity state into the free high nibbles of the next-pill colour bytes:
+#     nA |= (speedUps & $0F) << 4                              speedUps = P2 $038A (0..49)
+#     nB |= (((speedUps >> 4) & 3) | ((speed + 1) << 2)) << 4  speed    = P2 $038B (0..2), sent +1 as a marker
+# so a DRREACH copro firmware can compute the ROM gravity threshold and drop root candidates the driver cannot land
+# (fpga/copro/reach_6502.py). The "+1" makes the NB high nibble NEVER zero from this cart, which is how the firmware
+# tells a transport cart from an old one.
+# ************************************************************************************************************
+# PAIRING: DRREACHTX=1 cart  +  DRREACH=1 firmware  = reach-filtered search (the intended build).
+#          DRREACHTX=1 cart  +  pre-DRREACH firmware = unchanged search (every S_NA/S_NB read masks AND #$0F;
+#                                                     gate G1a in experiments/reach/ proves it).
+#          DRREACHTX=0 cart  +  DRREACH=1 firmware  = unchanged search (NB high nibble 0 -> no filter; gate G1b).
+# The filter is ONLY live when BOTH are on. Build the couch pair from CHAIN540_REACH_BUILD.md, never mix by hand.
+# ************************************************************************************************************
+# Default 0 = byte-identical cart.
+REACHTX = _os.environ.get("DRREACHTX", "0") == "1"
 # DRUNPAUSE (#133): a P1-driven cart is UNPAUSABLE -- the P1 executor rewrites $F5 (the raw P1
 # latch at hook time; the ROM derives pressed/held from it AFTER the hook) every hook from a
 # vocabulary {none,right,left,down,A} with no START, and it runs before the stock edge-detect,
@@ -2667,6 +2683,10 @@ def build_main(level=11, speed=1):
             elif k == 1:    # cB carries seed high nibble
                 a.ins16("LDA_abs", seedsrc); a.ins("AND_imm", 0xF0); a.ins16("STA_abs", TMPSEED)
                 a.ins16("LDA_abs", src); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED)
+            elif REACHTX and idx == 2:
+                # DRREACHTX: nA / nB carry P2's gravity nibbles (see the flag block)
+                _emit_reachtx_nibble(a, k == 2)                     # -> TMPSEED
+                a.ins16("LDA_abs", src); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED)
             else:
                 a.ins16("LDA_abs", src); a.ins("AND_imm", 0x0F)
             a.ins16("STA_abs", wbase + 0x80 + k)
@@ -3119,8 +3139,15 @@ def build_main(level=11, speed=1):
         a.jmp("pt_dv")
         a.label("pt_dvd")
         a.ins16("STA_abs", PRE_TMP)                                   # remainder = nB
-        a.ins("TXA"); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", W2_BASE + 0x82)
-        a.ins16("LDA_abs", PRE_TMP); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", W2_BASE + 0x83)
+        if REACHTX:
+            # DRREACHTX: same gravity nibbles as handle() (X = nA survives: the nibble code touches A only)
+            _emit_reachtx_nibble(a, True)
+            a.ins("TXA"); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED); a.ins16("STA_abs", W2_BASE + 0x82)
+            _emit_reachtx_nibble(a, False)
+            a.ins16("LDA_abs", PRE_TMP); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED); a.ins16("STA_abs", W2_BASE + 0x83)
+        else:
+            a.ins("TXA"); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", W2_BASE + 0x82)
+            a.ins16("LDA_abs", PRE_TMP); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", W2_BASE + 0x83)
         a.ins16("STA_abs", W2_BASE + 0x84)      # GO: any write to +$84 pulses reset + clears DONE
         a.ins("LDA_imm", 1); a.ins16("STA_abs", ARMED2); a.ins16("STA_abs", PRE_ACT2)
         a.ins("LDA_imm", 0)
@@ -3840,6 +3867,22 @@ def _check_gated_flags():
     raise SystemExit(
         "REFUSING TO BUILD: a requested default-off flag is suppressed by its gate and would ship "
         "silently absent. Enable the gate, drop the flag, or set DRALLOW_GATED=1 to override.")
+
+def _emit_reachtx_nibble(a, is_na):
+    """DRREACHTX: TMPSEED <- the high-nibble transport byte for nA (is_na) or nB, from P2's $038A/$038B.
+    Clobbers A only (X/Y untouched -- the prestart commit keeps nA in X across this)."""
+    if is_na:
+        a.ins16("LDA_abs", 0x038A); a.ins("AND_imm", 0x0F)
+        a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+        a.ins16("STA_abs", TMPSEED)
+    else:
+        a.ins16("LDA_abs", 0x038A); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A")
+        a.ins("AND_imm", 0x03); a.ins16("STA_abs", TMPSEED)
+        a.ins16("LDA_abs", 0x038B); a.ins("CLC"); a.ins("ADC_imm", 1); a.ins("ASL_A"); a.ins("ASL_A")
+        a.ins16("ORA_abs", TMPSEED)
+        a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+        a.ins16("STA_abs", TMPSEED)
+
 
 def main():
     import os
