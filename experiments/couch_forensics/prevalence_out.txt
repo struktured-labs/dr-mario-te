@@ -1,0 +1,31 @@
+== 1. override rates (verified placements; all placements in brackets)
+game     result             n  MATCH  clamp PROPH-esc  late   OVR% PROPHfired PROPH->MATCH  tuck  other shortNoClamp
+n24_G1    won               54     43      2         0     1   5.6% [ 5.0% of 60]      0            0     0      8            0
+n24_G2    won              103     84      3         0     3   5.8% [ 5.4% of 111]      0            0     1     11            1
+n24_G3    won               24     22      0         0     0   0.0% [ 0.0% of 24]      0            0     1      1            0
+m25_G1    won               82     59      2         0     1   3.7% [ 5.4% of 92]      0            0     2     14            4
+m25_G2    LOST (tap-out)    68     45      3         5     7  22.1% [20.8% of 72]     24           14     2      6            0
+m25_G3    won               43     35      1         0     2   7.0% [ 8.5% of 47]      0            0     1      4            0
+m25_G4    won               57     52      0         0     1   1.8% [ 1.6% of 61]      0            0     0      4            0
+POOLED verified n=431: overrides 31 (7.2%) = clamp 11 + PROPH-escape 5 + late-flip 15; MATCH 340 (78.9%); PROPH fired 24 -> escapes AGAINST the brain 5, MATCH 14  [all placements: 34/467 = 7.3%]
+WON games only: overrides 16/363 (4.4%), PROPH-escapes 0
+
+== 2. what follows an override (spawn-lane height = max(h3,h4); fo_min = min first-occupied row c3/c4)
+  +3 pills: n_overrides=27  d(lane) override +0.15 vs matched MATCH -0.26  => excess +0.41 rows [95% -0.15,+1.02];  P(ledge fo_min<=2 at +3) override 0.22 vs matched 0.17
+     SHORT-LANDING  n= 10 excess d(lane) +0.99
+     PROPH-ESCAPE   n=  3 excess d(lane) +0.21
+     LATE-FLIP      n= 14 excess d(lane) -0.02
+  +5 pills: n_overrides=27  d(lane) override +0.11 vs matched MATCH -0.36  => excess +0.47 rows [95% -0.32,+1.29];  P(ledge fo_min<=2 at +5) override 0.19 vs matched 0.09
+     SHORT-LANDING  n= 11 excess d(lane) +1.06
+     PROPH-ESCAPE   n=  1 excess d(lane) +0.50
+     LATE-FLIP      n= 15 excess d(lane) +0.05
+
+== 3. steering timing (frames from preview change to first lateral move)
+  no-PROPH n=370 median 18.0 min 5 max 91; <10 f: 14
+  histogram: {5: 11, 6: 1, 8: 2, 13: 1, 14: 10, 15: 102, 16: 23, 17: 21, 18: 17, 19: 18, 20: 16, 21: 25, 22: 23, 23: 17, 24: 16, 25: 25, 26: 26, 27: 10, 28: 1, 38: 1, 39: 2, 65: 1, 91: 1}
+  PROPH-fired n=23 first move frames: {3: 2, 4: 18, 5: 1, 8: 1, 19: 1}
+
+== 4. override density: G2 death window vs sliding 12-placement windows in the won games
+  G2 whole game 0.22 (n=72); G2 last 12 0.67 (8/12)
+  won-game 12-windows: n=329, max overrides 3 (m25_G3 from idx 20), windows with >= G2's 8: 0;  mean 0.61
+  PROPH-escapes in any won-game 12-window: max 0; G2 last 12: 4

@@ -140,8 +140,8 @@ def analyze(placements_path, out_path):
     dec = decider()
     rows = []
     for idx, r in enumerate(R):
-        if r["landing"] is None:
-            continue
+        if r["landing"] is None or 0 in r["cur"] or 0 in r["nxt"]:
+            continue                      # no capsule track, or a game-start/-end spawn (pill/preview blank)
         S = r["S"]
         b = board_from_strings(S["color"], S["virus"], S["link"])
         Sc = b.color.copy()
