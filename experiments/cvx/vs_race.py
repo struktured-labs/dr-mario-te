@@ -66,6 +66,15 @@ ARMS = {
     "fw270":       dict(trunk="winner", chain=270, strand=20),
     "fw360":       dict(trunk="winner", chain=360, strand=20),
     "fw540":       dict(trunk="winner", chain=540, strand=20),
+    "fw720":       dict(trunk="winner", chain=720, strand=20),   # a_chw 180
+    "fw900":       dict(trunk="winner", chain=900, strand=20),   # a_chw 225 (reg max 255 -> 1020)
+    # STALL BREAKER (owner #2, 2026-09-25) on the fw540 brain: DIG mode per pill when >=S placements
+    # without a virus cleared AND spawn lane >= H rows (cascade_dig_x.StallBreakerDecider).
+    "sb_chain0":    dict(trunk="winner", chain=540, strand=20, dig=dict(S=8, H=11, dig_chain=0)),
+    "sb_spawn":     dict(trunk="winner", chain=540, strand=20, dig=dict(S=8, H=11, dig_sp=300, dig_hs=10)),
+    "sb_virus":     dict(trunk="winner", chain=540, strand=20, dig=dict(S=8, H=11, dig_nv=400)),
+    "sb_all":       dict(trunk="winner", chain=540, strand=20, dig=dict(S=8, H=11, dig_chain=0, dig_sp=300, dig_hs=10, dig_nv=400)),
+    "sb_all_early": dict(trunk="winner", chain=540, strand=20, dig=dict(S=5, H=10, dig_chain=0, dig_sp=300, dig_hs=10, dig_nv=400)),
 }
 
 _CHAIN_READY = False
@@ -81,6 +90,10 @@ def _decider(arm):
         if not _CHAIN_READY:
             C.warmup_chain(topk2=8); _CHAIN_READY = True
         w, fl = FX.variant(spec["trunk"])
+        if "dig" in spec:
+            import cascade_dig_x as DG
+            dec = DG.StallBreakerDecider(w, fl, w_chain=int(spec["chain"]), ws=int(spec["strand"]), **spec["dig"])
+            return lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt)
         if "strand" in spec:
             import cascade_stranded_x as S
             dec = S.StrandedChainD3Decider(w, fl, topk2=8, maxpass=0,
@@ -198,6 +211,8 @@ def evaluate(row, median, sigma=0.15, delta=2.0):
 
 if __name__ == "__main__":
     arm, lam, lo, cnt, step, out = sys.argv[1], float(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]), sys.argv[6]
+    level = int(sys.argv[7]) if len(sys.argv) > 7 else 11
     with open(out, "w") as fh:
         for i in range(cnt):
-            fh.write(json.dumps(play(lo + i * step, arm, lam)) + "\n"); fh.flush()
+            r = play(lo + i * step, arm, lam, level=level); r["level"] = level
+            fh.write(json.dumps(r) + "\n"); fh.flush()
