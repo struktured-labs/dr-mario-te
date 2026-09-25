@@ -6,7 +6,7 @@ optional clock stream TRATE.  Same loop as clock_play.play_hartford, model injec
 """
 import sys, os, json, random
 import numpy as np
-sys.path.insert(0, "/home/struktured/projects/dr-mario-h16-wt/experiments/cvx")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import import_pin; import_pin.pin()
 import clock_play as CP
 from vs_choose import VsPolicy

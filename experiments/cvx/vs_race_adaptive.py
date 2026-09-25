@@ -11,7 +11,7 @@ Mechanics, clock and volleys are identical to vs_race.play.
 """
 import sys, os, json, math, random
 import numpy as np
-CVX = "/home/struktured/projects/dr-mario-h16-wt/experiments/cvx"
+CVX = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, CVX)
 import vs_race as V
 from attack import probe_placement

@@ -1,0 +1,82 @@
+{
+ "attack": {
+  "source": "/home/struktured/projects/dr_mario_rl/tmp/vs_aware/attack.py",
+  "vendored": "attack.py"
+ },
+ "bursty_model": {
+  "source": "/home/struktured/projects/dr-mario-qa-wt/experiments/eval47/bursty_model.py",
+  "vendored": "bursty_model.py"
+ },
+ "cascade_chain_x": {
+  "source": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/cascade_chain_x.py",
+  "vendored": "cascade_chain_x.py"
+ },
+ "cascade_link_x": {
+  "source": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/cascade_link_x.py",
+  "vendored": "cascade_link_x.py"
+ },
+ "cascade_stranded_x": {
+  "source": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/cascade_stranded_x.py",
+  "vendored": "cascade_stranded_x.py"
+ },
+ "drmario": {
+  "source": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/__init__.py",
+  "vendored": "drmario/__init__.py"
+ },
+ "drmario.env": {
+  "source": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/env.py",
+  "vendored": "drmario/env.py"
+ },
+ "drmario.faithful_env": {
+  "source": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/faithful_env.py",
+  "vendored": "drmario/faithful_env.py"
+ },
+ "drmario.faithful_game": {
+  "source": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/faithful_game.py",
+  "vendored": "drmario/faithful_game.py"
+ },
+ "drmario.game": {
+  "source": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/game.py",
+  "vendored": "drmario/game.py"
+ },
+ "fast_sim_x": {
+  "source": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/fast_sim_x.py",
+  "vendored": "fast_sim_x.py"
+ },
+ "fb": {
+  "source": "/home/struktured/projects/dr_mario_rl/tmp/endgame/fb.py",
+  "vendored": "fb.py"
+ },
+ "nes_pills": {
+  "source": "/home/struktured/projects/dr_mario_rl/tmp/pillrng/nes_pills.py",
+  "vendored": "nes_pills.py"
+ },
+ "rom_attack_rule": {
+  "source": "/home/struktured/projects/dr_mario_rl/tmp/vs_aware/rom_attack_rule.py",
+  "vendored": "rom_attack_rule.py"
+ },
+ "root_search": {
+  "source": "/home/struktured/projects/dr-mario-qa-wt/experiments/tuck_v3/root_search.py",
+  "vendored": "root_search.py"
+ },
+ "terms47": {
+  "source": "/home/struktured/projects/dr-mario-qa-wt/experiments/eval47/terms47.py",
+  "vendored": "terms47.py"
+ },
+ "tuck_enum": {
+  "source": "/home/struktured/projects/dr_mario_rl/tmp/tuck/tuck_enum.py",
+  "vendored": "tuck_enum.py"
+ },
+ "vision": {
+  "source": "/home/struktured/projects/dr_mario_rl/tmp/film_review_20260804/vision.py",
+  "vendored": "vision.py"
+ },
+ "vs_env": {
+  "source": "/home/struktured/projects/dr_mario_rl/tmp/champion/vs_env.py",
+  "vendored": "vs_env.py"
+ },
+ "vs_harness": {
+  "source": "/home/struktured/projects/dr_mario_rl/tmp/vs_aware/vs_harness.py",
+  "vendored": "vs_harness.py"
+ }
+}

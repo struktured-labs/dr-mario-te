@@ -8,22 +8,52 @@ Cart-matched search uses ws=0 (DRSTRAND default 0). The loop gens 0-2 and the
 in-flight A-first confirm used ws=20; those rows are a different player.
 """
 from __future__ import annotations
-import importlib, os, sys
+import importlib, importlib.util, os, sys
 
-H16_WT = "/home/struktured/projects/dr-mario-h16-wt"
-CVX = H16_WT + "/experiments/cvx"
+CVX = os.path.dirname(os.path.abspath(__file__))          # portable: works from any clone path
+H16_WT = os.path.dirname(os.path.dirname(CVX))
 H16 = H16_WT + "/experiments/h16"
+VENDOR_DIR = CVX + "/vendor"
 QA = "/home/struktured/projects/dr-mario-qa-wt/experiments"
-E47 = QA + "/eval47"
 ROOT = "/home/struktured/projects/dr_mario_rl"
-PILLRNG = ROOT + "/tmp/pillrng"
-FAITHFUL = ROOT + "/.claude/worktrees/faithful-sim/src"
-COMBO = ROOT + "/tmp/combo_term"
-ENDGAME = ROOT + "/tmp/endgame"
-TUCK3 = QA + "/tuck_v3"
+# DRM_VENDOR: "1" = use the in-repo copies (experiments/cvx/vendor, see VENDOR_MANIFEST.json),
+# "0" = the original out-of-repo locations, default "auto" = vendored iff the originals are absent.
+_MODE = os.environ.get("DRM_VENDOR", "auto")
+VENDORED = _MODE == "1" or (_MODE != "0" and not (os.path.isdir(QA) and os.path.isdir(ROOT)))
+if VENDORED:
+    E47 = ENDGAME = COMBO = TUCK3 = FAITHFUL = PILLRNG = VENDOR_DIR
+    _PATHS_FRONT = (VENDOR_DIR, CVX)
+else:
+    E47 = QA + "/eval47"
+    PILLRNG = ROOT + "/tmp/pillrng"
+    FAITHFUL = ROOT + "/.claude/worktrees/faithful-sim/src"
+    COMBO = ROOT + "/tmp/combo_term"
+    ENDGAME = ROOT + "/tmp/endgame"
+    TUCK3 = QA + "/tuck_v3"
+    # Last insert(0) is searched first. nes_pills MUST beat QA.
+    _PATHS_FRONT = (QA, E47, ENDGAME, COMBO, TUCK3, FAITHFUL, PILLRNG, CVX)
 
-# Last insert(0) is searched first. nes_pills MUST beat QA.
-_PATHS_FRONT = (QA, E47, ENDGAME, COMBO, TUCK3, FAITHFUL, PILLRNG, CVX)
+class _VendorFinder:
+    """Vendored mode: resolve EXACTLY the modules in VENDOR_MANIFEST.json from VENDOR_DIR, whatever
+    sys.path says. Several modules (in-repo pressure_rig, vendored fb/root_search/...) insert their
+    ORIGINAL absolute paths into sys.path at import time; ordering tricks cannot beat that reliably."""
+    def __init__(self):
+        import json
+        man = json.load(open(os.path.join(VENDOR_DIR, "VENDOR_MANIFEST.json")))
+        self.map = {n: os.path.join(VENDOR_DIR, e["vendored"]) for n, e in man.items()}
+
+    def find_spec(self, fullname, path=None, target=None):
+        f = self.map.get(fullname)
+        if f is None:
+            return None
+        if os.path.basename(f) == "__init__.py":
+            return importlib.util.spec_from_file_location(fullname, f,
+                                                          submodule_search_locations=[os.path.dirname(f)])
+        return importlib.util.spec_from_file_location(fullname, f)
+
+
+if VENDORED and not any(isinstance(x, _VendorFinder) for x in sys.meta_path):
+    sys.meta_path.insert(0, _VendorFinder())
 
 PINNED = {
     "fast_rtl_x": CVX + "/fast_rtl_x.py",
@@ -87,7 +117,27 @@ def pin():
             bad.append(f"{k}: got {got} want {want}")
     if bad:
         raise RuntimeError("import pin failed:\n  " + "\n  ".join(bad))
+    if VENDORED:
+        _assert_vendored_closure(loaded)
     return loaded
+
+
+def _assert_vendored_closure(loaded):
+    """Vendored mode: import EVERY module in VENDOR_MANIFEST.json now and assert each resolved from
+    VENDOR_DIR -- several vendored modules insert their original absolute paths into sys.path at
+    import, so on a machine that still has the originals a later lazy import could bind outside."""
+    import json
+    man = json.load(open(os.path.join(VENDOR_DIR, "VENDOR_MANIFEST.json")))
+    bad = []
+    for name in man:
+        mod = importlib.import_module(name)
+        f = os.path.realpath(mod.__file__)
+        loaded[name] = f
+        if not f.startswith(os.path.realpath(VENDOR_DIR) + os.sep):
+            bad.append(f"{name}: {f}")
+    _front_paths()
+    if bad:
+        raise RuntimeError("vendored closure leaked outside vendor/:\n  " + "\n  ".join(bad))
 
 
 if __name__ == "__main__":

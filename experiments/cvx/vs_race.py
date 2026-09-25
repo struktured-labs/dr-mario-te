@@ -24,7 +24,7 @@ Outcomes follow the spec: survive-but-slower and cap are LOSSES.
 import sys, os, json, math, random
 import numpy as np
 
-CVX = "/home/struktured/projects/dr-mario-h16-wt/experiments/cvx"
+CVX = os.path.dirname(os.path.abspath(__file__))
 VSA = "/home/struktured/projects/dr_mario_rl/tmp/vs_aware"
 sys.path.insert(0, CVX)
 import import_pin

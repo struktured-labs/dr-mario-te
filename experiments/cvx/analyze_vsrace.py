@@ -2,8 +2,8 @@
 
 Usage: python analyze_vsrace.py [DIR] [--m 177] [--lam 3.3] [--delta 2.0] [--sigma 0.15] [--base holes80]
 """
-import sys, json, glob, random, collections, argparse
-sys.path.insert(0, "/home/struktured/projects/dr-mario-h16-wt/experiments/cvx")
+import sys, os, json, glob, random, collections, argparse
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from vs_race import evaluate
 
 ap = argparse.ArgumentParser()
