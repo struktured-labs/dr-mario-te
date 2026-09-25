@@ -522,6 +522,17 @@ if ROTDIR_MUT != "none" and not ROTDIR:
 # the wedge's persistence mechanism, not just the hang). Applied by anchor match, never by
 # pinned offset (#120 gate rot).
 VERFIX = _os.environ.get("DRVERFIX", "0") == "1"
+# DRNMITMP (#141, root-caused on silicon 2026-09-25): the stock getInputs -- called from the NMI --
+# keeps p1/p2_btns_pressed_tmp in the game's SHARED scratch bytes tmp48/tmp49 ($48/$49), while
+# checkVerMatch's clear-MARKING loop on the main thread uses $49 as its END INDEX (loop: mark ($57),Y;
+# $5A += 8; CPY $49 / BNE). An NMI landing inside that loop overwrites $49 with P2's pressed buttons
+# ($04 = DOWN while the P2 AI soft-drops), the CPY can never match (wrong residue mod 8), and the loop
+# spins forever writing past the field: the OAM-cleared "freeze" (frozen PC $94D2-$94F8, $49=$04, $5A
+# cycling mod 8, driver still ticking). Stock-game race; our long NMI hook makes it reachable. Fix: move
+# getInputs' two scratch bytes to $BF/$C7 (outside every range in the stock zero-page map; no reference
+# anywhere in the cart). 4 operand bytes, located by content. Silicon A/B from the same pre-freeze
+# save-state: unpatched re-froze in ~6 s on the identical frame, patched played through.
+NMITMP = _os.environ.get("DRNMITMP", "0") == "1"
 # DRUNPAUSE (#133): a P1-driven cart is UNPAUSABLE -- the P1 executor rewrites $F5 (the raw P1
 # latch at hook time; the ROM derives pressed/held from it AFTER the hook) every hook from a
 # vocabulary {none,right,left,down,A} with no START, and it runs before the stock edge-detect,
@@ -3906,6 +3917,17 @@ def main():
         rom[_vf_off:_vf_off + 3] = bytes.fromhex("c980b0")   # CMP #$80 / BCS (same length+target)
         print(f"DRVERFIX: checkVerMatch vertical scan bounded "
               f"(AND #$F8/BEQ -> CMP #$80/BCS) at file offset 0x{_vf_off:04X}")
+
+    if NMITMP:
+        # #141 stock-ROM race fix (see the DRNMITMP flag block): getInputs' tmp48/tmp49 -> $BF/$C7.
+        _nt_save = bytes.fromhex("a5f58548a5f68549")          # LDA $F5/STA $48/LDA $F6/STA $49
+        _nt_and = bytes.fromhex("a5f5254885f5a5f6254985f6")   # LDA $F5/AND $48/STA $F5/LDA $F6/AND $49/STA $F6
+        _i1 = rom.find(_nt_save); _i2 = rom.find(_nt_and)
+        assert _i1 >= 0 and rom.find(_nt_save, _i1 + 1) < 0, "DRNMITMP: getInputs save anchor not unique/found"
+        assert _i2 >= 0 and rom.find(_nt_and, _i2 + 1) < 0, "DRNMITMP: getInputs AND anchor not unique/found"
+        rom[_i1 + 3] = 0xBF; rom[_i1 + 7] = 0xC7; rom[_i2 + 3] = 0xBF; rom[_i2 + 9] = 0xC7
+        print(f"DRNMITMP: getInputs scratch tmp48/tmp49 -> $BF/$C7 at file offsets "
+              f"0x{_i1 + 3:04X}/0x{_i1 + 7:04X}/0x{_i2 + 3:04X}/0x{_i2 + 9:04X}")
 
     if STUDY:
         # v8.2 EVAC: keep part1 ($D2CC STUDY + P1 preview, RTS), drop the 2P tail, and restore the 4
