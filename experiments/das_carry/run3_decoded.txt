@@ -1,0 +1,9 @@
+state act pause  X   Y spd vel | frames since prev (controlled)  dX
+a0      0     5  3  14   0   0 |               (zp currentP=5)
+a1      0     5  3  14   0   0 |      0    0   (zp currentP=5)
+a2      0     5  3  14   9   9 |      9    0   (zp currentP=5)
+b0      0     5  0  12  14  12 |     45   -3   (zp currentP=5)
+b1      0     5  0  12  14  12 |      0    0   (zp currentP=5)
+b2      0     5  2  11   4  10 |     10    2   (zp currentP=5)
+c0      0     5  2  11   4  10 |      0    0   (zp currentP=5)
+c1      0     5  1  10   6   8 |     22   -1   (zp currentP=5)

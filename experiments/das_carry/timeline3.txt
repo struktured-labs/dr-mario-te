@@ -1,0 +1,47 @@
+# Precondition: TITLE (fresh load). RIGHT=106 LEFT=105 START=28. Pause-window = a non-control window like the lock gap.
+tap 28
+sleep 2500
+tap 28
+sleep 2600
+tap 28
+sleep 500
+save a0
+# A: press+hold LEFT during pause (edge consumed), unpause ~120 ms, re-pause. v0 = 0 here.
+down 105
+sleep 300
+save a1
+tap 28
+sleep 120
+tap 28
+sleep 500
+save a2
+# slide to the wall to build charge (still holding LEFT), re-pause
+tap 28
+sleep 700
+tap 28
+sleep 500
+save b0
+# B: REDIRECT — release LEFT, press+hold RIGHT during pause, unpause ~120 ms, re-pause
+up 105
+down 106
+sleep 300
+save b1
+tap 28
+sleep 120
+tap 28
+sleep 500
+save b2
+up 106
+sleep 300
+save c0
+# C: CONTROL — unpause, press+hold LEFT while the pill is controlled, re-pause ~120 ms later
+tap 28
+sleep 200
+down 105
+sleep 120
+tap 28
+sleep 500
+save c1
+up 105
+sleep 300
+tap 28
