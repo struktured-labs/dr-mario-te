@@ -78,6 +78,7 @@ ARMS = {
     # STEER1/STEER2: reachability-aware ROOT (cascade_reach_x) on the firmware brains
     "fw_winner_reach": dict(trunk="winner", chain=180, strand=20, reach=True),
     "fw540_reach":     dict(trunk="winner", chain=540, strand=20, reach=True),
+    "fw540_reachfw":   dict(trunk="winner", chain=540, strand=20, reach="fw"),   # closed-form firmware rule
 }
 
 _CHAIN_READY = False
@@ -95,7 +96,8 @@ def _decider(arm):
         w, fl = FX.variant(spec["trunk"])
         if spec.get("reach"):
             import cascade_reach_x as R
-            dec = R.ReachAwareDecider(w, fl, topk2=8, maxpass=0, w_chain=int(spec["chain"]), ws=int(spec["strand"]))
+            cls = R.ReachFwDecider if spec["reach"] == "fw" else R.ReachAwareDecider
+            dec = cls(w, fl, topk2=8, maxpass=0, w_chain=int(spec["chain"]), ws=int(spec["strand"]))
             return lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt, k=env.pills_placed)
         if "dig" in spec:
             import cascade_dig_x as DG

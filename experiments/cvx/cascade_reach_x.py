@@ -129,6 +129,15 @@ class ReachAwareDecider(StrandedChainD3Decider):
         return None if a < 0 else int(a)
 
 
+class ReachFwDecider(ReachAwareDecider):
+    """STEER2 post-hoc: the mask is the CLOSED-FORM FIRMWARE RULE (reach_fw.reach_mask_fw, strict: the capsule
+    lands exactly on the straight-drop cells), i.e. what the reach-root firmware would compute."""
+
+    def mask(self, board, k):
+        import reach_fw as RF
+        return np.asarray(RF.reach_mask_fw(board.color.tolist(), SM.table_threshold(k)), dtype=np.int8)
+
+
 def selfcheck(n_games=2, seed0=36734):
     """All-ones mask == the stranded decider on every board of real fw540 gate-(b) games."""
     import gate_b as G, bursty_model as BM, vs_race as V, fast_rtl_x as FX

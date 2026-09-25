@@ -29,6 +29,7 @@ ARMS = {
     # STEER2: dose x reach under couch steering (decider built by vs_race._decider)
     "w180":       dict(steer=dict(proph="throat"), dec="fw_winner"),
     "w180_reach": dict(steer=dict(proph="throat"), dec="fw_winner_reach"),
+    "reachfw":    dict(steer=dict(proph="throat"), dec="fw540_reachfw"),        # STEER2 post-hoc firmware rule
 }
 
 
