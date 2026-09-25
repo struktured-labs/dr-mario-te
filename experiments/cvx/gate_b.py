@@ -11,7 +11,7 @@ import import_pin; import_pin.pin()
 import clock_play as CP
 from vs_choose import VsPolicy
 
-def play(seed, pol, model, trate=0.0, level=11, maxpills=600, choose=None):
+def play(seed, pol, model, trate=0.0, level=11, maxpills=600, choose=None, steer=None):
     import pressure_rig_time as PRT
     from bursty_model import inject_bursty_garbage
     from drmario.faithful_env import FaithfulDrMarioEnv
@@ -21,6 +21,9 @@ def play(seed, pol, model, trate=0.0, level=11, maxpills=600, choose=None):
     env = FaithfulDrMarioEnv(level=level, seed=seed, max_pills=maxpills); env.reset()
     NesPillSource(seed=seed).attach(env); env.cur = env._rand_pill(); env.nxt = env._rand_pill()
     elapsed = 0.0; garbage = 0; res = "stall"; v_at_topout = None
+    if steer is not None:                     # steering-faithful execution (steer_model.py); None = unchanged
+        import steer_model as SM
+        steer.reset(seed)
     ctx = {"own_vleft": 48, "opp_vleft": 48, "own_t": 0.0, "opp_t": 0.0, "opp_spawn_h": 0, "own_spawn_h": 0}
     for _ in range(maxpills):
         if env.board.virus_count() == 0: res = "clear"; break
@@ -38,7 +41,11 @@ def play(seed, pol, model, trate=0.0, level=11, maxpills=600, choose=None):
             hmax = max(hmax, h)
         dt = CP.T_LAT + CP.FPR * max(0, 16 - hmax); elapsed += dt
         occ_before = int(np.count_nonzero(env.board.color))
-        _, _, term, trunc, info = env.step(int(a))
+        if steer is None:
+            _, _, term, trunc, info = env.step(int(a))
+        else:
+            ex = steer.execute(env.board.color.tolist(), int(a), env.pills_placed)
+            (_, _, term, trunc, info), _straight = SM.place_executed(env, ex)
         if term:
             res = "clear" if info["won"] else "topout"
             if res == "topout": v_at_topout = env.board.virus_count()
@@ -59,9 +66,12 @@ def play(seed, pol, model, trate=0.0, level=11, maxpills=600, choose=None):
             if env.board.virus_count() == 0: res = "clear"; break
             if env.board.spawn_blocked(): res = "topout"; v_at_topout = env.board.virus_count(); break
     vleft = v_at_topout if v_at_topout is not None else env.board.virus_count()
-    return {"seed": seed, "won": int(res == "clear"), "topout": int(res == "topout"), "stall": int(res == "stall"),
+    out = {"seed": seed, "won": int(res == "clear"), "topout": int(res == "topout"), "stall": int(res == "stall"),
             "pills": env.pills_placed, "elapsed_s": round(elapsed, 1), "garbage": garbage, "vleft": int(vleft),
             "dies_ahead": int(res == "topout" and v_at_topout is not None and v_at_topout <= 12), "how": res}
+    if steer is not None:
+        out["steer"] = dict(steer.stats)
+    return out
 
 ARMS = {"winner": dict(trunk="winner", k_clock=0.0), "kc40": dict(trunk="winner", k_clock=40.0),
         "holes80": dict(trunk="winholes80", k_clock=0.0),
