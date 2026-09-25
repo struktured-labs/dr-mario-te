@@ -63,7 +63,18 @@ Registered check: would 540's L15 tap-out be worse than winner's by >1 pp at the
 −1.83 [−4.17, +0.50], so **540 is the default at every level tested**. Win rates are equal (93.8 / 93.8).
 ⚠ At L15, 540 leaves more games at the 600-pill cap (2.33% vs 0.50%, CI excludes 0). Same direction as the
 VS-race `l_cap` flag. At the couch those games keep going, so their real outcome (clear or tap-out) is
-censored here. This is the one L15 cost of 540 on record.
+censored here. **Resolved in (D): 58/60 capped games clear; 540 stays lowest at L15 (4.00%).**
+
+## (D) Cap uncensored (`uncensor_caps.py` → `uncensor_caps_out/`, Hetzner queue job 100)
+All 60 gate-(b) games that hit the 600-pill cap (L11: winner 6 · 540 6 · 720 11 · 900 8; L15: winner 3 ·
+540 14 · 720 12) were replayed at maxpills=3000. **Controls: 7/7 banked non-capped games are identical under
+the larger cap**, so the cap only truncates.
+- **58/60 eventually CLEAR** (after 602–2243 pills). One 540 L15 game taps out (pill 1263), and one 540 L15
+  game is still stalled at 3000.
+- Uncensored tap-out: L11 unchanged (every capped game clears). L15: winner 5.67% · **540 4.00%** · 720 4.83%;
+  winner − 540 = +1.67 [−0.67, +4.00]. **The L15 ranking holds.** The capped games are slow wins, not
+  hidden tap-outs. In a race they are still losses (a 600-pill game is ~50 min of game clock); that cost
+  is already in the VS-race `l_cap`/`loss_race` counts.
 
 ## Provenance
 - L11 rows: `vsrace2/fw_{winner,360,540}_l6.0_*`, `vsrace3/fw{720,900}_l6.0_*`, `gateb/fw*_*.jsonl`.
