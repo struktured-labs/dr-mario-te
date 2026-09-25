@@ -108,6 +108,29 @@ def target_side(var, col):
 
 # ---- empirical answer latency (frames from preview change to the driver's first action), silicon
 _LAT = None
+_LAT_ROT = None
+NROT = {0: 0, 1: 2, 2: 1, 3: 1}                      # presses from spawn rot 0 to each target var (DRROTDIR)
+
+
+def latency_by_rot(path=None):
+    """POST-HOC SENSITIVITY (STEER1): first-lateral-move frame conditioned on how many rotation presses the
+    silicon landing needed (medians 15 / 22 / 15 for 0 / 1 / 2). The pooled sampler (the pre-registered
+    default) ignores that and rotates AFTER the sample, which is too slow for H and too fast for V targets."""
+    global _LAT_ROT
+    if _LAT_ROT is None:
+        path = path or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "couch_forensics",
+                                    "cases_all_games.jsonl")
+        out = {0: [], 1: [], 2: []}
+        for l in open(path):
+            q = json.loads(l)
+            f = (q.get("video") or {}).get("first_lateral_f")
+            if f is None or q.get("proph_dir") is not None or not q.get("verified", True):
+                continue
+            o, cols, a, b = q["actual"][0], tuple(q["actual"][2]), q["cur"][0], q["cur"][1]
+            var = (0 if cols == (a, b) else 1) if o == "H" else (2 if cols == (a, b) else 3)
+            out[NROT[var]].append(int(f))
+        _LAT_ROT = {k: sorted(v) for k, v in out.items()}
+    return _LAT_ROT
 
 
 def latency_samples(path=None):
@@ -129,8 +152,11 @@ class Steer:
     """Stateful per game (the ROM's horVelocity carries across pills)."""
 
     def __init__(self, proph="throat", prehold=False, pulse=False, distgate=True, speed=1, seed=0,
-                 lat=None, trace=False):
+                 lat=None, trace=False, lat_mode="pooled"):
         self.proph, self.prehold, self.pulse, self.distgate = proph, prehold, pulse, distgate
+        self.lat_mode = lat_mode                     # "pooled" (pre-registered) | "byrot" (post-hoc sensitivity)
+        self.hint_side = None                        # "plan" mode: side of the PREVIOUS search's ply-2 plan
+        self.use_hint = False
         self.speed = speed
         self.dtable, self.scancap = dist_table(dasedge=4 if pulse else 12)
         self.lat = lat if lat is not None else latency_samples()
@@ -146,10 +172,13 @@ class Steer:
                       "not_straight": 0, "frames": 0}
 
     # -------------------------------------------------------------------------------------------
-    def _t_act(self, k, t_act=None):
+    def _t_act(self, k, t_act=None, nrot=0):
         if t_act is not None:
             return int(t_act)
         rng = random.Random(self.seed * 1000003 + k * 7919 + 17)
+        if self.lat_mode == "byrot":
+            xs = latency_by_rot()[nrot]
+            return xs[rng.randrange(len(xs))]
         return self.lat[rng.randrange(len(self.lat))]
 
     def _eff(self, color, x, row, tcol):
@@ -178,7 +207,11 @@ class Steer:
         tvar, tcol = target_action // 8, target_action % 8
         trot = ROT_OF_VAR[tvar]
         thr = table_threshold(k, self.speed)
-        ta = self._t_act(k, t_act)
+        nrot = NROT[tvar]
+        ta = self._t_act(k, t_act, nrot)
+        # byrot: ta is the FIRST LATERAL frame (as measured); the answer (rotation start) is nrot frames earlier.
+        # pooled (pre-registered): ta is the answer; rotation follows it, then lateral.
+        t_ans = max(F0, ta - nrot) if self.lat_mode == "byrot" else ta
         rng = random.Random(self.seed * 1000003 + k * 7919 + 29)
         ph = rng.randrange(2) if phase is None else phase
         g0 = G0_CHOICES[rng.randrange(2)] if phase is None else G0_CHOICES[phase]
@@ -188,8 +221,8 @@ class Steer:
         if armed is not None and self.proph is not None:
             if self.proph == "throat":
                 pd = armed if armed in ("L", "R") else None
-            elif self.proph == "brain":
-                side = target_side(tvar, tcol)
+            elif self.proph in ("brain", "plan"):
+                side = self.hint_side if self.proph == "plan" else target_side(tvar, tcol)
                 if side == "L" and color[0][2] == 0 and color[1][2] == 0:
                     pd = "L"
                 elif side == "R" and color[0][5] == 0 and color[1][5] == 0:
@@ -197,7 +230,7 @@ class Steer:
         # pre-hold (carry the charge toward the target side through the lock); only when it pays
         pre = None
         if self.prehold and pd is None and self.v_at_lock >= 10:
-            pre = target_side(tvar, tcol)
+            pre = self.hint_side if self.use_hint else target_side(tvar, tcol)
         x, row, rot = 3, 0, 0
         v = self.v
         spd = 0
@@ -208,17 +241,20 @@ class Steer:
         for f in range(F0, F0 + 4000):
             # ---------------- driver decision (from last frame's state) ----------------
             raw, clear = 0, False
-            if f < ta:
+            if f < t_ans:
                 if pd is not None:
                     clear = True
                     if (f + ph) % 2 == 0:
                         raw = RIGHT if pd == "R" else LEFT
-                elif pre is not None and x != tcol:
-                    raw = RIGHT if pre == "R" else LEFT
+                elif pre is not None and ((pre == "R" and x < 7) or (pre == "L" and x > 0)) and \
+                        (self.use_hint or x != tcol):
+                    raw = RIGHT if pre == "R" else LEFT  # plan mode: the driver doesn't know tcol yet
             elif rot != trot:
                 clear = True
                 delta = (trot - rot) & 3
                 raw = BTN_B if delta == 1 else BTN_A
+            elif f < ta:
+                raw = 0                                    # byrot: rotated early, lateral waits for the gate
             else:
                 eff = self._eff(color, x, row, tcol)
                 if eff != tcol:

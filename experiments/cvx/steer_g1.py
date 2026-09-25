@@ -31,7 +31,7 @@ def var_of(orient, cols, cur):
     return 2 if tuple(cols) == (a, b) else 3
 
 
-def run(phase=None, use_obs_latency=True, verbose=False):
+def run(phase=None, use_obs_latency=True, verbose=False, lat_mode="pooled"):
     C = [json.loads(l) for l in open(CASES)]
     tab = collections.defaultdict(lambda: [0, 0])
     detail = []
@@ -40,7 +40,7 @@ def run(phase=None, use_obs_latency=True, verbose=False):
             continue
         color = grid(q["S"]["color"])
         a = q["sim_action"]
-        st = SM.Steer(proph="throat", seed=1)
+        st = SM.Steer(proph="throat", seed=1, lat_mode=lat_mode)
         t = q["video"]["first_lateral_f"] if use_obs_latency else None
         if SM.proph_throat(color) in ("L", "R") and t is not None:
             # armed spawn: the first observed move is the DRPROPH pulse, not the answer. The answer is the
@@ -80,7 +80,8 @@ def run(phase=None, use_obs_latency=True, verbose=False):
 if __name__ == "__main__":
     ph = sys.argv[sys.argv.index("--phase") + 1] if "--phase" in sys.argv else "0"
     phases = [0, 1] if ph == "sweep" else [int(ph)]
+    lm = sys.argv[sys.argv.index("--lat") + 1] if "--lat" in sys.argv else "pooled"
     for p in phases:
-        tab, det = run(phase=p)
-        print(f"phase {p}:  " + "  ".join(f"{k} {v[0]}/{v[1]}" for k, v in sorted(tab.items())))
+        tab, det = run(phase=p, lat_mode=lm)
+        print(f"[{lm}] phase {p}:  " + "  ".join(f"{k} {v[0]}/{v[1]}" for k, v in sorted(tab.items())))
     json.dump(det, open(os.path.join(CVX, "..", "..", "tmp", "steer_g1_detail.json"), "w"))

@@ -19,12 +19,38 @@ ARMS = {
     "prehold":    dict(steer=dict(proph="brain", prehold=True)),
     "pulse":      dict(steer=dict(proph="throat", pulse=True)),
     "reach":      dict(steer=dict(proph="throat"), reach=True),
+    # POST-HOC SENSITIVITY (not pre-registered): rotation-conditional answer latency (steer_model.latency_by_rot)
+    "couch_byrot":   dict(steer=dict(proph="throat", lat_mode="byrot")),
+    "prehold_byrot": dict(steer=dict(proph="brain", prehold=True, lat_mode="byrot")),
+    # POST-HOC REALISTIC (not pre-registered): arm (3) with the direction taken from the PREVIOUS search's ply-2
+    # plan for this pill (cascade_plan_x) instead of the oracle final target -- what a firmware change can deliver
+    "prehold_plan":       dict(steer=dict(proph="plan", prehold=True), plan=True),
+    "prehold_plan_byrot": dict(steer=dict(proph="plan", prehold=True, lat_mode="byrot"), plan=True),
 }
 
 
 def make(arm):
     spec = ARMS[arm]
     steer = SM.Steer(**spec["steer"]) if spec["steer"] is not None else None
+    if spec.get("plan"):
+        import fast_rtl_x as FX
+        import cascade_chain_x as C
+        import cascade_plan_x as PX
+        C.warmup_chain(topk2=8)
+        w, fl = FX.variant("winner")
+        dec = PX.PlanDecider(w, fl, topk2=8, maxpass=0, w_chain=540, ws=20)
+        steer.use_hint = True
+        state = {"next_hint": None}
+
+        def choose(env, col, vir, ctx):
+            if env.pills_placed == 0:
+                state["next_hint"] = None
+            steer.hint_side = state["next_hint"]          # plan made by the PREVIOUS search (None on pill 0)
+            a = dec.choose(env.board, env.cur, env.nxt)
+            p2 = dec.plan
+            state["next_hint"] = None if p2 < 0 else SM.target_side(p2 // 8, p2 % 8)
+            return a
+        return steer, choose
     if spec.get("reach"):
         import fast_rtl_x as FX
         import cascade_chain_x as C
