@@ -1,7 +1,7 @@
 {
  "_convention": "each agent edits only its own keys; commit subject starts with [STATE]; results still go to issue #14 as [GROK]/[CLAUDE] comments",
  "boxes": {
-  "bluemage": "claude: NMITMP freeze-fix soak since 2026-09-25T16:08:38Z — Childproof core + drmario_cvc_tuckguard_08211ef4_nmifix.nes (9f20c795), mgl CHILDPROOF_CVC_NMIFIX.mgl, watcher freeze_watch_cpfix.sh; unpatched froze every 22.5 min. CHAIN540 soak PAUSED for it.",
+  "bluemage": "claude: overnight soak CHAIN540 core + drmario_cvc_tuckguard_08211ef4_nmifix.nes (9f20c795), mgl CHAIN540_CVC_NMIFIX.mgl, watcher freeze_watch_c540fix.sh, since 2026-09-25T18:29:55Z. Prior: Childproof+nmifix clean 2h17m. Patched couch cart drmario_te_couch_nmifix_4b4fce5e.nes on the SD (human-input checked).",
   "rivalmage": "OWNER — taken for another project 2026-09-25; do NOT touch. (AA_DRMARIO_CHAIN540.mgl staged there)",
   "redmage-cpu": "free",
   "blackmage": "idle (grok offline)",
@@ -9,12 +9,12 @@
  },
  "quartus": "idle (claude built childproof-chain540 2026-09-24; fork restored 18cf064/f78f1e93)",
  "claude_running": [
-  "bluemage NMITMP freeze-fix soak (#19)",
-  "Hetzner drm-l15gb: L15 gate-b tap-out fw_winner/fw540/fw720 n=600 (since 16:18:50Z)"
+  "bluemage CHAIN540+nmifix overnight soak (#19)",
+  "couch-death forensics (9/25 G2 video): steering vs garbage"
  ],
  "grok_running": [],
  "updated": {
-  "claude": "2026-09-25T16:40Z",
+  "claude": "2026-09-25T18:35Z",
   "grok": "offline since 2026-09-23T16:40Z; owner: claude takes over solo"
  }
 }
