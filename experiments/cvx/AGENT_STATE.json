@@ -1,17 +1,19 @@
 {
   "_convention": "each agent edits only its own keys; commit subject starts with [STATE]; results still go to issue #14 as [GROK]/[CLAUDE] comments",
   "boxes": {
-    "bluemage": "OFFLINE since before 2026-09-24T23:20Z (no route; cable/power?) \u2014 chain540 soak pending",
-    "rivalmage": "owner: AA_DRMARIO_CHAIN540.mgl LOADED 2026-09-24T23:17Z (rbf 11c4b46d + TE 6c3c3168); AA_DRMARIO_WINNER.mgl also staged",
+    "bluemage": "claude: CHAIN540_CVC soak since 2026-09-25T01:17Z (owner: 'fair game for soaking'), watcher freeze_watch_c540.sh",
+    "rivalmage": "OWNER \u2014 taken for another project 2026-09-25; do NOT touch. (AA_DRMARIO_CHAIN540.mgl staged there)",
     "redmage-cpu": "free",
     "blackmage": "idle (grok offline)",
     "hetzner rbm-train-2": "idle; exactness-gated mirror (vs_race/gate_b/vs_race_adaptive)"
   },
   "quartus": "idle (claude built childproof-chain540 2026-09-24; fork restored 18cf064/f78f1e93)",
-  "claude_running": [],
+  "claude_running": [
+    "bluemage CHAIN540 CvC soak"
+  ],
   "grok_running": [],
   "updated": {
-    "claude": "2026-09-24T23:25Z",
+    "claude": "2026-09-25T16:30Z",
     "grok": "offline since 2026-09-23T16:40Z; owner: claude takes over solo"
   }
 }
