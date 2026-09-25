@@ -70,6 +70,7 @@ ARMS = {"winner": dict(trunk="winner", k_clock=0.0), "kc40": dict(trunk="winner"
 
 if __name__ == "__main__":
     arm, model_name, trate, lo, cnt, step, out = sys.argv[1], sys.argv[2], float(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]), sys.argv[7]
+    level = int(sys.argv[8]) if len(sys.argv) > 8 else 11
     if model_name == "owner":
         import bursty_model as BM; model = BM.fit_struktured_20260804()
     else:
@@ -81,5 +82,7 @@ if __name__ == "__main__":
         pol, choose = None, vs_race._decider(arm)
     with open(out, "w") as fh:
         for i in range(cnt):
-            r = play(lo + i * step, pol, model, trate=trate, choose=choose)
-            r.update({"arm": arm, "model": model_name, "trate": trate}); fh.write(json.dumps(r) + "\n"); fh.flush()
+            r = play(lo + i * step, pol, model, trate=trate, level=level, choose=choose)
+            r.update({"arm": arm, "model": model_name, "trate": trate})
+            if level != 11: r["level"] = level     # L11 rows stay byte-identical to the banked screen
+            fh.write(json.dumps(r) + "\n"); fh.flush()
