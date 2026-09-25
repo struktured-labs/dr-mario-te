@@ -1,7 +1,7 @@
 # RESULT (2026-09-25, Claude solo): DOSE2 — past the knee? DRCHAIN 720/900 + tournament level L15
 Pre-reg: `PREREG_DOSE2.md` (written at launch). Rev `vsrace-r1 / vsharness-r1 / rom-attack-2026-08-01`.
 
-## Verdict: 540 STAYS. Neither 720 nor 900 clears the bar; the knee is at or below 540.
+## Verdict: 540 STAYS. Neither 720 nor 900 clears the bar; the knee is at or below 540. At L15, 540 has the lowest tap-out (3.83% vs winner 5.67%).
 The L11 ranking survives at L15 only partly: 540 = 720 = winner at the scaled 236 s pace. At 177 s,
 540 beats winner (−8.0 pp for winner).
 
@@ -52,14 +52,23 @@ clearing or topping out, so the high-chain policy stalls on the bigger board. `l
 at δ=2.0 the same games count as `loss_race`, so this is an outcome-label artifact of one game
 population, not two. It is also the same failure the stall-breaker lane (#2) targets.
 
-## Pending
-- L15 gate (b) tap-out (the owner's metric at tournament level): fw_winner / fw540 / fw720, n=600 paired
-  seeds 40134.. step 2, Hetzner unit `drm-l15gb` (launched 16:18:50Z; local↔remote game md5 `a4fef43f` match).
-  If 540's L15 tap-out is worse than winner's by >1 pp (upper CI), the couch default should depend on level.
+## (C) L15 gate (b) tap-out: owner burst model, n=600 paired seeds 40134.. step 2 (`gateb_l15/`, Hetzner `drm-l15gb`)
+| arm | win% | tap-out% | paired tap-out vs fw540 | cap-stall% | paired stall vs fw540 | med pills |
+|---|---|---|---|---|---|---|
+| fw_winner | 93.8 | 5.67 | +1.83 [−0.50, +4.17] | 0.50 | −1.83 [−3.17, −0.50] | 171 |
+| **fw540** | 93.8 | **3.83** | — | 2.33 | — | 192 |
+| fw720 | 93.2 | 4.83 | +1.00 [−1.00, +3.00] | 2.00 | −0.33 [−1.83, +1.33] | 209 |
+
+Registered check: would 540's L15 tap-out be worse than winner's by >1 pp at the upper CI? No. 540 − winner =
+−1.83 [−4.17, +0.50], so **540 is the default at every level tested**. Win rates are equal (93.8 / 93.8).
+⚠ At L15, 540 leaves more games at the 600-pill cap (2.33% vs 0.50%, CI excludes 0). Same direction as the
+VS-race `l_cap` flag. At the couch those games keep going, so their real outcome (clear or tap-out) is
+censored here. This is the one L15 cost of 540 on record.
 
 ## Provenance
 - L11 rows: `vsrace2/fw_{winner,360,540}_l6.0_*`, `vsrace3/fw{720,900}_l6.0_*`, `gateb/fw*_*.jsonl`.
 - L15 rows: `vsrace_l15/*_L15_*.jsonl` (rsync from `/root/drm/l15/`). Current `vs_race.py` (8ff227b6)
   reproduces banked row fw540 L15 seed 40134 byte-for-byte.
+- L15 gate-b rows: `gateb_l15/*_L15_*.jsonl`; analyzer `analyze_l15gb.py`.
 - `gate_b.py` gained an optional 8th CLI arg `level` (default 11); L11 rows are byte-identical
   (re-ran fw540 seed 36734 = banked row).
