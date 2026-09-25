@@ -5,9 +5,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 COPRO = os.path.join(ROOT, "fpga", "copro")
 chain, out = sys.argv[1], sys.argv[2]
 reach = sys.argv[3] if len(sys.argv) > 3 else "0"
+reachtap = sys.argv[4] if len(sys.argv) > 4 else "0"
 os.environ.update({"DRSTRAND": "20", "DRCHAIN": chain, "DRCOPRO_ARM": "1", "DRFIX": "1",
                    "DRCOPRO_TUCKBFS": "1", "DRCOPRO_TUCKBFS_TIER3": "1", "DRCOPRO_TUCKV3_THETA": "400",
-                   "DRDBLCANON": "1", "DRCOPRO_TUCKV3_FIXSLOT": "1", "DRVETO": "1", "DRREACH": reach})
+                   "DRDBLCANON": "1", "DRCOPRO_TUCKV3_FIXSLOT": "1", "DRVETO": "1", "DRREACH": reach, "DRREACHTAP": reachtap})
 for m in ("test_search_d3", "tuck_v3", "build_copro_d3"):
     sys.modules.pop(m, None)
 sys.path.insert(0, COPRO)

@@ -23,10 +23,13 @@ import reach_fw as RF
 S_NA, S_NB = 0x6126, 0x6127
 
 
+TAPBUILD = False          # --tap: gate the DRREACHTAP routine (P decoded from the colour low-nibble bits 2-3)
+
+
 def build(mut="none"):
     R._MUT = mut
     a = Asm6502(R.REACH_ROM)
-    R.emit_reach(a, S_NA, S_NB)
+    R.emit_reach(a, S_NA, S_NB, tap=TAPBUILD)
     code = a.assemble()
     assert a.labels["reach_mask"] == 0, "entry must be the first byte"
     R._MUT = "none"
@@ -56,8 +59,8 @@ def to_live(color, empty=0xFF, rng=None):
     return out
 
 
-def ref_eff(color, thr):
-    m = RF.reach_mask_fw(color, thr)
+def ref_eff(color, thr, tap=0):
+    m = RF.reach_mask_fw(color, thr, tap or None)
     return [m[((i >> 3) ^ 2) * 8 + (i & 7)] for i in range(32)]
 
 
@@ -82,14 +85,15 @@ def check_transport(code):
     return bad, old_ok and flt_bad == 0
 
 
-def check_mask(code, boards, rng, both_empty=True):
+def check_mask(code, boards, rng, both_empty=True, tap=0):
     n = bad = 0; cyc_max = 0; first_bad = None
     for d in boards:
-        ref = ref_eff(d["color"], d["thr"])
+        ref = ref_eff(d["color"], d["thr"], tap)
         hi_a, hi_b = R.pack_nibbles(d["speed"], d["speedups"])
+        lo_a, lo_b = (tap & 3) << 2, ((tap >> 2) & 3) << 2         # the DRTAPP transport (0 = DAS)
         for emp in ((0xFF, 0x00) if both_empty else (0xFF,)):
             live = to_live(d["color"], emp, rng)
-            rok, flt, thr, cyc = run(code, live, hi_a | rng.randrange(3), hi_b | rng.randrange(3))
+            rok, flt, thr, cyc = run(code, live, hi_a | lo_a | rng.randrange(3), hi_b | lo_b | rng.randrange(3))
             assert thr == d["thr"], (thr, d["thr"])
             eff = rok if flt else [1] * 32
             legal = [i for i in range(32) if _legal(d["color"], i)]
@@ -111,7 +115,12 @@ def _legal(color, idx):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--synth", type=int, default=1500); ap.add_argument("--mut-boards", type=int, default=400)
+    ap.add_argument("--tap", action="store_true", help="gate the DRREACHTAP routine at --taps periods")
+    ap.add_argument("--taps", default="0,2,3")
     args = ap.parse_args()
+    global TAPBUILD
+    TAPBUILD = args.tap
+    taps = [int(x) for x in args.taps.split(",")] if args.tap else [0]
     rng = random.Random(7)
     game, synth = load_corpus(args.synth)
     code = build()
@@ -119,17 +128,19 @@ def main():
     tb, old_ok = check_transport(code)
     print(f"T  transport: thr mismatches {tb}/150; old cart (NB hi = 0) -> no filter: {old_ok}")
     ok = tb == 0 and old_ok
-    for name, boards in (("game", game), ("synth", synth)):
-        n, bad, cyc, fb = check_mask(code, boards, rng)
-        print(f"M  {name}: {len(boards)} boards, {n} legal candidate checks (x2 empty encodings), mismatches {bad}, max {cyc} cycles{'' if not fb else ' first bad ' + str(fb)}")
-        ok &= bad == 0
+    for tp in taps:
+        for name, boards in (("game", game), ("synth", synth)):
+            n, bad, cyc, fb = check_mask(code, boards, rng, tap=tp)
+            print(f"M  {name} {'P=' + str(tp) if args.tap else 'DAS'}: {len(boards)} boards, {n} legal candidate checks (x2 empty encodings), mismatches {bad}, max {cyc} cycles{'' if not fb else ' first bad ' + str(fb)}")
+            ok &= bad == 0
     killed = True
     mb = (game + synth)[:: max(1, (len(game) + len(synth)) // args.mut_boards)]
-    for mut in ("tlat_m1", "tlat_p1", "no_distgate", "no_fallback"):
+    muts = ("tlat_m1", "tlat_p1", "no_distgate", "no_fallback") + (("rot_das",) if args.tap else ())
+    for mut in muts:
         mc = build(mut)
-        n, bad, _, _ = check_mask(mc, mb, rng, both_empty=False)
-        # no_fallback only differs when reach_fw falls back to all-ones: add boards where every candidate is masked
-        print(f"   mutant {mut:12s}: mismatches {bad}/{n} -> {'KILLED' if bad else 'SURVIVED'}")
+        tp = next((t for t in taps if t), 0) if mut == "rot_das" else taps[-1]
+        n, bad, _, _ = check_mask(mc, mb, rng, both_empty=False, tap=tp)
+        print(f"   mutant {mut:12s} (P={tp}): mismatches {bad}/{n} -> {'KILLED' if bad else 'SURVIVED'}")
         killed &= bad > 0
     print("GATE_REACH_MASK", "PASS" if ok and killed else "FAIL")
     sys.exit(0 if ok and killed else 1)

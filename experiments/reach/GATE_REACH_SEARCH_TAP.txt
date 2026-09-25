@@ -1,0 +1,13 @@
+S   static: 8 abs refs to S_NA/S_NB in search/tuck/stub of the DRREACH=1 image, non-(LDA;AND #$0F): none; reach decode reads [('0xa804', '0x27'), ('0xa82e', '0x26'), ('0xa855', '0x26'), ('0xa85f', '0x27')]
+G3  P=0: firmware == masked mirror 81/81; argmax moved 14
+G3  P=2: firmware == masked mirror 81/81; argmax moved 12
+G3  P=3: firmware == masked mirror 81/81; argmax moved 14
+G1a transport inert (DRREACH=0, random nibbles; colour args < 16): 102/102
+G1b old cart (DRREACH=1, no nibbles) == DRREACH=0:              102/102
+G3  game: firmware == masked mirror 120/120; mask non-trivial on 120; filter moved the argmax on 4
+G3  fast: firmware == masked mirror 81/81; mask non-trivial on 69; filter moved the argmax on 33
+G3  few : firmware == masked mirror 42/42; mask non-trivial on 5; filter moved the argmax on 3
+masked-winner board: unfiltered (0, 0)  skip (1, 2)  firmware (1, 2)
+   mutant PENALTY: firmware (0, 0) vs skip (1, 2) -> KILLED
+   mutant NOAND: static audit flags 2 site(s); colour-arg writes >= 16 on 2/3 boards -> KILLED
+GATE_REACH_SEARCH PASS

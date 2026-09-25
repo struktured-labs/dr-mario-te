@@ -68,3 +68,79 @@ The game corpus (`corpus/game_l1{1,5}.jsonl`) comes from h16-wt `experiments/cvx
   mask becomes conservative, not wrong.
 - DRPRESTART sends the gravity state at lock time. speedUps can tick once between the lock and the spawn (every
   10 pills), so thr may be stale by one step for that one pill.
+
+# DRTAPP — tap steering up to the controller-interface limit (owner ruling 2026-09-25)
+The AI may steer faster than a human, but never faster than a real pad. The game samples the pad once per frame, and
+a press edge needs a released frame before it, so the ceiling is one press per 2 frames.
+
+## Cart dial `DRTAPP=P` (unset/0 = today's DAS, byte-identical; 2..15; 2 = the ceiling)
+- **One shared press scheduler for every P2 press edge (A/B rotation, L/R lateral, PROPH pulse).**
+  - Frame-start bookkeeping at `act` (first hook pass of a game frame, keyed to `$43`) captures the ROM's held byte
+    `$F8` = the TRUE previous-frame pad, and advances a cooldown.
+  - The TAP FILTER at `act_p1` (every P2 path ends there) lets a press intent through only if the cooldown is 0
+    and the bit was released last frame; otherwise it drops the intent. Holds (DOWN) pass through.
+  - The filter restores `$F8`, so the driver can never manufacture an edge.
+- **Interactions (code read + the emulated gate below):**
+
+| path | behaviour under DRTAPP |
+|---|---|
+| **rotation** | Today's `held:=0` idiom (a fresh A/B edge every frame) is neutralised; rotation taps every P. |
+| **lateral / WEAVE** | L/R intents are tapped every P. The pill falls at natural gravity (never pinned). No DAS component remains. |
+| **DISTGATE** | `DIST_DASEDGE = 2P` hooks/column. At P=2 the budget is `min(7, 7y)`, so it clamps only at y=0 (no free row under the span) — the same zero-budget condition the reach mask models. |
+| **SLAM / COLGATE / stuck force-drop** | DOWN holds pass unchanged. The ROM's fast drop needs DOWN alone on the d-pad, and the driver only slams when aligned. |
+| **PROPH** | Requests its direction every hook; the scheduler spaces it at P. The first press is on the detect frame. It no longer uses the `$43`-parity idiom, which is the P=2 special case. |
+| **DRPRESTART** | A GO path with no pad writes; its transport carries P like `handle()`. |
+| **TUCK** | Lateral taps are faster than DAS. TUCKGUARD's bound is DAS-free (1 row/column), so it is unchanged and conservative. |
+
+- **Transport (with DRREACHTX):** P rides the nA/nB colour LOW-nibble bits 2-3 (nA[3:2]=P[1:0], nB[3:2]=P[3:2]).
+  - Every search read of S_NA/S_NB is `LDA; AND #$0F; STA $70E2/$70E3` (engine colour-arg registers; static audit).
+  - The RTL keeps only DO[1:0] there, so the bits are dead to the search. Older firmware ignores them.
+
+## Firmware `DRREACHTAP=1` (needs DRREACH; default 0 = the DRREACH fw d8014d77, byte-identical)
+- The reach routine decodes P (<2 → DAS model) and applies the tap timing.
+  - PROPH presses at F0, F0+P, …; the first answer press at `max(T_LAT, last PROPH + P)`.
+  - Rotation attempts every P; a blocked attempt spends its slot.
+  - Lateral presses start at the last rotation press + P, then every P.
+- `reach_fw.py` gained `tap=P` (tap=None is unchanged: 0 diffs vs the banked masks).
+- One TAP firmware serves both DAS reach carts (P=0) and tap carts.
+
+## Gates (all PASS unless noted)
+- **Identity:**
+  - DRTAPP off reproduces couch 4b4fce5e / 09cdb6ae and CvC 08211ef4 / 9f20c795 / 2291a61d.
+  - DRREACHTAP=0 reproduces fw d8014d77; DRREACH=0 reproduces 6d13e6a1.
+- **G2 mask bit-exact, tap routine** (`gate_reach_mask.py --tap --taps 0,2,3`):
+  - 0 mismatches at P=0, 2 and 3 on 7,412 boards (404,536 checks each).
+  - Mutants killed: T_LAT±1, DISTGATE off, fallback off, and the new `rot_das` (rotation stepping 1 frame).
+  - GATE_REACH_MASK_TAP.txt.
+- **G1/G3 whole search, tap firmware** (`gate_reach_search.py --tap`), GATE_REACH_SEARCH_TAP.txt:
+  - Static audit: every S_NA/S_NB read lands in LEV_A_CA/CB.
+  - G1a (random high AND low-nibble bits inert under DRREACH=0): 102/102. G1b: 102/102.
+  - G3 firmware == masked golden mirror: 243/243 (81 each at P=0/2/3).
+  - PENALTY and NOAND mutants killed.
+- **INTERFACE COMPLIANCE** (`gate_tap_interface.py`, GATE_TAP_INTERFACE.txt):
+  - Method: the REAL emitted driver under py65, closed-loop with a ROM-rule world + an emulated copro, two hook
+    passes per frame, and the ROM's AND / pressed / held semantics.
+  - Checks: C1 no manufactured edge (pressed == R & ~R_prev); C2 never a press on consecutive frames; C3 press
+    spacing ≥ P.
+  - Couch P=2 ×3 seeds and P=3 ×2, CvC P=2 ×2: **0 violations over 280,000 frames** (≈5,900 pills, ≈5,100
+    searches); the minimum gap equals P.
+  - **Mutant `everyframe`: KILLED** on both carts (C1/C2/C3).
+  - ⚠ **Baseline, today's DAS driver (dial off): FAILS C1/C2** about 1,600–1,800 times per 40k frames, all on
+    the A button. The DAS-era rotation forces held := 0 and manufactures a rotation press every frame, faster than
+    a real pad. Lateral DAS is compliant.
+  - Info: hook passes disagree on ≈10 frames per 40k (the ROM ANDs them, so this is harmless). ≈1.4% of frames
+    change more than one button, e.g. a tap release and a DOWN hold together. That is ONE sampled pad state per
+    frame, which a physical pad can produce.
+- **Cart hazard gates:** ALL PASS. **PRG RAM map** regenerated: no collisions; TAP_* declared at $61D0-$61D3.
+- **NMI census:**
+  - Couch tap: 14/14 OK; worst spawn-edge 15,308 cycles; same-frame pair 27,872 < 29,780.
+  - CvC tap: bounds +79..+155 cycles vs the DAS cart.
+
+## Timing notes for the steering sim (STEER3 alignment)
+1. ONE scheduler: the next press of ANY button comes no sooner than P frames after the previous press.
+2. Rotation taps at P. Today's DAS driver rotated every frame, via the manufactured edge above.
+3. PROPH: the first press is on the detect frame (F0=3), then every P. The first answer press is at
+   max(T_LAT, last PROPH + P).
+4. The first lateral press is P after the last rotation press (or the first free slot if no rotation), then every
+   P. There is no DAS 16/6 anywhere.
+5. In the harness, the first press after the answer is published comes after a median of P frames.

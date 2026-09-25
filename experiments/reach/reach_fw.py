@@ -35,6 +35,15 @@ Rule for candidate (var, col), capsule spawning horizontal at x=3, row 0:
   3. Aligned: it falls straight from its row; reachable iff that rest row == the straight-drop rest row
      (so a capsule that slid under an overhang is NOT the brain's landing).
 Legal candidates only (straight-drop cells exist). If none is allowed, the mask is all-ones (no filtering).
+
+TAP MODE (tap=P, cart DRTAPP=P; owner ruling 2026-09-25): every P2 press -- PROPH pulse, rotation, lateral -- is a
+one-frame tap from ONE shared scheduler, the next press no sooner than P frames later (cart tap filter, reach-wt
+patch_cartridge_copro.py). Timing, replacing the DAS schedule above:
+  0. PROPH presses at f = F0, F0+P, F0+2P, ... (< T_LAT, < lock); a blocked press still spends its slot.
+     s = T_LAT, or max(T_LAT, last PROPH press + P) if PROPH pressed.
+  1. rotation attempts at s, s+P, ... (a blocked attempt costs a slot, retried P frames later); t1 = last press + P
+     (t1 = s if NROT = 0).
+  2. lateral steps at t_i = t1 + (i-1)*P, same (a)(b)(c) checks.
 """
 ROWS, COLS = 16, 8
 T_LAT, G0, F0 = 19, 8, 3
@@ -111,19 +120,22 @@ def straight_rest(top, x, vert):
     return top[x] - 1 if vert else min(top[x], top[x + 1]) - 1
 
 
-def reachable(color, top, thr, var, col):
-    """True iff the couch driver lands the capsule EXACTLY on the straight-drop cells of (var, col)."""
+def reachable(color, top, thr, var, col, tap=None):
+    """True iff the couch driver lands the capsule EXACTLY on the straight-drop cells of (var, col).
+    tap=None: today's DAS driver; tap=P: the DRTAPP=P tap driver (see the module docstring)."""
     vert = var in (2, 3)
     x = 3
+    last_press = None
     # ---- 0. PROPH pulse phase (capsule horizontal, rot 0, until the answer at T_LAT)
     pd = proph_dir(color, top)
     if pd is not None:
         step = 1 if pd == "R" else -1
         lockf = tick_frame(rest_from(color, x, 0, False), thr)
-        for f in range(F0, T_LAT):
+        for f in (range(F0, T_LAT) if tap is None else range(F0, T_LAT, tap)):
             if f >= lockf:
                 break
-            if f % 2 == 1:                                     # pulse on-frames (odd)
+            if tap is not None or f % 2 == 1:                  # DAS: pulse on odd frames; TAP: every P from F0
+                last_press = f
                 r = row_at(f, thr)
                 if fits(None, x + step, r, False, color):
                     x += step
@@ -139,6 +151,9 @@ def reachable(color, top, thr, var, col):
     # capsule locks; each successful press re-bases the lock on the new shape.
     nrot = NROT[var]
     f = T_LAT
+    if tap is not None and last_press is not None:
+        f = max(T_LAT, last_press + tap)                       # the shared scheduler's next press slot
+    rstep = 1 if tap is None else tap
     done = 0
     while done < nrot:
         if f >= lockf:
@@ -156,14 +171,17 @@ def reachable(color, top, thr, var, col):
                 done = 2
             if done == 2:
                 lockf = tick_frame(rest_from(color, x, r, False), thr)
-        f += 1
+        f += rstep
     t1 = f
     # ---- 2. lateral steps; the driver decides frame t with the row after frame t-1
     d = abs(col - x)
     r = row_at(max(t1 - 1, 0), thr)
     sd = 1 if col > x else -1
     for i in range(1, d + 1):
-        ti = t1 if i == 1 else t1 + 16 + 6 * (i - 2)
+        if tap is None:
+            ti = t1 if i == 1 else t1 + 16 + 6 * (i - 2)
+        else:
+            ti = t1 + (i - 1) * tap
         if ti >= lockf:                                        # (a) locked in the previous column first
             return False
         y = free_rows_below(color, row_at(ti - 1, thr), min(x, col), max(x, col))
@@ -178,7 +196,7 @@ def reachable(color, top, thr, var, col):
     return rest_from(color, x, r, vert) == straight_rest(top, x, vert)
 
 
-def reach_mask_fw(color, thr):
+def reach_mask_fw(color, thr, tap=None):
     top = tops(color)
     out = [0] * 32
     for a in range(32):
@@ -188,7 +206,7 @@ def reach_mask_fw(color, thr):
             continue
         if rest(top, col, vert) - (1 if vert else 0) < 0:
             continue
-        out[a] = 1 if reachable(color, top, thr, var, col) else 0
+        out[a] = 1 if reachable(color, top, thr, var, col, tap) else 0
     if not any(out):
         out = [1] * 32
     return out

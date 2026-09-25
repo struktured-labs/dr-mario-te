@@ -55,7 +55,10 @@ V_IDX, V_ANY = 0x0AD4, 0x0AD5
 V_LO, V_HI = 0x0AD6, 0x0AD7      # lateral span columns
 V_G0T = 0x0AD8                   # G0 + thr
 V_SR = 0x0AD9                    # scratch rest row
-REACH_RAM_END = 0x0ADA
+V_P = 0x0ADA                     # DRREACHTAP: tap period P from the transport (0 = DAS)
+V_SL = 0x0ADB                    # DRREACHTAP: first answer press slot s (= T_LAT or last PROPH press + P)
+V_LP = 0x0ADC                    # DRREACHTAP: last PROPH press frame ($FF = none)
+REACH_RAM_END = 0x0ADD
 # zp $B6-$C9: unclaimed by every module of the Childproof/CHAIN540 build (measured by instrumenting the
 # assembler over a full build_image: only $B4/$B5 (DRVETO) are used in $B4-$C9).
 (R_THR, R_TP1, R_X, R_LKL, R_LKH, R_FL, R_FH, R_O4, R_COL, R_VRT, R_FX, R_FR, R_FV, RW_L, RW_H, R_I, R_D, R_SD,
@@ -75,6 +78,7 @@ assert len(SPEED_TABLE) == 81
 
 # TEST-ONLY mutants (gate G2 must kill each). Never set by any build.
 _MUT = "none"   # "tlat_m1" | "tlat_p1" | "no_distgate" | "penalty" (handled in test_search_d3) | "no_fallback"
+                # | "rot_das" (TAP build: rotation attempts step 1 frame instead of P)
 
 
 def thr_from_nibbles(na, nb):
@@ -95,7 +99,13 @@ def pack_nibbles(speed, speedups):
 
 
 # ------------------------------------------------------------------ Python mirror of the 6502 (dev + gate aid)
-def mirror_mask(live, thr, tlat=T_LAT, distgate=True):
+def tap_from_nibbles(na, nb):
+    """DRREACHTAP decode: P = nA[3:2] | nB[3:2] << 2 from the colour LOW nibbles (0 = DAS; < 2 treated as DAS)."""
+    pp = ((na >> 2) & 3) | (((nb >> 2) & 3) << 2)
+    return pp if pp >= 2 else 0
+
+
+def mirror_mask(live, thr, tlat=T_LAT, distgate=True, tap=0):
     """The exact integer algorithm the 6502 implements, on NES bytes (empty = $FF or $00), in COPRO o4 space.
     Returns (rok[32], flt). Must equal reach_fw.reach_mask_fw (re-indexed var = o4 ^ 2) on every board."""
     emp = lambda r, c: live[r * 8 + c] in (0xFF, 0x00)
@@ -138,12 +148,14 @@ def mirror_mask(live, thr, tlat=T_LAT, distgate=True):
             pd = -1 if gl else (1 if gr else 0)
     x = 3
     plock, pidx = False, None
+    lastp = None
     if pd:
         lock = tk(rest(3, 0, False))
-        for f in range(F0, tlat):
+        for f in (range(F0, tlat) if not tap else range(F0, tlat, tap)):
             if f >= lock:
                 break
-            if f & 1:
+            if tap or (f & 1):
+                lastp = f
                 r = row(f)
                 if fits(x + pd, r, False):
                     x += pd
@@ -171,6 +183,9 @@ def mirror_mask(live, thr, tlat=T_LAT, distgate=True):
             rok[idx] = int(idx == pidx)
             continue
         x, lock, f, done, nrot = x0, l0, tlat, 0, NROT_O4[o4]
+        if tap and lastp is not None:
+            f = max(tlat, lastp + tap)
+        rstep = tap if tap else 1
         ok = True
         while done < nrot:
             if f >= lock:
@@ -189,7 +204,7 @@ def mirror_mask(live, thr, tlat=T_LAT, distgate=True):
                     done = 2
                 if done == 2:
                     lock = tk(rest(x, r, False))
-            f += 1
+            f += rstep
         if not ok:
             continue
         t1 = f
@@ -213,7 +228,10 @@ def mirror_mask(live, thr, tlat=T_LAT, distgate=True):
                 break
             x += sd
             lock = tk(rest(x, r, vert))
-            ti = t1 + 16 if i == 1 else ti + 6
+            if tap:
+                ti = ti + tap
+            else:
+                ti = t1 + 16 if i == 1 else ti + 6
         if not ok:
             continue
         sr = (top[x] - 1) if vert else (min(top[x], top[x + 1]) - 1)
@@ -223,7 +241,7 @@ def mirror_mask(live, thr, tlat=T_LAT, distgate=True):
 
 
 # ------------------------------------------------------------------ 6502 emitter
-def emit_reach(a, s_na, s_nb):
+def emit_reach(a, s_na, s_nb, tap=False):
     """Emit the routine; the FIRST instruction is the entry point (label reach_mask at offset 0, asserted by the
     builder), so the search can JSR REACH_ROM without a cross-image label. Clobbers A/X/Y, zp $B6-$C9, RAM
     $0A80-$0AD9. Leaves R_FLT and ROK for the Pass-0 filter."""
@@ -250,6 +268,13 @@ def emit_reach(a, s_na, s_nb):
     a.ins("TAX"); _lda_absx_label(a, "rm_speedtab"); a.ins("STA_zp", R_THR)
     a.ins("CLC"); a.ins("ADC_imm", 1); a.ins("STA_zp", R_TP1)
     a.ins("LDA_zp", R_THR); a.ins("CLC"); a.ins("ADC_imm", G0); a.ins16("STA_abs", V_G0T)
+    if tap:
+        # DRREACHTAP: P = nA[3:2] | nB[3:2] << 2 (colour LOW-nibble bits the search never uses); < 2 -> DAS (0)
+        a.ins16("LDA_abs", s_na); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("AND_imm", 0x03); a.ins16("STA_abs", V_TMP)
+        a.ins16("LDA_abs", s_nb); a.ins("AND_imm", 0x0C); a.ins16("ORA_abs", V_TMP)
+        a.ins("CMP_imm", 2); a.br("BCS", "rm_pok"); a.ins("LDA_imm", 0)
+        a.label("rm_pok"); a.ins16("STA_abs", V_P)
+        a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", V_LP)
     # ---------- TICK[r] = G0 + thr + r*(thr+1), r = 0..15 (16-bit) ----------
     a.ins16("LDA_abs", V_G0T); a.ins16("STA_abs", TICKL); a.ins("LDA_imm", 0); a.ins16("STA_abs", TICKH)
     a.ins("LDX_imm", 0)
@@ -306,7 +331,13 @@ def emit_reach(a, s_na, s_nb):
     a.ins("LDA_zp", R_FL); a.ins("CMP_zp", R_LKL); a.ins("LDA_zp", R_FH); a.ins("SBC_zp", R_LKH)
     a.br("BCC", "rm_pf2"); a.jmp("rm_pfe")                                    # f >= lock -> break
     a.label("rm_pf2")
+    if tap:
+        a.ins16("LDA_abs", V_P); a.br("BEQ", "rm_pfdas")
+        a.ins("LDA_zp", R_FL); a.ins16("STA_abs", V_LP); a.jmp("rm_pfgo")      # TAP: every visited frame presses
+        a.label("rm_pfdas")
     a.ins("LDA_zp", R_FL); a.ins("AND_imm", 1); a.br("BEQ", "rm_pfn")         # even frame: no pulse
+    if tap:
+        a.label("rm_pfgo")
     a.ins("LDA_zp", R_FL); a.ins("STA_zp", RW_L); a.ins("LDA_zp", R_FH); a.ins("STA_zp", RW_H)
     a.jsr("rx_row"); a.ins("STA_zp", R_R)
     a.ins("LDA_zp", R_X); a.ins("CLC"); a.ins16("ADC_abs", V_PD); a.ins("STA_zp", R_FX)
@@ -315,6 +346,10 @@ def emit_reach(a, s_na, s_nb):
     a.ins("LDA_zp", R_FX); a.ins("STA_zp", R_X)                              # x += step
     a.ins("LDA_zp", R_R); a.ins("STA_zp", R_FR); a.jsr("rx_rest"); a.ins("LDA_zp", R_FR); a.jsr("rx_tick")
     a.label("rm_pfn")
+    if tap:
+        a.ins16("LDA_abs", V_P); a.br("BEQ", "rm_pfi1")
+        a.ins("CLC"); a.ins("ADC_zp", R_FL); a.ins("STA_zp", R_FL); a.jmp("rm_pf")   # TAP: next slot f + P
+        a.label("rm_pfi1")
     a.ins("INC_zp", R_FL); a.jmp("rm_pf")
     a.label("rm_pfe")
     # locked at or before T_LAT?  lock <= T_LAT  <=>  !(lock > T_LAT)  <=>  LKH == 0 && LKL <= T_LAT
@@ -344,6 +379,14 @@ def emit_reach(a, s_na, s_nb):
     a.label("rm_nopd")
     a.ins("LDA_imm", 3); a.ins("STA_zp", R_X)
     a.label("rm_x0")
+    if tap:
+        # V_SL = T_LAT, or max(T_LAT, last PROPH press + P) when a TAP PROPH press happened
+        a.ins("LDA_imm", tlat); a.ins16("STA_abs", V_SL)
+        a.ins16("LDA_abs", V_P); a.br("BEQ", "rm_sld")
+        a.ins16("LDA_abs", V_LP); a.ins("CMP_imm", 0xFF); a.br("BEQ", "rm_sld")
+        a.ins("CLC"); a.ins16("ADC_abs", V_P); a.ins("CMP_imm", tlat); a.br("BCC", "rm_sld")
+        a.ins16("STA_abs", V_SL)
+        a.label("rm_sld")
     # ---------- x0, lock0 = T(rest(x0, row(T_LAT - 1), H)) ----------
     a.ins("LDA_zp", R_X); a.ins16("STA_abs", V_X0)
     a.ins("LDA_imm", tlat - 1); a.ins("STA_zp", RW_L); a.ins("LDA_imm", 0); a.ins("STA_zp", RW_H)
@@ -391,7 +434,10 @@ def emit_reach(a, s_na, s_nb):
     a.label("rx_cand")
     a.ins16("LDA_abs", V_X0); a.ins("STA_zp", R_X)
     a.ins16("LDA_abs", V_L0L); a.ins("STA_zp", R_LKL); a.ins16("LDA_abs", V_L0H); a.ins("STA_zp", R_LKH)
-    a.ins("LDA_imm", tlat); a.ins("STA_zp", R_FL); a.ins("LDA_imm", 0); a.ins("STA_zp", R_FH)
+    if tap:
+        a.ins16("LDA_abs", V_SL); a.ins("STA_zp", R_FL); a.ins("LDA_imm", 0); a.ins("STA_zp", R_FH)
+    else:
+        a.ins("LDA_imm", tlat); a.ins("STA_zp", R_FL); a.ins("LDA_imm", 0); a.ins("STA_zp", R_FH)
     a.ins16("STA_abs", V_DONE)
     a.ins("LDX_zp", R_O4); _lda_absx_label(a, "rm_nrot"); a.ins16("STA_abs", V_NROT)
     a.label("rc_rl")
@@ -424,6 +470,11 @@ def emit_reach(a, s_na, s_nb):
     a.ins("LDA_imm", 0); a.ins("STA_zp", R_FV)
     a.jsr("rx_rest"); a.ins("LDA_zp", R_FR); a.jsr("rx_tick")
     a.label("rc_rn")
+    if tap and _MUT != "rot_das":
+        a.ins16("LDA_abs", V_P); a.br("BEQ", "rc_ri1")
+        a.ins("CLC"); a.ins("ADC_zp", R_FL); a.ins("STA_zp", R_FL)                  # TAP: next attempt f + P
+        a.ins("LDA_zp", R_FH); a.ins("ADC_imm", 0); a.ins("STA_zp", R_FH); a.jmp("rc_rl2")
+        a.label("rc_ri1")
     a.ins("INC_zp", R_FL); a.br("BNE", "rc_rl2"); a.ins("INC_zp", R_FH)
     a.label("rc_rl2")
     a.jmp("rc_rl")
@@ -483,7 +534,12 @@ def emit_reach(a, s_na, s_nb):
     a.label("rc_l3")
     a.ins("LDA_zp", R_FX); a.ins("STA_zp", R_X)
     a.ins("LDA_zp", R_R); a.ins("STA_zp", R_FR); a.jsr("rx_rest"); a.ins("LDA_zp", R_FR); a.jsr("rx_tick")
-    # next ti: i == 1 -> t1 + 16 ; else ti + 6
+    # next ti: i == 1 -> t1 + 16 ; else ti + 6      (TAP: ti + P always)
+    if tap:
+        a.ins16("LDA_abs", V_P); a.br("BEQ", "rc_tdas")
+        a.ins("CLC"); a.ins("ADC_zp", R_FL); a.ins("STA_zp", R_FL)
+        a.ins("LDA_zp", R_FH); a.ins("ADC_imm", 0); a.ins("STA_zp", R_FH); a.jmp("rc_tn")
+        a.label("rc_tdas")
     a.ins("LDA_zp", R_I); a.ins("CMP_imm", 1); a.br("BNE", "rc_t6")
     a.ins16("LDA_abs", V_T1L); a.ins("CLC"); a.ins("ADC_imm", 16); a.ins("STA_zp", R_FL)
     a.ins16("LDA_abs", V_T1H); a.ins("ADC_imm", 0); a.ins("STA_zp", R_FH); a.jmp("rc_tn")

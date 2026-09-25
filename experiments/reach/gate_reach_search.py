@@ -29,12 +29,15 @@ import reach_6502 as RC
 import reach_fw as RF
 
 TS = (0x10 | 1) ^ 0xA4
+TAPFW = False            # --tap: gate the DRREACHTAP firmware; P rides the nA/nB colour LOW-nibble bits 2-3
+TAPS = [0]
 S_NA, S_NB = 0x6126, 0x6127
 _ST = {}
 
 
 def image(B, D3, reach):
     os.environ["DRREACH"] = "1" if reach else "0"
+    os.environ["DRREACHTAP"] = "1" if (reach and TAPFW) else "0"
     img, clen, _ = B.build_image([0xFF] * 128, 0, 0, 0, 0)
     _code, labels = D3.build()
     return img, 0x8000 + labels["search"]
@@ -73,8 +76,8 @@ def color_grid(nes):
     return [[0 if nes[r * 8 + c] in (0xFF, 0x00) else 1 for c in range(8)] for r in range(16)]
 
 
-def reach_eff(nes, thr):
-    m = RF.reach_mask_fw(color_grid(nes), thr)
+def reach_eff(nes, thr, tap=0):
+    m = RF.reach_mask_fw(color_grid(nes), thr, tap or None)
     return [m[((i >> 3) ^ 2) * 8 + (i & 7)] for i in range(32)]
 
 
@@ -109,22 +112,25 @@ def expect(D3, board, cA, cB, nA, nB, mask, ts=TS):
 
 def task(t):
     D3 = _ST["D3"]
-    kind, nes, (cA, cB, nA, nB), (sp, su), do_g1 = t
+    kind, nes, (cA, cB, nA, nB), (sp, su), do_g1, tp = t
     thr = RC.SPEED_TABLE[min(80, RC.SPEED_BASE[sp] + su)]
     hiA, hiB = RC.pack_nibbles(sp, su)
-    out = {"kind": kind, "sp": sp, "su": su, "thr": thr}
+    hiA |= (tp & 3) << 2; hiB |= ((tp >> 2) & 3) << 2           # DRTAPP transport (low-nibble bits 2-3)
+    out = {"kind": kind, "sp": sp, "su": su, "thr": thr, "tap": tp}
     img0, ep0 = _ST["img0"]; img1, ep1 = _ST["img1"]
     if do_g1:
         r = random.Random(sum(nes) * 7 + cA)
         d0, m0 = run_fw(img0, ep0, nes, cA, cB, nA, nB)
-        d0r, m0r = run_fw(img0, ep0, nes, cA, cB, nA | (r.randrange(1, 16) << 4), nB | (r.randrange(1, 16) << 4))
+        d0r, m0r = run_fw(img0, ep0, nes, cA, cB, nA | (r.randrange(1, 16) << 4) | (r.randrange(4) << 2),
+                          nB | (r.randrange(1, 16) << 4) | (r.randrange(4) << 2))
         d1o, m1o = run_fw(img1, ep1, nes, cA, cB, nA, nB)
-        out.update(g1a=(d0 == d0r and m0r < 16), g1b=(d1o == d0), d0=d0)
-    mask = reach_eff(nes, thr)
+        out.update(g1a=(d0 == d0r and m0r < 16), g1b=(d1o == d0), d0=d0)   # m0r < 16: args carry the low nibble only
+    mask = reach_eff(nes, thr, tp if TAPFW else 0)
     d1, m1 = run_fw(img1, ep1, nes, cA, cB, nA | hiA, nB | hiB)
     e1 = expect(D3, nes, cA, cB, nA, nB, mask)
     e0 = expect(D3, nes, cA, cB, nA, nB, None)
-    out.update(g3=(d1 == e1 and m1 < 16), d1=d1, e1=e1, e0=e0, masked=32 - sum(mask), moved=(e1 != e0), argmax=m1)
+    out.update(g3=(d1 == e1 and m1 < 16), d1=d1, e1=e1, e0=e0, masked=32 - sum(mask),
+               moved=(e1 != e0), argmax=m1)
     return out
 
 
@@ -138,7 +144,8 @@ def static_audit(img):
         if img[i] in absops and img[i + 1] in (0x26, 0x27) and img[i + 2] == 0x61:
             if RC.REACH_ROM <= i < RC.REACH_ROM + 0x800:
                 continue          # the reach routine's own transport decode reads the HIGH nibble by design
-            ok = img[i] == 0xAD and img[i + 3] == 0x29 and img[i + 4] == 0x0F
+            sta = img[i + 5] == 0x8D and (img[i + 6] | img[i + 7] << 8) in (0x70E2, 0x70E3)
+            ok = img[i] == 0xAD and img[i + 3] == 0x29 and img[i + 4] == 0x0F and sta
             hits.append(i)
             if not ok:
                 bad.append((hex(i), hex(img[i]), bytes(img[i:i + 5]).hex(" ")))
@@ -163,7 +170,10 @@ def main():
     ap.add_argument("--game", type=int, default=80); ap.add_argument("--fast", type=int, default=60)
     ap.add_argument("--few", type=int, default=20); ap.add_argument("--g1", type=int, default=60)
     ap.add_argument("--workers", type=int, default=8)
+    ap.add_argument("--tap", action="store_true"); ap.add_argument("--taps", default="0,2,3")
     args = ap.parse_args()
+    global TAPFW, TAPS
+    TAPFW = args.tap; TAPS = [int(x) for x in args.taps.split(",")] if args.tap else [0]
     B, D3 = GD._load()
     _ST.update(B=B, D3=D3, img0=image(B, D3, False), img1=image(B, D3, True))
     rng = random.Random(20260925)
@@ -172,18 +182,18 @@ def main():
     rd = reach_decode_reads(_ST["img1"][0])
     print(f"S   static: {len(hits)} abs refs to S_NA/S_NB in search/tuck/stub of the DRREACH=1 image, non-(LDA;AND #$0F): "
           f"{bad or 'none'}; reach decode reads {rd}")
-    ok = not bad and len(hits) > 0 and len(rd) == 2
+    ok = not bad and len(hits) > 0 and len(rd) == (4 if TAPFW else 2)   # thr decode (2) + TAP: P decode (2)
     # ---- task list
     rows = [json.loads(l) for f in ("game_l11.jsonl", "game_l15.jsonl") for l in open(os.path.join(HERE, "corpus", f))]
     step = max(1, len(rows) // args.game)
     tasks = []
     for j, d in enumerate(rows[::step][:args.game]):
         p = [x - 1 for x in d["pills"]]
-        tasks.append(("game", d["nes"], tuple(p), (d["speed"], d["speedups"]), j < args.g1))
+        tasks.append(("game", d["nes"], tuple(p), (d["speed"], d["speedups"]), j < args.g1, TAPS[j % len(TAPS)]))
     fastsp = [(2, 30), (2, 40), (2, 49), (1, 40), (1, 49)]
     for j, d in enumerate(rows[step // 2::step][:args.fast]):
         p = [x - 1 for x in d["pills"]]
-        tasks.append(("fast", d["nes"], tuple(p), fastsp[j % len(fastsp)], False))
+        tasks.append(("fast", d["nes"], tuple(p), fastsp[j % len(fastsp)], False, TAPS[j % len(TAPS)]))
     from test_search_d3 import make_fewlegal
     FSIM = "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim"
     for pth in (os.path.join(FSIM, "src"), os.path.join(FSIM, "tmp")):
@@ -193,12 +203,16 @@ def main():
     from xcheck_terms import faithful_to_nes
     for j in range(args.few):
         nes = list(faithful_to_nes(make_fewlegal(rng, FaithfulBoard)))
-        tasks.append(("few", nes, tuple(rng.randint(0, 2) for _ in range(4)), fastsp[j % len(fastsp)], True))
+        tasks.append(("few", nes, tuple(rng.randint(0, 2) for _ in range(4)), fastsp[j % len(fastsp)], True, TAPS[j % len(TAPS)]))
     with mp.get_context("fork").Pool(args.workers, initializer=init_worker) as pool:
         res = pool.map(task, tasks, chunksize=1)
     g1 = [r for r in res if "g1a" in r]
     g1a = sum(r["g1a"] for r in g1); g1b = sum(r["g1b"] for r in g1)
     g3 = sum(r["g3"] for r in res)
+    if TAPFW:
+        for tp in TAPS:
+            rr = [r for r in res if r["tap"] == tp]
+            print(f"G3  P={tp}: firmware == masked mirror {sum(r['g3'] for r in rr)}/{len(rr)}; argmax moved {sum(r['moved'] for r in rr)}")
     print(f"G1a transport inert (DRREACH=0, random nibbles; colour args < 16): {g1a}/{len(g1)}")
     print(f"G1b old cart (DRREACH=1, no nibbles) == DRREACH=0:              {g1b}/{len(g1)}")
     for kind in ("game", "fast", "few"):
@@ -213,8 +227,9 @@ def main():
     # ---- masked-winner board + PENALTY mutant
     E = 0xFF
     mw = [E] * 128; mw[15 * 8 + 0] = 0xD0; mw[14 * 8 + 0] = 0xD0
-    pc = (0, 0, 1, 2); sp = (2, 49)
-    thr = RC.SPEED_TABLE[80]; hiA, hiB = RC.pack_nibbles(*sp); mk = reach_eff(mw, thr)
+    pc = (0, 0, 1, 2); sp = (2, 49); tpw = 2 if TAPFW else 0
+    thr = RC.SPEED_TABLE[80]; hiA, hiB = RC.pack_nibbles(*sp); mk = reach_eff(mw, thr, tpw)
+    hiA |= (tpw & 3) << 2; hiB |= ((tpw >> 2) & 3) << 2
     e_skip = expect(D3, mw, *pc, mk); e_open = expect(D3, mw, *pc, None)
     d_ok, _ = run_fw(*_ST["img1"], mw, pc[0], pc[1], pc[2] | hiA, pc[3] | hiB)
     print(f"masked-winner board: unfiltered {e_open}  skip {e_skip}  firmware {d_ok}")
@@ -231,7 +246,7 @@ def main():
     few = [t for t in tasks if t[0] == "game"][:3]
     leak = 0
     for t in few:
-        _, (cA, cB, nA, nB), (sp_, su_) = t[1], t[2], t[3]
+        _, (cA, cB, nA, nB), (sp_, su_) = t[1], t[2], t[3]   # NOAND mutant runs with the P transport off
         hA, hB = RC.pack_nibbles(sp_, su_)
         _, mxn = run_fw(*imgn, t[1], cA, cB, nA | hA, nB | hB)
         leak += int(mxn >= 16)

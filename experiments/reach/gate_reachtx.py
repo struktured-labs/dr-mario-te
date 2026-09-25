@@ -33,11 +33,14 @@ def main():
                 cpu.call(0x8000, max_steps=1000)
                 outs.append(cpu.mem[PC.TMPSEED])
             want = RC.pack_nibbles(sp, su)
+            if PC.TAPP:                                   # DRTAPP: P rides the low-nibble bits 2-3
+                want = (want[0] | (PC.TAPP & 3) << 2, want[1] | ((PC.TAPP >> 2) & 3) << 2)
             bad += int(tuple(outs) != want)
             zero_marker += int((outs[1] >> 4) == 0)
             if su <= 49:
                 na, nb = outs[0] | 2, outs[1] | 1
                 bad += int(RC.thr_from_nibbles(na, nb) != RC.SPEED_TABLE[min(80, RC.SPEED_BASE[sp] + su)])
+                bad += int(RC.tap_from_nibbles(na, nb) != (PC.TAPP if PC.TAPP >= 2 else 0))
     print(f"nibble code: {len(code_a) - 1}+{len(code_b) - 1} B; mismatches vs pack_nibbles/decode {bad}; NB-high zero {zero_marker}")
     ok = bad == 0 and zero_marker == 0
     if len(sys.argv) > 1:

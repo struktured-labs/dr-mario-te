@@ -158,6 +158,10 @@ def build_image(board, cA, cB, nA, nB):
     # PAIRING: a DRREACH firmware filters only when the cart sends the DRREACHTX gravity nibbles; with an old
     # cart it runs exactly today's search. See experiments/reach/ + h16-wt CHAIN540_REACH_BUILD.md.
     D3.DRREACH = int(os.environ.get("DRREACH", "0"))
+    # DRREACHTAP (needs DRREACH): the mask models the cart's DRTAPP tap steering, period P decoded from the nA/nB
+    # colour LOW-nibble bits 2-3 (P = 0 -> today's DAS model). Default 0 = byte-identical DRREACH firmware.
+    D3.DRREACHTAP = int(os.environ.get("DRREACHTAP", "0"))
+    assert not D3.DRREACHTAP or D3.DRREACH, "DRREACHTAP requires DRREACH=1"
     import nes_d3_golden as _G
     _G.DISC_SHIFT = 1            # golden must match for the py65 gate
     _G.EXCAV_HANG_PLY1 = True    # golden must match for the py65 gate
@@ -298,7 +302,7 @@ def build_image(board, cA, cB, nA, nB):
         import reach_6502 as RC
         assert not EMIT_TUCK, "DRREACH's mask routine lives in the v1 EMIT_TUCK window ($A800)"
         ra = Asm6502(RC.REACH_ROM)
-        RC.emit_reach(ra, S_NA, S_NB)
+        RC.emit_reach(ra, S_NA, S_NB, tap=bool(D3.DRREACHTAP))
         reach_code = ra.assemble()
         assert ra.labels["reach_mask"] == 0, "the search JSRs REACH_ROM: the entry must be its first byte"
         assert RC.REACH_ROM + len(reach_code) <= SQ_ROM, f"reach routine overruns the SQ tables ({len(reach_code)}B)"

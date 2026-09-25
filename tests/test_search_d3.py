@@ -90,6 +90,8 @@ DRREACH = 0                    # reach-root pre-filter (STEER2; set by build_cop
                                # search JSRs it after the board upload, Pass 0 skips every legal
                                # candidate with R_FLT && !ROK[o4*8+col], and an all-masked Pass 0
                                # is rerun unfiltered. Spec + gates: experiments/reach/.
+DRREACHTAP = 0                 # DRREACH mask models the cart's DRTAPP taps (P from the nA/nB low-nibble bits 2-3);
+                               # set by build_copro_d3. Only the reach routine changes (reach_6502.emit_reach(tap=)).
 _REACH_PENALTY_MUT = False     # TEST-ONLY (gate mutant): the o_cand PENALTY form instead of the
                                # Pass-0 skip (a masked winning candidate then still outranks).
 _REACH_NOAND_MUT = False       # TEST-ONLY (gate mutant): one S_NA read site without AND #$0F --
