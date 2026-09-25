@@ -97,8 +97,10 @@ def _choose_d3_chain_s_masked(pcol, pvir, plnk, ca, cb, na, nb, topk2, w_excav, 
 
 
 class ReachAwareDecider(StrandedChainD3Decider):
-    def __init__(self, weights, flags, topk2=8, maxpass=0, w_chain=540, ws=20, t_act=None, proph="throat"):
+    def __init__(self, weights, flags, topk2=8, maxpass=0, w_chain=540, ws=20, t_act=None, proph="throat",
+                 steer_kw=None):
         super().__init__(weights, flags, topk2=topk2, maxpass=maxpass, w_chain=w_chain, ws=ws)
+        self.steer_kw = dict(steer_kw or {})          # STEER3: the mask simulates the same steering (e.g. tap period)
         lat = SM.latency_samples()
         self.t_act = int(t_act) if t_act is not None else lat[len(lat) // 2]
         self.proph = proph
@@ -111,7 +113,7 @@ class ReachAwareDecider(StrandedChainD3Decider):
             var, col = a // 8, a % 8
             if SM.straight_cells(color, var, col) is None:
                 continue
-            st = SM.Steer(proph=self.proph, seed=0)
+            st = SM.Steer(proph=self.proph, seed=0, **self.steer_kw)
             r = st.execute(color, a, k, t_act=self.t_act, phase=1)
             allowed[a] = 1 if r["exact"] else 0
         if not allowed.any():

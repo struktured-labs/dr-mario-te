@@ -30,6 +30,8 @@ ARMS = {
     "w180":       dict(steer=dict(proph="throat"), dec="fw_winner"),
     "w180_reach": dict(steer=dict(proph="throat"), dec="fw_winner_reach"),
     "reachfw":    dict(steer=dict(proph="throat"), dec="fw540_reachfw"),        # STEER2 post-hoc firmware rule
+    # STEER3: tap-steering at P frames/column for ALL normal moves, reach root simulating the same P
+    **{f"tap{P}_reach": dict(steer=dict(proph="throat", pulse=True, tap_period=P), tapreach=P) for P in (2, 3, 4, 5)},
 }
 
 
@@ -55,6 +57,15 @@ def make(arm):
             state["next_hint"] = None if p2 < 0 else SM.target_side(p2 // 8, p2 % 8)
             return a
         return steer, choose
+    if spec.get("tapreach"):
+        import fast_rtl_x as FX
+        import cascade_chain_x as C
+        import cascade_reach_x as R
+        C.warmup_chain(topk2=8)
+        w, fl = FX.variant("winner")
+        dec = R.ReachAwareDecider(w, fl, topk2=8, maxpass=0, w_chain=540, ws=20,
+                                  steer_kw={"pulse": True, "tap_period": spec["tapreach"]})
+        return steer, (lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt, k=env.pills_placed))
     if spec.get("reach"):
         import fast_rtl_x as FX
         import cascade_chain_x as C

@@ -79,6 +79,9 @@ ARMS = {
     "fw_winner_reach": dict(trunk="winner", chain=180, strand=20, reach=True),
     "fw540_reach":     dict(trunk="winner", chain=540, strand=20, reach=True),
     "fw540_reachfw":   dict(trunk="winner", chain=540, strand=20, reach="fw"),   # closed-form firmware rule
+    # STEER3: reach root whose mask simulates tap-steering at P frames/column (pair with steer_race TAP=P)
+    "fw540_reach_tap2": dict(trunk="winner", chain=540, strand=20, reach=True, tap=2),
+    "fw540_reach_tap4": dict(trunk="winner", chain=540, strand=20, reach=True, tap=4),
 }
 
 _CHAIN_READY = False
@@ -97,7 +100,8 @@ def _decider(arm):
         if spec.get("reach"):
             import cascade_reach_x as R
             cls = R.ReachFwDecider if spec["reach"] == "fw" else R.ReachAwareDecider
-            dec = cls(w, fl, topk2=8, maxpass=0, w_chain=int(spec["chain"]), ws=int(spec["strand"]))
+            kw = {"steer_kw": {"pulse": True, "tap_period": int(spec["tap"])}} if spec.get("tap") else {}
+            dec = cls(w, fl, topk2=8, maxpass=0, w_chain=int(spec["chain"]), ws=int(spec["strand"]), **kw)
             return lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt, k=env.pills_placed)
         if "dig" in spec:
             import cascade_dig_x as DG

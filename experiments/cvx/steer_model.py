@@ -151,14 +151,17 @@ def latency_samples(path=None):
 class Steer:
     """Stateful per game (the ROM's horVelocity carries across pills)."""
 
-    def __init__(self, proph="throat", prehold=False, pulse=False, distgate=True, speed=1, seed=0,
+    def __init__(self, proph="throat", prehold=False, pulse=False, distgate=True, speed=1, seed=0, tap_period=None,
                  lat=None, trace=False, lat_mode="pooled"):
         self.proph, self.prehold, self.pulse, self.distgate = proph, prehold, pulse, distgate
         self.lat_mode = lat_mode                     # "pooled" (pre-registered) | "byrot" (post-hoc sensitivity)
         self.hint_side = None                        # "plan" mode: side of the PREVIOUS search's ply-2 plan
         self.use_hint = False
         self.speed = speed
-        self.dtable, self.scancap = dist_table(dasedge=4 if pulse else 12)
+        # tap_period (STEER3): None = STEER1's alternate-frame pulse (parity-keyed); P = one fresh press every P
+        # frames from the first steering frame. DISTGATE is sized to the tap rate (2 hooks/frame -> 2P hooks/col).
+        self.tap_period = tap_period
+        self.dtable, self.scancap = dist_table(dasedge=(2 * (tap_period or 2)) if pulse else 12)
         self.lat = lat if lat is not None else latency_samples()
         self.seed = seed
         self.trace = trace
@@ -237,6 +240,7 @@ class Steer:
         prev_held = (RIGHT if pre == "R" else LEFT) if pre else 0   # held since the lock: no edge at spawn
         clamped_ever = False
         lock_f = None
+        last_tap = None
         tr = [] if self.trace else None
         for f in range(F0, F0 + 4000):
             # ---------------- driver decision (from last frame's state) ----------------
@@ -263,7 +267,13 @@ class Steer:
                     raw = DOWN
                 else:
                     d = RIGHT if x < eff else LEFT
-                    if self.pulse:
+                    if self.pulse and self.tap_period is not None:
+                        clear = True
+                        if last_tap is None or f - last_tap >= self.tap_period:
+                            raw = d; last_tap = f
+                        else:
+                            raw = 0
+                    elif self.pulse:
                         clear = True
                         raw = d if (f + ph) % 2 == 0 else 0
                     else:
