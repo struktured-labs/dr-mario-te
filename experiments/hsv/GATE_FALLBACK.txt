@@ -1,0 +1,23 @@
+# DRHSV timing fallback gates -- 2026-09-26T13:08:40-04:00, RTL NES_MiSTer-drmario claude/hsv-leaf @ 6cd8563 (LeafEval.sv md5 4b170111)
+IDENTITY no-define == cce212a: PASS ; DRHSV-only == cce212a DRHSV: PASS (verilator -E -P, real files)
+rtl on_cyc: PHASE1 LEAF 948/948 PHASE2 NODE 4238/4494 (worst latency 11507 cyc) PHASE3 DELTA 4494/4494 (743 clear-fallbacks verified) CYCLES leaf_sum=1211667 node_sum=9350565 base_sum=5846262 delta_sum=4003684 
+rtl pipe: PHASE1 LEAF 948/948 PHASE2 NODE 4238/4494 (worst latency 11507 cyc) PHASE3 DELTA 4494/4494 (743 clear-fallbacks verified) CYCLES leaf_sum=1211667 node_sum=9350565 base_sum=5846262 delta_sum=4003684 
+rtl pipe_off: PHASE1 LEAF 948/948 PHASE2 NODE 4238/4494 (worst latency 11507 cyc) PHASE3 DELTA 4494/4494 (743 clear-fallbacks verified) CYCLES leaf_sum=1211667 node_sum=9350565 base_sum=5846262 delta_sum=4003684 
+linknode base: GATE PASS linknode: LeafEval.sv (md5 3a4a5645) == cascade_chain_x on 7282 cases, 9/9 mutants killed
+linknode pipe: GATE PASS linknode: LeafEval.sv (md5 1eec5ccb) == cascade_chain_x on 7282 cases, 9/9 mutants killed
+mutant row (must die): PHASE1 LEAF 604/948 PHASE2 NODE 2854/4494 (worst latency 11507 cyc) PHASE3 DELTA 3341/4494 (743 clear-fallbacks verified) 
+mutant col (must die): PHASE1 LEAF 559/948 PHASE2 NODE 2722/4494 (worst latency 11507 cyc) PHASE3 DELTA 3235/4494 (743 clear-fallbacks verified) 
+mutant sign (must die): PHASE1 LEAF 406/948 PHASE2 NODE 2208/4494 (worst latency 11507 cyc) PHASE3 DELTA 2793/4494 (743 clear-fallbacks verified) 
+mutant delta (must die): PHASE1 LEAF 948/948 PHASE2 NODE 4238/4494 (worst latency 11507 cyc) PHASE3 DELTA 2793/4494 (743 clear-fallbacks verified) 
+mutant wrdata (must die): PHASE1 LEAF 194/948 PHASE2 NODE 428/4494 (worst latency 10873 cyc) PHASE3 DELTA 1010/4494 (277 clear-fallbacks verified) 
+mutant sqswap (must die): PHASE1 LEAF 207/948 PHASE2 NODE 1133/4494 (worst latency 11507 cyc) PHASE3 DELTA 1834/4494 (743 clear-fallbacks verified) 
+mutant sqlag3 (must die): PHASE1 LEAF 948/948 PHASE2 NODE 4238/4494 (worst latency 11507 cyc) PHASE3 DELTA 4229/4494 (743 clear-fallbacks verified) 
+probe sqlag2 (predicted PASS, margin=2): PHASE1 LEAF 948/948 PHASE2 NODE 4238/4494 (worst latency 11507 cyc) PHASE3 DELTA 4494/4494 (743 clear-fallbacks verified) 
+mutant wrlnk (must die, linknode): GATE FAIL linknode: RTL != cascade_chain_x reference at dose 0 (identity)
+fw co-sim (copro6502 + fw 77ec742c, 69 real boards, HSV-only vs HSV+fallback):
+  boards: hsv 69  pipe 69  of 69
+  moves identical: 69/69   clocks identical: 69/69
+  GO->DONE clocks: total 4547096880  mean 65899955  (0.767 s/board @ 85.9 MHz)
+  FWCOSIM PASS
+note: rtl PHASE2 4238/4494 = the link-aware engine vs the compact-gravity oracle, BY DESIGN (see gate.py help); linknode is the NODE gate for this engine.
+provenance: the runs above used the working copy one comment-only edit before 6cd8563; its fallback-define preprocess (verilator -E -P) is identical to 6cd8563's modulo whitespace (902/902 lines).

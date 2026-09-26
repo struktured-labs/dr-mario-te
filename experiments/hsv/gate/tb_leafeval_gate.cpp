@@ -12,6 +12,7 @@
 #include <cstring>
 
 static VLeafEval* t;
+static long cyc_leaf = 0, cyc_node = 0, cyc_base = 0, cyc_delta = 0;   // hsv gate: engine cycles per phase
 static void tick() { t->clk = 0; t->eval(); t->clk = 1; t->eval(); }
 
 static void write_board(const int* b) {
@@ -58,6 +59,7 @@ int main(int argc, char** argv) {
       write_board(b);
       t->start = 1; tick(); t->start = 0;
       long cyc = wait_done();
+      cyc_leaf += cyc;
       short got = (short)t->sco;
       bool ok = t->done && (int)t->win == exp_win && (exp_win || got == (short)exp_sco);
       if (ok) pass++;
@@ -89,6 +91,7 @@ int main(int argc, char** argv) {
       t->a_o4 = o4; t->a_col = colu; t->a_ca = ca + 1; t->a_cb = cb + 1;
       t->cmd = 4; t->cmd_go = 1; tick(); t->cmd_go = 0;
       long cyc = wait_done();
+      cyc_node += cyc;
       if (cyc > worst) worst = cyc;
       bool ok = t->done && (int)t->legal == legal;
       if (legal && ok) {
@@ -133,10 +136,10 @@ int main(int argc, char** argv) {
 
       write_board(b);
       t->cmd = 6; t->cmd_go = 1; tick(); t->cmd_go = 0;   // BASE latch
-      wait_done();
+      cyc_base += wait_done();
       t->a_o4 = o4; t->a_col = colu; t->a_ca = ca + 1; t->a_cb = cb + 1;
       t->cmd = 7; t->cmd_go = 1; tick(); t->cmd_go = 0;   // DELTA child
-      wait_done();
+      cyc_delta += wait_done();
       bool ok;
       if (!legal) ok = (int)t->legal == 0;
       else if (cells > 0 || vir > 0) {                    // clears: must fall back
@@ -158,5 +161,6 @@ int main(int argc, char** argv) {
   }
 
   delete t;
+  printf("CYCLES leaf_sum=%ld node_sum=%ld base_sum=%ld delta_sum=%ld\n", cyc_leaf, cyc_node, cyc_base, cyc_delta);
   return fails == 0 ? 0 : 1;
 }
