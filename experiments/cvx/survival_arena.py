@@ -717,16 +717,106 @@ def _cmd_screen(args):
         write_jsonl(os.path.splitext(args.out)[0] + ".fw_winner.jsonl", base)
 
 
+def _cfg_field(row, name):
+    if name not in row or row[name] is None or row[name] == "":
+        return None
+    return row[name]
+
+
+def config_key(row):
+    """Identity of one summary bucket.
+
+    An explicit ``label`` is part of the key, and so are arm, chain, strand, and
+    leaf. Chain and strand stay in the key even when a label is set, so two doses
+    of ``fw_winner`` cannot collapse into the arm name.
+    """
+    return (
+        _cfg_field(row, "label"),
+        _cfg_field(row, "arm"),
+        _cfg_field(row, "chain"),
+        _cfg_field(row, "strand"),
+        _cfg_field(row, "leaf"),
+    )
+
+
+def config_name(key):
+    label, arm, chain, strand, leaf = key
+    bits = []
+    if label is not None:
+        bits.append(str(label))
+        if arm is not None:
+            bits.append("arm=%s" % arm)
+    elif arm is not None:
+        bits.append(str(arm))
+    else:
+        bits.append("?")
+    if chain is not None:
+        bits.append("chain=%s" % chain)
+    if strand is not None:
+        bits.append("strand=%s" % strand)
+    if leaf is not None:
+        bits.append("leaf=%s" % leaf)
+    return " ".join(bits)
+
+
+def group_rows_by_config(rows):
+    """Rows grouped by configuration, in first-seen order.
+
+    Each item is ``(key, display_name, rows)``.
+    """
+    buckets = {}
+    order = []
+    for row in rows:
+        key = config_key(row)
+        if key not in buckets:
+            buckets[key] = []
+            order.append(key)
+        buckets[key].append(row)
+    return [(key, config_name(key), buckets[key]) for key in order]
+
+
+def summary_pairs(groups):
+    """Which groups to compare.
+
+    Two groups are always paired (a two-file dose or arm contrast). With more
+    than two, pair only groups that share chain and strand and differ in label
+    or arm, so a chain-540 seed is not matched against a chain-180 seed.
+    """
+    if len(groups) == 2:
+        return [(groups[0], groups[1])]
+    out = []
+    for i in range(len(groups)):
+        for j in range(i + 1, len(groups)):
+            left, right = groups[i][0], groups[j][0]
+            same_dose = left[2] == right[2] and left[3] == right[3]
+            different_name = (left[0], left[1]) != (right[0], right[1])
+            if same_dose and different_name:
+                out.append((groups[i], groups[j]))
+    return out
+
+
+def render_summary(rows, n_boot=4000):
+    grouped = group_rows_by_config(rows)
+    chunks = [format_summary(name, summarize(group, n_boot=n_boot))
+              for _key, name, group in grouped]
+    for left, right in summary_pairs(grouped):
+        chunks.append(format_paired(left[1], right[1], left[2], right[2]))
+    if not chunks:
+        return ""
+    return "\n".join(chunks) + "\n"
+
+
 def _cmd_summary(args):
-    groups = {}
+    rows = []
     for path in args.inputs:
-        for r in read_jsonl(path):
-            groups.setdefault(r.get("arm", path), []).append(r)
-    names = list(groups)
-    for name in names:
-        print(format_summary(name, summarize(groups[name])))
-    if len(names) == 2:
-        print(format_paired(names[0], names[1], groups[names[0]], groups[names[1]]))
+        for row in read_jsonl(path):
+            if row.get("arm") in (None, "") and row.get("label") in (None, ""):
+                row = dict(row)
+                row["arm"] = path
+            rows.append(row)
+    text = render_summary(rows)
+    if text:
+        print(text, end="")
 
 
 def _cmd_retro(args):
@@ -781,7 +871,7 @@ def build_parser():
     s.add_argument("--out")
     s.set_defaults(func=_cmd_screen)
 
-    m = sub.add_parser("summary", help="summarise jsonl")
+    m = sub.add_parser("summary", help="summarise jsonl, one row per arm+chain+strand (or label)")
     m.add_argument("inputs", nargs="+")
     m.set_defaults(func=_cmd_summary)
 

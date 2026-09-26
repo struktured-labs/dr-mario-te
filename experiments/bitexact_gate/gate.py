@@ -26,6 +26,9 @@ Commands
   linknode    level 2b: link-aware node co-sim -- colour, virus AND LINK planes
               plus CHAIN depth, vs cascade_chain_x, on its own pinned corpus
               (linkcorpus.py). Includes its own mutant selfcheck.
+              Chain weights are a_chw bytes (firmware stores DRCHAIN/4). The
+              default set is 0,45,90,135 (DRCHAIN 0/180/360/540). Override with
+              --chain-weights; 255 is the 8-bit register maximum (stress).
   repro       replay one dumped failure case with full term breakdown
 
 Verdict lines are machine-greppable:  GATE PASS ... / GATE FAIL ...
@@ -54,15 +57,50 @@ CORPUS = os.path.join(HERE, "corpus.txt")
 RESULTS = os.path.join(HERE, "results")
 BUILD = os.path.join(HERE, "build")
 
-sys.path.insert(0, COMBO_TERM)
-from fast_rtl_x import _eval_rtl, variant as named_variant          # noqa: E402
-from fast_sim_x import _expand_core                                  # noqa: E402
+# Numba kernels live in the external combo_term tree. linknode does not execute
+# them (the pinned corpus is the reference); load them only for the modes that do,
+# so `gate.py linknode` still runs when that tree is absent.
+_eval_rtl = None
+named_variant = None
+_expand_core = None
+
+
+def _ensure_kernels():
+    global _eval_rtl, named_variant, _expand_core
+    if _eval_rtl is not None:
+        return
+    if COMBO_TERM not in sys.path:
+        sys.path.insert(0, COMBO_TERM)
+    from fast_rtl_x import _eval_rtl as er, variant as nv          # noqa: E402
+    from fast_sim_x import _expand_core as ec                      # noqa: E402
+    _eval_rtl, named_variant, _expand_core = er, nv, ec
+
+
+def _vendor_py(name):
+    """Path of a reference kernel. Prefer combo_term; fall back to in-repo copies."""
+    candidates = (
+        os.path.join(COMBO_TERM, name),
+        os.path.join(os.path.dirname(HERE), "cvx", "vendor", name),
+        os.path.join(os.path.dirname(HERE), "cvx", name),
+    )
+    for path in candidates:
+        if os.path.isfile(path):
+            return path
+    return None
+
+
+def _md5_or_absent(path):
+    if path and os.path.isfile(path):
+        return file_md5(path)
+    return "absent"
+
 
 _CANON_COPRO = "/home/struktured/projects/dr-mario-canonical-wt/fpga/copro"
 
 
 # ---------------------------------------------------------------- reference
 def eval_ref(board, w, fl):
+    _ensure_kernels()
     col, vir = nes_to_arrays(board)
     return int(_eval_rtl(col, vir, w, fl))
 
@@ -72,6 +110,7 @@ def _ref_hash():
     edited concurrently (delta-eval work lands in the same file), so level-1
     verdicts are only meaningful against the exact reference the RTL co-sim
     blessed -- this hash ties the two together."""
+    _ensure_kernels()
     import inspect, hashlib
     src = inspect.getsource(_eval_rtl.py_func)
     return hashlib.sha256(src.encode()).hexdigest()
@@ -99,6 +138,7 @@ def check_blessing(require=True):
 # ---------------------------------------------------------------- variants
 def variant_suite(rtl_path):
     """[(name, w, fl)] for level-1 candidate testing."""
+    _ensure_kernels()
     out = []
     for name in ("r47", "winner", "vrdy12", "weekend_burial", "combined", "cross8"):
         w, fl = named_variant(name)
@@ -325,6 +365,7 @@ def recover_o4_map(verbose=False):
     70. Normalising uses every record and compares what actually differs; the true-link
     assertion below is what guards the case filtering was wrongly claiming to guard.
     """
+    _ensure_kernels()
     pinned = os.path.join(QA_COPRO, "leafeval_node_cases.txt")
     recs = _load_pairs(pinned)
     _assert_no_true_links(recs)
@@ -368,6 +409,7 @@ def recover_o4_map(verbose=False):
 
 # ---------------------------------------------------------------- corpus/pairs build
 def build_all(args):
+    _ensure_kernels()
     import corpus as corpus_mod
     if os.path.exists(CORPUS) and not args.force:
         print("corpus already pinned at %s (use --force to rebuild)" % CORPUS); return 2
@@ -631,25 +673,66 @@ _LINK_FIELDS = {"legal": 133, "cells": 134, "vir": 135, "chain": 136,
 _LINK_REC = 268
 
 
-def _link_build(rtl_path, out_dir):
+def _link_build(rtl_path, out_dir, defines=None):
     """Verilate the target .sv with the link-aware node testbench."""
+    defines = [d for d in (defines or []) if d]
     rtl_dir = os.path.dirname(rtl_path)
     srcs = [rtl_path]
     if "dpram" in open(rtl_path).read():
         for cand in (os.path.join(rtl_dir, "dpram.v"),
                      os.path.join(rtl_dir, "..", "dpram.v"),
-                     os.path.join(QA_COPRO, "dpram.v")):
+                     os.path.join(QA_COPRO, "dpram.v"),
+                     os.path.join(os.path.dirname(HERE), "..", "fpga", "copro", "dpram.v")):
             if os.path.exists(cand):
                 srcs.append(cand); break
         else:
             return None, "LeafEval instantiates dpram but no dpram.v found"
-    cmd = ["verilator", "--cc", "--exe", "--build", "-j", "2", "-O2", "-Wno-fatal",
-           "--top-module", "LeafEval", "--Mdir", out_dir, "-o", "VLinkNodeGate"] \
-          + srcs + [os.path.join(HERE, "tb_linknode_gate.cpp")]
+    cmd = (["verilator", "--cc", "--exe", "--build", "-j", "2", "-O2", "-Wno-fatal"]
+           + ["-D" + d for d in defines]
+           + ["--top-module", "LeafEval", "--Mdir", out_dir, "-o", "VLinkNodeGate"]
+           + srcs + [os.path.join(HERE, "tb_linknode_gate.cpp")])
     r = subprocess.run(cmd, capture_output=True, text=True)
     if r.returncode != 0:
         return None, (r.stdout[-2500:] + r.stderr[-2500:])
     return os.path.join(out_dir, "VLinkNodeGate"), None
+
+
+# a_chw is the byte firmware stores (DRCHAIN/4). 0/45/90 are the doses this gate
+# historically ran (DRCHAIN 0/180/360). 135 is DRCHAIN=540, the rivalmage build.
+# 255 is the 8-bit register maximum and is opt-in via --chain-weights.
+DEFAULT_LINK_CHAIN_WEIGHTS = (0, 45, 90, 135)
+_CHAIN_WEIGHT_LABELS = {
+    0: "dose 0 (identity)",
+    45: "dose 180",
+    90: "dose 360",
+    135: "dose 540",
+    255: "a_chw 255 (DRCHAIN 1020, 8-bit max)",
+}
+
+
+def parse_chain_weights(text):
+    """Comma-separated a_chw bytes, each 0..255. None/blank -> the default set."""
+    if text is None or str(text).strip() == "":
+        return list(DEFAULT_LINK_CHAIN_WEIGHTS)
+    out = []
+    for part in str(text).split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            chw = int(part, 0)
+        except ValueError:
+            raise ValueError("chain weight %r is not an integer" % part)
+        if not 0 <= chw <= 255:
+            raise ValueError("a_chw %d is outside the 8-bit register (0..255)" % chw)
+        out.append(chw)
+    if not out:
+        raise ValueError("empty --chain-weights")
+    return out
+
+
+def chain_weight_label(chw):
+    return _CHAIN_WEIGHT_LABELS.get(int(chw), "a_chw %d (DRCHAIN %d)" % (chw, int(chw) * 4))
 
 
 def gate_linknode(args):
@@ -667,17 +750,33 @@ def gate_linknode(args):
               "only applies to the link-aware engine" % args.rtl)
         return 1
     os.makedirs(BUILD, exist_ok=True)
-    exe, err = _link_build(args.rtl, os.path.join(BUILD, "obj_linknode"))
+    defines = list(args.define or [])
+    try:
+        weights = parse_chain_weights(args.chain_weights)
+    except ValueError as e:
+        print("GATE FAIL linknode: %s" % e)
+        return 2
+    # Build dir is per RTL checksum and per -D set. Reusing obj_linknode across
+    # a different LeafEval (or DRHSV) would co-sim the previous binary.
+    tag = file_md5(args.rtl)[:12]
+    if defines:
+        tag += "_" + "_".join("".join(ch if ch.isalnum() else "_" for ch in d) for d in defines)
+    exe, err = _link_build(args.rtl, os.path.join(BUILD, "obj_linknode_" + tag), defines)
     if exe is None:
         print(err); print("GATE FAIL linknode: verilator build failed"); return 1
 
     toks = open(LINKCASES).read().split()
     n = int(toks[0]); body = toks[1:]
     os.makedirs(RESULTS, exist_ok=True)
-    # dose 0 is the identity arm (must reproduce lnk1/fixpoint-no-reward exactly); doses
-    # 180 and 360 are the measured ones. The tb refuses a dose run over a chain-free
-    # corpus, so a passing dose run cannot be vacuous.
-    for chw, label in ((0, "dose 0 (identity)"), (45, "dose 180"), (90, "dose 360")):
+    # dose 0 is the identity arm (must reproduce the no-reward fixpoint exactly).
+    # The tb refuses a non-zero dose over a chain-free corpus, so a passing dose
+    # run cannot be vacuous. a_chw 135 is DRCHAIN=540.
+    print("linknode chain weights (a_chw): %s" % ", ".join(
+        "%d [%s]" % (chw, chain_weight_label(chw)) for chw in weights))
+    if defines:
+        print("linknode verilog defines: %s" % " ".join(defines))
+    for chw in weights:
+        label = chain_weight_label(chw)
         r = subprocess.run([exe, LINKCASES, str(chw)], capture_output=True, text=True,
                            timeout=7200)
         print("--- %s ---" % label)
@@ -735,12 +834,16 @@ def gate_linknode(args):
               "every field it claims to")
         return 1
 
+    chain_py = _vendor_py("cascade_chain_x.py")
+    link_py = _vendor_py("cascade_link_x.py")
     json.dump(dict(rtl_path=args.rtl, rtl_md5=file_md5(args.rtl),
                    corpus_md5=file_md5(LINKCASES), n_cases=n,
-                   cascade_chain_x_md5=file_md5(os.path.join(COMBO_TERM,
-                                                             "cascade_chain_x.py")),
-                   cascade_link_x_md5=file_md5(os.path.join(COMBO_TERM,
-                                                            "cascade_link_x.py")),
+                   chain_weights=weights,
+                   verilog_defines=defines,
+                   cascade_chain_x=chain_py,
+                   cascade_chain_x_md5=_md5_or_absent(chain_py),
+                   cascade_link_x=link_py,
+                   cascade_link_x_md5=_md5_or_absent(link_py),
                    when=time.strftime("%Y-%m-%d %H:%M:%S")),
               open(LINK_BLESSING, "w"), indent=2)
     print("GATE PASS linknode: LeafEval.sv (md5 %s) == cascade_chain_x on %d cases, "
@@ -755,6 +858,13 @@ def main():
     ap.add_argument("mode", choices=["corpus", "selfcheck", "candidate", "pairs",
                                      "rtl", "linknode", "repro"])
     ap.add_argument("--rtl", default=RTL_DEFAULT, help="LeafEval.sv to gate against")
+    ap.add_argument("--chain-weights", default=None,
+                    help="linknode only: comma-separated a_chw bytes (DRCHAIN/4), "
+                         "each 0..255. Default: 0,45,90,135. "
+                         "255 is the 8-bit register maximum (stress).")
+    ap.add_argument("--define", action="append", default=None,
+                    help="linknode only: Verilog macro for the Verilator build "
+                         "(repeatable), e.g. --define DRHSV")
     ap.add_argument("--py", help="candidate python file.py:fn")
     ap.add_argument("--cmd", help="candidate subprocess command")
     ap.add_argument("--name", help="candidate name for reports")
