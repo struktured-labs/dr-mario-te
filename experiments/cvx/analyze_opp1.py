@@ -138,6 +138,56 @@ def main():
         print("  " + f)
 
 
+SEEDS_B = sorted(set().union(*[range(lo, lo + 2 * n, 2) for lo, n in ((39134, 900), (33000, 600), (26280, 340), (60348, 326))]))
+
+
+def main_b():
+    """OPP1b (PREREG_OPP1b.md): confirm the hsv-vs-LULU flip on 2,166 disjoint seeds."""
+    from collections import Counter
+    rc = {b: _load_seeds(f"opp1b/*/rc_{b}_*.jsonl", f"{b}~steer", SEEDS_B) for b in BUILDS}
+    S = [s for s in SEEDS_B if all(s in rc[b] for b in BUILDS)]
+    win = lambda r, M, dl: int(evaluate(r, M, 0.15, dl)[0] == "win_race")
+    t = boot([win(rc["s5b_hsv512"][s], 140.0, 2.65) - win(rc["s4_base"][s], 140.0, 2.65) for s in S])
+    print(f"OPP1b PRIMARY (lam 2, M 140, delta 2.65): n={len(S)}  base {100*np.mean([win(rc['s4_base'][s],140.,2.65) for s in S]):.1f}%  "
+          f"hsv {100*np.mean([win(rc['s5b_hsv512'][s],140.,2.65) for s in S]):.1f}%  hsv-base {fmt(t)}  ->  "
+          + ("FLIP CONFIRMED" if t[2] < 0 else "NOT CONFIRMED"))
+    tk = boot([(rc["s5b_hsv512"][s]["how"] == "topout") - (rc["s4_base"][s]["how"] == "topout") for s in S])
+    print(f"  race-row tap-out: base {100*np.mean([rc['s4_base'][s]['how'] == 'topout' for s in S]):.1f}%  "
+          f"hsv {100*np.mean([rc['s5b_hsv512'][s]['how'] == 'topout' for s in S]):.1f}%  hsv-base {fmt(tk)}")
+    for dl in DELTAS:
+        for M in MS:
+            tt = boot([win(rc["s5b_hsv512"][s], M, dl) - win(rc["s4_base"][s], M, dl) for s in S])
+            print(f"  delta {dl:4.2f} M {M:5.0f}s  base {100*np.mean([win(rc['s4_base'][s], M, dl) for s in S]):5.1f}%  "
+                  f"hsv {100*np.mean([win(rc['s5b_hsv512'][s], M, dl) for s in S]):5.1f}%  hsv-base {fmt(tt)}")
+    for b in BUILDS:
+        print(f"  {BNAME[b]} loss types @M140: {dict(Counter(evaluate(rc[b][s], 140.0, 0.15, 2.65)[0] for s in S))}")
+    # pooled with OPP1 (descriptive)
+    ra = {b: _load_seeds(f"opp1/*/rc_{b}_*.jsonl", f"{b}~steer", SEEDS) for b in BUILDS}
+    PA = [(ra, s) for s in SEEDS if all(s in ra[b] for b in BUILDS)] + [(rc, s) for s in S]
+    tp = boot([win(d["s5b_hsv512"][s], 140.0, 2.65) - win(d["s4_base"][s], 140.0, 2.65) for d, s in PA])
+    tpk = boot([(d["s5b_hsv512"][s]["how"] == "topout") - (d["s4_base"][s]["how"] == "topout") for d, s in PA])
+    print(f"  POOLED OPP1+OPP1b (descriptive) n={len(PA)}: race win M140 {fmt(tp)}   race-row tap-out {fmt(tpk)}")
+    # same seeds at lam 6 (banked STEER5d)
+    r6 = {b: _load_seeds(f"steer5d/*/rc_{b}_*.jsonl", f"{b}~steer", SEEDS_B) for b in BUILDS}
+    S6 = [s for s in S if all(s in r6[b] for b in BUILDS)]
+    t6 = boot([win(r6["s5b_hsv512"][s], 140.0, 2.65) - win(r6["s4_base"][s], 140.0, 2.65) for s in S6])
+    t6k = boot([(r6["s5b_hsv512"][s]["how"] == "topout") - (r6["s4_base"][s]["how"] == "topout") for s in S6])
+    print(f"  SAME SEEDS at lam 6 (STEER5d) n={len(S6)}: race win M140 {fmt(t6)}   race-row tap-out {fmt(t6k)}")
+
+
+def _load_seeds(pattern, label, seeds):
+    out = {}
+    for f in glob.glob(pattern):
+        for l in open(f):
+            r = json.loads(l)
+            if r.get("arm") == label:
+                out[r["seed"]] = r
+    return {s: out[s] for s in seeds if s in out}
+
+
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    main()
+    if "--b" in sys.argv:
+        main_b()
+    else:
+        main()
