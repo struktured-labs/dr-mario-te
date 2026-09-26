@@ -82,6 +82,14 @@ ARMS = {
     # STEER3: reach root whose mask simulates tap-steering at P frames/column (pair with steer_race TAP=P)
     "fw540_reach_tap2": dict(trunk="winner", chain=540, strand=20, reach=True, tap=2),
     "fw540_reach_tap4": dict(trunk="winner", chain=540, strand=20, reach=True, tap=4),
+    # STEER4: shipping brain (reach_fw_tap mask, P=2) + firmware-proxy shape terms (cascade_shape_x)
+    "s4_base":  dict(trunk="winner", chain=540, strand=20, shape={}),
+    "s4_sv180": dict(trunk="winner", chain=540, strand=20, shape={"w_sv": 180, "r_hi": 9}),
+    "s4_sv540": dict(trunk="winner", chain=540, strand=20, shape={"w_sv": 540, "r_hi": 9}),
+    "s4_sp100": dict(trunk="winner", chain=540, strand=20, shape={"w_sp": 100, "hs": 10}),
+    "s4_sp300": dict(trunk="winner", chain=540, strand=20, shape={"w_sp": 300, "hs": 10}),
+    "s4_rot2":  dict(trunk="winner", chain=540, strand=20, shape={"rot_margin": 2}),
+    "s4_combo": dict(trunk="winner", chain=540, strand=20, shape={"w_sv": 180, "r_hi": 9, "rot_margin": 2}),
 }
 
 _CHAIN_READY = False
@@ -97,6 +105,11 @@ def _decider(arm):
         if not _CHAIN_READY:
             C.warmup_chain(topk2=8); _CHAIN_READY = True
         w, fl = FX.variant(spec["trunk"])
+        if "shape" in spec:
+            import cascade_shape_x as SH
+            dec = SH.ShapeReachDecider(w, fl, topk2=8, maxpass=0, w_chain=int(spec["chain"]), ws=int(spec["strand"]),
+                                       tap=2, **spec["shape"])
+            return lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt, k=env.pills_placed)
         if spec.get("reach"):
             import cascade_reach_x as R
             cls = R.ReachFwDecider if spec["reach"] == "fw" else R.ReachAwareDecider

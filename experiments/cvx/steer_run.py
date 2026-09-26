@@ -40,6 +40,7 @@ ARMS = {
         "s4_sp100": {"w_sp": 100, "hs": 10},
         "s4_sp300": {"w_sp": 300, "hs": 10},
         "s4_rot2":  {"rot_margin": 2},
+        "s4_combo": {"w_sv": 180, "r_hi": 9, "rot_margin": 2},    # arm (4) by the pre-registered rule
     }.items()},
 }
 

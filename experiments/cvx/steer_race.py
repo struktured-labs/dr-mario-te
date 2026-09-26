@@ -14,10 +14,13 @@ if __name__ == "__main__":
     arm, lam, lo, cnt, step, out = sys.argv[1], float(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]), sys.argv[6]
     level = int(sys.argv[7]) if len(sys.argv) > 7 else 11
     tap = int(sys.argv[8]) if len(sys.argv) > 8 else 0          # STEER3: tap period (0 = DAS)
-    steer = SM.Steer(proph="throat", pulse=True, tap_period=tap) if tap else SM.Steer(proph="throat")
+    unified = len(sys.argv) > 9 and sys.argv[9] == "unified"      # STEER4: shipping DRTAPP scheduler
+    steer = (SM.Steer(proph="throat", pulse=True, tap_period=tap, tap_unified=unified) if tap
+             else SM.Steer(proph="throat"))
     with open(out, "w") as fh:
         for i in range(cnt):
             r = V.play(lo + i * step, arm, lam, level=level, steer=steer)
             r["arm"] = arm + "~steer"; r["level"] = level
             if tap: r["tap"] = tap
+            if unified: r["tap_unified"] = True
             fh.write(json.dumps(r) + "\n"); fh.flush()
