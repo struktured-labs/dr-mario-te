@@ -29,3 +29,11 @@ Also runs 1-2: v=12 and v=10 survived a lock and the next spawn unchanged (no re
 **Bigger lever found in the same code:** DRPROPH's escape pulse presses on alternate frames (a fresh press edge
 each time), which moves 1 col / 2 f, 3× faster than DAS (6 f/col). Normal steering holds (DAS). A 4-col
 move: DAS 28 f · charged carry 19 f · pulse 6 f. (Pulsing is a superhuman input rate; owner's call.)
+
+## TAP build hardware check (2026-09-26 00:1xZ, bluemage) — `tap_hw_check.txt`
+Same save-state method: 40 random snapshots of the CvC soak on each core (`sample40.txt`, decoder `p2scan.py`).
+- CONTROL (CHAIN540+REACH, DAS): P2 horVelocity non-zero in 7/26 in-game snapshots (values 3–14), i.e. holds.
+- TAP (CHAIN540+REACH+TAP, P=2): P2 horVelocity = 0 in 29/29 ⇒ every lateral move is a fresh press, no holds. Speed:
+  3 cols by ~21 f after spawn; DAS needs ≥~41. The frame-spacing compliance proof is the py65 trace gate
+  (0 violations / 280k frames); save-states cannot resolve single frames.
+- Couch TAP cart smoke: P1 LEFT×2 = 2 cols, and P1's counter behaves like a pad (human path untouched); AI cleared 4→2.

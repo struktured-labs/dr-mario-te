@@ -1,0 +1,36 @@
+## CONTROL: CHAIN540+REACH (DAS) CvC, 40 save-states
+P2 horVelocity histogram (all in-game snapshots): {0: 16, 3: 1, 7: 2, 10: 4, 12: 1, 13: 1, 14: 1}
+controlled snapshots (act=0): name X Y spd v frames/row ~frames-since-spawn |X-3|
+  s02.ss X=3 Y=15 spd=2 v=0 fr/row=20 f~2 dx=0
+  s10.ss X=4 Y=15 spd=11 v=3 fr/row=20 f~11 dx=1
+  s11.ss X=4 Y=15 spd=13 v=0 fr/row=20 f~13 dx=1
+  s12.ss X=3 Y=15 spd=0 v=12 fr/row=20 f~0 dx=0
+  s17.ss X=4 Y=15 spd=16 v=0 fr/row=20 f~16 dx=1
+  s19.ss X=2 Y=15 spd=15 v=7 fr/row=20 f~15 dx=1
+  s21.ss X=3 Y=15 spd=1 v=10 fr/row=20 f~1 dx=0
+  s24.ss X=3 Y=15 spd=5 v=0 fr/row=19 f~5 dx=0
+  s27.ss X=5 Y=14 spd=8 v=13 fr/row=19 f~27 dx=2
+  s28.ss X=3 Y=15 spd=3 v=0 fr/row=19 f~3 dx=0
+  s29.ss X=6 Y=12 spd=0 v=10 fr/row=19 f~57 dx=3
+  s30.ss X=3 Y=14 spd=2 v=7 fr/row=18 f~20 dx=0
+  s35.ss X=4 Y=14 spd=19 v=0 fr/row=20 f~39 dx=1
+  s36.ss X=4 Y=15 spd=15 v=0 fr/row=20 f~15 dx=1
+  s38.ss X=5 Y=14 spd=8 v=14 fr/row=20 f~28 dx=2
+  s40.ss X=3 Y=15 spd=1 v=0 fr/row=19 f~1 dx=0
+
+## TREATMENT: CHAIN540+REACH+TAP (P=2) CvC, 40 save-states
+P2 horVelocity histogram (all in-game snapshots): {0: 29}
+controlled snapshots (act=0): name X Y spd v frames/row ~frames-since-spawn |X-3|
+  s03.ss X=3 Y=15 spd=0 v=0 fr/row=20 f~0 dx=0
+  s06.ss X=1 Y=15 spd=12 v=0 fr/row=20 f~12 dx=2
+  s08.ss X=7 Y=13 spd=0 v=0 fr/row=20 f~40 dx=4
+  s12.ss X=3 Y=15 spd=1 v=0 fr/row=20 f~1 dx=0
+  s16.ss X=3 Y=15 spd=1 v=0 fr/row=20 f~1 dx=0
+  s17.ss X=2 Y=14 spd=4 v=0 fr/row=20 f~24 dx=1
+  s19.ss X=3 Y=15 spd=1 v=0 fr/row=19 f~1 dx=0
+  s27.ss X=3 Y=15 spd=0 v=0 fr/row=20 f~0 dx=0
+  s28.ss X=0 Y=14 spd=1 v=0 fr/row=20 f~21 dx=3
+  s29.ss X=4 Y=15 spd=8 v=0 fr/row=20 f~8 dx=1
+  s33.ss X=3 Y=14 spd=1 v=0 fr/row=19 f~20 dx=0
+  s38.ss X=3 Y=15 spd=1 v=0 fr/row=20 f~1 dx=0
+  s40.ss X=2 Y=14 spd=3 v=0 fr/row=20 f~23 dx=1
