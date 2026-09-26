@@ -32,6 +32,15 @@ ARMS = {
     "reachfw":    dict(steer=dict(proph="throat"), dec="fw540_reachfw"),        # STEER2 post-hoc firmware rule
     # STEER3: tap-steering at P frames/column for ALL normal moves, reach root simulating the same P
     **{f"tap{P}_reach": dict(steer=dict(proph="throat", pulse=True, tap_period=P), tapreach=P) for P in (2, 3, 4, 5)},
+    # STEER4: the SHIPPING couch build (fw540 + reach_fw_tap mask P=2 + unified DRTAPP=2 steering) + shape terms
+    **{name: dict(steer=dict(proph="throat", pulse=True, tap_period=2, tap_unified=True), shape=kw) for name, kw in {
+        "s4_base":  {},
+        "s4_sv180": {"w_sv": 180, "r_hi": 9},
+        "s4_sv540": {"w_sv": 540, "r_hi": 9},
+        "s4_sp100": {"w_sp": 100, "hs": 10},
+        "s4_sp300": {"w_sp": 300, "hs": 10},
+        "s4_rot2":  {"rot_margin": 2},
+    }.items()},
 }
 
 
@@ -57,6 +66,14 @@ def make(arm):
             state["next_hint"] = None if p2 < 0 else SM.target_side(p2 // 8, p2 % 8)
             return a
         return steer, choose
+    if "shape" in spec:
+        import fast_rtl_x as FX
+        import cascade_chain_x as C
+        import cascade_shape_x as SH
+        C.warmup_chain(topk2=8)
+        w, fl = FX.variant("winner")
+        dec = SH.ShapeReachDecider(w, fl, topk2=8, maxpass=0, w_chain=540, ws=20, tap=2, **spec["shape"])
+        return steer, (lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt, k=env.pills_placed))
     if spec.get("tapreach"):
         import fast_rtl_x as FX
         import cascade_chain_x as C

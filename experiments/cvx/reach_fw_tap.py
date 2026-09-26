@@ -121,7 +121,7 @@ def straight_rest(top, x, vert):
     return top[x] - 1 if vert else min(top[x], top[x + 1]) - 1
 
 
-def reachable(color, top, thr, var, col, tap=None):
+def reachable(color, top, thr, var, col, tap=None, rot_margin=0):
     """True iff the couch driver lands the capsule EXACTLY on the straight-drop cells of (var, col).
     tap=None: today's DAS driver; tap=P: the DRTAPP=P tap driver (see the module docstring)."""
     vert = var in (2, 3)
@@ -154,6 +154,8 @@ def reachable(color, top, thr, var, col, tap=None):
     f = T_LAT
     if tap is not None and last_press is not None:
         f = max(T_LAT, last_press + tap)                       # the shared scheduler's next press slot
+    if nrot:
+        f += rot_margin                                        # STEER4 arm 3: rotation conservatism (k61 fix)
     rstep = 1 if tap is None else tap
     done = 0
     while done < nrot:
@@ -197,7 +199,7 @@ def reachable(color, top, thr, var, col, tap=None):
     return rest_from(color, x, r, vert) == straight_rest(top, x, vert)
 
 
-def reach_mask_fw(color, thr, tap=None):
+def reach_mask_fw(color, thr, tap=None, rot_margin=0):
     top = tops(color)
     out = [0] * 32
     for a in range(32):
@@ -207,7 +209,7 @@ def reach_mask_fw(color, thr, tap=None):
             continue
         if rest(top, col, vert) - (1 if vert else 0) < 0:
             continue
-        out[a] = 1 if reachable(color, top, thr, var, col, tap) else 0
+        out[a] = 1 if reachable(color, top, thr, var, col, tap, rot_margin) else 0
     if not any(out):
         out = [1] * 32
     return out

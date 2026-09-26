@@ -152,6 +152,7 @@ class Steer:
     """Stateful per game (the ROM's horVelocity carries across pills)."""
 
     def __init__(self, proph="throat", prehold=False, pulse=False, distgate=True, speed=1, seed=0, tap_period=None,
+                 tap_unified=False,
                  lat=None, trace=False, lat_mode="pooled"):
         self.proph, self.prehold, self.pulse, self.distgate = proph, prehold, pulse, distgate
         self.lat_mode = lat_mode                     # "pooled" (pre-registered) | "byrot" (post-hoc sensitivity)
@@ -161,6 +162,10 @@ class Steer:
         # tap_period (STEER3): None = STEER1's alternate-frame pulse (parity-keyed); P = one fresh press every P
         # frames from the first steering frame. DISTGATE is sized to the tap rate (2 hooks/frame -> 2P hooks/col).
         self.tap_period = tap_period
+        # tap_unified (STEER4): the SHIPPING cart's DRTAPP=P driver -- every P2 press (PROPH pulse, rotation, lateral)
+        # is a one-frame tap from ONE scheduler, the next press no sooner than P frames later (reach_fw_tap.py).
+        # Soft-drop (DOWN) stays held. Requires pulse=True and tap_period=P.
+        self.tap_unified = bool(tap_unified)
         self.dtable, self.scancap = dist_table(dasedge=(2 * (tap_period or 2)) if pulse else 12)
         self.lat = lat if lat is not None else latency_samples()
         self.seed = seed
@@ -245,7 +250,26 @@ class Steer:
         for f in range(F0, F0 + 4000):
             # ---------------- driver decision (from last frame's state) ----------------
             raw, clear = 0, False
-            if f < t_ans:
+            if self.tap_unified:
+                want = None
+                if f < t_ans:
+                    if pd is not None:
+                        want = RIGHT if pd == "R" else LEFT
+                elif rot != trot:
+                    want = BTN_B if ((trot - rot) & 3) == 1 else BTN_A
+                else:
+                    eff = self._eff(color, x, row, tcol)
+                    if eff != tcol:
+                        clamped_ever = True
+                    if x == eff:
+                        raw = DOWN
+                    else:
+                        want = RIGHT if x < eff else LEFT
+                if want is not None:
+                    clear = True
+                    if last_tap is None or f - last_tap >= self.tap_period:
+                        raw = want; last_tap = f
+            elif f < t_ans:
                 if pd is not None:
                     clear = True
                     if (f + ph) % 2 == 0:
