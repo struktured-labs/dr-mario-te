@@ -52,6 +52,7 @@ ARMS = {
     # STEER5b (post-hoc, PREREG_STEER5b.md): leaf HSV term (cascade_leaf5b_x), w5 = [BUR35, ACC35, RB35, HSV]
     **{name: dict(steer=dict(proph="throat", pulse=True, tap_period=2, tap_unified=True), leaf5b=w5) for name, w5 in {
         "s5b_hsv180": (0, 0, 0, 180), "s5b_hsv540": (0, 0, 0, 540),
+        "s5b_hsv512": (0, 0, 0, 512),                                  # STEER5c: RTL-buildable dose (popcount 1)
     }.items()},
 }
 

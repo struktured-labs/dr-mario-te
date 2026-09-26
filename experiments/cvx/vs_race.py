@@ -90,6 +90,8 @@ ARMS = {
     "s4_sp300": dict(trunk="winner", chain=540, strand=20, shape={"w_sp": 300, "hs": 10}),
     "s4_rot2":  dict(trunk="winner", chain=540, strand=20, shape={"rot_margin": 2}),
     "s4_combo": dict(trunk="winner", chain=540, strand=20, shape={"w_sv": 180, "r_hi": 9, "rot_margin": 2}),
+    # STEER5c: HSV leaf term (cascade_leaf5b_x) on the shipping brain; pair with steer_race TAP=2 unified
+    "s5b_hsv512": dict(trunk="winner", chain=540, strand=20, leaf5b=(0, 0, 0, 512)),
 }
 
 _CHAIN_READY = False
@@ -105,6 +107,11 @@ def _decider(arm):
         if not _CHAIN_READY:
             C.warmup_chain(topk2=8); _CHAIN_READY = True
         w, fl = FX.variant(spec["trunk"])
+        if "leaf5b" in spec:
+            import cascade_leaf5b_x as L5b
+            dec = L5b.Leaf5ReachDecider(w, fl, w5=spec["leaf5b"], topk2=8, maxpass=0, w_chain=int(spec["chain"]),
+                                        ws=int(spec["strand"]), tap=2)
+            return lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt, k=env.pills_placed)
         if "shape" in spec:
             import cascade_shape_x as SH
             dec = SH.ShapeReachDecider(w, fl, topk2=8, maxpass=0, w_chain=int(spec["chain"]), ws=int(spec["strand"]),
