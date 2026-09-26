@@ -42,6 +42,13 @@ ARMS = {
         "s4_rot2":  {"rot_margin": 2},
         "s4_combo": {"w_sv": 180, "r_hi": 9, "rot_margin": 2},    # arm (4) by the pre-registered rule
     }.items()},
+    # STEER5: leaf-term screen on the shipping baseline (w5 = [BUR35, ACC35, RB35], cascade_leaf5_x)
+    **{name: dict(steer=dict(proph="throat", pulse=True, tap_period=2, tap_unified=True), leaf5=w5) for name, w5 in {
+        "s5_base":   (0, 0, 0),
+        "s5_bur32":  (32, 0, 0),  "s5_bur96":  (96, 0, 0),
+        "s5_acc60":  (0, 60, 0),  "s5_acc180": (0, 180, 0),
+        "s5_rb48":   (0, 0, 48),  "s5_rb144":  (0, 0, 144),
+    }.items()},
 }
 
 
@@ -67,6 +74,14 @@ def make(arm):
             state["next_hint"] = None if p2 < 0 else SM.target_side(p2 // 8, p2 % 8)
             return a
         return steer, choose
+    if "leaf5" in spec:
+        import fast_rtl_x as FX
+        import cascade_chain_x as C
+        import cascade_leaf5_x as L5
+        C.warmup_chain(topk2=8)
+        w, fl = FX.variant("winner")
+        dec = L5.Leaf5ReachDecider(w, fl, w5=spec["leaf5"], topk2=8, maxpass=0, w_chain=540, ws=20, tap=2)
+        return steer, (lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt, k=env.pills_placed))
     if "shape" in spec:
         import fast_rtl_x as FX
         import cascade_chain_x as C
