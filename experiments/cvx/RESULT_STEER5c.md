@@ -35,7 +35,7 @@ Non-inferiority at ±2 pp needs about 3–4× the sample:
 - whole-game tap-out SE ≈ 1 pp → ~2,500 paired games;
 - race SE ≈ 1 pp → ~3,000 race games.
 
-Fresh streams are nearly exhausted (the registry's longest free runs are now ≤ 83 streams), so a larger
+Fresh streams are now exhausted (the registry's longest free run is 20 streams), so a larger
 confirmation must reuse seeds, declared. The alternative is to accept tap≤100 as the primary on the owner's #1
 metric (early tap-outs) with non-inferiority on the pooled data.
 
