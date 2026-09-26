@@ -1,4 +1,4 @@
-# CHAIN540 + REACH + TAP + HSV core — build record (2026-09-26, Claude): ⛔ NOT STAGED. The fallback CLOSES copro (+0.760) but fails pll_hdmi (−0.176) at seed 13
+# CHAIN540 + REACH + TAP + HSV core — build record (2026-09-26, Claude): ✅ STAGED — fallback build at seed 3 (copro +0.806, pll_hdmi +0.202, rbf 6b73907c)
 
 **Why:** HSV512 passed STEER5d's powered check (`71970ba`):
 - tap≤100 −2.26 [−3.35, −1.21]
@@ -100,12 +100,45 @@ Every stage keeps the LeafEval FSM cycle-exact: **0 added engine cycles**.
   `dr_mario_rl/tmp/rtl_chain/ship/childproof-chain540-reach-tap-hsv-pipe-seed13/`.
   - That directory also holds the per-endpoint wide report, the floor paths and the pll_hdmi paths.
   - Scripts: `chain540_reach_tap_hsv_pipe_build.sh`, `chain540_reach_tap_hsv_pipe_after_sweep.sh`.
-- **Not done: a fallback seed sweep.** The instruction was "do NOT seed-hunt without asking." With copro at +0.760,
-  only pll_hdmi is left to hit, and that is a coin flip per seed on this project's history. The next ask is a
-  2–4 seed sweep of the fallback build.
+- A fallback seed sweep was then approved by the coordinator: seeds 3 and 9 first (holes80's HDMI passes), then 2
+  and 7, stopping at the first pass.
+
+## 4. Fallback seed sweep → ✅ PASS AT SEED 3 (first seed tried; 9/2/7 not needed)
+The bars are defined in `dr-mario-main-wt/experiments/rtl_chain/fit_verdict.sh` (main @ `160ecaf`):
+- `SLACK_BAR=0.10` (l.25) for copro;
+- `BASE_HDMI=-0.012` (l.24), with pass iff `hdmi >= BASE_HDMI-0.05`, i.e. **≥ −0.062** (l.87).
+
+| seed | copro slack | pll_hdmi | ALMs | verdict |
+|---|---|---|---|---|
+| 13 | +0.760 | −0.176 | 37,512 | FAIL (pll_hdmi) |
+| **3** | **+0.806** | **+0.202** | **37,470** | **SHIP AS-IS** |
+
+- **FW-in-image:** bijection 16/16 == 77ec742c. The REACH control hex d8014d77 correctly MISMATCHES 8/16.
+- **HSV in the netlist:** `matched60[14]` 89 refs, `matched60_p[14]` 3, `base_matched[14]` 3.
+- **Fallback registers present:**
+  - `vn_hit` 25 refs, `h_waddr` 348 refs.
+  - The fit report's register-packing table puts `sq_h_in`/`sq_v_in` INTO the LeafEval Mult DSPs (20 rows), and
+    `run_h`/`run_v` in NONE (0 rows).
+  - HSV-only seed 13 was the reverse: `run_h` → `Mult5~8`, 20 rows. That was the root cause.
+- **Copro floor at seed 3:** only host-write (+0.806) and vo→span_hi (+0.812) paths are below +0.9.
+- The netlist check, packing check and staging are all automated by `chain540_reach_tap_hsv_pipe_stage.sh`. It
+  refuses unless every check holds.
 
 ## Staging
-`dr_mario_rl/tmp/rtl_chain/ship/chain540-reach-tap-hsv/` holds `BUILD_FAILED.md` only. There is deliberately NO rbf.
+`dr_mario_rl/tmp/rtl_chain/ship/chain540-reach-tap-hsv/` contains:
+- `NES_childproof_chain540_reach_tap_hsv_fb_seed3_20260926.rbf` (md5 `6b73907c0c4d59585852e19b7088d82a`);
+- `BUILD.md`, `FW_IN_IMAGE_PROOF.txt`, `HSV_NETLIST_CHECK.txt`, `FALLBACK_REG_CHECK.txt`, `verdict.txt`,
+  `NES.qsf.used`, and `fw540_reachtap_77ec742c.hex`.
+
+The earlier `BUILD_FAILED.md` moved to the seed-3 archive. The full archive is
+`childproof-chain540-reach-tap-hsv-pipe-seed3/`.
+
+**Pairing: the TAP carts are UNCHANGED.** Use them from `chain540-reach-tap/`:
+- couch TE `drmario_te_couch_nmifix_reachtx_tap2_198a95e3.nes`, md5 `198a95e3d5f0ce5b671c1b8d02af54ce`;
+- CvC soak `drmario_cvc_tuckguard_08211ef4_nmifix_reachtx_tap2_33062615.nes`, md5
+  `33062615a9b76fb9233445daa7899caa`.
+
+Not deployed: the coordinator does the hardware check and soak.
 
 ## HSV gates carried over (dr-mario-te `hsv-leaf` @ `d437be0`)
 - Bitexact with a spec-fixed reference: PHASE1 948/948, PHASE3 4494/4494.
