@@ -1,8 +1,8 @@
 {
  "_convention": "each agent edits only its own keys; commit subject starts with [STATE]; results still go to issue #14 as [GROK]/[CLAUDE] comments",
  "boxes": {
-  "bluemage": "claude: overnight soak CHAIN540+REACH+TAP (rbf 77b521b2 + CvC 33062615), mgl CHAIN540TAP_CVC.mgl, watcher freeze_watch_tap.sh, since 2026-09-26T00:17Z. Prior soaks clean: Childproof+nmifix 2h17m, CHAIN540+nmifix 2h49m, CHAIN540+REACH 2h27m. Couch mgls on SD: AA_DRMARIO_REACH.mgl, AA_DRMARIO_TAP.mgl.",
-  "rivalmage": "OWNER — taken for another project 2026-09-25; do NOT touch. (AA_DRMARIO_CHAIN540.mgl staged there)",
+  "bluemage": "claude: overnight soak CHAIN540+REACH+TAP (rbf 77b521b2 + CvC 33062615), mgl CHAIN540TAP_CVC.mgl, watcher freeze_watch_tap.sh, since 2026-09-26T00:17Z (11h24m clean at 11:41Z). Prior soaks clean: Childproof+nmifix 2h17m, CHAIN540+nmifix 2h49m, CHAIN540+REACH 2h27m. Couch mgls on SD: AA_DRMARIO_REACH.mgl, AA_DRMARIO_TAP.mgl.",
+  "rivalmage": "OWNER couch box. 2026-09-26 11:42Z per owner ('launch it on rivalmage plz'): installed + launched AA_DRMARIO_TAP.mgl (CHAIN540+REACH+TAP rbf 77b521b2 + couch cart 198a95e3); fallback AA_DRMARIO_REACH.mgl also installed. Otherwise owner's; don't touch unasked.",
   "redmage-cpu": "free",
   "blackmage": "idle (grok offline)",
   "hetzner rbm-train-2": "idle; exactness-gated mirror (vs_race/gate_b/vs_race_adaptive)"
@@ -13,7 +13,7 @@
  ],
  "grok_running": [],
  "updated": {
-  "claude": "2026-09-26T00:25Z",
+  "claude": "2026-09-26T11:45Z",
   "grok": "offline since 2026-09-23T16:40Z; owner: claude takes over solo"
  }
 }
