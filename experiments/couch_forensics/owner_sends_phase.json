@@ -1,0 +1,194 @@
+{
+ "all": {
+  "time": {
+   "open <30s": {
+    "minutes": 7.0,
+    "volleys": 33,
+    "cells": 76,
+    "volleys_per_min": 4.71,
+    "mean_size": 2.3,
+    "cells_per_min": 10.86
+   },
+   "mid 30-90s": {
+    "minutes": 12.28,
+    "volleys": 56,
+    "cells": 128,
+    "volleys_per_min": 4.56,
+    "mean_size": 2.29,
+    "cells_per_min": 10.42
+   },
+   "late >=90s": {
+    "minutes": 14.5,
+    "volleys": 65,
+    "cells": 164,
+    "volleys_per_min": 4.48,
+    "mean_size": 2.52,
+    "cells_per_min": 11.31
+   }
+  },
+  "owner": {
+   ">30": {
+    "minutes": 19.23,
+    "volleys": 86,
+    "cells": 196,
+    "volleys_per_min": 4.47,
+    "mean_size": 2.28,
+    "cells_per_min": 10.2
+   },
+   "21-30": {
+    "minutes": 9.43,
+    "volleys": 46,
+    "cells": 104,
+    "volleys_per_min": 4.88,
+    "mean_size": 2.26,
+    "cells_per_min": 11.02
+   },
+   "9-20": {
+    "minutes": 4.83,
+    "volleys": 20,
+    "cells": 54,
+    "volleys_per_min": 4.15,
+    "mean_size": 2.7,
+    "cells_per_min": 11.19
+   },
+   "<=8": {
+    "minutes": 0.3,
+    "volleys": 2,
+    "cells": 14,
+    "volleys_per_min": 6.67,
+    "mean_size": 7.0,
+    "cells_per_min": 46.67
+   }
+  },
+  "ai": {
+   ">30": {
+    "minutes": 9.2,
+    "volleys": 41,
+    "cells": 94,
+    "volleys_per_min": 4.46,
+    "mean_size": 2.29,
+    "cells_per_min": 10.22
+   },
+   "21-30": {
+    "minutes": 7.99,
+    "volleys": 39,
+    "cells": 89,
+    "volleys_per_min": 4.88,
+    "mean_size": 2.28,
+    "cells_per_min": 11.14
+   },
+   "9-20": {
+    "minutes": 8.86,
+    "volleys": 39,
+    "cells": 91,
+    "volleys_per_min": 4.4,
+    "mean_size": 2.33,
+    "cells_per_min": 10.27
+   },
+   "<=8": {
+    "minutes": 7.73,
+    "volleys": 35,
+    "cells": 94,
+    "volleys_per_min": 4.53,
+    "mean_size": 2.69,
+    "cells_per_min": 12.16
+   }
+  }
+ },
+ "L11": {
+  "time": {
+   "open <30s": {
+    "minutes": 5.5,
+    "volleys": 28,
+    "cells": 62,
+    "volleys_per_min": 5.09,
+    "mean_size": 2.21,
+    "cells_per_min": 11.27
+   },
+   "mid 30-90s": {
+    "minutes": 10.17,
+    "volleys": 49,
+    "cells": 114,
+    "volleys_per_min": 4.82,
+    "mean_size": 2.33,
+    "cells_per_min": 11.21
+   },
+   "late >=90s": {
+    "minutes": 10.01,
+    "volleys": 48,
+    "cells": 113,
+    "volleys_per_min": 4.8,
+    "mean_size": 2.35,
+    "cells_per_min": 11.29
+   }
+  },
+  "owner": {
+   ">30": {
+    "minutes": 16.73,
+    "volleys": 79,
+    "cells": 178,
+    "volleys_per_min": 4.72,
+    "mean_size": 2.25,
+    "cells_per_min": 10.64
+   },
+   "21-30": {
+    "minutes": 7.46,
+    "volleys": 36,
+    "cells": 84,
+    "volleys_per_min": 4.83,
+    "mean_size": 2.33,
+    "cells_per_min": 11.26
+   },
+   "9-20": {
+    "minutes": 1.43,
+    "volleys": 9,
+    "cells": 23,
+    "volleys_per_min": 6.32,
+    "mean_size": 2.56,
+    "cells_per_min": 16.14
+   },
+   "<=8": {
+    "minutes": 0.07,
+    "volleys": 1,
+    "cells": 4,
+    "volleys_per_min": 15.0,
+    "mean_size": 4.0,
+    "cells_per_min": 60.0
+   }
+  },
+  "ai": {
+   ">30": {
+    "minutes": 7.86,
+    "volleys": 38,
+    "cells": 84,
+    "volleys_per_min": 4.84,
+    "mean_size": 2.21,
+    "cells_per_min": 10.69
+   },
+   "21-30": {
+    "minutes": 6.56,
+    "volleys": 35,
+    "cells": 81,
+    "volleys_per_min": 5.34,
+    "mean_size": 2.31,
+    "cells_per_min": 12.35
+   },
+   "9-20": {
+    "minutes": 6.71,
+    "volleys": 29,
+    "cells": 71,
+    "volleys_per_min": 4.32,
+    "mean_size": 2.45,
+    "cells_per_min": 10.58
+   },
+   "<=8": {
+    "minutes": 4.55,
+    "volleys": 23,
+    "cells": 53,
+    "volleys_per_min": 5.05,
+    "mean_size": 2.3,
+    "cells_per_min": 11.65
+   }
+  }
+ }
+}
