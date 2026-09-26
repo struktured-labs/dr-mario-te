@@ -18,7 +18,7 @@ X0, Y0, W, H = 1100, 320, 420, 680        # search window around the P2 bottle
 
 
 def frame(video, t):
-    cmd = ["ffmpeg", "-v", "error", "-ss", str(t), "-i", video, "-frames:v", "1",
+    cmd = ["ffmpeg", "-v", "error", "-threads", "1", "-ss", str(t), "-i", video, "-frames:v", "1",
            "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
     buf = subprocess.run(cmd, capture_output=True, check=True).stdout
     return np.frombuffer(buf, np.uint8).reshape(1080, 1920, 3).astype(int)

@@ -17,7 +17,7 @@ X_OFF, Y_OFF, W, H = 1120, 190, 380, 790
 
 def main(video, t0, dur, out):
     rd = R.Reader(X_OFF, Y_OFF)
-    cmd = ["ffmpeg", "-v", "error", "-ss", str(t0), "-i", video, "-t", str(dur),
+    cmd = ["ffmpeg", "-v", "error", "-threads", "1", "-ss", str(t0), "-i", video, "-t", str(dur),
            "-vf", f"crop={W}:{H}:{X_OFF}:{Y_OFF}", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     n = W * H * 3
