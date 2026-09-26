@@ -81,3 +81,44 @@ G2 AI 7 vs owner 29.
 - **Gates:** masked-decider identity 169/169. Mechanics with garbage: 161/167 steps exact or explained (6
   unexplained).
 - **Cases:** `cases_tap_20260926_g3g4.jsonl` (169).
+
+## Addendum 2: healthy contrast. PM 3-0 TAP match vs the two AM tower deaths (fast pass, nice 19 / single-thread)
+**The PM match windows:**
+- G1: 1180.9–1397.6 s, AI clear (owner at 4).
+- G2: 1413.9–1458.6 s, owner topped out (38 vs 24).
+- G3: 1481.1–1726.2 s, AI clear (owner at 10).
+- ⚠ **The PM match was LEVEL 10 (44 viruses); the AM games were L11 (48).** HUD-checked at each first spawn: reader ==
+  HUD 5/5. The only healthy L11 comparison is AM-G3.
+- Masked-decider identity: 215/215.
+
+| game | outcome | n | match masked | lane max | lane > 10 (s, frac) | hi-virus c3-5 (rows ≤ 8): start → clear time | hi-virus·s | garbage cells (/min) | PROPH |
+|---|---|---|---|---|---|---|---|---|---|
+| AM-G1 (L11) | **AI tap-out** | 46 | 80% | 15 | 82.8 (0.91) | **7 → 2 by 21 s, 2 left until death (91 s)** | **245** | 19 (12.5) | 8 |
+| AM-G2 (L11) | **AI tap-out** | 59 | 85% | 12 | 29.3 (0.23) | **7 → 1 by 52 s, last one until 127 s** | **286** | 26 (12.2) | 0 |
+| AM-G3 (L11) | AI clear | 120 | 83% | 12 | 13.5 (0.05) | 5 → 0 at 17 s | 38 | 35 (8.4) | 0 |
+| PM-G1 (L10) | AI clear | 85 | 84% | 12 | 3.9 (0.02) | 2 → 0 at 27 s | 36 | 33 (9.4) | 0 |
+| PM-G2 (L10) | owner top-out | 23 | 87% | 10 | 0 (0) | 4 → 0 at 25 s | 58 | 4 (6.5) | 0 |
+| PM-G3 (L10) | AI clear | 107 | 77% | 11 | 11.6 (0.05) | 3 → 0 at 13 s | 25 | 40 (10.1) | 0 |
+
+**What separates the deaths:**
+1. **Virus layout + clearing, clearly.**
+   - Both deaths started with **7 viruses in cols 3-5 above row 9** (top virus row 6 in all three columns), against
+     2–5 in the healthy games.
+   - Both deaths **never finished clearing them**: 1–2 sat in the spawn columns for 70–75 s, which is
+     245–286 virus-seconds against 25–58.
+   - Every healthy game cleared its high centre viruses within 13–27 s.
+2. **Board shape follows:** spawn lane > 10 for 23–91% of the game in the deaths vs ≤ 5% in the healthy games.
+3. **Garbage: modest.** 12.2–12.5 cells/min in the deaths vs 6.5–10.1. It is higher, but it doesn't separate as
+   sharply as the virus measure.
+4. **Brain–silicon fidelity: no difference** (80–85% vs 77–87%). PROPH fired only in AM-G1's final phase.
+
+⇒ For STEER5, the target is **accessibility / time-to-clear of viruses high in the spawn columns**: a leaf term
+pricing uncleared c3-5 viruses above row 9, and the burial that stacks garbage and pills on top of them. A
+generic tower or height term is not it: early lane > 10 is common to every game (virus layout alone puts it there
+within 1–7 s).
+
+Caveats: n = 2 deaths vs 4 healthy games, and 3 of the healthy games are L10.
+
+- **Cases:** `cases_tap_20260926_pm.jsonl` (215 placements) and `cases_tap_contrast.jsonl` (per-game metrics +
+  per-spawn (t, lane, hi-virus) series).
+- **Script:** `contrast_tap.py`.
