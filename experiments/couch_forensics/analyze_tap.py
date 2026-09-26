@@ -69,7 +69,8 @@ def run(raw_path, out_path):
         tot += 1; same += int(a_one == a_un)
         g, k = kg[i]
         thr = SM.table_threshold(k)
-        mask = RFT.reach_mask_fw(b.color.tolist(), thr, 2)
+        tap = os.environ.get("TAP", "2")
+        mask = RFT.reach_mask_fw(b.color.tolist(), thr, None if tap == "none" else int(tap))
         a_m = masked_choice(dec, S, cur, nxt, mask)
         o, orow, ocol, ocl = r["landing"]
         # which action index is the silicon landing (any variant with the same cells + colours)?

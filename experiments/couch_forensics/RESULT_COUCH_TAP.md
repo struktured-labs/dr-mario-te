@@ -56,3 +56,28 @@ G2 AI 7 vs owner 29.
 - `analyze_tap.py`: masked vs unmasked brain vs silicon, timing. Needs `GAMES="t0:t1,..."`.
 - `cases_tap_20260926.jsonl`: the 105 banked cases (board, pills, both brains, silicon, mask, timing).
 - `scan_frames.py` / `fit_geometry.py`: now `ffmpeg -threads 1`.
+
+## Addendum: G3 (AI won) + an abandoned G4, same recording (fast pass, nice 19 / single-thread)
+- **Windows:**
+  - G3: 307.2–564.0 s. Ends **AI 00 vs owner 20**; STAGE CLEAR appears on P2 at 564.3 s.
+  - G4: 599.8–707.3 s, **abandoned mid-game** at owner 24 / AI 21.
+  - **Dr. Mario content ends at ≈707.3 s.** The frame is black from 708 s, then a static non-Dr. Mario screen
+    through ≥820 s (the rivalmage core switch). Nothing after 707 s is analysed.
+- **Build = TAP (AA_DRMARIO_TAP.mgl behaviour), not the DAS fallback.** Lateral-gap histograms:
+  - G3: `1:10  2:88  3:1  4:3  5:5  6:4  7:2  8:1  11:2  12:2  13:1  17:1  18:1  20:1  22:1  26:1  44:1`, so 88 of
+    125 gaps are 2 frames.
+  - G4: `1:1  2:14  4:2  6:3`.
+  - The DAS signature (first press, then 16 f, then 6 f) is absent: there is no 16-f cluster. The 9/25 DAS
+    CHAIN540 games showed 6 f ×10 and 16 f ×7.
+  - First answer move: median ≈ f18 (T_LAT 19).
+- **Placements vs the masked brain (tap mask, P=2):**
+  - G3: **100/120** match (83%).
+  - G4: **40/49** (82%).
+  - The mask never removed the brain's choice.
+  - No landing fell outside the mask; 3 tucks.
+  - **PROPH never fired.** Spawn-lane height maxed at 12: neither game entered the ledge regime.
+  - The mismatches (G3 20, G4 9) are scattered different targets / orientations. There is no clamp, PROPH or
+    ledge pattern. Not examined further (fast pass).
+- **Gates:** masked-decider identity 169/169. Mechanics with garbage: 161/167 steps exact or explained (6
+  unexplained).
+- **Cases:** `cases_tap_20260926_g3g4.jsonl` (169).
