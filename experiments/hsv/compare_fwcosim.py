@@ -22,13 +22,14 @@ def load(shard, build):
 
 
 def main():
+    alt = sys.argv[1] if len(sys.argv) > 1 else "pipe"      # the fallback build's log name (run_<alt>.log)
     a, b, want = {}, {}, 0
     for s in range(4):
-        x, n = load(s, "hsv"); y, _ = load(s, "pipe"); a.update(x); b.update(y); want += n
+        x, n = load(s, "hsv"); y, _ = load(s, alt); a.update(x); b.update(y); want += n
     bad = [k for k in sorted(a) if a.get(k) != b.get(k)]
     both = sorted(set(a) & set(b))
     tot = sum(a[k][2] for k in both)
-    print("boards: hsv %d  pipe %d  of %d" % (len(a), len(b), want))
+    print("boards: hsv %d  %s %d  of %d" % (len(a), alt, len(b), want))
     print("moves identical: %d/%d   clocks identical: %d/%d" % (
         sum(a[k][:2] == b[k][:2] for k in both), len(both), sum(a[k][2] == b[k][2] for k in both), len(both)))
     if both:
@@ -36,7 +37,7 @@ def main():
                                                                                    tot / len(both) / 85.9e6))
     ok = len(a) == len(b) == want and not bad
     for k in bad[:10]:
-        print("DIFF board %d: hsv=%s pipe=%s" % (k, a.get(k), b.get(k)))
+        print("DIFF board %d: hsv=%s %s=%s" % (k, a.get(k), alt, b.get(k)))
     print("FWCOSIM %s" % ("PASS" if ok else "FAIL"))
     return 0 if ok else 1
 
