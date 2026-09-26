@@ -109,6 +109,85 @@ def test_short_game_records_tapout_fields():
     assert row["how"] in ("clear", "topout", "stall")
 
 
+def _arena_row(seed, arm, chain, strand, topout, leaf="winner", label=None):
+    row = {
+        "seed": seed,
+        "arm": arm,
+        "chain": chain,
+        "strand": strand,
+        "leaf": leaf,
+        "topout": topout,
+        "won": 0 if topout else 1,
+        "stall": 0,
+        "dies_ahead": 0,
+        "elapsed_s": 12.0 if topout else 30.0,
+        "pills": 8 if topout else 20,
+    }
+    if label is not None:
+        row["label"] = label
+    return row
+
+
+def test_summary_does_not_merge_chain_doses():
+    """`run --arm fw_winner --chain 540` writes arm=fw_winner. Grouping by arm
+    name alone merged those rows with the chain-180 fw_winner rows."""
+    chain_180 = [_arena_row(1, "fw_winner", 180, 20, 1),
+                 _arena_row(2, "fw_winner", 180, 20, 1)]
+    chain_540 = [_arena_row(1, "fw_winner", 540, 20, 0),
+                 _arena_row(2, "fw_winner", 540, 20, 0)]
+    text = S.render_summary(chain_180 + chain_540, n_boot=20)
+    assert "n=4" not in text
+    assert "fw_winner chain=180 strand=20 leaf=winner: n=2" in text
+    assert "fw_winner chain=540 strand=20 leaf=winner: n=2" in text
+    assert "100.00%" in text and "0.00%" in text
+    pair_lines = [ln for ln in text.splitlines() if "paired n=" in ln]
+    assert pair_lines == [
+        ln for ln in pair_lines
+        if "chain=540" in ln and "chain=180" in ln and "paired n=2" in ln and "-100.00pp" in ln
+    ]
+    assert len(pair_lines) == 1
+
+    # Same arm and dose, different explicit labels, stay apart.
+    labeled = [
+        _arena_row(1, "fw_winner", 540, 20, 1, label="screen-a"),
+        _arena_row(1, "fw_winner", 540, 20, 0, label="screen-b"),
+    ]
+    groups = S.group_rows_by_config(labeled)
+    assert len(groups) == 2
+    assert {len(rows) for _k, _n, rows in groups} == {1}
+
+    # Older jsonl has no chain/strand/leaf. Those still summarise under the arm name.
+    legacy = [
+        {"arm": "fw_winner", "seed": 1, "topout": 0, "won": 1,
+         "elapsed_s": 1.0, "pills": 3},
+        {"arm": "fw_winner", "seed": 2, "topout": 1, "won": 0,
+         "elapsed_s": 4.0, "pills": 8},
+    ]
+    legacy_groups = S.group_rows_by_config(legacy)
+    assert len(legacy_groups) == 1
+    assert legacy_groups[0][1] == "fw_winner"
+
+    # Three configs: pair only the arms that share chain and strand.
+    # A chain-540 seed must not enter the chain-180 comparison.
+    mixed = [
+        _arena_row(1, "fw_winner", 180, 20, 1),
+        _arena_row(2, "fw_winner", 180, 20, 1),
+        _arena_row(1, "fw_winner", 540, 20, 0),
+        _arena_row(2, "fw_winner", 540, 20, 0),
+        _arena_row(1, "fw_holes80", 180, 20, 0, leaf="winholes80"),
+        _arena_row(2, "fw_holes80", 180, 20, 1, leaf="winholes80"),
+    ]
+    mixed_text = S.render_summary(mixed, n_boot=20)
+    mixed_pairs = [ln for ln in mixed_text.splitlines() if "paired n=" in ln]
+    assert len(mixed_pairs) == 1
+    assert "chain=540" not in mixed_pairs[0]
+    assert "chain=180" in mixed_pairs[0]
+    assert "fw_holes80" in mixed_pairs[0] and "fw_winner" in mixed_pairs[0]
+    assert "paired n=2" in mixed_pairs[0]
+    assert "-50.00pp" in mixed_pairs[0]
+    assert "fw_winner chain=540 strand=20 leaf=winner: n=2" in mixed_text
+
+
 def test_resolve_matches_flat_board():
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "experiments", "cvx"))
     import repo_paths
