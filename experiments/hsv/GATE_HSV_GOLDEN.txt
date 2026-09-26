@@ -1,0 +1,3 @@
+game : firmware(+HSV engine) == golden mirror(+HSV) 220/220; HSV count median 4 max 8; HSV moved the decision on 67
+synth: firmware(+HSV engine) == golden mirror(+HSV) 120/120; HSV count median 13 max 23; HSV moved the decision on 25
+GATE_HSV_GOLDEN PASS

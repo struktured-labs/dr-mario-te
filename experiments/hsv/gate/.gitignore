@@ -1,0 +1,9 @@
+build/
+results/
+__pycache__/
+# pinned corpora: identical to dr-mario-qa-wt experiments/bitexact_gate (committed there); copied locally, not re-committed
+corpus.txt
+corpus.txt.classes
+node_cases.txt
+pairs_noclear.txt
+linknode_cases.txt
