@@ -49,6 +49,10 @@ ARMS = {
         "s5_acc60":  (0, 60, 0),  "s5_acc180": (0, 180, 0),
         "s5_rb48":   (0, 0, 48),  "s5_rb144":  (0, 0, 144),
     }.items()},
+    # STEER5b (post-hoc, PREREG_STEER5b.md): leaf HSV term (cascade_leaf5b_x), w5 = [BUR35, ACC35, RB35, HSV]
+    **{name: dict(steer=dict(proph="throat", pulse=True, tap_period=2, tap_unified=True), leaf5b=w5) for name, w5 in {
+        "s5b_hsv180": (0, 0, 0, 180), "s5b_hsv540": (0, 0, 0, 540),
+    }.items()},
 }
 
 
@@ -74,6 +78,14 @@ def make(arm):
             state["next_hint"] = None if p2 < 0 else SM.target_side(p2 // 8, p2 % 8)
             return a
         return steer, choose
+    if "leaf5b" in spec:
+        import fast_rtl_x as FX
+        import cascade_chain_x as C
+        import cascade_leaf5b_x as L5b
+        C.warmup_chain(topk2=8)
+        w, fl = FX.variant("winner")
+        dec = L5b.Leaf5ReachDecider(w, fl, w5=spec["leaf5b"], topk2=8, maxpass=0, w_chain=540, ws=20, tap=2)
+        return steer, (lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt, k=env.pills_placed))
     if "leaf5" in spec:
         import fast_rtl_x as FX
         import cascade_chain_x as C
