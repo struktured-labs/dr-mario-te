@@ -1,0 +1,56 @@
+
+=== gb-0804  n=600  tap-out  23.0%  clear  77.0%
+  BOARD stall str  N>=10: games with one  77.0%  per game 1.75  len p50/p90/max 19/83/387  decisions in stall  27.8%  vleft@start p50 3  ends unlocked_own=933 unlocked_garbage=26 end=94
+  BOARD stall str  N>=20: games with one  52.8%  per game 0.87  len p50/p90/max 37/142/387  decisions in stall  20.7%  vleft@start p50 3  ends unlocked_own=428 unlocked_garbage=14 end=78
+  BOARD stall act  N>=10: games with one  85.0%  per game 2.27  len p50/p90/max 18/66/387  decisions in stall  31.8%  vleft@start p50 4  ends unlocked_own=515 unlocked_garbage=12 unlocked_pill=733 end=103
+  BOARD stall act  N>=20: games with one  59.3%  per game 1.03  len p50/p90/max 35/133/387  decisions in stall  22.9%  vleft@start p50 3  ends unlocked_own=222 unlocked_garbage=8 unlocked_pill=301 end=87
+  BOARD stall mask N>=10: games with one  86.3%  per game 2.32  len p50/p90/max 18/68/387  decisions in stall  32.6%  vleft@start p50 4  ends unlocked_own=520 unlocked_garbage=11 unlocked_pill=742 end=119
+  BOARD stall mask N>=20: games with one  60.8%  per game 1.06  len p50/p90/max 35/133/387  decisions in stall  23.5%  vleft@start p50 3  ends unlocked_own=219 unlocked_garbage=8 unlocked_pill=307 end=102
+  outcome x act stall>=10: clear n=462 contain  83.3% in-stall-at-end   0.0%  topout n=138 contain  90.6% in-stall-at-end  74.6%
+  outcome x act stall>=20: clear n=462 contain  53.2% in-stall-at-end   0.0%  topout n=138 contain  79.7% in-stall-at-end  63.0%
+  outcome x str stall>=20: clear n=462 contain  46.3% in-stall-at-end   0.0%  topout n=138 contain  74.6% in-stall-at-end  56.5%
+  WINS: pills in act stalls>=10 mean 59.2 of 162 pills ( 36.6%); seconds mean 270.7
+  endgame lingering virus (str, vleft0<=4): 0.29/game  len p50/p90 24/129  ends cleared_garbage=1 unlocked_own=139 unlocked_garbage=5 end=27
+  endgame lingering virus (act, vleft0<=4): 0.14/game  len p50/p90 22/131  ends cleared_garbage=1 unlocked_own=23 unlocked_garbage=1 unlocked_pill=40 end=16
+
+=== gb-09  n=600  tap-out  21.8%  clear  78.2%
+  BOARD stall str  N>=10: games with one  67.2%  per game 1.49  len p50/p90/max 21/98/386  decisions in stall  29.6%  vleft@start p50 3  ends unlocked_own=766 unlocked_garbage=36 end=92
+  BOARD stall str  N>=20: games with one  48.2%  per game 0.81  len p50/p90/max 38/190/386  decisions in stall  23.4%  vleft@start p50 3  ends unlocked_own=380 unlocked_garbage=21 end=84
+  BOARD stall act  N>=10: games with one  78.2%  per game 1.98  len p50/p90/max 19/82/387  decisions in stall  33.4%  vleft@start p50 4  ends unlocked_own=441 unlocked_garbage=13 unlocked_pill=628 end=104
+  BOARD stall act  N>=20: games with one  55.7%  per game 0.96  len p50/p90/max 37/173/387  decisions in stall  25.6%  vleft@start p50 3  ends unlocked_own=214 unlocked_garbage=8 unlocked_pill=258 end=94
+  BOARD stall mask N>=10: games with one  79.5%  per game 2.03  len p50/p90/max 19/82/387  decisions in stall  34.4%  vleft@start p50 4  ends unlocked_own=453 unlocked_garbage=11 unlocked_pill=629 end=125
+  BOARD stall mask N>=20: games with one  57.7%  per game 0.99  len p50/p90/max 36/168/387  decisions in stall  26.4%  vleft@start p50 3  ends unlocked_own=218 unlocked_garbage=6 unlocked_pill=262 end=110
+  outcome x act stall>=10: clear n=469 contain  74.2% in-stall-at-end   1.1%  topout n=131 contain  92.4% in-stall-at-end  75.6%
+  outcome x act stall>=20: clear n=469 contain  47.5% in-stall-at-end   0.9%  topout n=131 contain  84.7% in-stall-at-end  68.7%
+  outcome x str stall>=20: clear n=469 contain  39.2% in-stall-at-end   0.2%  topout n=131 contain  80.2% in-stall-at-end  63.4%
+  WINS: pills in act stalls>=10 mean 47.4 of 150 pills ( 31.7%); seconds mean 221.7
+  endgame lingering virus (str, vleft0<=4): 0.34/game  len p50/p90 23/113  ends unlocked_own=163 unlocked_garbage=9 end=31
+  endgame lingering virus (act, vleft0<=4): 0.15/game  len p50/p90 24/165  ends unlocked_own=27 unlocked_pill=42 end=21
+
+=== gb-lulu  n=600  tap-out  18.5%  clear  81.5%
+  BOARD stall str  N>=10: games with one  64.2%  per game 1.42  len p50/p90/max 19/83/401  decisions in stall  26.1%  vleft@start p50 3  ends unlocked_own=719 unlocked_garbage=40 end=91
+  BOARD stall str  N>=20: games with one  44.0%  per game 0.70  len p50/p90/max 38/163/401  decisions in stall  20.1%  vleft@start p50 3  ends unlocked_own=328 unlocked_garbage=17 end=73
+  BOARD stall act  N>=10: games with one  76.5%  per game 1.96  len p50/p90/max 17/66/407  decisions in stall  29.8%  vleft@start p50 4  ends unlocked_own=430 unlocked_garbage=14 unlocked_pill=638 end=96
+  BOARD stall act  N>=20: games with one  50.2%  per game 0.85  len p50/p90/max 35/139/407  decisions in stall  22.0%  vleft@start p50 3  ends unlocked_own=186 unlocked_garbage=7 unlocked_pill=236 end=79
+  BOARD stall mask N>=10: games with one  77.0%  per game 2.00  len p50/p90/max 17/66/434  decisions in stall  30.4%  vleft@start p50 4  ends unlocked_own=436 unlocked_garbage=12 unlocked_pill=647 end=103
+  BOARD stall mask N>=20: games with one  51.2%  per game 0.87  len p50/p90/max 35/131/434  decisions in stall  22.4%  vleft@start p50 3  ends unlocked_own=188 unlocked_garbage=6 unlocked_pill=244 end=86
+  outcome x act stall>=10: clear n=489 contain  72.4% in-stall-at-end   0.8%  topout n=111 contain  94.6% in-stall-at-end  82.9%
+  outcome x act stall>=20: clear n=489 contain  43.4% in-stall-at-end   0.6%  topout n=111 contain  80.2% in-stall-at-end  68.5%
+  outcome x str stall>=20: clear n=489 contain  36.6% in-stall-at-end   0.4%  topout n=111 contain  76.6% in-stall-at-end  64.0%
+  WINS: pills in act stalls>=10 mean 44.9 of 147 pills ( 30.5%); seconds mean 208.4
+  endgame lingering virus (str, vleft0<=4): 0.29/game  len p50/p90 19/69  ends cleared_garbage=2 unlocked_own=144 unlocked_garbage=5 end=21
+  endgame lingering virus (act, vleft0<=4): 0.14/game  len p50/p90 17/41  ends cleared_garbage=2 unlocked_own=23 unlocked_pill=47 end=10
+
+=== race-4.7  n=600  tap-out  26.7%  race win@M140  68.5%
+  BOARD stall str  N>=10: games with one  69.2%  per game 1.55  len p50/p90/max 20/108/446  decisions in stall  30.8%  vleft@start p50 4  ends unlocked_own=775 unlocked_garbage=38 end=119
+  BOARD stall str  N>=20: games with one  46.2%  per game 0.79  len p50/p90/max 41/208/446  decisions in stall  24.8%  vleft@start p50 3  ends unlocked_own=346 unlocked_garbage=22 end=105
+  BOARD stall act  N>=10: games with one  80.3%  per game 2.12  len p50/p90/max 18/90/446  decisions in stall  34.4%  vleft@start p50 5  ends unlocked_own=451 unlocked_garbage=5 unlocked_pill=684 end=131
+  BOARD stall act  N>=20: games with one  53.5%  per game 0.94  len p50/p90/max 37/190/446  decisions in stall  26.8%  vleft@start p50 3  ends unlocked_own=188 unlocked_garbage=3 unlocked_pill=256 end=117
+  BOARD stall mask N>=10: games with one  81.5%  per game 2.15  len p50/p90/max 18/93/446  decisions in stall  35.5%  vleft@start p50 5  ends unlocked_own=456 unlocked_garbage=6 unlocked_pill=683 end=146
+  BOARD stall mask N>=20: games with one  54.5%  per game 0.96  len p50/p90/max 38/194/446  decisions in stall  27.8%  vleft@start p50 3  ends unlocked_own=187 unlocked_garbage=3 unlocked_pill=254 end=131
+  outcome x act stall>=10: loss_kill n=69 contain  82.6% in-stall-at-end  63.8%  loss_race n=120 contain 100.0% in-stall-at-end  70.0%  win_race n=411 contain  74.2% in-stall-at-end   0.7%
+  outcome x act stall>=20: loss_kill n=69 contain  63.8% in-stall-at-end  50.7%  loss_race n=120 contain  98.3% in-stall-at-end  67.5%  win_race n=411 contain  38.7% in-stall-at-end   0.2%
+  outcome x str stall>=20: loss_kill n=69 contain  60.9% in-stall-at-end  44.9%  loss_race n=120 contain  96.7% in-stall-at-end  61.7%  win_race n=411 contain  29.0% in-stall-at-end   0.0%
+  WINS: pills in act stalls>=10 mean 35.1 of 141 pills ( 24.8%); seconds mean 49.8
+  endgame lingering virus (str, vleft0<=4): 0.28/game  len p50/p90 22/111  ends cleared_garbage=1 unlocked_own=129 unlocked_garbage=5 end=32
+  endgame lingering virus (act, vleft0<=4): 0.15/game  len p50/p90 22/146  ends unlocked_own=27 unlocked_pill=42 end=23
