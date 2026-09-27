@@ -13,8 +13,8 @@
  ],
  "grok_running": [],
  "updated": {
-  "claude": "2026-09-27T13:45Z",
+  "claude": "2026-09-27T14:15Z",
   "grok": "offline since 2026-09-23T16:40Z; owner: claude takes over solo"
  },
- "canon_sota": "2026-09-27: CHAIN540+REACH+TAP+HSV (rbf 6b73907c, fw 77ec742c, carts 198a95e3/33062615). dr-mario-te main f7e45bb6 + fork main 3619558, tag sota-20260927. Name pending owner."
+ "canon_sota": "2026-09-27 ANTIBODY (owner name) = CHAIN540+REACH+TAP+HSV (rbf 6b73907c, fw 77ec742c, carts 198a95e3/33062615). dr-mario-te main a1d6c2e0 (tags sota-20260927, antibody); fork main dbae1f8 (tags sota-20260927, antibody). Launcher ANTIBODY.mgl (on bluemage; rivalmage on 'go')."
 }
