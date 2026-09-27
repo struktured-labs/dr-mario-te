@@ -55,6 +55,16 @@ def run(raw_path, out_path):
         g = next((j + 1 for j, (a, b) in enumerate(wins) if a <= r["t_spawn"] <= b), 0)
         first = next(q for q, rr in enumerate(R) if g and wins[g - 1][0] <= rr["t_spawn"] <= wins[g - 1][1]) if g else i
         kg.append((g, i - first))
+    # HSV (optional): the STEER5b leaf term at W on top of the same masked search (cascade_leaf5b_x)
+    hsv_w = int(os.environ.get("HSV", "0"))
+    d5 = d5h = None
+    if hsv_w:
+        import cascade_leaf5b_x as L5
+        import fast_rtl_x as FX
+        w_, fl_ = FX.variant("winner")
+        d5 = L5.Leaf5ReachDecider(w_, fl_, tap=2, w5=(0, 0, 0, 0))
+        d5h = L5.Leaf5ReachDecider(w_, fl_, tap=2, w5=(0, 0, 0, hsv_w))
+    same5 = tot5 = 0
     # identity gate: all-ones mask == unmasked on every analysable board
     same = tot = 0
     rows = []
@@ -89,6 +99,13 @@ def run(raw_path, out_path):
                 if oo != last[0] or cl != last[3]:
                     rot.append(round((t - t0) * 60))
             last = (oo, rr, cc, cl)
+        hsv = base5 = None
+        if d5 is not None:
+            a5 = d5.choose(b.clone(), Pill(*cur), Pill(*nxt), k)
+            a5h = d5h.choose(b.clone(), Pill(*cur), Pill(*nxt), k)
+            base5 = pose_of(a5, cur, b) if a5 is not None else None
+            hsv = pose_of(a5h, cur, b) if a5h is not None else None
+            tot5 += 1; same5 += int(a5 == a_m)
         un = pose_of(a_un, cur, b) if a_un is not None else None
         ms = pose_of(a_m, cur, b) if a_m is not None else None
         actual = [o, ocol, list(ocl), orow]
@@ -97,6 +114,8 @@ def run(raw_path, out_path):
                      "fo3": CL.fo(r["S"]["color"], 3), "fo4": CL.fo(r["S"]["color"], 4), "proph": CL.proph(r["S"]["color"]),
                      "unmasked": un, "masked": ms, "actual": actual, "actual_action": act_a,
                      "match_unmasked": un == actual, "match_masked": ms == actual,
+                     "hsv": hsv, "match_hsv": (hsv == actual) if hsv is not None else None,
+                     "hsv_differs": (hsv != ms) if hsv is not None else None,
                      "mask_allows_actual": None if act_a is None else bool(mask[act_a]),
                      "mask_allows_unmasked": None if a_un is None else bool(mask[a_un]),
                      "n_allowed": int(sum(mask)), "lateral_f": lat, "rotation_f": rot,
@@ -105,6 +124,8 @@ def run(raw_path, out_path):
         for q in rows:
             fh.write(json.dumps(q) + "\n")
     print(f"identity gate (all-ones mask == unmasked): {same}/{tot}; {len(rows)} placements -> {out_path}")
+    if d5 is not None:
+        print(f"leaf5b(w5=0) == masked decider: {same5}/{tot5}")
 
 
 if __name__ == "__main__":

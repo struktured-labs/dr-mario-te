@@ -26,7 +26,11 @@ GAMES = [  # label, tap analysis, raw, game index in that analysis, outcome
     ("PM-G1", "tap_t26m2.jsonl", "raw_t26m2.jsonl", 1, "AI clear (owner 4)"),
     ("PM-G2", "tap_t26m2.jsonl", "raw_t26m2.jsonl", 2, "owner top-out (38 vs 24)"),
     ("PM-G3", "tap_t26m2.jsonl", "raw_t26m2.jsonl", 3, "AI clear (owner 10)"),
+    ("HSV-G1", "hsv_t27_G1.jsonl", "raw_t27_G1.jsonl", 1, "AI clear (HSV build)"),
+    ("HSV-G2", "hsv_t27_G2.jsonl", "raw_t27_G2.jsonl", 1, "AI clear (HSV build)"),
+    ("HSV-G3", "hsv_t27_G3.jsonl", "raw_t27_G3.jsonl", 1, "AI clear (HSV build; STUDY pause 708.8-913 s excluded)"),
 ]
+DT_CAP = 15.0   # an inter-spawn interval longer than this is a pause (G3's STUDY screen), not board time
 
 
 def grid(s):
@@ -40,7 +44,7 @@ def main(out):
         T = [t for t in T if t["game"] == g]
         raw = {json.loads(l)["k"]: json.loads(l) for l in open(os.path.join(TMP, rawf))}
         ts = [t["t_spawn"] for t in T]
-        dts = [ts[i + 1] - ts[i] for i in range(len(ts) - 1)] + [0.0]
+        dts = [min(ts[i + 1] - ts[i], DT_CAP) for i in range(len(ts) - 1)] + [0.0]
         lane = [max(t["heights"][3], t["heights"][4]) for t in T]
         hv = []
         for t in T:
@@ -56,7 +60,7 @@ def main(out):
             gcells += ex; gsteps += int(ex > 0)
         V0, C0 = grid(T[0]["S"]["virus"]), grid(T[0]["S"]["color"])
         top = [next((rr for rr in range(16) if V0[rr, c]), 16) for c in (3, 4, 5)]
-        dur = ts[-1] - ts[0]
+        dur = sum(dts)
         rec = {"game": label, "outcome": outcome, "n": len(T), "dur_s": round(dur, 1),
                "match_masked": sum(t["match_masked"] for t in T),
                "lane_max": max(lane), "lane_gt10_s": round(sum(d for l, d in zip(lane, dts) if l > 10), 1),
