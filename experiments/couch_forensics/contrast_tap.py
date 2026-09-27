@@ -29,6 +29,9 @@ GAMES = [  # label, tap analysis, raw, game index in that analysis, outcome
     ("HSV-G1", "hsv_t27_G1.jsonl", "raw_t27_G1.jsonl", 1, "AI clear (HSV build)"),
     ("HSV-G2", "hsv_t27_G2.jsonl", "raw_t27_G2.jsonl", 1, "AI clear (HSV build)"),
     ("HSV-G3", "hsv_t27_G3.jsonl", "raw_t27_G3.jsonl", 1, "AI clear (HSV build; STUDY pause 708.8-913 s excluded)"),
+    ("HSV2-G1", "hsv_t27m2_G1.jsonl", "raw_t27m2_G1.jsonl", 1, "AI win (HSV match 2)"),
+    ("HSV2-G2", "hsv_t27m2_G2.jsonl", "raw_t27m2_G2.jsonl", 1, "AI win (HSV match 2; pauses excluded)"),
+    ("HSV2-G3", "hsv_t27m2_G3.jsonl", "raw_t27m2_G3.jsonl", 1, "AI clear 19-0 (HSV match 2)"),
 ]
 DT_CAP = 15.0   # an inter-spawn interval longer than this is a pause (G3's STUDY screen), not board time
 

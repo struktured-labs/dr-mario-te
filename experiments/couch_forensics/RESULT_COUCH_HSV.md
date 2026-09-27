@@ -79,3 +79,62 @@ Reading:
 - `classify_tap.py`.
 - `analyze_tap.py`: `HSV=W` computes the leaf5b HSV choice alongside the masked one.
 - `contrast_tap.py`: extended with the HSV games, and caps inter-spawn intervals at 15 s so pauses don't count.
+
+## Addendum: match 2 on the HSV build (same recording, after 1107 s), AI 3-0, last game 19-0
+**Windows:**
+- G1: 1264.7–1491.7 s.
+- G2: 1545.0–3227.6 s. It paused 1660.9–1721 s (61 s), then 1736.0–3212 s (the clip). Pause time is excluded:
+  inter-spawn intervals are capped at 15 s.
+- G3: 3229.6–3421.9 s.
+
+**L11 verified** by the HUD (48 viruses, LEVEL 11/11 MED/MED) on all three.
+
+**HSV again follows the silicon.** Disagreement subset: silicon == HSV **11**, == no-HSV **3** (n = 16). Pooled
+over both matches: **20 : 6**, against the non-HSV control's 4 : 12. Fisher p = 0.0027 (the updated test).
+
+| game | n | MATCH | late flip | short | tuck | other | PROPH | hi-virus c3-5 start → clear | hi-virus·s | lane > 10 | garbage /min |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| M2-G1 | 99 | 82 | 0 | 3 | 0 | 14 | 0 | 5 → 1 by 15 s → 0 at 24 s | 56 | 0.01 | 8.4 |
+| M2-G2 | 70 | 60 | 0 | 2 | 2 | 6 | 0 | 5 → 1 by 17 s → 0 at ~118 s of play | 170 | 0.26 | 9.3 |
+| M2-G3 (19-0) | 85 | 76 | 1 | 0 | 0 | 8 | 0 | 5 → 1 by 9 s → 0 at 48 s | 71 | 0.07 | 10.1 |
+| *M1-G3 (near tap-out)* | 185 | 131 | 8 | 9 | 11 | 26 | 33 | 4 → 1 by 12 s → 0 at ~181 s of play | 213 | 0.53 | 11.1 |
+
+### Why match-1 G3 nearly tapped out and match 2 did not (`linger_g3.py` → `linger_hsv_g3.jsonl`, `linger_hsv2_g2.jsonl`)
+The last high virus in M1-G3 was a **yellow at row 8 of column 3** (a spawn column). It was sealed in by a
+sequence, not missed by the brain.
+1. **k9 (547 s), silicon SHORT-LANDING.** The brain aimed H YR at cols 1–2 / row 5. The pill landed one column
+   short, at cols 2–3, colours reversed. Its yellow half bridged column 3 at row 5, leaving an empty gap above the
+   virus (rows 6–7) under an overhang.
+2. **Owner garbage** stacked on it: a yellow at row 4 (k41), then a **red cap at row 2** plus a yellow at row 3 (k56).
+3. **k63 (653 s), silicon TUCK.** The sim brain chose a vertical BB drop into column 4. Silicon slid a horizontal BB
+   under the overhang, which put a **blue into the row-6 gap**. After that, column 3 read (top→virus)
+   `r y y y b y Y`.
+4. **On all 88 pills while it lingered, no candidate at all could clear it** (0/88 immediate clears, mask or no
+   mask). The column grew into the 15-tall spawn-lane tower (the 685–698 s crisis). Tucks dug the top out, the blue
+   cleared after the STUDY pause, and the virus cleared at about 918 s raw.
+
+Match 2 started with the same load (5 high spawn-col viruses every game), and none got sealed.
+- In M2-G2 the last one (a **blue at row 7 of column 3**) sat under a red for about 85 s. The red was then cleared
+  and the brain stacked two blues on it.
+- The brain passed on the first clearing move (k59: 6 were available, it chose V2 BB) and cleared it on the next
+  chance (k64).
+
+**Answer to the owner:**
+- Match-1 G3 wasn't the brain ignoring that last virus. The virus got walled in early by two execution slips on
+  the cart plus his garbage:
+  - a pill landed one column short and left a hole over it;
+  - his garbage capped the column with red;
+  - a tuck later slid a wrong-colour (blue) half into the hole.
+- After that no move could clear it for 88 pills (every candidate was checked), so that column grew into the tower
+  that nearly topped it out, until the tucks dug it out.
+- Match 2 started with exactly the same number of high centre viruses but never got one sealed. They were gone in
+  24–48 s, and the one stubborn blue was cleared as soon as a clearing move existed.
+- Garbage was similar (about 8–10 vs 11 cells/min), and his pace wasn't the difference.
+- So it was mostly sequence luck plus two execution slips.
+- The fix it points to is on the execution side: don't let a short landing or a tuck bridge or fill a hole
+  directly above a high spawn-column virus with a non-matching colour. The sim brain has no tuck moves, so it can't
+  see that risk yet.
+
+- **Cases:** `cases_hsv2_20260927.jsonl` (254 classified placements).
+- **Lingering-virus traces:** `linger_hsv_g3.jsonl` and `linger_hsv2_g2.jsonl`.
+- **Contrast:** `cases_tap_contrast.jsonl`, extended with M2-G1..3.
