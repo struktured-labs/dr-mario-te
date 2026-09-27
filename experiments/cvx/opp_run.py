@@ -3,7 +3,7 @@ path) with the garbage decision delegated to `opponent.after_placement`. With Ow
 must reproduce gate_b rows byte-for-byte (identity gate).
 
   python opp_run.py BUILD OPPONENT LO CNT STEP OUT.jsonl
-BUILD = a steer_run arm (s4_base = shipping REACH+TAP, s5b_hsv512); OPPONENT = owner0804 | owner202609 | striker5 | striker6 | striker8
+BUILD = a steer_run arm (s4_base = shipping REACH+TAP, s5b_hsv512); OPPONENT = owner0804 | owner202609 | lulu202609 | striker5 | striker6 | striker8
 """
 import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -23,6 +23,9 @@ def make_opponent(name):
     if name == "owner202609":
         import opp_owner202609 as O9
         return O9.make()
+    if name == "lulu202609":
+        import opp_lulu202609 as L9
+        return L9.make()
     raise ValueError(name)
 
 
