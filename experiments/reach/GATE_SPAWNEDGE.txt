@@ -1,0 +1,5 @@
+off   : 2587 pills, edges/pill {0: 438, 1: 2149}, missed 438 (previous pill locked at row 0 / Y=$0F: 438/438)
+on    : 2605 pills, edges/pill {1: 2605}, pills != 1 edge: 0
+mutant nostore: 2313 pills, edges/pill {1: 17, 3: 2296}, pills with > 1 edge: 2296 -> KILLED
+mutant nofell : 2506 pills, edges/pill {1: 2341, 2: 165}, pills with > 1 edge: 165 -> KILLED (the round-start throw double edge)
+GATE_SPAWNEDGE PASS

@@ -1,0 +1,19 @@
+== GATE 1 (DRPROPH=0 byte-identity to ae06cd1d) — final record 2026-08-31T05:50Z
+  ✅ REPRODUCED byte-exact: ae06cd1d4a08e27f1b147eba488eeb17
+ae06cd1d4a08e27f1b147eba488eeb17  tmp/proph/proph0_recheck.nes
+cmp: IDENTICAL (direct emitter build vs manifest rebuild)
+ae06cd1d4a08e27f1b147eba488eeb17  tmp/proph/proph0.nes
+ae06cd1d4a08e27f1b147eba488eeb17  tmp/proph/proph0_recheck.nes
+
+== DRPROPH=1 determinism
+30c921837fdaa8e915175cdcf8709a24  tmp/proph/proph1_recheck.nes
+cmp: DETERMINISTIC
+
+== deliverable hashes
+30c921837fdaa8e915175cdcf8709a24  tmp/proph/proph1.nes
+f391f6d567574163ab27e137d835766e  tmp/proph/proph1_hold.nes
+549592c2fb39cf3eedf5e7d03d7e39f2  tmp/proph/proph1_late.nes
+7105ff4f53296dc1a9d8af4e518dca1d  tmp/proph/proph1_wrongdir.nes
+
+== PRG-RAM map
+ok: map current, no collisions, every indexed writer bounded

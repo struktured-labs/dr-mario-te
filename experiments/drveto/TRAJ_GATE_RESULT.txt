@@ -1,0 +1,24 @@
+======================================================================
+G2 -- MAILBOX-TRAJECTORY GATE (anytime stream, not the final answer)
+======================================================================
+  M4==pre-FixA emitter : PASS (M4 delta build md5 47edb895 vs shipped veto1 47edb895)
+
+=== REAL(FixA)  (29 searches; all-vetoed boards: 4; vetoed stores seen: 0)
+  T1 no-vetoed-visible : PASS (0 violations: [])
+  T2 liveness          : PASS (0 starved: [])
+  T3 all-vetoed fallbk : PASS (0 bad: [])
+  T4 final conserved   : PASS (0 mismatches: [])
+  T5 silent control    : PASS (0 ON!=OFF trajectories on fire-free boards)
+
+=== M4_pubveto  (23 searches; all-vetoed boards: 2; vetoed stores seen: 9)
+  T1 no-vetoed-visible : FAIL (5 violations: ['synth:FORCED_DIVERGE', 'PC4cap0', 'PC4cap1', 'PC4cap2', 'std1'])
+  T2 liveness          : PASS (0 starved: [])
+  T3 all-vetoed fallbk : FAIL (2 bad: ['synth:PLUGGED_PARENT', 'traj_c5'])
+  T4 final conserved   : PASS (0 mismatches: [])
+  T5 silent control    : PASS (0 ON!=OFF trajectories on fire-free boards)
+
+======================================================================
+REAL (Fix A) implementation: PASS
+M4_pubveto (bit-exact pre-Fix-A emitter): KILLED by T1
+
+G2 GATE: PASS

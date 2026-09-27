@@ -19,6 +19,7 @@ patch_vs_cpu.OPS.setdefault("LSR_zp", 0x46)
 patch_vs_cpu.OPS.setdefault("ASL_zp", 0x06)
 patch_vs_cpu.OPS.setdefault("ORA_zp", 0x05)
 patch_vs_cpu.OPS.setdefault("EOR_zp", 0x45)
+patch_vs_cpu.OPS.setdefault("EOR_abs", 0x4D)   # DRDBLCANON's double test (#123)
 from py65_harness import Cpu
 from test_depth2 import (S_BEST_C, S_BEST_O,
                          _rand_board, _emit_calc_imm, _emit_copy, emit_landplace,
@@ -57,6 +58,172 @@ DRSTRAND = 0                   # #47 stranded-half root cost dose (set by build_
                                # DRSTRAND). 0 emits NOTHING -> byte-identical firmware, which the
                                # hex drift guard depends on. Offline gates for dose 20: mirror
                                # -9.85 REAL, VS 54.2% vs chain180 (eval47/SILICON_PLAN.md).
+DBLCANON = 0                   # #123 double-capsule orient canonicalisation (set by
+                               # build_copro_d3 from env DRDBLCANON). 0 emits NOTHING ->
+                               # byte-identical firmware.  See _e_dblcanon for what it does
+                               # and why it is at the PUBLISH site and not in the p0 loop.
+DRVETO = 0                     # spawn-plug veto, variant (a+) (set by build_copro_d3 from
+                               # env DRVETO). 0 emits NOTHING -> byte-identical firmware (the
+                               # b03a586e byte-identity gate depends on that). Penalise any
+                               # root candidate whose no-clear resolution leaves a cell in
+                               # (row0,col3)/(row0,col4) -- the ROM's only loss condition --
+                               # while viruses remain. Spec + gates: experiments/drveto/.
+D_VETO, D_VIRF = 0xB4, 0xB5    # DRVETO zp: per-candidate veto flag (root-replay -> o_cand)
+                               # + per-search viruses-remain flag. $B4-$C9 is unclaimed by
+                               # every module in this build (D_* end $72; tuck_v3 $70-$80;
+                               # tuck_bfs $81-$96; translate $97-$A8; tier3 $A9-$B3;
+                               # primitives scratch $CA-$F1).
+_VETO_SUPPRESS = False         # TEST-ONLY (gate identity check): True suppresses all three
+                               # DRVETO emissions even with DRVETO=1. Never set by any build.
+_VETO_AT_OCAND = False         # TEST-ONLY (gate mutant M2, the C1 trap): True moves the
+                               # predicate evaluation to o_cand, where LEV_RVC/LEV_WIN_R are
+                               # STALE. Exists so the gate can PROVE the trap is real and
+                               # that its own parity check catches it. Never set by any build.
+_VETO_PUB_MUTANT = False       # TEST-ONLY (gate mutant M4, the FIX-A hole made real): True
+                               # drops the anytime publish suppression, reproducing the
+                               # pre-Fix-A emitter -- a vetoed running best IS stored to
+                               # S_BEST_C/O mid-search. The mailbox-trajectory gate must
+                               # kill this build. Never set by any build.
+DRREACH = 0                    # reach-root pre-filter (STEER2; set by build_copro_d3 from env
+                               # DRREACH). 0 emits NOTHING -> byte-identical firmware. The mask
+                               # routine lives at fpga/copro/reach_6502.REACH_ROM ($A800); the
+                               # search JSRs it after the board upload, Pass 0 skips every legal
+                               # candidate with R_FLT && !ROK[o4*8+col], and an all-masked Pass 0
+                               # is rerun unfiltered. Spec + gates: experiments/reach/.
+DRREACHTAP = 0                 # DRREACH mask models the cart's DRTAPP taps (P from the nA/nB low-nibble bits 2-3);
+                               # set by build_copro_d3. Only the reach routine changes (reach_6502.emit_reach(tap=)).
+_REACH_PENALTY_MUT = False     # TEST-ONLY (gate mutant): the o_cand PENALTY form instead of the
+                               # Pass-0 skip (a masked winning candidate then still outranks).
+_REACH_NOAND_MUT = False       # TEST-ONLY (gate mutant): one S_NA read site without AND #$0F --
+                               # proves the gate sees a colour read that the transport nibbles leak into.
+VETO_PENALTY = 20000           # subtracted at o_cand with 16-bit signed SATURATION (clamp
+                               # -32767 on overflow) -- a vetoed candidate loses to any
+                               # plausible legit score, order among vetoed candidates is
+                               # preserved, and no wrap can flip a vetoed move to the top.
+                               # Same scale family DRSTRAND already argued safe (<24480).
+
+
+def veto_plug(board, o4, col):
+    """DRVETO geometry arm, in Python: the SPEC the 6502 in `_e_veto_flag` implements.
+
+    True iff the placement of (o4, col) on `board` (parent, NES bytes, $FF empty)
+    puts -- or finds -- a cell in (row0,col3)/(row0,col4):
+      * parent already occupies (0,3)/(0,4) (note A: every candidate fires; the
+        PENALTY form keeps the argmax total so a clearing candidate, which is
+        never vetoed, floats to the top if one exists);
+      * VERTICAL in col 3/4 with fo <= 2 (fo==2 -> halves at rows 0-1; fo==1 ->
+        bottom half at row 0, top half discarded above the bottle -- silicon-
+        verified on G3 even though this enumerator never generates it, see R29);
+      * HORIZONTAL whose span (col, col+1) covers col 3 or 4, resting at row 0
+        (min fo == 1).  Spans 2-3 and 4-5 plug (0,3)/(0,4) exactly as 3-4 does.
+    rv_cells==0 / win==0 / viruses-remain are NOT here -- they come from the
+    engine result regs + parent scan and are tested separately at the root-replay
+    site (C1: the regs are stale by o_cand).  Lives in this module for the same
+    reason `canon_o4` does: this is the only file a gate can import and be sure
+    which tree it got.
+    """
+    E = 0xFF
+    if board[3] != E or board[4] != E:
+        return True
+    if o4 & 2:                                    # horizontal (a_o4[1], LeafEval.sv S_FO1)
+        if col < 2 or col > 4:
+            return False
+        if board[col] != E or board[col + 1] != E:
+            return False                          # row 0 blocked -> illegal, never a candidate
+        return board[8 + col] != E or board[9 + col] != E     # min(fo)==1 -> rests at row 0
+    if col not in (3, 4):                         # vertical
+        return False
+    return board[col] != E or board[8 + col] != E or board[16 + col] != E   # fo <= 2
+
+
+def veto_val(val):
+    """The o_cand penalty, in Python: 16-bit signed subtract with saturation."""
+    t = val - VETO_PENALTY
+    return t if t >= -32768 else -32767
+
+
+def _e_veto_flag(a):
+    """DRVETO root-replay-site read (C1): the CMD-4 NODE for THIS root candidate has
+    just run, so LEV_RVC/LEV_WIN_R are the candidate's own values -- by o_cand the
+    ply-2 loop has issued ~32 more LeafEval commands and they are someone else's.
+    Stash the verdict in D_VETO; the penalty applies at o_cand. Clobbers A,X."""
+    a.ins("LDA_imm", 0); a.ins("STA_zp", D_VETO)
+    a.ins16("LDA_abs", LEV_WIN_R); a.br("BNE", "vt_no")      # candidate wins -> never veto
+    a.ins16("LDA_abs", LEV_RVC); a.br("BNE", "vt_no")        # resolution clears -> conservative skip
+    a.ins("LDA_zp", D_VIRF); a.br("BEQ", "vt_no")            # no viruses on parent -> skip
+    a.ins16("LDA_abs", LIVE + 3); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")   # parent plugs (0,3)
+    a.ins16("LDA_abs", LIVE + 4); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")   # parent plugs (0,4)
+    a.ins("LDA_zp", D_O1); a.ins("AND_imm", 0x02); a.br("BNE", "vt_h")
+    a.ins("LDA_zp", D_C1); a.ins("CMP_imm", 3); a.br("BEQ", "vt_v")   # vertical: col 3/4 only
+    a.ins("CMP_imm", 4); a.br("BEQ", "vt_v")
+    a.jmp("vt_no")
+    a.label("vt_v")                                          # fo(col) <= 2: any of rows 0-2 occupied
+    a.ins("LDX_zp", D_C1)
+    a.ins16("LDA_absX", LIVE); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")
+    a.ins16("LDA_absX", LIVE + 8); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")
+    a.ins16("LDA_absX", LIVE + 16); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")
+    a.jmp("vt_no")
+    a.label("vt_h")                                          # span (col,col+1) covers col 3/4?
+    a.ins("LDA_zp", D_C1); a.ins("CMP_imm", 2); a.br("BCC", "vt_no")
+    a.ins("CMP_imm", 5); a.br("BCS", "vt_no")
+    a.ins("TAX")
+    a.ins16("LDA_absX", LIVE); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_no")       # row0 blocked -> illegal
+    a.ins16("LDA_absX", LIVE + 1); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_no")
+    a.ins16("LDA_absX", LIVE + 8); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")  # min(fo)==1
+    a.ins16("LDA_absX", LIVE + 9); a.ins("CMP_imm", 0xFF); a.br("BNE", "vt_yes")
+    a.jmp("vt_no")
+    a.label("vt_yes"); a.ins("LDA_imm", 1); a.ins("STA_zp", D_VETO)
+    a.label("vt_no")
+
+
+def canon_o4(o4, cA, cB):
+    """#123 / DRDBLCANON, in Python: the SPEC the 6502 in `_e_dblcanon` implements.
+
+    Lives here rather than in `nes_d3_golden` on purpose.  `build_copro_d3.py`
+    force-registers THIS tree's `test_search_d3` into `sys.modules` (see its
+    import-order guard) but does not do the same for `nes_d3_golden`, which
+    therefore resolves to a sibling worktree's copy -- so this module is the
+    only place a gate can import the contract from and be sure which file it
+    got.
+    """
+    return (int(o4) & 0xFE) if int(cA) == int(cB) else int(o4)
+
+
+def _e_dblcanon(a, tag):
+    """#123: rewrite a winning DOUBLE's orient to the cheaper-to-reach member.
+
+    A capsule with `cA == cB` produces every physical placement twice: the two
+    colour-orderings within an axis are the same placement once the colours are
+    equal.  The duplicate pairs are o4 0<->1 and o4 2<->3, always at the same
+    column -- MEASURED from resulting boards over 7,075 real double plies
+    (`experiments/dblcanon/`), 7075/7075 cell-for-cell identical, and NOT
+    derivable from `_VAR_OF_O4` slot arithmetic (the `(v, v+2)` key removes
+    nothing and reports a clean bill of health while doing it).
+
+    The executor presses only A (CCW), so a target's cost is its CCW distance
+    from the spawn orient, which is game orient 0.  Through the driver's
+    copro->game map {0:3, 1:1, 2:0, 3:2} that is o4 {0:1, 1:3, 2:0, 3:2} -- the
+    EVEN member of each pair is cheaper by exactly two rotations, in both pairs.
+    So the whole canonicalisation is `AND #$FE`.
+
+    ⚠ WHY THIS IS AT THE PUBLISH SITE AND NOT IN THE p0 LOOP.  Skipping the
+    expensive slot during enumeration is NOT board-neutral on a real cart.
+    With `DRSEED != 0` (the default, and DRSEED=1 in every shipped flag
+    snapshot) the firmware adds a `+0..3` jitter keyed on (o4, col) before the
+    argmax.  A duplicate pair's two members differ only in bit 0 of o4 = bit 3
+    of the jitter input, so their jitters differ by exactly XOR 1 -- meaning a
+    duplicated placement effectively draws the MAX of two jitter values while a
+    unique placement draws one.  Dropping the duplicate removes that advantage
+    and can hand the ply to a DIFFERENT placement: measured 0.158% of double
+    plies.  Canonicalising the WINNER instead leaves the candidate set, the
+    jitters and the argmax untouched and rewrites only the orient byte, which
+    is zero board effect by construction rather than by measurement.
+    """
+    a.ins16("LDA_abs", S_CA); a.ins16("EOR_abs", S_CB); a.ins("AND_imm", 0x0F)
+    a.br("BNE", f"{tag}_dcx")        # colours differ -> not a double -> leave it
+    a.ins("LDA_zp", D_BO); a.ins("AND_imm", 0xFE); a.ins("STA_zp", D_BO)
+    a.label(f"{tag}_dcx")
+
 
 THIRD = [(0, 1), (1, 2), (2, 0), (1, 1)]   # stratified 4-pill subset (3 mixed + 1 double), /4=shift
 RESOLVE_LBL = "resolve_capped"   # TARGETED (deploy config, isolation 12/12); "resolve_capped_full" for full
@@ -181,7 +348,10 @@ def _e_node(a, o_zp, c_zp, ca_abs, cb_abs):
     """args from zp orient/col + abs color sources (masked), CMD 4, poll."""
     a.ins("LDA_zp", o_zp); a.ins16("STA_abs", LEV_A_O4)
     a.ins("LDA_zp", c_zp); a.ins16("STA_abs", LEV_A_COL)
-    a.ins16("LDA_abs", ca_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CA)
+    a.ins16("LDA_abs", ca_abs)
+    if not (_REACH_NOAND_MUT and ca_abs == S_NA):
+        a.ins("AND_imm", 0x0F)
+    a.ins16("STA_abs", LEV_A_CA)
     a.ins16("LDA_abs", cb_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CB)
     a.ins("LDA_imm", 4); a.ins16("STA_abs", LEV_CMD)
     _e_poll(a)
@@ -200,7 +370,10 @@ def _e_dnode(a, o_zp, c_zp, ca_abs, cb_abs, rslot):
     (sco/imm/legal/win) match _e_node either way. Assumes base already latched (CMD 6) and CUR=parent."""
     a.ins("LDA_zp", o_zp); a.ins16("STA_abs", LEV_A_O4)
     a.ins("LDA_zp", c_zp); a.ins16("STA_abs", LEV_A_COL)
-    a.ins16("LDA_abs", ca_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CA)
+    a.ins16("LDA_abs", ca_abs)
+    if not (_REACH_NOAND_MUT and ca_abs == S_NA):
+        a.ins("AND_imm", 0x0F)
+    a.ins16("STA_abs", LEV_A_CA)
     a.ins16("LDA_abs", cb_abs); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", LEV_A_CB)
     a.ins("LDA_imm", 7); a.ins16("STA_abs", LEV_CMD); _e_poll(a)      # CMD 7 DELTA
     n = _ec[0]; _ec[0] += 1
@@ -365,6 +538,19 @@ def _emit_search_d3_engine(a):
     # tie-break seed (same as soft build)
     a.ins16("LDA_abs", S_CA); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("LSR_A"); a.ins("STA_zp", D_SEED)
     a.ins16("LDA_abs", S_CB); a.ins("AND_imm", 0xF0); a.ins("ORA_zp", D_SEED); a.ins("STA_zp", D_SEED)
+    if DRVETO and not _VETO_SUPPRESS:
+        # DRVETO: viruses-remain flag, once per search from the untouched root at LIVE
+        # ($0500). Redundant with LEV_WIN_R when rv_cells==0 (no clear + parent viruses
+        # -> win==0), but the spec names the condition and it costs one scan per search.
+        a.ins("LDA_imm", 0); a.ins("STA_zp", D_VIRF)
+        a.ins("LDX_imm", 0)
+        a.label("vt_vs")
+        a.ins16("LDA_absX", LIVE); a.ins("CMP_imm", 0xFF); a.br("BEQ", "vt_vn")
+        a.ins("AND_imm", 0xF0); a.ins("CMP_imm", 0xD0); a.br("BNE", "vt_vn")
+        a.ins("LDA_imm", 1); a.ins("STA_zp", D_VIRF); a.jmp("vt_ve")
+        a.label("vt_vn")
+        a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "vt_vs")
+        a.label("vt_ve")
     # upload LIVE ($0500) -> engine slot 1
     a.ins("LDA_imm", 1); a.ins16("STA_abs", LEV_WSLOT)
     a.ins("LDX_imm", 0)
@@ -372,10 +558,17 @@ def _emit_search_d3_engine(a):
     a.ins16("LDA_absX", LIVE); a.ins16("STA_absX", LEV_BOARD)
     a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "up_l")
     a.ins("LDA_imm", 0); a.ins16("STA_abs", LEV_WSLOT)
+    if DRREACH:
+        import reach_6502 as _RC
+        # DRREACH: build the 32-entry reach mask ONCE per search from the root at LIVE + the
+        # DRREACHTX gravity nibbles (old cart -> R_FLT = 0 -> no filtering).
+        a.jsr(_RC.REACH_ROM)
     # ---- Pass 0 ----
     if _d(DELTA_P0):
         _e_copy(a, 1, True)                               # CUR <- slot1 (root parent), once
         _e_base(a)                                        # latch base accumulators + col heights
+    if DRREACH:
+        a.label("p0_restart")                             # all-masked fallback reruns Pass 0 from here
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_T1C); a.ins("STA_zp", D_O1)
     a.label("p0_o"); a.ins("LDA_imm", 0); a.ins("STA_zp", D_C1)
     a.label("p0_c")
@@ -386,6 +579,14 @@ def _emit_search_d3_engine(a):
         _e_node(a, D_O1, D_C1, S_CA, S_CB)
     a.ins16("LDA_abs", LEV_LEGAL); a.br("BNE", "p0_leg"); a.jmp("p0_next")
     a.label("p0_leg")
+    if DRREACH and not _REACH_PENALTY_MUT:
+        # DRREACH pre-filter: a legal candidate the driver cannot land exactly never enters TK1 (so it is never
+        # replayed, scored or live-published). Skip semantics, NOT a penalty: a masked candidate that clears the
+        # last virus would still outrank unmasked ones under a -20000 o_cand penalty (+WIN 30000).
+        a.ins("LDA_zp", _RC.R_FLT); a.br("BEQ", "p0_rk")
+        a.ins("LDA_zp", D_O1); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ORA_zp", D_C1); a.ins("TAX")
+        a.ins16("LDA_absX", _RC.ROK); a.br("BNE", "p0_rk"); a.jmp("p0_next")
+        a.label("p0_rk")
     _e_score(a)
     a.ins("CLC"); a.ins16("LDA_abs", LEV_IMM); a.ins("ADC_zp", D_V3L); a.ins("STA_zp", D_KL)
     a.ins16("LDA_abs", LEV_IMM + 1); a.ins("ADC_zp", D_V3H); a.ins("STA_zp", D_KH)
@@ -398,6 +599,12 @@ def _emit_search_d3_engine(a):
     a.label("p0_oc")
     a.ins("INC_zp", D_O1); a.ins("LDA_zp", D_O1); a.ins("CMP_imm", 4); a.br("BEQ", "p0_done"); a.jmp("p0_o")
     a.label("p0_done")
+    if DRREACH and not _REACH_PENALTY_MUT:
+        # every legal candidate masked -> clear the filter and rerun Pass 0 unfiltered (= today's search)
+        a.ins("LDA_zp", _RC.R_FLT); a.br("BEQ", "p0_rkd")
+        a.ins("LDA_zp", D_T1C); a.br("BNE", "p0_rkd")
+        a.ins("LDA_imm", 0); a.ins("STA_zp", _RC.R_FLT); a.jmp("p0_restart")
+        a.label("p0_rkd")
     # ---- select loop ----
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_J1)
     a.label("s_loop")
@@ -424,6 +631,8 @@ def _emit_search_d3_engine(a):
     _e_copy(a, 1, True)
     _e_node(a, D_O1, D_C1, S_CA, S_CB)
     a.ins16("LDA_abs", LEV_IMM); a.ins("STA_zp", D_I1L); a.ins16("LDA_abs", LEV_IMM + 1); a.ins("STA_zp", D_I1H)
+    if DRVETO and not _VETO_SUPPRESS and not _VETO_AT_OCAND:
+        _e_veto_flag(a)          # C1: read rv_cells/win HERE, while they are this candidate's
     if DRSTRAND:
         # #47: the engine's working board holds the RESOLVED ROOT CHILD right here
         # (CMD-4 NODE just ran). CMD 8 counts its stranded halves -- read-only, touches
@@ -557,6 +766,33 @@ def _emit_search_d3_engine(a):
                 a.ins("LDA_zp", D_P1H); a.ins("ADC_imm", 0); a.ins("STA_zp", D_P1H)
         a.ins("SEC"); a.ins("LDA_zp", D_V1L); a.ins("SBC_zp", D_P1L); a.ins("STA_zp", D_V1L)
         a.ins("LDA_zp", D_V1H); a.ins("SBC_zp", D_P1H); a.ins("STA_zp", D_V1H)
+    if DRVETO and not _VETO_SUPPRESS:
+        if _VETO_AT_OCAND:
+            _e_veto_flag(a)      # TEST-ONLY M2: the C1 trap made real -- stale reads
+        # DRVETO penalty (note A: penalty, never removal -- a fully-plugged parent still
+        # picks a move, and un-vetoed clearing candidates outrank every vetoed one).
+        # 16-bit signed subtract, SATURATING at -32767 so no wrap can promote a vetoed
+        # candidate past the argmax. Mirrored bit-for-bit by veto_val().
+        a.ins("LDA_zp", D_VETO); a.br("BEQ", "vt_np")
+        a.ins("SEC")
+        a.ins("LDA_zp", D_V1L); a.ins("SBC_imm", VETO_PENALTY & 0xFF); a.ins("STA_zp", D_V1L)
+        a.ins("LDA_zp", D_V1H); a.ins("SBC_imm", (VETO_PENALTY >> 8) & 0xFF)
+        a.br("BVC", "vt_st")
+        a.ins("LDA_imm", 0x01); a.ins("STA_zp", D_V1L); a.ins("LDA_imm", 0x80)
+        a.label("vt_st"); a.ins("STA_zp", D_V1H)
+        a.label("vt_np")
+    if DRREACH and _REACH_PENALTY_MUT:
+        import reach_6502 as _RC
+        a.ins("LDA_zp", _RC.R_FLT); a.br("BEQ", "rkp_n")
+        a.ins("LDA_zp", D_O1); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ORA_zp", D_C1); a.ins("TAX")
+        a.ins16("LDA_absX", _RC.ROK); a.br("BNE", "rkp_n")
+        a.ins("SEC")
+        a.ins("LDA_zp", D_V1L); a.ins("SBC_imm", VETO_PENALTY & 0xFF); a.ins("STA_zp", D_V1L)
+        a.ins("LDA_zp", D_V1H); a.ins("SBC_imm", (VETO_PENALTY >> 8) & 0xFF)
+        a.br("BVC", "rkp_st")
+        a.ins("LDA_imm", 0x01); a.ins("STA_zp", D_V1L); a.ins("LDA_imm", 0x80)
+        a.label("rkp_st"); a.ins("STA_zp", D_V1H)
+        a.label("rkp_n")
     if DEBUG_VAL1:                                    # dump (C1,O1,V1L,V1H,B2L,B2H) at
                                                         # ring[D_J1*8] (pre-jitter), PLUS
                                                         # (I1L,I1H,L1L,L1H,ADL,ADH) at
@@ -585,6 +821,25 @@ def _emit_search_d3_engine(a):
     a.br("BVC", "o_s1"); a.ins("EOR_imm", 0x80); a.label("o_s1"); a.br("BPL", "s_next")
     a.ins("LDA_zp", D_V1L); a.ins("STA_zp", D_BVL); a.ins("LDA_zp", D_V1H); a.ins("STA_zp", D_BVH)
     a.ins("LDA_zp", D_C1); a.ins("STA_zp", D_BC); a.ins("LDA_zp", D_O1); a.ins("STA_zp", D_BO)
+    if DBLCANON:
+        _e_dblcanon(a, "e")          # #123: before BOTH the anytime mailbox and the final D_BO
+    if DRVETO and not _VETO_SUPPRESS and not _VETO_PUB_MUTANT:
+        # FIX A (anytime publish suppression, 2026-08-30): a vetoed running best is
+        # NEVER stored to the live mailbox. Without this, iteration 1 always beats
+        # the $8000 sentinel, so a vetoed pass-0 argmax IS handed to the pre-DONE
+        # driver (mailbox invalid=$FF until the first store; DRSLAM/MIN_THINK act on
+        # the interim answer) -- the exact lethal-interim hole the vetog1 delta audit
+        # found. Skipping the store keeps the mailbox at $FF (or at the last unvetoed
+        # best); the INTERNAL best (D_BV*/D_BC/D_BO) still updates, so the final
+        # answer -- published unconditionally by the stub at DONE -- is unchanged:
+        # penalty-not-removal (note A) is preserved, and on an all-vetoed board the
+        # vetoed best still reaches the driver at o_done via that stub store.
+        # (The spec's "while ... no unvetoed candidate has yet been published"
+        # conjunct is subsumed: a vetoed candidate can only become the running best
+        # after an unvetoed one has been published if it out-margins the penalty
+        # (~20000 units); suppressing the store in that corner too is the strictly
+        # safer direction and is what the trajectory gate asserts.)
+        a.ins("LDA_zp", D_VETO); a.br("BNE", "s_next")
     a.ins("LDA_zp", D_BC); a.ins16("STA_abs", S_BEST_C)     # ANYTIME: live-publish running best
     a.ins("LDA_zp", D_BO); a.ins16("STA_abs", S_BEST_O)
     a.label("s_next")
@@ -967,6 +1222,8 @@ def _emit_search_d3(a):
     a.br("BVC", "o_s1"); a.ins("EOR_imm", 0x80); a.label("o_s1"); a.br("BPL", "s_next")
     a.ins("LDA_zp", D_V1L); a.ins("STA_zp", D_BVL); a.ins("LDA_zp", D_V1H); a.ins("STA_zp", D_BVH)
     a.ins("LDA_zp", D_C1); a.ins("STA_zp", D_BC); a.ins("LDA_zp", D_O1); a.ins("STA_zp", D_BO)
+    if DBLCANON:
+        _e_dblcanon(a, "s")          # #123, soft build -- distinct label prefix from the engine
     a.ins("LDA_zp", D_BC); a.ins16("STA_abs", S_BEST_C)     # ANYTIME: live-publish running best
     a.ins("LDA_zp", D_BO); a.ins16("STA_abs", S_BEST_O)
     a.label("s_next")

@@ -144,6 +144,24 @@ def build_image(board, cA, cB, nA, nB):
     # #47 stranded-half root cost (env DRSTRAND, default 0 = byte-identical firmware;
     # dose 20 = the mirror+VS-gated config, see eval47/SILICON_PLAN.md).
     D3.DRSTRAND = int(os.environ.get("DRSTRAND", "0"))
+    # #123 double-capsule orient canonicalisation. Default 0 = emits NOTHING, so
+    # copro_rom.hex stays byte-identical to the pre-#123 build (the hex drift guard
+    # depends on that). NOT "DRCANON" -- that name is already in use as a path to
+    # the canonical worktree in four files, and setting it to 1 would break them.
+    D3.DBLCANON = int(os.environ.get("DRDBLCANON", "0"))
+    # Spawn-plug veto, variant (a+) (env DRVETO, default 0 = byte-identical firmware --
+    # the b03a586e identity gate depends on that). See tests/test_search_d3.py veto_plug/
+    # _e_veto_flag and experiments/drveto/gate_drveto.py for the spec + killed-mutant gate.
+    D3.DRVETO = int(os.environ.get("DRVETO", "0"))
+    # Reach-root pre-filter (env DRREACH, default 0 = byte-identical firmware). The mask routine is its own
+    # image at reach_6502.REACH_ROM ($A800 = the v1 EMIT_TUCK window, never co-resident: asserted below).
+    # PAIRING: a DRREACH firmware filters only when the cart sends the DRREACHTX gravity nibbles; with an old
+    # cart it runs exactly today's search. See experiments/reach/ + h16-wt CHAIN540_REACH_BUILD.md.
+    D3.DRREACH = int(os.environ.get("DRREACH", "0"))
+    # DRREACHTAP (needs DRREACH): the mask models the cart's DRTAPP tap steering, period P decoded from the nA/nB
+    # colour LOW-nibble bits 2-3 (P = 0 -> today's DAS model). Default 0 = byte-identical DRREACH firmware.
+    D3.DRREACHTAP = int(os.environ.get("DRREACHTAP", "0"))
+    assert not D3.DRREACHTAP or D3.DRREACH, "DRREACHTAP requires DRREACH=1"
     import nes_d3_golden as _G
     _G.DISC_SHIFT = 1            # golden must match for the py65 gate
     _G.EXCAV_HANG_PLY1 = True    # golden must match for the py65 gate
@@ -279,6 +297,20 @@ def build_image(board, cA, cB, nA, nB):
             f"tuck_bfs overruns the free ROM window before $A800 ({len(tuck_bfs_code)}B)"
         assert 0x8000 + len(code) <= TUCK_BFS_ROM, "search overruns tuck_bfs"
 
+    reach_code = b""
+    if D3.DRREACH:
+        import reach_6502 as RC
+        assert not EMIT_TUCK, "DRREACH's mask routine lives in the v1 EMIT_TUCK window ($A800)"
+        ra = Asm6502(RC.REACH_ROM)
+        RC.emit_reach(ra, S_NA, S_NB, tap=bool(D3.DRREACHTAP))
+        reach_code = ra.assemble()
+        assert ra.labels["reach_mask"] == 0, "the search JSRs REACH_ROM: the entry must be its first byte"
+        assert RC.REACH_ROM + len(reach_code) <= SQ_ROM, f"reach routine overruns the SQ tables ({len(reach_code)}B)"
+        if tuck_bfs_code:
+            assert TUCK_BFS_ROM + len(tuck_bfs_code) <= RC.REACH_ROM, "tuck_bfs overruns the reach routine"
+        if tuck_v3_code:
+            assert TUCK_V3_ROM + len(tuck_v3_code) <= RC.REACH_ROM, "tuck_v3 overruns the reach routine"
+
     stub = Asm6502(STUB)
     stub.ins("SEI"); stub.ins("CLD")
     stub.ins("LDX_imm", 0xFF); stub.ins("TXS")
@@ -315,6 +347,8 @@ def build_image(board, cA, cB, nA, nB):
         img[TUCK_V3_ROM:TUCK_V3_ROM + len(tuck_v3_code)] = tuck_v3_code
     if tuck_bfs_code:
         img[TUCK_BFS_ROM:TUCK_BFS_ROM + len(tuck_bfs_code)] = tuck_bfs_code
+    if reach_code:
+        img[RC.REACH_ROM:RC.REACH_ROM + len(reach_code)] = reach_code
     for i in range(17):
         img[SQ_ROM + i] = (i * i) & 0xFF
         img[SQ_ROM + 17 + i] = (i * i) >> 8
@@ -373,6 +407,20 @@ def main():
         na, nb_ = rng.randint(1, 3), rng.randint(1, 3)
         return list(faithful_to_nes(fb)), ca - 1, cb - 1, na - 1, nb_ - 1
 
+    def _expect(b, cA, cB, nA, nB):
+        """The golden's answer, with #123's publish-time canonicalisation applied.
+
+        DRDBLCANON rewrites only the WINNING orient, so the gate applies the same
+        rewrite to the golden's winner rather than re-deriving the search. With the
+        flag off `canon_o4` is the identity and this is the pre-#123 comparison
+        unchanged. `canon_o4` comes from D3 (this tree, force-registered) because
+        `nes_d3_golden` resolves to a sibling worktree -- see the import guard above.
+        """
+        exp = G3.decide_d3(b, cA, cB, nA, nB, topk1=D3.TOPK1, topk2=8, third=THIRD)
+        if D3.DBLCANON and exp is not None:
+            exp = (exp[0], D3.canon_o4(exp[1], cA, cB))
+        return exp
+
     fails = 0
 
     # ---- (1) direct search-entry call vs decide_d3 ----
@@ -387,7 +435,7 @@ def main():
     cpu.mem[S_CA] = cA; cpu.mem[S_CB] = cB; cpu.mem[S_NA] = nA; cpu.mem[S_NB] = nB
     cpu.call(search_ep, max_steps=MAX_STEPS)
     got = (cpu.mem[D_BC], cpu.mem[D_BO]) if cpu.mem[D_BO] != 0xFF else None
-    exp = G3.decide_d3(b, cA, cB, nA, nB, topk1=D3.TOPK1, topk2=8, third=THIRD)
+    exp = _expect(b, cA, cB, nA, nB)
     ok = got == exp
     fails += 0 if ok else 1
     print(f"  direct-call: got={got} exp={exp}  {'OK' if ok else 'FAIL'}")
@@ -409,7 +457,7 @@ def main():
         if cpu2.mem[DONE] == 1:
             reached = True; break
     got2 = (cpu2.mem[S_BEST_C], cpu2.mem[S_BEST_O])
-    exp2 = G3.decide_d3(b, cA, cB, nA, nB, topk1=D3.TOPK1, topk2=8, third=THIRD)
+    exp2 = _expect(b, cA, cB, nA, nB)
     tables_ok = all(cpu2.mem[PILLA + i] == img[PILL_ROM + i] for i in range(16))
     ok2 = reached and tables_ok and exp2 is not None and got2 == exp2
     fails += 0 if ok2 else 1

@@ -1,0 +1,14 @@
+reach routine: 1564 B at $A800 (md5 5123992f); RAM $0A80-$0ADC
+T  transport: thr mismatches 0/150; old cart (NB hi = 0) -> no filter: True
+M  game P=0: 1412 boards, 82464 legal candidate checks (x2 empty encodings), mismatches 0, max 235267 cycles
+M  synth P=0: 6000 boards, 322072 legal candidate checks (x2 empty encodings), mismatches 0, max 243632 cycles
+M  game P=2: 1412 boards, 82464 legal candidate checks (x2 empty encodings), mismatches 0, max 240198 cycles
+M  synth P=2: 6000 boards, 322072 legal candidate checks (x2 empty encodings), mismatches 0, max 494928 cycles
+M  game P=3: 1412 boards, 82464 legal candidate checks (x2 empty encodings), mismatches 0, max 239222 cycles
+M  synth P=3: 6000 boards, 322072 legal candidate checks (x2 empty encodings), mismatches 0, max 381470 cycles
+   mutant tlat_m1      (P=3): mismatches 708/22526 -> KILLED
+   mutant tlat_p1      (P=3): mismatches 1091/22526 -> KILLED
+   mutant no_distgate  (P=3): mismatches 1169/22526 -> KILLED
+   mutant no_fallback  (P=3): mismatches 1208/22526 -> KILLED
+   mutant rot_das      (P=2): mismatches 249/22526 -> KILLED
+GATE_REACH_MASK PASS

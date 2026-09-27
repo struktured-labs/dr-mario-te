@@ -1,0 +1,492 @@
+{
+ "parent_s1A": {
+  "final": [
+   2,
+   0
+  ],
+  "b4zero": 26,
+  "b4one": 4,
+  "pubs": [
+   [
+    2,
+    0,
+    0,
+    "search"
+   ],
+   [
+    2,
+    0,
+    1,
+    "post"
+   ]
+  ],
+  "fired_canon": [
+   [
+    3,
+    2
+   ],
+   [
+    3,
+    3
+   ],
+   [
+    4,
+    2
+   ],
+   [
+    4,
+    3
+   ]
+  ],
+  "unvetoed_exists": true,
+  "n_short": 26,
+  "final_search_mirror": [
+   2,
+   0
+  ]
+ },
+ "parent_s1B": {
+  "final": [
+   2,
+   0
+  ],
+  "b4zero": 26,
+  "b4one": 4,
+  "pubs": [
+   [
+    2,
+    0,
+    0,
+    "search"
+   ],
+   [
+    2,
+    0,
+    1,
+    "post"
+   ]
+  ],
+  "fired_canon": [
+   [
+    3,
+    2
+   ],
+   [
+    3,
+    3
+   ],
+   [
+    4,
+    2
+   ],
+   [
+    4,
+    3
+   ]
+  ],
+  "unvetoed_exists": true,
+  "n_short": 26,
+  "final_search_mirror": [
+   2,
+   0
+  ]
+ },
+ "parent_s2A": {
+  "final": [
+   2,
+   3
+  ],
+  "b4zero": 26,
+  "b4one": 4,
+  "pubs": [
+   [
+    0,
+    0,
+    0,
+    "search"
+   ],
+   [
+    3,
+    1,
+    0,
+    "search"
+   ],
+   [
+    2,
+    3,
+    0,
+    "search"
+   ],
+   [
+    2,
+    3,
+    1,
+    "post"
+   ]
+  ],
+  "fired_canon": [
+   [
+    3,
+    2
+   ],
+   [
+    3,
+    3
+   ],
+   [
+    4,
+    2
+   ],
+   [
+    4,
+    3
+   ]
+  ],
+  "unvetoed_exists": true,
+  "n_short": 26,
+  "final_search_mirror": [
+   2,
+   3
+  ]
+ },
+ "parent_s3A": {
+  "final": [
+   3,
+   0
+  ],
+  "b4zero": 26,
+  "b4one": 4,
+  "pubs": [
+   [
+    0,
+    0,
+    0,
+    "search"
+   ],
+   [
+    3,
+    0,
+    0,
+    "search"
+   ],
+   [
+    3,
+    0,
+    1,
+    "post"
+   ]
+  ],
+  "fired_canon": [
+   [
+    3,
+    2
+   ],
+   [
+    3,
+    3
+   ],
+   [
+    4,
+    2
+   ],
+   [
+    4,
+    3
+   ]
+  ],
+  "unvetoed_exists": true,
+  "n_short": 26,
+  "final_search_mirror": [
+   3,
+   0
+  ]
+ },
+ "parent_s4A": {
+  "final": [
+   3,
+   1
+  ],
+  "b4zero": 26,
+  "b4one": 4,
+  "pubs": [
+   [
+    0,
+    0,
+    0,
+    "search"
+   ],
+   [
+    3,
+    0,
+    0,
+    "search"
+   ],
+   [
+    3,
+    1,
+    0,
+    "search"
+   ],
+   [
+    3,
+    1,
+    1,
+    "post"
+   ]
+  ],
+  "fired_canon": [
+   [
+    3,
+    2
+   ],
+   [
+    3,
+    3
+   ],
+   [
+    4,
+    2
+   ],
+   [
+    4,
+    3
+   ]
+  ],
+  "unvetoed_exists": true,
+  "n_short": 26,
+  "final_search_mirror": [
+   3,
+   1
+  ]
+ },
+ "golden0": {
+  "final": [
+   1,
+   3
+  ],
+  "b4zero": 6,
+  "b4one": 6,
+  "pubs": [
+   [
+    1,
+    3,
+    1,
+    "post"
+   ]
+  ],
+  "fired_canon": [
+   [
+    1,
+    0
+   ],
+   [
+    1,
+    1
+   ],
+   [
+    1,
+    2
+   ],
+   [
+    1,
+    3
+   ],
+   [
+    2,
+    0
+   ],
+   [
+    2,
+    1
+   ]
+  ],
+  "unvetoed_exists": false,
+  "n_short": 6,
+  "final_search_mirror": [
+   1,
+   3
+  ]
+ },
+ "golden1": {
+  "final": [
+   6,
+   0
+  ],
+  "b4zero": 4,
+  "b4one": 4,
+  "pubs": [
+   [
+    6,
+    0,
+    1,
+    "post"
+   ]
+  ],
+  "fired_canon": [
+   [
+    2,
+    0
+   ],
+   [
+    6,
+    0
+   ]
+  ],
+  "unvetoed_exists": false,
+  "n_short": 4,
+  "final_search_mirror": [
+   6,
+   0
+  ]
+ },
+ "golden2": {
+  "final": [
+   4,
+   1
+  ],
+  "b4zero": 4,
+  "b4one": 4,
+  "pubs": [
+   [
+    4,
+    1,
+    1,
+    "post"
+   ]
+  ],
+  "fired_canon": [
+   [
+    2,
+    0
+   ],
+   [
+    2,
+    1
+   ],
+   [
+    4,
+    0
+   ],
+   [
+    4,
+    1
+   ]
+  ],
+  "unvetoed_exists": false,
+  "n_short": 4,
+  "final_search_mirror": [
+   4,
+   1
+  ]
+ },
+ "golden3_silent": {
+  "final": [
+   3,
+   0
+  ],
+  "b4zero": 6,
+  "b4one": 0,
+  "pubs": [
+   [
+    3,
+    0,
+    0,
+    "search"
+   ],
+   [
+    3,
+    0,
+    0,
+    "post"
+   ]
+  ],
+  "fired_canon": [],
+  "unvetoed_exists": true,
+  "n_short": 6,
+  "final_search_mirror": [
+   3,
+   0
+  ]
+ },
+ "RV_clear_c3": {
+  "final": [
+   4,
+   1
+  ],
+  "b4zero": 14,
+  "b4one": 0,
+  "pubs": [
+   [
+    3,
+    0,
+    0,
+    "search"
+   ],
+   [
+    4,
+    2,
+    0,
+    "post"
+   ],
+   [
+    4,
+    1,
+    0,
+    "post"
+   ],
+   [
+    4,
+    1,
+    0,
+    "post"
+   ]
+  ],
+  "fired_canon": [],
+  "unvetoed_exists": true,
+  "n_short": 14,
+  "final_search_mirror": [
+   3,
+   0
+  ]
+ },
+ "PC4cap0": {
+  "final": [
+   4,
+   0
+  ],
+  "b4zero": 6,
+  "b4one": 2,
+  "pubs": [
+   [
+    3,
+    2,
+    0,
+    "search"
+   ],
+   [
+    4,
+    0,
+    0,
+    "search"
+   ],
+   [
+    4,
+    0,
+    0,
+    "post"
+   ]
+  ],
+  "fired_canon": [
+   [
+    3,
+    0
+   ]
+  ],
+  "unvetoed_exists": true,
+  "n_short": 6,
+  "final_search_mirror": [
+   4,
+   0
+  ]
+ }
+}

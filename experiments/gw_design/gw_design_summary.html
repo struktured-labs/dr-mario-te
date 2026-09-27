@@ -1,0 +1,804 @@
+<title>Garbage-Window Compute — feasibility verdict</title>
+
+<style>
+  :root {
+    --ground:      #F2F4F6;
+    --panel:       #FFFFFF;
+    --rule:        #D3DAE1;
+    --rule-soft:   #E6EBEF;
+    --ink:         #10151B;
+    --ink-2:       #414D59;
+    --ink-3:       #6E7C8A;
+    --accent:      #10627F;
+    --accent-soft: #DCEDF4;
+    --ok:          #1F6B4E;
+    --ok-fill:     #7FC4A4;
+    --warn:        #9A6410;
+    --warn-fill:   #E0B463;
+    --crit:        #A33229;
+    --crit-fill:   #E0938B;
+    --shadow:      0 1px 2px rgba(16,33,45,.06), 0 8px 24px -16px rgba(16,33,45,.28);
+
+    --f-head: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --f-body: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --f-data: ui-monospace, SFMono-Regular, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:      #0D1218;
+      --panel:       #141B23;
+      --rule:        #2A3742;
+      --rule-soft:   #1E2831;
+      --ink:         #E3E9EF;
+      --ink-2:       #A8B6C2;
+      --ink-3:       #75838F;
+      --accent:      #63C2E0;
+      --accent-soft: #14313D;
+      --ok:          #63C39A;
+      --ok-fill:     #2F6B52;
+      --warn:        #DDA65B;
+      --warn-fill:   #6E5323;
+      --crit:        #EE8A80;
+      --crit-fill:   #75332D;
+      --shadow:      0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0D1218; --panel: #141B23; --rule: #2A3742; --rule-soft: #1E2831;
+    --ink: #E3E9EF; --ink-2: #A8B6C2; --ink-3: #75838F;
+    --accent: #63C2E0; --accent-soft: #14313D;
+    --ok: #63C39A; --ok-fill: #2F6B52;
+    --warn: #DDA65B; --warn-fill: #6E5323;
+    --crit: #EE8A80; --crit-fill: #75332D;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+  }
+
+  :root[data-theme="light"] {
+    --ground: #F2F4F6; --panel: #FFFFFF; --rule: #D3DAE1; --rule-soft: #E6EBEF;
+    --ink: #10151B; --ink-2: #414D59; --ink-3: #6E7C8A;
+    --accent: #10627F; --accent-soft: #DCEDF4;
+    --ok: #1F6B4E; --ok-fill: #7FC4A4;
+    --warn: #9A6410; --warn-fill: #E0B463;
+    --crit: #A33229; --crit-fill: #E0938B;
+    --shadow: 0 1px 2px rgba(16,33,45,.06), 0 8px 24px -16px rgba(16,33,45,.28);
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: 3rem 1.25rem 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.75rem;
+  }
+
+  .eyebrow {
+    font-family: var(--f-data);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: var(--f-head);
+    font-size: clamp(1.9rem, 4.6vw, 2.9rem);
+    line-height: 1.08;
+    letter-spacing: -.022em;
+    font-weight: 750;
+    text-wrap: balance;
+    margin: .5rem 0 0;
+  }
+
+  h2 {
+    font-family: var(--f-head);
+    font-size: 1.18rem;
+    letter-spacing: -.01em;
+    font-weight: 700;
+    margin: 0 0 .2rem;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-family: var(--f-head);
+    font-size: .93rem;
+    font-weight: 660;
+    margin: 0;
+    letter-spacing: -.005em;
+  }
+
+  p { margin: 0; max-width: 66ch; }
+  section { display: flex; flex-direction: column; gap: .85rem; }
+
+  .lede { font-size: 1.12rem; color: var(--ink-2); max-width: 60ch; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .rule { height: 1px; background: var(--rule); border: 0; margin: 0; }
+
+  /* ---- verdict strip ---- */
+  .verdict {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 3px;
+    padding: 1.15rem 1.35rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+  }
+  .verdict p { max-width: 68ch; }
+
+  /* ---- stat row ---- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .stat { background: var(--panel); padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .18rem; }
+  .stat .n {
+    font-family: var(--f-data);
+    font-size: 1.5rem;
+    font-weight: 620;
+    letter-spacing: -.03em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .stat .k { font-family: var(--f-head); font-size: .78rem; color: var(--ink-2); line-height: 1.35; }
+  .stat .src { font-family: var(--f-data); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .n.crit { color: var(--crit); }
+  .n.ok   { color: var(--ok); }
+  .n.warn { color: var(--warn); }
+
+  /* ---- tables ---- */
+  .scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; font-family: var(--f-data); font-size: .8rem; font-variant-numeric: tabular-nums; }
+  caption {
+    caption-side: top; text-align: left; padding: .85rem 1rem .1rem;
+    font-family: var(--f-head); font-size: .85rem; font-weight: 660; color: var(--ink);
+  }
+  caption span { display: block; font-family: var(--f-body); font-weight: 400; font-size: .8rem; color: var(--ink-3); line-height: 1.45; }
+  th, td { padding: .4rem .7rem; text-align: right; border-bottom: 1px solid var(--rule-soft); white-space: nowrap; }
+  th {
+    font-family: var(--f-head); font-weight: 620; font-size: .68rem;
+    letter-spacing: .07em; text-transform: uppercase; color: var(--ink-3);
+    border-bottom: 1px solid var(--rule); position: sticky; top: 0; background: var(--panel);
+  }
+  td:first-child, th:first-child { text-align: left; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .lbl { text-align: left !important; white-space: normal; min-width: 15rem; font-family: var(--f-body); font-size: .84rem; }
+
+  /* ---- budget bar ---- */
+  .bar-cell { width: 42%; min-width: 9rem; }
+  .bar { height: .52rem; border-radius: 1px; background: var(--ok-fill); display: block; }
+  .bar.w { background: var(--warn-fill); }
+  .bar.c { background: var(--crit-fill); }
+  .bar.zero { background: var(--rule); width: 2px !important; }
+
+  .mark { font-family: var(--f-head); font-weight: 640; font-size: .7rem; letter-spacing: .04em; }
+  .mark.ok { color: var(--ok); }
+  .mark.w  { color: var(--warn); }
+  .mark.c  { color: var(--crit); }
+
+  tr.band td { background: var(--accent-soft); }
+
+  /* ---- cards ---- */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; }
+  .card {
+    background: var(--panel); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .45rem;
+  }
+  .card p { font-size: .88rem; color: var(--ink-2); max-width: none; }
+  .card .tag {
+    font-family: var(--f-data); font-size: .62rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+
+  ol.steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .1rem; counter-reset: s; }
+  ol.steps li {
+    display: grid; grid-template-columns: 2.1rem 1fr; gap: .9rem;
+    padding: .8rem 0; border-bottom: 1px solid var(--rule-soft);
+  }
+  ol.steps li:last-child { border-bottom: 0; }
+  ol.steps li::before {
+    counter-increment: s; content: counter(s);
+    font-family: var(--f-data); font-size: .78rem; font-weight: 620;
+    color: var(--accent); border: 1px solid var(--rule); border-radius: 2px;
+    width: 1.9rem; height: 1.9rem; display: grid; place-items: center;
+  }
+  ol.steps .body { display: flex; flex-direction: column; gap: .2rem; }
+  ol.steps p { font-size: .89rem; color: var(--ink-2); }
+  ol.steps .cost { font-family: var(--f-data); font-size: .72rem; color: var(--ink-3); letter-spacing: .04em; }
+
+  ul.risks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .75rem; }
+  ul.risks li { display: grid; grid-template-columns: 5.6rem 1fr; gap: .9rem; align-items: start; }
+  ul.risks .sev {
+    font-family: var(--f-data); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase;
+    padding: .18rem .4rem; border-radius: 2px; text-align: center; margin-top: .18rem;
+  }
+  .sev.block { background: var(--crit-fill); color: var(--crit); filter: saturate(.9); }
+  .sev.hard  { background: var(--warn-fill); color: var(--warn); filter: saturate(.9); }
+  .sev.watch { background: var(--rule-soft); color: var(--ink-3); }
+  ul.risks p { font-size: .89rem; color: var(--ink-2); max-width: none; }
+  ul.risks strong { color: var(--ink); font-weight: 600; }
+
+  code { font-family: var(--f-data); font-size: .86em; color: var(--ink); background: var(--rule-soft); padding: .06em .3em; border-radius: 2px; }
+
+  footer { font-size: .8rem; color: var(--ink-3); display: flex; flex-direction: column; gap: .4rem; }
+  footer code { background: none; padding: 0; color: var(--ink-3); }
+
+  a { color: var(--accent); }
+  a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 34rem) {
+    ul.risks li { grid-template-columns: 1fr; gap: .25rem; }
+    ul.risks .sev { justify-self: start; padding: .18rem .5rem; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Dr. Mario RL · task #117 · branch gw-design · 2026-08-18</p>
+    <h1>The garbage window is a one-to-three&nbsp;searches budget, not a rollout budget.</h1>
+    <p class="lede" style="margin-top:.9rem">
+      The coprocessor is idle for 100% of every garbage drop. Costing that window in
+      <strong>copro cycles</strong> against 1,500 measured decision costs settles what can actually
+      run there — and rules out the thing the lane was hoping for.
+    </p>
+  </header>
+
+  <div class="verdict">
+    <h2>Verdict</h2>
+    <p>
+      Porting <strong>H12 into the window is dead, and not marginally</strong> — it needs up to 300
+      champion decisions per intervention against a window that holds at most 5.3. What
+      <em>is</em> newly affordable is a <strong>2-candidate, one-ply deepening of the top-2 tie</strong>,
+      which fits on 52.4% of releases. The decisive screen costs about <strong>$4</strong> and needs
+      no hardware. Recommendation: build nothing yet, run that screen.
+    </p>
+    <p style="font-size:.92rem;color:var(--ink-2)">
+      <strong>✅ The lane's motivating measurement is confirmed, in every regime.</strong> An earlier
+      version of this page said the 50.5% pre-vs-post-garbage argmax flip was un-reproducible and
+      out-of-regime. Both claims were wrong — the rigs existed all along, in the session scratchpad
+      where no repository search reaches. All three have now run: <strong>50.5%</strong> at low fill,
+      <strong>53.2%</strong> at 45–60% fill, <strong>66.3%</strong> on real kill-game boards at stack
+      13–16, against a 2% testability floor. The effect is <em>strongest</em> in the near-death regime
+      this lane targets.
+    </p>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="n">45.1 M</span>
+      <span class="k">cycles per champion decision (median) = 49.6 Pocket frames</span>
+      <span class="src">measured · n=1500</span>
+    </div>
+    <div class="stat">
+      <span class="n">264 − 16h</span>
+      <span class="k">window in frames, h = shallowest hit column's stack height</span>
+      <span class="src">cited · verified 8/8</span>
+    </div>
+    <div class="stat">
+      <span class="n crit">56×</span>
+      <span class="k">H12's cost over the largest window that ever exists</span>
+      <span class="src">derived</span>
+    </div>
+    <div class="stat">
+      <span class="n ok">52.4%</span>
+      <span class="k">of releases that can afford the 2-candidate deepening</span>
+      <span class="src">derived · median cost</span>
+    </div>
+  </div>
+
+  <section>
+    <h2>What fits, at which board height</h2>
+    <p>
+      One decision costs the same cycles on both machines; only the frames-per-cycle conversion
+      differs, by 1.57×. Figures below are the <strong>Pocket</strong> tap (54.669 MHz), the venue for
+      the rematch. MiSTer's every budget is 1.57× larger.
+    </p>
+    <div class="scroll">
+      <table>
+        <caption>Window budget by board height
+          <span>“Extra” is what remains after the mandatory post-garbage re-search. Bars scale to the h=0 budget of 5.32 decisions.</span>
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">h</th>
+            <th scope="col">window</th>
+            <th scope="col">releases</th>
+            <th scope="col">budget</th>
+            <th scope="col">extra</th>
+            <th scope="col" class="bar-cell">whole champion decisions that fit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>0</td><td>264 f</td><td>1.0%</td><td>5.32</td><td>4.32</td><td class="bar-cell"><span class="bar" style="width:100%"></span></td></tr>
+          <tr><td>2</td><td>232 f</td><td>1.9%</td><td>4.68</td><td>3.68</td><td class="bar-cell"><span class="bar" style="width:88%"></span></td></tr>
+          <tr><td>4</td><td>200 f</td><td>7.2%</td><td>4.03</td><td>3.03</td><td class="bar-cell"><span class="bar" style="width:76%"></span></td></tr>
+          <tr><td>5</td><td>184 f</td><td>13.9%</td><td>3.71</td><td>2.71</td><td class="bar-cell"><span class="bar" style="width:70%"></span></td></tr>
+          <tr><td>6</td><td>168 f</td><td>13.0%</td><td>3.39</td><td>2.39</td><td class="bar-cell"><span class="bar" style="width:64%"></span></td></tr>
+          <tr class="band"><td>7</td><td>152 f</td><td>11.1%</td><td>3.06</td><td>2.06</td><td class="bar-cell"><span class="bar" style="width:58%"></span></td></tr>
+          <tr><td>8</td><td>136 f</td><td>11.1%</td><td>2.74</td><td>1.74</td><td class="bar-cell"><span class="bar w" style="width:52%"></span></td></tr>
+          <tr><td>9</td><td>120 f</td><td>10.1%</td><td>2.42</td><td>1.42</td><td class="bar-cell"><span class="bar w" style="width:45%"></span></td></tr>
+          <tr><td>10</td><td>104 f</td><td>4.3%</td><td>2.10</td><td>1.10</td><td class="bar-cell"><span class="bar w" style="width:39%"></span></td></tr>
+          <tr><td>11</td><td>88 f</td><td>7.7%</td><td>1.77</td><td>0.77</td><td class="bar-cell"><span class="bar w" style="width:33%"></span></td></tr>
+          <tr><td>12</td><td>72 f</td><td>3.8%</td><td>1.45</td><td>0.45</td><td class="bar-cell"><span class="bar w" style="width:27%"></span></td></tr>
+          <tr><td>13</td><td>56 f</td><td>3.8%</td><td>1.13</td><td>0.13</td><td class="bar-cell"><span class="bar c" style="width:21%"></span></td></tr>
+          <tr><td>14</td><td>40 f</td><td>2.4%</td><td>0.81</td><td>0.00</td><td class="bar-cell"><span class="bar c" style="width:15%"></span></td></tr>
+          <tr><td>15</td><td>24 f</td><td>2.4%</td><td>0.48</td><td>0.00</td><td class="bar-cell"><span class="bar c" style="width:9%"></span></td></tr>
+          <tr><td>16</td><td>8 f</td><td>1.9%</td><td>0.16</td><td>0.00</td><td class="bar-cell"><span class="bar c" style="width:3%"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      The shaded row is the last height at which the base search <em>plus</em> the deepening still
+      fits. Cumulatively that is 52.4% of releases.
+    </p>
+    <div class="verdict" style="border-left-color:var(--crit)">
+      <h3>⚠⚠ The “% of releases” figures on this page are computed from the WRONG VARIABLE</h3>
+      <p style="font-size:.92rem">
+        The co-sim farm logs the garbage-hit height as the <strong>max</strong> over hit columns; the
+        window formula needs the <strong>min</strong>. A tile falls <code>15 − h</code>, so the drop
+        animation ends with the tile falling <em>furthest</em> — the one in the <em>shallowest</em>
+        hit column. Measured on 446 real boards × 12 volley shapes: the logged variable gives median
+        h 11 and window 88 f where the correct one gives median h <strong>4</strong> and window
+        <strong>200 f</strong> — overstating height by 7 and understating the window by 112 frames.
+      </p>
+      <p style="font-size:.92rem">
+        <strong>So every percentage on this page that is a share “of releases” is wrong</strong>,
+        including the 52.4% that gates the recommendation. The <em>h-axis is sound</em> — the window
+        formula, the cycle costs and the budget columns are unaffected; only the distribution over h
+        is corrupt, and <strong>the error is conservative</strong>: true windows are longer, so real
+        affordability is higher than shown. Recompute is filed; nothing here is silently patched.
+      </p>
+      <p style="font-size:.92rem">
+        ★ It also retires a validation this page previously leaned on. Reproducing the published
+        “89.4% at h ≤ 12” independently was cited as evidence the pipeline was right — but both
+        figures come from the same logged field, so it demonstrated <em>agreement, not correctness</em>.
+        Independent reproduction corroborates only when the inputs are independent.
+      </p>
+    </div>
+
+    <div class="verdict" style="border-left-color:var(--ok)">
+      <h3>⚠ Retraction: the window does <em>not</em> shrink where the danger is</h3>
+      <p style="font-size:.92rem">
+        Earlier drafts carried “the window is shortest exactly in the near-death regime” as the lane's
+        central pessimism. <strong>Measured on 125 real kill-game boards, it is false.</strong> That
+        claim came from flat synthetic stacks, where every column has the same height. Real
+        near-death boards are <strong>towers</strong>: the tallest column has median height 15, but
+        the window is set by the <em>shallowest garbage-hit</em> column — and garbage lands in spread
+        columns, so it almost always finds a low one.
+      </p>
+      <p style="font-size:.92rem">
+        Shallowest-hit height has median <strong>4</strong>, giving a near-death window of
+        <strong>median 200 frames = 3.33 s</strong>, not the 0.93 s implied by the synthetic. Only
+        <strong>3.2%</strong> of real death boards land in the short-window shape. So the compute is
+        <strong>abundant and most valuable in the same regime</strong> — ~3.3 s of window alongside
+        the highest flip rate measured anywhere (66.3%).
+      </p>
+      <p style="font-size:.92rem">
+        <strong>Now confirmed regime-general on a second, independent corpus.</strong> 446 mid-game
+        flips (median 15 viruses) give shallowest-hit height median <strong>4</strong>, window median
+        <strong>200 f</strong>, and <strong>0.0%</strong> short-window — indistinguishable from the
+        near-death boards. Ample windows are not a near-death peculiarity; they are the normal case.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>The cost ladder, and where the cliff is</h2>
+    <div class="scroll">
+      <table>
+        <caption>Candidate computations in the same currency
+          <span>“Fits up to” is the largest h whose window still contains the whole computation at median search cost.</span>
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col" class="lbl">computation</th>
+            <th scope="col">cycles</th>
+            <th scope="col">Pocket f</th>
+            <th scope="col">fits up to</th>
+            <th scope="col">of releases</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="lbl">Linear tail term — 19 lock-time accumulators + comparator</td><td>7.3 K</td><td>0.008</td><td class="mark ok">every h</td><td>100%</td></tr>
+          <tr><td class="lbl">Base post-garbage re-search — <strong>mandatory</strong></td><td>45.1 M</td><td>49.6</td><td class="mark ok">h ≤ 13</td><td>93.3%</td></tr>
+          <tr class="band"><td class="lbl">Base + <strong>2-candidate × 1 ply</strong></td><td>135.4 M</td><td>148.8</td><td class="mark w">h ≤ 7</td><td>52.4%</td></tr>
+          <tr><td class="lbl">…same, truncated at 80% <em>(100% move agreement, n=69)</em></td><td>117.3 M</td><td>129.0</td><td class="mark w">h ≤ 8</td><td>63.5%</td></tr>
+          <tr><td class="lbl">Base + top-4 × 1 ply</td><td>225.7 M</td><td>248.1</td><td class="mark c">h ≤ 0</td><td>1.0%</td></tr>
+          <tr><td class="lbl"><strong>H12 as certified</strong> — top-4 × 5 samples × 15-pill horizon</td><td>13.5 G</td><td>14,884</td><td class="mark c">never</td><td>0%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      H12's figure is an upper bound — forks terminate early on a clear. The slack cannot change the
+      verdict: even at one tenth of its horizon it still misses the largest window by 5.6×.
+    </p>
+  </section>
+
+  <section>
+    <h2>The largest lever: truncation is nearly free</h2>
+    <p>
+      Depth 3 is best-first over a depth-1 ranking — it commits the shallow favourite immediately and
+      spends the rest confirming. So a truncated search is usually the same search. The curve is
+      already measured on 69 real boards on the shipped arm, and combining it with the budget table
+      turns a marginal feature into a comfortable one at the p90 cost that actually binds.
+    </p>
+    <div class="scroll">
+      <table>
+        <caption>Adopting a search truncated at fraction f
+          <span>Agreement is RTL-measured (n=69, stomp180 arm). Affordability is the base search plus the deepening.</span>
+        </caption>
+        <thead>
+          <tr><th scope="col">truncate at</th><th scope="col">move agreement</th><th scope="col">cost</th><th scope="col">affordable @median</th><th scope="col">@p90</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>f = 1.00</td><td>100%</td><td>3.0 × C</td><td>52.4%</td><td>14.4%</td></tr>
+          <tr class="band"><td>f = 0.80</td><td><strong>100%</strong></td><td>2.6 × C</td><td>63.5%</td><td><strong>41.3%</strong></td></tr>
+          <tr><td>f = 0.70</td><td>98.6%</td><td>2.4 × C</td><td>73.6%</td><td>41.3%</td></tr>
+          <tr><td>f = 0.50</td><td>95.7%</td><td>2.0 × C</td><td>77.9%</td><td>63.5%</td></tr>
+          <tr><td>f = 0.05</td><td>65.2%</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      The f = 0.05 row is what keeps this from being vacuous: the search really does refine late on a
+      third of boards, so 100%-at-80% is earned. It also reconciles with the pair-latch defect — 34.8%
+      disagreement at f = 0.05 sits beside the pair latch's 23.2–39.1% at a comparable completion
+      fraction. Those two findings were never in tension; they are the same curve read at opposite
+      ends. <strong>Still open:</strong> the curve was measured for the full root search, not the
+      2-candidate deepening, so the transfer is an assumption. The go/no-go arithmetic therefore
+      uses the untruncated <strong>52.4%</strong> and treats any lift from truncation as upside.
+    </p>
+  </section>
+
+  <section>
+    <h2>How big is the dose?</h2>
+    <p>
+      A budget says what <em>can</em> run; whether an experiment can <em>detect</em> it depends on how
+      often it fires. Both halves are measurable from banked data, and the answer is the encouraging
+      part of this document.
+    </p>
+    <div class="stats">
+      <div class="stat">
+        <span class="n">13.87%</span>
+        <span class="k">of plies are post-garbage decisions</span>
+        <span class="src">measured · n=1500</span>
+      </div>
+      <div class="stat">
+        <span class="n">18.88%</span>
+        <span class="k">of plies have an exact top-2 champion-value tie</span>
+        <span class="src">measured · 9,000 games</span>
+      </div>
+      <div class="stat">
+        <span class="n crit">0.48%</span>
+        <span class="k">of plies actually trigger, after de-duplication and affordability</span>
+        <span class="src">corrected · see below</span>
+      </div>
+      <div class="stat">
+        <span class="n">1.98%</span>
+        <span class="k">H12's own accepted-flip dose, for comparison</span>
+        <span class="src">measured · 9,000 games</span>
+      </div>
+    </div>
+    <div class="verdict" style="border-left-color:var(--crit)">
+      <h3>⚠ Retraction: 87% of “exact top-2 ties” are the same physical placement</h3>
+      <p style="font-size:.92rem">
+        An earlier version of this page put the trigger population at 1.37–1.66% of plies and called it
+        “the same order as H12's 1.98% — the encouraging part of this document”. That was wrong, and it
+        was caught while gating the screen, before the registered run.
+      </p>
+      <p style="font-size:.92rem">
+        A Dr. Mario capsule is a <strong>double</strong> (both halves the same colour) one time in three,
+        and a double is symmetric under 180°: orientations 0 and 2 are the same placement, as are 1 and 3.
+        So the action space collapses from 32 to 16 and every placement appears <em>twice with exactly
+        equal value</em>. Measured over 359 post-garbage plies: at a raw top-2 tie the two candidates
+        produce a <strong>literally identical board 87.1%</strong> of the time, with identical legal-move
+        counts <strong>100%</strong> of the time. A binary comparator over the raw top-2 is comparing a
+        board with itself, and no amount of deepening can discriminate.
+      </p>
+      <p style="font-size:.92rem">
+        De-duplicating candidates by resulting board shrinks the tie population <strong>7.53×</strong>
+        (6.86% → 0.911% of plies), giving a corrected trigger population of ~0.48% — <strong>4× smaller
+        than H12's dose, not comparable to it</strong>. Power is now a live risk rather than a reassurance.
+        <strong>H12 itself is not affected:</strong> identical candidates yield identical fork labels, so
+        its θ-margin gate rejects them automatically. What was overstated is the tie count used as a
+        <em>dose statistic</em> — which is what I had used.
+      </p>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      <strong>⚠ And size is still not dose.</strong> Per the distill lane's law, dose must be weighted by
+      selection quality — its safe linear rule fired at a usable rate but carried only 2.7% of H12's
+      effective dose, because precision fell as fast as firing rose. One extra ply is a far weaker
+      discriminator than a 15-pill rollout, so per-flip quality remains unknown and is exactly what the
+      screen exists to measure.
+    </p>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      <strong>A free tempo win falls out of this, unrelated to the lane.</strong> For a double capsule the
+      mirrored orientations are the same placement but <em>not</em> the same cost to reach: the executor is
+      CCW-only, so orient 1 costs three rotations from spawn where orient 3 costs one. Canonicalising to
+      the cheapest-to-reach member is a pure tempo gain with provably zero board effect.
+    </p>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <h2>The near-death regime is reachable — the lane's strongest argument</h2>
+    <p>
+      The sharpest objection to this lane was: <em>boards at h ≥ 14 flip 2-in-3, yet cannot afford
+      even the base search.</em> Dividing the window by the measured decision cost gives the
+      completion fraction the regime can buy, and the truncation curve says what that fraction is
+      worth.
+    </p>
+    <div class="scroll">
+      <table>
+        <caption>What a truncated re-search buys near death
+          <span>Pocket tap. Agreement read off the RTL curve (n=69) at the achievable completion fraction.</span>
+        </caption>
+        <thead>
+          <tr><th scope="col">h</th><th scope="col">window</th><th scope="col">fraction @median</th><th scope="col">agreement</th><th scope="col">fraction @p90</th><th scope="col">agreement</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>13</td><td>56 f</td><td>1.00</td><td><strong>completes</strong></td><td>0.88</td><td>~100%</td></tr>
+          <tr class="band"><td>14</td><td>40 f</td><td>0.81</td><td><strong>~100%</strong></td><td>0.63</td><td>~98%</td></tr>
+          <tr class="band"><td>15</td><td>24 f</td><td>0.48</td><td><strong>~95%</strong></td><td>0.38</td><td>~90%</td></tr>
+          <tr><td>16</td><td>8 f</td><td>0.16</td><td>~78%</td><td>0.13</td><td>~74%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      <strong>★ Here the truncation curve needs no transfer assumption.</strong> It was measured for the
+      full depth-3 root search and only <em>assumed</em> to carry to the 2-candidate deepening — but the
+      base re-search <em>is</em> that full root search, same object and same best-first structure. For the
+      mandatory step this is measurement, not extrapolation; the assumption stays confined to the
+      optional extras. h = 16 is the only write-off, and that board is already lost — the garbage
+      overwrites row 0 and the next spawn tops out.
+    </p>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      <strong>And the regime this rescues is rarer than it looks, which is better news still.</strong>
+      Since only 3.2% of real death boards have a short window, the primary near-death story is not
+      truncation at all — it is that a <em>complete</em> re-search fits, in ~3.3 s, at a 66.3% flip
+      rate. Truncation is tail insurance for the remainder.
+    </p>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      <strong>⚠ It does force a design change.</strong> Abandon-whole pre-emption is the wrong default
+      above h = 13, where it would discard a result worth 90–100% fidelity. The rule becomes
+      height-dependent: abandon below h = 13, adopt at ≥ 80% completion above it — gated on a
+      <em>completion counter, never a timer</em>, behind the same seqlock, with a killed mutant where
+      adopting below the threshold must reproduce the stale-move signature. Adopting partials is the
+      pair-latch failure mode by another name.
+    </p>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <h2>Three design constraints that fall out of the numbers</h2>
+    <div class="cards">
+      <div class="card">
+        <span class="tag">mandatory first step · confirmed</span>
+        <h3>Search the post-garbage board, or don't bother</h3>
+        <p>
+          Half of all argmax decisions flip between the pre- and post-garbage board, so letting the
+          existing search run <em>longer</em> on the stale board is wasted work half the time.
+          Measured in three regimes: <strong>50.5%</strong> low fill, <strong>53.2%</strong> at
+          45–60% fill, <strong>66.3%</strong> near-death. It holds everywhere, and hardest where
+          the window is shortest.
+        </p>
+      </div>
+      <div class="card">
+        <span class="tag">atomicity</span>
+        <h3>Publish the result as one object, never field-by-field</h3>
+        <p>
+          The shipped pair-latch defect is exactly a two-field result sampled across time — worth
+          −15.8pp clear rate. The driver runs two hooks per frame, so a split publish recreates it
+          by default. A <strong>seqlock</strong> makes the bad pair unrepresentable for ~12
+          instructions.
+        </p>
+      </div>
+      <div class="card">
+        <span class="tag">pre-emption</span>
+        <h3>Abandon whole; degrade to the certified move</h3>
+        <p>
+          Write the valid flag only on completion. If the spawn edge lands first, re-GO exactly as
+          today — which also makes the OFF path provably identical. Abandonment isn't free: it
+          disarms the slam for that capsule.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How to price it, given that the farm can't see time</h2>
+    <p>
+      The co-sim farm has no time axis, and its baseline already receives the settled post-garbage
+      board for free. The way through is to stop asking it a joint question:
+    </p>
+    <p style="font-family:var(--f-data);font-size:.86rem;background:var(--accent-soft);border-radius:3px;padding:.8rem 1rem;max-width:none;color:var(--ink)">
+      shippable effect = P(compute completes | h) × value(move produced | compute granted)
+    </p>
+    <p>
+      The left factor is pure timing — the table above answers it. The right factor has no timing
+      content, so the farm can measure it honestly by granting the compute unconditionally.
+      <strong>The farm's prestart bias is common-mode across both arms here and cancels</strong> —
+      which is precisely why this lane is priceable where DRPRESTART was not. Report the right
+      factor stratified by h, never pooled, so the product can be formed height by height.
+    </p>
+  </section>
+
+  <section>
+    <h2>Recommended path</h2>
+    <ol class="steps">
+      <li><div class="body">
+        <h3>Argmax-flip screen of the deepening</h3>
+        <p>Base vs 2-candidate-deepened argmax on banked post-garbage boards at tie plies. A flip rate under ~2% closes the lane outright.</p>
+        <span class="cost">~0.5 d · $0 · <strong>can close the lane</strong></span>
+      </div></li>
+      <li><div class="body">
+        <h3>Truncation curve</h3>
+        <p>Move agreement vs fraction of cycles completed. Decides whether truncated results can be adopted — worth 27pp of affordability at p90, and currently an assumption.</p>
+        <span class="cost">~0.5 d · $0 · sets the design</span>
+      </div></li>
+      <li><div class="body">
+        <h3>Farm A/B with compute granted unconditionally</h3>
+        <p>Paired, N = 9,000, stratified by h, dies-ahead primary, dose-matched label-blind null mandatory. Measures the value ceiling.</p>
+        <span class="cost">~2 d · <strong>~$4</strong> (vs $135 for H12's endpoint) · can close the lane</span>
+      </div></li>
+      <li><div class="body">
+        <h3>Multiply by the completion curve — before launching step 3</h3>
+        <p>The shippable effect is at most 52.4% of the ceiling, over a population 4× smaller than
+        H12's. Fold both discounts into the MDE up front. <strong>An experiment that cannot detect is
+        not an experiment</strong> — and after the retraction above, a registered do-not-launch is a
+        more likely outcome than it looked this morning.</p>
+        <span class="cost">analysis · $0 · gates the spend</span>
+      </div></li>
+      <li><div class="body">
+        <h3>Build: firmware extras, seqlock, Mesen gate, then silicon</h3>
+        <p>Five killed mutants, default OFF and byte-identical when unset — and only after the NMI fix spec lands.</p>
+        <span class="cost">~5 d · $0 · only if 1–4 clear</span>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Risk register</h2>
+    <ul class="risks">
+      <li>
+        <span class="sev block">blocking</span>
+        <p><strong>NMI overrun.</strong> Two trace-proven hazards fire when a hook runs long; mechanism 2 is
+        confirmed on ship bytes as the root cause of the 2026-08-09 field crash. DRPRESTART's release-edge
+        spike already eats 40% of a frame, and <em>any</em> hook-lengthening flag re-arms it. The fix spec must
+        land <em>before</em> this feature — and the two NMI fixes brick each other, so gate the combination.</p>
+      </li>
+      <li>
+        <span class="sev hard">hard limit</span>
+        <p><strong>Pocket fit: 18,262 / 18,480 ALMs = 99%</strong>, ~218 spare — inside fitter-seed noise on that
+        device. This feature must cost <strong>zero ALMs</strong> on Pocket. The design satisfies that by
+        construction; any variant needing new RTL is MiSTer-only and cannot ship to the rematch venue.
+        MiSTer has 11% free.</p>
+      </li>
+      <li>
+        <span class="sev hard">hard limit</span>
+        <p><strong>Flag interactions.</strong> DRPRESTART × DRTUCK is a wedge pair — 9 pills and a hang, with
+        neither flag at fault alone. A garbage-window knob extends DRPRESTART and inherits it. Since a tuck CvC
+        cart must ship DRPRESTART=0, this feature and the tuck executor <strong>cannot coexist on that cart
+        line at all</strong>. That is a product fork, not a build detail.</p>
+      </li>
+      <li>
+        <span class="sev watch">trade-off</span>
+        <p><strong>Firmware placement costs A/B agility.</strong> Putting the extras in copro firmware keeps
+        host-side hook length unchanged — the right call for NMI safety — but <code>$readmemh</code> resolves at
+        synthesis, so every arm is a full ~40 min compile, and the cart can neither see nor verify which core it
+        is plugged into. Mitigation worth doing regardless: a firmware capability byte the cart reads at init.</p>
+      </li>
+      <li>
+        <span class="sev block">evidence</span>
+        <p><strong>The number the lane rests on cannot currently be shown.</strong> The 50.5% flip has
+        <em>no reproducible artifact in any of the 30 worktrees</em> — it survives only as prose plus one
+        downstream citation — and every board behind it was under 45% fill, excluding the regime the lane
+        targets. Re-deriving it with a committed rig is folded into the screen. The release-height
+        distribution here is separately thin: n=208 from 10 games, 4–8 observations in the decisive
+        cells, so read that column as a scale, not a rate.</p>
+      </li>
+      <li>
+        <span class="sev watch">measurement</span>
+        <p><strong>A 3× conflict over search cost, raised in review and resolved.</strong> A competing figure
+        of 150 frames per warm search would have killed the lane. It traces to a hook-counted constant
+        authored to mean ~60 frames under a 5-hooks/frame assumption; a later audit corrected the rate to
+        2/frame, fixed the surrounding prose, and left the constant — so it now reads 2.5× long. Four
+        independent measurements (31.6 / 34 / 57.2 / 60 frames) agree with the original intent.
+        <strong>Knock-on:</strong> the DRSLAM arming threshold was tuned against that same stale constant.</p>
+      </li>
+    </ul>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <h2>Did the extra compute help? Not adjudicated — and that is the honest answer</h2>
+    <p>
+      The screen asked two questions. The first has a clean answer; the second does not, and the
+      instrument that was supposed to settle it turned out to need a fix of its own.
+    </p>
+    <div class="cards">
+      <div class="card">
+        <span class="tag">answered</span>
+        <h3>The deepening changes decisions</h3>
+        <p>
+          <strong>33.8%</strong> of tie plies flip [31.1, 36.6] — 17× the testability floor, across
+          1,000 games and 158,968 plies, present in every board-height band. Not a formality.
+        </p>
+      </div>
+      <div class="card">
+        <span class="tag">not answered</span>
+        <h3>Whether the changes <em>help</em></h3>
+        <p>
+          The per-flip screen ran: <strong>+0.016</strong> viruses/flip [−0.014, +0.046] with
+          <strong>137 wins against 137 losses</strong> — the churn signature, exactly. But it is an
+          <em>observation</em>, not a verdict: the run voided on its own control threshold.
+        </p>
+      </div>
+      <div class="card">
+        <span class="tag">blocking</span>
+        <h3>The control has no trustworthy bar</h3>
+        <p>
+          Two attempts failed the same way — a threshold borrowed from a neighbouring lane, then a
+          derivation that borrowed that lane's unit conversion one level down. Fix handed forward:
+          make the bar a <strong>qualitative ordering test</strong> (worst &lt; random &lt; 0) inside
+          this instrument, importing no magnitude from anywhere.
+        </p>
+      </div>
+    </div>
+    <div class="verdict" style="border-left-color:var(--accent)">
+      <h3>★ The failed derivation produced the most interesting result of the day</h3>
+      <p style="font-size:.92rem">
+        At tie plies the champion's value gap between its top move and a random alternative is
+        <strong>1.221× larger</strong> than at ordinary post-garbage plies — yet the measured damage
+        of taking that random alternative is <strong>4.5× smaller</strong>. Drop the assumption that
+        value converts to outcome at a fixed rate and both facts hold at once:
+      </p>
+      <p style="font-size:.92rem">
+        <strong>At tie plies, the evaluator's value differences overstate real outcome consequence by
+        roughly 4.5×.</strong> Bigger gaps, far less actual damage — on precisely the population every
+        tie-gated arm targets. It rhymes with the distillation lane's finding that value magnitude at
+        ties resists learning: two lanes, from opposite directions, finding that value structure and
+        outcome structure come apart at ties.
+      </p>
+    </div>
+    <p style="font-size:.88rem;color:var(--ink-3)">
+      <strong>Bottom line.</strong> The window is real, the compute is affordable, and the deepening
+      demonstrably changes decisions. Nothing yet shows those changes are improvements, and the cheap
+      instrument that would say so needs its control rebuilt first. A third pre-registered run against
+      a bar the data already refutes would have produced a number, not an answer.
+    </p>
+  </section>
+
+  <hr class="rule">
+
+  <footer>
+    <p><strong>Provenance.</strong> Decision costs measured from <code>/mnt/data/drmario_cosim/results/prestart_pilot.jsonl</code> — 1,500 decisions, firmware md5 <code>e970e9ab…</code>, manifest <code>bed03caf0f5290be</code>. Regenerate every table with <code>experiments/gw_design/budget_table.py</code> on branch <code>gw-design</code>.</p>
+    <p><strong>Pipeline cross-checks.</strong> Independently recovers the shadow-latency pilot's published 49.6-silicon-frame median, and reproduces the published “89.4% of releases at h ≤ 12” DRPRESTART headline from arithmetic that never saw it.</p>
+    <p>Full document: <code>GARBAGE_WINDOW_DESIGN.md</code>. Every figure there is labelled MEASURED, DERIVED or CITED.</p>
+  </footer>
+
+</div>

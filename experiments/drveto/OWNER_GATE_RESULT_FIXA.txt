@@ -1,0 +1,12 @@
+  geometry: G2 fatal vertical col3 (o4=0): FIRES
+  geometry: G2 fatal vertical col3 (o4=1): FIRES
+  geometry: G3 fatal vertical col3 fo==1 (o4=0, non-generable): FIRES
+  geometry: G3 generable horizontal 2-3 (o4=2): FIRES
+  geometry: G3 generable horizontal 3-4 (o4=2): FIRES
+  G2 cap=(0,2) next=(0,1) ts=00: OFF=(7, 0) ON=(7, 0) fired=[(3, 0), (3, 1)]
+  G3 cap=(2,0) next=(0,1) ts=00: OFF=(6, 2) ON=(6, 2) fired=[(2, 2), (2, 3), (3, 2), (3, 3)]
+  G3 cap=(2,1) next=(0,1) ts=00: OFF=(6, 1) ON=(6, 1) fired=[(2, 2), (2, 3), (3, 2), (3, 3)]
+  G3 cap=(2,2) next=(0,1) ts=00: OFF=(1, 0) ON=(1, 0) fired=[(2, 2), (2, 3), (3, 2), (3, 3)]
+
+OWNER-BOARD GATE: PASS -- predicate fires on both parents, firmware ==
+mirror on both, and the DRVETO=1 decision never plugs the throat.
