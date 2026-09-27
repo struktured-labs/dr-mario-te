@@ -90,7 +90,7 @@ Reading:
 **L11 verified** by the HUD (48 viruses, LEVEL 11/11 MED/MED) on all three.
 
 **HSV again follows the silicon.** Disagreement subset: silicon == HSV **11**, == no-HSV **3** (n = 16). Pooled
-over both matches: **20 : 6**, against the non-HSV control's 4 : 12. Fisher p = 0.0027 (the updated test).
+over both matches: **20 : 6**, against the non-HSV control's 4 : 12. Fisher p = 0.0014 (two-sided).
 
 | game | n | MATCH | late flip | short | tuck | other | PROPH | hi-virus c3-5 start → clear | hi-virus·s | lane > 10 | garbage /min |
 |---|---|---|---|---|---|---|---|---|---|---|---|
