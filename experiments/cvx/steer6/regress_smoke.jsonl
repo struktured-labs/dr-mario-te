@@ -1,0 +1,10 @@
+{"case": "luluG1", "k0": 80, "cleared_at": 100, "pills": 20, "v0": 6, "v": 4, "how": "target_cleared", "arm": "base", "garbage": true, "active": 0, "decisions": 20, "d_trace": [14, 13, 11, 16]}
+{"case": "luluG1", "k0": 80, "cleared_at": 99, "pills": 19, "v0": 6, "v": 3, "how": "target_cleared", "arm": "base", "garbage": false, "active": 0, "decisions": 19, "d_trace": [14, 8, 13, 13]}
+{"case": "luluG1", "k0": 120, "cleared_at": 174, "pills": 54, "v0": 4, "v": 3, "how": "target_cleared", "arm": "base", "garbage": true, "active": 0, "decisions": 54, "d_trace": [15, 16, 15, 16, 16, 16, 16, 16, 16, 16, 2]}
+{"case": "luluG1", "k0": 120, "cleared_at": null, "pills": 117, "v0": 4, "v": 4, "how": "end_of_data", "arm": "base", "garbage": false, "active": 0, "decisions": 117, "d_trace": [15, 16, 16, 16, 10, 16, 14, 16, 15, 16, 16, 16, 16, 16, 16, 14, 16, 16, 16, 14, 16, 16, 16, 14]}
+{"case": "m1G3", "k0": 9, "cleared_at": 16, "pills": 7, "v0": 43, "v": 41, "how": "target_cleared", "arm": "base", "garbage": true, "active": 0, "decisions": 7, "d_trace": [3, 1]}
+{"case": "m1G3", "k0": 9, "cleared_at": 16, "pills": 7, "v0": 43, "v": 41, "how": "target_cleared", "arm": "base", "garbage": false, "active": 0, "decisions": 7, "d_trace": [3, 1]}
+{"case": "m1G3", "k0": 41, "cleared_at": 117, "pills": 76, "v0": 27, "v": 12, "how": "target_cleared", "arm": "base", "garbage": true, "active": 0, "decisions": 76, "d_trace": [11, 16, 16, 8, 16, 14, 16, 13, 14, 8, 16, 16, 16, 16, 16, 16]}
+{"case": "m1G3", "k0": 41, "cleared_at": 78, "pills": 37, "v0": 27, "v": 11, "how": "target_cleared", "arm": "base", "garbage": false, "active": 0, "decisions": 37, "d_trace": [11, 16, 13, 10, 16, 14, 16, 1]}
+{"case": "m1G3", "k0": 63, "cleared_at": 117, "pills": 54, "v0": 18, "v": 13, "how": "target_cleared", "arm": "base", "garbage": true, "active": 0, "decisions": 54, "d_trace": [16, 16, 16, 16, 16, 16, 16, 16, 12, 14, 16]}
+{"case": "m1G3", "k0": 63, "cleared_at": 117, "pills": 54, "v0": 18, "v": 13, "how": "target_cleared", "arm": "base", "garbage": false, "active": 0, "decisions": 54, "d_trace": [16, 16, 16, 16, 16, 16, 9, 7, 16, 16, 16]}

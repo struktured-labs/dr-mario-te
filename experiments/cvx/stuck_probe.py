@@ -215,13 +215,14 @@ def play_gb(seed, choose, steer, opp, level=11, maxpills=600, probe=None):
 
 
 # ------------------------------- race: vs_race.play + probe hooks -------------------------------
-def play_race(seed, arm, lam, level=11, maxpills=600, steer=None, probe=None):
+def play_race(seed, arm, lam, level=11, maxpills=600, steer=None, probe=None, choose=None):
     import vs_race as V
     from drmario.faithful_env import FaithfulDrMarioEnv
     from nes_pills import NesPillSource
     from fb import FB
     import root_search as RS
-    choose = V._decider(arm)
+    if choose is None:
+        choose = V._decider(arm)
     if steer is not None:
         import steer_model as SM
         steer.reset(seed)
@@ -318,8 +319,12 @@ if __name__ == "__main__":
     elif mode == "race":
         build, lam, lo, cnt, step, outp = sys.argv[2], float(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]), sys.argv[7]
         steer = SM.Steer(proph="throat", pulse=True, tap_period=2, tap_unified=True)
+        choose = None
+        if build.startswith("s6_"):                        # STEER6 arms live in steer_run (same unified tap steering)
+            import steer_run as SR
+            choose = SR.make(build)[1]
         with open(outp, "w") as fh:
             for i in range(cnt):
-                r = play_race(lo + i * step, build, lam, level=11, steer=steer, probe=StuckProbe())
+                r = play_race(lo + i * step, build, lam, level=11, steer=steer, probe=StuckProbe(), choose=choose)
                 r["arm"] = build + "~steer"; r["level"] = 11; r["tap"] = 2; r["tap_unified"] = True
                 fh.write(json.dumps(r) + "\n"); fh.flush()
