@@ -1,0 +1,72 @@
+[
+  {
+    "name": "cells_g6_h4",
+    "send_rule": "cells",
+    "gcols": "g6",
+    "halves_cap": 4,
+    "n": 160,
+    "winner_vs_h80": 89,
+    "how": {
+      "clear": 159,
+      "opp_crushed": 1
+    },
+    "topout_share": 0.00625,
+    "mean_sent": 32.25625
+  },
+  {
+    "name": "lines_g6_h4",
+    "send_rule": "lines",
+    "gcols": "g6",
+    "halves_cap": 4,
+    "n": 160,
+    "winner_vs_h80": 113,
+    "how": {
+      "clear": 160
+    },
+    "topout_share": 0.0,
+    "mean_sent": 3.4875
+  },
+  {
+    "name": "cells_g8_h4",
+    "send_rule": "cells",
+    "gcols": "all8",
+    "halves_cap": 4,
+    "n": 160,
+    "winner_vs_h80": 92,
+    "how": {
+      "clear": 153,
+      "opp_topout": 5,
+      "opp_crushed": 2
+    },
+    "topout_share": 0.04375,
+    "mean_sent": 32.8125
+  },
+  {
+    "name": "cells_g6_h8",
+    "send_rule": "cells",
+    "gcols": "g6",
+    "halves_cap": 8,
+    "n": 160,
+    "winner_vs_h80": 89,
+    "how": {
+      "clear": 159,
+      "opp_crushed": 1
+    },
+    "topout_share": 0.00625,
+    "mean_sent": 32.36875
+  },
+  {
+    "name": "lines_g8_h8",
+    "send_rule": "lines",
+    "gcols": "all8",
+    "halves_cap": 8,
+    "n": 160,
+    "winner_vs_h80": 98,
+    "how": {
+      "clear": 158,
+      "opp_topout": 2
+    },
+    "topout_share": 0.0125,
+    "mean_sent": 3.475
+  }
+]

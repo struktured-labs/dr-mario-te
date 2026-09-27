@@ -34,17 +34,39 @@ REPLACEMENT = '''        a.label(f"{L}_start")            # start a search: uplo
 '''
 
 
+# The shipped emitter, once D2 landed: the pend/delay early-outs come FIRST and the
+# invalidation sits after them. Detecting this is how we tell "already fixed upstream"
+# apart from "the emitter moved somewhere we don't understand".
+ALREADY_FIXED = '''        a.ins16("LDA_abs", pend); a.br("BNE", f"{L}_st1"); a.jmp(f"{L}_done"); a.label(f"{L}_st1")
+        a.ins16("LDA_abs", delay); a.br("BEQ", f"{L}_st2"); a.jmp(f"{L}_done"); a.label(f"{L}_st2")
+        if TUCK and idx == 2:'''
+
+
 def _fix(src):
-    assert ANCHOR in src, (
-        "D2 anchor not found in driver-nav/patch_cartridge_copro.py -- the emitter has moved. "
-        "Re-derive the fix rather than measuring the unfixed driver. "
-        "MOST LIKELY CAUSE (2026-08-02): the real fix landed for real in driver-nav commit "
-        "b850159 (task #17 phase 3 stage 1) -- the emitter no longer needs this in-memory "
-        "transform at all. This harness going stale is a SIGN THE FIX SHIPPED, not that this "
-        "directory rotted; retire this file (and real_ab.py, which imports it) in favour of "
-        "measuring driver-nav's patch_cartridge_copro.py directly, the way "
-        "qa-harness/experiments/tuck_regression.py's D2/D2b checks already do.")
-    return src.replace(ANCHOR, REPLACEMENT)
+    """Return driver source with D2 repaired -- transforming only if it still needs it.
+
+    ★ D2 SHIPPED UPSTREAM (driver-nav, at the placement this directory proposed and citing
+    d2_invalidation_fix.patch). So the in-memory transform is now a NO-OP path: the real
+    emitter already invalidates after the pend/delay early-outs. This module is kept as the
+    D2 DETECTOR rather than retired, because `real_ab.py`'s comparison only means anything
+    if the descriptor genuinely survives the descent -- and that is now a property of
+    driver-nav that could regress. Silently importing the plain driver would let a D2
+    regression pass as a valid measurement.
+    """
+    if ANCHOR in src:
+        print("exec_tuck_sim_fixed: driver still has the PRE-D2 placement -- applying the "
+              "in-memory fix (measuring a hypothetical, not the shipped driver)")
+        return src.replace(ANCHOR, REPLACEMENT)
+    if ALREADY_FIXED in src:
+        print("exec_tuck_sim_fixed: D2 is FIXED UPSTREAM in driver-nav -- no transform "
+              "needed; measuring the shipped driver as-is")
+        return src
+    raise AssertionError(
+        "D2 anchor not found AND the fixed placement not found in "
+        "driver-nav/patch_cartridge_copro.py -- the emitter has moved somewhere neither "
+        "shape matches. Re-derive before measuring: an unrecognised emitter may have "
+        "reintroduced the per-frame invalidation in a new form, and this harness must not "
+        "report a descent measurement it cannot vouch for.")
 
 
 _m, _code, _lab, _tog = E.build(source_transform=_fix)

@@ -1,0 +1,3 @@
+median within-state sd: D at lambda=1 -> 474.1 value units; ws=20*g_stranded -> 18.4
+STRUCTURAL-PARITY lambda_par = 0.0389
+proposed stage-A grid (6 log-spaced, lam_par..0.3): [np.float64(0.0389), np.float64(0.0585), np.float64(0.088), np.float64(0.1325), np.float64(0.1994), np.float64(0.3)]

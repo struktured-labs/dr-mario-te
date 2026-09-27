@@ -1,0 +1,64 @@
+1
+00:00:00,000 --> 00:00:01,920
+The history is getting a bit harsh.
+
+2
+00:00:02,500 --> 00:00:04,100
+62, look at that.
+
+3
+00:00:06,480 --> 00:00:07,440
+Russian mess.
+
+4
+00:00:07,900 --> 00:00:10,420
+Shit, we haven't been cheating that much.
+
+5
+00:00:41,640 --> 00:00:42,320
+Mic working?
+
+6
+00:00:42,540 --> 00:00:42,820
+Cool.
+
+7
+00:00:48,140 --> 00:00:49,060
+What is this thing?
+
+8
+00:00:52,020 --> 00:00:55,420
+Okay, first thing I want to comment on is the weird blue streak in the bottom.
+
+9
+00:00:56,540 --> 00:00:57,440
+That's messed up.
+
+10
+00:00:57,440 --> 00:01:03,340
+It should show TE instead of TM in the upper right. That's also just something that I thought was done. It's not done
+
+11
+00:01:04,280 --> 00:01:08,680
+It's locking the player too. Now. It's just showing random blue and red stuff. It's really screwed up
+
+12
+00:01:09,740 --> 00:01:12,760
+When I hit up, yeah, it's still locking the player too, but whatever it's fine
+
+13
+00:01:14,080 --> 00:01:15,200
+What I wanted to do
+
+14
+00:01:16,720 --> 00:01:19,000
+Just not sure if that's what you wanted to do. Alright, here we go
+
+15
+00:01:21,420 --> 00:01:21,780
+Alright
+
+16
+00:01:21,780 --> 00:01:30,320
+Alright, I see some weird flickering which I think is, it's all buggy, a buggy disaster.
+

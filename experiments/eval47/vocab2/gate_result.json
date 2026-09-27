@@ -1,0 +1,173 @@
+{
+ "pass": true,
+ "n_seeds": 24,
+ "n_topout": 12,
+ "n_stall": 6,
+ "n_clear": 6,
+ "detail": [
+  {
+   "seed": 35781,
+   "result": "topout",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 19968,
+   "result": "topout",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 5407,
+   "result": "topout",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 350,
+   "result": "topout",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 4080,
+   "result": "topout",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 36887,
+   "result": "topout",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 26391,
+   "result": "topout",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 1487,
+   "result": "topout",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 30599,
+   "result": "topout",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 31852,
+   "result": "topout",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 3768,
+   "result": "topout",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 4280,
+   "result": "topout",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 33509,
+   "result": "stall",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 15743,
+   "result": "stall",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 10541,
+   "result": "stall",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 516,
+   "result": "stall",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 1412,
+   "result": "stall",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 34482,
+   "result": "stall",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 1090,
+   "result": "clear",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 23769,
+   "result": "clear",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 33252,
+   "result": "clear",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 31838,
+   "result": "clear",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 10199,
+   "result": "clear",
+   "ok": true,
+   "errors": []
+  },
+  {
+   "seed": 6262,
+   "result": "clear",
+   "ok": true,
+   "errors": []
+  }
+ ],
+ "mutants": [
+  {
+   "mutant": "ws=0",
+   "killed": true,
+   "seed": 35781,
+   "first_divergence": [
+    "result: census=topout mine=clear",
+    "pills: census=217 mine=165"
+   ]
+  },
+  {
+   "mutant": "garbage_rng+1",
+   "killed": true,
+   "seed": 35781,
+   "first_divergence": [
+    "result: census=topout mine=clear",
+    "pills: census=217 mine=165"
+   ]
+  }
+ ]
+}

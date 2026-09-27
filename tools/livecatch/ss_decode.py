@@ -41,22 +41,55 @@ manual decode. TGT_C1 also reads $50 in the wiggle carts -- the open-bus byte fr
 stripped $5000 window, i.e. the instrument independently reproduces the known P1-idle
 root cause.
 
-★ THE OFFSET IS A HINT, NEVER AN ASSUMPTION. locate_ram() re-checks the invariant on every
-file and rescans if it fails. A MiSTer core update that moves the layout would otherwise
-make this print a perfectly plausible WRONG board -- the exact failure class that has cost
-this project the most time (a confident number from a stale or mis-parsed source). Decoding
-garbage silently is worse than refusing.
+★ THE OFFSET IS A HINT, NEVER AN ASSUMPTION. locate_ram() re-derives it by SIGNATURE on
+every file. A MiSTer core update that moves the layout would otherwise make this print a
+perfectly plausible WRONG board -- the exact failure class that has cost this project the
+most time (a confident number from a stale or mis-parsed source). Decoding garbage silently
+is worse than refusing.
+
+WHY THE VIRUS INVARIANT IS NO LONGER THE LOCATOR (task #130, 2026-08-19)
+-----------------------------------------------------------------------
+The first version located the base by a cross-address VIRUS-COUNT invariant: popcount of
+$D0-$D2 in each playfield must equal the BCD counter, over tiles drawn from a LEGAL_TILE
+set of {empty, virus, pill}. That set was incomplete, and the consequence was an instrument
+outage, not a decode error:
+
+  * $B0-$BF is the CLEAR-ANIMATION tile (`clearedPillOrVirus = $B0`, colour in the low
+    nibble). It is on the board during every clear, i.e. routinely.
+  * $8D/$8F/$EF are the stock GAME OVER / stage-clear TEXT BOX tiles, which renderGameOver
+    writes into the playfield array itself.
+
+So a perfectly healthy mid-clear frame failed the "legal playfield" test. Worse, the code
+then reported that failure as "the game was at a title/menu screen, not in a match" -- and
+the 99-file wedge corpus of 2026-08-18 was refused 99/99 with that message while sitting at
+mode $04, mid-match, holding exactly the $BF board the #129 wedge produces. A capture the
+decoder was built to read was described as a menu frame.
+
+⇒ The base is now derived by a DRIVER-STATE SIGNATURE (NAV_MAGIC $6149 == $A5 plus
+MATCH_ACTIVE $6164 == 1 and four flags/TURN constrained to their legal ranges), per
+mister-savestate-ram-read. The virus invariant survives as a CORROBORATION that is reported,
+never as a gate. And a failed scan says what it searched and how many offsets it tried --
+"absence is not pass": a scan that finds nothing must never be reported as a game-state fact.
 """
 from __future__ import annotations
 
+import gzip
+import hashlib
 import json
+import os
 import sys
 
 SS_SIZE = 1327112
-RAM_HINT = 0x102B08          # CPU work RAM $0000, pinned by the invariant above
+RAM_HINT = 0x102B08          # CPU work RAM $0000 -- a hint to try first, never an assumption
 WRAM_DELTA = 0x800           # cartridge WRAM $6000 follows CPU RAM contiguously
 
-LEGAL_TILE = set([0x00, 0xFF]) | set(range(0x40, 0x90)) | set(range(0xD0, 0xD3))
+# Playfield tiles. The first three groups are the resting board; the last two are transient
+# but entirely normal, and omitting them is what made the old locator refuse live captures.
+LEGAL_TILE = (set([0x00, 0xFF])
+              | set(range(0x40, 0x90))     # pill halves / orphans, colour in low nibble
+              | set(range(0xD0, 0xD3))     # viruses
+              | set(range(0xB0, 0xC0))     # clearedPillOrVirus $B0 | colour -- clear anim
+              | set([0x8D, 0x8F, 0xEF]))   # GAME OVER / stage-clear text-box tiles
 VIRUS_TILE = set(range(0xD0, 0xD3))
 COLOURS = {0: 'Y', 1: 'R', 2: 'B'}
 
@@ -107,67 +140,154 @@ def bcd(b):
     return (b >> 4) * 10 + (b & 0x0F)
 
 
-def _invariant_holds(buf, o, require_viruses=False):
-    """The cross-address check that pins the base. See module docstring."""
-    if o < 0 or o + 0x800 > len(buf):
+# ---------------------------------------------------------------------------------------
+# THE SIGNATURE. Anchors are driver PRG-RAM addresses whose values are pinned or bounded
+# for any running driver cart, per mister-savestate-ram-read: several independent bytes at
+# fixed spacings, so a wrong offset has to satisfy all of them by coincidence at once.
+#
+# MATCH_ACTIVE is deliberately in the STRICT set only. A menu/title frame is a legitimate,
+# routine capture whose base is still locatable -- so the scan falls back to the RELAXED
+# set (no MATCH_ACTIVE) and, if that pins a base, reports "not in a match" as a positive
+# finding rather than as a location failure.
+SIG_EXACT = [("NAV_MAGIC", 0x6149, 0xA5)]
+SIG_MATCH = [("MATCH_ACTIVE", 0x6164, 1)]
+SIG_RANGE = [("TURN", 0x6160, (0, 2)),
+             ("f_6143", 0x6143, (0, 1)),
+             ("ARMED2", 0x6161, (0, 1)),
+             ("f_614E", 0x614E, (0, 1)),
+             ("ROT_DONE2", 0x616E, (0, 1))]
+SIG_SPAN = 0x200                 # highest anchor offset touched from the WRAM base
+
+
+def _signature_holds(buf, wram, strict=True):
+    """True if the driver-state signature sits at this cartridge-WRAM base."""
+    if wram < 0 or wram + SIG_SPAN > len(buf):
         return False
-    p1 = buf[o + 0x400:o + 0x480]
-    p2 = buf[o + 0x500:o + 0x580]
-    if not all(b in LEGAL_TILE for b in p1) or not all(b in LEGAL_TILE for b in p2):
-        return False
-    c1, c2 = bcd(buf[o + 0x324]), bcd(buf[o + 0x3A4])
-    if c1 is None or c2 is None:
-        return False
-    v1 = sum(1 for b in p1 if b in VIRUS_TILE)
-    v2 = sum(1 for b in p2 if b in VIRUS_TILE)
-    if v1 != c1 or v2 != c2:
-        return False
-    if require_viruses and v1 == 0 and v2 == 0:
-        return False        # an empty pair is satisfied vacuously and proves nothing
+    anchors = SIG_EXACT + (SIG_MATCH if strict else [])
+    for _name, addr, want in anchors:
+        if buf[wram + addr - 0x6000] != want:
+            return False
+    for _name, addr, (lo, hi) in SIG_RANGE:
+        if not lo <= buf[wram + addr - 0x6000] <= hi:
+            return False
     return True
 
 
-def locate_ram(buf, hint=RAM_HINT):
-    """Return the CPU-RAM base, verifying rather than assuming.
+def _scan_signature(buf, strict=True):
+    """Every WRAM base in the container satisfying the signature, plus the number tried.
 
-    The hint is accepted only if the invariant holds AND the driver's power-on magic is
-    where the contiguous-WRAM hypothesis puts it. Both can be true of a cleanly running
-    cart at any point in a match, including a finished board with zero viruses -- which is
-    why the magic is checked too, instead of demanding live viruses.
+    Seeded off NAV_MAGIC so the sweep is a bytes.find walk rather than a 1.3M-iteration
+    Python loop, but the CANDIDATE COUNT reported is the full search space -- the error
+    message must describe what was searched, not what survived the first filter.
     """
-    magic_ok = (hint + WRAM_DELTA + 0x149 < len(buf)
-                and buf[hint + WRAM_DELTA + 0x149] == 0xA5)
-    if _invariant_holds(buf, hint) and magic_ok:
-        return hint, "hint verified (invariant + NAV_MAGIC)"
-    if _invariant_holds(buf, hint, require_viruses=True):
-        return hint, "hint verified by invariant; NAV_MAGIC absent (not a driver cart?)"
+    lo, hi = 0, len(buf) - SIG_SPAN
+    _name, magic_addr, magic_val = SIG_EXACT[0]
+    delta = magic_addr - 0x6000
+    hits, i = [], 0
+    while True:
+        i = buf.find(bytes([magic_val]), i)
+        if i < 0:
+            break
+        w = i - delta
+        if lo <= w < hi and _signature_holds(buf, w, strict):
+            hits.append(w)
+        i += 1
+    return hits, hi - lo
 
-    # The hint failed. Separate the two reasons before doing anything expensive: if the
-    # driver's magic is still sitting where the layout says it should, the CONTAINER is
-    # fine and it is the game state that is not a board -- a title or level-select frame,
-    # which a live ring will capture routinely. Rescanning for those is pointless and
-    # reporting them as "layout moved" would be alarming and wrong.
-    if magic_ok:
-        raise NotInAMatch(
-            "container layout is intact (NAV_MAGIC present) but $0400/$0500 do not hold a "
-            "legal playfield -- the game was at a title/menu screen, not in a match. Skip."
+
+def _describe_signature(strict=True):
+    parts = [f"{n} ${a:04X}==${v:02X}" for n, a, v in SIG_EXACT + (SIG_MATCH if strict else [])]
+    parts += [f"{n} ${a:04X} in {lo}..{hi}" for n, a, (lo, hi) in SIG_RANGE]
+    return "; ".join(parts)
+
+
+def virus_invariant(buf, ram):
+    """CORROBORATION, never a locator: virus popcount vs the BCD counter, per player.
+
+    Returns (ok, note). This used to gate the base, and doing so took the decoder offline
+    for every clear animation and every game-over board -- see the module docstring. It is
+    reported now, so a genuine mis-parse is still visible without a normal frame being
+    refused.
+    """
+    p1 = buf[ram + 0x400:ram + 0x480]
+    p2 = buf[ram + 0x500:ram + 0x580]
+    c1, c2 = bcd(buf[ram + 0x324]), bcd(buf[ram + 0x3A4])
+    v1 = sum(1 for b in p1 if b in VIRUS_TILE)
+    v2 = sum(1 for b in p2 if b in VIRUS_TILE)
+    bad = [b for b in list(p1) + list(p2) if b not in LEGAL_TILE]
+    notes = []
+    if c1 is None or c2 is None:
+        notes.append(f"virus counter not BCD (${buf[ram+0x324]:02X}/${buf[ram+0x3A4]:02X})")
+    else:
+        if v1 != c1:
+            notes.append(f"P1 viruses on board {v1} != counter {c1}")
+        if v2 != c2:
+            notes.append(f"P2 viruses on board {v2} != counter {c2}")
+    if bad:
+        notes.append(f"{len(bad)} tile(s) outside the known encoding, e.g. "
+                     f"${bad[0]:02X}")
+    return (not notes), "; ".join(notes) or "virus counts agree; all tiles known"
+
+
+def locate_ram(buf, hint=RAM_HINT):
+    """Return (cpu_ram_base, how), derived by SIGNATURE with the constant only as a hint.
+
+    ★ THE SCAN ALWAYS RUNS. There is deliberately no "trust the hint and skip" fast path:
+    that path is what lets a stale constant stay load-bearing, and it also means a second,
+    decoy copy of the signature elsewhere in the container would be resolved silently by
+    whichever one the constant happened to name. The scan is seeded off NAV_MAGIC via
+    bytes.find, so a full 1.3 MB sweep costs single-digit milliseconds; `hint` is now only
+    used to say, in the `how` string, whether the recorded constant still agrees.
+
+    Ladder: strict scan; then a relaxed scan dropping MATCH_ACTIVE, which distinguishes
+    "the game was at a menu" from "I could not find the driver at all". Every failure names
+    the anchors it searched and how many offsets it tried -- a scan that found nothing must
+    never be dressed up as a fact about the game.
+    """
+    strict, n = _scan_signature(buf, strict=True)
+    if len(strict) == 1:
+        w = strict[0]
+        ram = w - WRAM_DELTA
+        agree = "matches RAM_HINT" if hint is not None and ram == hint else (
+            f"DISAGREES with RAM_HINT 0x{hint:06X} -- container layout moved (core update?)"
+            if hint is not None else "no hint")
+        return ram, (f"signature scan located WRAM 0x{w:06X} -> CPU RAM 0x{ram:06X} "
+                     f"({agree}; {_describe_signature()})")
+    if len(strict) > 1:
+        raise NotASaveState(
+            f"signature is AMBIGUOUS: {len(strict)} offsets satisfy [{_describe_signature()}] "
+            f"over {n} candidate offsets ({', '.join('0x%06X' % w for w in strict[:5])}). "
+            "Refusing to decode a board I cannot place."
         )
 
-    cands = [o for o in range(len(buf) - 0x800)
-             if _invariant_holds(buf, o, require_viruses=True)]
-    if len(cands) == 1:
-        return cands[0], (f"HINT FAILED -- relocated to 0x{cands[0]:06X} by rescan. "
-                          "The container layout moved (core update?); update RAM_HINT.")
+    relaxed, _ = _scan_signature(buf, strict=False)
+    if len(relaxed) == 1:
+        w = relaxed[0]
+        raise NotInAMatch(
+            f"driver located at WRAM 0x{w:06X} (anchors [{_describe_signature(strict=False)}] "
+            f"all hold), but MATCH_ACTIVE $6164 = {buf[w + 0x164]} != 1 -- the game was not "
+            "in a match when this was captured. Skip."
+        )
+    if len(relaxed) > 1:
+        raise NotASaveState(
+            f"signature is AMBIGUOUS: no offset satisfies MATCH_ACTIVE, and {len(relaxed)} "
+            f"satisfy the relaxed anchors [{_describe_signature(strict=False)}] over {n} "
+            f"candidate offsets ({', '.join('0x%06X' % w for w in relaxed[:5])}). Refusing "
+            "to decode a board I cannot place."
+        )
     raise NotASaveState(
-        f"cannot locate CPU RAM: hint 0x{hint:06X} failed the invariant and a full rescan "
-        f"found {len(cands)} candidate(s). Refusing to decode a board I cannot place."
+        f"no driver signature found in {n} candidate offsets. Searched for "
+        f"[{_describe_signature()}] (strict: 0 hits) and [{_describe_signature(strict=False)}] "
+        f"(relaxed: {len(relaxed)} hits). This is an ABSENCE, not a statement about the game "
+        "state: either the cart is not a driver build, the container layout changed, or the "
+        "capture is not a MiSTer NES save-state."
     )
 
 
 class Snapshot:
-    def __init__(self, path):
+    def __init__(self, path, buf=None):
         self.path = path
-        self.buf = open(path, 'rb').read()
+        self.buf = open(path, 'rb').read() if buf is None else buf
         if len(self.buf) != SS_SIZE:
             raise NotASaveState(
                 f"{path}: {len(self.buf)} bytes, expected {SS_SIZE}. Truncated capture "
@@ -175,6 +295,7 @@ class Snapshot:
             )
         self.ram, self.how = locate_ram(self.buf)
         self.wram = self.ram + WRAM_DELTA
+        self.invariant_ok, self.invariant_note = virus_invariant(self.buf, self.ram)
 
     # -- raw accessors -------------------------------------------------------------
     def cpu(self, addr):
@@ -212,6 +333,10 @@ class Snapshot:
                     line += '.'
                 elif t in VIRUS_TILE:
                     line += COLOURS.get(t & 0x0F, '?')
+                elif 0xB0 <= t <= 0xBF:
+                    line += '*'          # mid-clear animation, not a resting cell
+                elif t in (0x8D, 0x8F, 0xEF):
+                    line += '#'          # GAME OVER / stage-clear text box
                 else:
                     line += COLOURS.get(t & 0x0F, '?').lower()
             rows.append(line)
@@ -285,11 +410,13 @@ def report(path, as_json=False):
     v = s.verdict()
     if as_json:
         print(json.dumps(dict(path=path, ram_base=s.ram, how=s.how,
+                              invariant_ok=s.invariant_ok, invariant=s.invariant_note,
                               p1=p1, p2=p2, mailbox=s.mailbox(), verdict=v,
                               board_p1=s.render(1), board_p2=s.render(2)), indent=2))
         return s
     print(f"== {path}")
     print(f"   RAM base 0x{s.ram:06X}  WRAM 0x{s.wram:06X}   [{s.how}]")
+    print(f"   corroboration: {'OK' if s.invariant_ok else 'NOTE'} -- {s.invariant_note}")
     print(f"   P1 level {p1['level']:2d} viruses {p1['viruses']}   "
           f"P2 level {p2['level']:2d} viruses {p2['viruses']}")
     print()
@@ -308,17 +435,162 @@ def report(path, as_json=False):
     return s
 
 
+# ---------------------------------------------------------------------------------------
+# SELF-TEST
+#
+# Gate standard (dr-mario-gate-standard-killed-mutants): a check must be shown to FAIL on
+# wrong inputs, not merely pass on right ones. Each fixture below is a real 0x1000-byte
+# silicon window replanted in a full-size container; each MUTANT is that same window with
+# one signature byte broken, and every mutant must be refused with a message that NAMES
+# what was searched. The relocation case is the one that would have been caught by the old
+# code too; the clear-animation and text-box cases are the ones that took it offline.
+# ---------------------------------------------------------------------------------------
+
+FIXDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures')
+WINDOW = 0x1000
+
+
+def _container(win, base):
+    """A full-size save-state holding `win` at `base`, zero elsewhere.
+
+    Zero-fill is a deliberately hostile background for the locator: it can produce neither
+    NAV_MAGIC ($A5) nor a decoy playfield, so any base the scan returns came from the
+    fixture's own bytes.
+    """
+    buf = bytearray(SS_SIZE)
+    buf[base:base + len(win)] = win
+    return bytes(buf)
+
+
+def _fixtures():
+    with open(os.path.join(FIXDIR, 'manifest.json')) as fh:
+        man = json.load(fh)
+    out = []
+    for e in man:
+        with gzip.open(os.path.join(FIXDIR, e['name']), 'rb') as fh:
+            win = fh.read()
+        got = hashlib.sha256(win).hexdigest()
+        if got != e['sha256']:
+            raise AssertionError(f"{e['name']}: sha256 {got[:12]} != manifest {e['sha256'][:12]}")
+        out.append((e, win))
+    return out
+
+
+def selftest(verbose=True):
+    cases, failures = [], []
+
+    def check(name, want, fn):
+        try:
+            got = fn()
+        except Exception as e:          # noqa: BLE001 -- the exception IS the observable
+            got = f"{type(e).__name__}: {e}"
+        ok = want(got)
+        cases.append((ok, name, got))
+        if not ok:
+            failures.append(name)
+
+    for e, win in _fixtures():
+        base, tag = e['ram_base'], e['source']
+        in_match = win[WRAM_DELTA + 0x164] == 1
+
+        # (1) decodes at the recorded base
+        if in_match:
+            check(f"{tag}: decodes",
+                  lambda g: isinstance(g, Snapshot) and g.ram == base,
+                  lambda: Snapshot(tag, _container(win, base)))
+        else:
+            check(f"{tag}: reported not-in-a-match, naming MATCH_ACTIVE",
+                  lambda g: isinstance(g, str) and g.startswith('NotInAMatch')
+                  and 'MATCH_ACTIVE' in g,
+                  lambda: Snapshot(tag, _container(win, base)))
+
+        # (2) RELOCATED: the constant must not be load-bearing. Same bytes, different
+        #     offset -- the signature scan has to find them without the hint.
+        moved = base + 0x4000
+        check(f"{tag}: relocated to 0x{moved:06X} is found by scan",
+              lambda g, m=moved: (isinstance(g, Snapshot) and g.ram == m) or
+              (isinstance(g, str) and g.startswith('NotInAMatch') and 'MATCH_ACTIVE' in g),
+              lambda m=moved: Snapshot(tag, _container(win, m)))
+
+        # (3) MUTANT A: NAV_MAGIC corrupted -> must refuse, naming the anchors searched.
+        mA = bytearray(win)
+        mA[WRAM_DELTA + 0x149] ^= 0xFF
+        check(f"{tag}: MUTANT nav_magic -> refused, names the search",
+              lambda g: isinstance(g, str) and g.startswith('NotASaveState')
+              and 'no driver signature found' in g and 'NAV_MAGIC' in g
+              and 'candidate offsets' in g,
+              lambda: Snapshot(tag, _container(bytes(mA), base)))
+
+        # (4) MUTANT B: a range anchor pushed out of range -> same refusal.
+        mB = bytearray(win)
+        mB[WRAM_DELTA + 0x160] = 0x77            # TURN, legal range 0..2
+        check(f"{tag}: MUTANT turn_out_of_range -> refused",
+              lambda g: isinstance(g, str) and g.startswith('NotASaveState')
+              and 'no driver signature found' in g,
+              lambda: Snapshot(tag, _container(bytes(mB), base)))
+
+        # (5) MUTANT C: MATCH_ACTIVE cleared on an in-match fixture -> the message must
+        #     switch to not-in-a-match and STILL report the located base. This is the
+        #     mutant that proves the two failure modes are actually distinguished, which
+        #     is exactly what the old code got wrong in the other direction.
+        if in_match:
+            mC = bytearray(win)
+            mC[WRAM_DELTA + 0x164] = 0
+            check(f"{tag}: MUTANT match_inactive -> not-in-a-match, base still located",
+                  lambda g: isinstance(g, str) and g.startswith('NotInAMatch')
+                  and 'MATCH_ACTIVE' in g and '0x%06X' % (base + WRAM_DELTA) in g,
+                  lambda: Snapshot(tag, _container(bytes(mC), base)))
+
+        # (6) MUTANT D: two copies of the signature -> ambiguity must be refused, not
+        #     silently resolved by picking the first.
+        dup = _container(win, base)
+        dup = bytearray(dup)
+        dup[base + 0x20000:base + 0x20000 + WINDOW] = win
+        check(f"{tag}: MUTANT duplicate signature -> refused as ambiguous",
+              lambda g: isinstance(g, str) and 'AMBIGUOUS' in g,
+              lambda: Snapshot(tag, bytes(dup)))
+
+    # (7) NOT-INERT / population check: the widened tile set must actually BIND. A fixture
+    #     corpus that never contains a clear-animation or text-box tile would pass every
+    #     case above vacuously while the real defect walked free.
+    seen = set()
+    for _e, win in _fixtures():
+        for b in win[0x400:0x480] + win[0x500:0x580]:
+            if 0xB0 <= b <= 0xBF:
+                seen.add('clear-anim $Bx')
+            if b in (0x8D, 0x8F, 0xEF):
+                seen.add('text-box')
+    check("fixtures exercise the tiles the old LEGAL_TILE set omitted",
+          lambda g: 'clear-anim $Bx' in g, lambda: seen)
+
+    if verbose:
+        for ok, name, got in cases:
+            print(f"  [{'PASS' if ok else 'FAIL'}] {name}")
+            if not ok:
+                print(f"         got: {got}")
+        print(f"\n  {len(cases) - len(failures)}/{len(cases)} passed")
+    return 0 if not failures else 1
+
+
 def main(argv):
+    if '--selftest' in argv:
+        return selftest()
     as_json = '--json' in argv
     paths = [a for a in argv if not a.startswith('--')]
     if not paths:
         print(__doc__)
-        print("usage: ss_decode.py [--json] <snapshot.ss> [...]", file=sys.stderr)
+        print("usage: ss_decode.py [--json] <snapshot.ss> [...]\n"
+              "       ss_decode.py --selftest", file=sys.stderr)
         return 64
     rc = 0
     for p in paths:
         try:
             report(p, as_json)
+        except NotInAMatch as e:
+            # A live ring captures menu and title frames as a matter of course. Saying
+            # "REFUSING TO DECODE" here would make routine, expected coverage look like an
+            # instrument outage -- which is how this decoder came to be ignored.
+            print(f"SKIP {p}: {e}", file=sys.stderr)
         except NotASaveState as e:
             print(f"REFUSING TO DECODE {p}: {e}", file=sys.stderr)
             rc = 65

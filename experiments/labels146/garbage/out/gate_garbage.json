@@ -1,0 +1,69 @@
+{
+ "verdicts": [
+  [
+   "m1_counter",
+   true,
+   "class=counter want=counter"
+  ],
+  [
+   "m2_settle",
+   true,
+   "class=settle want=settle"
+  ],
+  [
+   "m3_links",
+   true,
+   "class=links want=links"
+  ],
+  [
+   "m4_mode",
+   true,
+   "class=mode want=mode"
+  ],
+  [
+   "m5_pills",
+   true,
+   "class=pills want=pills"
+  ],
+  [
+   "G-CRN",
+   true,
+   "cands=15"
+  ],
+  [
+   "G-replay_30000",
+   true,
+   "res=topout want=topout"
+  ],
+  [
+   "G-replay_30004",
+   true,
+   "res=topout want=topout"
+  ],
+  [
+   "M-stale",
+   true,
+   "gate aborted as required"
+  ],
+  [
+   "G-pressure-live_fired",
+   true,
+   "injections=[1400, 1207, 2567]"
+  ],
+  [
+   "G-pressure-live_binding",
+   true,
+   "means=[(6.93, 8.0), (1.73, 4.57), (7.37, 8.0)]"
+  ],
+  [
+   "G-pressure-live_direction",
+   true,
+   "severed >= injected everywhere"
+  ]
+ ],
+ "replay_seeds": [
+  30000,
+  30004
+ ],
+ "ref_state": "A_14293_ship_s006"
+}

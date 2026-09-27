@@ -1,0 +1,3 @@
+  k 5 579.2833 landing ['H', 7, 5, [1, 2]] miss/extra ([(7, 5, 1, 0), (7, 6, 2, 0), (8, 5, 1, 0), (10, 3, 1, 0)], [(4, 0, 1), (5, 0, 1), (9, 5, 1), (9, 7, 2), (10, 5, 1), (10, 6, 2)])
+  k 37 646.3833 landing ['H', 9, 0, [2, 3]] miss/extra ([], [(11, 3, 3), (11, 4, 1)])
+{"file": "/home/struktured/projects/dr-mario-h16-wt/tmp/couch_forensics/raw_m25_G3.jsonl", "steps": 45, "exact": 40, "garbage_explained": 3, "unexplained": 2, "unexplained_k": [5, 37]}

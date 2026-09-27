@@ -1,0 +1,46 @@
+GATE (b) cells (n, tap-out, tap<=100, clear, garbage cells/eligible pill):
+  base owner0804    n=600  tap  23.8%  tap<=100  4.3%  clear  76.2%  garb/pill 0.421
+  base owner202609  n=600  tap  21.8%  tap<=100  3.8%  clear  78.2%  garb/pill 0.321  volleys/game 24.6
+  base striker5     n=600  tap  25.0%  tap<=100  4.2%  clear  75.0%  garb/pill 0.415  releases/game 22.2 height-triggered 95%  undelivered 0.8% of earned
+  base striker6     n=600  tap  25.0%  tap<=100  4.8%  clear  75.0%  garb/pill 0.414  releases/game 19.9 height-triggered 90%  undelivered 1.3% of earned
+  base striker8     n=600  tap  24.3%  tap<=100  4.2%  clear  75.7%  garb/pill 0.405  releases/game 16.0 height-triggered 69%  undelivered 2.3% of earned
+  hsv  owner0804    n=600  tap  23.0%  tap<=100  3.3%  clear  77.0%  garb/pill 0.423
+  hsv  owner202609  n=600  tap  21.8%  tap<=100  2.0%  clear  78.2%  garb/pill 0.319  volleys/game 27.2
+  hsv  striker5     n=600  tap  24.5%  tap<=100  4.7%  clear  75.5%  garb/pill 0.416  releases/game 23.5 height-triggered 95%  undelivered 0.8% of earned
+  hsv  striker6     n=600  tap  24.2%  tap<=100  3.2%  clear  75.8%  garb/pill 0.413  releases/game 22.0 height-triggered 91%  undelivered 1.1% of earned
+  hsv  striker8     n=600  tap  25.5%  tap<=100  3.7%  clear  74.5%  garb/pill 0.403  releases/game 16.7 height-triggered 69%  undelivered 2.0% of earned
+
+A. OPPONENT EFFECT vs the COMMON BLIND BASELINE (OWNER-0804), per build, paired:
+  base owner202609  n=600  tap -2.00 [-6.50, +2.50]  tap100 -0.50 [-2.67, +1.50]  clear +2.00 [-2.50, +6.50]
+  base striker5     n=600  tap +1.17 [-3.33, +5.50]  tap100 -0.17 [-2.17, +1.83]  clear -1.17 [-5.50, +3.33]
+  base striker6     n=600  tap +1.17 [-3.50, +5.83]  tap100 +0.50 [-1.83, +2.83]  clear -1.17 [-5.83, +3.50]
+  base striker8     n=600  tap +0.50 [-3.83, +4.83]  tap100 -0.17 [-2.33, +2.00]  clear -0.50 [-4.83, +3.83]
+  hsv  owner202609  n=600  tap -1.17 [-5.50, +3.17]  tap100 -1.33 [-3.00, +0.33]  clear +1.17 [-3.17, +5.50]
+  hsv  striker5     n=600  tap +1.50 [-2.83, +5.83]  tap100 +1.33 [-0.67, +3.33]  clear -1.50 [-5.83, +2.83]
+  hsv  striker6     n=600  tap +1.17 [-3.17, +5.50]  tap100 -0.17 [-1.83, +1.50]  clear -1.17 [-5.50, +3.17]
+  hsv  striker8     n=600  tap +2.50 [-1.83, +6.83]  tap100 +0.33 [-1.50, +2.33]  clear -2.50 [-6.83, +1.83]
+
+B. hsv - base PER OPPONENT, paired:
+  owner0804    n=600  tap -0.83 [-5.17, +3.50]  tap100 -1.00 [-3.17, +1.00]  clear +0.83 [-3.50, +5.17]
+  owner202609  n=600  tap +0.00 [-4.33, +4.33]  tap100 -1.83 [-3.50, -0.17]  clear +0.00 [-4.33, +4.33]
+  striker5     n=600  tap -0.50 [-5.00, +3.67]  tap100 +0.50 [-1.67, +2.83]  clear +0.50 [-3.67, +5.00]
+  striker6     n=600  tap -0.83 [-5.50, +3.67]  tap100 -1.67 [-4.00, +0.67]  clear +0.83 [-3.67, +5.50]
+  striker8     n=600  tap +1.17 [-3.50, +5.67]  tap100 -0.50 [-2.67, +1.83]  clear -1.17 [-5.67, +3.50]
+
+C. LULU (the RACER): vs_race lam 2, win rate by pace median M and damage delta:
+  n=600 paired;  race-row tap-out: base 9.2%  hsv 12.7%  clear: base 90.7%  hsv 87.3%
+  race-row tap-out hsv-base +3.50 [+0.33, +6.83]
+  delta 2.65 M   140s  base  88.7%  hsv  84.8%  hsv-base -3.83 [-7.50, -0.50]
+  delta 2.65 M   160s  base  89.5%  hsv  85.8%  hsv-base -3.67 [-7.00, -0.33]
+  delta 2.65 M   177s  base  89.8%  hsv  86.7%  hsv-base -3.17 [-6.50, +0.17]
+  delta 2.00 M   140s  base  80.8%  hsv  78.8%  hsv-base -2.00 [-6.17, +2.00]
+  delta 2.00 M   160s  base  85.2%  hsv  82.2%  hsv-base -3.00 [-6.83, +0.67]
+  delta 2.00 M   177s  base  87.7%  hsv  83.7%  hsv-base -4.00 [-7.67, -0.50]
+  [descriptive M sweep, delta 2.65] base: M80:64%  M100:78%  M120:85%  M140:89%  M160:90%  M177:90%  -> bot win >= 50% from M = 70 s
+  [descriptive M sweep, delta 2.65] hsv: M80:62%  M100:76%  M120:82%  M140:85%  M160:86%  M177:87%  -> bot win >= 50% from M = 75 s
+  reference (banked STEER5d lam 6, same seeds n=600): M140 base 64.3% hsv 64.5%  M160 base 66.5% hsv 67.7%  M177 base 67.0% hsv 68.2%
+
+PRE-DECLARED FLAGS:
+  hsv FLIPS vs LULU at M140 delta2.65: -3.83 [-7.50, -0.50]
+  hsv FLIPS vs LULU at M160 delta2.65: -3.67 [-7.00, -0.33]
+  hsv FLIPS vs LULU at M177 delta2.0: -4.00 [-7.67, -0.50]

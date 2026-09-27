@@ -1,0 +1,12 @@
+fw_winner 6.0 40134 50 2 /root/drm/l15/fw_winner_L15_0.jsonl 15
+fw_winner 6.0 40234 50 2 /root/drm/l15/fw_winner_L15_1.jsonl 15
+fw_winner 6.0 40334 50 2 /root/drm/l15/fw_winner_L15_2.jsonl 15
+fw_winner 6.0 40434 50 2 /root/drm/l15/fw_winner_L15_3.jsonl 15
+fw540 6.0 40134 50 2 /root/drm/l15/fw540_L15_0.jsonl 15
+fw540 6.0 40234 50 2 /root/drm/l15/fw540_L15_1.jsonl 15
+fw540 6.0 40334 50 2 /root/drm/l15/fw540_L15_2.jsonl 15
+fw540 6.0 40434 50 2 /root/drm/l15/fw540_L15_3.jsonl 15
+fw720 6.0 40134 50 2 /root/drm/l15/fw720_L15_0.jsonl 15
+fw720 6.0 40234 50 2 /root/drm/l15/fw720_L15_1.jsonl 15
+fw720 6.0 40334 50 2 /root/drm/l15/fw720_L15_2.jsonl 15
+fw720 6.0 40434 50 2 /root/drm/l15/fw720_L15_3.jsonl 15

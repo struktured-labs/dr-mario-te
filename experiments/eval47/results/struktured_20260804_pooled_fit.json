@@ -1,0 +1,83 @@
+{
+  "n_matches": 4,
+  "n_volleys": 61,
+  "n_clears": 188,
+  "volleys_by_match_side": {
+    "m1/P1": 12,
+    "m1/P2": 10,
+    "m2/P1": 4,
+    "m2/P2": 3,
+    "m3/P1": 2,
+    "m3/P2": 5,
+    "m4/P1": 15,
+    "m4/P2": 10
+  },
+  "clears_by_match_side": {
+    "m1/P1": 22,
+    "m1/P2": 32,
+    "m2/P1": 8,
+    "m2/P2": 12,
+    "m3/P1": 16,
+    "m3/P2": 10,
+    "m4/P1": 43,
+    "m4/P2": 45
+  },
+  "volley_size_hist": {
+    "2": 42,
+    "3": 9,
+    "4": 7,
+    "5": 2,
+    "6": 1
+  },
+  "volley_size_mean": 2.540983606557377,
+  "volley_size_ci95": [
+    2.3278688524590163,
+    2.7868852459016393
+  ],
+  "inter_volley_gap_mean_s": 22.69811320754717,
+  "inter_volley_gap_ci95_s": [
+    17.18867924528302,
+    28.547169811320753
+  ],
+  "inter_volley_gap_n": 53,
+  "p_volley_within_k_by_clear_size": {
+    "4-6": {
+      "p": 0.32051282051282054,
+      "n": 156,
+      "hits": 50,
+      "ci95": [
+        0.25,
+        0.3974358974358974
+      ]
+    },
+    "7-10": {
+      "p": 0.7407407407407407,
+      "n": 27,
+      "hits": 20,
+      "ci95": [
+        0.5555555555555556,
+        0.8888888888888888
+      ]
+    },
+    "11-999": {
+      "p": 0.4,
+      "n": 5,
+      "hits": 2,
+      "ci95": [
+        0,
+        0.8
+      ]
+    }
+  },
+  "k_seconds": 5.0,
+  "lock_crosscheck_annotated_of_total": "33/61",
+  "_provenance": {
+    "source": "bursty_model.fit_struktured_20260804()",
+    "module": "/home/struktured/projects/dr-mario-qa-wt/experiments/eval47/bursty_model.py",
+    "film_review_dir": "/home/struktured/projects/dr_mario_rl/tmp/film_review_20260804",
+    "python": "/home/struktured/projects/dr_mario_rl/tmp/venv/bin/python",
+    "elapsed_s": 57.7,
+    "generated_by": "tmp/repro_struktured_fit.py",
+    "scope": "POOLED (both sides' events; see STYLE_ENSEMBLE_V1.md 6a)"
+  }
+}

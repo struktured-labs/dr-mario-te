@@ -1,0 +1,48 @@
+=== PREREG_ROTDIR_V2 verdict (win orient, copro 1) ===
+
+per-seed (off -> on):
+  4001:   81.63(p109 A 392/B  0 w0)  ->    79.91(p116 A   0/B148 w0)   d=  -1.73
+  4002:   80.57(p107 A 405/B  0 w0)  ->    76.93(p112 A   0/B113 w0)   d=  -3.64
+  4003:   80.05(p104 A 430/B  0 w0)  ->    77.75(p111 A   0/B111 w0)   d=  -2.30
+  4004:   78.40(p110 A 367/B  0 w0)  ->    77.50(p111 A   0/B112 w0)   d=  -0.90
+  4005:   80.42(p107 A 414/B  0 w0)  ->    77.53(p117 A   0/B172 w0)   d=  -2.89
+  4006:   84.70(p110 A 391/B  0 w0)  ->    79.53(p112 A   0/B143 w0)   d=  -5.17
+  4007:   80.87(p110 A 420/B  0 w0)  ->    77.97(p114 A   0/B115 w0)   d=  -2.90
+  4008:   85.99(p106 A 365/B  0 w0)  ->    86.14(p111 A   0/B112 w0)   d=  +0.15
+  4009:   79.09(p109 A 435/B  0 w0)  ->    79.23(p110 A   0/B111 w0)   d=  +0.14
+  4010:   79.73(p108 A 365/B  0 w0)  ->    77.33(p115 A   0/B116 w0)   d=  -2.40
+  4011:   80.56(p107 A 349/B  0 w0)  ->    78.96(p113 A   0/B115 w0)   d=  -1.60
+  4012:   78.77(p113 A 398/B  0 w0)  ->    80.77(p115 A   0/B146 w0)   d=  +2.00
+  4013:   82.36(p108 A 376/B  0 w0)  ->    78.40(p112 A   0/B112 w0)   d=  -3.96
+  4014:   81.41(p106 A 386/B  0 w0)  ->    81.42(p113 A   0/B126 w0)   d=  +0.02
+  4015:   79.10(p105 A 409/B  0 w0)  ->    76.41(p113 A   0/B113 w0)   d=  -2.69
+  4016:   81.65(p109 A 380/B  0 w0)  ->    77.91(p114 A   0/B115 w0)   d=  -3.74
+
+  dropped 0/16 pairs (a wedge in either arm): none
+  n=16 pairs   mean(ON-OFF) = -1.976 f/pill   95% CI [-2.974, -0.978]
+  P1 (mean <= -1.5 and CI upper < 0): PASS
+  P3: PASS
+  => REAL FIX: PASS
+
+  EXPLORATORY (not a claim, see prereg): #131 wedges  OFF 0/16   ON 0/16
+
+=== mutant kill sheet (each must FAIL at least one half) ===
+  --- m1
+      win half     : win arm mean +31.47 f/pill over 3 pairs   -> FAIL
+      control half : control (delta-3) arm mean +30.20 f/pill over 3 pairs   -> FAIL
+      => m1: KILLED
+  --- m2b
+      win half     : win arm mean -2.79 f/pill over 3 pairs   -> pass
+      control half : control (delta-3) arm mean +2.07 f/pill over 3 pairs   -> FAIL
+      => m2b: KILLED
+  --- m3b
+      win half     : win arm mean +28.61 f/pill over 3 pairs   -> FAIL
+      control half : control (delta-3) arm mean +0.00 f/pill over 3 pairs   -> pass
+      => m3b: KILLED
+  --- m4
+      win half     : win arm mean +0.00 f/pill over 3 pairs   -> FAIL
+      control half : control (delta-3) arm mean +0.00 f/pill over 3 pairs   -> pass
+      => m4: KILLED
+
+all 4 mutants killed
+exit 0

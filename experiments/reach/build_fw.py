@@ -12,6 +12,12 @@ os.environ.update({"DRSTRAND": "20", "DRCHAIN": chain, "DRCOPRO_ARM": "1", "DRFI
 for m in ("test_search_d3", "tuck_v3", "build_copro_d3"):
     sys.modules.pop(m, None)
 sys.path.insert(0, COPRO)
+# Make this tree authoritative BEFORE anything is imported (#127). Installing it later (inside
+# build_copro_d3) re-imports helpers that test_search_d3 already bound, splitting module state and
+# changing the emitted firmware (d7d8293a instead of the shipped 77ec742c). Installed first, the
+# build is self-contained and reproduces 77ec742c with zero modules from outside the tree.
+import copro_bootstrap
+copro_bootstrap.install(ROOT)
 def pin(name, path):
     spec = importlib.util.spec_from_file_location(name, path); mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod; spec.loader.exec_module(mod); return mod
