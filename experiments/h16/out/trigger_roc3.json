@@ -1,0 +1,66 @@
+{
+ "width_coverage": {
+  "3": 0.4051,
+  "5": 0.6095,
+  "8": 0.7591,
+  "12": 0.8577,
+  "99": 1.0
+ },
+ "procedures": {
+  "P_full8": {
+   "recovered_of_claims": 1.0,
+   "good_choice_of_recovered": 1.0,
+   "false_override_healthy": 0.0,
+   "false_override_nonclaim": 0.0,
+   "forks_per_fire": 176.0
+  },
+  "P_m5": {
+   "recovered_of_claims": 0.8467,
+   "good_choice_of_recovered": 0.8621,
+   "false_override_healthy": 0.0,
+   "false_override_nonclaim": 0.0813,
+   "forks_per_fire": 110.0
+  },
+  "P_scr": {
+   "recovered_of_claims": 0.5547,
+   "good_choice_of_recovered": 1.0,
+   "false_override_healthy": 0.0,
+   "false_override_nonclaim": 0.0019,
+   "forks_per_fire": 80.0
+  }
+ },
+ "budget": {
+  "13": {
+   "1": {
+    "mean_adj_per_game": 29.01,
+    "p90": 72.0
+   },
+   "5": {
+    "mean_adj_per_game": 8.34,
+    "p90": 19.0
+   },
+   "8": {
+    "mean_adj_per_game": 6.32,
+    "p90": 14.0
+   }
+  },
+  "14": {
+   "1": {
+    "mean_adj_per_game": 12.28,
+    "p90": 33.0
+   },
+   "5": {
+    "mean_adj_per_game": 3.57,
+    "p90": 9.0
+   },
+   "8": {
+    "mean_adj_per_game": 2.75,
+    "p90": 7.0
+   }
+  }
+ },
+ "opportunity": {
+  "13": 0.8125,
+  "14": 0.5938
+ }
+}

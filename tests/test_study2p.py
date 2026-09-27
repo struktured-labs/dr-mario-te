@@ -3,11 +3,23 @@
 evac'd base-ROM tail was supposed to draw (task #39; probe-proven defect signature:
 P1 preview frozen at 1P position Y=$45 X=$BE/$C6, P2 slots never written, STUDY unlifted).
 
+PAUSE GATE (2026-08-08 field-defect fix): the block draws ONLY when the S2P_TTL
+play-frame heartbeat has drained (= a mode-4 blocking wait, i.e. the pause loop) with
+MATCH_ACTIVE set and no board hold; on live play frames (TTL>0) it BLANKS slots 32-40
+(Y=$FF) and decrements the TTL. The old unconditional draw is the OAM leak the owner
+saw on the Pocket ("flickers + STUDY on top as if start pressed").
+
 Asserts on the REAL emitted bytes via py65:
-  A  2P/VS hook -> slots 37-40 carry the 2P layout (Y=$33, P1 X=$38/$40, P2 X=$B8/$C0,
-     tiles $60|color / $70|color from the LIVE preview bytes) + STUDY letters at Y=$08
-  B  1P hook ($0727=1) -> none of those slots written (branch not taken)
+  A  paused 2P/VS hook (TTL=0, MATCH_ACTIVE=1) -> slots 37-40 carry the 2P layout
+     (Y=$33, P1 X=$38/$40, P2 X=$B8/$C0, tiles from the LIVE preview bytes) + STUDY Y=$08
+  B  paused 1P hook ($0727=1) -> 1P layout, P2 slots untouched
   C  flag-off emission deterministic and != flag-on (the flag is real)
+  D  DEFECT SHAPE, live play hook (TTL topped up as the $D2CC heartbeat leaves it):
+     NO letter tiles written, slots parked at Y=$FF, TTL decremented -- the exact
+     hook state that used to leak now provably blanks
+  E  board-hold hook (DRHOLDBOARD=1, HOLD_ACTIVE=1, TTL drained) -> blanked, no STUDY
+     over the held board
+  F  first play hook of a match (MATCH_ACTIVE=0, TTL=0) -> blanked (heartbeat not started)
 
     tests/test_study2p.py            # asserts; exit 1 on failure
 """
@@ -24,7 +36,8 @@ sys.path.insert(0, REPO)
 BASE = 0x8000
 SENT = 0x4FF2
 _FLAGS = ("DRNOFREEZE", "DRHUMAN", "DRPOCKET", "DRRECOMMIT_NOFREEZE", "DRNAVDWELL",
-          "DRPENDBOUND", "DRCOLDINIT", "DRSTUDYCOUNTS", "DRSTUDY2P", "DRNAVESC")
+          "DRPENDBOUND", "DRCOLDINIT", "DRSTUDYCOUNTS", "DRSTUDY2P", "DRNAVESC",
+          "DRHOLDBOARD")
 _seq = [0]
 
 
@@ -42,12 +55,18 @@ def build(flags):
     return P, bytes(unit1), {k: BASE + v for k, v in labels.items()}
 
 
-def one_hook(unit1, labels, players, pv1=(1, 2), pv2=(0, 2)):
+def one_hook(unit1, labels, players, pv1=(1, 2), pv2=(0, 2),
+             ttl=0, match_active=1, hold_active=0):
     m = MPU()
     m.memory[BASE:BASE + len(unit1)] = unit1
     m.memory[0x0046] = 4                      # play mode (pause keeps it 4)
     m.memory[0x0727] = players
     m.memory[0x04] = 1
+    m.memory[0x6149] = 0xA5                   # NAV_MAGIC: steady-state (power-on init done),
+                                              # else the init clears MATCH_ACTIVE this hook
+    m.memory[0x61B0] = ttl                    # S2P_TTL: 0 = heartbeat drained (paused)
+    m.memory[0x6164] = match_active           # MATCH_ACTIVE
+    m.memory[0x6195] = hold_active            # HOLD_ACTIVE (DRHOLDBOARD builds)
     m.memory[0x031A], m.memory[0x031B] = pv1  # P1 next-pill colors
     m.memory[0x039A], m.memory[0x039B] = pv2  # P2 next-pill colors
     m.memory[0x0306] = 15                     # spawn row: no lock edge
@@ -98,9 +117,10 @@ def main():
     untouched = [0x029C, 0x029D, 0x02A0, 0x02A1]                       # P2 slots only
     leaked = {hex(a): hex(m1.memory[a]) for a in untouched if m1.memory[a] != 0}
     assert not leaked, "1P hook wrote P2 slots: %r" % leaked
-    # B2: the EVAC part1 blob is a bare RTS (v3 -- NOTHING left to race the driver)
-    assert P.STUDY_BLOB_EVAC[0] == 0x60 and set(P.STUDY_BLOB_EVAC[1:]) == {0xFF}, \
-        "EVAC part1 is not the bare-RTS v3 form"
+    # B2: the EVAC part1 blob is the v4 HEARTBEAT (LDA #N; STA S2P_TTL; RTS)
+    want = bytes([0xA9, P.S2P_TTL_N, 0x8D, P.S2P_TTL & 0xFF, P.S2P_TTL >> 8, 0x60])
+    assert P.STUDY_BLOB_EVAC[:6] == want and set(P.STUDY_BLOB_EVAC[6:]) == {0xFF}, \
+        "EVAC part1 is not the v4 heartbeat form"
     assert len(P.STUDY_BLOB_EVAC) == 52, "EVAC blob must fill the audited 52B run"
 
     # C: flag-off identity
@@ -109,7 +129,38 @@ def main():
     assert off1 == off2, "flag-off emission not deterministic"
     assert off1 != unit1, "DRSTUDY2P=1 changed nothing"
 
-    print("STUDY2P gate: A 2P layout OK, B 1P untouched OK, C flag-off identity OK")
+    # D: DEFECT SHAPE -- a live play hook (heartbeat topped up, exactly what $D2CC leaves
+    # behind every unpaused frame). The pre-fix block drew STUDY here (the field leak);
+    # the fix must blank instead. Slots parked offscreen, letter tiles untouched, TTL DEC'd.
+    md = one_hook(unit1, labels, players=2, ttl=P.S2P_TTL_N, match_active=1)
+    ys = [0x0200 + s_ * 4 for s_ in range(32, 41)]
+    off = {hex(a): hex(md.memory[a]) for a in ys if md.memory[a] != 0xFF}
+    assert not off, "live-play hook left slots visible (the leak): %r" % off
+    tiles_untouched = [0x0281, 0x0285, 0x0289, 0x028D, 0x0291, 0x0295, 0x0299, 0x029D, 0x02A1]
+    drawn = {hex(a): hex(md.memory[a]) for a in tiles_untouched if md.memory[a] != 0}
+    assert not drawn, "live-play hook wrote STUDY/preview tiles (the leak): %r" % drawn
+    assert md.memory[0x61B0] == P.S2P_TTL_N - 1, "live-play hook must DEC the TTL"
+
+    # E: board-hold (STAGE CLEAR / GAME OVER wait, mode still 4, heartbeat drained):
+    # STUDY must NOT be drawn over the held board.
+    Ph, unit1h, labelsh = build(dict(human, DRSTUDY2P="1", DRHOLDBOARD="1"))
+    mh = one_hook(unit1h, labelsh, players=2, ttl=0, match_active=1, hold_active=1)
+    offh = {hex(a): hex(mh.memory[a]) for a in ys if mh.memory[a] != 0xFF}
+    assert not offh, "hold hook left slots visible: %r" % offh
+    assert mh.memory[0x0281] == 0, "hold hook drew STUDY over the held board"
+    # E2: same build, genuine pause during a live match -> still draws
+    mh2 = one_hook(unit1h, labelsh, players=2, ttl=0, match_active=1, hold_active=0)
+    assert mh2.memory[0x0281] == 0x0D and mh2.memory[0x0280] == Ph.STUDY_2P_Y, \
+        "DRHOLDBOARD build lost the pause draw"
+
+    # F: first play hook of a match (MATCH_ACTIVE still 0, TTL boot-cleared): blank,
+    # not a one-hook STUDY flash at round start.
+    mf = one_hook(unit1, labels, players=2, ttl=0, match_active=0)
+    offf = {hex(a): hex(mf.memory[a]) for a in ys if mf.memory[a] != 0xFF}
+    assert not offf, "match-start hook left slots visible: %r" % offf
+
+    print("STUDY2P pause gate: A 2P pause draw OK, B 1P OK, C flag-off identity OK, "
+          "D live-play blanks (defect shape) OK, E hold blanks OK, F match-start blanks OK")
 
 
 if __name__ == "__main__":

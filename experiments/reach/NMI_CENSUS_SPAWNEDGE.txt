@@ -1,0 +1,46 @@
+# NMI census, DRSPAWNEDGE=1 vs shipped TAP carts
+== couch (shipped TAP)
+  steady_play      hook worst =  12564 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  spawn_edge_p2    hook worst =  15308 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  release_edge     hook worst =  12564 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  p1_search        hook worst =  12564 cyc  (absent labels skipped: h1_start)
+  pp_edge          hook worst =   9323 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_idle          hook worst =   6599 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_spawn         hook worst =   9343 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph1           hook worst =  12564 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph2           hook worst =  12548 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph3           hook worst =  12553 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph4           hook worst =  12000 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  ALL_PATHS        hook worst =  15486 cyc
+  SAME-FRAME PAIR (2 hooks) worst = 27872 cyc   [max(spike) + steady_play]
+  WORST ADMISSIBLE FRAME = 27452 of 29780 (92.2%), margin 2328 cyc [pp_ph1 + pp_ph2]
+== couch DRSPAWNEDGE=1
+  steady_play      hook worst =  12617 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  spawn_edge_p2    hook worst =  15362 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  release_edge     hook worst =  12617 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  p1_search        hook worst =  12617 cyc  (absent labels skipped: h1_start)
+  pp_edge          hook worst =   9368 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_idle          hook worst =   6644 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_spawn         hook worst =   9389 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph1           hook worst =  12617 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph2           hook worst =  12593 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph3           hook worst =  12598 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph4           hook worst =  12045 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  ALL_PATHS        hook worst =  15540 cyc
+  SAME-FRAME PAIR (2 hooks) worst = 27979 cyc   [max(spike) + steady_play]
+  WORST ADMISSIBLE FRAME = 27550 of 29780 (92.5%), margin 2230 cyc [pp_ph1 + pp_ph2]
+== cvc (shipped TAP)
+  steady_play      hook worst =   5457 cyc  (absent labels skipped: pt_edge,h1_start,do_init)
+  spawn_edge_p2    hook worst =   7588 cyc  (absent labels skipped: pt_edge,h1_start,do_init)
+  release_edge     hook worst =   5457 cyc  (absent labels skipped: h1_start,do_init)
+  p1_search        hook worst =  95490 cyc  (absent labels skipped: pt_edge,h1_start,do_init)
+  ALL_PATHS        hook worst =  97621 cyc
+  SAME-FRAME PAIR (2 hooks) worst = 103078 cyc   [p1_search + spawn_edge_p2]
+== cvc DRSPAWNEDGE=1
+  steady_play      hook worst =   5499 cyc  (absent labels skipped: pt_edge,h1_start,do_init)
+  spawn_edge_p2    hook worst =   7630 cyc  (absent labels skipped: pt_edge,h1_start,do_init)
+  release_edge     hook worst =   5499 cyc  (absent labels skipped: h1_start,do_init)
+  p1_search        hook worst =  95532 cyc  (absent labels skipped: pt_edge,h1_start,do_init)
+  ALL_PATHS        hook worst =  97663 cyc
+  SAME-FRAME PAIR (2 hooks) worst = 103162 cyc   [p1_search + spawn_edge_p2]
+couch OK lines (DRSPAWNEDGE=1): 14

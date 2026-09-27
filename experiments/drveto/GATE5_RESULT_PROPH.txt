@@ -1,0 +1,12 @@
+  NEG mode0         : PROPH_DIR=0 and proph1==proph0 OK
+  NEG mode1         : PROPH_DIR=0 and proph1==proph0 OK
+  NEG mode2         : PROPH_DIR=0 and proph1==proph0 OK
+  NEG mode3         : PROPH_DIR=0 and proph1==proph0 OK
+  NEG mode7         : PROPH_DIR=0 and proph1==proph0 OK
+  NEG mode8         : PROPH_DIR=0 and proph1==proph0 OK
+  NEG mode4_p04_0   : PROPH_DIR=0 and proph1==proph0 OK
+  NEG mode4_fcclear : PROPH_DIR=0 and proph1==proph0 OK
+  POS mode4_ai: PROPH_DIR=0x02 F6/hook=[2, 2, 0, 0] F8/press=[0, 0] OK
+  CTL proph0 mode4: no-button state, PROPH_DIR untouched OK
+
+GATE5: PASS

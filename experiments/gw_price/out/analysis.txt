@@ -1,0 +1,120 @@
+{
+ "verdict": "VOID",
+ "why": "only 8 triggered seeds (<10)",
+ "summary": {
+  "void_reason": "only 8 triggered seeds (<10)",
+  "ordering_green": false,
+  "d_vc_mean": 0.0,
+  "d_vc_ci_lo": 0.0,
+  "d_vc_ci_hi": 0.0,
+  "proj_pp_point": 0.0,
+  "proj_pp_hi": 0.0
+ }
+}
+{
+ "arms": {
+  "deepen": {
+   "n_seeds": 32,
+   "n_diverged": 8,
+   "d_vc_mean": 0.0,
+   "d_vc_ci": [
+    0.0,
+    0.0
+   ],
+   "d_won_mean": 0.0,
+   "d_da_mean": 0.0,
+   "d_pills_mean": -15.5
+  },
+  "rand": {
+   "n_seeds": 16,
+   "n_diverged": 4,
+   "d_vc_mean": 0.0,
+   "d_vc_ci": [
+    0.0,
+    0.0
+   ],
+   "d_won_mean": 0.0,
+   "d_da_mean": 0.0,
+   "d_pills_mean": 8.25
+  },
+  "worst": {
+   "n_seeds": 16,
+   "n_diverged": 4,
+   "d_vc_mean": 0.0,
+   "d_vc_ci": [
+    0.0,
+    0.0
+   ],
+   "d_won_mean": 0.0,
+   "d_da_mean": 0.0,
+   "d_pills_mean": -49.25
+  }
+ },
+ "ordering": {
+  "green": false,
+  "worst": 0.0,
+  "rand": 0.0,
+  "worst_ci": [
+   0.0,
+   0.0
+  ]
+ },
+ "strata": {
+  "h<=7": {
+   "n": 7,
+   "d_vc_mean": 0.0,
+   "d_vc_ci": [
+    0.0,
+    0.0
+   ]
+  },
+  "h8-10": {
+   "n": 1,
+   "d_vc_mean": 0.0,
+   "d_vc_ci": [
+    0.0,
+    0.0
+   ]
+  }
+ },
+ "product": {
+  "h<=7": {
+   "pocket": {
+    "P_complete": 0.87925,
+    "effect": 0.0
+   },
+   "mister": {
+    "P_complete": 0.9986666666666667,
+    "effect": 0.0
+   }
+  },
+  "h8-10": {
+   "pocket": {
+    "P_complete": 0.11666666666666665,
+    "effect": 0.0
+   },
+   "mister": {
+    "P_complete": 0.8497777777777777,
+    "effect": 0.0
+   }
+  }
+ },
+ "mde": {
+  "fires_per_game": 0.293,
+  "p_complete_bar": 0.7839270833333333,
+  "d_won_per_trigger": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "projected_pp_point": 0.0,
+  "projected_pp_ci_hi": 0.0,
+  "mde_pp": 0.84,
+  "h12_games": 9000
+ },
+ "mirror_mismatch": {
+  "n_tie": 113,
+  "n_mm": 6,
+  "rate": 0.05309734513274336
+ }
+}

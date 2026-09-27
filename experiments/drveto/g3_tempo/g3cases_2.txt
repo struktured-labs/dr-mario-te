@@ -1,0 +1,21 @@
+10
+parent_s1A_p2 2 1 1 1 0 0
+ff ff ff ff ff ff ff ff ff ff ff ff 40 41 ff ff ff ff ff ff ff 40 40 40 ff ff ff ff ff 40 41 40 ff ff ff ff ff 41 40 ff ff ff ff ff ff 42 42 42 ff ff ff ff 40 40 40 42 ff ff ff ff 42 41 41 41 ff ff ff ff 40 42 41 40 ff ff ff ff 41 40 ff 42 ff ff ff ff ff ff 40 41 ff ff ff ff 40 42 ff 42 ff 40 ff 40 40 40 ff 42 ff 40 41 42 ff 41 41 42 42 41 41 41 ff 41 42 41 d1 d0 d2 d1 d0 d2 42 42
+parent_s2A_p0 1 0 0 1 0 0
+ff ff ff ff ff ff ff ff ff ff ff ff 40 41 ff ff ff ff ff ff ff 40 40 42 ff ff ff ff ff 40 42 41 ff ff ff ff ff ff ff 41 ff ff ff ff ff 40 42 41 ff ff ff ff 41 42 41 40 ff ff ff ff 42 40 42 41 ff ff ff ff 41 40 42 42 ff ff ff ff ff 40 42 42 ff ff ff ff 40 ff 40 ff ff ff ff ff ff 40 41 41 ff 42 ff 41 40 40 41 42 ff 40 40 42 41 ff 42 42 42 42 41 42 41 41 42 ff d0 d2 d2 d1 d1 d0 41 40
+parent_s3A_p1 0 2 2 2 0 0
+ff ff ff ff ff ff ff ff ff ff ff ff 40 41 ff ff ff ff ff ff ff 40 41 40 ff ff ff ff ff 40 41 41 ff ff ff ff ff 40 ff 42 ff ff ff ff ff 42 42 ff ff ff ff ff 41 40 42 ff ff ff ff ff 42 41 41 41 ff ff ff ff 40 40 40 ff ff ff ff ff 40 ff 41 42 ff ff ff ff 42 41 40 41 ff ff ff ff 40 41 ff 41 ff 42 ff 42 42 42 40 42 ff 40 42 41 41 42 40 41 42 41 40 42 ff 41 41 42 d0 d1 d0 d2 d2 d2 ff 41
+parent_s4A_p2 2 1 1 1 0 0
+ff ff ff ff ff ff ff ff ff ff ff ff 40 41 ff ff ff ff ff ff ff 40 40 40 ff ff ff ff ff 40 41 41 ff ff ff ff ff 42 41 41 ff ff ff ff ff 41 40 42 ff ff ff ff 40 40 ff 41 ff ff ff ff 42 42 42 41 ff ff ff ff 42 41 41 41 ff ff ff ff 41 ff 40 40 ff ff ff ff ff 42 41 40 ff ff ff ff ff 41 ff 41 ff 42 ff 41 ff 42 42 41 ff 41 42 40 40 ff 42 40 40 40 42 40 40 40 41 40 d1 d0 d1 d1 ff d0 d2 40
+g3_p0 1 0 0 1 0 0
+ff ff ff ff ff 41 ff ff ff ff ff 41 ff 41 ff ff ff ff ff 42 ff 42 ff ff ff ff ff 42 40 41 ff ff ff ff ff 41 ff 40 ff ff ff ff ff 41 ff 42 ff ff ff ff ff 42 42 42 ff ff ff ff ff ff 42 41 41 ff ff ff ff ff 41 42 40 40 ff ff ff ff 42 ff 41 42 ff ff ff ff 40 42 40 41 ff ff ff ff 40 ff ff ff ff ff 42 ff 40 ff 41 40 ff ff d0 ff d2 ff d1 40 ff d2 d0 d0 ff ff d2 d2 d0 d2 d2 d0 d1 d2 ff d1
+PC4cap0_p1 0 2 2 2 0 0
+41 41 41 ff ff 41 41 41 42 42 42 ff ff 42 42 42 41 41 41 d0 ff 41 41 41 42 42 42 41 ff 42 42 42 41 41 41 42 d2 41 41 41 42 42 42 41 41 42 42 42 41 41 41 d0 42 41 41 41 42 42 42 41 41 42 42 42 41 41 41 42 d2 41 41 41 42 42 42 41 41 42 42 42 41 41 41 d0 42 41 41 41 42 42 42 41 41 42 42 42 41 41 41 42 d2 41 41 41 42 42 42 41 41 42 42 42 41 41 41 d0 42 41 41 41 42 42 42 41 41 42 42 42
+synth_L3f1_p0 1 0 0 1 0 0
+ff ff ff ff ff ff ff ff ff ff ff 41 ff ff ff ff ff ff ff 42 ff ff ff ff ff ff ff 40 ff ff ff ff ff ff ff 41 ff ff ff ff ff ff ff 42 ff ff ff ff ff ff ff 40 ff ff ff ff ff ff ff 41 ff ff ff ff 42 40 41 42 ff ff ff ff 40 41 42 40 ff ff ff ff 41 42 40 41 ff ff ff ff 42 40 41 42 ff ff ff ff 40 41 42 40 41 ff ff ff 41 42 40 41 42 40 41 42 42 40 41 42 40 41 42 40 d0 d1 42 40 41 42 40 d1
+synth_L3f2_p0 1 0 0 1 0 0
+ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 42 ff ff ff ff ff ff ff 40 ff ff ff ff ff ff ff 41 ff ff ff ff ff ff ff 42 ff ff ff ff ff ff ff 40 ff ff ff ff ff ff ff 41 ff ff ff ff 42 40 41 42 ff ff ff ff 40 41 42 40 ff ff ff ff 41 42 40 41 ff ff ff ff 42 40 41 42 ff ff ff ff 40 41 42 40 41 ff ff ff 41 42 40 41 42 40 41 42 42 40 41 42 40 41 42 40 d0 d1 42 40 41 42 40 d1
+synth_B34f1_p0 1 0 0 1 0 0
+ff ff ff ff ff ff ff ff ff ff ff 41 42 ff ff ff ff ff ff 42 40 ff ff ff ff ff ff 40 41 ff ff ff ff ff ff 41 42 ff ff ff ff ff ff 42 40 ff ff ff ff ff ff 40 41 ff ff ff ff ff ff 41 42 ff ff ff ff ff ff 42 40 ff ff ff ff ff ff 40 41 ff ff ff 41 42 40 41 42 40 41 42 42 40 41 42 40 41 42 40 40 41 42 40 41 42 40 41 41 42 40 41 42 40 41 42 42 40 41 42 40 41 42 40 d0 d1 42 40 41 42 40 d1
+synth_none_p0 1 0 0 1 0 0
+40 41 42 ff ff 42 40 41 41 42 40 41 42 40 41 42 42 40 41 42 40 41 42 40 40 41 42 40 41 42 40 41 41 42 40 41 42 40 41 42 42 40 41 42 40 41 42 40 40 41 42 40 41 42 40 41 41 42 40 41 42 40 41 42 42 40 41 42 40 41 42 40 40 41 42 40 41 42 40 41 41 42 40 41 42 40 41 42 42 40 41 42 40 41 42 40 40 41 42 40 41 42 40 41 41 42 40 41 42 40 41 42 42 40 41 42 40 41 42 40 d0 d1 42 40 41 42 40 d1

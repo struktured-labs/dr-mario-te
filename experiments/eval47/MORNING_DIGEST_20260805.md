@@ -109,12 +109,19 @@ workstreams merged); film-review scorecard + quantitative dossier rebuild
 ## STABILITY: the wedge is OURS, not the platform's (and not the brain's)
 
 Elimination chain, each step verified by screenshot-timeout ground truth:
-1. **Our own IPC exonerated** — wedge recurs with tracker + preventive loop
-   fully stopped.
-2. **Idle exonerated** — 9h19m at MENU, zero wedges. It needs active play.
-3. **s20b / CMD-8 exonerated** — the PRE-STRAND20 shipped champion
-   (71d2de37) wedged in **6m15s** under identical conditions. Not a
-   regression from the #47 work.
+1. ⚠ **RETRACTED 2026-08-10 — "Our own IPC exonerated"** rested entirely on
+   `WEDGE_CONFIRMED`/`AUTO_REBOOT` lines inside the tracker-stopped blackout,
+   i.e. on a discriminator now proven to fire on healthy play. Needs re-running.
+2. ⚠ **RETRACTED 2026-08-10 — "Idle exonerated, 9h19m at MENU, zero wedges."**
+   Those 9h19m are 1,111 consecutive polls with `fw_pid=none`/`fw_state=DEAD`
+   (bare-argv blind spot). `CONSEC` only increments when `FW_STATE_CHAR="R"`, so
+   the trigger was disconnected from its own input for the whole window and
+   **could not** have fired. Vacuous, not a control.
+3. **s20b / CMD-8 exonerated** — holds, but on the *screenshot timeout* at
+   22:35Z, not on the timing. ⚠ The "**6m15s**" figure is retracted: it is an
+   `ALERT_ONLY` from the same non-specific trigger, and a verified-healthy arm
+   (copro + human cart) scored *faster* at 3m01s.
+   See `experiments/freeze5_blackscreen/WEDGE_PROBE.md`, "RE-DERIVATION (2026-08-10)".
 4. **MiSTer framework exonerated** — stock NES core + a commercial ROM ran
    clean at 6.5 min, 15 min, and a 3-frame motion test at 17 min. No
    pinned-firmware workaround needed.

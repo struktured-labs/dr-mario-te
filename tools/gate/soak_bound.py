@@ -1,0 +1,374 @@
+#!/usr/bin/env python3
+"""soak_bound.py -- turn a soak log into a BOUND, in the unit the owner cares about.
+
+A bare "zero events" is not a result; the question is always "zero over how much play?".
+This reads probe_soak.log and prints, per canary, the one-sided 95% upper confidence limit on
+the event rate expressed as MINUTES OF PLAY between events.
+
+  k = 0  -> rule of three: lambda_hi = 3/N per frame, so >= N/3 frames between events.
+  k > 0  -> exact Poisson upper limit: the lambda_hi solving P(X <= k | lambda_hi) = 0.05,
+            found by bisection on the Poisson CDF (no scipy dependency).
+
+⚠ Two honesty notes that belong next to any number this prints:
+  * Frames are converted at the NES NTSC rate 60.0988 fps. That is EMULATED play time, which is
+    the right unit -- the soak runs faster than real time but a frame is still a frame.
+  * The gate's matches are short (P1 is an idle human seat, so it tops out fast). Match COUNT
+    therefore is not comparable to real matches against a person; frames are. Both are printed.
+
+Usage: soak_bound.py <probe_soak.log> [more logs...]
+"""
+import math
+import re
+import sys
+
+FPS = 60.0988
+
+# canary name -> (regex key in the SUMMARY/SOAK line, human description)
+CANARIES = [
+    ("MIXED_PRG_nonboot", "mixed shift-register load into the PRG register (the catastrophic MMC1 interleave)"),
+    # ⚠ RAW `wipes` IS NOT AN EVENT COUNT. The detector fires on any $0324 (virus counter)
+    # transition >0 -> 0, and the END OF EVERY MATCH legitimately does exactly that. The tuck-phase
+    # gate saw 19 zeroings against 19 match-ends and they were all the normal path. So the healthy
+    # baseline is ~1 per match-end, NOT zero, and printing the raw number in a table of canaries
+    # would read as hundreds of RAM wipes on a clean cart -- a false alarm loud enough to discredit
+    # every other row. The anomalous count is what matters: wipes - match_ends, floored at 0, and
+    # cross-checked against the per-MATCH d_wipes distribution (any match with d_wipes >= 2 is a
+    # real candidate). Both numbers are printed.
+    ("wipes", "$0324 zeroings -- RAW, includes the legitimate one per match end"),
+    ("wipes_anom", "RAM wipes IN EXCESS of one per match end (the real canary)"),
+    # ⚠ Same trap as `wipes`: $8036 is executed ONCE legitimately at power-on, so the healthy
+    # baseline is 1 PER BOOT, not 0 -- the tuck-phase gate recorded exactly "1 bank-0 entry (the
+    # boot one)". Each seed segment is its own boot, so the pooled baseline is one per segment.
+    ("soft8036", "bank-0 entries at $8036 -- RAW, includes the power-on one"),
+    ("soft8036_anom", "bank-0 soft entries BEYOND the power-on one (the real canary)"),
+    ("brk_a02e", "BRK-loop hit at $A02E"),
+    ("ABORT_4to0", "catastrophic mid-match abort to title (the v6c signature)"),
+    ("title0", "unrequested return to title from a live state"),
+    ("busyEp", "stuck-BUSY episode (driver re-entrancy latch held)"),
+    ("modeStall", "hard hang (one mode held past threshold)"),
+    ("gapStall", "failure to progress across a match boundary"),
+    ("srchStall", "search stall (mode 4 with the AI no longer asking)"),
+    # ⚠ key is MISMATCH, which is what the ACHK line actually emits. It was "amism" here,
+    # which appears in no log, so `if key not in vals: continue` skipped the single most
+    # important new canary SILENTLY -- the A-check would have been absent from the bound
+    # table while everything else looked complete.
+    ("MISMATCH", "accumulator corrupted across the NMI (the v8 DRRTIVEC defect)"),
+    ("tuckwr", "write to the tuck executor's cart state (must be 0 on a DRTUCK=0 cart)"),
+]
+
+
+def poisson_cdf(k: int, lam: float) -> float:
+    """P(X <= k) for Poisson(lam), computed stably in log space."""
+    if lam <= 0:
+        return 1.0
+    total = 0.0
+    log_lam = math.log(lam)
+    for i in range(k + 1):
+        total += math.exp(-lam + i * log_lam - math.lgamma(i + 1))
+    return min(total, 1.0)
+
+
+def upper_limit(k: int, conf: float = 0.95) -> float:
+    """One-sided upper confidence limit on the Poisson mean given k observed events."""
+    alpha = 1.0 - conf
+    if k == 0:
+        return -math.log(alpha)          # = 3.0 to 2 dp -- the "rule of three"
+    lo, hi = float(k), float(k) + 10.0
+    while poisson_cdf(k, hi) > alpha:
+        hi *= 2.0
+        if hi > 1e9:
+            return hi
+    for _ in range(200):
+        mid = 0.5 * (lo + hi)
+        if poisson_cdf(k, mid) > alpha:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
+
+
+def fmt_time(frames: float) -> str:
+    if frames == float("inf"):
+        return "inf"
+    secs = frames / FPS
+    if secs < 90:
+        return f"{secs:.0f} s"
+    if secs < 5400:
+        return f"{secs / 60:.1f} min"
+    return f"{secs / 3600:.2f} h"
+
+
+BOOT_FRAMES = 10          # matches the probe's own BOOTF: frames <= this are power-on
+
+
+def count_late_bank0(path: str, boot_frames: int) -> int:
+    """Bank-0 entries at $8036 AFTER the boot window, counted from the probe's own event lines.
+
+    The calibration arm on the clean cart logged exactly two, both at f=1 and f=2, so the healthy
+    count by this definition is 0 -- which is what makes it usable as a canary at all.
+    """
+    n = 0
+    for line in open(path, "r", errors="replace"):
+        if "BANK0 SOFT-ENTRY" in line:
+            m = re.search(r"f=(\d+)", line)
+            if m and int(m.group(1)) > boot_frames:
+                n += 1
+    return n
+
+
+# CKPT uses SHORT key names; the SUMMARY/SOAK lines use long ones. Recovering a truncated segment
+# means translating, not just re-parsing -- a straight key copy would silently drop every canary
+# whose name differs, which is most of them, and the segment would then look CLEAN because all its
+# counters were absent rather than zero.
+CKPT_TO_SUMMARY = {
+    "f": "frames",
+    "ended": "matches_ended",
+    "clean": "clean_ends",
+    "mixedPRG": "MIXED_PRG_nonboot",
+    "abort": "ABORT_4to0",
+    "brk": "brk_a02e",
+    "amism": "MISMATCH",
+}
+
+
+def parse(path: str):
+    """Parse a soak log. Falls back to the last CHECKPOINT if the segment never wrote a SUMMARY.
+
+    ⚠ WHY THE FALLBACK EXISTS. A segment killed by the deadline has CKPT lines but no SUMMARY, and
+    the original code discarded such a log wholesale ("not a result"). The LAST segment is exactly
+    the one most likely to be truncated, so a clean run could have thrown away a quarter of its own
+    evidence -- the same mistake the pooled-bound note warns about, arriving by a different door.
+    """
+    vals, meta = {}, {}
+    txt = open(path, "r", errors="replace").read()
+    for line in txt.splitlines():
+        if line.startswith("probe_soak start"):
+            # Provenance. maxf identifies WHICH DRIVER produced this segment (two drivers ran today
+            # with budgets 224829 and 220965), and seed identifies WHICH capsule stream it covers.
+            for m in re.finditer(r"(maxf|seed|tag)=([-\w.]+)", line):
+                meta["start_" + m.group(1)] = m.group(2)
+        if line.startswith(("SUMMARY ", "SOAK ", "SOAK2 ", "ACHK ")):
+            for m in re.finditer(r"(\w+)=([-\w.]+)", line):
+                vals[m.group(1)] = m.group(2)
+        if line.startswith("CKPT "):
+            meta["last_ckpt"] = line
+    if not vals and "last_ckpt" in meta:
+        for m in re.finditer(r"(\w+)=([-\w.]+)", meta["last_ckpt"]):
+            key, val = m.group(1), m.group(2)
+            vals[CKPT_TO_SUMMARY.get(key, key)] = val
+        meta["recovered"] = True
+        # ⚠ play4_frames is NOT in a checkpoint, so a recovered segment contributes its frames and
+        # its match-ends but NOTHING to the live-play denominator. That is deliberate: estimating
+        # it from the other segments' ratio would put an assumption inside a confidence bound. The
+        # effect is to UNDERSTATE live-play exposure, which makes the PLAY-class bounds
+        # conservative rather than optimistic -- the correct direction for a safety claim.
+        vals.pop("play4_frames", None)
+    return vals, meta
+
+
+def main() -> int:
+    if len(sys.argv) < 2:
+        print(__doc__)
+        return 1
+    pool = {"frames": 0, "play4": 0, "ends": 0, "logs": 0, "achk": [], "k": {},
+            "seeds": {}, "maxf": {}}
+    for path in sys.argv[1:]:
+        vals, meta = parse(path)
+        if not vals:
+            print(f"\n=== {path}\n  NO SUMMARY/SOAK LINE -- this log is not a result. "
+                  f"{'last ' + meta['last_ckpt'] if 'last_ckpt' in meta else 'no checkpoints either.'}")
+            continue
+        try:
+            n = int(vals.get("frames", "0"))
+        except ValueError:
+            n = 0
+        print(f"\n=== {path}")
+        if meta.get("recovered"):
+            print("  ⚠ RECOVERED FROM CHECKPOINT -- this segment was cut off before it wrote a")
+            print("    SUMMARY. Frames, match-ends and canary counts are the last checkpoint's, so")
+            print("    any play AFTER that checkpoint is discarded, and live-play frames are")
+            print("    counted as zero. Both make this segment's contribution an UNDERSTATEMENT.")
+        print(f"  tag                 {vals.get('tag')}")
+        print(f"  frames              {n:,}   = {fmt_time(n)} of emulated play")
+        print(f"  matches started     {vals.get('matches_started')}")
+        print(f"  matches ended       {vals.get('matches_ended')}  (clean {vals.get('clean_ends')})")
+        print(f"  wall / fps          {vals.get('wall')} / {vals.get('fps')}")
+        print(f"  A-integrity verdict {vals.get('verdict', '<absent>')}"
+              f"  shield_hits={vals.get('shield_CEEC')} nmi={vals.get('nmi_events')}")
+        if n <= 0:
+            print("  frames=0 -- no bound computable")
+            continue
+        # ⚠ CHOOSING THE DENOMINATOR. Frames are the right exposure unit for a per-hook fault
+        # (the MMC1 interleave fires inside the driver hook, which runs every frame). They are the
+        # WRONG unit for the DRHOLDBOARD/v6c class, which can only fire when a match ENDS: for
+        # those the exposure is match boundaries, and this rig deliberately produces them far
+        # faster than real play does, because P1 is an idle seat that tops out in ~500 frames.
+        # Reporting only the frame bound would understate boundary coverage by more than an order
+        # of magnitude; reporting only the match bound would overstate per-frame coverage. Both.
+        # Faults that can only fire when a match ENDS get match-ends as their denominator.
+        BOUNDARY = {"ABORT_4to0", "title0", "gapStall"}
+        # Faults that fire inside the per-frame driver hook get LIVE-PLAY frames, not wall frames.
+        # play4 <= frames always, so this is the conservative choice, and it is also the unit the
+        # owner actually means by "how long can I play".
+        PLAY = {"MIXED_PRG_nonboot", "wipes_anom", "soft8036_anom", "brk_a02e", "MISMATCH", "busyEp", "srchStall"}
+        try:
+            m = int(vals.get("matches_ended", "0"))
+        except ValueError:
+            m = 0
+        try:
+            p4 = int(vals.get("play4_frames", "0"))
+        except ValueError:
+            p4 = 0
+        if p4:
+            print(f"  live-play frames    {p4:,}   = {fmt_time(p4)} in mode 4 "
+                  f"({100.0 * p4 / n:.0f}% of the run)")
+        # derived: zeroings beyond the one-per-match-end the normal path produces
+        try:
+            vals["wipes_anom"] = str(max(0, int(vals.get("wipes", 0)) - m))
+        except ValueError:
+            pass
+        # ⚠ DO NOT subtract a guessed allowance here. The calibration arm showed TWO power-on
+        # entries, at frames 1 and 2 -- so "soft8036 - 1" would have manufactured one phantom
+        # event per segment, four across the run, in the very table built to avoid false alarms.
+        # The probe logs every entry with its frame, so the anomaly is counted exactly: entries
+        # after the boot window. Nothing is assumed about how many boot entries there are.
+        vals["soft8036_anom"] = str(count_late_bank0(path, BOOT_FRAMES))
+        print(f"  {'canary':<22} {'k':>5}  {'95% upper bound on the rate':<32} description")
+        for key, desc in CANARIES:
+            if key not in vals:
+                continue
+            try:
+                k = int(vals[key])
+            except ValueError:
+                continue
+            lam_hi = upper_limit(k)                 # events per whole run
+            RAW_BASELINED = {"wipes": "expected ~1 per match end",
+                             "soft8036": "expected 1 per boot (power-on)"}
+            flag = "   <<< FIRED" if (k > 0 and key not in RAW_BASELINED) else ""
+            if key in RAW_BASELINED and k > 0:
+                flag = f"   ({RAW_BASELINED[key]})"
+            if key in BOUNDARY and m > 0:
+                bound = f"<= 1 per {m / lam_hi:,.0f} match-ends"
+            elif key in PLAY and p4 > 0:
+                bound = f"<= 1 per {fmt_time(p4 / lam_hi)} of live play"
+            else:
+                bound = f"<= 1 per {fmt_time(n / lam_hi)}"
+            print(f"  {key:<22} {k:>5}  {bound:<32} {desc}{flag}")
+        if m > 0:
+            print(f"  [{m} match-ends observed; a match here is ~{n / m:.0f} frames because P1 is an")
+            print("   idle seat, so match-ends accrue MUCH faster than in real play. Total frames")
+            print("   therefore overstate real-match exposure -- which is why the crash class is")
+            print("   bounded per match-end and the per-hook class per live-play minute.]")
+        # ⚠ PROVENANCE GATE ON THE DENOMINATOR. Two soak drivers ran today against the same tags,
+        # so a segment directory could in principle hold another driver's run, and the same SEED
+        # could appear twice. Either would inflate the pooled exposure -- claiming more evidence
+        # than exists, in the one number this whole rig produces. A segment therefore carries its
+        # origin into the pool, and mixed origins or a repeated seed are reported and EXCLUDED
+        # rather than quietly summed.
+        seed = meta.get("start_seed")
+        maxf = meta.get("start_maxf")
+        if seed is not None and seed in pool["seeds"]:
+            print(f"  ⚠ SEED {seed} ALREADY POOLED from {pool['seeds'][seed]} -- EXCLUDED from the")
+            print("    pooled denominator. The same capsule stream counted twice would inflate the")
+            print("    bound; a seed contributes once no matter how many drivers ran it.")
+            continue
+        if seed is not None:
+            pool["seeds"][seed] = path
+        if maxf is not None:
+            pool["maxf"].setdefault(maxf, []).append(path)
+        # accumulate for the pooled bound
+        pool["logs"] += 1
+        pool["frames"] += n
+        pool["play4"] += p4
+        pool["ends"] += m
+        pool["achk"].append(vals.get("verdict", "<absent>"))
+        for key, _ in CANARIES:
+            if key in vals:
+                try:
+                    pool["k"][key] = pool["k"].get(key, 0) + int(vals[key])
+                except ValueError:
+                    pass
+
+    # ---------------- POOLED ----------------
+    # ⚠ THE HEADLINE IS THE POOLED BOUND, NOT THE PER-SEGMENT ONE. The soak is split into seed
+    # segments so that a crash costs one segment instead of the run, and so that four independent
+    # capsule streams are covered rather than one. But each segment reporting "1 per N/3 frames"
+    # UNDERSTATES the evidence by the number of segments: the segments are independent observations
+    # of the same cart, so their exposure ADDS. Four clean segments of N frames bound the rate at
+    # 1 per 4N/3, not 1 per N/3. Printing only the per-segment numbers would have thrown away 75%
+    # of a five-hour run.
+    if pool["logs"] > 1:
+        n, p4, m = pool["frames"], pool["play4"], pool["ends"]
+        print("\n" + "=" * 78)
+        print(f"POOLED OVER {pool['logs']} SEGMENTS  (independent seeds, same cart -- exposure adds)")
+        print("=" * 78)
+        print(f"  frames              {n:,}   = {fmt_time(n)} of emulated play")
+        print(f"  live-play frames    {p4:,}   = {fmt_time(p4)} in mode 4"
+              + (f" ({100.0 * p4 / n:.0f}% of the run)" if n else ""))
+        print(f"  match-ends          {m}")
+        print(f"  seeds pooled        {', '.join(sorted(pool['seeds'])) or '<unknown>'}")
+        if len(pool["maxf"]) > 1:
+            print("  ⚠ MIXED SEGMENT ORIGINS -- these logs were not all produced by the same driver:")
+            for mf, paths in sorted(pool["maxf"].items()):
+                print(f"      maxf={mf}: {len(paths)} segment(s)")
+            print("    Frame budgets differ, so the segments are not interchangeable evidence about")
+            print("    one configuration. Pool them only if you have confirmed the CART and FLAGS")
+            print("    were identical and only the length differed.")
+        print(f"  A-integrity         {', '.join(pool['achk'])}")
+        BOUNDARY = {"ABORT_4to0", "title0", "gapStall"}
+        PLAY = {"MIXED_PRG_nonboot", "wipes_anom", "soft8036_anom", "brk_a02e", "MISMATCH", "busyEp", "srchStall"}
+        pool["k"]["wipes_anom"] = max(0, pool["k"].get("wipes", 0) - m)
+        # soft8036_anom is summed per-log from the event frames; no subtraction anywhere.
+        print(f"  {'canary':<22} {'k':>5}  {'95% upper bound on the rate':<34} description")
+        RAW_BASELINED = {"wipes": "expected ~1 per match end",
+                         "soft8036": "expected 1 per boot (power-on)"}
+        for key, desc in CANARIES:
+            if key not in pool["k"]:
+                continue
+            k = pool["k"][key]
+            lam_hi = upper_limit(k)
+            flag = "   <<< FIRED" if (k > 0 and key not in RAW_BASELINED) else ""
+            if key in RAW_BASELINED and k > 0:
+                flag = f"   ({RAW_BASELINED[key]})"
+            if key in BOUNDARY and m > 0:
+                bound = f"<= 1 per {m / lam_hi:,.0f} match-ends"
+            elif key in PLAY and p4 > 0:
+                bound = f"<= 1 per {fmt_time(p4 / lam_hi)} of live play"
+            else:
+                bound = f"<= 1 per {fmt_time(n / lam_hi)}"
+            print(f"  {key:<22} {k:>5}  {bound:<34} {desc}{flag}")
+        # ⚠ THE HEADLINE MUST NOT CLAIM "zero events" WHEN A CANARY FIRED. This line previously
+        # hardcoded upper_limit(0), so it printed "with zero events" unconditionally -- and on the
+        # first run that ever found something (seed 30011: modeStall=1, gapStall=1) it produced a
+        # clean-sounding headline sitting directly beneath two rows flagged <<< FIRED. The table
+        # was honest and the summary of the table was not, which is the worst arrangement: the
+        # sentence people quote is the one that was wrong. The headline is now DERIVED from what
+        # actually fired, so a future event cannot be summarised away.
+        fired = sorted(key for key, _ in CANARIES
+                       if pool["k"].get(key, 0) > 0 and key not in RAW_BASELINED)
+        if fired:
+            print(f"\n  ⚠ HEADLINE: NOT CLEAN. {len(fired)} canary class(es) fired: {', '.join(fired)}")
+            print(f"    This run does NOT support a zero-event claim. The bound below is the rate")
+            print(f"    bound GIVEN the events observed, not evidence of their absence:")
+            for key in fired:
+                k = pool["k"][key]
+                if key in BOUNDARY and m > 0:
+                    print(f"      {key}: {k} in {m} match-ends  <= 1 per {m / upper_limit(k):,.0f} match-ends")
+                else:
+                    print(f"      {key}: {k} in {fmt_time(n)}  <= 1 per {fmt_time(n / upper_limit(k))}")
+            clean = [key for key, _ in CANARIES
+                     if key in pool["k"] and pool["k"].get(key, 0) == 0 and key not in RAW_BASELINED]
+            if clean and p4:
+                print(f"    The remaining {len(clean)} classes were clean; for THOSE the 95% upper")
+                print(f"    bound is 1 per {fmt_time(p4 / upper_limit(0))} of live play. That is a")
+                print(f"    statement about those classes ONLY -- it is not the run's verdict.")
+        elif p4:
+            print(f"\n  HEADLINE, conservative unit: with zero events, 95% upper bound is")
+            print(f"    1 catastrophic event per {fmt_time(p4 / upper_limit(0))} OF LIVE PLAY")
+            print(f"    (per wall-clock emulated time, {fmt_time(n / upper_limit(0))})")
+    print()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

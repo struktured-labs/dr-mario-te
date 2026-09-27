@@ -58,8 +58,13 @@ import random
 H_RELEASE_DEFAULT = 6
 BANK_TIMEOUT_PILLS = 9          # see derivation in the module docstring
 EXPOSURE_H = 6                  # pre-registered exposure threshold
-MUTANTS = ("none", "inverted", "random")
+# "ignores_bank" is implemented in the RUNNER (run_striker_ab.play): it is a
+# banking BYPASS (drop at earn, never bank), not a predicate on the bank, so
+# release_fires() never sees it.
+MUTANTS = ("none", "inverted", "inverted_lt", "random", "ignores_bank")
 RANDOM_MUTANT_P = 0.15          # per-placement fire prob for the "random" mutant
+MIN_BANK_TICKS = 1              # every released volley must have been banked
+                                # >= this many placements (gated)
 
 
 def col_heights(board):
@@ -164,22 +169,35 @@ def release_fires(mutant, h_max, h_release, rng):
     "none" = the real striker: fire iff h_max >= h_release.
     "inverted" = fire in the trough (h_max <= 2) -- differs whenever the
       stack is mid-height or tall, non-equivalent by construction.
-    "random" = fire with p=RANDOM_MUTANT_P regardless of height."""
+    "inverted_lt" = the literal inverted predicate: fire iff h_max <
+      h_release -- every height-release it produces is one the real
+      predicate cannot (h < H), non-equivalent wherever h != H exactly.
+    "random" = fire with p=RANDOM_MUTANT_P regardless of height.
+    ("ignores_bank" never reaches this function -- see MUTANTS comment.)"""
     if mutant == "none":
         return h_max >= h_release
     if mutant == "inverted":
         return h_max <= 2
+    if mutant == "inverted_lt":
+        return h_max < h_release
     if mutant == "random":
         return rng.random() < RANDOM_MUTANT_P
     raise ValueError(f"unknown mutant {mutant!r}")
 
 
-def check_release_log(releases, h_release, timeout=BANK_TIMEOUT_PILLS):
-    """The GATE: every release must be height- or timeout-justified.
+def check_release_log(releases, h_release, timeout=BANK_TIMEOUT_PILLS,
+                      min_bank_ticks=MIN_BANK_TICKS):
+    """The GATE: every release must be (a) height- or timeout-justified AND
+    (b) BANKED for >= min_bank_ticks placements before release (age_newest,
+    logged by the runner; the runner evaluates release BEFORE earn so the
+    real striker satisfies this by construction).  A release with
+    age_newest == 0 was never banked at all -- the ignores-bank mutant's
+    numeric signature; a missing age_newest is itself a violation.
     Returns a list of violation strings (empty = pass).  Demonstrated to
-    FAIL on the inverted/random mutants and on the blind control's log
-    (run_striker_ab.py --gate-demo) before being trusted -- the
-    killed-mutant standard (dr-mario-gate-standard-killed-mutants.md)."""
+    FAIL on the inverted/inverted_lt/random/ignores_bank mutants and on the
+    blind control's log (run_gate.py / run_striker_ab.py --gate-demo)
+    before being trusted -- the killed-mutant standard
+    (dr-mario-gate-standard-killed-mutants.md)."""
     bad = []
     for ev in releases:
         reason = ev.get("reason")
@@ -194,10 +212,70 @@ def check_release_log(releases, h_release, timeout=BANK_TIMEOUT_PILLS):
         else:
             bad.append(f"pill {ev['pill']}: unjustified release reason "
                        f"{reason!r}")
+        if ev.get("age_newest", 0) < min_bank_ticks:
+            bad.append(f"pill {ev['pill']}: banked "
+                       f"{ev.get('age_newest', 'NONE')} tick(s) < "
+                       f"{min_bank_ticks} before release")
     return bad
 
 
-def build_blind_schedule(release_log, horizon, seed, min_pills):
+def check_pairing(rows_a, rows_b, require_volleys=False):
+    """PAIRING GATE: for every seed present in both arms, the two games must
+    share (1) the initial virus layout (md5 over the reset board's
+    color+is_virus planes), (2) the capsule stream (elementwise over the
+    common prefix of the logged (ca, cb) sequences -- games may END at
+    different lengths, but the stream up to the shorter end must be
+    identical), and, when require_volleys (striker-vs-striker reproduction),
+    (3) the released banked-volley sequence exactly: same events, same pill
+    indices, same sizes, same count.  Returns violation strings (empty =
+    pass).  Its mutant is pair_break (env/pill seed+2 in one arm -- +2, NOT
+    +1, because seeds 2k and 2k+1 are the SAME game and a +1 mutant would
+    be EQUIVALENT on even seeds)."""
+    bad = []
+    for s in sorted(set(rows_a) & set(rows_b)):
+        a, b = rows_a[s], rows_b[s]
+        if a["virus_sig"] != b["virus_sig"]:
+            bad.append(f"seed {s}: virus layout differs "
+                       f"({a['virus_sig'][:8]} != {b['virus_sig'][:8]})")
+        ca, cb = a["capsule_seq"], b["capsule_seq"]
+        k = min(len(ca), len(cb))
+        if list(ca[:k]) != list(cb[:k]):
+            bad.append(f"seed {s}: capsule stream diverges within the "
+                       f"first {k} placements")
+        if require_volleys:
+            va = [(ev["pill"], list(ev["sizes"])) for ev in a["release_log"]]
+            vb = [(ev["pill"], list(ev["sizes"])) for ev in b["release_log"]]
+            if va != vb:
+                bad.append(f"seed {s}: banked volley sequence differs "
+                           f"({len(va)} events {va} != {len(vb)} events {vb})")
+    return bad
+
+
+def check_matched_volume(striker_rows, schedules):
+    """MATCHED-CONTROL GATE: per seed, the blind control's SCHEDULE must
+    carry exactly the striker's released volleys -- same COUNT, same
+    multiset of sizes, same TOTAL garbage cells.  Only the placement
+    indices (the timing) may differ.  Returns violation strings (empty =
+    pass).  Its mutant is a schedule builder that silently drops one volley
+    (drop_one=True), which changes both count and total cells."""
+    bad = []
+    for s in sorted(striker_rows):
+        released = sorted(x for ev in striker_rows[s]["release_log"]
+                          for x in ev["sizes"])
+        scheduled = sorted(x for _i, x in schedules.get(s, []))
+        if len(released) != len(scheduled):
+            bad.append(f"seed {s}: volley COUNT {len(released)} != "
+                       f"{len(scheduled)}")
+        if sum(released) != sum(scheduled):
+            bad.append(f"seed {s}: total garbage CELLS {sum(released)} != "
+                       f"{sum(scheduled)}")
+        if released != scheduled:
+            bad.append(f"seed {s}: size multiset {released} != {scheduled}")
+    return bad
+
+
+def build_blind_schedule(release_log, horizon, seed, min_pills,
+                         drop_one=False):
     """VOLUME-MATCHED BLIND CONTROL schedule for one seed: the IDENTICAL
     multiset of volley sizes the striker actually released in that seed's
     game, at placement indices drawn uniform over [min_pills, horizon].
@@ -213,8 +291,14 @@ def build_blind_schedule(release_log, horizon, seed, min_pills):
     broken down by blind outcome.
 
     Deterministic per seed; independent of the striker's release rng stream
-    (different salt).  Returns a sorted list of (pills_index, n_cells)."""
+    (different salt).  Returns a sorted list of (pills_index, n_cells).
+
+    drop_one=True is the MUTANT for check_matched_volume: it silently drops
+    the largest scheduled volley, exactly the "control fires less garbage
+    than the striker" confound the matched control exists to kill."""
     sizes = [s for ev in release_log for s in ev["sizes"]]
+    if drop_one and sizes:
+        sizes = sorted(sizes)[:-1]
     rng = random.Random(seed * 99991 + 7)
     lo = min_pills
     hi = max(horizon, lo + 1)

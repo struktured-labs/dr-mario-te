@@ -126,6 +126,56 @@ event-CSV annotations (lock_crosscheck 0/59), single level/speed (L11 MED), v4 c
 Same-night rig run (n=120, champion under HER fitted pressure) was launched immediately —
 dies-ahead number lands in `eval47/tmp/dr_lulu_20260808_refit.log`.
 
+### AI-side (P2) frame-level pass, m3 — one result, two metrics BLOCKED (2026-08-08)
+
+Ran the standing tracker pipeline against the **AI side** of night two's m3 window
+(555-739 s), the window the owner flagged as "could have untangled faster".
+
+**PREREQUISITE THAT DID NOT EXIST.** The session dir held only `frames/` (1 fps) — no
+`p1/p2_60fps` crops, no `events/`. Generated the P2 60 fps crops myself for m1/m2/m3
+(40,980 frames, origin (1088,348) 440x704 = `refit_dr_lulu.py`'s derived P2 mirror) and
+wrote `experiments/eval47/film_20260808/tracker_p2.py`, which reuses every pure function
+from the 20260804 `tracker.py` unchanged, exactly as `tracker_p2_death.py` does.
+Crop geometry is VERIFIED, not assumed: classifying a full frame with the full-frame P2
+grid and its crop with the crop-local grid give identical boards on 3 sampled frames, and
+an origin wrong by 8 px is detected.
+
+**✅ THE LAST-MOMENT SNAP INTO THE RIGHTMOST COLUMN — FOUND AND TIMESTAMPED.**
+
+| | |
+|---|---|
+| when | **t = 596.35 s** absolute (m3 + 41.35 s), frame 2481 of the m3 60 fps crop |
+| what | horizontal (HF) capsule, **lateral col 5 → 6** so it occupies cols **6-7** |
+| how late | **13 frames = 0.22 s before lock** |
+| lands | (8,6)+(8,7), colours B-R |
+
+Visually confirmed frame-by-frame (f2470 → f2494). This is a genuine late lateral on
+silicon from a cart with **no tuck executor** — the nav driver's own steering, i.e. the
+input pipeline can execute a last-moment horizontal placement. Three further late moves
+reach col 7 in m3 (t = 645.05, 681.90, 689.58 s) but all three are **vertical** capsules
+entering the column, not horizontal snaps; 7 clean pills made any lateral reaching col 7.
+
+**❌ DECLINED-CLEAR RATE AND PILLS-PER-CLEAR: NOT MEASURED — the instrument fails its
+control on this footage.** Two independent failures, both quantified before I stopped:
+
+1. **19.4 % of tracked P2 pills (18/93) "lock" at the spawn cell (0,3)+(0,4)** with a
+   0-2-frame lifetime — i.e. the tracker never followed the piece. The same tracker on the
+   20260804 corpus gives **0.0 / 0.0 / 3.6 / 0.0 %** across P1 m1-m4 and 6.2 % on the P2
+   death clip. The failures are not uniform: **33-50 % in the first 80 s of the window,
+   3-4 % after t≈637 s**, so excluding them would bias exactly the early-window behaviour
+   the owner asked about.
+2. **The classifier's virus count disagrees with the game's own on-screen counter.** At
+   t = 567 s the VIRUS box reads **41** for P2; the classifier finds **28** virus cells —
+   a ~30 % undercount. Declined-clear requires engine-verified board reconstruction, and a
+   board that mis-reads a third of its viruses cannot support it.
+
+Per the metric battery's own rule — *a metric that can't fail its control is noise* — no
+declined-clear or pills-per-clear number is published here. What is needed first is a
+P2-side tracker validated against the on-screen VIRUS counter as ground truth (it is
+readable every frame and is the free control this pipeline has never used). The crops are
+on disk (`eval47/tmp/dr_lulu_20260808/p2_60fps/`, gitignored) so the re-run costs no
+re-extraction.
+
 ## Execution-consistency addendum (frame-level film study, 2026-08-03)
 
 This is a first, small down payment on the "capture-card video... convert to (state,move)

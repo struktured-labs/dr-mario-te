@@ -1,0 +1,21 @@
+v6e-tuck-pocket-v3.json DOES NOT REBUILD ON THIS BRANCH HEAD. That is intentional.
+
+The cart it describes (roms/v6e-tuck-pocket-v3.nes, md5 dbee0937ccec7c1d0b518341d46a8217)
+is the ARTIFACT OF A REFUTED EXPERIMENT, kept for the record. It was built with the
+DRSTUDYCOUNTS pause gate, which was reverted in this branch's history because the
+experiment showed the gate fixes nothing.
+
+  reproducible ONLY at commit 918f09c (the emitter carrying the pause gate)
+  refutation    5096839  "#46 VERDICT: STUDYCOUNTS is INNOCENT"
+  revert        this commit
+
+WHY IT WAS REVERTED (short version): a PC-attributed OAM write census charged every
+sprite still visible on a non-play screen to its last writer. The 40 PC sites that
+exist only when DRSTUDYCOUNTS is compiled in issued 2,314,736 OAM writes and produced
+ZERO stale menu sightings; all ~75k sightings came from 5 PCs present even in a cart
+with the feature compiled out. The existing non-play blank of slots 8-15 already
+cleans 100% of the driver's writes, pauses included.
+
+A MISMATCH here is NOT provenance rot -- do not "fix" it by rebuilding and restamping
+the manifest, which would silently attach this md5 to a different set of bytes.
+Instruments that produced the verdict: tools/gate/stomp_pc.lua + run_stomp_pc.sh.

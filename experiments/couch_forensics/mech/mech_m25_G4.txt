@@ -1,0 +1,3 @@
+  k 41 791.1 landing ['V', 8, 1, [2, 3]] miss/extra ([], [(11, 5, 1), (11, 6, 2)])
+  k 46 800.8 landing ['V', 7, 7, [2, 2]] miss/extra ([], [(8, 1, 2), (8, 2, 3)])
+{"file": "/home/struktured/projects/dr-mario-h16-wt/tmp/couch_forensics/raw_m25_G4.jsonl", "steps": 59, "exact": 45, "garbage_explained": 12, "unexplained": 2, "unexplained_k": [41, 46]}

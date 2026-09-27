@@ -1,0 +1,40 @@
+== GATE 4 (DRPROPH): the human-cart battery re-run on the DRPROPH build ==
+2026-08-31, reviewer re-run, drveto worktree (battery deps fast-forwarded from
+humancart-148: tests/test_human_cart.py + companions, tools/nmi126/, tools/gate
+probe6 machinery, 4 gate manifests -- same clean-forward provenance as 776a34e).
+
+STATIC (tests/test_human_cart.py, stock env = DRPROPH=0 arm): ALL PASS -- every
+md5 and number identical to the certified GATE_HUMAN.md sheet (H1a ae06cd1d,
+H1b 2b806db8, worst frame 23322 margin +6458, 8 dead stores, 22 binding cuts).
+
+STATIC PROPH ARM (tests/test_human_cart_proph.py = same suite, DRPROPH=1
+leak-through; H1a vs the deliverable 30c92183, H1b pins DRPROPH=0): ALL PASS.
+  H4a 0 reachable $F5/$F7/GRAV_P1 writes ON THE PROPH BUILD (never presses the
+      human); H4b 8 dead stores; H7 M1/M2/M3 all killed.
+  HP0 (new): IR capture PROVEN to contain proph_trigger/proph_pulse labels.
+  H5 worst admissible frame 25464/29780, margin +4316 (PROPH costs ~2142 cyc
+      worst-case; was 23322/+6458). H6 unpipelined arm still OVER (36101).
+  CAUGHT AND FIXED EN ROUTE: the census refused the trigger's two fo-scan
+  loops as UNDECLARED -- pf_s3/pf_s4 bounds (16 head passes each, CPX #128
+  exit) added to tools/nmi126/census.py LOOP_BOUNDS. The =1 image had never
+  been through the frame census before this run.
+COMPANIONS (tools/gate/run_cart_gates.sh): stock ALL PASS (rtivec 4/4 mutants,
+  mmc1rst 3/3, aclobber, prg_ram_map incl. the $61C6 map, combo_cart).
+  DRPROPH=1 leak-through: rtivec/mmc1rst/aclobber/prg_ram_map PASS with the
+  PROPH bytes in-image; combo C2-C5 behavioral PASS (combo admissible frame
+  28507/+1273 WITH PROPH cycles); combo C1a/b/c are pinned-hash identity gates
+  for a DIFFERENT deliverable (the CvC cart never ships DRPROPH=1) -- fail
+  under leak-through BY CONSTRUCTION, recorded as inapplicable, not green.
+PLAY (probe6, headless Mesen, MMC1 remap, D135 guard ON, 18k frames/run):
+  stage1 proph1 idle: goes=162 dones=149 pills=144, MIXED=0 brk=0 ABORT_4to0=0,
+    19 started/18 ended/18 clean, D135 blocked=10 leaked=0,
+    P1-IDLE WITNESS ON THE PROPH BUILD: p1_xmoves=0 p1_rots=0 (108 spawns).
+  stage2 proph1 forced attacks: 43 pokes -> 44 edges, pp 43/123/41/2 maxphase 4
+    swallows 0, matches 19/19/19 clean, MIXED=0 brk=0 wedges=0, D135 leaked=0,
+    p1_xmoves=0 p1_rots=0.
+  stage2 proph0 PAIRED CONTROL (this box, same probe): reproduces the certified
+    sheet BIT-FOR-BIT (43/124/42/1, tuck 39/39, D1=24 D2=26, p1 107/377) ->
+    environment exonerated; the proph1 deltas (pills 97 vs 100, tuck_opp 36 vs
+    39, pp_aborts 2 vs 1) are the flag's own placement-stream divergence, all
+    inside safe-bail machinery (pp_aborts = documented safe abort; swallows=0).
+GATE4: PASS (combo C1 identity rows inapplicable by construction).

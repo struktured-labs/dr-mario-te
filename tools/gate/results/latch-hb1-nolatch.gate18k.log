@@ -1,0 +1,163 @@
+fieldplay start tag=hb1-nolatch maxf=18000 dlat=34 seed=114 warm=0
+MODE f=1 -1->0 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=31 0->1 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+SEEDPOKE f=31 round=1 s17=4F s18=44
+MODE f=37 1->2 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=40 2->3 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=41 3->8 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=219 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=0 dones=0
+MODE f=773 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=60 fill2=62 goes=8 dones=7
+HOLD ARM f=774 ep=1 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=774 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=21 fill2=62 goes=8 dones=7
+HOLD REL f=781 mode=7 held=0
+MODE f=887 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=8 dones=7
+SEEDPOKE f=887 round=2 s17=02 s18=49
+MODE f=888 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=8 dones=7
+MODE f=1066 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=8 dones=7
+MODE f=2094 4->5 hold=0 match=1 vc1=70 vc2=72 fill1=52 fill2=70 goes=20 dones=19
+HOLD ARM f=2095 ep=2 mode=7 match_active=0 vc1=70 vc2=72
+MODE f=2095 5->7 hold=1 match=0 vc1=70 vc2=72 fill1=52 fill2=29 goes=20 dones=19
+HOLD REL f=2101 mode=7 held=0
+MODE f=2207 7->3 hold=0 match=0 vc1=70 vc2=72 fill1=0 fill2=0 goes=20 dones=19
+SEEDPOKE f=2207 round=3 s17=7C s18=3E
+MODE f=2208 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=20 dones=19
+MODE f=2386 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=20 dones=19
+MODE f=2935 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=60 fill2=60 goes=27 dones=25
+HOLD ARM f=2936 ep=3 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=2936 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=21 fill2=60 goes=27 dones=25
+HOLD REL f=2941 mode=7 held=0
+MODE f=3047 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=27 dones=25
+SEEDPOKE f=3047 round=4 s17=6C s18=EB
+MODE f=3048 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=27 dones=25
+MODE f=3226 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=27 dones=25
+MODE f=3774 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=60 fill2=60 goes=34 dones=31
+HOLD ARM f=3775 ep=4 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=3775 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=22 fill2=60 goes=34 dones=31
+HOLD REL f=3781 mode=7 held=0
+MODE f=3991 7->1 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=34 dones=31
+SEEDPOKE f=3991 round=5 s17=B5 s18=7C
+MODE f=3997 1->2 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=34 dones=31
+MODE f=4000 2->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=34 dones=31
+MODE f=4001 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=34 dones=31
+MODE f=4180 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=34 dones=31
+MODE f=4731 4->5 hold=0 match=1 vc1=72 vc2=70 fill1=60 fill2=56 goes=41 dones=37
+HOLD ARM f=4732 ep=5 mode=7 match_active=0 vc1=72 vc2=70
+MODE f=4732 5->7 hold=1 match=0 vc1=72 vc2=70 fill1=18 fill2=56 goes=41 dones=37
+HOLD REL f=4741 mode=7 held=0
+MODE f=4847 7->3 hold=0 match=0 vc1=72 vc2=70 fill1=0 fill2=0 goes=41 dones=37
+SEEDPOKE f=4847 round=6 s17=14 s18=78
+MODE f=4848 3->8 hold=0 match=0 vc1=70 vc2=70 fill1=0 fill2=0 goes=41 dones=37
+MODE f=5026 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=41 dones=37
+MODE f=5746 4->5 hold=0 match=1 vc1=72 vc2=70 fill1=62 fill2=60 goes=50 dones=45
+HOLD ARM f=5747 ep=6 mode=7 match_active=0 vc1=72 vc2=70
+MODE f=5747 5->7 hold=1 match=0 vc1=72 vc2=70 fill1=23 fill2=60 goes=50 dones=45
+HOLD REL f=5761 mode=7 held=0
+MODE f=5867 7->3 hold=0 match=0 vc1=72 vc2=70 fill1=0 fill2=0 goes=50 dones=45
+SEEDPOKE f=5867 round=7 s17=0E s18=56
+MODE f=5868 3->8 hold=0 match=0 vc1=70 vc2=70 fill1=0 fill2=0 goes=50 dones=45
+MODE f=6046 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=50 dones=45
+MODE f=6618 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=57 fill2=60 goes=57 dones=52
+HOLD ARM f=6619 ep=7 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=6619 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=16 fill2=60 goes=57 dones=52
+HOLD REL f=6631 mode=7 held=0
+MODE f=6841 7->1 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=57 dones=52
+SEEDPOKE f=6841 round=8 s17=49 s18=F5
+MODE f=6853 1->2 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=57 dones=52
+MODE f=6856 2->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=57 dones=52
+MODE f=6857 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=57 dones=52
+MODE f=7037 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=57 dones=52
+MODE f=7802 4->5 hold=0 match=1 vc1=70 vc2=71 fill1=55 fill2=60 goes=65 dones=60
+HOLD ARM f=7803 ep=8 mode=7 match_active=0 vc1=70 vc2=71
+MODE f=7803 5->7 hold=1 match=0 vc1=70 vc2=71 fill1=14 fill2=60 goes=65 dones=60
+HOLD REL f=7831 mode=7 held=0
+MODE f=7907 7->3 hold=0 match=0 vc1=70 vc2=71 fill1=0 fill2=0 goes=65 dones=60
+SEEDPOKE f=7907 round=9 s17=20 s18=E1
+MODE f=7908 3->8 hold=0 match=0 vc1=71 vc2=71 fill1=0 fill2=0 goes=65 dones=60
+MODE f=8088 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=65 dones=60
+MODE f=8632 4->5 hold=0 match=1 vc1=72 vc2=69 fill1=60 fill2=54 goes=71 dones=66
+HOLD ARM f=8633 ep=9 mode=7 match_active=0 vc1=72 vc2=69
+MODE f=8633 5->7 hold=1 match=0 vc1=72 vc2=69 fill1=21 fill2=54 goes=71 dones=66
+HOLD REL f=8641 mode=7 held=0
+MODE f=8747 7->3 hold=0 match=0 vc1=72 vc2=69 fill1=0 fill2=0 goes=71 dones=66
+SEEDPOKE f=8747 round=10 s17=13 s18=24
+MODE f=8748 3->8 hold=0 match=0 vc1=69 vc2=69 fill1=0 fill2=0 goes=71 dones=66
+MODE f=8926 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=71 dones=66
+MODE f=9642 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=62 fill2=64 goes=80 dones=75
+HOLD ARM f=9643 ep=10 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=9643 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=23 fill2=64 goes=80 dones=75
+HOLD REL f=9661 mode=7 held=0
+MODE f=9841 7->1 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=80 dones=75
+SEEDPOKE f=9841 round=11 s17=60 s18=1C
+MODE f=9853 1->2 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=80 dones=75
+MODE f=9856 2->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=80 dones=75
+MODE f=9857 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=80 dones=75
+MODE f=10035 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=80 dones=75
+MODE f=10584 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=60 fill2=60 goes=87 dones=81
+HOLD ARM f=10585 ep=11 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=10585 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=22 fill2=60 goes=87 dones=81
+HOLD REL f=10591 mode=7 held=0
+MODE f=10697 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=87 dones=81
+SEEDPOKE f=10697 round=12 s17=EB s18=8E
+MODE f=10698 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=87 dones=81
+MODE f=10876 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=87 dones=81
+MODE f=11446 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=56 fill2=60 goes=94 dones=88
+HOLD ARM f=11447 ep=12 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=11447 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=16 fill2=60 goes=94 dones=88
+HOLD REL f=11461 mode=7 held=0
+MODE f=11567 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=94 dones=88
+SEEDPOKE f=11567 round=13 s17=3D s18=E0
+MODE f=11568 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=94 dones=88
+MODE f=11747 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=94 dones=88
+MODE f=12469 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=62 fill2=66 goes=104 dones=97
+HOLD ARM f=12470 ep=13 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=12470 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=23 fill2=66 goes=104 dones=97
+HOLD REL f=12481 mode=7 held=0
+MODE f=12691 7->1 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=104 dones=97
+SEEDPOKE f=12691 round=14 s17=3D s18=52
+MODE f=12697 1->2 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=104 dones=97
+MODE f=12700 2->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=104 dones=97
+MODE f=12701 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=104 dones=97
+MODE f=12879 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=104 dones=97
+MODE f=13585 4->5 hold=0 match=1 vc1=70 vc2=72 fill1=58 fill2=66 goes=113 dones=106
+HOLD ARM f=13586 ep=14 mode=5 match_active=0 vc1=70 vc2=72
+MODE f=13587 5->7 hold=1 match=0 vc1=70 vc2=72 fill1=58 fill2=28 goes=113 dones=106
+HOLD REL f=13591 mode=7 held=0
+MODE f=13697 7->3 hold=0 match=0 vc1=70 vc2=72 fill1=0 fill2=0 goes=113 dones=106
+SEEDPOKE f=13697 round=15 s17=FB s18=86
+MODE f=13698 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=113 dones=106
+MODE f=13876 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=113 dones=106
+MODE f=14547 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=56 fill2=67 goes=122 dones=115
+HOLD ARM f=14548 ep=15 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=14548 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=56 fill2=22 goes=122 dones=115
+HOLD REL f=14551 mode=7 held=0
+MODE f=14657 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=122 dones=115
+SEEDPOKE f=14657 round=16 s17=9E s18=B0
+MODE f=14658 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=122 dones=115
+MODE f=14836 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=122 dones=115
+MODE f=15554 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=62 fill2=66 goes=131 dones=124
+HOLD ARM f=15555 ep=16 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=15555 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=24 fill2=66 goes=131 dones=124
+HOLD REL f=15571 mode=7 held=0
+MODE f=15677 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=131 dones=124
+SEEDPOKE f=15677 round=17 s17=52 s18=55
+MODE f=15678 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=131 dones=124
+MODE f=15856 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=131 dones=124
+MODE f=16404 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=60 fill2=60 goes=138 dones=131
+HOLD ARM f=16405 ep=17 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=16405 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=17 fill2=60 goes=138 dones=131
+HOLD REL f=16411 mode=7 held=0
+MODE f=16517 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=138 dones=131
+SEEDPOKE f=16517 round=18 s17=CD s18=54
+MODE f=16518 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=138 dones=131
+MODE f=16696 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=138 dones=131
+MODE f=17149 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=56 fill2=61 goes=144 dones=137
+HOLD ARM f=17150 ep=18 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=17150 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=56 fill2=21 goes=144 dones=137
+HOLD REL f=17161 mode=7 held=0
+MODE f=17371 7->1 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=144 dones=137
+SEEDPOKE f=17371 round=19 s17=C5 s18=B2
+MODE f=17377 1->2 hold=0 match=0 vc1=72 vc2=72 fill1=128 fill2=128 goes=144 dones=137
+MODE f=17380 2->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=144 dones=137
+MODE f=17381 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=144 dones=137
+MODE f=17559 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=144 dones=137
+SUMMARY tag=hb1-nolatch frames=18000 goes=149 dones=142 matches_ended=18 hold_episodes=18 patho_frames=0 patho_first=-1

@@ -1,0 +1,6 @@
+{
+ "mode": "mimic",
+ "n_states": 80,
+ "n_claims": 0,
+ "verdict": "FAIL_NO_CLAIMS"
+}

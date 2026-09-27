@@ -1,0 +1,30 @@
+{
+ "model": "S1br2_lut8_q64",
+ "model_json": "/home/struktured/projects/dr-mario-qa-wt/experiments/eval47/stage2/shippable/out/RECOMMENDED_lut64.json",
+ "auc_model": 0.7219889998076308,
+ "auc_champ": 0.6645042605729236,
+ "reported_auc_model": 0.722,
+ "reported_auc_champ": 0.6645,
+ "flip_target_class": 0.02117787031528852,
+ "reported_flip_target": 0.0212,
+ "flip_cleared_games": 0.016523535166865964,
+ "reported_flip_clear": 0.0165,
+ "delta_abs_max": 52,
+ "delta_sd": 9.59388863073459,
+ "delta_span": 127,
+ "param_bits": 3456,
+ "mutant_aucs": {
+  "M1_sign_flip": 0.2780110001923693,
+  "M2_shuffled_tables": 0.47463791998145355,
+  "M3_feature_permute": 0.41603930388957827
+ },
+ "mutants_fire": {
+  "M1_sign_flip": true,
+  "M2_shuffled_tables": true,
+  "M3_feature_permute": true,
+  "M4_wrong_enum_order": true
+ },
+ "holdout_rows": 104951,
+ "holdout_games": 657,
+ "pass": true
+}

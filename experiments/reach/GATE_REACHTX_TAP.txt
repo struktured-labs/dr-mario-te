@@ -1,0 +1,7 @@
+nibble code: 14+32 B; mismatches vs pack_nibbles/decode 0; NB-high zero 0
+tmp/carts/couch_tap2.nes: nA block x2, nB block x2 (expect 2 each)
+GATE_REACHTX PASS
+tmp/carts/cvc_tap2.nes: nA block x1, nB block x1 (expect 1 each)
+GATE_REACHTX PASS
+tmp/carts/couch_id1.nes: nA block x2, nB block x2 (expect 2 each)
+GATE_REACHTX PASS

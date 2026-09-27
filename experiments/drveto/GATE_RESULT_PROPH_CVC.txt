@@ -1,0 +1,89 @@
+== DRPROPH on the CvC SOAK CART (hardened 70a857cc flag set) — gate record ==
+2026-08-31, drveto worktree. Deliverable: drmario_prophcvc_f2a16c00.nes
+(md5 f2a16c007babc89d4fc7bb6195c18645), paired with the veto2fixa core
+NES_theta400dblcanon_veto2fixa_20260830.rbf (md5 cd1fa38916cad5f8869a3b4cefdea9f6).
+
+WHY THIS ARM EXISTS: the DRPROPH/DRHUMAN cart cannot be soaked unattended — with
+nobody on P1 the empty seat tops out in ~30 s and the AI seat wins by default, so
+zero AI-seat deaths and zero DRPROPH signal. On the CvC cart both seats play.
+
+APPLICABILITY (settled from the emitter, not assumed)
+  DRPROPH is a P2-SEAT mechanism by construction: proph_trigger is JSR'd from the
+  new-P2-pill edge in dispatch, and proph_pulse replaces exactly the two P2
+  no-answer no-button states (the act_p2 settle guard and nf2_hold). There is no
+  P1 trigger and no P1 pulse site.
+  On the hardened CvC flag set P2 IS the copro champion and P1 is the DRP1NATIVE
+  v28cs depth-1 6502 AI (handle(1) is dropped entirely). So the prophylactic covers
+  exactly the seat whose deaths are the DRPROPH signal. It is NOT half-covered in
+  the sense of a missing champion seat; the uncovered seat is the weak native AI.
+
+GATE 1 — BYTE IDENTITY. The literal bar ("DRPROPH=0 rebuilds 70a857cc") CANNOT be
+met in this worktree and the reason is NOT DRPROPH:
+  * control, old emitter: v8 lineage bbc08b3 (emitter md5 5496a1a1) + the
+    hardened-all-20260819 flag_snapshot -> 70a857cc EXACTLY. Recipe verified.
+  * this lineage, DRPROPH=0: 858990bf37a150d6ee90178140fd0168, deterministic 3/3.
+  * 858990bf vs 70a857cc differ in exactly THREE BYTES, all one operand:
+    $61BB -> $61C4 at file offsets 0x8232, 0x8239, 0x8267. That is FC_STAB
+    (DRSTARTGUARD site 2) relocated by the humancart-148 lineage advance (d30ac21)
+    because SL_PH/DRP1SLICE also claimed $61BB. Semantically null on this flag set
+    (DRP1SLICE=0, so SL_PH is not emitted) and the new byte is collision-free.
+  RESTATED AND MET: DRPROPH=0 on THIS emitter is byte-stable 3/3; DRPROPH=1 is
+  byte-stable 2/2 (f2a16c00); the DRPROPH=0 baseline differs from the silicon
+  baseline only by that 3-byte relocation, which is attributable to the emitter
+  lineage and reproduced independently on the old emitter.
+
+EMITTER CHANGE REQUIRED (and why it is safe). DRPROPH=1 DID NOT BUILD on the CvC
+config: "branch out of range to not_play (130)". The go_ai block's skip branch is a
+short branch on a DRPRESTART=0 arm, and DRPROPH's PROPH_DIR cold-init store adds
+exactly 3 B. The human cart never saw this because DRPRESTART=1 there already takes
+the invert-and-JMP path. Fix = extend that existing, documented gate to
+`if PRESTART or PROPH`. Regression proof: the human arms still rebuild EXACTLY —
+DRPROPH=0 -> ae06cd1d4a08e27f1b147eba488eeb17, DRPROPH=1 -> 30c921837fdaa8e915175cdcf8709a24.
+
+GATE 2 (g3 behavioral, killed-mutant standard), CvC arms, n=42, W=10 and W=8:
+  proph0   (i)12  (ii)+0   (iii)30   closed-loop survived  3/42
+  real     (i)12  (ii)+28  (iii)2    closed-loop survived 37/42   PASS
+  hold     (i)12  (ii)+21  (iii)9    FAILS (loses the 7 two-edge classes)
+  late     (i)12  (ii)+0   (iii)30   FAILS
+  wrongdir (i)12  (ii)+0   (iii)30   FAILS
+  The real arm reproduces the tier-1 projection and the human-cart result EXACTLY
+  (12/+28/2, 37-vs-3). All three mutants fail. Identical at W=10 and W=8.
+
+GATE 3 (interaction traces): PASS on the real arm; FAIL (6) on each of hold, late,
+  wrongdir ("B1 pulse malformed") — the killed-mutant instrument works on this lineage.
+
+GATE 5 (mode guard): PASS. Trigger inert and full-state-identical to DRPROPH=0 in
+  modes 0/1/2/3/7/8, mode-4-$04=0 and the fc_clear pre-empt; positive control fires
+  on-phase (PROPH_DIR=0x02, F6/hook [2,2,0,0]); proph0 control untouched.
+
+CART HAZARD GATES (tools/gate/run_cart_gates.sh, the pre-push suite): ALL PASS —
+  test_rtivec (4/4 mutants), test_mmc1rst (3/3), test_rtivec_aclobber,
+  test_prg_ram_map, test_combo_cart.
+
+PRG-RAM: a `proph-cvc` config added to the deriver (the shape where FC_STAB $61C4
+  and PROPH_DIR $61C6 are both live). Map regenerated; --check green: no collisions,
+  every indexed writer bounded. $61C6 now lists proph-cvc among its writers.
+
+FRAME BUDGET (#126 census on the CvC IR, both arms):
+  ⚠ H5 AS WRITTEN IS NOT A VALID GATE FOR THIS CONFIG. The p1_search scenario bound
+  is 94791 cyc on BOTH arms — the DRP1NATIVE unsliced depth-1 search (DRP1SLICE=0)
+  overruns the 29780-cycle frame BY DESIGN on the baseline cart, absorbed by
+  DRRTIVEC/DRMMC1RST (both ON). This is a pre-existing property of 70a857cc, not a
+  DRPROPH regression.
+  Excluding that by-design overrun: worst non-search ordered hook pair
+    DRPROPH=0  17208/29780  (+12572)
+    DRPROPH=1  19122/29780  (+10658)   both FIT
+  DRPROPH costs +1916 cyc worst-case pair (+958/hook), consistent with the human
+  cart's measured ~2142.
+
+SUPERSEDED BY THIS WORK: GATE4_RESULT_PROPH.txt records "the CvC cart never ships
+  DRPROPH=1" as the reason its combo C1a/b/c pinned-hash arms were filed
+  inapplicable. The CvC cart now DOES ship DRPROPH=1, so those pins describe the
+  baseline, not this deliverable, and want re-pinning against f2a16c00 if that
+  identity gate is to cover this arm.
+
+DEPLOYED: bluemage, 2026-08-31T23:37:25Z. Cart md5 verified on-box; core cd1fa389
+  verified on-box; /media/fat/dblcanon_prophcvc_soak.mgl names exactly those two;
+  freeze_watch v2.2 MGL repointed and restarted by PID (28395), logging on fresh
+  timestamps; log markers VETO2FIXA SOAK END and PROPH CVC SOAK START written.
+  First frame confirms L11/L11 MED/MED with both seats live.

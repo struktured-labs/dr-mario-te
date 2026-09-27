@@ -1,0 +1,91 @@
+{
+ "G3": {
+  "cases": [
+   {
+    "feature": "c_das_reach",
+    "hand": 5,
+    "got": 5,
+    "mutant_got": 8,
+    "killed": true,
+    "correct": true
+   },
+   {
+    "feature": "e_escape_routes",
+    "hand": 5,
+    "got": 5,
+    "mutant_got": 6,
+    "killed": true,
+    "correct": true
+   },
+   {
+    "feature": "b_spawn_prox",
+    "hand": 3,
+    "got": 3,
+    "mutant_got": 4,
+    "killed": true,
+    "correct": true
+   },
+   {
+    "feature": "d_gvuln_mass",
+    "hand": 3,
+    "got": 3,
+    "mutant_got": 1,
+    "killed": true,
+    "correct": true
+   },
+   {
+    "feature": "x_hvar",
+    "hand": 1.0,
+    "got": 1.0,
+    "mutant_got": 1.1428571428571428,
+    "killed": true,
+    "correct": true
+   },
+   {
+    "feature": "x_jagged",
+    "hand": 8,
+    "got": 8,
+    "mutant_got": 0,
+    "killed": true,
+    "correct": true
+   }
+  ],
+  "pass": true
+ },
+ "G4": {
+  "checks": {
+   "fatal_maxh_match": true,
+   "fatal_nvir_match": true,
+   "fatal_nlegal_match": true,
+   "fatal_action_is_argmax": true,
+   "ctrl_maxh_match": true,
+   "ctrl_nvir_match": true,
+   "ctrl_nlegal_match": true,
+   "ctrl_action_is_argmax": true
+  },
+  "pass": true
+ },
+ "G1": {
+  "leak_auc": 1.0,
+  "pass": true
+ },
+ "G2": {
+  "n_shuffles": 50,
+  "null_means": {
+   "MAXH": 0.4982629133639854,
+   "d_gvuln_mass": 0.49575560080022024,
+   "x_hvar": 0.5001513541584348,
+   "c_das_reach": 0.5049399093444912
+  },
+  "null_sds": {
+   "MAXH": 0.017106972713772376,
+   "d_gvuln_mass": 0.02884273642506448,
+   "x_hvar": 0.029916275828721476,
+   "c_das_reach": 0.02640668308787733
+  },
+  "max_bias": 0.004939909344491178,
+  "max_absdev": 0.07048789795757626,
+  "pass": true
+ },
+ "pass": true
+}

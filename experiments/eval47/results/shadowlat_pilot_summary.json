@@ -1,0 +1,38 @@
+{
+  "source_jsonl": "/mnt/data/drmario_cosim/results/prestart_pilot.jsonl",
+  "analyzer": "/home/struktured/projects/dr-mario-prestart-wt/experiments/prestart/shadowlat_analyze.py",
+  "analyzer_selftest": "PASS",
+  "n_games": 10,
+  "domain_ratio": 1.5714403234593646,
+  "silicon": {
+    "n_decisions": 1500,
+    "median_frames": 49.613015451155135,
+    "p90_frames": 63.83299242021621,
+    "median_seconds": 0.8255242276244308,
+    "late_pct": 9.466666666666667,
+    "late_n": 142,
+    "band_9_12_late_pct": 14.131897711978466,
+    "band_9_12_n": 743
+  },
+  "sim_lockstep": {
+    "n_decisions": 1500,
+    "median_frames": 31.5716828125787,
+    "p90_frames": 40.62069139201827,
+    "median_seconds": 0.5253296706852499,
+    "late_pct": 2.466666666666667,
+    "late_n": 37,
+    "band_9_12_late_pct": 2.826379542395693,
+    "band_9_12_n": 743
+  },
+  "window_miss_h13plus_silicon": {
+    "n": 22,
+    "miss": 15,
+    "miss_pct": 68.18181818181819
+  },
+  "window_miss_h13plus_sim": {
+    "n": 22,
+    "miss": 8,
+    "miss_pct": 36.36363636363637
+  },
+  "arm": "champion s20b, drop+bursty"
+}

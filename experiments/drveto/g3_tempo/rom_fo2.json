@@ -1,0 +1,32 @@
+[
+ {
+  "name": "fo2_ups0",
+  "ups": 0,
+  "lock_t": 39,
+  "y_drops": [
+   19
+  ]
+ },
+ {
+  "name": "fo2_ups10",
+  "ups": 10,
+  "lock_t": 19,
+  "y_drops": [
+   9
+  ]
+ },
+ {
+  "name": "fo2_fo4_ups10",
+  "ups": 10,
+  "lock_t": 19,
+  "y_drops": [
+   9
+  ]
+ },
+ {
+  "name": "fo1_ups10_ctl",
+  "ups": 10,
+  "lock_t": 9,
+  "y_drops": []
+ }
+]

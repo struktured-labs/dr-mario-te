@@ -1,0 +1,139 @@
+{
+ "n_claims": 274,
+ "n_nonclaim": 1070,
+ "n_healthy": 58,
+ "dedup_width_median": 22.0,
+ "sweep": [
+  {
+   "m1": 2,
+   "keep": 5,
+   "cmax": 3,
+   "dmin": 3,
+   "recovered": 152,
+   "recovered_frac": 0.5547,
+   "good_choice": 152,
+   "good_frac_of_recovered": 1.0,
+   "false_override_nonclaim": 2,
+   "false_override_healthy": 0,
+   "forks_per_fire": 80.0
+  },
+  {
+   "m1": 2,
+   "keep": 8,
+   "cmax": 3,
+   "dmin": 3,
+   "recovered": 178,
+   "recovered_frac": 0.6496,
+   "good_choice": 175,
+   "good_frac_of_recovered": 0.9831,
+   "false_override_nonclaim": 4,
+   "false_override_healthy": 0,
+   "forks_per_fire": 98.0
+  },
+  {
+   "m1": 2,
+   "keep": 12,
+   "cmax": 3,
+   "dmin": 3,
+   "recovered": 190,
+   "recovered_frac": 0.6934,
+   "good_choice": 187,
+   "good_frac_of_recovered": 0.9842,
+   "false_override_nonclaim": 8,
+   "false_override_healthy": 0,
+   "forks_per_fire": 122.0
+  },
+  {
+   "m1": 2,
+   "keep": 8,
+   "cmax": 3,
+   "dmin": 4,
+   "recovered": 62,
+   "recovered_frac": 0.2263,
+   "good_choice": 62,
+   "good_frac_of_recovered": 1.0,
+   "false_override_nonclaim": 0,
+   "false_override_healthy": 0,
+   "forks_per_fire": 98.0
+  },
+  {
+   "m1": 3,
+   "keep": 5,
+   "cmax": 3,
+   "dmin": 2,
+   "recovered": 227,
+   "recovered_frac": 0.8285,
+   "good_choice": 218,
+   "good_frac_of_recovered": 0.9604,
+   "false_override_nonclaim": 61,
+   "false_override_healthy": 0,
+   "forks_per_fire": 96.0
+  },
+  {
+   "m1": 3,
+   "keep": 8,
+   "cmax": 3,
+   "dmin": 2,
+   "recovered": 238,
+   "recovered_frac": 0.8686,
+   "good_choice": 224,
+   "good_frac_of_recovered": 0.9412,
+   "false_override_nonclaim": 87,
+   "false_override_healthy": 0,
+   "forks_per_fire": 111.0
+  },
+  {
+   "m1": 3,
+   "keep": 5,
+   "cmax": 3,
+   "dmin": 3,
+   "recovered": 108,
+   "recovered_frac": 0.3942,
+   "good_choice": 106,
+   "good_frac_of_recovered": 0.9815,
+   "false_override_nonclaim": 4,
+   "false_override_healthy": 0,
+   "forks_per_fire": 96.0
+  },
+  {
+   "m1": 3,
+   "keep": 8,
+   "cmax": 3,
+   "dmin": 3,
+   "recovered": 119,
+   "recovered_frac": 0.4343,
+   "good_choice": 117,
+   "good_frac_of_recovered": 0.9832,
+   "false_override_nonclaim": 5,
+   "false_override_healthy": 0,
+   "forks_per_fire": 111.0
+  }
+ ],
+ "registered": {
+  "m1": 2,
+  "keep": 8,
+  "cmax": 3,
+  "dmin": 3,
+  "recovered": 178,
+  "recovered_frac": 0.6496,
+  "good_choice": 175,
+  "good_frac_of_recovered": 0.9831,
+  "false_override_nonclaim": 4,
+  "false_override_healthy": 0,
+  "forks_per_fire": 98.0
+ },
+ "ab_fire": {
+  "A_dsh12": 0.2941,
+  "A_dsh13": 0.1765,
+  "A_dsh14": 0.1176,
+  "B_dsh12": 0.2286,
+  "B_dsh13": 0.1143,
+  "B_dsh14": 0.0286
+ },
+ "catch_by_k": {
+  "8": 0.9048,
+  "12": 0.8219,
+  "16": 0.8615,
+  "20": 0.8298
+ }
+}

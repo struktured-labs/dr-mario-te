@@ -1,0 +1,75 @@
+fieldplay start tag=v8plain-hb1-hs maxf=18000 dlat=34 seed=114 warm=0
+MODE f=1 -1->0 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=31 0->1 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+SEEDPOKE f=31 round=1 s17=4F s18=44
+MODE f=37 1->2 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=40 2->3 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=41 3->8 hold=0 match=0 vc1=0 vc2=0 fill1=0 fill2=0 goes=0 dones=0
+MODE f=219 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=0 dones=0
+MODE f=773 4->5 hold=0 match=1 vc1=72 vc2=72 fill1=60 fill2=62 goes=8 dones=7
+HOLD ARM f=774 ep=1 mode=7 match_active=0 vc1=72 vc2=72
+MODE f=774 5->7 hold=1 match=0 vc1=72 vc2=72 fill1=21 fill2=62 goes=8 dones=7
+HOLD REL f=781 mode=7 held=0
+MODE f=887 7->3 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=8 dones=7
+SEEDPOKE f=887 round=2 s17=02 s18=49
+MODE f=888 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=8 dones=7
+MODE f=1066 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=8 dones=7
+MODE f=2094 4->5 hold=0 match=1 vc1=70 vc2=72 fill1=52 fill2=70 goes=20 dones=19
+HOLD ARM f=2095 ep=2 mode=7 match_active=0 vc1=70 vc2=72
+MODE f=2095 5->7 hold=1 match=0 vc1=70 vc2=72 fill1=52 fill2=29 goes=20 dones=19
+HOLD REL f=2101 mode=7 held=0
+MODE f=2207 7->3 hold=0 match=0 vc1=70 vc2=72 fill1=0 fill2=0 goes=20 dones=19
+SEEDPOKE f=2207 round=3 s17=7C s18=3E
+MODE f=2208 3->8 hold=0 match=0 vc1=72 vc2=72 fill1=0 fill2=0 goes=20 dones=19
+MODE f=2386 8->4 hold=0 match=0 vc1=72 vc2=72 fill1=48 fill2=48 goes=20 dones=19
+*** PATHOLOGY f=2635: HOLD_ACTIVE=1 while mode=4 (live play) ***
+HOLD ARM f=2635 ep=3 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2641 mode=4 held=0
+HOLD ARM f=2643 ep=4 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2644 mode=4 held=0
+HOLD ARM f=2646 ep=5 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2651 mode=4 held=0
+HOLD ARM f=2653 ep=6 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2654 mode=4 held=0
+HOLD ARM f=2656 ep=7 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2661 mode=4 held=0
+HOLD ARM f=2663 ep=8 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2664 mode=4 held=0
+HOLD ARM f=2666 ep=9 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2671 mode=4 held=0
+HOLD ARM f=2673 ep=10 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2674 mode=4 held=0
+HOLD ARM f=2676 ep=11 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2681 mode=4 held=0
+HOLD ARM f=2683 ep=12 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2684 mode=4 held=0
+HOLD ARM f=2686 ep=13 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2691 mode=4 held=0
+HOLD ARM f=2693 ep=14 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2694 mode=4 held=0
+HOLD ARM f=2696 ep=15 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2701 mode=4 held=0
+HOLD ARM f=2703 ep=16 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2704 mode=4 held=0
+HOLD ARM f=2706 ep=17 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2711 mode=4 held=0
+HOLD ARM f=2713 ep=18 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2714 mode=4 held=0
+HOLD ARM f=2716 ep=19 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2721 mode=4 held=0
+HOLD ARM f=2723 ep=20 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2724 mode=4 held=0
+HOLD ARM f=2726 ep=21 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2731 mode=4 held=0
+HOLD ARM f=2733 ep=22 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2734 mode=4 held=0
+HOLD ARM f=2736 ep=23 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2741 mode=4 held=0
+HOLD ARM f=2743 ep=24 mode=4 match_active=1 vc1=72 vc2=0
+HOLD REL f=2744 mode=4 held=0
+HOLD ARM f=2746 ep=25 mode=4 match_active=1 vc1=72 vc2=0
+MODE f=2747 4->3 hold=1 match=1 vc1=72 vc2=0 fill1=50 fill2=54 goes=23 dones=22
+SEEDPOKE f=2747 round=4 s17=6C s18=EB
+HOLD REL f=2749 mode=8 held=0
+MODE f=2749 3->8 hold=0 match=0 vc1=0 vc2=0 fill1=50 fill2=54 goes=23 dones=22
+SUMMARY tag=v8plain-hb1-hs frames=18000 goes=23 dones=22 matches_ended=3 hold_episodes=25 patho_frames=68 patho_first=2635

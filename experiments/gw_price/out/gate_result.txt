@@ -1,0 +1,22 @@
+gate_gw_price:
+  G1 stock-identity seed 52105       PASS  stock=clear/101 mine=clear/101 ties=1
+  G1 stock-identity seed 52108       PASS  stock=clear/139 mine=clear/139 ties=0
+  G1 stock-identity seed 52111       PASS  stock=clear/94 mine=clear/94 ties=0
+  G1-M1 closure mutant KILLED        FAIL  mutant IDENTICAL (ties seen: 1)
+  G2 population dedup ratio          PASS  raw=328 dedup=34 ratio=9.65 (predicted ~7.5)
+  G4 second implementation           PASS  898 boards compared, 0 mismatches
+  G3 worst = min-value rep           PASS  picked 26
+  G3-M3a worst->max mutant KILLED    PASS  mutant picked 10
+  G3 rand excludes rep0              PASS  support=[3, 18, 26]
+  G3-M3b rand-incl-rep0 mutant KILLED PASS  support=[3, 10, 18, 26]
+  G3 worst tie-break last-in-order   PASS  picked 4 want 4
+  G5 test_gw_hhit suite              PASS  PASS: tier1=ok tier2=ok
+  G6 router [void]                   PASS  got VOID (gate red)
+  G6 router [not-green]              PASS  got INDETERMINATE (ordering control not green — deepen sign not read)
+  G6 router [harmful]                PASS  got NO-GO (deepen CI upper <= 0)
+  G6 router [small-but-significant]  PASS  got NO-GO (projected full-N effect even at CI upper (0.500 pp) < MDE 0.84 pp)
+  G6 router [go]                     PASS  got GO (CI lower > 0 and projected effect >= MDE)
+  G6 router [ci-straddles]           PASS  got INDETERMINATE (CI includes 0 or projection below MDE at point)
+  G6-M6 MDE-blind router mutant KILLED PASS  mutant=GO real=NO-GO
+  G8 determinism (deepen arm)        PASS  n_iv=0
+RESULT: FAIL: ['G1-M1 closure mutant KILLED']

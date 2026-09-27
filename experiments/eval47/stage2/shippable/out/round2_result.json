@@ -1,0 +1,453 @@
+{
+ "contamination_flag": ", carried on every round-2 number ***\nThe decision to correct the eligible set was taken AFTER a holdout-scored diagnostic\nshowed BURIED as the largest single addition (+0.023).  The FIT and the FEATURE\nSELECTION below run on TRAIN ROWS ONLY, but the choice of which category to admit was\nholdout-informed.  Round-2 holdout AUCs are therefore OPTIMISTICALLY BIASED and are\nreported as INDICATIVE.  They must be re-established under a fresh pre-registration on\nthe population-scale corpus (Hetzner job 070) before any of them is used for a GO.\nRound 1 (S0/S1/S1b/S2/S3) remains the clean, uncontaminated result.",
+ "eligible2": [
+  "MAXH",
+  "HOLES",
+  "TOPRISK",
+  "SPAWN",
+  "SETUP",
+  "MATCHED",
+  "BURIED",
+  "RDYEXT",
+  "VRDY",
+  "POLL",
+  "a_topout_dist",
+  "d_spawn_h",
+  "d_crit_cols",
+  "d_gvuln_mass",
+  "x_jagged",
+  "x_hvar",
+  "e_escape_routes"
+ ],
+ "selected": [
+  "e_escape_routes",
+  "BURIED",
+  "RDYEXT",
+  "d_spawn_h",
+  "POLL",
+  "VRDY",
+  "a_topout_dist",
+  "x_hvar"
+ ],
+ "trace": [
+  {
+   "k": 1,
+   "added": "e_escape_routes",
+   "cv_auc": 0.6787739215010841
+  },
+  {
+   "k": 2,
+   "added": "BURIED",
+   "cv_auc": 0.7082050008736306
+  },
+  {
+   "k": 3,
+   "added": "RDYEXT",
+   "cv_auc": 0.7186343145478784
+  },
+  {
+   "k": 4,
+   "added": "d_spawn_h",
+   "cv_auc": 0.7240503647349906
+  },
+  {
+   "k": 5,
+   "added": "POLL",
+   "cv_auc": 0.7261636835595293
+  },
+  {
+   "k": 6,
+   "added": "VRDY",
+   "cv_auc": 0.7272106578003276
+  },
+  {
+   "k": 7,
+   "added": "a_topout_dist",
+   "cv_auc": 0.7282057221086258
+  },
+  {
+   "k": 8,
+   "added": "x_hvar",
+   "cv_auc": 0.7290441699574617
+  }
+ ],
+ "A_champ": 0.6645042605729236,
+ "quant_err": {
+  "e_escape_routes": 0.0,
+  "BURIED": 0.0,
+  "RDYEXT": 1.0,
+  "d_spawn_h": 0.0,
+  "POLL": 0.0,
+  "VRDY": 0.0,
+  "a_topout_dist": 0.0,
+  "x_hvar": 0.5
+ },
+ "models": {
+  "S1r2_hinge": {
+   "float_auc": 0.7116647972759241,
+   "quant12_auc": 0.7116813715692729,
+   "mutant3bit_auc": 0.6512831139850734,
+   "ship_dose_sd": 10,
+   "ship_quant_auc": 0.7110014139964114,
+   "flip_target": 0.024271267102914933,
+   "flip_clear": 0.017284487444287424,
+   "T_over_C": 1.4042225539604682,
+   "dose_curve": [
+    {
+     "delta_sd": 1,
+     "flip_fail": 0.001784651992861392,
+     "flip_fail_ties": 0.004185447520927237,
+     "flip_fail_decided": 0.0003774297037176826,
+     "flip_ctrl": 0.0016306120230459833,
+     "flip_ctrl_ties": 0.003937007874015748,
+     "flip_ctrl_decided": 0.0003391555027980329,
+     "T_over_C": 1.0944675788221296,
+     "auc": 0.6545189768025719
+    },
+    {
+     "delta_sd": 2,
+     "flip_fail": 0.00594883997620464,
+     "flip_fail_ties": 0.011912427559562138,
+     "flip_fail_decided": 0.002453293074164937,
+     "flip_ctrl": 0.002174149364061311,
+     "flip_ctrl_ties": 0.004239854633555421,
+     "flip_ctrl_decided": 0.0010174665083940986,
+     "T_over_C": 2.736168947055324,
+     "auc": 0.6945983741125343
+    },
+    {
+     "delta_sd": 5,
+     "flip_fail": 0.01570493753718025,
+     "flip_fail_ties": 0.02994204764971024,
+     "flip_fail_decided": 0.0073598792224948105,
+     "flip_ctrl": 0.010327209479291227,
+     "flip_ctrl_ties": 0.02150211992731678,
+     "flip_ctrl_decided": 0.004069866033576394,
+     "T_over_C": 1.5207338989949593,
+     "auc": 0.7080413172293277
+    },
+    {
+     "delta_sd": 10,
+     "flip_fail": 0.024271267102914933,
+     "flip_fail_ties": 0.04346426271732132,
+     "flip_fail_decided": 0.01302132477826005,
+     "flip_ctrl": 0.017284487444287424,
+     "flip_ctrl_ties": 0.03361599030890369,
+     "flip_ctrl_decided": 0.008139732067152789,
+     "T_over_C": 1.4042225539604682,
+     "auc": 0.7110014139964114
+    },
+    {
+     "delta_sd": 20,
+     "flip_fail": 0.03950029744199881,
+     "flip_fail_ties": 0.0592401802962009,
+     "flip_fail_decided": 0.027929798075108512,
+     "flip_ctrl": 0.03000326122404609,
+     "flip_ctrl_ties": 0.04784978800726832,
+     "flip_ctrl_decided": 0.02001017466508394,
+     "T_over_C": 1.3165334643802429,
+     "auc": 0.7115786423478934
+    },
+    {
+     "delta_sd": 40,
+     "flip_fail": 0.06472337894110648,
+     "flip_fail_ties": 0.0901481004507405,
+     "flip_fail_decided": 0.0498207208907341,
+     "flip_ctrl": 0.05283182954668986,
+     "flip_ctrl_ties": 0.07389460932768019,
+     "flip_ctrl_decided": 0.04103781583856198,
+     "T_over_C": 1.225083051191849,
+     "auc": 0.7115574427548648
+    },
+    {
+     "delta_sd": 80,
+     "flip_fail": 0.11112433075550268,
+     "flip_fail_ties": 0.13811976819059885,
+     "flip_fail_decided": 0.09530100018871485,
+     "flip_ctrl": 0.09348842265463637,
+     "flip_ctrl_ties": 0.11720169594185342,
+     "flip_ctrl_decided": 0.08021027641173478,
+     "T_over_C": 1.1886426960696153,
+     "auc": 0.7116117907528932
+    },
+    {
+     "delta_sd": 160,
+     "flip_fail": 0.18143961927424151,
+     "flip_fail_ties": 0.19768190598840954,
+     "flip_fail_decided": 0.17191923004340443,
+     "flip_ctrl": 0.1562126318078052,
+     "flip_ctrl_ties": 0.18776499091459722,
+     "flip_ctrl_decided": 0.13854502289299644,
+     "T_over_C": 1.1614913414779038,
+     "auc": 0.7117306285761115
+    },
+    {
+     "delta_sd": 320,
+     "flip_fail": 0.2694824509220702,
+     "flip_fail_ties": 0.28783000643915,
+     "flip_fail_decided": 0.2587280618984714,
+     "flip_ctrl": 0.23937384498315034,
+     "flip_ctrl_ties": 0.27135069654754695,
+     "flip_ctrl_decided": 0.2214685433271155,
+     "T_over_C": 1.125780683938294,
+     "auc": 0.711656699549226
+    }
+   ],
+   "accum_max_abs": 58,
+   "accum_int16_ok": true,
+   "param_bits": 8904,
+   "cycles": 18,
+   "ops": "8 BRAM reads + 8 int adds; 0 multiplies",
+   "B2_diff": 0.046497153423487814,
+   "B2_ci95": [
+    0.034415603740011895,
+    0.05922161544765559
+   ],
+   "B2_frac_pos": 1.0
+  },
+  "S1br2_lut": {
+   "float_auc": 0.7241526621600941,
+   "quant12_auc": 0.7241615846131926,
+   "mutant3bit_auc": 0.6256461002738211,
+   "ship_dose_sd": 10,
+   "ship_quant_auc": 0.7230768448182747,
+   "flip_target": 0.02129684711481261,
+   "flip_clear": 0.016197412762256766,
+   "T_over_C": 1.3148301785849748,
+   "dose_curve": [
+    {
+     "delta_sd": 1,
+     "flip_fail": 0.0028554431885782273,
+     "flip_fail_ties": 0.007405022537025113,
+     "flip_fail_decided": 0.0001887148518588413,
+     "flip_ctrl": 0.0017393194912490488,
+     "flip_ctrl_ties": 0.0045427013930950935,
+     "flip_ctrl_decided": 0.00016957775139901646,
+     "T_over_C": 1.6417013682331945,
+     "auc": 0.6481283125606466
+    },
+    {
+     "delta_sd": 2,
+     "flip_fail": 0.0052349791790600834,
+     "flip_fail_ties": 0.010946555054732776,
+     "flip_fail_decided": 0.0018871485185884128,
+     "flip_ctrl": 0.0038047613871072944,
+     "flip_ctrl_ties": 0.0072683222289521504,
+     "flip_ctrl_decided": 0.0018653552653891809,
+     "T_over_C": 1.3759020990906774,
+     "auc": 0.6985178235534326
+    },
+    {
+     "delta_sd": 5,
+     "flip_fail": 0.013087447947650209,
+     "flip_fail_ties": 0.025756600128783,
+     "flip_fail_decided": 0.005661445555765239,
+     "flip_ctrl": 0.009131427329057506,
+     "flip_ctrl_ties": 0.01756511205330103,
+     "flip_ctrl_decided": 0.0044090215363744275,
+     "T_over_C": 1.4332313532194556,
+     "auc": 0.7198571091357927
+    },
+    {
+     "delta_sd": 10,
+     "flip_fail": 0.02129684711481261,
+     "flip_fail_ties": 0.03766902768834514,
+     "flip_fail_decided": 0.01170032081524816,
+     "flip_ctrl": 0.016197412762256766,
+     "flip_ctrl_ties": 0.03210175651120533,
+     "flip_ctrl_decided": 0.007291843310157707,
+     "T_over_C": 1.3148301785849748,
+     "auc": 0.7230768448182747
+    },
+    {
+     "delta_sd": 20,
+     "flip_fail": 0.03664485425342058,
+     "flip_fail_ties": 0.056664520283322604,
+     "flip_fail_decided": 0.02491036044536705,
+     "flip_ctrl": 0.026198499836938796,
+     "flip_ctrl_ties": 0.04330708661417323,
+     "flip_ctrl_decided": 0.01661861963710361,
+     "T_over_C": 1.398738648453178,
+     "auc": 0.7240048210042201
+    },
+    {
+     "delta_sd": 40,
+     "flip_fail": 0.06032123735871505,
+     "flip_fail_ties": 0.0824211204121056,
+     "flip_fail_decided": 0.04736742781656916,
+     "flip_ctrl": 0.047722578541145776,
+     "flip_ctrl_ties": 0.06450635978195034,
+     "flip_ctrl_decided": 0.03832457181617772,
+     "T_over_C": 1.2639978643799994,
+     "auc": 0.7240813690234684
+    },
+    {
+     "delta_sd": 80,
+     "flip_fail": 0.10350981558596074,
+     "flip_fail_ties": 0.12524146812620734,
+     "flip_fail_decided": 0.09077184374410266,
+     "flip_ctrl": 0.08620502228503098,
+     "flip_ctrl_ties": 0.1096305269533616,
+     "flip_ctrl_decided": 0.07308801085297609,
+     "T_over_C": 1.2007399666774943,
+     "auc": 0.724126073228057
+    },
+    {
+     "delta_sd": 160,
+     "flip_fail": 0.16644854253420582,
+     "flip_fail_ties": 0.1880231809401159,
+     "flip_fail_decided": 0.15380260426495565,
+     "flip_ctrl": 0.14686378954234156,
+     "flip_ctrl_ties": 0.16868564506359782,
+     "flip_ctrl_decided": 0.13464473461081905,
+     "T_over_C": 1.133353177477542,
+     "auc": 0.7241626122960567
+    },
+    {
+     "delta_sd": 320,
+     "flip_fail": 0.24497323022010709,
+     "flip_fail_ties": 0.2633612363168062,
+     "flip_fail_decided": 0.23419513115682203,
+     "flip_ctrl": 0.2240460919665181,
+     "flip_ctrl_ties": 0.24197456087219868,
+     "flip_ctrl_decided": 0.21400712226555876,
+     "T_over_C": 1.0934055045098328,
+     "auc": 0.724130919108889
+    }
+   ],
+   "accum_max_abs": 66,
+   "accum_int16_ok": true,
+   "param_bits": 8904,
+   "cycles": 18,
+   "ops": "8 BRAM reads + 8 int adds; 0 multiplies",
+   "B2_diff": 0.05857258424535117,
+   "B2_ci95": [
+    0.046986611274020144,
+    0.06993178393963823
+   ],
+   "B2_frac_pos": 1.0
+  },
+  "S3r2_trees": {
+   "float_auc": 0.7291345656133199,
+   "quant12_auc": 0.729139357166504,
+   "mutant3bit_auc": 0.7072410836950107,
+   "ship_dose_sd": 20,
+   "ship_quant_auc": 0.7268077527918493,
+   "flip_target": 0.032004759071980964,
+   "flip_clear": 0.024894010218502013,
+   "T_over_C": 1.285640955035602,
+   "dose_curve": [
+    {
+     "delta_sd": 1,
+     "flip_fail": 0.0,
+     "flip_fail_ties": 0.0,
+     "flip_fail_decided": 0.0,
+     "flip_ctrl": 0.0,
+     "flip_ctrl_ties": 0.0,
+     "flip_ctrl_decided": 0.0,
+     "T_over_C": 0.0,
+     "auc": 0.4997585348638508
+    },
+    {
+     "delta_sd": 2,
+     "flip_fail": 0.001784651992861392,
+     "flip_fail_ties": 0.004185447520927237,
+     "flip_fail_decided": 0.0003774297037176826,
+     "flip_ctrl": 0.0008696597456245244,
+     "flip_ctrl_ties": 0.0021199273167777106,
+     "flip_ctrl_decided": 0.00016957775139901646,
+     "T_over_C": 2.052126710291493,
+     "auc": 0.5869997652907522
+    },
+    {
+     "delta_sd": 5,
+     "flip_fail": 0.010469958358120167,
+     "flip_fail_ties": 0.018995492594977462,
+     "flip_fail_decided": 0.005472730703906397,
+     "flip_ctrl": 0.006196325687574737,
+     "flip_ctrl_ties": 0.010902483343428226,
+     "flip_ctrl_decided": 0.0035611327793793456,
+     "T_over_C": 1.6897043322166212,
+     "auc": 0.7033937132338052
+    },
+    {
+     "delta_sd": 10,
+     "flip_fail": 0.017608566329565735,
+     "flip_fail_ties": 0.031551835157759174,
+     "flip_fail_decided": 0.009435742592942064,
+     "flip_ctrl": 0.012283943906946407,
+     "flip_ctrl_ties": 0.021804966686856452,
+     "flip_ctrl_decided": 0.006952687807359675,
+     "T_over_C": 1.4334619616431434,
+     "auc": 0.7236040784697731
+    },
+    {
+     "delta_sd": 20,
+     "flip_fail": 0.032004759071980964,
+     "flip_fail_ties": 0.05119124275595621,
+     "flip_fail_decided": 0.02075863370447254,
+     "flip_ctrl": 0.024894010218502013,
+     "flip_ctrl_ties": 0.03906723198061781,
+     "flip_ctrl_decided": 0.016957775139901644,
+     "T_over_C": 1.285640955035602,
+     "auc": 0.7268077527918493
+    },
+    {
+     "delta_sd": 40,
+     "flip_fail": 0.054253420582986316,
+     "flip_fail_ties": 0.07694784288473921,
+     "flip_fail_decided": 0.04095112285336856,
+     "flip_ctrl": 0.044787476899663003,
+     "flip_ctrl_ties": 0.06117504542701393,
+     "flip_ctrl_decided": 0.03561132779379345,
+     "T_over_C": 1.2113524658808037,
+     "auc": 0.728720863118539
+    },
+    {
+     "delta_sd": 80,
+     "flip_fail": 0.10148720999405116,
+     "flip_fail_ties": 0.12234385061171925,
+     "flip_fail_decided": 0.08926212492923193,
+     "flip_ctrl": 0.07924774432003479,
+     "flip_ctrl_ties": 0.09721380981223501,
+     "flip_ctrl_decided": 0.06918772257079871,
+     "T_over_C": 1.280632160130695,
+     "auc": 0.7291136125842316
+    },
+    {
+     "delta_sd": 160,
+     "flip_fail": 0.16073765615704938,
+     "flip_fail_ties": 0.18448164842240825,
+     "flip_fail_decided": 0.14682015474617852,
+     "flip_ctrl": 0.13305794108055224,
+     "flip_ctrl_ties": 0.15051483949121744,
+     "flip_ctrl_decided": 0.12328302526708496,
+     "T_over_C": 1.2080275318535107,
+     "auc": 0.7291462847592479
+    },
+    {
+     "delta_sd": 320,
+     "flip_fail": 0.23581201665675194,
+     "flip_fail_ties": 0.25434642627173215,
+     "flip_fail_decided": 0.22494810341573881,
+     "flip_ctrl": 0.21165344059136862,
+     "flip_ctrl_ties": 0.23016353725015143,
+     "flip_ctrl_decided": 0.20128879091063254,
+     "T_over_C": 1.1141421372498517,
+     "auc": 0.72915603666289
+    }
+   ],
+   "accum_max_abs": 87,
+   "accum_int16_ok": true,
+   "param_bits": 11056,
+   "cycles": 160,
+   "ops": "32x(4 uint8 compares + 1 BRAM read + 1 int add); 0 multiplies",
+   "B2_diff": 0.06230349221892573,
+   "B2_ci95": [
+    0.050144694263072054,
+    0.07439772001625408
+   ],
+   "B2_frac_pos": 1.0
+  }
+ }
+}

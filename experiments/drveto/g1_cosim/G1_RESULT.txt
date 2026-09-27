@@ -1,0 +1,21 @@
+==============================================================================
+G1 (minimal) -- delta-path co-sim gate, real RTL (Verilator CoproDrMario)
+==============================================================================
+  parent_s1A         final=(2, 0) b4zero=26 clocks=  31468320  m2_broke=Y veto1_vetoed_pubs=0
+  parent_s1B         final=(2, 0) b4zero=26 clocks=  31225440  m2_broke=Y veto1_vetoed_pubs=0
+  parent_s2A         final=(2, 3) b4zero=26 clocks=  24922560  m2_broke=Y veto1_vetoed_pubs=0
+  parent_s3A         final=(3, 0) b4zero=26 clocks=  29467680  m2_broke=Y veto1_vetoed_pubs=0
+  parent_s4A         final=(3, 1) b4zero=26 clocks=  25027680  m2_broke=Y veto1_vetoed_pubs=0
+  golden0            final=(1, 3) b4zero=6 clocks=   1882560  m2_broke=Y veto1_vetoed_pubs=1
+  golden1            final=(6, 0) b4zero=4 clocks=   1086720  m2_broke=Y veto1_vetoed_pubs=2
+  golden2            final=(4, 1) b4zero=4 clocks=    699360  m2_broke=Y veto1_vetoed_pubs=1
+  golden3_silent     final=(3, 0) b4zero=6 clocks=   4383840  m2_broke=Y veto1_vetoed_pubs=0
+  RV_clear_c3        final=(4, 1) b4zero=14 clocks=  13558080  m2_broke=Y veto1_vetoed_pubs=0
+  PC4cap0            final=(4, 0) b4zero=6 clocks=   2398080  m2_broke=Y veto1_vetoed_pubs=1
+
+
+  M2-under-delta: cmd4viol total 208 across 11 cases; finals diverged on 0 -> KILLED
+  veto1 (pre-Fix-A) anytime hole visible on: ['PC4cap0'] (positive control OK)
+  py65 cross-check divergences (reported, not gated): none
+
+G1 GATE: PASS

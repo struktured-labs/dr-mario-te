@@ -1,0 +1,3 @@
+transform: 4 HSV addition sites wrapped (of 5 _x5 references incl. the def/calls)
+boards 647 (3 games): sim (post-wrap HSV) == RTL-exact (in-combine HSV) 647/647; HSV moved the root decision vs w5=0 on 21
+CHECK_HSV_SEARCH PASS
