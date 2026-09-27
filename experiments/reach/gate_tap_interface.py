@@ -18,7 +18,7 @@ edges are exactly the edges of that state sequence):
   C3 DIAL                  : successive press edges of A/B/L/R are >= P frames apart (P = DRTAPP)
 Informational: hook-pass disagreements (harmless: the ROM ANDs them), frames with > 1 bit changing, press timing
 (first answer-driven press after the answer is published, lateral spacing) for aligning the steering sim.
-Usage: gate_tap_interface.py --cart couch|cvc --tap P [--mut everyframe] [--frames N] [--seed S]
+Usage: gate_tap_interface.py --cart couch|cvc --tap P [--mut everyframe] [--frames N] [--seed S] [--overlay K=V ...]
 Exit 0 iff C1-C3 hold with zero violations (and, with --mut, iff the mutant is caught: exit 0 = KILLED).
 """
 import argparse, json, os, random, subprocess, sys, collections
@@ -36,7 +36,7 @@ SPEED_TABLE = [0x45, 0x43, 0x41, 0x3F, 0x3D, 0x3B, 0x39, 0x37, 0x35, 0x33, 0x31,
 SPEED_BASE = [0x0F, 0x19, 0x1F]
 MAGIC, MODE, Z04, MATCH = 0x6149, 0x46, 0x04, 0x6164
 P2 = dict(x=0x0385, y=0x0386, rot=0x03A5, ca=0x0381, cb=0x0382, na=0x039A, nb=0x039B, su=0x038A, sp=0x038B,
-          scnt=0x0392, hv=0x0393, vc=0x03A4, pc=0x03A7, lvl=0x0396)
+          scnt=0x0392, hv=0x0393, vc=0x03A4, pc=0x03A7, lvl=0x0396, na_state=0x0397)
 
 
 def capture(cart, env_extra, out):
@@ -143,6 +143,7 @@ class World:
         m[P2["x"]] = self.x; m[P2["y"]] = 15 - self.row; m[P2["rot"]] = self.rot
         m[P2["ca"]] = self.ca; m[P2["cb"]] = self.cb; m[P2["su"]] = self.su; m[P2["sp"]] = self.speed
         m[P2["scnt"]] = self.scnt; m[P2["hv"]] = self.hv; m[P2["pc"]] = self.pills & 0x7F
+        m[P2["na_state"]] = 0 if self.active else 6        # p2_nextAction: pillFalling(0) live, sendPill(6) between
 
     def lock(self):
         if self.rot % 2 == 0:
@@ -166,9 +167,7 @@ class World:
                         kill.update(run)
         for r, c in kill:
             self.board[r][c] = 0
-        self.active = False; self.spawn_in = self.rng.randint(8, 28); self.pills += 1; self.pills_on_board += 1
-        if self.pills % 10 == 0:
-            self.su = min(49, self.su + 1)
+        self.active = False; self.spawn_in = self.rng.randint(8, 28); self.pills_on_board += 1
 
     def step(self, frame, pressed, held):
         if not self.active:
@@ -180,6 +179,11 @@ class World:
                 self.ca, self.cb = self.m[P2["na"]] % 3, self.m[P2["nb"]] % 3
                 self.m[P2["na"]], self.m[P2["nb"]] = self.rng.randrange(3), self.rng.randrange(3)
                 self.active = True; self.scnt = 0; self.age = 0
+                # ROM: generateNextPill (the spawn) writes Y=$0F AND increments p2_pillsCounter $03A7 in the same call;
+                # the speed-up check rides the same counter. (Was counted at LOCK -- wrong frame for DRSPAWNEDGE.)
+                self.pills += 1
+                if self.pills % 10 == 0:
+                    self.su = min(49, self.su + 1)
             return
         self.age += 1
         # --- checkYMove
@@ -225,12 +229,14 @@ class World:
                     self.x -= 1; self.rot = nr
 
 
-def run(cart, tap, mut, frames, seed):
+def run(cart, tap, mut, frames, seed, overlays=None):
     tmpd = os.path.join(ROOT, "tmp", "tapgate"); os.makedirs(tmpd, exist_ok=True)
     extra = {"DRTAPP": str(tap)}
+    extra.update(overlays or {})
     if mut != "none":
         extra["DRTAPP_MUT"] = mut
-    ir, snap = capture(cart, extra, os.path.join(tmpd, f"{cart}_p{tap}_{mut}_ir.json"))
+    otag = "".join(f"_{k}{v}" for k, v in sorted((overlays or {}).items()))
+    ir, snap = capture(cart, extra, os.path.join(tmpd, f"{cart}_p{tap}_{mut}{otag}_s{seed}_{os.getpid()}_ir.json"))
     wbase = 0x5000 if snap.get("DRPOCKET") == "1" else 0x5200     # DRPOCKET single-window, else P2 = $5200
     rng = random.Random(seed)
     base = [0] * 0x10000
@@ -320,8 +326,9 @@ def main():
     ap.add_argument("--cart", default="couch"); ap.add_argument("--tap", type=int, default=2)
     ap.add_argument("--mut", default="none"); ap.add_argument("--frames", type=int, default=20000)
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--overlay", nargs="*", default=[], help="extra KEY=VAL build flags, e.g. DRSPAWNEDGE=1")
     a = ap.parse_args()
-    res = run(a.cart, a.tap, a.mut, a.frames, a.seed)
+    res = run(a.cart, a.tap, a.mut, a.frames, a.seed, dict(kv.split("=", 1) for kv in a.overlay))
     print(json.dumps(res))
     if a.mut != "none":
         print("GATE_TAP_INTERFACE mutant", a.mut, "KILLED" if not res["ok"] else "SURVIVED")

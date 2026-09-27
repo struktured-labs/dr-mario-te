@@ -1,0 +1,12 @@
+g2_couch_mut_se1           GATE_TAP_INTERFACE mutant everyframe KILLED | frames 20000 pills 424 presses 5803 viol {'C3_dial_spacing': 5367, 'C1_manufactured_edge': 12861, 'C2_consecutive_press': 5053}
+g2_couch_se0_s1            GATE_TAP_INTERFACE couch P=2 PASS | frames 70000 pills 1530 presses 11270 viol {}
+g2_couch_se1_s1            GATE_TAP_INTERFACE couch P=2 PASS | frames 70000 pills 1466 presses 11756 viol {}
+g2_couch_se1_s2            GATE_TAP_INTERFACE couch P=2 PASS | frames 70000 pills 1474 presses 13031 viol {}
+g2_couch_se1_s3            GATE_TAP_INTERFACE couch P=2 PASS | frames 70000 pills 1474 presses 12423 viol {}
+g2_couch_se1_s4            GATE_TAP_INTERFACE couch P=2 PASS | frames 70000 pills 1451 presses 12498 viol {}
+g2_cvc_mut_se1             GATE_TAP_INTERFACE mutant everyframe KILLED | frames 20000 pills 402 presses 1859 viol {'C3_dial_spacing': 1412, 'C1_manufactured_edge': 9661, 'C2_consecutive_press': 1256}
+g2_cvc_se0_s1              GATE_TAP_INTERFACE cvc P=2 PASS | frames 70000 pills 1434 presses 5740 viol {}
+g2_cvc_se1_s1              GATE_TAP_INTERFACE cvc P=2 PASS | frames 70000 pills 1378 presses 4968 viol {}
+g2_cvc_se1_s2              GATE_TAP_INTERFACE cvc P=2 PASS | frames 70000 pills 1373 presses 5168 viol {}
+g2_cvc_se1_s3              GATE_TAP_INTERFACE cvc P=2 PASS | frames 70000 pills 1373 presses 5048 viol {}
+g2_cvc_se1_s4              GATE_TAP_INTERFACE cvc P=2 PASS | frames 70000 pills 1409 presses 4706 viol {}

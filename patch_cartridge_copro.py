@@ -574,6 +574,31 @@ TAPP = int(_os.environ.get("DRTAPP", "0") or "0")
 assert TAPP == 0 or 2 <= TAPP <= 15, "DRTAPP must be 0 (DAS) or 2..15 frames per press (2 = the interface ceiling)"
 TAP_LF, TAP_H, TAP_CD, TAP_USED = 0x61D0, 0x61D1, 0x61D2, 0x61D3   # DRTAPP state ($61D0-$61D3, free run $61CF-$61FF)
 TAP_INTENT = 0xC3                     # A | B | LEFT | RIGHT: the press-edge buttons the driver emits on P2
+# DRSPAWNEDGE=1 (default OFF -> byte-identical cart): the P2 new-pill edge is `$0386 (fallingPillY) increased`. The ROM
+# writes fallingPillY in exactly two places (dr-mario-disassembly prg/drmario_prg_game_logic.asm): gravity (dec/inc) and
+# generateNextPill at the spawn (`lda #pillStartingY ($0F); sta currentP_fallingPillY`, called from
+# @pillThrown_toField). So a capsule that LOCKS at Y=$0F (a horizontal pill in the top row off the spawn cells, or a
+# vertical pill whose bottom half is in the top row) leaves Y=$0F, the next spawn writes $0F again, and the edge is
+# MISSED: no PEND2/search, ROT_DONE2 stays latched, no PROPH trigger -- the new capsule is steered to the PREVIOUS
+# pill's target without rotating. It lives in the throat/ledge regime (the one PROPH owns), where a missed pill that
+# locks at the spawn row misses the NEXT edge too (orient_harness.py: runs of up to 6). DRCOLDINIT fixed the same
+# family only at match boundaries. Fix: when Y is UNCHANGED at $0F, fall back to the ROM's per-spawn pill counter
+# $03A7 (p2_pillsCounter, incremented by the same generateNextPill call that writes Y=$0F): a change = a new pill --
+# but ONLY if a pill has actually FALLEN since the last edge (FELL2, latched from p2_nextAction $0397 == pillFalling $00,
+# the ROM's own "a capsule is live" state). That exclusion is the ROUND START: level init calls generateNextPill (Y=$0F)
+# before Mario throws the first capsule, so the stock Y test already fires a PRE-THROW edge there, and the throw's own
+# counter bump (still Y=$0F, no capsule has fallen in between) must NOT fire a second one. ROM flow (Nostaljipi listing):
+# pillFalling(0) -> placed(1) -> checkAttack(2) -> incNextAction -> sendPill (toField: generateNextPill) ->
+# sendPillFinished(3) -> pillFalling(0).
+# Every other hook takes the unchanged Y test, so the fix can only ADD edges in the one ambiguous state.
+SPAWNEDGE = _os.environ.get("DRSPAWNEDGE", "0") == "1"
+# TEST-ONLY mutant (orient_harness gate_spawnedge must KILL it; never ship): "nostore" = LASTPC2 is never written, so
+# the counter test compares against a stale byte and re-fires a new-pill edge on every hook the capsule sits at Y=$0F.
+SPAWNEDGE_MUT = _os.environ.get("DRSPAWNEDGE_MUT", "none") if SPAWNEDGE else "none"
+# "nofell" = the FELL2 test is skipped, so the round-start throw fires a SECOND edge right after the pre-throw one.
+assert SPAWNEDGE_MUT in ("none", "nostore", "nofell"), SPAWNEDGE_MUT
+LASTPC2 = 0x61D4                      # DRSPAWNEDGE: $03A7 as of the previous hook (free run $61D4-$61FF)
+FELL2 = 0x61D5                        # DRSPAWNEDGE: 1 = a P2 capsule has been falling (nextAction==0) since the last edge
 # TEST-ONLY mutant (the interface gate must KILL it; never ship): "everyframe" = the filter passes every press intent
 # on every frame and forces held := 0 -- a fresh edge every frame, i.e. faster than any physical pad.
 TAPP_MUT = _os.environ.get("DRTAPP_MUT", "none") if TAPP else "none"
@@ -2468,7 +2493,17 @@ def build_main(level=11, speed=1):
     a.label("no_p1_new")
     a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", LASTY1)
     a.ins16("LDA_abs", 0x0386); a.ins16("CMP_abs", LASTY2)
-    a.br("BCC", "no_p2_new"); a.br("BEQ", "no_p2_new")
+    if SPAWNEDGE:
+        # DRSPAWNEDGE (flag block above): Y increased -> new pill (unchanged); Y decreased -> none (unchanged);
+        # Y EQUAL -> a new pill only if Y is the spawn row $0F AND the ROM's spawn counter $03A7 moved.
+        a.br("BCC", "no_p2_new"); a.br("BNE", "p2_new")
+        a.ins("CMP_imm", 0x0F); a.br("BNE", "no_p2_new")
+        a.ins16("LDA_abs", 0x03A7); a.ins16("CMP_abs", LASTPC2); a.br("BEQ", "no_p2_new")
+        if SPAWNEDGE_MUT != "nofell":
+            a.ins16("LDA_abs", FELL2); a.br("BEQ", "no_p2_new")  # nothing fell since the last edge (round start)
+        a.label("p2_new")
+    else:
+        a.br("BCC", "no_p2_new"); a.br("BEQ", "no_p2_new")
     if PRESTART:
         # A prestart already owns this capsule: its search was launched against the PROJECTED
         # post-garbage board with THIS capsule's colours, so queueing a second one would either
@@ -2488,6 +2523,8 @@ def build_main(level=11, speed=1):
     a.ins16("STA_abs", WRETRY2 if WRETRY_FIX else WRETRY)   # FIX(B): reset P2's latch per P2 pill (was WRETRY=P1)
     if ROTFIX:
         a.ins16("STA_abs", ROT_DONE2)                       # A==0 here: new P2 pill -> re-enter pre-phase
+    if SPAWNEDGE:
+        a.ins16("STA_abs", FELL2)                           # A==0: a new edge re-arms the "has fallen" latch
     if SLAM:
         a.ins16("STA_abs", STABLE_CT2)                      # A==0: new pill -> argmax must re-prove stability
     if MATURE:
@@ -2506,6 +2543,12 @@ def build_main(level=11, speed=1):
         a.jsr("proph_trigger")
     a.label("no_p2_new")
     a.ins16("LDA_abs", 0x0386); a.ins16("STA_abs", LASTY2)
+    if SPAWNEDGE and SPAWNEDGE_MUT != "nostore":
+        a.ins16("LDA_abs", 0x03A7); a.ins16("STA_abs", LASTPC2)   # every hook, like LASTY2
+    if SPAWNEDGE:
+        a.ins16("LDA_abs", 0x0397); a.br("BNE", "p2_nofall")       # p2_nextAction != pillFalling
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", FELL2)
+        a.label("p2_nofall")
     if PRESTART:
         # Runs BEFORE handle(2) so a prestart issued this hook starts its watchdog on this hook,
         # exactly as a normal `_start` does. Body lives past freeze_pending (JSR-only territory).
