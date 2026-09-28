@@ -1,20 +1,20 @@
 {
- "_convention": "each agent edits only its own keys; commit subject starts with [STATE]; results still go to issue #14 as [GROK]/[CLAUDE] comments",
- "boxes": {
-  "bluemage": "claude: soak CHAIN540+REACH+TAP+HSV (rbf 6b73907c + CvC 33062615) since 2026-09-26T19:04Z, 17h12m clean at 12:16Z 9/27.",
-  "rivalmage": "OWNER — taken 2026-09-27 ~13:20Z 'for other purposes'; do NOT touch. Last Dr. Mario load: AA_DRMARIO_HSV.mgl (canon SOTA). /media/fat/freeze_hold was left SET (boot freeze_watch.sh won't reload).",
-  "redmage-cpu": "free",
-  "blackmage": "idle (grok offline)",
-  "hetzner rbm-train-2": "idle; exactness-gated mirror (vs_race/gate_b/vs_race_adaptive)"
- },
- "quartus": "idle (claude built childproof-chain540 2026-09-24; fork restored 18cf064/f78f1e93)",
- "claude_running": [
-  "bluemage CHAIN540+REACH+TAP overnight soak"
- ],
- "grok_running": [],
- "updated": {
-  "claude": "2026-09-27T14:15Z",
-  "grok": "offline since 2026-09-23T16:40Z; owner: claude takes over solo"
- },
- "canon_sota": "2026-09-27 ANTIBODY (owner name) = CHAIN540+REACH+TAP+HSV (rbf 6b73907c, fw 77ec742c, carts 198a95e3/33062615). dr-mario-te main a1d6c2e0 (tags sota-20260927, antibody); fork main dbae1f8 (tags sota-20260927, antibody). Launcher ANTIBODY.mgl (on bluemage; rivalmage on 'go')."
+  "_convention": "each agent edits only its own keys; commit subject starts with [STATE]; results still go to issue #14 as [GROK]/[CLAUDE] comments",
+  "boxes": {
+    "bluemage": "claude: soak CHAIN540+REACH+TAP+HSV (rbf 6b73907c + CvC 33062615) since 2026-09-26T19:04Z, 17h12m clean at 12:16Z 9/27.",
+    "rivalmage": "2026-09-28T03:00Z claude READ-ONLY ssh check (DRSPAWNEDGE soak request): loaded core = GBC (/media/fat/games/GBC/ultima_rov_dx_infmoney.mgl), NOT Dr. Mario; boot freeze_watch.sh is DISABLED in user-startup.sh ('DISABLED 20260927_230402 (screenshot every 60s shows in OBS)'), not running; /media/fat/freeze_hold present; ANTIBODY.mgl = rbf 6b73907c + couch 198a95e3. Soak NOT started (nothing written/loaded) -- awaiting owner confirmation because the box is in use by another core.",
+    "redmage-cpu": "free",
+    "blackmage": "idle (grok offline)",
+    "hetzner rbm-train-2": "idle; exactness-gated mirror (vs_race/gate_b/vs_race_adaptive)"
+  },
+  "quartus": "idle (claude built childproof-chain540 2026-09-24; fork restored 18cf064/f78f1e93)",
+  "claude_running": [
+    "bluemage CHAIN540+REACH+TAP overnight soak"
+  ],
+  "grok_running": [],
+  "updated": {
+    "claude": "2026-09-28T03:45Z",
+    "grok": "offline since 2026-09-23T16:40Z; owner: claude takes over solo"
+  },
+  "canon_sota": "2026-09-27 ANTIBODY (owner name) = CHAIN540+REACH+TAP+HSV (rbf 6b73907c, fw 77ec742c, carts 198a95e3/33062615). dr-mario-te main a1d6c2e0 (tags sota-20260927, antibody); fork main dbae1f8 (tags sota-20260927, antibody). Launcher ANTIBODY.mgl (on bluemage; rivalmage on 'go')."
 }
