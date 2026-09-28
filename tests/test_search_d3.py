@@ -90,6 +90,9 @@ DRREACH = 0                    # reach-root pre-filter (STEER2; set by build_cop
                                # search JSRs it after the board upload, Pass 0 skips every legal
                                # candidate with R_FLT && !ROK[o4*8+col], and an all-masked Pass 0
                                # is rerun unfiltered. Spec + gates: experiments/reach/.
+DRDIST = 0                     # STEER6b dist_target: pick the endgame target (fpga/copro/dist_6502.py) and write it to
+                               # the LeafEval $70F5 register once per search (set by build_copro_d3 from env DRDIST;
+                               # 0 = byte-identical firmware). The -60*D term itself is RTL (LeafEval `DRDIST`).
 DRREACHTAP = 0                 # DRREACH mask models the cart's DRTAPP taps (P from the nA/nB low-nibble bits 2-3);
                                # set by build_copro_d3. Only the reach routine changes (reach_6502.emit_reach(tap=)).
 _REACH_PENALTY_MUT = False     # TEST-ONLY (gate mutant): the o_cand PENALTY form instead of the
@@ -563,6 +566,11 @@ def _emit_search_d3_engine(a):
         # DRREACH: build the 32-entry reach mask ONCE per search from the root at LIVE + the
         # DRREACHTX gravity nibbles (old cart -> R_FLT = 0 -> no filtering).
         a.jsr(_RC.REACH_ROM)
+    if DRDIST:
+        import dist_6502 as _DT
+        # DRDIST: the endgame target, ONCE per search from the root at LIVE, BEFORE the first engine command (Pass 0's
+        # CMD 6 base walk latches the target's row/column): $70F5 = $80|idx with <= 4 viruses, else 0 (term off).
+        a.jsr(_DT.DIST_ROM)
     # ---- Pass 0 ----
     if _d(DELTA_P0):
         _e_copy(a, 1, True)                               # CUR <- slot1 (root parent), once
