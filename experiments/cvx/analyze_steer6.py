@@ -184,8 +184,43 @@ def dlat():
               f"race {fmt(boot([win(R[s]) - win(R0[s]) for s in SR]))}")
 
 
+def opp():
+    """Opponent suite for the recommended arm (PREREG_STEER6b): dist_target60 vs ANTIBODY per opponent, 600 paired."""
+    arm = "s6_dist_target60"
+    cells = (("OWNER-0804", "steer6/measure/*/gb_owner0804_*.jsonl", "s5b_hsv512@owner0804", f"steer6/screen/*/gb_{arm}_*.jsonl", f"{arm}@owner0804"),
+             ("OWNER-2026-09", "opp1/*/gb_s5b_hsv512_owner202609_*.jsonl", "s5b_hsv512@owner202609", "steer6/opp/*/gb_owner202609_*.jsonl", f"{arm}@owner202609"),
+             ("lulu fit", "steer6/measure/*/gb_lulu202609_*.jsonl", "s5b_hsv512@lulu202609", "steer6/opp/*/gb_lulu202609_*.jsonl", f"{arm}@lulu202609"),
+             ("STRIKER H6", "opp1/*/gb_s5b_hsv512_striker6_*.jsonl", "s5b_hsv512@striker6", "steer6/opp/*/gb_striker6_*.jsonl", f"{arm}@striker6"))
+    flags = []
+    print(f"OPPONENT SUITE: {arm} vs ANTIBODY (paired, 95% CIs)")
+    for name, bp, bl, ap, al in cells:
+        Bb, A = load(bp, bl), load(ap, al); S = [s for s in SEEDS if s in Bb and s in A]
+        if not S:
+            print(f"  {name:14s} no rows"); continue
+        t = boot([A[s]["topout"] - Bb[s]["topout"] for s in S]); t1 = boot([tap100(A[s]) - tap100(Bb[s]) for s in S])
+        print(f"  {name:14s} n={len(S)}  tap-out {100*np.mean([Bb[s]['topout'] for s in S]):5.1f}% -> {100*np.mean([A[s]['topout'] for s in S]):5.1f}%  "
+              f"d {fmt(t)}   tap<=100 d {fmt(t1)}")
+        if t[1] > 0 or t1[1] > 0:
+            flags.append(f"{name}: arm WORSE (tap-out {fmt(t)}, tap<=100 {fmt(t1)})")
+    Bb = load("steer6/measure/*/rc47_*.jsonl", "s5b_hsv512~steer"); A = load("steer6/opp/*/rc47_*.jsonl", f"{arm}~steer")
+    S = [s for s in SEEDS if s in Bb and s in A]
+    if S:
+        print(f"  LULU race (lam 4.7) n={len(S)}  race-row tap-out {100*np.mean([Bb[s]['how'] == 'topout' for s in S]):.1f}% -> "
+              f"{100*np.mean([A[s]['how'] == 'topout' for s in S]):.1f}%  d {fmt(boot([(A[s]['how'] == 'topout') - (Bb[s]['how'] == 'topout') for s in S]))}")
+        for dl in (2.65, 2.0):
+            for M in (140.0, 160.0, 177.0):
+                w = lambda r: int(evaluate(r, M, .15, dl)[0] == "win_race")
+                t = boot([w(A[s]) - w(Bb[s]) for s in S])
+                print(f"    delta {dl} M {M:.0f}: base {100*np.mean([w(Bb[s]) for s in S]):5.1f}%  arm {100*np.mean([w(A[s]) for s in S]):5.1f}%  d {fmt(t)}")
+                if t[2] < 0:
+                    flags.append(f"LULU race M{M:.0f} delta{dl}: arm WORSE {fmt(t)}")
+    print("FLAGS:", flags or "none (the arm holds or improves against every opponent)")
+
+
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    if "--opp" in sys.argv:
+        opp(); sys.exit(0)
     if "--dlat" in sys.argv or "--dfrac" in sys.argv:
         dlat(); sys.exit(0)
     if "--holdout" in sys.argv:
