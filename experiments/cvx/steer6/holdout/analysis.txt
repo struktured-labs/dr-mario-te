@@ -1,0 +1,24 @@
+BASELINE ANTIBODY (STEER5d rows): gate b n=1500 tap<=100 3.13% tap-out 25.40%   race n=2166 win 69.30%
+
+s6_dist_end60: gate b n=1500  race n=2166   -> CONFIRMED
+  tap-out  base 25.40%  arm 21.87%  d -3.53 [-5.73, -1.40] (98.33%)   95%: -3.53 [-5.33, -1.73]
+  tap<=100 base 3.13%  arm 3.07%  d -0.07 [-0.27, +0.00] (98.33%)
+  race win base 69.30%  arm 76.27%  d +6.97 [+5.26, +8.73] (98.33%)   95%: +6.97 [+5.54, +8.40]   delta 2.0 95%: +10.62 [+9.00, +12.23]
+  churn fixed 122 / new 69 (base failures 381)   arm stall pills/game 54.7  arm endgame-stall deaths 7.40%
+  POOLED screen+holdout tap-out (descriptive, n=2100): -4.24 [-5.71, -2.76]
+
+s6_dist_stall60: gate b n=1500  race n=2166   -> NOT CONFIRMED
+  tap-out  base 25.40%  arm 21.47%  d -3.93 [-7.00, -0.80] (98.33%)   95%: -3.93 [-6.53, -1.40]
+  tap<=100 base 3.13%  arm 4.40%  d +1.27 [+0.00, +2.60] (98.33%)
+  race win base 69.30%  arm 76.82%  d +7.53 [+4.80, +10.16] (98.33%)   95%: +7.53 [+5.36, +9.70]   delta 2.0 95%: +10.02 [+7.66, +12.33]
+  churn fixed 239 / new 180 (base failures 381)   arm stall pills/game 43.5  arm endgame-stall deaths 5.80%
+  POOLED screen+holdout tap-out (descriptive, n=2100): -4.10 [-6.43, -1.81]
+
+s6_dist_target60: gate b n=1500  race n=2166   -> CONFIRMED
+  tap-out  base 25.40%  arm 20.00%  d -5.40 [-7.47, -3.42] (98.33%)   95%: -5.40 [-7.00, -3.80]
+  tap<=100 base 3.13%  arm 3.07%  d -0.07 [-0.27, +0.00] (98.33%)
+  race win base 69.30%  arm 75.85%  d +6.56 [+4.89, +8.20] (98.33%)   95%: +6.56 [+5.17, +7.90]   delta 2.0 95%: +10.20 [+8.54, +11.73]
+  churn fixed 124 / new 43 (base failures 381)   arm stall pills/game 56.4  arm endgame-stall deaths 5.93%
+  POOLED screen+holdout tap-out (descriptive, n=2100): -5.05 [-6.43, -3.67]
+
+RECOMMENDATION (pre-declared rule: cheapest RTL within 1.5 pp of the best confirmed): s6_dist_target60

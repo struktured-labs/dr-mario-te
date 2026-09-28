@@ -188,6 +188,10 @@ def build_image(board, cA, cB, nA, nB):
     # colour LOW-nibble bits 2-3 (P = 0 -> today's DAS model). Default 0 = byte-identical DRREACH firmware.
     D3.DRREACHTAP = int(os.environ.get("DRREACHTAP", "0"))
     assert not D3.DRREACHTAP or D3.DRREACH, "DRREACHTAP requires DRREACH=1"
+    # DRDIST (STEER6b dist_target60): endgame target selection -> the LeafEval `DRDIST` term (env DRDIST, default 0 =
+    # byte-identical firmware). Needs an RTL built with DRDIST; on an older core the $70F5 write is ignored (no decode)
+    # and the search is exactly ANTIBODY's. Routine at dist_6502.DIST_ROM ($A400).
+    D3.DRDIST = int(os.environ.get("DRDIST", "0"))
     import nes_d3_golden as _G
     _G.DISC_SHIFT = 1            # golden must match for the py65 gate
     _G.EXCAV_HANG_PLY1 = True    # golden must match for the py65 gate
@@ -337,6 +341,20 @@ def build_image(board, cA, cB, nA, nB):
         if tuck_v3_code:
             assert TUCK_V3_ROM + len(tuck_v3_code) <= RC.REACH_ROM, "tuck_v3 overruns the reach routine"
 
+    dist_code = b""
+    if D3.DRDIST:
+        import dist_6502 as DT
+        da = Asm6502(DT.DIST_ROM)
+        DT.emit_dist(da)
+        dist_code = da.assemble()
+        assert da.labels["dist_tgt"] == 0, "the search JSRs DIST_ROM: the entry must be its first byte"
+        assert DT.DIST_ROM + len(dist_code) <= 0xA800, f"dist routine overruns $A800 ({len(dist_code)}B)"
+        if tuck_bfs_code:
+            assert TUCK_BFS_ROM + len(tuck_bfs_code) <= DT.DIST_ROM, "tuck_bfs overruns the dist routine"
+        if tuck_v3_code:
+            assert TUCK_V3_ROM + len(tuck_v3_code) <= DT.DIST_ROM, "tuck_v3 overruns the dist routine"
+        assert not tuck_code, "dist routine shares the v1 EMIT_TUCK window"
+
     stub = Asm6502(STUB)
     stub.ins("SEI"); stub.ins("CLD")
     stub.ins("LDX_imm", 0xFF); stub.ins("TXS")
@@ -375,6 +393,8 @@ def build_image(board, cA, cB, nA, nB):
         img[TUCK_BFS_ROM:TUCK_BFS_ROM + len(tuck_bfs_code)] = tuck_bfs_code
     if reach_code:
         img[RC.REACH_ROM:RC.REACH_ROM + len(reach_code)] = reach_code
+    if dist_code:
+        img[DT.DIST_ROM:DT.DIST_ROM + len(dist_code)] = dist_code
     for i in range(17):
         img[SQ_ROM + i] = (i * i) & 0xFF
         img[SQ_ROM + 17 + i] = (i * i) >> 8

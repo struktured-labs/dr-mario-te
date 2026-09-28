@@ -1,0 +1,12 @@
+
+s6_dist_target60 @ +1 f (vs ANTIBODY @ nominal): gate b n=600 race n=600 -> GAIN DOES NOT SURVIVE
+  tap-out  21.50%  d -1.50 [-4.67, +1.67]    tap<=100 d -0.50 [-1.67, +0.50]
+  race win 73.00%  d +4.83 [+0.33, +9.50]
+  LATENCY COST (arm@+1 - arm@0): tap-out +2.67 [+0.33, +5.00]  race -1.33 [-5.67, +3.17]
+
+s6_dist_end60 @ +2 f (vs ANTIBODY @ nominal): gate b n=600 race n=600 -> GAIN DOES NOT SURVIVE
+  tap-out  21.00%  d -2.00 [-5.50, +1.50]    tap<=100 d -0.67 [-1.83, +0.33]
+  race win 67.83%  d -0.33 [-5.17, +4.50]
+  LATENCY COST (arm@+2 - arm@0): tap-out +4.00 [+1.17, +6.83]  race -6.50 [-11.17, -1.67]
+
+s6_dist_stall60 @ +18 f: gate b n=0 race n=0 (no/partial rows)
