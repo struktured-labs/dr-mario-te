@@ -24,3 +24,15 @@ gate_dist_fw.py (py65, the emitted target routine vs the Leaf6Decider rule): gam
 gate_dist_golden.py (py65 WHOLE search, engine leaf = golden + HSV + D(firmware-written target)): game 154/154, couch 283/283, synth 120/120, big(>4) 40/40 == golden mirror; target written == rule 597/597; the term moved the decision on 143 (0 on >4-virus boards) -- GATE_DIST_GOLDEN PASS
 check_dist_search.py (sim cascade_leaf6_x dist_target60 vs RTL-exact in-combine twin): endgame 1723/1723 (term active 1723, moved 469), couch 450/450 incl. 420 lulu-G1 + match-1-G3 regression boards (active 218, moved 84), >4-virus 60/60 (moved 0) -- CHECK_DIST_SEARCH PASS
 interface compliance: unchanged (DRDIST touches no cart; the paired carts c960dd49 / 3b8737a9 passed gate_tap_interface with 0 violations, reach-root cd8a3b4 / GATE_TAP_INTERFACE_SPAWNEDGE.txt)
+fw co-sim (real copro6502, CoproDrMario Verilator): DIST RTL + fw 77ec742c == ANTIBODY RTL + fw 77ec742c on the 69 fw co-sim boards, moves AND GO->DONE clocks 69/69 (the D engine adds 0 cycles); DIST RTL + fw 1488e158 vs + fw 77ec742c: >4-virus boards 52/52 same moves, clock delta -2976..+240 (the target routine's virus count ~ +2.4k, noise from tuck/anytime paths)
+endgame decision latency (analyze_endgame_latency.py, 437 endgame boards = 154 game + 283 couch, both fws on the DIST RTL):
+  endgame boards 437/437 (154 game, 283 couch)
+  moves changed by the term: 120
+  engine commands: more on 107, fewer on 144, equal on 186
+  GO->DONE delta (frames): mean -0.066  median +0.005  p90 +1.152  p95 +2.734  max +12.828  min -7.413
+  ANTIBODY endgame decision time (frames): median 31.81  p95 45.63
+    boards slower by > 0.5 frame: 67   faster by > 0.5: 84
+    boards slower by > 1.0 frame: 47   faster by > 1.0: 68
+    boards slower by > 2.0 frame: 30   faster by > 2.0: 52
+  
+  (the spread is VALUE-DEPENDENT search effort -- the term changes leaf values and the value-driven parts of the search (tuck extension, top-k) do different work; per engine command the cycles are identical)
