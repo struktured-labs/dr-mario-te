@@ -48,3 +48,61 @@
   the right actor.
 - **Caveat:** these are the sim's straight-drop semantics. On silicon, tucks add moves the probe cannot see, so the
   true stall rate may be somewhat lower.
+
+## Phase 3: candidates (`cascade_leaf6_x.py`) and couch regression (`steer6_regress.py`)
+**The distance D(v).** A per-virus clearing distance: the minimum over 4-windows through v of the cell cost.
+- Horizontal: each empty cell costs `1 + support gap`.
+- Vertical: each empty cell above v costs 1.
+- A wrong-colour cell or a cavity makes that route infeasible.
+- It is graded and gravity-aware, and it takes the min over routes, so it is not a cover price.
+
+**Five modes**, all switched on by a root (firmware-side) gate: (a) dist_end, (b) rowsup_end, (c) dist_stall,
+(d) dist_target, (e) dist_hsv. Details are in `PREREG_STEER6.md` (`030e459f`).
+
+**Couch regression**, from lulu G1 mid-stall (k120), counting pills until the sealed yellow clears:
+
+| decider | with garbage | without garbage |
+|---|---|---|
+| ANTIBODY | 54 | 117+ (never) |
+| D-candidates | 4–10 | 4–10 |
+
+**Match-1 G3** (walled-in yellow): ANTIBODY 54 pills; dist_hsv 12–15.
+
+## Phase 4: SCREEN (PREREG_STEER6.md; 600 paired seeds 37934–39132; gate b OWNER-0804; race lam 6, M 177, δ 2.65)
+Rows: `steer6/screen/`. Local 3,000 + Hetzner 3,000; exactness 10/10. Analysis: `analyze_steer6.py` →
+`steer6/screen/analysis.txt`.
+
+**Baseline (ANTIBODY):** tap≤100 3.33%, tap-out **23.00%**, race win **68.17%**.
+
+| arm | tap≤100 Δ | **tap-out Δ** | **race win Δ** | churn (fixed/new) | stall pills/game | endgame-stall deaths | verdict |
+|---|---|---|---|---|---|---|---|
+| **(a) dist_end60** | +0.00 | **−6.00 [−8.50, −3.50]** (17.0%) | **+6.17 [+3.33, +9.00]** | **48 / 12** | 77 → 48 | 9.3 → 4.7% | **PASS** |
+| (b) rowsup_end180 | +0.00 | +0.83 [−2.17, +3.83] | +1.67 [−1.17, +4.33] | 39 / 44 | 77 → 55 | 9.3 → 9.0% | fail |
+| **(c) dist_stall60** | −0.83 [−2.50, +0.67] | **−4.50 [−8.50, −0.50]** | **+9.67 [+5.50, +14.00]** | 91 / 64 | 77 → 45 | 9.3 → 5.7% | **PASS** |
+| **(d) dist_target60** | +0.00 | **−4.17 [−6.67, −1.67]** | **+6.17 [+3.50, +8.83]** | 43 / 18 | 77 → 53 | 9.3 → 6.3% | **PASS** |
+| (e) dist_hsv60 | −0.67 [−2.50, +1.17] | +2.00 [−2.17, +6.17] | −2.00 [−6.50, +2.67] | 75 / 87 | 77 → 85 | 9.3 → 9.8% | fail |
+
+Other reported measures:
+- **Race at δ 2.0:** (a) +8.0, (c) +13.3, (d) +8.0.
+- **Pills to clear in games both builds won:** (a) −21.8, (c) −18.9, (d) −16.1.
+
+**Reading:**
+- **Three distance arms PASS the screen**, with the mechanism visible.
+  - Stall pills per game fall 24–33.
+  - "Endgame-stall" deaths roughly halve: 9.3 → 4.7–6.3% of games.
+  - Wins get faster (−16 to −22 pills), and the race improves by +6 to +10 pp.
+- **Not churn** (the stall-breaker test):
+  - (a) fixes 48 base tap-outs and adds 12.
+  - (d) fixes 43 and adds 18.
+  - (c) churns more (91 / 64), because it also fires in mid-game stalls.
+- **(a) and (d) are identical to ANTIBODY until the root has ≤ 4 viruses.**
+  - tap≤100 Δ is exactly 0.
+  - A replay check on 3 seeds: the first differing decision happens at root vcount = 4, or the games never
+    diverge.
+- **The two failures are instructive:**
+  - **Row support (b)** is "finish-line"-shaped: it only credits support that has already reached the row, the same
+    trap as setup and ACC35.
+  - **HSV-region distance (e)**, always on, adds stall pills (+8) and nets zero. The walled-in M1-G3 anecdote does
+    not generalise. Always-on shaping of mid-game viruses is the burial-price family again.
+- **Caveat:** 5 arms were screened on one declared-reuse block, and all of this is sim-only. **Next, as
+  pre-registered:** a powered confirmatory holdout on disjoint seeds, then the opponent suite and an RTL estimate.

@@ -1,0 +1,46 @@
+BASELINE ANTIBODY: gate b n=600 tap<=100 3.33%  tap-out 23.00%   race n=600 win 68.17%
+
+s6_dist_end60: gate b n=600  race n=600   -> PASS
+  tap<=100  3.33%  d +0.00 [+0.00, +0.00]
+  tap-out  17.00%  d -6.00 [-8.50, -3.50]
+  race win 74.33%  d +6.17 [+3.33, +9.00]   (delta 2.0: +8.00 [+5.00, +11.17])
+  churn on tap-out: fixed 48 / new 12  (base failures 138)
+  MECHANISM: act-stall(>=10) pills/game base 77.0 arm 47.7  d -29.3 [-35.7, -23.6]
+  endgame-stall deaths (terminal stall>=20 from <=4 viruses): base 9.33% arm 4.67%  d -4.67 [-7.00, -2.50]
+  pills to clear (both won, n=450): d mean -21.8
+
+s6_rowsup_end180: gate b n=600  race n=600   -> fail
+  tap<=100  3.33%  d +0.00 [+0.00, +0.00]
+  tap-out  23.83%  d +0.83 [-2.17, +3.83]
+  race win 69.83%  d +1.67 [-1.17, +4.33]   (delta 2.0: +2.83 [-0.17, +5.83])
+  churn on tap-out: fixed 39 / new 44  (base failures 138)
+  MECHANISM: act-stall(>=10) pills/game base 77.0 arm 55.0  d -22.1 [-28.4, -16.1]
+  endgame-stall deaths (terminal stall>=20 from <=4 viruses): base 9.33% arm 9.00%  d -0.33 [-3.00, +2.33]
+  pills to clear (both won, n=418): d mean -4.6
+
+s6_dist_stall60: gate b n=600  race n=600   -> PASS
+  tap<=100  2.50%  d -0.83 [-2.50, +0.67]
+  tap-out  18.50%  d -4.50 [-8.50, -0.50]
+  race win 77.83%  d +9.67 [+5.50, +14.00]   (delta 2.0: +13.33 [+8.83, +18.00])
+  churn on tap-out: fixed 91 / new 64  (base failures 138)
+  MECHANISM: act-stall(>=10) pills/game base 77.0 arm 44.6  d -32.5 [-40.1, -24.7]
+  endgame-stall deaths (terminal stall>=20 from <=4 viruses): base 9.33% arm 5.67%  d -3.67 [-6.50, -0.83]
+  pills to clear (both won, n=398): d mean -18.9
+
+s6_dist_target60: gate b n=600  race n=600   -> PASS
+  tap<=100  3.33%  d +0.00 [+0.00, +0.00]
+  tap-out  18.83%  d -4.17 [-6.67, -1.67]
+  race win 74.33%  d +6.17 [+3.50, +8.83]   (delta 2.0: +8.00 [+5.17, +10.83])
+  churn on tap-out: fixed 43 / new 18  (base failures 138)
+  MECHANISM: act-stall(>=10) pills/game base 77.0 arm 53.1  d -23.9 [-29.9, -18.2]
+  endgame-stall deaths (terminal stall>=20 from <=4 viruses): base 9.33% arm 6.33%  d -3.00 [-5.50, -0.50]
+  pills to clear (both won, n=444): d mean -16.1
+
+s6_dist_hsv60: gate b n=600  race n=600   -> fail
+  tap<=100  2.67%  d -0.67 [-2.50, +1.17]
+  tap-out  25.00%  d +2.00 [-2.17, +6.17]
+  race win 66.17%  d -2.00 [-6.50, +2.67]   (delta 2.0: -2.17 [-6.83, +2.67])
+  churn on tap-out: fixed 75 / new 87  (base failures 138)
+  MECHANISM: act-stall(>=10) pills/game base 77.0 arm 85.2  d +8.1 [-1.1, +17.3]
+  endgame-stall deaths (terminal stall>=20 from <=4 viruses): base 9.33% arm 9.83%  d +0.50 [-2.50, +3.33]
+  pills to clear (both won, n=375): d mean +4.4
