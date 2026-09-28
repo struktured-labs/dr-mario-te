@@ -152,8 +152,33 @@ def holdout():
         print("\nno arm confirmed")
 
 
+def dlat():
+    """STEER6c (PREREG_STEER6c.md): arm @ +DLAT frames vs ANTIBODY @ nominal (95% CIs), + the latency cost arm@D - arm@0."""
+    GB = load("steer6/measure/*/gb_owner0804_*.jsonl", "s5b_hsv512@owner0804")
+    RC = load("steer5d/*/rc_s5b_hsv512_*.jsonl", "s5b_hsv512~steer")
+    win = lambda r: int(evaluate(r, 177., .15, 2.65)[0] == "win_race")
+    for arm, d in (("s6_dist_target60", 1), ("s6_dist_end60", 2), ("s6_dist_stall60", 18)):
+        G = load(f"steer6/dlat/*/gb_{arm}_d{d}_*.jsonl", f"{arm}@owner0804"); R = load(f"steer6/dlat/*/rc_{arm}_d{d}_*.jsonl", f"{arm}~steer")
+        G0 = load(f"steer6/screen/*/gb_{arm}_*.jsonl", f"{arm}@owner0804"); R0 = load(f"steer6/screen/*/rc_{arm}_*.jsonl", f"{arm}~steer")
+        S = [s for s in SEEDS if s in G and s in GB and s in G0]; SR = [s for s in SEEDS if s in R and s in RC and s in R0]
+        if not S or not SR:
+            print(f"\n{arm} @ +{d} f: gate b n={len(S)} race n={len(SR)} (no/partial rows)"); continue
+        ttop = boot([G[s]["topout"] - GB[s]["topout"] for s in S]); t100 = boot([tap100(G[s]) - tap100(GB[s]) for s in S])
+        trc = boot([win(R[s]) - win(RC[s]) for s in SR])
+        ok = ttop[2] < 0 and trc[1] >= -2.0 and t100[2] <= 1.0
+        full = len(S) == 600 and len(SR) == 600
+        print(f"\n{arm} @ +{d} f (vs ANTIBODY @ nominal): gate b n={len(S)} race n={len(SR)} -> "
+              + (("GAIN SURVIVES" if ok else "GAIN DOES NOT SURVIVE") if full else "incomplete"))
+        print(f"  tap-out  {100*np.mean([G[s]['topout'] for s in S]):5.2f}%  d {fmt(ttop)}    tap<=100 d {fmt(t100)}")
+        print(f"  race win {100*np.mean([win(R[s]) for s in SR]):5.2f}%  d {fmt(trc)}")
+        print(f"  LATENCY COST (arm@+{d} - arm@0): tap-out {fmt(boot([G[s]['topout'] - G0[s]['topout'] for s in S]))}  "
+              f"race {fmt(boot([win(R[s]) - win(R0[s]) for s in SR]))}")
+
+
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    if "--dlat" in sys.argv:
+        dlat(); sys.exit(0)
     if "--holdout" in sys.argv:
         holdout()
     else:

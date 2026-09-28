@@ -56,3 +56,26 @@ existing column walk the way HSV was folded) becomes a hard requirement of the b
 The STEER6b recommendation is re-stated in the result with this column included.
 
 **Execution:** after STEER6b finishes. 2 arms × (600 + 600) = 2,400 games (+1,200 if (c)). Hetzner + local.
+
+## ADDENDUM (2026-09-28, POST-HOC sensitivity, written before any STEER6c-s game)
+**Primary result, as pre-registered:** with a whole-game shift of +1 f (dist_target) and +2 f (dist_end), BOTH
+gains **do NOT survive**.
+- dist_target@+1: tap-out −1.50 [−4.67, +1.67]; latency cost vs @0 +2.67 [+0.33, +5.00].
+- dist_end@+2: tap-out −2.00; cost +4.00, race −6.5.
+
+**Why that test overstates the cost.**
+- The real cost of the sequential routes is paid only on ACTIVE decisions (root ≤ 4 viruses).
+- Its size is FRACTIONAL: dist_target +0.10 f median / +0.17 f max; dist_end +0.49 f median / +1.25 f p95.
+- The sim takes whole frames, so the pre-registered test rounded up to +1 and +2 f and applied them to EVERY
+  decision. That is 6–10× the dist_target route's real cost, spread over the whole game.
+
+**Sensitivity STEER6c-s** (`steer6_dlat_frac.py`; with no shift it reproduces the screen rows 5/5).
+- **How the shift is realised:**
+  - On active decisions only: floor(D) + Bernoulli(frac(D)) extra whole frames, deterministic per board.
+  - D is the MiSTer p95 cost: **dist_target D = 0.17 f**, **dist_end D = 1.25 f**.
+  - Inactive decisions run at nominal latency.
+- **Samples and bar:** the same 600 gate-b + 600 race seeds as STEER6c, and the same bar.
+- **Labelled POST-HOC.**
+  - If the gain survives here but failed the pre-registered test, the conclusion is that the sequential route is
+    probably acceptable but not demonstrated.
+  - The 0-added-cycle concurrent route stays the RECOMMENDED build requirement either way.
