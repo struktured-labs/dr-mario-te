@@ -157,8 +157,14 @@ def dlat():
     GB = load("steer6/measure/*/gb_owner0804_*.jsonl", "s5b_hsv512@owner0804")
     RC = load("steer5d/*/rc_s5b_hsv512_*.jsonl", "s5b_hsv512~steer")
     win = lambda r: int(evaluate(r, 177., .15, 2.65)[0] == "win_race")
-    for arm, d in (("s6_dist_target60", 1), ("s6_dist_end60", 2), ("s6_dist_stall60", 18)):
-        G = load(f"steer6/dlat/*/gb_{arm}_d{d}_*.jsonl", f"{arm}@owner0804"); R = load(f"steer6/dlat/*/rc_{arm}_d{d}_*.jsonl", f"{arm}~steer")
+    frac = "--dfrac" in sys.argv
+    runs = ((("s6_dist_target60", "0.17"), ("s6_dist_end60", "1.25")) if frac else
+            (("s6_dist_target60", 1), ("s6_dist_end60", 2), ("s6_dist_stall60", 18)))
+    for arm, d in runs:
+        if frac:
+            G = load(f"steer6/dfrac/gb_{arm}_f{d}_*.jsonl", f"{arm}@owner0804"); R = load(f"steer6/dfrac/rc_{arm}_f{d}_*.jsonl", f"{arm}~steer")
+        else:
+            G = load(f"steer6/dlat/*/gb_{arm}_d{d}_*.jsonl", f"{arm}@owner0804"); R = load(f"steer6/dlat/*/rc_{arm}_d{d}_*.jsonl", f"{arm}~steer")
         G0 = load(f"steer6/screen/*/gb_{arm}_*.jsonl", f"{arm}@owner0804"); R0 = load(f"steer6/screen/*/rc_{arm}_*.jsonl", f"{arm}~steer")
         S = [s for s in SEEDS if s in G and s in GB and s in G0]; SR = [s for s in SEEDS if s in R and s in RC and s in R0]
         if not S or not SR:
@@ -167,6 +173,9 @@ def dlat():
         trc = boot([win(R[s]) - win(RC[s]) for s in SR])
         ok = ttop[2] < 0 and trc[1] >= -2.0 and t100[2] <= 1.0
         full = len(S) == 600 and len(SR) == 600
+        if frac:
+            act = [G[s].get("lat_active", 0) for s in S]; ext = [G[s].get("lat_extra_f", 0) for s in S]
+            print(f"\n[POST-HOC fractional, active decisions only] gate b: active decisions/game {np.mean(act):.1f}, extra frames/game {np.mean(ext):.2f}")
         print(f"\n{arm} @ +{d} f (vs ANTIBODY @ nominal): gate b n={len(S)} race n={len(SR)} -> "
               + (("GAIN SURVIVES" if ok else "GAIN DOES NOT SURVIVE") if full else "incomplete"))
         print(f"  tap-out  {100*np.mean([G[s]['topout'] for s in S]):5.2f}%  d {fmt(ttop)}    tap<=100 d {fmt(t100)}")
@@ -177,7 +186,7 @@ def dlat():
 
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    if "--dlat" in sys.argv:
+    if "--dlat" in sys.argv or "--dfrac" in sys.argv:
         dlat(); sys.exit(0)
     if "--holdout" in sys.argv:
         holdout()
