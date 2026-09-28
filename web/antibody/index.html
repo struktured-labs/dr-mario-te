@@ -68,6 +68,8 @@
   .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 3px; }
   .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; }
   kbd { font-family: var(--mono); font-size: 12px; background: var(--panel-2); border: 1px solid var(--glass-dim); border-bottom-width: 2px; border-radius: 3px; padding: 1px 6px; white-space: nowrap; }
+  .padinfo { display: grid; gap: 6px; padding-top: 8px; border-top: 1px solid var(--glass-dim); }
+  .padinfo .on { color: var(--good); }
   .note { color: var(--muted); font-size: 13px; margin: 0; max-width: 65ch; }
 
   .pad { display: none; grid-template-columns: repeat(5, 1fr); gap: 8px; }
@@ -148,6 +150,10 @@
         <span><kbd>Z</kbd></span><span>B: rotate clockwise</span>
         <span><kbd>Enter</kbd></span><span>Start or next round</span>
         <span><kbd>P</kbd></span><span>Pause</span>
+      </div>
+      <div class="padinfo">
+        <p class="note" id="padStatus" role="status">USB or Bluetooth controller: plug it in and press any button. D‑pad or stick moves, the right face button is A, the left one is B, Start starts or pauses, Select pauses.</p>
+        <label class="check" for="padSwap"><input type="checkbox" id="padSwap"> Swap A and B on the controller</label>
       </div>
       <p class="note">Rules follow the NES VS game: four in a row clears, clearing two or more lines in one turn (cascades count) sends 2–4 garbage halves to the other bottle, and the first to empty their bottle wins the round. Both players get the same NES capsule sequence. The bot's couch record was set at level 11, MED.</p>
     </section>
@@ -338,6 +344,7 @@
   // ------------------------------------------------------------ input
   const held = { left: false, right: false, down: false, a: false, b: false };
   const prevHeld = { ...held };
+  const orHeld = () => { const o = {}; for (const k in held) o[k] = held[k] || pad.held[k]; return o; };
   const KEYMAP = { ArrowLeft: "left", ArrowRight: "right", ArrowDown: "down", KeyX: "a", ArrowUp: "a", KeyZ: "b" };
   window.addEventListener("keydown", (e) => {
     if (e.target && (e.target.tagName === "SELECT" || e.target.tagName === "INPUT")) return;
@@ -571,11 +578,64 @@
     }
     stepResolve(p);
   }
+  // ------------------------------------------------------------ controllers (Gamepad API)
+  // Standard-mapping pads (Xbox, PlayStation, Switch Pro, 8BitDo in X-input) use buttons 12-15 for
+  // the d-pad and 0-3 for the face buttons. Generic USB NES/SNES pads usually report non-standard
+  // mapping with the d-pad on axes 0/1 or as a POV hat on axis 9, so all three are read.
+  const padSwapEl = $("padSwap"), padStatusEl = $("padStatus");
+  try { padSwapEl.checked = localStorage.getItem("antibody.padSwap") === "1"; } catch (e) {}
+  padSwapEl.addEventListener("change", () => { try { localStorage.setItem("antibody.padSwap", padSwapEl.checked ? "1" : "0"); } catch (e) {} });
+  const pad = { held: { left: false, right: false, down: false, a: false, b: false }, start: false, select: false, name: "", blocked: false };
+  const HAT_DIRS = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
+  function pollPads() {
+    const h = { left: false, right: false, down: false, a: false, b: false };
+    let start = false, select = false, name = "";
+    let list = [];
+    try { list = navigator.getGamepads ? navigator.getGamepads() : []; }
+    catch (e) { pad.blocked = true; }
+    for (const gp of list || []) {
+      if (!gp || !gp.connected) continue;
+      name = name || gp.id;
+      const bt = (i) => { const b = gp.buttons[i]; return !!b && (b.pressed || b.value > 0.5); };
+      const ax = (i) => gp.axes[i] || 0;
+      const std = gp.mapping === "standard";
+      let dx = 0, dy = 0;
+      if (bt(14)) dx = -1; if (bt(15)) dx = 1; if (bt(13)) dy = 1; if (bt(12)) dy = -1;
+      if (ax(0) < -0.5) dx = -1; if (ax(0) > 0.5) dx = 1; if (ax(1) > 0.5) dy = 1; if (ax(1) < -0.5) dy = -1;
+      if (!std && gp.axes.length > 9) {
+        const v = ax(9);
+        if (v >= -1.05 && v <= 1.05) { const d = HAT_DIRS[Math.round((v + 1) * 3.5) & 7]; dx = d[0] || dx; dy = d[1] || dy; }
+      }
+      if (dx < 0) h.left = true; if (dx > 0) h.right = true; if (dy > 0) h.down = true;
+      let a = bt(1) || bt(3), b = bt(0) || bt(2);
+      if (padSwapEl.checked) [a, b] = [b, a];
+      if (a) h.a = true; if (b) h.b = true;
+      if (bt(9) || (!std && bt(7))) start = true;
+      if (bt(8) || (!std && bt(6))) select = true;
+    }
+    if (start && !pad.start) {
+      if (!game.running || game.matchOver || game.roundOver) onEnter(); else togglePause();
+    }
+    if (select && !pad.select && game.running) togglePause();
+    pad.held = h; pad.start = start; pad.select = select;
+    if (name !== pad.name || pad.blocked) {
+      pad.name = name;
+      if (pad.blocked) padStatusEl.textContent = "This view blocks controllers. Open web/antibody/index.html from the repo in your browser to play with one.";
+      else if (name) padStatusEl.innerHTML = '<span class="on">Controller connected:</span> ' + name.replace(/[<>&]/g, "").slice(0, 60);
+    }
+  }
+  window.addEventListener("gamepadconnected", pollPads);
+  window.addEventListener("gamepaddisconnected", () => {
+    pad.name = ""; padStatusEl.textContent = "Controller disconnected. Plug it back in and press any button.";
+  });
+
   function tick() {
-    if (!game.running || game.paused || game.roundOver) { Object.assign(prevHeld, held); return; }
+    pollPads();
+    if (!game.running || game.paused || game.roundOver) { Object.assign(prevHeld, held, orHeld()); return; }
     game.frame++;
-    const snap = { ...held };
+    const snap = orHeld();
     for (const p of P) stepPlayer(p, snap, prevHeld);
+    // keyboard, touch and controller all drive P1
     Object.assign(prevHeld, snap);
   }
 

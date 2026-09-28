@@ -13,6 +13,12 @@
   200 Python golden decisions (action and REACH mask). Regenerate with `test/gen_golden.py`
   (needs numba).
 
+Controllers: any pad the browser's Gamepad API sees (USB or Bluetooth) drives P1. Standard-mapping
+pads use the d-pad/left stick, right face button = A, left = B, Start, Select. Generic USB NES/SNES
+pads (non-standard mapping) are read from axes 0/1 or the POV hat on axis 9; a "Swap A and B"
+checkbox fixes pads that report the face buttons the other way round. Browsers expose a pad only
+after a button press on the page.
+
 The brain is exact. The game around it is an approximation of the NES: gravity uses the ROM speed
 table and the bot's driver uses the silicon timings (19-frame answer, gravity pinned for 8 frames,
 one tap every 2 frames, soft drop once aligned), but clear/cascade animation lengths, virus layout
