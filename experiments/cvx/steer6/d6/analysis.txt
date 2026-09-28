@@ -1,0 +1,14 @@
+
+[full] n gb 600 race 600 lulu 600   mean realised delta per active decision -0.068 f  -> PASS
+  gate b tap-out 18.67% (ANTIBODY 23.00%)  d -4.33 [-7.00, -1.83]   tap<=100 d +0.00 [+0.00, +0.00]
+  race lam6 M177  win 74.00% (ANTIBODY 68.17%)  d +5.83 [+3.33, +8.50]
+  LULU race M140  win 81.00% (ANTIBODY 68.50%)  d +12.50 [+9.67, +15.50]
+  latency cost vs dist_target60@nominal: tap-out -0.17 [-1.67, +1.33]  race -0.33 [-1.67, +1.17]  LULU +0.00 [-1.00, +1.00]
+
+[clip] n gb 600 race 600 lulu 600   mean realised delta per active decision -0.238 f  -> PASS
+  gate b tap-out 18.67% (ANTIBODY 23.00%)  d -4.33 [-7.00, -1.83]   tap<=100 d +0.00 [+0.00, +0.00]
+  race lam6 M177  win 73.17% (ANTIBODY 68.17%)  d +5.00 [+2.50, +7.50]
+  LULU race M140  win 81.00% (ANTIBODY 68.50%)  d +12.50 [+9.67, +15.50]
+  latency cost vs dist_target60@nominal: tap-out -0.17 [-1.50, +1.17]  race -1.17 [-2.50, +0.17]  LULU +0.00 [-1.00, +1.00]
+
+TAIL CONTRIBUTION (full - clip, paired): tap-out +0.00 [-0.50, +0.50]  race +0.83 [-0.33, +2.00]  LULU +0.00 [-0.50, +0.50]

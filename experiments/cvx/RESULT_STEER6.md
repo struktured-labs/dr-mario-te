@@ -247,3 +247,29 @@ is no new combine input on the critical path.
   1. Go / no-go on the RTL build: an RTL fork, ~1 build cycle plus the gates.
   2. Whether the Pocket build also gets it. Its 54.669 MHz clock makes the sequential fallback 1.6× costlier, so the
      concurrent route matters more there.
+
+## STEER6d: the BUILT dist_target60 under its MEASURED decision-latency distribution (PREREG_STEER6d.md `30b05d39`)
+**Source of the deltas.** reachbuild's DRDIST build (h16 `190cb12b`, dr-mario-te `dist-target` `1f430974`).
+- Engine cycles per command are unchanged.
+- Whole-decision endgame latency shifts because the search does different work: DRDIST fw vs ANTIBODY fw on 437
+  real endgame boards gives mean −0.07 f, p95 +2.73, max +12.8, min −7.4.
+- The per-board deltas are in `steer6/endgame_latency_deltas.json`.
+
+**Method** (`steer6_dlat_dist.py`, identity at Δ ≡ 0 2/2).
+- On each active decision (≤ 4 viruses), a delta is drawn per board and stochastically rounded.
+- It moves the steer answer frame, the mask T_LAT, race BASE_F and the gate-b clock.
+- 600 paired per cell. Local only, 18 workers.
+- Analysis: `analyze_steer6.py --d6` → `steer6/d6/analysis.txt`.
+
+| variant | gate-b tap-out Δ vs ANTIBODY | race lam 6 (M 177) | LULU race (lam 4.7, M 140) | verdict |
+|---|---|---|---|---|
+| **full** (measured distribution) | **−4.33 [−7.00, −1.83]** (23.0 → 18.7%) | **+5.83 [+3.33, +8.50]** | **+12.50 [+9.67, +15.50]** | **PASS** |
+| clip (p95+ tail replaced by p95) | −4.33 [−7.00, −1.83] | +5.00 [+2.50, +7.50] | +12.50 [+9.67, +15.50] | PASS |
+
+- **Tail contribution** (full − clip, paired): tap-out +0.00 [−0.50, +0.50]; race +0.83 [−0.33, +2.00]; LULU +0.00
+  [−0.50, +0.50]. **The tails do not bite.**
+- **Latency cost** vs dist_target60 at nominal latency: tap-out −0.17 [−1.67, +1.33]; race −0.33; LULU 0.00.
+- The measured distribution averages about 0 f per active decision (−0.07). The rare slow boards (+2.7 … +12.8 f)
+  are too few, and occur only in the endgame, to move any endpoint.
+- **Verdict: the built DRDIST passes on the latency axis.** Ship proceeds as far as the sim is concerned. The couch
+  A/B is the real test.

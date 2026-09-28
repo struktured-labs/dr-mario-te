@@ -217,8 +217,47 @@ def opp():
     print("FLAGS:", flags or "none (the arm holds or improves against every opponent)")
 
 
+def d6():
+    """STEER6d (PREREG_STEER6d.md): dist_target60 under the measured endgame latency distribution (full / p95-clipped)."""
+    arm = "s6_dist_target60"
+    GB = load("steer6/measure/*/gb_owner0804_*.jsonl", "s5b_hsv512@owner0804")
+    R6 = load("steer5d/*/rc_s5b_hsv512_*.jsonl", "s5b_hsv512~steer"); R47 = load("steer6/measure/*/rc47_*.jsonl", "s5b_hsv512~steer")
+    G0 = load(f"steer6/screen/*/gb_{arm}_*.jsonl", f"{arm}@owner0804"); A6_0 = load(f"steer6/screen/*/rc_{arm}_*.jsonl", f"{arm}~steer")
+    A47_0 = load("steer6/opp/*/rc47_*.jsonl", f"{arm}~steer")
+    w177 = lambda r: int(evaluate(r, 177., .15, 2.65)[0] == "win_race"); w140 = lambda r: int(evaluate(r, 140., .15, 2.65)[0] == "win_race")
+    V = {}
+    for v in ("full", "clip"):
+        V[v] = (load(f"steer6/d6/gb_{v}_*.jsonl", f"{arm}@owner0804"), load(f"steer6/d6/rc6_{v}_*.jsonl", f"{arm}~steer"),
+                load(f"steer6/d6/rc47_{v}_*.jsonl", f"{arm}~steer"))
+    for v in ("full", "clip"):
+        G, R, L = V[v]
+        S = [s for s in SEEDS if s in G and s in GB]; SR = [s for s in SEEDS if s in R and s in R6]; SL = [s for s in SEEDS if s in L and s in R47]
+        if not (S and SR and SL):
+            print(f"{v}: incomplete gb {len(S)} race {len(SR)} lulu {len(SL)}"); continue
+        tt = boot([G[s]["topout"] - GB[s]["topout"] for s in S]); t1 = boot([tap100(G[s]) - tap100(GB[s]) for s in S])
+        tr = boot([w177(R[s]) - w177(R6[s]) for s in SR]); tl = boot([w140(L[s]) - w140(R47[s]) for s in SL])
+        full = len(S) == len(SR) == len(SL) == 600
+        ok = tt[2] < 0 and tr[1] >= -2.0 and tl[1] >= -2.0
+        ext = np.mean([G[s].get("lat_extra_f", 0) / max(1, G[s].get("lat_active", 0)) for s in S if G[s].get("lat_active", 0)])
+        print(f"\n[{v}] n gb {len(S)} race {len(SR)} lulu {len(SL)}   mean realised delta per active decision {ext:+.3f} f  -> "
+              + (("PASS" if ok else "FAIL") if full else "incomplete"))
+        print(f"  gate b tap-out {100*np.mean([G[s]['topout'] for s in S]):5.2f}% (ANTIBODY {100*np.mean([GB[s]['topout'] for s in S]):.2f}%)  d {fmt(tt)}   tap<=100 d {fmt(t1)}")
+        print(f"  race lam6 M177  win {100*np.mean([w177(R[s]) for s in SR]):5.2f}% (ANTIBODY {100*np.mean([w177(R6[s]) for s in SR]):.2f}%)  d {fmt(tr)}")
+        print(f"  LULU race M140  win {100*np.mean([w140(L[s]) for s in SL]):5.2f}% (ANTIBODY {100*np.mean([w140(R47[s]) for s in SL]):.2f}%)  d {fmt(tl)}")
+        print(f"  latency cost vs dist_target60@nominal: tap-out {fmt(boot([G[s]['topout'] - G0[s]['topout'] for s in S if s in G0]))}  "
+              f"race {fmt(boot([w177(R[s]) - w177(A6_0[s]) for s in SR if s in A6_0]))}  LULU {fmt(boot([w140(L[s]) - w140(A47_0[s]) for s in SL if s in A47_0]))}")
+    (Gf, Rf, Lf), (Gc, Rc, Lc) = V["full"], V["clip"]
+    S = [s for s in SEEDS if s in Gf and s in Gc]
+    if S:
+        print(f"\nTAIL CONTRIBUTION (full - clip, paired): tap-out {fmt(boot([Gf[s]['topout'] - Gc[s]['topout'] for s in S]))}  "
+              f"race {fmt(boot([w177(Rf[s]) - w177(Rc[s]) for s in SEEDS if s in Rf and s in Rc]))}  "
+              f"LULU {fmt(boot([w140(Lf[s]) - w140(Lc[s]) for s in SEEDS if s in Lf and s in Lc]))}")
+
+
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    if "--d6" in sys.argv:
+        d6(); sys.exit(0)
     if "--opp" in sys.argv:
         opp(); sys.exit(0)
     if "--dlat" in sys.argv or "--dfrac" in sys.argv:
