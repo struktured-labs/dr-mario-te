@@ -54,6 +54,14 @@ ARMS = {
         "s5b_hsv180": (0, 0, 0, 180), "s5b_hsv540": (0, 0, 0, 540),
         "s5b_hsv512": (0, 0, 0, 512),                                  # STEER5c: RTL-buildable dose (popcount 1)
     }.items()},
+    # STEER6 (PREREG_STEER6.md): "build toward a clear" leaf extras on ANTIBODY (cascade_leaf6_x.Leaf6Decider)
+    **{name: dict(steer=dict(proph="throat", pulse=True, tap_period=2, tap_unified=True), leaf6=l6) for name, l6 in {
+        "s6_dist_end60":    dict(mode="dist_end", W=60, vk=4),
+        "s6_dist_target60": dict(mode="dist_target", W=60, vk=4),
+        "s6_dist_stall60":  dict(mode="dist_stall", W=60, stall=4),
+        "s6_rowsup_end180": dict(mode="rowsup_end", W=180, vk=4),
+        "s6_dist_hsv60":    dict(mode="dist_hsv", W=60),
+    }.items()},
 }
 
 
@@ -79,6 +87,14 @@ def make(arm):
             state["next_hint"] = None if p2 < 0 else SM.target_side(p2 // 8, p2 % 8)
             return a
         return steer, choose
+    if "leaf6" in spec:
+        import fast_rtl_x as FX
+        import cascade_chain_x as C
+        import cascade_leaf6_x as L6
+        C.warmup_chain(topk2=8)
+        w, fl = FX.variant("winner")
+        dec = L6.Leaf6Decider(w, fl, topk2=8, maxpass=0, w_chain=540, ws=20, tap=2, **spec["leaf6"])
+        return steer, (lambda env, col, vir, ctx: dec.choose(env.board, env.cur, env.nxt, k=env.pills_placed))
     if "leaf5b" in spec:
         import fast_rtl_x as FX
         import cascade_chain_x as C

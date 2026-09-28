@@ -26,6 +26,21 @@ PREV_Y0 = 204.2
 ROWS, COLS = 16, 8
 VIRUS_MIN_DARK = 4
 
+# Per-capture geometry override (a different MiSTer output / capture path moves and rescales the image):
+# CF_GEOM=<json with SX, SY, CW, CH, P2_X0, P2_Y0, PREV_Y0>, fitted with fit_geometry-style gap folds.
+import json as _json
+import os as _os
+if _os.environ.get("CF_GEOM"):
+    _d = _json.load(open(_os.environ["CF_GEOM"]))
+    SX, SY, CW, CH = _d["SX"], _d["SY"], _d["CW"], _d["CH"]
+    P2_X0, P2_Y0, PREV_Y0 = _d["P2_X0"], _d["P2_Y0"], _d["PREV_Y0"]
+    VIRUS_MIXED = bool(_d.get("VIRUS_MIXED", False))
+else:
+    VIRUS_MIXED = False
+# VIRUS_MIXED (soft captures, e.g. 720p upscaled): one virus animation frame has only 1-2 dark interior px;
+# a virus face still MIXES hues in the inner 3x3 (eyes/mouth), while a capsule half's inner 3x3 is its pure
+# colour (the highlight bar sits on the tile edge). virus |= (#inner-3x3 px != tile colour) >= 3.
+
 LINK_NONE, LINK_UP, LINK_DOWN, LINK_LEFT, LINK_RIGHT = 0, 1, 2, 3, 4
 
 
@@ -87,6 +102,10 @@ class Reader:
         interior = t[:, 2:7, 2:7]
         ndark = (interior == 0).sum((1, 2))
         virus = (colour > 0) & (ndark >= VIRUS_MIN_DARK)
+        if VIRUS_MIXED:
+            inner = t[:, 3:6, 3:6]
+            nonmain = (inner != colour[:, None, None]).sum((1, 2))
+            virus = virus | ((colour > 0) & (nonmain >= 3))
         # notched = the corner px is NOT the tile's own hue (dark, or a dark/hue blend the median
         # left as "other"); the square joined side keeps its corner in the tile colour.
         tl, tr = t[:, 1, 1] != colour, t[:, 1, 7] != colour
@@ -99,10 +118,36 @@ class Reader:
         link[pill & bl & br & ~tl & ~tr] = LINK_UP
         return colour, virus, link, ncol
 
+    @staticmethod
+    def _wall_links(t, colour, virus, link):
+        """The bottle walls are light blue and bleed into the wall-side corners of columns 0 and 7, so a BLUE
+        tile there reads its outer corners as 'square'. Decide those tiles' links from the inner corners only:
+        col 0: TR,BR square -> left half (RIGHT); TR notched, BR square -> top (DOWN); TR square, BR notched ->
+        bottom (UP); both notched -> single. Col 7 mirrors with TL,BL. Identical to the 4-corner rule whenever
+        the outer corners read correctly."""
+        link = link.copy()
+        for k in range(len(t)):
+            c = k % COLS
+            if c not in (0, COLS - 1) or colour[k] == 0 or virus[k]:
+                continue
+            ic = 7 if c == 0 else 1                       # inner-side corner column
+            top_n = t[k, 1, ic] != colour[k]
+            bot_n = t[k, 7, ic] != colour[k]
+            if not top_n and not bot_n:
+                link[k] = LINK_RIGHT if c == 0 else LINK_LEFT
+            elif top_n and not bot_n:
+                link[k] = LINK_DOWN
+            elif bot_n and not top_n:
+                link[k] = LINK_UP
+            else:
+                link[k] = LINK_NONE
+        return link
+
     def read(self, im):
         """im: HxWx3 uint8/int array. Returns dict with 16x8 colour/virus/link and preview (a, b)."""
         t = self._tiles(im, self.by, self.bx)
         colour, virus, link, _ = self._decode(t)
+        link = self._wall_links(t, colour, virus, link)
         pt = self._tiles(im, self.py, self.px)
         pc, _, pl, _ = self._decode(pt)
         return {"color": colour.reshape(ROWS, COLS), "virus": virus.reshape(ROWS, COLS),

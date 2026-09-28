@@ -93,6 +93,13 @@ def settled_at_spawn(F, i, cur):
             C[rr, cc] = 0; V[rr, cc] = False; L[rr, cc] = 0
     else:
         src += " NOCAPSULE"
+    # Viruses animate; on soft captures one animation frame drops below the dark-pixel threshold, so a
+    # single frame under-counts them. Viruses never move: mark a settled cell as a virus if it read as a virus
+    # (same colour) in ANY frame of the next ~0.33 s (both animation phases). Capsule pills never exceed the
+    # threshold when static; the erased capsule cells are empty in C so they cannot be marked.
+    for j in range(m, min(m + 20, len(F))):
+        V = V | (F[j]["V"] & (F[j]["C"] == C) & (C > 0))
+    L = np.where(V, 0, L)
     enc = lambda a: "".join(str(int(v)) for v in np.asarray(a).ravel())
     return {"C": C, "color": enc(C), "virus": enc(V.astype(int)), "link": enc(L), "src": src, "m": m}
 
