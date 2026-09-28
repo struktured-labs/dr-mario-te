@@ -149,4 +149,4 @@ The flagged assumption is now checked on the real ROM:
   - FELL2 then suppresses the throw's counter bump, exactly as designed.
 - Files:
   - `MESEN_SPAWNEDGE_RESULT.txt`;
-  - `mesen_logs/spawnedge_cvc_se{0,1}.log` — `E`=edge, `S`=state change, `F*`=forced lock.
+  - `mesen_logs/spawnedge_cvc_se{0,1}.txt` — `E`=edge, `S`=state change, `F*`=forced lock.
