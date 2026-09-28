@@ -1,0 +1,38 @@
+# DRDIST gates -- 2026-09-28T01:45:54-04:00
+# RTL NES_MiSTer-drmario claude/dist-leaf 3b164c7 (= claude/dist-target 14eb0d4 RTL, rebased on 391afb8); fw DRDIST=1 1488e158 (DRDIST=0 = 77ec742c)
+IDENTITY RTL: LeafEval + CoproDrMario without DRDIST preprocess == fork main (bare and DRHSV+fallback): PASS (4/4)
+IDENTITY FW: build_fw.py 540 _ 1 1 0 -> 77ec742c: PASS
+rtl gate DRDIST on: PHASE1 LEAF 948/948 PHASE2 NODE 4238/4494 (worst latency 11507 cyc) PHASE3 DELTA 4494/4494 (743 clear-fallbacks verified) DT_LATE 0 CYCLES leaf_sum=1211667 node_sum=9350565 base_sum=5846262 delta_sum=4003684 
+rtl gate DRDIST off: PHASE1 LEAF 948/948 PHASE2 NODE 4238/4494 (worst latency 11507 cyc) PHASE3 DELTA 4494/4494 (743 clear-fallbacks verified) CYCLES leaf_sum=1211667 node_sum=9350565 base_sum=5846262 delta_sum=4003684 
+RTL mutant hwin (must die): PHASE1 LEAF 907/948 PHASE3 DELTA 4294/4494 (743 clear-fallbacks verified) 
+RTL mutant vwin (must die): PHASE1 LEAF 910/948 PHASE3 DELTA 4400/4494 (743 clear-fallbacks verified) 
+RTL mutant gap (must die): PHASE1 LEAF 799/948 PHASE3 DELTA 3934/4494 (743 clear-fallbacks verified) 
+RTL mutant cavity1 (must die): PHASE1 LEAF 918/948 PHASE3 DELTA 4362/4494 (743 clear-fallbacks verified) 
+RTL mutant below1 (must die): PHASE1 LEAF 911/948 PHASE3 DELTA 4461/4494 (743 clear-fallbacks verified) 
+RTL mutant vover (must die): PHASE1 LEAF 932/948 PHASE3 DELTA 4418/4494 (743 clear-fallbacks verified) 
+RTL mutant sign (must die): PHASE1 LEAF 394/948 PHASE3 DELTA 2484/4494 (743 clear-fallbacks verified) 
+RTL mutant patchrow (must die): PHASE1 LEAF 948/948 PHASE3 DELTA 4466/4494 (743 clear-fallbacks verified) 
+RTL mutant patchtop (must die): PHASE1 LEAF 948/948 PHASE3 DELTA 4406/4494 (743 clear-fallbacks verified) 
+RTL mutant tvir (must die): PHASE1 LEAF 921/948 PHASE3 DELTA 4386/4494 (743 clear-fallbacks verified) 
+RTL mutant cap (must die): PHASE1 LEAF 664/948 PHASE3 DELTA 3351/4494 (743 clear-fallbacks verified) 
+RTL mutant w64 (must die): PHASE1 LEAF 394/948 PHASE3 DELTA 2484/4494 (743 clear-fallbacks verified) 
+RTL mutants cavity/below (plain DELETION of the check): EQUIVALENT -- 5-bit top-r underflows to 17..31 > cap / the virus itself is the overhang; the semantic 'fillable' forms above die
+dist_equiv.py (gate reference vs cascade_leaf6_x): D per virus 411526/411526 identical to _vdist (cap 16, kdig 0); target choice 20923/20923 identical to Leaf6Decider dist_target -- DIST_EQUIV PASS
+coverage: LEAF cases with an active target 693/948 (D 0..16 all present); DELTA non-clearing legal cases with an active target 2340/3147, of which 290 have child D != parent D (the S_DNEW patch path)
+linknode_dist.py (link-aware NODE, cascade_chain_x reference + spec HSV + spec D on the child, per-record target): 7282/7282, 5001 records with a non-zero D term; latency cap-1 mean 3273 worst 8725, fixpoint mean 3888 worst 10989 (identical to the no-DIST run) -- LINKNODE_DIST PASS; mutants sign 2281/7282, gap 6849/7282, cavity1 6833/7282 -> KILLED
+gate_dist_fw.py (py65, the emitted target routine vs the Leaf6Decider rule): game 1412/1412 (154 with a target), couch 1234/1234 (283), synth 20000/20000 (13505); write-count violations 0; mutants vk5 tie_le hwin gap cavity vbelow cap15 all KILLED; routine cost: off (>4 viruses) median 2438 max 2811 cycles, on median 11152 max 16297 cycles (<= 0.19 ms, once per decision) -- GATE_DIST_FW PASS
+gate_dist_golden.py (py65 WHOLE search, engine leaf = golden + HSV + D(firmware-written target)): game 154/154, couch 283/283, synth 120/120, big(>4) 40/40 == golden mirror; target written == rule 597/597; the term moved the decision on 143 (0 on >4-virus boards) -- GATE_DIST_GOLDEN PASS
+check_dist_search.py (sim cascade_leaf6_x dist_target60 vs RTL-exact in-combine twin): endgame 1723/1723 (term active 1723, moved 469), couch 450/450 incl. 420 lulu-G1 + match-1-G3 regression boards (active 218, moved 84), >4-virus 60/60 (moved 0) -- CHECK_DIST_SEARCH PASS
+interface compliance: unchanged (DRDIST touches no cart; the paired carts c960dd49 / 3b8737a9 passed gate_tap_interface with 0 violations, reach-root cd8a3b4 / GATE_TAP_INTERFACE_SPAWNEDGE.txt)
+fw co-sim (real copro6502, CoproDrMario Verilator): DIST RTL + fw 77ec742c == ANTIBODY RTL + fw 77ec742c on the 69 fw co-sim boards, moves AND GO->DONE clocks 69/69 (the D engine adds 0 cycles); DIST RTL + fw 1488e158 vs + fw 77ec742c: >4-virus boards 52/52 same moves, clock delta -2976..+240 (the target routine's virus count ~ +2.4k, noise from tuck/anytime paths)
+endgame decision latency (analyze_endgame_latency.py, 437 endgame boards = 154 game + 283 couch, both fws on the DIST RTL):
+  endgame boards 437/437 (154 game, 283 couch)
+  moves changed by the term: 120
+  engine commands: more on 107, fewer on 144, equal on 186
+  GO->DONE delta (frames): mean -0.066  median +0.005  p90 +1.152  p95 +2.734  max +12.828  min -7.413
+  ANTIBODY endgame decision time (frames): median 31.81  p95 45.63
+    boards slower by > 0.5 frame: 67   faster by > 0.5: 84
+    boards slower by > 1.0 frame: 47   faster by > 1.0: 68
+    boards slower by > 2.0 frame: 30   faster by > 2.0: 52
+  
+  (the spread is VALUE-DEPENDENT search effort -- the term changes leaf values and the value-driven parts of the search (tuck extension, top-k) do different work; per engine command the cycles are identical)
