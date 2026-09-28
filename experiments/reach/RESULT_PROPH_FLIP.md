@@ -120,3 +120,33 @@ They are built under `tmp/carts/` and pair with the unchanged firmware and RTL, 
   rotations refused by the world in the escape pocket.
   - Captured before the two world-fidelity fixes (the counter at spawn, and round starts). Neither fix touches
     rotation physics.
+
+## Mesen round-start check on the REAL cart (2026-09-28): PASS
+The flagged assumption is now checked on the real ROM:
+- **Setup:**
+  - The CvC TAP carts: fix off 33062615, fix on 3b8737a9. Their headers are remapped 100 → 1 (MMC1), so the PRG is
+    byte-identical.
+  - They ran in headless Mesen: P1 is the native AI, and `tools/copro_emu.lua` answers the P2 mailbox. Input is zero;
+    the cart's own autonav plays VS rounds and rematches.
+  - 30,000 frames per cart, 57 level inits (round starts) and 18 match restarts through the menu.
+- **Counting:** `experiments/reach/mesen_spawnedge_probe.lua` counts new-pill edges from the block's own
+  `STA DELAY2 <- 15`.
+  - handle()'s `DEC DELAY2` in the same hook does a 6502 read-modify-write dummy write of 15. The probe discounts it.
+  - `analyze_mesen_spawnedge.py` attributes the edges to live pills (p2_nextAction == 0).
+- **How the lock was forced:**
+  - The driver itself refuses a zero-fall landing, because DRDISTGATE clamps it.
+  - So cols 0–1 are filled from row 1 and the capsule is TELEPORTED to X=0 at Y=$0F at its spawn. It locks at Y=$0F
+    off the spawn cells, 3 times per run.
+
+| cart | round-start pills: edges each | their edge timing vs going live | all pills | pill after a forced Y=$0F lock |
+|---|---|---|---|---|
+| fix off (33062615) | 56 × **1** | −2 f ×53, −3 f ×3 (pre-throw) | 270 × 1 + **3 × 0** | **0, 0, 0 (MISSED — defect on the real ROM)** |
+| fix on (3b8737a9) | 57 × **1** | −2 f ×54, −3 f ×3 (identical) | **272 × 1** | **1, 1, 1** (at the spawn) |
+
+- Round starts are UNCHANGED by the fix: same count and same pre-throw timing.
+  - Between rounds the cart passes through non-play modes, so DRCOLDINIT's per-match cold init also re-runs per round.
+    That zeroes LASTY2, and the stock Y test fires at the first play hook.
+  - FELL2 then suppresses the throw's counter bump, exactly as designed.
+- Files:
+  - `MESEN_SPAWNEDGE_RESULT.txt`;
+  - `mesen_logs/spawnedge_cvc_se{0,1}.log` — `E`=edge, `S`=state change, `F*`=forced lock.
