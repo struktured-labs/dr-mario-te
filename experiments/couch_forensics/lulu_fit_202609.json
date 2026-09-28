@@ -1,0 +1,160 @@
+{
+ "name": "lulu_fit_202609",
+ "source": "RESULT_COUCH_LULU.md; dr. lulu (P1) sends as RECEIVED by ANTIBODY (P2), clean-HDMI 2026-09-27, L11, 2 games",
+ "population": {
+  "games": 2,
+  "minutes": 12.9,
+  "note": "n=2 games: PROVISIONAL (<10 games)"
+ },
+ "model": "independent renewal process of volleys (same form as owner_fit_202609)",
+ "clear_pace_viruses_per_min": {
+  "G1": 5.63,
+  "G2": 10.13
+ },
+ "rate_volleys_per_min": 4.73,
+ "cells_per_min": 11.39,
+ "size_hist": {
+  "1": 1,
+  "2": 47,
+  "3": 2,
+  "4": 10,
+  "6": 1
+ },
+ "size_pmf": {
+  "2": 0.783,
+  "3": 0.033,
+  "4": 0.167
+ },
+ "p_merged_double": 0.016,
+ "inter_volley_gap_s": {
+  "quantiles": {
+   "p10": 3.58,
+   "p25": 5.68,
+   "p50": 8.67,
+   "p75": 14.95,
+   "p90": 25.57
+  },
+  "mean": 12.13,
+  "cv": 0.73,
+  "p_gap_le_3s": 0.051,
+  "samples": [
+   8.38,
+   5.88,
+   3.08,
+   23.42,
+   3.58,
+   37.8,
+   7.32,
+   13.72,
+   8.95,
+   2.65,
+   9.87,
+   24.72,
+   13.65,
+   9.47,
+   20.87,
+   13.45,
+   25.57,
+   2.1,
+   6.67,
+   6.85,
+   4.13,
+   20.42,
+   7.3,
+   3.38,
+   4.1,
+   10.38,
+   30.83,
+   17.75,
+   8.33,
+   7.97,
+   26.25,
+   5.65,
+   6.17,
+   4.9,
+   8.97,
+   4.43,
+   33.4,
+   5.35,
+   10.9,
+   31.1,
+   5.68,
+   8.67,
+   12.78,
+   19.75,
+   13.53,
+   6.07,
+   7.12,
+   6.6,
+   2.78,
+   27.2,
+   14.95,
+   11.42,
+   14.93,
+   23.02,
+   4.25,
+   6.35,
+   6.3,
+   21.08,
+   3.7
+  ]
+ },
+ "unexplained_volleys": 40,
+ "unexplained_with_new_cells": 31,
+ "rate_upper_bound_volleys_per_min": 7.13,
+ "phase": {
+  "time": {
+   "open <30s": {
+    "minutes": 1.0,
+    "volleys": 6,
+    "volleys_per_min": 6.0,
+    "mean_size": 3.33,
+    "cells_per_min": 20.0
+   },
+   "mid 30-90s": {
+    "minutes": 2.0,
+    "volleys": 7,
+    "volleys_per_min": 3.5,
+    "mean_size": 2.43,
+    "cells_per_min": 8.5
+   },
+   "late >=90s": {
+    "minutes": 9.91,
+    "volleys": 48,
+    "volleys_per_min": 4.84,
+    "mean_size": 2.29,
+    "cells_per_min": 11.1
+   }
+  },
+  "lulu": {
+   ">30": {
+    "minutes": 1.59,
+    "volleys": 8,
+    "volleys_per_min": 5.03,
+    "mean_size": 3.0,
+    "cells_per_min": 15.08
+   },
+   "21-30": {
+    "minutes": 2.77,
+    "volleys": 13,
+    "volleys_per_min": 4.7,
+    "mean_size": 2.38,
+    "cells_per_min": 11.2
+   },
+   "9-20": {
+    "minutes": 4.55,
+    "volleys": 23,
+    "volleys_per_min": 5.05,
+    "mean_size": 2.13,
+    "cells_per_min": 10.77
+   },
+   "<=8": {
+    "minutes": 4.0,
+    "volleys": 17,
+    "volleys_per_min": 4.25,
+    "mean_size": 2.53,
+    "cells_per_min": 10.75
+   }
+  }
+ }
+}

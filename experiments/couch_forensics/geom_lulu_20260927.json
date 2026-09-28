@@ -1,0 +1,13 @@
+{
+ "capture": "20260927_111114 (rivalmage -> Samsung, video_mode=0 720p; OBS 1080p)",
+ "fit": "gap-fold over 5 frames, both bottles: best pitch 44.6 x 38.5 (ratio 0.39-0.40); P1 origin x 420.25",
+ "SX": 5.575,
+ "SY": 4.8125,
+ "CW": 44.6,
+ "CH": 38.5,
+ "P2_X0": 1125.25,
+ "P2_Y0": 341.0,
+ "PREV_Y0": 205.3,
+ "VIRUS_MIXED": false,
+ "note": "VIRUS_MIXED over-counts (blurred capsule/pills); viruses are recovered by track.py's temporal OR instead"
+}

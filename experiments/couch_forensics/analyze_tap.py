@@ -64,6 +64,10 @@ def run(raw_path, out_path):
         w_, fl_ = FX.variant("winner")
         d5 = L5.Leaf5ReachDecider(w_, fl_, tap=2, w5=(0, 0, 0, 0))
         d5h = L5.Leaf5ReachDecider(w_, fl_, tap=2, w5=(0, 0, 0, hsv_w))
+    d5w = None
+    if hsv_w and os.environ.get("HSVWIDE") == "1":
+        import leaf5b_wide as L5W                     # HSV region cols 2-6 (post-hoc counterfactual)
+        d5w = L5W.Leaf5ReachDecider(w_, fl_, tap=2, w5=(0, 0, 0, hsv_w))
     same5 = tot5 = 0
     # identity gate: all-ones mask == unmasked on every analysable board
     same = tot = 0
@@ -100,11 +104,16 @@ def run(raw_path, out_path):
                     rot.append(round((t - t0) * 60))
             last = (oo, rr, cc, cl)
         hsv = base5 = None
+        hsv_wide = None
         if d5 is not None:
             a5 = d5.choose(b.clone(), Pill(*cur), Pill(*nxt), k)
             a5h = d5h.choose(b.clone(), Pill(*cur), Pill(*nxt), k)
             base5 = pose_of(a5, cur, b) if a5 is not None else None
             hsv = pose_of(a5h, cur, b) if a5h is not None else None
+        hsv_wide = None
+        if d5w is not None:
+            aw = d5w.choose(b.clone(), Pill(*cur), Pill(*nxt), k)
+            hsv_wide = pose_of(aw, cur, b) if aw is not None else None
             tot5 += 1; same5 += int(a5 == a_m)
         un = pose_of(a_un, cur, b) if a_un is not None else None
         ms = pose_of(a_m, cur, b) if a_m is not None else None
@@ -115,6 +124,7 @@ def run(raw_path, out_path):
                      "unmasked": un, "masked": ms, "actual": actual, "actual_action": act_a,
                      "match_unmasked": un == actual, "match_masked": ms == actual,
                      "hsv": hsv, "match_hsv": (hsv == actual) if hsv is not None else None,
+                     "hsv_wide": hsv_wide, "match_hsv_wide": (hsv_wide == actual) if hsv_wide is not None else None,
                      "hsv_differs": (hsv != ms) if hsv is not None else None,
                      "mask_allows_actual": None if act_a is None else bool(mask[act_a]),
                      "mask_allows_unmasked": None if a_un is None else bool(mask[a_un]),
