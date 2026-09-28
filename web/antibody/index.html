@@ -1,0 +1,749 @@
+<meta charset="utf-8">
+<title>Play ANTIBODY</title>
+<meta name="description" content="Play Dr. Mario VS against ANTIBODY, the 2026-09-27 champion bot, running in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --ground: #0b1416;
+    --panel: #122024;
+    --panel-2: #172a2f;
+    --glass: #6f9aa2;
+    --glass-dim: #2c4449;
+    --text: #e4ece8;
+    --muted: #8fa6a4;
+    --amber: #f0b13a;
+    --yellow: #f2c53d;
+    --red: #e5484d;
+    --blue: #3e7bfa;
+    --good: #5ccf8a;
+    --display: "Chakra Petch", "Rajdhani", "Segoe UI", system-ui, sans-serif;
+    --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  html, body { background: var(--ground); color: var(--text); }
+  body { font-family: var(--body); font-size: 15px; line-height: 1.5; }
+  .wrap { max-width: 980px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; display: grid; gap: 18px; }
+
+  header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 10px 24px; }
+  .mark { display: grid; gap: 2px; }
+  .mark h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: clamp(30px, 6vw, 44px); letter-spacing: 0.08em; line-height: 1; text-wrap: balance; }
+  .mark h1 span { color: var(--amber); }
+  .mark p { margin: 0; color: var(--muted); max-width: 58ch; }
+  .recipe { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0.04em; }
+  .recipe b { color: var(--text); font-weight: 600; }
+
+  .setup { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 16px; padding: 12px 14px; background: var(--panel); border: 1px solid var(--glass-dim); border-radius: 6px; }
+  .field { display: grid; gap: 4px; }
+  .field label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+  select, button { font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--glass-dim); border-radius: 4px; padding: 6px 10px; }
+  select:focus-visible, button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  button { cursor: pointer; }
+  button.primary { background: var(--amber); color: #1a1204; border-color: var(--amber); font-family: var(--display); font-weight: 700; letter-spacing: 0.08em; padding: 7px 18px; }
+  .setup .spacer { flex: 1; }
+  .check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+
+  .arena { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: start; }
+  .side { display: grid; gap: 8px; justify-items: center; }
+  .who { display: flex; align-items: baseline; gap: 10px; font-family: var(--display); font-weight: 700; letter-spacing: 0.1em; }
+  .who .name { font-size: 18px; }
+  .who .tag { font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+  .bottle { width: 100%; max-width: 250px; height: auto; display: block; }
+  .mid { display: grid; gap: 14px; justify-items: center; align-content: start; padding-top: 34px; min-width: 96px; }
+  .score { font-family: var(--display); font-weight: 700; font-size: 34px; letter-spacing: 0.08em; font-variant-numeric: tabular-nums; }
+  .score small { display: block; text-align: center; font-size: 11px; color: var(--muted); letter-spacing: 0.14em; font-weight: 500; }
+  .vc { display: grid; gap: 2px; text-align: center; }
+  .vc .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
+  .vc .n { font-family: var(--mono); font-size: 22px; font-variant-numeric: tabular-nums; }
+  .status { font-family: var(--display); letter-spacing: 0.06em; text-align: center; min-height: 3em; color: var(--amber); max-width: 12ch; }
+
+  .lower { display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--glass-dim); border-radius: 6px; padding: 14px 16px; display: grid; gap: 10px; align-content: start; }
+  .card h2 { margin: 0; font-family: var(--display); font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  dl.readout { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 14px; }
+  dl.readout dt { color: var(--muted); }
+  dl.readout dd { margin: 0; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 3px; }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; }
+  kbd { font-family: var(--mono); font-size: 12px; background: var(--panel-2); border: 1px solid var(--glass-dim); border-bottom-width: 2px; border-radius: 3px; padding: 1px 6px; white-space: nowrap; }
+  .note { color: var(--muted); font-size: 13px; margin: 0; max-width: 65ch; }
+
+  .pad { display: none; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .pad button { padding: 14px 0; font-size: 18px; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  @media (hover: none), (max-width: 700px) { .pad { display: grid; } }
+
+  @media (max-width: 700px) {
+    .arena { grid-template-columns: 1fr 1fr; }
+    .mid { grid-column: 1 / -1; grid-row: 1; grid-template-columns: repeat(3, auto); align-items: center; justify-content: center; gap: 18px; padding-top: 0; }
+    .status { max-width: none; min-height: 0; }
+    .lower { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="mark">
+      <h1>ANTI<span>BODY</span></h1>
+      <p>Dr. Mario VS against the canon Prescription champion bot. It went 9–0 on the couch. The same search runs in your browser.</p>
+    </div>
+    <div class="recipe"><b>CHAIN540</b> · <b>REACH</b> · <b>TAP</b> · <b>HSV</b> &nbsp;/&nbsp; depth‑3, top‑8</div>
+  </header>
+
+  <form class="setup" id="setup" autocomplete="off">
+    <div class="field"><label for="lvlP1">Your level</label><select id="lvlP1"></select></div>
+    <div class="field"><label for="lvlP2">ANTIBODY level</label><select id="lvlP2"></select></div>
+    <div class="field"><label for="speed">Speed</label>
+      <select id="speed"><option value="0">LOW</option><option value="1" selected>MED</option><option value="2">HI</option></select>
+    </div>
+    <label class="check" for="ghost"><input type="checkbox" id="ghost" checked> Show ANTIBODY's target</label>
+    <div class="spacer"></div>
+    <button type="submit" class="primary" id="startBtn">START MATCH</button>
+  </form>
+
+  <section class="arena" aria-label="Game">
+    <div class="side">
+      <div class="who"><span class="name">YOU</span><span class="tag">P1</span></div>
+      <canvas class="bottle" id="cv0" width="220" height="440" aria-label="Your bottle"></canvas>
+    </div>
+    <div class="mid">
+      <div class="score"><span id="w0">0</span>–<span id="w1">0</span><small>FIRST TO 3</small></div>
+      <div class="vc"><span class="lbl">Virus</span><span class="n"><span id="vc0">0</span> · <span id="vc1">0</span></span></div>
+      <div class="status" id="status" role="status">Press Start</div>
+    </div>
+    <div class="side">
+      <div class="who"><span class="name">ANTIBODY</span><span class="tag">P2 · CPU</span></div>
+      <canvas class="bottle" id="cv1" width="220" height="440" aria-label="ANTIBODY's bottle"></canvas>
+    </div>
+  </section>
+
+  <div class="pad" id="pad" aria-label="Touch controls">
+    <button type="button" data-k="left" aria-label="Left">◀</button>
+    <button type="button" data-k="down" aria-label="Drop">▼</button>
+    <button type="button" data-k="right" aria-label="Right">▶</button>
+    <button type="button" data-k="b" aria-label="Rotate clockwise">B ↻</button>
+    <button type="button" data-k="a" aria-label="Rotate counter-clockwise">A ↺</button>
+  </div>
+
+  <div class="lower">
+    <section class="card" aria-labelledby="brainH">
+      <h2 id="brainH">ANTIBODY's last decision</h2>
+      <dl class="readout">
+        <dt>Placement</dt><dd id="rdPlace">–</dd>
+        <dt>Reachable</dt><dd id="rdReach">–</dd>
+        <dt>Search time</dt><dd id="rdMs">–</dd>
+        <dt>Gravity</dt><dd id="rdThr">–</dd>
+        <dt>High spawn viruses</dt><dd id="rdHsv">–</dd>
+      </dl>
+      <p class="note">Each pill, ANTIBODY scores every placement three pills deep (current, next, and an average over four stand‑in third pills), with a bonus of 540 per extra cascade step. REACH drops placements its tap driver can't reach before the pill locks. HSV charges 512 for every virus left high in columns 4–6, where new pills arrive. The driver taps one button every 2 frames, never faster than a real controller.</p>
+    </section>
+    <section class="card" aria-labelledby="ctlH">
+      <h2 id="ctlH">Controls</h2>
+      <div class="keys">
+        <span><kbd>←</kbd> <kbd>→</kbd></span><span>Move</span>
+        <span><kbd>↓</kbd></span><span>Drop faster</span>
+        <span><kbd>X</kbd> <kbd>↑</kbd></span><span>A: rotate counter‑clockwise</span>
+        <span><kbd>Z</kbd></span><span>B: rotate clockwise</span>
+        <span><kbd>Enter</kbd></span><span>Start or next round</span>
+        <span><kbd>P</kbd></span><span>Pause</span>
+      </div>
+      <p class="note">Rules follow the NES VS game: four in a row clears, clearing two or more lines in one turn (cascades count) sends 2–4 garbage halves to the other bottle, and the first to empty their bottle wins the round. Both players get the same NES capsule sequence. The bot's couch record was set at level 11, MED.</p>
+    </section>
+  </div>
+</div>
+
+<script src="antibody_brain.js"></script>
+<script>
+(function () {
+  "use strict";
+  const BR = window.AntibodyBrain;
+  const ROWS = 16, COLS = 8, N = 128;
+  const { T_LAT, G0, F0, DT } = BR.constants;
+  const LINK_UP = 1, LINK_DOWN = 2, LINK_LEFT = 3, LINK_RIGHT = 4;
+  const COLOR_NAME = ["", "yellow", "red", "blue"];
+  const CSSV = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const HUE = [null, CSSV("--yellow"), CSSV("--red"), CSSV("--blue")];
+
+  // ------------------------------------------------------------ NES capsule sequence (nes_pills.py)
+  const PILL_COLORS = [[1, 1], [1, 2], [1, 3], [2, 1], [2, 2], [2, 3], [3, 1], [3, 2], [3, 3]];
+  function pillSequence(seed) {
+    let s0 = (seed >> 8) & 0xff, s1 = seed & 0xff;
+    if (s0 === 0 && s1 === 0) { s0 = 0x89; s1 = 0x88; }
+    const ids = new Array(128);
+    let acc = 0;
+    for (let k = 0; k < 128; k++) {
+      const fb = ((s0 >> 1) & 1) ^ ((s1 >> 1) & 1), c0 = s0 & 1;
+      s0 = ((fb << 7) | (s0 >> 1)) & 0xff;
+      s1 = ((c0 << 7) | (s1 >> 1)) & 0xff;
+      acc = ((s0 & 0x0f) + acc) % 9;
+      ids[127 - k] = acc;
+    }
+    return ids.map((id) => PILL_COLORS[id]);
+  }
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // NES-style virus fill: level count, height cap by level, no same colour two cells away.
+  function makeViruses(level, seed) {
+    const rand = mulberry32(seed);
+    const col = new Int8Array(N), vir = new Int8Array(N);
+    const count = Math.min(84, 4 * (level + 1));
+    const vtop = level <= 14 ? 6 : level <= 16 ? 5 : level <= 18 ? 4 : 3;
+    let placed = 0, tries = 0;
+    const clash = (r, c, k) => [[-2, 0], [2, 0], [0, -2], [0, 2]].some(([dr, dc]) => {
+      const rr = r + dr, cc = c + dc;
+      return rr >= 0 && rr < ROWS && cc >= 0 && cc < COLS && col[rr * COLS + cc] === k;
+    });
+    while (placed < count && tries < 20000) {
+      tries++;
+      const r = vtop + Math.floor(rand() * (ROWS - vtop)), c = Math.floor(rand() * COLS);
+      const i = r * COLS + c;
+      if (col[i]) continue;
+      const first = 1 + Math.floor(rand() * 3);
+      let k = 0;
+      for (let d = 0; d < 3; d++) {
+        const kk = ((first - 1 + d) % 3) + 1;
+        if (!clash(r, c, kk) || tries > 15000) { k = kk; break; }
+      }
+      if (!k) continue;
+      col[i] = k; vir[i] = 1; placed++;
+    }
+    return { col, vir };
+  }
+
+  // ------------------------------------------------------------ board helpers
+  function pillCells(p) {
+    const { x, row, rot, a, b } = p;
+    switch (rot) {
+      case 0: return [[row, x, a, LINK_RIGHT], [row, x + 1, b, LINK_LEFT]];
+      case 2: return [[row, x, b, LINK_RIGHT], [row, x + 1, a, LINK_LEFT]];
+      case 3: return [[row - 1, x, a, LINK_DOWN], [row, x, b, LINK_UP]];
+      default: return [[row - 1, x, b, LINK_DOWN], [row, x, a, LINK_UP]];
+    }
+  }
+  function valid(col, p) {
+    for (const [r, c] of pillCells(p)) {
+      if (c < 0 || c >= COLS || r >= ROWS) return false;
+      if (r >= 0 && col[r * COLS + c] !== 0) return false;
+    }
+    return true;
+  }
+  function countRuns(col) {
+    let n = 0; const colors = [];
+    for (let r = 0; r < ROWS; r++) {
+      let c = 0;
+      while (c < COLS) {
+        const v = col[r * COLS + c];
+        if (!v) { c++; continue; }
+        let c2 = c; while (c2 < COLS && col[r * COLS + c2] === v) c2++;
+        if (c2 - c >= 4) { n++; colors.push(v); }
+        c = c2;
+      }
+    }
+    for (let c = 0; c < COLS; c++) {
+      let r = 0;
+      while (r < ROWS) {
+        const v = col[r * COLS + c];
+        if (!v) { r++; continue; }
+        let r2 = r; while (r2 < ROWS && col[r2 * COLS + c] === v) r2++;
+        if (r2 - r >= 4) { n++; colors.push(v); }
+        r = r2;
+      }
+    }
+    return { n, colors };
+  }
+  // One pass of the linked-body gravity (repeated passes == AntibodyBrain.gravity).
+  function gravityPass(col, vir, lnk) {
+    const LDR = [0, -1, 1, 0, 0], LDC = [0, 0, 0, -1, 1];
+    const seen = new Uint8Array(N), bodies = [];
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const i = r * COLS + c;
+      if (!col[i] || vir[i] || seen[i]) continue;
+      const lk = lnk[i];
+      if (lk) {
+        const pr = r + LDR[lk], pc = c + LDC[lk], ok = pr >= 0 && pr < ROWS && pc >= 0 && pc < COLS;
+        const j = ok ? pr * COLS + pc : -1;
+        if (ok && !seen[j]) { seen[i] = seen[j] = 1; bodies.push([i, j, Math.max(r, pr)]); continue; }
+      }
+      seen[i] = 1; bodies.push([i, -1, r]);
+    }
+    bodies.sort((p, q) => q[2] - p[2]); // stable in modern engines: lowest first
+    let moved = false;
+    for (const [k0, k1] of bodies) {
+      let fall = true;
+      for (const kk of [k0, k1]) {
+        if (kk < 0) continue;
+        if (((kk / COLS) | 0) + 1 >= ROWS) { fall = false; break; }
+        const nk = kk + COLS;
+        if (nk !== k0 && nk !== k1 && col[nk]) { fall = false; break; }
+      }
+      if (!fall) continue;
+      const save = [k0, k1].filter((k) => k >= 0).map((k) => [k, col[k], vir[k], lnk[k]]);
+      for (const [k] of save) { col[k] = 0; vir[k] = 0; lnk[k] = 0; }
+      for (const [k, cv, vv, lv] of save) { col[k + COLS] = cv; vir[k + COLS] = vv; lnk[k + COLS] = lv; }
+      moved = true;
+    }
+    return moved;
+  }
+  const virusCount = (vir) => vir.reduce((s, v) => s + v, 0);
+
+  // ------------------------------------------------------------ brain transport (worker, else main thread)
+  let worker = null;
+  const pending = new Map();
+  let reqId = 0;
+  try {
+    worker = new Worker("antibody_worker.js");
+    worker.onmessage = (e) => { const cb = pending.get(e.data.id); pending.delete(e.data.id); if (cb) cb(e.data); };
+    worker.onerror = () => { worker = null; for (const [id, cb] of pending) cb(null, id); pending.clear(); };
+  } catch (err) { worker = null; }
+  function askBrain(msg, cb) {
+    const id = ++reqId; msg.id = id;
+    const local = () => {
+      const t0 = performance.now();
+      const d = BR.decide(msg.col, msg.vir, msg.lnk, msg.ca, msg.cb, msg.na, msg.nb, msg.placed, msg.speed);
+      cb({ id, action: d.action, mask: d.mask, ms: performance.now() - t0 });
+    };
+    if (worker) {
+      pending.set(id, (res) => (res ? cb(res) : setTimeout(local, 0)));
+      worker.postMessage(msg);
+    } else setTimeout(local, 0);
+  }
+
+  // ------------------------------------------------------------ players
+  const ROT_OF_VAR = [0, 2, 3, 1];
+  class Player {
+    constructor(idx, isBot) { this.idx = idx; this.isBot = isBot; this.wins = 0; }
+    reset(level, speed, seed, seq) {
+      const v = makeViruses(level, seed);
+      this.col = v.col; this.vir = v.vir; this.lnk = new Int8Array(N);
+      this.level = level; this.speed = speed; this.seq = seq; this.seqIdx = 1; // the ROM burns one capsule
+      this.placed = 0; this.garbageIn = []; this.pill = null; this.next = this.draw();
+      this.state = "spawn"; this.timer = 20; this.flash = null; this.combo = { n: 0, colors: [] };
+      this.hv = 0; this.plan = null; this.result = null;
+    }
+    draw() { const [a, b] = this.seq[this.seqIdx % 128]; this.seqIdx++; return { a, b }; }
+    thr() { return BR.tableThreshold(this.placed, this.speed); }
+  }
+  const P = [new Player(0, false), new Player(1, true)];
+
+  // ------------------------------------------------------------ input
+  const held = { left: false, right: false, down: false, a: false, b: false };
+  const prevHeld = { ...held };
+  const KEYMAP = { ArrowLeft: "left", ArrowRight: "right", ArrowDown: "down", KeyX: "a", ArrowUp: "a", KeyZ: "b" };
+  window.addEventListener("keydown", (e) => {
+    if (e.target && (e.target.tagName === "SELECT" || e.target.tagName === "INPUT")) return;
+    const k = KEYMAP[e.code];
+    if (k) { held[k] = true; if (game.running) e.preventDefault(); }
+    if (e.code === "Enter" || e.code === "Space") { if (e.target.tagName !== "BUTTON") { e.preventDefault(); onEnter(); } }
+    if (e.code === "KeyP" && game.running) togglePause();
+  });
+  window.addEventListener("keyup", (e) => { const k = KEYMAP[e.code]; if (k) held[k] = false; });
+  window.addEventListener("blur", () => { for (const k in held) held[k] = false; if (game.running && !game.paused) togglePause(); });
+  document.querySelectorAll("#pad button").forEach((btn) => {
+    const k = btn.dataset.k;
+    const on = (e) => { e.preventDefault(); held[k] = true; btn.setPointerCapture && btn.setPointerCapture(e.pointerId); };
+    const off = () => { held[k] = false; };
+    btn.addEventListener("pointerdown", on);
+    btn.addEventListener("pointerup", off);
+    btn.addEventListener("pointercancel", off);
+    btn.addEventListener("contextmenu", (e) => e.preventDefault());
+  });
+
+  // ------------------------------------------------------------ game state
+  const game = { running: false, paused: false, frame: 0, roundOver: false, matchOver: false, seed: 1, round: 0 };
+  const $ = (id) => document.getElementById(id);
+  const statusEl = $("status");
+
+  for (const id of ["lvlP1", "lvlP2"]) {
+    const s = $(id);
+    for (let l = 0; l <= 20; l++) s.add(new Option(String(l).padStart(2, "0"), l));
+  }
+  $("lvlP1").value = "11"; $("lvlP2").value = "11";
+
+  function startRound() {
+    game.round++;
+    game.seed = (Math.random() * 0xffff) | 1;
+    const seq = pillSequence(game.seed);
+    const speed = +$("speed").value;
+    const vseed = (Math.random() * 1e9) | 0;
+    P[0].reset(+$("lvlP1").value, speed, vseed, seq);
+    P[1].reset(+$("lvlP2").value, speed, vseed, seq);
+    game.running = true; game.paused = false; game.roundOver = false;
+    setStatus("Round " + game.round);
+  }
+  function startMatch() {
+    P[0].wins = 0; P[1].wins = 0; game.round = 0; game.matchOver = false;
+    updateScore(); startRound();
+  }
+  function onEnter() {
+    if (!game.running || game.matchOver) startMatch();
+    else if (game.roundOver) startRound();
+  }
+  function togglePause() {
+    if (game.roundOver) return;
+    game.paused = !game.paused;
+    setStatus(game.paused ? "Paused" : "Round " + game.round);
+  }
+  $("setup").addEventListener("submit", (e) => { e.preventDefault(); startMatch(); $("startBtn").blur(); });
+  function setStatus(t) { statusEl.textContent = t; }
+  function updateScore() { $("w0").textContent = P[0].wins; $("w1").textContent = P[1].wins; }
+
+  function endRound(winner, why) {
+    if (game.roundOver) return;
+    game.roundOver = true;
+    P[winner].wins++; updateScore();
+    const name = winner === 0 ? "You win" : "ANTIBODY wins";
+    if (P[winner].wins >= 3) {
+      game.matchOver = true;
+      setStatus(name + " the match. Enter for a rematch");
+    } else setStatus(name + " (" + why + "). Enter for the next round");
+  }
+
+  // ------------------------------------------------------------ bot driver (TAP, DRTAPP=2)
+  function botSpawnSetup(p) {
+    const col = p.col, top = [];
+    for (let c = 0; c < COLS; c++) { let r = 0; while (r < ROWS && !col[r * COLS + c]) r++; top.push(r); }
+    let pd = 0;
+    if (!(top[3] > 2 && top[4] > 2)) {
+      const gl = !col[2] && !col[COLS + 2], gr = !col[5] && !col[COLS + 5];
+      pd = top[4] > top[3] ? (gr ? 1 : gl ? -1 : 0) : (gl ? -1 : gr ? 1 : 0);
+    }
+    p.plan = { ready: false, action: -1, proph: pd, lastPress: -99, gaveUp: false, spawnId: p.placed };
+    const na = p.next.a, nb = p.next.b;
+    const msg = { col: Array.from(p.col), vir: Array.from(p.vir), lnk: Array.from(p.lnk),
+      ca: p.pill.a, cb: p.pill.b, na, nb, placed: p.placed, speed: p.speed };
+    const plan = p.plan;
+    askBrain(msg, (res) => {
+      if (p.plan !== plan) return;
+      plan.ready = true; plan.action = res.action;
+      showDecision(p, res, msg);
+    });
+  }
+  function botInput(p, f) {
+    const inp = { left: false, right: false, down: false, a: false, b: false };
+    const plan = p.plan, pill = p.pill;
+    const canPress = f - plan.lastPress >= 2;
+    const press = (k) => { inp[k] = true; plan.lastPress = f; };
+    if (!plan.ready || f < T_LAT) {
+      if (plan.proph && f >= F0 && f < T_LAT && canPress) press(plan.proph > 0 ? "right" : "left");
+      return inp;
+    }
+    if (plan.action < 0) { inp.down = true; return inp; }
+    const v = plan.action >> 3, tx = plan.action & 7, trot = ROT_OF_VAR[v];
+    if (pill.rot !== trot) {
+      if (canPress) press(v === 3 ? "b" : "a");
+      return inp;
+    }
+    if (pill.x !== tx && !plan.gaveUp) {
+      const lo = Math.min(pill.x, tx), hi = Math.max(pill.x, tx);
+      let y = 0;
+      for (let r = pill.row + 1; r < ROWS; r++) {
+        let empty = true;
+        for (let c = lo; c <= hi; c++) if (p.col[r * COLS + c]) { empty = false; break; }
+        if (!empty) break; y++;
+      }
+      if (DT[Math.min(y, 15)] === 0) plan.gaveUp = true;
+      else { if (canPress) press(tx > pill.x ? "right" : "left"); return inp; }
+    }
+    inp.down = true;
+    return inp;
+  }
+
+  // ------------------------------------------------------------ per-frame update
+  function spawn(p) {
+    for (const g of p.garbageIn.splice(0)) {
+      g.cols.forEach((c, i) => { if (!p.col[c]) { p.col[c] = g.colors[i]; p.vir[c] = 0; p.lnk[c] = 0; } });
+      p.state = "settle"; p.timer = 4; p.fromGarbage = true;
+      return;
+    }
+    if (p.col[3] || p.col[4]) { endRound(1 - p.idx, (p.idx === 0 ? "you" : "ANTIBODY") + " topped out"); p.state = "dead"; return; }
+    p.pill = { x: 3, row: 0, rot: 0, a: p.next.a, b: p.next.b };
+    p.next = p.draw();
+    p.f = 0; p.sc = 0; p.hv = p.hv || 0;
+    p.state = "fall";
+    if (p.isBot) botSpawnSetup(p);
+  }
+  function lock(p) {
+    const cells = pillCells(p.pill);
+    if (cells.some(([r]) => r < 0)) {        // locked sticking out of the bottle: top-out
+      for (const [r, c, k] of cells) if (r >= 0) { const i = r * COLS + c; p.col[i] = k; p.vir[i] = 0; p.lnk[i] = 0; }
+      p.pill = null; p.state = "dead";
+      endRound(1 - p.idx, (p.idx === 0 ? "you" : "ANTIBODY") + " topped out");
+      return;
+    }
+    for (const [r, c, k, lk] of cells) { const i = r * COLS + c; p.col[i] = k; p.vir[i] = 0; p.lnk[i] = lk; }
+    p.pill = null; p.placed++;
+    p.combo = { n: 0, colors: [] };
+    p.fromGarbage = false;
+    p.state = "check"; p.timer = 0;
+  }
+  function stepFall(p, inp, edge) {
+    const pill = p.pill, thr = p.thr();
+    const f = p.f;
+    // checkYMove
+    const onlyDown = inp.down && !inp.left && !inp.right;
+    let lower = false;
+    if (onlyDown && (game.frame & 1)) lower = true;
+    else if (!p.isBot || f >= G0) { p.sc++; if (p.sc > thr) { p.sc = 0; lower = true; } }
+    if (lower) {
+      const nx = { ...pill, row: pill.row + 1 };
+      if (valid(p.col, nx)) pill.row++;
+      else { lock(p); return; }
+    }
+    // checkXMove (NES DAS: press moves now, held repeats at 16 then every 6)
+    const dir = inp.right && !inp.left ? 1 : inp.left && !inp.right ? -1 : 0;
+    if (dir) {
+      let move = false;
+      if ((dir > 0 && edge.right) || (dir < 0 && edge.left)) { p.hv = 0; move = true; }
+      else if (!p.isBot) { p.hv++; if (p.hv >= 16) { p.hv = 10; move = true; } }
+      if (move) {
+        const nx = { ...pill, x: pill.x + dir };
+        if (valid(p.col, nx)) pill.x += dir; else p.hv = 15;
+      }
+    }
+    // checkRotate: A -> rot-1, B -> rot+1, left wall-kick when going horizontal
+    const rd = edge.a ? 3 : edge.b ? 1 : 0;
+    if (rd) {
+      const nx = { ...pill, rot: (pill.rot + rd) % 4 };
+      if (valid(p.col, nx)) pill.rot = nx.rot;
+      else if (nx.rot % 2 === 0) { nx.x -= 1; if (valid(p.col, nx)) { pill.rot = nx.rot; pill.x = nx.x; } }
+    }
+    p.f++;
+  }
+  function stepResolve(p) {
+    if (p.timer > 0) { p.timer--; return; }
+    if (p.state === "check") {
+      const mask = new Int8Array(N);
+      const n = BR.findClears(p.col, mask);
+      if (n > 0) {
+        const runs = countRuns(p.col);
+        if (!p.fromGarbage) { p.combo.n += runs.n; p.combo.colors.push(...runs.colors); }
+        p.flash = mask; p.state = "clear"; p.timer = 16;
+        return;
+      }
+      afterResolve(p);
+    } else if (p.state === "clear") {
+      BR.applyClear(p.col, p.vir, p.lnk, p.flash);
+      p.flash = null; p.state = "settle"; p.timer = 6;
+    } else if (p.state === "settle") {
+      if (gravityPass(p.col, p.vir, p.lnk)) { p.timer = 3; return; }
+      p.state = "check";
+    }
+  }
+  function afterResolve(p) {
+    const opp = P[1 - p.idx];
+    if (p.combo.n >= 2 && opp.state !== "dead") {
+      const size = p.combo.n === 2 ? 2 : p.combo.n === 3 ? 3 : 4;
+      const start = game.frame & (size === 4 ? 1 : 3), gap = size === 2 ? 4 : 2;
+      const cols = [], colors = [];
+      for (let i = 0; i < size; i++) {
+        cols.push(start + i * gap);
+        colors.push(p.combo.colors[i] || 1 + Math.floor(Math.random() * 3));
+      }
+      opp.garbageIn.push({ cols, colors });
+    }
+    p.combo = { n: 0, colors: [] };
+    if (virusCount(p.vir) === 0) { endRound(p.idx, "bottle cleared"); p.state = "done"; return; }
+    p.state = "spawn"; p.timer = p.fromGarbage ? 2 : 10;
+    p.fromGarbage = false;
+  }
+  function stepPlayer(p, rawHeld, rawPrev) {
+    if (p.state === "dead" || p.state === "done") return;
+    if (p.state === "spawn") { if (p.timer > 0) p.timer--; else spawn(p); return; }
+    if (p.state === "fall") {
+      let inp, edge;
+      if (p.isBot) { inp = botInput(p, p.f); edge = inp; }
+      else {
+        inp = rawHeld;
+        edge = {}; for (const k in rawHeld) edge[k] = rawHeld[k] && !rawPrev[k];
+      }
+      stepFall(p, inp, edge);
+      return;
+    }
+    stepResolve(p);
+  }
+  function tick() {
+    if (!game.running || game.paused || game.roundOver) { Object.assign(prevHeld, held); return; }
+    game.frame++;
+    const snap = { ...held };
+    for (const p of P) stepPlayer(p, snap, prevHeld);
+    Object.assign(prevHeld, snap);
+  }
+
+  // ------------------------------------------------------------ readout
+  function describeAction(a, ca, cb) {
+    if (a < 0) return "no legal move";
+    const v = a >> 3, c = a & 7;
+    const sw = (k) => `<span class="swatch" style="background:${HUE[k]}"></span>${COLOR_NAME[k]}`;
+    if (v === 0) return `cols ${c + 1}–${c + 2}, flat: ${sw(ca)} ${sw(cb)}`;
+    if (v === 1) return `cols ${c + 1}–${c + 2}, flat: ${sw(cb)} ${sw(ca)}`;
+    if (v === 2) return `col ${c + 1}, upright: ${sw(ca)} over ${sw(cb)}`;
+    return `col ${c + 1}, upright: ${sw(cb)} over ${sw(ca)}`;
+  }
+  function showDecision(p, res, msg) {
+    $("rdPlace").innerHTML = describeAction(res.action, msg.ca, msg.cb);
+    let legal = 0;
+    const col = msg.col;
+    const top = (c) => { let r = 0; while (r < ROWS && !col[r * COLS + c]) r++; return r; };
+    for (let a = 0; a < 32; a++) {
+      const v = a >> 3, c = a & 7, vert = v >= 2;
+      if (!vert && c + 1 >= COLS) continue;
+      const rr = vert ? top(c) - 2 : Math.min(top(c), top(c + 1)) - 1;
+      if (rr >= 0) legal++;
+    }
+    const allowed = res.mask.reduce((s, x) => s + x, 0);
+    $("rdReach").textContent = allowed >= 32 ? `all ${legal} (nothing reachable, no filter)` : `${allowed} of ${legal} legal placements`;
+    $("rdMs").textContent = `${res.ms.toFixed(0)} ms${worker ? "" : " (main thread)"}`;
+    const thr = BR.tableThreshold(msg.placed, msg.speed);
+    $("rdThr").textContent = `1 row / ${thr + 1} frames (pill ${msg.placed + 1})`;
+    let hsv = 0;
+    for (let r = 0; r < 9; r++) for (let c = 3; c < 6; c++) if (msg.vir[r * COLS + c]) hsv++;
+    $("rdHsv").textContent = `${hsv} in cols 4–6, rows 1–9`;
+  }
+
+  // ------------------------------------------------------------ rendering
+  const canv = [$("cv0"), $("cv1")];
+  const CS = 20, PADX = 14, TOPH = 72, W = COLS * CS + PADX * 2, H = ROWS * CS + TOPH + 14;
+  function setupCanvas(cv) {
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    cv.width = W * dpr; cv.height = H * dpr;
+    const ctx = cv.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return ctx;
+  }
+  const ctxs = canv.map(setupCanvas);
+  const glass = CSSV("--glass"), glassDim = CSSV("--glass-dim"), ground = CSSV("--ground"), amber = CSSV("--amber");
+
+  function shade(hex, f) {
+    const n = parseInt(hex.slice(1), 16);
+    const ch = (s) => Math.max(0, Math.min(255, Math.round(((n >> s) & 255) * f)));
+    return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
+  }
+  function drawHalf(ctx, x, y, k, lk, alpha) {
+    const s = CS, m = 1.5, r = s / 2 - m;
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    const rad = { tl: r, tr: r, br: r, bl: r };
+    if (lk === LINK_RIGHT) { rad.tr = rad.br = 2; }
+    if (lk === LINK_LEFT) { rad.tl = rad.bl = 2; }
+    if (lk === LINK_DOWN) { rad.bl = rad.br = 2; }
+    if (lk === LINK_UP) { rad.tl = rad.tr = 2; }
+    const x0 = x + m, y0 = y + m, w = s - 2 * m, h = s - 2 * m;
+    ctx.beginPath();
+    ctx.moveTo(x0 + rad.tl, y0);
+    ctx.lineTo(x0 + w - rad.tr, y0); ctx.quadraticCurveTo(x0 + w, y0, x0 + w, y0 + rad.tr);
+    ctx.lineTo(x0 + w, y0 + h - rad.br); ctx.quadraticCurveTo(x0 + w, y0 + h, x0 + w - rad.br, y0 + h);
+    ctx.lineTo(x0 + rad.bl, y0 + h); ctx.quadraticCurveTo(x0, y0 + h, x0, y0 + h - rad.bl);
+    ctx.lineTo(x0, y0 + rad.tl); ctx.quadraticCurveTo(x0, y0, x0 + rad.tl, y0);
+    ctx.closePath();
+    ctx.fillStyle = HUE[k]; ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.28)";
+    ctx.fillRect(x0 + 3, y0 + 3, w * 0.3, 3);
+    ctx.globalAlpha = 1;
+  }
+  function drawVirus(ctx, x, y, k, t) {
+    const cx = x + CS / 2, cy = y + CS / 2, R = CS * 0.36;
+    const wob = Math.sin(t / 9 + x * 0.3 + y * 0.2) * 1.2;
+    ctx.fillStyle = HUE[k];
+    ctx.beginPath();
+    for (let i = 0; i < 16; i++) {
+      const ang = (i / 16) * Math.PI * 2, rr = i % 2 ? R : R + 2.6 + (i % 4 === 0 ? wob : -wob * 0.5);
+      const px = cx + Math.cos(ang) * rr, py = cy + Math.sin(ang) * rr;
+      i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = shade(HUE[k], 0.45);
+    ctx.beginPath(); ctx.arc(cx, cy, R * 0.55, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(cx - 4, cy - 3, 3, 4); ctx.fillRect(cx + 1, cy - 3, 3, 4);
+    ctx.fillStyle = "#111";
+    ctx.fillRect(cx - 3, cy - 2, 1.5, 2); ctx.fillRect(cx + 2, cy - 2, 1.5, 2);
+  }
+  function drawBottle(ctx, p, t, showGhost) {
+    ctx.clearRect(0, 0, W, H);
+    const bx = PADX, by = TOPH;
+    // neck + body outline
+    ctx.strokeStyle = glass; ctx.lineWidth = 3; ctx.lineJoin = "round";
+    const nx0 = bx + 2 * CS, nx1 = bx + 6 * CS;
+    ctx.beginPath();
+    ctx.moveTo(nx0, 14); ctx.lineTo(nx0, by - 16); ctx.lineTo(bx - 4, by - 6); ctx.lineTo(bx - 4, by + ROWS * CS + 6);
+    ctx.lineTo(bx + COLS * CS + 4, by + ROWS * CS + 6); ctx.lineTo(bx + COLS * CS + 4, by - 6); ctx.lineTo(nx1, by - 16); ctx.lineTo(nx1, 14);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(111,154,162,0.06)";
+    ctx.fillRect(bx, by, COLS * CS, ROWS * CS);
+    // grid ticks
+    ctx.fillStyle = glassDim;
+    for (let r = 1; r < ROWS; r++) for (let c = 1; c < COLS; c++) ctx.fillRect(bx + c * CS - 0.5, by + r * CS - 0.5, 1, 1);
+    if (!p || !p.col) return;
+    // next capsule in the neck
+    if (p.next && p.state !== "dead" && p.state !== "done") {
+      drawHalf(ctx, bx + 3 * CS, 24, p.next.a, LINK_RIGHT);
+      drawHalf(ctx, bx + 4 * CS, 24, p.next.b, LINK_LEFT);
+    }
+    // board
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const i = r * COLS + c, k = p.col[i];
+      if (!k) continue;
+      const x = bx + c * CS, y = by + r * CS;
+      const blink = p.flash && p.flash[i] && ((t >> 2) & 1);
+      if (blink) { ctx.fillStyle = "#fff"; ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.arc(x + CS / 2, y + CS / 2, CS * 0.42, 0, 7); ctx.fill(); ctx.globalAlpha = 1; continue; }
+      if (p.vir[i]) drawVirus(ctx, x, y, k, t);
+      else drawHalf(ctx, x, y, k, p.lnk[i]);
+    }
+    // ghost of ANTIBODY's chosen landing
+    if (showGhost && p.isBot && p.pill && p.plan && p.plan.ready && p.plan.action >= 0) {
+      const a = p.plan.action, v = a >> 3, c = a & 7;
+      let rr = 0;
+      const topc = (cc) => { let r = 0; while (r < ROWS && !p.col[r * COLS + cc]) r++; return r; };
+      const cells = v < 2 ? (rr = Math.min(topc(c), topc(c + 1)) - 1, [[rr, c], [rr, c + 1]])
+        : (rr = topc(c) - 1, [[rr - 1, c], [rr, c]]);
+      ctx.strokeStyle = amber; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]);
+      for (const [r, cc] of cells) if (r >= 0) ctx.strokeRect(bx + cc * CS + 2, by + r * CS + 2, CS - 4, CS - 4);
+      ctx.setLineDash([]);
+    }
+    // falling capsule
+    if (p.pill) for (const [r, c, k, lk] of pillCells(p.pill)) if (r >= 0) drawHalf(ctx, bx + c * CS, by + r * CS, k, lk);
+    // pending garbage markers
+    if (p.garbageIn.length) {
+      ctx.fillStyle = amber;
+      ctx.font = "600 11px " + CSSV("--mono");
+      ctx.fillText("+" + p.garbageIn.reduce((s, g) => s + g.cols.length, 0), bx + COLS * CS - 20, 30);
+    }
+    if (p.state === "dead" || p.state === "done") {
+      ctx.fillStyle = "rgba(11,20,22,0.62)"; ctx.fillRect(bx, by, COLS * CS, ROWS * CS);
+      ctx.fillStyle = p.state === "done" ? CSSV("--good") : CSSV("--red");
+      ctx.font = "700 20px " + CSSV("--display"); ctx.textAlign = "center";
+      ctx.fillText(p.state === "done" ? "CLEAR" : "TOPPED OUT", bx + (COLS * CS) / 2, by + ROWS * CS / 2);
+      ctx.textAlign = "start";
+    }
+  }
+
+  // ------------------------------------------------------------ loop (fixed 60 Hz)
+  let last = performance.now(), acc = 0, renderT = 0;
+  function loop(now) {
+    acc += Math.min(250, now - last); last = now;
+    while (acc >= 1000 / 60) { tick(); acc -= 1000 / 60; renderT++; }
+    const ghost = $("ghost").checked;
+    drawBottle(ctxs[0], P[0], renderT, false);
+    drawBottle(ctxs[1], P[1], renderT, ghost);
+    if (P[0].vir) { $("vc0").textContent = virusCount(P[0].vir); $("vc1").textContent = virusCount(P[1].vir); }
+    requestAnimationFrame(loop);
+  }
+  document.addEventListener("visibilitychange", () => { if (document.hidden && game.running && !game.paused && !game.roundOver) togglePause(); });
+
+  // Opening state: both bottles filled at level 11 so the page shows the match it will play.
+  (function preview() {
+    const seq = pillSequence(0x8988);
+    const s = 12345;
+    P[0].reset(11, 1, s, seq); P[1].reset(11, 1, s, seq);
+  })();
+  requestAnimationFrame(loop);
+})();
+</script>
