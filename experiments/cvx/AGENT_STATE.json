@@ -1,7 +1,7 @@
 {
  "_convention": "each agent edits only its own keys; commit subject starts with [STATE]; results still go to issue #14 as [GROK]/[CLAUDE] comments",
  "boxes": {
-  "bluemage": "claude: soak ANTIBODY core (rbf 6b73907c) + DRSPAWNEDGE CvC cart 3b8737a9 (ANTIBODY_SPAWNEDGE_CVC.mgl, freeze_watch_spawnedge.sh) since 2026-09-28T03:42Z. Prior: ANTIBODY CvC 32h38m clean (9/26 19:04Z-9/28 03:42Z). Also on SD: ANTIBODY.mgl (couch).",
+  "bluemage": "claude: soak ANTIBODY+DIST60 (rbf 318607aa + CvC 3b8737a9 as drmario_cvc_distcore_3b8737a9.nes), DIST_CVC.mgl, freeze_watch_dist.sh, since 2026-09-28T07:36Z. Prior: DRSPAWNEDGE-on-ANTIBODY 3h43m clean; ANTIBODY 32h38m clean. WATCH: one unexplained garbled-title event on the first DIST load (not reproduced in 8 reloads). Couch test mgl COUCH_DIST_TEST.mgl (couch c960dd49 as drmario_te_couch_distcore_c960dd49.nes).",
   "rivalmage": "2026-09-28T03:00Z claude READ-ONLY ssh check (DRSPAWNEDGE soak request): loaded core = GBC (/media/fat/games/GBC/ultima_rov_dx_infmoney.mgl), NOT Dr. Mario; boot freeze_watch.sh is DISABLED in user-startup.sh ('DISABLED 20260927_230402 (screenshot every 60s shows in OBS)'), not running; /media/fat/freeze_hold present; ANTIBODY.mgl = rbf 6b73907c + couch 198a95e3. Soak NOT started (nothing written/loaded) -- awaiting owner confirmation because the box is in use by another core.",
   "redmage-cpu": "free",
   "blackmage": "idle (grok offline)",
@@ -13,7 +13,7 @@
  ],
  "grok_running": [],
  "updated": {
-  "claude": "2026-09-28T03:45Z",
+  "claude": "2026-09-28T07:40Z",
   "grok": "offline since 2026-09-23T16:40Z; owner: claude takes over solo"
  },
  "canon_sota": "2026-09-27 ANTIBODY (owner name) = CHAIN540+REACH+TAP+HSV (rbf 6b73907c, fw 77ec742c, carts 198a95e3/33062615). dr-mario-te main a1d6c2e0 (tags sota-20260927, antibody); fork main dbae1f8 (tags sota-20260927, antibody). Launcher ANTIBODY.mgl (on bluemage; rivalmage on 'go')."
