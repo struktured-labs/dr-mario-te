@@ -1,0 +1,13 @@
+OPPONENT SUITE: s6_dist_target60 vs ANTIBODY (paired, 95% CIs)
+  OWNER-0804     n=600  tap-out  23.0% ->  18.8%  d -4.17 [-6.67, -1.67]   tap<=100 d +0.00 [+0.00, +0.00]
+  OWNER-2026-09  n=600  tap-out  21.8% ->  16.3%  d -5.50 [-8.00, -3.00]   tap<=100 d +0.00 [+0.00, +0.00]
+  lulu fit       n=600  tap-out  18.5% ->  14.3%  d -4.17 [-6.33, -2.00]   tap<=100 d +0.00 [+0.00, +0.00]
+  STRIKER H6     n=600  tap-out  24.2% ->  21.5%  d -2.67 [-5.17, -0.33]   tap<=100 d +0.00 [+0.00, +0.00]
+  LULU race (lam 4.7) n=600  race-row tap-out 26.7% -> 16.7%  d -10.00 [-13.00, -7.33]
+    delta 2.65 M 140: base  68.5%  arm  81.0%  d +12.50 [+9.67, +15.50]
+    delta 2.65 M 160: base  71.0%  arm  83.0%  d +12.00 [+9.33, +15.00]
+    delta 2.65 M 177: base  72.2%  arm  83.0%  d +10.83 [+8.17, +13.83]
+    delta 2.0 M 140: base  56.8%  arm  66.3%  d +9.50 [+6.83, +12.50]
+    delta 2.0 M 160: base  63.3%  arm  74.5%  d +11.17 [+8.17, +14.33]
+    delta 2.0 M 177: base  66.2%  arm  77.8%  d +11.67 [+9.00, +14.67]
+FLAGS: none (the arm holds or improves against every opponent)
