@@ -84,6 +84,77 @@ def main():
         print(f"  pills to clear (both won, n={len(pl)}): d mean {np.mean(pl):+.1f}")
 
 
+HO_GB = sorted(set(range(39134, 40933, 2)) | set(range(33000, 34199, 2)))
+HO_RC = sorted(set(HO_GB) | set(range(26280, 26959, 2)) | set(range(60348, 60999, 2)))
+HO_ARMS = ("s6_dist_end60", "s6_dist_stall60", "s6_dist_target60")
+RTL_ORDER = ("s6_dist_target60", "s6_dist_end60", "s6_dist_stall60")        # cheapest first (PREREG_STEER6b)
+
+
+def _load(pattern, label, seeds):
+    out = {}
+    for f in glob.glob(pattern):
+        for l in open(f):
+            r = json.loads(l)
+            if r.get("arm") == label:
+                out[r["seed"]] = r
+    return {s: out[s] for s in seeds if s in out}
+
+
+def boot_q(d, lo, hi, seed=0):
+    d = np.asarray(d, float); rng = np.random.default_rng(seed)
+    m = d[rng.integers(0, len(d), size=(B, len(d)))].mean(1)
+    return 100 * d.mean(), 100 * np.percentile(m, lo), 100 * np.percentile(m, hi)
+
+
+def holdout():
+    """STEER6b (PREREG_STEER6b.md): Bonferroni 98.33% CIs; CONFIRMED iff tap-out upper < 0, race lower >= -2,
+    tap<=100 upper <= +1."""
+    GB = _load("steer5d/*/gb_s5b_hsv512_*.jsonl", "fw540_steer_s5b_hsv512", HO_GB)
+    RC = _load("steer5d/*/rc_s5b_hsv512_*.jsonl", "s5b_hsv512~steer", HO_RC)
+    win = lambda r, dl=2.65: int(evaluate(r, 177., .15, dl)[0] == "win_race")
+    print(f"BASELINE ANTIBODY (STEER5d rows): gate b n={len(GB)} tap<=100 {100*np.mean([tap100(r) for r in GB.values()]):.2f}% "
+          f"tap-out {100*np.mean([r['topout'] for r in GB.values()]):.2f}%   race n={len(RC)} win {100*np.mean([win(r) for r in RC.values()]):.2f}%")
+    confirmed = {}
+    for arm in HO_ARMS:
+        G = _load(f"steer6/holdout/*/gb_{arm}_*.jsonl", f"{arm}@owner0804", HO_GB)
+        R = _load(f"steer6/holdout/*/rc_{arm}_*.jsonl", f"{arm}~steer", HO_RC)
+        S = [s for s in HO_GB if s in G and s in GB]; SR = [s for s in HO_RC if s in R and s in RC]
+        if not S or not SR:
+            print(f"\n{arm}: gate b n={len(S)} race n={len(SR)} (incomplete)"); continue
+        dtop = [G[s]["topout"] - GB[s]["topout"] for s in S]
+        d100 = [tap100(G[s]) - tap100(GB[s]) for s in S]
+        drc = [win(R[s]) - win(RC[s]) for s in SR]
+        tb, t1, tr = boot_q(dtop, 0.8333, 99.1667), boot_q(d100, 0.8333, 99.1667), boot_q(drc, 0.8333, 99.1667)
+        t95, r95 = boot_q(dtop, 2.5, 97.5), boot_q(drc, 2.5, 97.5)
+        complete = len(S) == len(HO_GB) and len(SR) == len(HO_RC)
+        ok = tb[2] < 0 and tr[1] >= -2.0 and t1[2] <= 1.0
+        v = ("CONFIRMED" if ok else "NOT CONFIRMED") if complete else "incomplete"
+        if ok and complete:
+            confirmed[arm] = tb[0]
+        print(f"\n{arm}: gate b n={len(S)}  race n={len(SR)}   -> {v}")
+        print(f"  tap-out  base {100*np.mean([GB[s]['topout'] for s in S]):.2f}%  arm {100*np.mean([G[s]['topout'] for s in S]):.2f}%  "
+              f"d {fmt(tb)} (98.33%)   95%: {fmt(t95)}")
+        print(f"  tap<=100 base {100*np.mean([tap100(GB[s]) for s in S]):.2f}%  arm {100*np.mean([tap100(G[s]) for s in S]):.2f}%  d {fmt(t1)} (98.33%)")
+        print(f"  race win base {100*np.mean([win(RC[s]) for s in SR]):.2f}%  arm {100*np.mean([win(R[s]) for s in SR]):.2f}%  "
+              f"d {fmt(tr)} (98.33%)   95%: {fmt(r95)}   delta 2.0 95%: {fmt(boot_q([win(R[s], 2.0) - win(RC[s], 2.0) for s in SR], 2.5, 97.5))}")
+        fixed = sum(1 for s in S if GB[s]["topout"] and not G[s]["topout"]); new = sum(1 for s in S if not GB[s]["topout"] and G[s]["topout"])
+        print(f"  churn fixed {fixed} / new {new} (base failures {sum(GB[s]['topout'] for s in S)})   "
+              f"arm stall pills/game {np.mean([stall_pills(G[s]) for s in S]):.1f}  arm endgame-stall deaths {100*np.mean([endgame_stall_death(G[s]) for s in S]):.2f}%")
+        # pooled with the screen (descriptive)
+        GS = load(f"steer6/screen/*/gb_{arm}_*.jsonl", f"{arm}@owner0804"); BS = load("steer6/measure/*/gb_owner0804_*.jsonl", "s5b_hsv512@owner0804")
+        P = [GS[s]["topout"] - BS[s]["topout"] for s in SEEDS if s in GS and s in BS] + dtop
+        print(f"  POOLED screen+holdout tap-out (descriptive, n={len(P)}): {fmt(boot_q(P, 2.5, 97.5))}")
+    if confirmed:
+        best = min(confirmed.values())
+        rec = next(a for a in RTL_ORDER if a in confirmed and confirmed[a] <= best + 1.5)
+        print(f"\nRECOMMENDATION (pre-declared rule: cheapest RTL within 1.5 pp of the best confirmed): {rec}")
+    else:
+        print("\nno arm confirmed")
+
+
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    main()
+    if "--holdout" in sys.argv:
+        holdout()
+    else:
+        main()
