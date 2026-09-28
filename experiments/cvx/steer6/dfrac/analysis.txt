@@ -1,0 +1,14 @@
+
+[POST-HOC fractional, active decisions only] gate b: active decisions/game 44.3, extra frames/game 7.57
+
+s6_dist_target60 @ +0.17 f (vs ANTIBODY @ nominal): gate b n=600 race n=600 -> GAIN SURVIVES
+  tap-out  19.17%  d -3.83 [-6.50, -1.17]    tap<=100 d +0.00 [+0.00, +0.00]
+  race win 73.50%  d +5.33 [+2.67, +8.17]
+  LATENCY COST (arm@+0.17 - arm@0): tap-out +0.33 [-0.67, +1.33]  race -0.83 [-1.83, +0.17]
+
+[POST-HOC fractional, active decisions only] gate b: active decisions/game 39.7, extra frames/game 49.47
+
+s6_dist_end60 @ +1.25 f (vs ANTIBODY @ nominal): gate b n=600 race n=600 -> GAIN SURVIVES
+  tap-out  17.67%  d -5.33 [-7.83, -2.83]    tap<=100 d +0.00 [+0.00, +0.00]
+  race win 75.33%  d +7.17 [+4.67, +9.83]
+  LATENCY COST (arm@+1.25 - arm@0): tap-out +0.67 [-0.67, +2.00]  race +1.00 [-0.67, +2.67]

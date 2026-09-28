@@ -1,0 +1,3507 @@
+{
+"source": "dr-mario-te dist-target 1f430974 experiments/dist/analyze_endgame_latency.py on tmp/fwcosim_end (reachbuild): DRDIST fw vs ANTIBODY fw 77ec742c, both on the DIST RTL, real copro6502 co-sim; 1 frame = 85.9e6/60.0988 clocks",
+"n": 437,
+"mean": -0.06644214578446013,
+"median": 0.004600811511059371,
+"p95": 2.7343596704633293,
+"max": 12.827834891846333,
+"min": -7.413384977210709,
+"rows": [
+{
+"board": 0,
+"kind": "game",
+"clk_antibody": 44334288,
+"clk_dist": 44073264,
+"delta_f": -0.1826219926798603,
+"move_changed": false
+},
+{
+"board": 1,
+"kind": "game",
+"clk_antibody": 53287632,
+"clk_dist": 53293344,
+"delta_f": 0.003996325327124563,
+"move_changed": false
+},
+{
+"board": 2,
+"kind": "game",
+"clk_antibody": 51062736,
+"clk_dist": 51068352,
+"delta_f": 0.0039291601955762515,
+"move_changed": false
+},
+{
+"board": 3,
+"kind": "game",
+"clk_antibody": 42713280,
+"clk_dist": 42686112,
+"delta_f": -0.019007732228172293,
+"move_changed": false
+},
+{
+"board": 4,
+"kind": "game",
+"clk_antibody": 40309632,
+"clk_dist": 40126080,
+"delta_f": -0.12841973152037253,
+"move_changed": true
+},
+{
+"board": 5,
+"kind": "game",
+"clk_antibody": 49184304,
+"clk_dist": 49190160,
+"delta_f": 0.004097073024447031,
+"move_changed": false
+},
+{
+"board": 6,
+"kind": "game",
+"clk_antibody": 45040512,
+"clk_dist": 44770512,
+"delta_f": -0.18890193247962747,
+"move_changed": true
+},
+{
+"board": 7,
+"kind": "game",
+"clk_antibody": 45493440,
+"clk_dist": 45343920,
+"delta_f": -0.10460969238649592,
+"move_changed": false
+},
+{
+"board": 8,
+"kind": "game",
+"clk_antibody": 46805712,
+"clk_dist": 46812480,
+"delta_f": 0.004735141774155995,
+"move_changed": false
+},
+{
+"board": 9,
+"kind": "game",
+"clk_antibody": 57120192,
+"clk_dist": 50467536,
+"delta_f": -4.6544428686006984,
+"move_changed": false
+},
+{
+"board": 10,
+"kind": "game",
+"clk_antibody": 55171392,
+"clk_dist": 51999696,
+"delta_f": -2.2190351986589056,
+"move_changed": false
+},
+{
+"board": 11,
+"kind": "game",
+"clk_antibody": 53354208,
+"clk_dist": 50837808,
+"delta_f": -1.760566010710128,
+"move_changed": false
+},
+{
+"board": 12,
+"kind": "game",
+"clk_antibody": 55016928,
+"clk_dist": 49047888,
+"delta_f": -4.1761599668451685,
+"move_changed": false
+},
+{
+"board": 13,
+"kind": "game",
+"clk_antibody": 56958912,
+"clk_dist": 53949936,
+"delta_f": -2.1051903006845167,
+"move_changed": false
+},
+{
+"board": 14,
+"kind": "game",
+"clk_antibody": 52093776,
+"clk_dist": 45924912,
+"delta_f": -4.3159641881629796,
+"move_changed": false
+},
+{
+"board": 15,
+"kind": "game",
+"clk_antibody": 49926000,
+"clk_dist": 49926432,
+"delta_f": 0.00030224309196740396,
+"move_changed": false
+},
+{
+"board": 16,
+"kind": "game",
+"clk_antibody": 47231616,
+"clk_dist": 47233584,
+"delta_f": 0.0013768851967403957,
+"move_changed": false
+},
+{
+"board": 17,
+"kind": "game",
+"clk_antibody": 46791936,
+"clk_dist": 46798128,
+"delta_f": 0.0043321509848661234,
+"move_changed": false
+},
+{
+"board": 18,
+"kind": "game",
+"clk_antibody": 47829984,
+"clk_dist": 53785056,
+"delta_f": 4.166387440204889,
+"move_changed": false
+},
+{
+"board": 19,
+"kind": "game",
+"clk_antibody": 50614416,
+"clk_dist": 50622000,
+"delta_f": 0.005306045392316647,
+"move_changed": false
+},
+{
+"board": 20,
+"kind": "game",
+"clk_antibody": 50671344,
+"clk_dist": 50677632,
+"delta_f": 0.004399316116414435,
+"move_changed": false
+},
+{
+"board": 21,
+"kind": "game",
+"clk_antibody": 51865152,
+"clk_dist": 57654192,
+"delta_f": 4.050225345192084,
+"move_changed": false
+},
+{
+"board": 22,
+"kind": "game",
+"clk_antibody": 52853568,
+"clk_dist": 52860624,
+"delta_f": 0.004936637168800931,
+"move_changed": false
+},
+{
+"board": 23,
+"kind": "game",
+"clk_antibody": 51557808,
+"clk_dist": 51565392,
+"delta_f": 0.005306045392316647,
+"move_changed": false
+},
+{
+"board": 24,
+"kind": "game",
+"clk_antibody": 35365248,
+"clk_dist": 35371488,
+"delta_f": 0.004365733550640279,
+"move_changed": false
+},
+{
+"board": 25,
+"kind": "game",
+"clk_antibody": 47363280,
+"clk_dist": 47309808,
+"delta_f": -0.03741097827240978,
+"move_changed": false
+},
+{
+"board": 26,
+"kind": "game",
+"clk_antibody": 50252160,
+"clk_dist": 50259840,
+"delta_f": 0.005373210523864959,
+"move_changed": false
+},
+{
+"board": 27,
+"kind": "game",
+"clk_antibody": 49660704,
+"clk_dist": 49593312,
+"delta_f": -0.047149922346915014,
+"move_changed": false
+},
+{
+"board": 28,
+"kind": "game",
+"clk_antibody": 48182688,
+"clk_dist": 42508176,
+"delta_f": -3.9700973432549476,
+"move_changed": false
+},
+{
+"board": 29,
+"kind": "game",
+"clk_antibody": 43004736,
+"clk_dist": 43010352,
+"delta_f": 0.0039291601955762515,
+"move_changed": false
+},
+{
+"board": 30,
+"kind": "game",
+"clk_antibody": 43879296,
+"clk_dist": 43885296,
+"delta_f": 0.004197820721769499,
+"move_changed": false
+},
+{
+"board": 31,
+"kind": "game",
+"clk_antibody": 39463680,
+"clk_dist": 39469488,
+"delta_f": 0.004063490458672875,
+"move_changed": false
+},
+{
+"board": 32,
+"kind": "game",
+"clk_antibody": 43458624,
+"clk_dist": 43464336,
+"delta_f": 0.003996325327124563,
+"move_changed": false
+},
+{
+"board": 33,
+"kind": "game",
+"clk_antibody": 43899264,
+"clk_dist": 43905168,
+"delta_f": 0.0041306555902211875,
+"move_changed": false
+},
+{
+"board": 34,
+"kind": "game",
+"clk_antibody": 40995072,
+"clk_dist": 41000448,
+"delta_f": 0.0037612473667054712,
+"move_changed": false
+},
+{
+"board": 35,
+"kind": "game",
+"clk_antibody": 40348320,
+"clk_dist": 40354128,
+"delta_f": 0.004063490458672875,
+"move_changed": false
+},
+{
+"board": 36,
+"kind": "game",
+"clk_antibody": 42793296,
+"clk_dist": 42798912,
+"delta_f": 0.0039291601955762515,
+"move_changed": false
+},
+{
+"board": 37,
+"kind": "game",
+"clk_antibody": 42863568,
+"clk_dist": 42869520,
+"delta_f": 0.004164238155995343,
+"move_changed": false
+},
+{
+"board": 38,
+"kind": "game",
+"clk_antibody": 47117760,
+"clk_dist": 47123856,
+"delta_f": 0.004264985853317811,
+"move_changed": false
+},
+{
+"board": 39,
+"kind": "game",
+"clk_antibody": 41911536,
+"clk_dist": 41917392,
+"delta_f": 0.004097073024447031,
+"move_changed": false
+},
+{
+"board": 40,
+"kind": "game",
+"clk_antibody": 43838016,
+"clk_dist": 43843152,
+"delta_f": 0.0035933345378346914,
+"move_changed": false
+},
+{
+"board": 41,
+"kind": "game",
+"clk_antibody": 43012416,
+"clk_dist": 43018272,
+"delta_f": 0.004097073024447031,
+"move_changed": false
+},
+{
+"board": 42,
+"kind": "game",
+"clk_antibody": 45636480,
+"clk_dist": 45642480,
+"delta_f": 0.004197820721769499,
+"move_changed": false
+},
+{
+"board": 43,
+"kind": "game",
+"clk_antibody": 44525328,
+"clk_dist": 44531376,
+"delta_f": 0.0042314032875436555,
+"move_changed": false
+},
+{
+"board": 44,
+"kind": "game",
+"clk_antibody": 43458384,
+"clk_dist": 43464000,
+"delta_f": 0.0039291601955762515,
+"move_changed": false
+},
+{
+"board": 45,
+"kind": "game",
+"clk_antibody": 43010016,
+"clk_dist": 43015920,
+"delta_f": 0.0041306555902211875,
+"move_changed": false
+},
+{
+"board": 46,
+"kind": "game",
+"clk_antibody": 43432464,
+"clk_dist": 43437744,
+"delta_f": 0.0036940822351571594,
+"move_changed": false
+},
+{
+"board": 47,
+"kind": "game",
+"clk_antibody": 44353056,
+"clk_dist": 44358432,
+"delta_f": 0.0037612473667054712,
+"move_changed": false
+},
+{
+"board": 48,
+"kind": "game",
+"clk_antibody": 46476144,
+"clk_dist": 46481472,
+"delta_f": 0.003727664800931315,
+"move_changed": true
+},
+{
+"board": 49,
+"kind": "game",
+"clk_antibody": 37430928,
+"clk_dist": 37436256,
+"delta_f": 0.003727664800931315,
+"move_changed": false
+},
+{
+"board": 50,
+"kind": "game",
+"clk_antibody": 44900400,
+"clk_dist": 44133360,
+"delta_f": -0.5366494010710128,
+"move_changed": false
+},
+{
+"board": 51,
+"kind": "game",
+"clk_antibody": 62468544,
+"clk_dist": 53799984,
+"delta_f": -6.064843465983702,
+"move_changed": false
+},
+{
+"board": 52,
+"kind": "game",
+"clk_antibody": 59196144,
+"clk_dist": 59223072,
+"delta_f": 0.018839819399301513,
+"move_changed": false
+},
+{
+"board": 53,
+"kind": "game",
+"clk_antibody": 59406192,
+"clk_dist": 55910016,
+"delta_f": -2.4460533432922,
+"move_changed": false
+},
+{
+"board": 54,
+"kind": "game",
+"clk_antibody": 61109664,
+"clk_dist": 61152720,
+"delta_f": 0.030123561499417927,
+"move_changed": false
+},
+{
+"board": 55,
+"kind": "game",
+"clk_antibody": 62270304,
+"clk_dist": 58548000,
+"delta_f": -2.604260810654249,
+"move_changed": false
+},
+{
+"board": 56,
+"kind": "game",
+"clk_antibody": 66556800,
+"clk_dist": 63159888,
+"delta_f": -2.3766045972712453,
+"move_changed": false
+},
+{
+"board": 57,
+"kind": "game",
+"clk_antibody": 53355456,
+"clk_dist": 53234880,
+"delta_f": -0.08435940522467986,
+"move_changed": false
+},
+{
+"board": 58,
+"kind": "game",
+"clk_antibody": 55784784,
+"clk_dist": 54764352,
+"delta_f": -0.7139317657927823,
+"move_changed": false
+},
+{
+"board": 59,
+"kind": "game",
+"clk_antibody": 55718832,
+"clk_dist": 60121968,
+"delta_f": 3.0805959235948777,
+"move_changed": false
+},
+{
+"board": 60,
+"kind": "game",
+"clk_antibody": 58550208,
+"clk_dist": 58556160,
+"delta_f": 0.004164238155995343,
+"move_changed": false
+},
+{
+"board": 61,
+"kind": "game",
+"clk_antibody": 65214720,
+"clk_dist": 65220720,
+"delta_f": 0.004197820721769499,
+"move_changed": false
+},
+{
+"board": 62,
+"kind": "game",
+"clk_antibody": 48483504,
+"clk_dist": 48167376,
+"delta_f": -0.22117477818859138,
+"move_changed": false
+},
+{
+"board": 63,
+"kind": "game",
+"clk_antibody": 51802704,
+"clk_dist": 51809040,
+"delta_f": 0.004432898682188591,
+"move_changed": false
+},
+{
+"board": 64,
+"kind": "game",
+"clk_antibody": 42417504,
+"clk_dist": 42425904,
+"delta_f": 0.005876949010477299,
+"move_changed": false
+},
+{
+"board": 65,
+"kind": "game",
+"clk_antibody": 44474976,
+"clk_dist": 44482800,
+"delta_f": 0.005473958221187427,
+"move_changed": false
+},
+{
+"board": 66,
+"kind": "game",
+"clk_antibody": 43183680,
+"clk_dist": 43191984,
+"delta_f": 0.005809783878928987,
+"move_changed": false
+},
+{
+"board": 67,
+"kind": "game",
+"clk_antibody": 48009792,
+"clk_dist": 48018528,
+"delta_f": 0.006112026970896391,
+"move_changed": false
+},
+{
+"board": 68,
+"kind": "game",
+"clk_antibody": 50163024,
+"clk_dist": 50167776,
+"delta_f": 0.003324674011641443,
+"move_changed": false
+},
+{
+"board": 69,
+"kind": "game",
+"clk_antibody": 47586384,
+"clk_dist": 47591376,
+"delta_f": 0.0034925868405122234,
+"move_changed": false
+},
+{
+"board": 70,
+"kind": "game",
+"clk_antibody": 48503040,
+"clk_dist": 48508080,
+"delta_f": 0.003526169406286379,
+"move_changed": false
+},
+{
+"board": 71,
+"kind": "game",
+"clk_antibody": 51891696,
+"clk_dist": 51896736,
+"delta_f": 0.003526169406286379,
+"move_changed": false
+},
+{
+"board": 72,
+"kind": "game",
+"clk_antibody": 56918736,
+"clk_dist": 56924304,
+"delta_f": 0.0038955776298020954,
+"move_changed": false
+},
+{
+"board": 73,
+"kind": "game",
+"clk_antibody": 49037760,
+"clk_dist": 49043520,
+"delta_f": 0.0040299078928987195,
+"move_changed": false
+},
+{
+"board": 74,
+"kind": "game",
+"clk_antibody": 53980464,
+"clk_dist": 53985792,
+"delta_f": 0.003727664800931315,
+"move_changed": false
+},
+{
+"board": 75,
+"kind": "game",
+"clk_antibody": 57483312,
+"clk_dist": 57488400,
+"delta_f": 0.0035597519720605353,
+"move_changed": false
+},
+{
+"board": 76,
+"kind": "game",
+"clk_antibody": 52150608,
+"clk_dist": 58439808,
+"delta_f": 4.400155680558789,
+"move_changed": false
+},
+{
+"board": 77,
+"kind": "game",
+"clk_antibody": 60084864,
+"clk_dist": 63370608,
+"delta_f": 2.2988273749383,
+"move_changed": false
+},
+{
+"board": 78,
+"kind": "game",
+"clk_antibody": 44418144,
+"clk_dist": 46790160,
+"delta_f": 1.6595496528614668,
+"move_changed": false
+},
+{
+"board": 79,
+"kind": "game",
+"clk_antibody": 39936912,
+"clk_dist": 42484416,
+"delta_f": 1.782327513331781,
+"move_changed": false
+},
+{
+"board": 80,
+"kind": "game",
+"clk_antibody": 62354736,
+"clk_dist": 65648112,
+"delta_f": 2.304167002896391,
+"move_changed": false
+},
+{
+"board": 81,
+"kind": "game",
+"clk_antibody": 44598000,
+"clk_dist": 62666976,
+"delta_f": 12.64172031232596,
+"move_changed": true
+},
+{
+"board": 82,
+"kind": "game",
+"clk_antibody": 45560160,
+"clk_dist": 63236976,
+"delta_f": 12.367350749951106,
+"move_changed": true
+},
+{
+"board": 83,
+"kind": "game",
+"clk_antibody": 47580960,
+"clk_dist": 65774064,
+"delta_f": 12.728564827417927,
+"move_changed": true
+},
+{
+"board": 84,
+"kind": "game",
+"clk_antibody": 71690064,
+"clk_dist": 71200608,
+"delta_f": -0.3424414231990687,
+"move_changed": false
+},
+{
+"board": 85,
+"kind": "game",
+"clk_antibody": 60182544,
+"clk_dist": 62738544,
+"delta_f": 1.7882716274738066,
+"move_changed": false
+},
+{
+"board": 86,
+"kind": "game",
+"clk_antibody": 48123696,
+"clk_dist": 66458688,
+"delta_f": 12.827834891846333,
+"move_changed": false
+},
+{
+"board": 87,
+"kind": "game",
+"clk_antibody": 54493584,
+"clk_dist": 54500496,
+"delta_f": 0.004835889471478463,
+"move_changed": false
+},
+{
+"board": 88,
+"kind": "game",
+"clk_antibody": 45461040,
+"clk_dist": 45435984,
+"delta_f": -0.017530099334109428,
+"move_changed": false
+},
+{
+"board": 89,
+"kind": "game",
+"clk_antibody": 50769216,
+"clk_dist": 50777424,
+"delta_f": 0.005742618747380675,
+"move_changed": false
+},
+{
+"board": 90,
+"kind": "game",
+"clk_antibody": 47504304,
+"clk_dist": 47513520,
+"delta_f": 0.006447852628637951,
+"move_changed": false
+},
+{
+"board": 91,
+"kind": "game",
+"clk_antibody": 37354752,
+"clk_dist": 37364448,
+"delta_f": 0.006783678286379511,
+"move_changed": false
+},
+{
+"board": 92,
+"kind": "game",
+"clk_antibody": 35476464,
+"clk_dist": 35485392,
+"delta_f": 0.006246357233993015,
+"move_changed": false
+},
+{
+"board": 93,
+"kind": "game",
+"clk_antibody": 39190944,
+"clk_dist": 39200304,
+"delta_f": 0.006548600325960418,
+"move_changed": false
+},
+{
+"board": 94,
+"kind": "game",
+"clk_antibody": 40577952,
+"clk_dist": 40587120,
+"delta_f": 0.006414270062863795,
+"move_changed": false
+},
+{
+"board": 95,
+"kind": "game",
+"clk_antibody": 19918368,
+"clk_dist": 19928064,
+"delta_f": 0.006783678286379511,
+"move_changed": false
+},
+{
+"board": 96,
+"kind": "game",
+"clk_antibody": 10868832,
+"clk_dist": 10878816,
+"delta_f": 0.006985173681024447,
+"move_changed": false
+},
+{
+"board": 97,
+"kind": "game",
+"clk_antibody": 18805296,
+"clk_dist": 18814560,
+"delta_f": 0.006481435194412107,
+"move_changed": false
+},
+{
+"board": 98,
+"kind": "game",
+"clk_antibody": 24834960,
+"clk_dist": 24871920,
+"delta_f": 0.025858575646100116,
+"move_changed": false
+},
+{
+"board": 99,
+"kind": "game",
+"clk_antibody": 28096416,
+"clk_dist": 28105344,
+"delta_f": 0.006246357233993015,
+"move_changed": false
+},
+{
+"board": 100,
+"kind": "game",
+"clk_antibody": 25886592,
+"clk_dist": 25996752,
+"delta_f": 0.077071988451688,
+"move_changed": false
+},
+{
+"board": 101,
+"kind": "game",
+"clk_antibody": 30370896,
+"clk_dist": 30579456,
+"delta_f": 0.14591624828870778,
+"move_changed": false
+},
+{
+"board": 102,
+"kind": "game",
+"clk_antibody": 41952672,
+"clk_dist": 41960496,
+"delta_f": 0.005473958221187427,
+"move_changed": false
+},
+{
+"board": 103,
+"kind": "game",
+"clk_antibody": 38847792,
+"clk_dist": 38856912,
+"delta_f": 0.006380687497089639,
+"move_changed": true
+},
+{
+"board": 104,
+"kind": "game",
+"clk_antibody": 40319760,
+"clk_dist": 40328352,
+"delta_f": 0.006011279273573923,
+"move_changed": false
+},
+{
+"board": 105,
+"kind": "game",
+"clk_antibody": 39787728,
+"clk_dist": 39796512,
+"delta_f": 0.006145609536670547,
+"move_changed": false
+},
+{
+"board": 106,
+"kind": "game",
+"clk_antibody": 39120000,
+"clk_dist": 39129168,
+"delta_f": 0.006414270062863795,
+"move_changed": false
+},
+{
+"board": 107,
+"kind": "game",
+"clk_antibody": 43540080,
+"clk_dist": 43548768,
+"delta_f": 0.006078444405122235,
+"move_changed": false
+},
+{
+"board": 108,
+"kind": "game",
+"clk_antibody": 31262880,
+"clk_dist": 30584688,
+"delta_f": -0.47448807182305003,
+"move_changed": false
+},
+{
+"board": 109,
+"kind": "game",
+"clk_antibody": 34003824,
+"clk_dist": 34016448,
+"delta_f": 0.008832214798603025,
+"move_changed": false
+},
+{
+"board": 110,
+"kind": "game",
+"clk_antibody": 36477936,
+"clk_dist": 36486000,
+"delta_f": 0.005641871050058207,
+"move_changed": false
+},
+{
+"board": 111,
+"kind": "game",
+"clk_antibody": 35054832,
+"clk_dist": 35062944,
+"delta_f": 0.005675453615832363,
+"move_changed": false
+},
+{
+"board": 112,
+"kind": "game",
+"clk_antibody": 38217888,
+"clk_dist": 38227056,
+"delta_f": 0.006414270062863795,
+"move_changed": false
+},
+{
+"board": 113,
+"kind": "game",
+"clk_antibody": 40070688,
+"clk_dist": 40078992,
+"delta_f": 0.005809783878928987,
+"move_changed": true
+},
+{
+"board": 114,
+"kind": "game",
+"clk_antibody": 45658320,
+"clk_dist": 45666432,
+"delta_f": 0.005675453615832363,
+"move_changed": false
+},
+{
+"board": 115,
+"kind": "game",
+"clk_antibody": 45028992,
+"clk_dist": 45035520,
+"delta_f": 0.004567228945285215,
+"move_changed": false
+},
+{
+"board": 116,
+"kind": "game",
+"clk_antibody": 49722912,
+"clk_dist": 49729584,
+"delta_f": 0.004667976642607683,
+"move_changed": false
+},
+{
+"board": 117,
+"kind": "game",
+"clk_antibody": 46676208,
+"clk_dist": 46682976,
+"delta_f": 0.004735141774155995,
+"move_changed": false
+},
+{
+"board": 118,
+"kind": "game",
+"clk_antibody": 39746736,
+"clk_dist": 39754224,
+"delta_f": 0.005238880260768335,
+"move_changed": false
+},
+{
+"board": 119,
+"kind": "game",
+"clk_antibody": 41148048,
+"clk_dist": 41155872,
+"delta_f": 0.005473958221187427,
+"move_changed": false
+},
+{
+"board": 120,
+"kind": "game",
+"clk_antibody": 39371808,
+"clk_dist": 39379248,
+"delta_f": 0.005205297694994179,
+"move_changed": false
+},
+{
+"board": 121,
+"kind": "game",
+"clk_antibody": 43221888,
+"clk_dist": 43229088,
+"delta_f": 0.005037384866123399,
+"move_changed": false
+},
+{
+"board": 122,
+"kind": "game",
+"clk_antibody": 32584848,
+"clk_dist": 32593392,
+"delta_f": 0.005977696707799767,
+"move_changed": false
+},
+{
+"board": 123,
+"kind": "game",
+"clk_antibody": 32085888,
+"clk_dist": 31927920,
+"delta_f": -0.11052022396274737,
+"move_changed": true
+},
+{
+"board": 124,
+"kind": "game",
+"clk_antibody": 32210304,
+"clk_dist": 32315472,
+"delta_f": 0.07357940161117578,
+"move_changed": false
+},
+{
+"board": 125,
+"kind": "game",
+"clk_antibody": 35287248,
+"clk_dist": 35600256,
+"delta_f": 0.21899191141327123,
+"move_changed": false
+},
+{
+"board": 126,
+"kind": "game",
+"clk_antibody": 37323408,
+"clk_dist": 32968176,
+"delta_f": -3.0470805229522697,
+"move_changed": false
+},
+{
+"board": 127,
+"kind": "game",
+"clk_antibody": 37348704,
+"clk_dist": 37509456,
+"delta_f": 0.11246801277764842,
+"move_changed": false
+},
+{
+"board": 128,
+"kind": "game",
+"clk_antibody": 38378400,
+"clk_dist": 38866464,
+"delta_f": 0.3414675287916181,
+"move_changed": false
+},
+{
+"board": 129,
+"kind": "game",
+"clk_antibody": 39124320,
+"clk_dist": 34736400,
+"delta_f": -3.06995025024447,
+"move_changed": true
+},
+{
+"board": 130,
+"kind": "game",
+"clk_antibody": 35839728,
+"clk_dist": 36893856,
+"delta_f": 0.7375067269662398,
+"move_changed": false
+},
+{
+"board": 131,
+"kind": "game",
+"clk_antibody": 41819328,
+"clk_dist": 42904992,
+"delta_f": 0.7595704726798602,
+"move_changed": false
+},
+{
+"board": 132,
+"kind": "game",
+"clk_antibody": 41089776,
+"clk_dist": 42426000,
+"delta_f": 0.9348714660209545,
+"move_changed": false
+},
+{
+"board": 133,
+"kind": "game",
+"clk_antibody": 40530912,
+"clk_dist": 36256752,
+"delta_f": -2.9903595693597205,
+"move_changed": true
+},
+{
+"board": 134,
+"kind": "game",
+"clk_antibody": 39796128,
+"clk_dist": 36635376,
+"delta_f": -2.211378373662398,
+"move_changed": true
+},
+{
+"board": 135,
+"kind": "game",
+"clk_antibody": 39130176,
+"clk_dist": 40543632,
+"delta_f": 0.9889058143515715,
+"move_changed": false
+},
+{
+"board": 136,
+"kind": "game",
+"clk_antibody": 42040128,
+"clk_dist": 36037920,
+"delta_f": -4.19936551979511,
+"move_changed": false
+},
+{
+"board": 137,
+"kind": "game",
+"clk_antibody": 42707184,
+"clk_dist": 44692464,
+"delta_f": 1.388974920419092,
+"move_changed": false
+},
+{
+"board": 138,
+"kind": "game",
+"clk_antibody": 41485344,
+"clk_dist": 42424512,
+"delta_f": 0.6570764819371362,
+"move_changed": true
+},
+{
+"board": 139,
+"kind": "game",
+"clk_antibody": 49372320,
+"clk_dist": 49253280,
+"delta_f": -0.08328476311990686,
+"move_changed": true
+},
+{
+"board": 140,
+"kind": "game",
+"clk_antibody": 47209776,
+"clk_dist": 47879760,
+"delta_f": 0.46874545307566934,
+"move_changed": true
+},
+{
+"board": 141,
+"kind": "game",
+"clk_antibody": 50139840,
+"clk_dist": 53100192,
+"delta_f": 2.071171161555297,
+"move_changed": true
+},
+{
+"board": 142,
+"kind": "game",
+"clk_antibody": 47427456,
+"clk_dist": 48484704,
+"delta_f": 0.73968959374156,
+"move_changed": true
+},
+{
+"board": 143,
+"kind": "game",
+"clk_antibody": 44064192,
+"clk_dist": 45564576,
+"delta_f": 1.049723840968568,
+"move_changed": false
+},
+{
+"board": 144,
+"kind": "game",
+"clk_antibody": 43880688,
+"clk_dist": 47788944,
+"delta_f": 2.7343596704633293,
+"move_changed": true
+},
+{
+"board": 145,
+"kind": "game",
+"clk_antibody": 33227136,
+"clk_dist": 38252784,
+"delta_f": 3.516128219119907,
+"move_changed": true
+},
+{
+"board": 146,
+"kind": "game",
+"clk_antibody": 38348592,
+"clk_dist": 39750624,
+"delta_f": 0.9809131636973224,
+"move_changed": true
+},
+{
+"board": 147,
+"kind": "game",
+"clk_antibody": 38861280,
+"clk_dist": 43374768,
+"delta_f": 3.1578022423096623,
+"move_changed": true
+},
+{
+"board": 148,
+"kind": "game",
+"clk_antibody": 42606096,
+"clk_dist": 44990640,
+"delta_f": 1.6683147025285214,
+"move_changed": true
+},
+{
+"board": 149,
+"kind": "game",
+"clk_antibody": 46128768,
+"clk_dist": 45597792,
+"delta_f": -0.3714903425937136,
+"move_changed": false
+},
+{
+"board": 150,
+"kind": "game",
+"clk_antibody": 44251200,
+"clk_dist": 47445360,
+"delta_f": 2.2347518394412105,
+"move_changed": false
+},
+{
+"board": 151,
+"kind": "game",
+"clk_antibody": 43583808,
+"clk_dist": 35877312,
+"delta_f": -5.391748100172293,
+"move_changed": false
+},
+{
+"board": 152,
+"kind": "game",
+"clk_antibody": 38247360,
+"clk_dist": 36274800,
+"delta_f": -1.3800755404889407,
+"move_changed": false
+},
+{
+"board": 153,
+"kind": "game",
+"clk_antibody": 47158080,
+"clk_dist": 41647968,
+"delta_f": -3.8550770554784632,
+"move_changed": false
+},
+{
+"board": 154,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 57808608,
+"clk_dist": 58594464,
+"delta_f": 0.5498137668544819,
+"move_changed": true
+},
+{
+"board": 155,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 52006464,
+"clk_dist": 53315280,
+"delta_f": 0.9156958209639114,
+"move_changed": true
+},
+{
+"board": 156,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 46219392,
+"clk_dist": 45990336,
+"delta_f": -0.1602560038742724,
+"move_changed": false
+},
+{
+"board": 157,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 54019296,
+"clk_dist": 55501296,
+"delta_f": 1.0368617182770663,
+"move_changed": true
+},
+{
+"board": 158,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 62266128,
+"clk_dist": 60930288,
+"delta_f": -0.9346028054947613,
+"move_changed": true
+},
+{
+"board": 159,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 50800032,
+"clk_dist": 45403344,
+"delta_f": -3.7757214525541327,
+"move_changed": false
+},
+{
+"board": 160,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 46429872,
+"clk_dist": 46290912,
+"delta_f": -0.0972215279161816,
+"move_changed": true
+},
+{
+"board": 161,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 48607008,
+"clk_dist": 47848560,
+"delta_f": -0.5306381217974389,
+"move_changed": true
+},
+{
+"board": 162,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 69000480,
+"clk_dist": 69240144,
+"delta_f": 0.16767775091036088,
+"move_changed": true
+},
+{
+"board": 163,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 57653904,
+"clk_dist": 57821184,
+"delta_f": 0.11703524172293364,
+"move_changed": false
+},
+{
+"board": 164,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 42302640,
+"clk_dist": 40143408,
+"delta_f": -1.5106781387846333,
+"move_changed": true
+},
+{
+"board": 165,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 41882640,
+"clk_dist": 41669712,
+"delta_f": -0.14897226177415598,
+"move_changed": false
+},
+{
+"board": 166,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 43510080,
+"clk_dist": 42470160,
+"delta_f": -0.7275662874970896,
+"move_changed": true
+},
+{
+"board": 167,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 39272400,
+"clk_dist": 39340704,
+"delta_f": 0.04778799109662398,
+"move_changed": true
+},
+{
+"board": 168,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 39271152,
+"clk_dist": 40549872,
+"delta_f": 0.8946395522235157,
+"move_changed": true
+},
+{
+"board": 169,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 27809040,
+"clk_dist": 27886032,
+"delta_f": 0.05386643550174621,
+"move_changed": true
+},
+{
+"board": 170,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 33032976,
+"clk_dist": 34613808,
+"delta_f": 1.1060082212060536,
+"move_changed": true
+},
+{
+"board": 171,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 36616416,
+"clk_dist": 36880224,
+"delta_f": 0.18456978149476133,
+"move_changed": false
+},
+{
+"board": 172,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 28293024,
+"clk_dist": 28255632,
+"delta_f": -0.02616081873806752,
+"move_changed": true
+},
+{
+"board": 173,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 33782208,
+"clk_dist": 30466944,
+"delta_f": -2.319480652889406,
+"move_changed": true
+},
+{
+"board": 174,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 38019840,
+"clk_dist": 33622032,
+"delta_f": -3.0768682587939464,
+"move_changed": true
+},
+{
+"board": 175,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 39338112,
+"clk_dist": 39699264,
+"delta_f": 0.2526752248847497,
+"move_changed": false
+},
+{
+"board": 176,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 37204656,
+"clk_dist": 31269360,
+"delta_f": -4.152551423105937,
+"move_changed": true
+},
+{
+"board": 177,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 34219920,
+"clk_dist": 34186272,
+"delta_f": -0.02354137860768335,
+"move_changed": false
+},
+{
+"board": 178,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 34365840,
+"clk_dist": 30257136,
+"delta_f": -2.8746004651362047,
+"move_changed": false
+},
+{
+"board": 179,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24382368,
+"clk_dist": 24334800,
+"delta_f": -0.03328032268218859,
+"move_changed": true
+},
+{
+"board": 180,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24708672,
+"clk_dist": 20830320,
+"delta_f": -2.7134377319860303,
+"move_changed": true
+},
+{
+"board": 181,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 26534496,
+"clk_dist": 22724832,
+"delta_f": -2.665381080363213,
+"move_changed": true
+},
+{
+"board": 182,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24299952,
+"clk_dist": 23110368,
+"delta_f": -0.832276727580908,
+"move_changed": true
+},
+{
+"board": 183,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 25672800,
+"clk_dist": 26471904,
+"delta_f": 0.559082555008149,
+"move_changed": false
+},
+{
+"board": 184,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 28886928,
+"clk_dist": 26402016,
+"delta_f": -1.7385358475622816,
+"move_changed": true
+},
+{
+"board": 185,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 28747008,
+"clk_dist": 26917296,
+"delta_f": -1.2801338247450522,
+"move_changed": true
+},
+{
+"board": 186,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 21821424,
+"clk_dist": 21417168,
+"delta_f": -0.2828323689499418,
+"move_changed": false
+},
+{
+"board": 187,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 25515312,
+"clk_dist": 29450784,
+"delta_f": 2.753400985257276,
+"move_changed": true
+},
+{
+"board": 188,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 23475984,
+"clk_dist": 21476688,
+"delta_f": -1.3987810296251455,
+"move_changed": false
+},
+{
+"board": 189,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 29702256,
+"clk_dist": 25415328,
+"delta_f": -2.999292531855646,
+"move_changed": false
+},
+{
+"board": 190,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24868464,
+"clk_dist": 24246720,
+"delta_f": -0.43499497447264257,
+"move_changed": false
+},
+{
+"board": 191,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 23156304,
+"clk_dist": 22407792,
+"delta_f": -0.5236865306821885,
+"move_changed": true
+},
+{
+"board": 192,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 26121792,
+"clk_dist": 26001696,
+"delta_f": -0.08402357956693829,
+"move_changed": false
+},
+{
+"board": 193,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 21608256,
+"clk_dist": 21419424,
+"delta_f": -0.1321138137555297,
+"move_changed": true
+},
+{
+"board": 194,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24804480,
+"clk_dist": 25947696,
+"delta_f": 0.7998359690430733,
+"move_changed": false
+},
+{
+"board": 195,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 28645776,
+"clk_dist": 27650544,
+"delta_f": -0.6963009187613504,
+"move_changed": true
+},
+{
+"board": 196,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 25640832,
+"clk_dist": 25015248,
+"delta_f": -0.43768157973457505,
+"move_changed": true
+},
+{
+"board": 197,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 26852496,
+"clk_dist": 25569408,
+"delta_f": -0.8976955657089638,
+"move_changed": true
+},
+{
+"board": 198,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 27415824,
+"clk_dist": 27226800,
+"delta_f": -0.1322481440186263,
+"move_changed": true
+},
+{
+"board": 199,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 25734720,
+"clk_dist": 24180816,
+"delta_f": -1.087168401806752,
+"move_changed": false
+},
+{
+"board": 200,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 25123680,
+"clk_dist": 29207376,
+"delta_f": 2.8571039483678695,
+"move_changed": false
+},
+{
+"board": 201,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 20830848,
+"clk_dist": 24701520,
+"delta_f": 2.7080645214621653,
+"move_changed": true
+},
+{
+"board": 202,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 22475856,
+"clk_dist": 21132336,
+"delta_f": -0.9399760160186262,
+"move_changed": true
+},
+{
+"board": 203,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 25356480,
+"clk_dist": 22701120,
+"delta_f": -1.8577875386263096,
+"move_changed": true
+},
+{
+"board": 204,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 28082784,
+"clk_dist": 22624608,
+"delta_f": -3.8187407193108265,
+"move_changed": false
+},
+{
+"board": 205,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 20236224,
+"clk_dist": 20197248,
+"delta_f": -0.027269043408614666,
+"move_changed": true
+},
+{
+"board": 206,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 20226288,
+"clk_dist": 20253024,
+"delta_f": 0.01870548913620489,
+"move_changed": true
+},
+{
+"board": 207,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 22352448,
+"clk_dist": 20366784,
+"delta_f": -1.3892435809452852,
+"move_changed": true
+},
+{
+"board": 208,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 26187456,
+"clk_dist": 23606976,
+"delta_f": -1.805398736018626,
+"move_changed": true
+},
+{
+"board": 209,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 26384352,
+"clk_dist": 22220544,
+"delta_f": -2.913153250644936,
+"move_changed": true
+},
+{
+"board": 210,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24266784,
+"clk_dist": 21111696,
+"delta_f": -2.2074156309010475,
+"move_changed": true
+},
+{
+"board": 211,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24217536,
+"clk_dist": 26615808,
+"delta_f": 1.67791931633993,
+"move_changed": true
+},
+{
+"board": 212,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 23394576,
+"clk_dist": 21434592,
+"delta_f": -1.3712769082561116,
+"move_changed": true
+},
+{
+"board": 213,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 20884656,
+"clk_dist": 21310752,
+"delta_f": 0.29811243637718277,
+"move_changed": true
+},
+{
+"board": 214,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 22091952,
+"clk_dist": 21683856,
+"delta_f": -0.2855189742118743,
+"move_changed": true
+},
+{
+"board": 215,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24445344,
+"clk_dist": 23555232,
+"delta_f": -0.6227550997159488,
+"move_changed": false
+},
+{
+"board": 216,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24941712,
+"clk_dist": 23404032,
+"delta_f": -1.0758174945750874,
+"move_changed": true
+},
+{
+"board": 217,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24154848,
+"clk_dist": 25034832,
+"delta_f": 0.6156691783376018,
+"move_changed": true
+},
+{
+"board": 218,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24043824,
+"clk_dist": 24537120,
+"delta_f": 0.34512802846100116,
+"move_changed": true
+},
+{
+"board": 219,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 28845936,
+"clk_dist": 30878496,
+"delta_f": 1.4220537477066355,
+"move_changed": true
+},
+{
+"board": 220,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 29382912,
+"clk_dist": 22646544,
+"delta_f": -4.713010863310826,
+"move_changed": true
+},
+{
+"board": 221,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 31338480,
+"clk_dist": 35424288,
+"delta_f": 2.8585815812619324,
+"move_changed": true
+},
+{
+"board": 222,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 31443312,
+"clk_dist": 32858064,
+"delta_f": 0.9898125436274737,
+"move_changed": false
+},
+{
+"board": 223,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 34643760,
+"clk_dist": 31878048,
+"delta_f": -1.934993857341094,
+"move_changed": true
+},
+{
+"board": 224,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 33807120,
+"clk_dist": 23211072,
+"delta_f": -7.413384977210709,
+"move_changed": false
+},
+{
+"board": 225,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 26215872,
+"clk_dist": 28991376,
+"delta_f": 1.941844700759022,
+"move_changed": true
+},
+{
+"board": 226,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 26812800,
+"clk_dist": 24422976,
+"delta_f": -1.6720087847636786,
+"move_changed": true
+},
+{
+"board": 227,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 34774176,
+"clk_dist": 35879424,
+"delta_f": 0.7732721595157159,
+"move_changed": false
+},
+{
+"board": 228,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24401520,
+"clk_dist": 23216928,
+"delta_f": -0.8287841407403957,
+"move_changed": true
+},
+{
+"board": 229,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 25851024,
+"clk_dist": 23665728,
+"delta_f": -1.528913472,
+"move_changed": true
+},
+{
+"board": 230,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 22359360,
+"clk_dist": 23665872,
+"delta_f": 0.9140838578067519,
+"move_changed": true
+},
+{
+"board": 231,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 23831664,
+"clk_dist": 22429296,
+"delta_f": -0.9811482416577415,
+"move_changed": true
+},
+{
+"board": 232,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24870816,
+"clk_dist": 21548592,
+"delta_f": -2.3243501249266587,
+"move_changed": true
+},
+{
+"board": 233,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 27423600,
+"clk_dist": 23334528,
+"delta_f": -2.8608651957345748,
+"move_changed": false
+},
+{
+"board": 234,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 26115840,
+"clk_dist": 21829392,
+"delta_f": -2.9989567061979043,
+"move_changed": true
+},
+{
+"board": 235,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 29864496,
+"clk_dist": 25517472,
+"delta_f": -3.041337904204889,
+"move_changed": true
+},
+{
+"board": 236,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 28643328,
+"clk_dist": 27499152,
+"delta_f": -0.8005076203585564,
+"move_changed": true
+},
+{
+"board": 237,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 23699808,
+"clk_dist": 27094800,
+"delta_f": 2.3752612946402794,
+"move_changed": true
+},
+{
+"board": 238,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 31992192,
+"clk_dist": 34523664,
+"delta_f": 1.771110936363213,
+"move_changed": false
+},
+{
+"board": 239,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 26748336,
+"clk_dist": 27249216,
+"delta_f": 0.3504340738533178,
+"move_changed": false
+},
+{
+"board": 240,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 25976688,
+"clk_dist": 25935792,
+"delta_f": -0.028612346039580905,
+"move_changed": true
+},
+{
+"board": 241,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 25211856,
+"clk_dist": 25037520,
+"delta_f": -0.12197187889173457,
+"move_changed": false
+},
+{
+"board": 242,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 25641168,
+"clk_dist": 25259808,
+"delta_f": -0.2668134850756694,
+"move_changed": true
+},
+{
+"board": 243,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 30145728,
+"clk_dist": 29808384,
+"delta_f": -0.23601827226076832,
+"move_changed": false
+},
+{
+"board": 244,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 28912656,
+"clk_dist": 24820080,
+"delta_f": -2.8633167230360885,
+"move_changed": true
+},
+{
+"board": 245,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 27736224,
+"clk_dist": 28090320,
+"delta_f": 0.24773858771594875,
+"move_changed": true
+},
+{
+"board": 246,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 29611392,
+"clk_dist": 28580928,
+"delta_f": -0.7209505220395809,
+"move_changed": true
+},
+{
+"board": 247,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 29699328,
+"clk_dist": 29666064,
+"delta_f": -0.023272718081490104,
+"move_changed": false
+},
+{
+"board": 248,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 23421408,
+"clk_dist": 23666640,
+"delta_f": 0.17157332854016297,
+"move_changed": false
+},
+{
+"board": 249,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 28466832,
+"clk_dist": 29011296,
+"delta_f": 0.38092704357625146,
+"move_changed": false
+},
+{
+"board": 250,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 25248240,
+"clk_dist": 24852048,
+"delta_f": -0.2771904978998836,
+"move_changed": false
+},
+{
+"board": 251,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 25533936,
+"clk_dist": 25897392,
+"delta_f": 0.2542871880419092,
+"move_changed": true
+},
+{
+"board": 252,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 24191040,
+"clk_dist": 24443232,
+"delta_f": 0.1764428005774156,
+"move_changed": false
+},
+{
+"board": 253,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 43495104,
+"clk_dist": 43502592,
+"delta_f": 0.005238880260768335,
+"move_changed": true
+},
+{
+"board": 254,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 56613792,
+"clk_dist": 56621280,
+"delta_f": 0.005238880260768335,
+"move_changed": false
+},
+{
+"board": 255,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 43507680,
+"clk_dist": 43515264,
+"delta_f": 0.005306045392316647,
+"move_changed": false
+},
+{
+"board": 256,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 41104800,
+"clk_dist": 41112480,
+"delta_f": 0.005373210523864959,
+"move_changed": false
+},
+{
+"board": 257,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 39912096,
+"clk_dist": 39974160,
+"delta_f": 0.0434222575459837,
+"move_changed": false
+},
+{
+"board": 258,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 49659024,
+"clk_dist": 49485552,
+"delta_f": -0.12136739270779975,
+"move_changed": false
+},
+{
+"board": 259,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 41291328,
+"clk_dist": 41296272,
+"delta_f": 0.0034590042747380673,
+"move_changed": false
+},
+{
+"board": 260,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 42632592,
+"clk_dist": 37295328,
+"delta_f": -3.7341462361257274,
+"move_changed": false
+},
+{
+"board": 261,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 38864880,
+"clk_dist": 38871360,
+"delta_f": 0.004533646379511059,
+"move_changed": false
+},
+{
+"board": 262,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 43896960,
+"clk_dist": 43903056,
+"delta_f": 0.004264985853317811,
+"move_changed": false
+},
+{
+"board": 263,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 41861232,
+"clk_dist": 41867904,
+"delta_f": 0.004667976642607683,
+"move_changed": false
+},
+{
+"board": 264,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 43829712,
+"clk_dist": 43836336,
+"delta_f": 0.004634394076833527,
+"move_changed": false
+},
+{
+"board": 265,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 38306112,
+"clk_dist": 38312640,
+"delta_f": 0.004567228945285215,
+"move_changed": false
+},
+{
+"board": 266,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 38278992,
+"clk_dist": 38285616,
+"delta_f": 0.004634394076833527,
+"move_changed": false
+},
+{
+"board": 267,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 42176208,
+"clk_dist": 42183456,
+"delta_f": 0.005070967431897555,
+"move_changed": false
+},
+{
+"board": 268,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 44246256,
+"clk_dist": 44253744,
+"delta_f": 0.005238880260768335,
+"move_changed": false
+},
+{
+"board": 269,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 45140880,
+"clk_dist": 45147840,
+"delta_f": 0.004869472037252619,
+"move_changed": false
+},
+{
+"board": 270,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 40891536,
+"clk_dist": 40897968,
+"delta_f": 0.004500063813736903,
+"move_changed": false
+},
+{
+"board": 271,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 42828000,
+"clk_dist": 42834432,
+"delta_f": 0.004500063813736903,
+"move_changed": false
+},
+{
+"board": 272,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 44583840,
+"clk_dist": 44590416,
+"delta_f": 0.004600811511059371,
+"move_changed": false
+},
+{
+"board": 273,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 47112000,
+"clk_dist": 47118768,
+"delta_f": 0.004735141774155995,
+"move_changed": false
+},
+{
+"board": 274,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 42464544,
+"clk_dist": 42471504,
+"delta_f": 0.004869472037252619,
+"move_changed": false
+},
+{
+"board": 275,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 48019104,
+"clk_dist": 48026544,
+"delta_f": 0.005205297694994179,
+"move_changed": false
+},
+{
+"board": 276,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 55785744,
+"clk_dist": 55794000,
+"delta_f": 0.005776201313154831,
+"move_changed": false
+},
+{
+"board": 277,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 59283024,
+"clk_dist": 59290608,
+"delta_f": 0.005306045392316647,
+"move_changed": false
+},
+{
+"board": 278,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 48689280,
+"clk_dist": 48696624,
+"delta_f": 0.005138132563445867,
+"move_changed": false
+},
+{
+"board": 279,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 46902384,
+"clk_dist": 46909728,
+"delta_f": 0.005138132563445867,
+"move_changed": false
+},
+{
+"board": 280,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 53565696,
+"clk_dist": 60950208,
+"delta_f": 5.166476248959254,
+"move_changed": false
+},
+{
+"board": 281,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 41427552,
+"clk_dist": 46656384,
+"delta_f": 3.658283220041909,
+"move_changed": false
+},
+{
+"board": 282,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 45111216,
+"clk_dist": 45117264,
+"delta_f": 0.0042314032875436555,
+"move_changed": false
+},
+{
+"board": 283,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 42412368,
+"clk_dist": 42418128,
+"delta_f": 0.0040299078928987195,
+"move_changed": false
+},
+{
+"board": 284,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 49337280,
+"clk_dist": 49343904,
+"delta_f": 0.004634394076833527,
+"move_changed": false
+},
+{
+"board": 285,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 39177600,
+"clk_dist": 39183312,
+"delta_f": 0.003996325327124563,
+"move_changed": false
+},
+{
+"board": 286,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 45932832,
+"clk_dist": 45938304,
+"delta_f": 0.003828412498253783,
+"move_changed": false
+},
+{
+"board": 287,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 47354736,
+"clk_dist": 47360400,
+"delta_f": 0.003962742761350407,
+"move_changed": false
+},
+{
+"board": 288,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 45291504,
+"clk_dist": 45297456,
+"delta_f": 0.004164238155995343,
+"move_changed": false
+},
+{
+"board": 289,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 48604992,
+"clk_dist": 48610752,
+"delta_f": 0.0040299078928987195,
+"move_changed": false
+},
+{
+"board": 290,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 48509376,
+"clk_dist": 48515376,
+"delta_f": 0.004197820721769499,
+"move_changed": false
+},
+{
+"board": 291,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 48465312,
+"clk_dist": 48471264,
+"delta_f": 0.004164238155995343,
+"move_changed": false
+},
+{
+"board": 292,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 48300048,
+"clk_dist": 48305904,
+"delta_f": 0.004097073024447031,
+"move_changed": false
+},
+{
+"board": 293,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 48371184,
+"clk_dist": 48377040,
+"delta_f": 0.004097073024447031,
+"move_changed": false
+},
+{
+"board": 294,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 50101680,
+"clk_dist": 50107920,
+"delta_f": 0.004365733550640279,
+"move_changed": false
+},
+{
+"board": 295,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 57286224,
+"clk_dist": 57292368,
+"delta_f": 0.004298568419091967,
+"move_changed": false
+},
+{
+"board": 296,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 45903600,
+"clk_dist": 45909504,
+"delta_f": 0.0041306555902211875,
+"move_changed": false
+},
+{
+"board": 297,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 58548240,
+"clk_dist": 58553664,
+"delta_f": 0.0037948299324796274,
+"move_changed": false
+},
+{
+"board": 298,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 47447760,
+"clk_dist": 47453808,
+"delta_f": 0.0042314032875436555,
+"move_changed": false
+},
+{
+"board": 299,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 43363536,
+"clk_dist": 43369104,
+"delta_f": 0.0038955776298020954,
+"move_changed": false
+},
+{
+"board": 300,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 43771200,
+"clk_dist": 43776912,
+"delta_f": 0.003996325327124563,
+"move_changed": false
+},
+{
+"board": 301,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 41855904,
+"clk_dist": 41861568,
+"delta_f": 0.003962742761350407,
+"move_changed": false
+},
+{
+"board": 302,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 47456160,
+"clk_dist": 47461536,
+"delta_f": 0.0037612473667054712,
+"move_changed": false
+},
+{
+"board": 303,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 46436496,
+"clk_dist": 46441920,
+"delta_f": 0.0037948299324796274,
+"move_changed": false
+},
+{
+"board": 304,
+"kind": "couch_lulu_9/27luluG1",
+"clk_antibody": 46419600,
+"clk_dist": 46425504,
+"delta_f": 0.0041306555902211875,
+"move_changed": false
+},
+{
+"board": 305,
+"kind": "couch_hsv27",
+"clk_antibody": 59080896,
+"clk_dist": 58852032,
+"delta_f": -0.16012167361117577,
+"move_changed": false
+},
+{
+"board": 306,
+"kind": "couch_hsv27",
+"clk_antibody": 59236704,
+"clk_dist": 59058192,
+"delta_f": -0.12489356211408614,
+"move_changed": false
+},
+{
+"board": 307,
+"kind": "couch_hsv27",
+"clk_antibody": 66465360,
+"clk_dist": 66200544,
+"delta_f": -0.18527501537601862,
+"move_changed": false
+},
+{
+"board": 308,
+"kind": "couch_hsv27",
+"clk_antibody": 67907184,
+"clk_dist": 72106128,
+"delta_f": 2.937735688791618,
+"move_changed": false
+},
+{
+"board": 309,
+"kind": "couch_hsv27",
+"clk_antibody": 68969136,
+"clk_dist": 69621696,
+"delta_f": 0.45655498169965075,
+"move_changed": false
+},
+{
+"board": 310,
+"kind": "couch_hsv27",
+"clk_antibody": 63197808,
+"clk_dist": 63194160,
+"delta_f": -0.0025522749988358554,
+"move_changed": false
+},
+{
+"board": 311,
+"kind": "couch_hsv27",
+"clk_antibody": 70697184,
+"clk_dist": 70977600,
+"delta_f": 0.19618934925261933,
+"move_changed": false
+},
+{
+"board": 312,
+"kind": "couch_hsv27",
+"clk_antibody": 75735744,
+"clk_dist": 77434896,
+"delta_f": 1.188789245839348,
+"move_changed": true
+},
+{
+"board": 313,
+"kind": "couch_hsv27",
+"clk_antibody": 61979664,
+"clk_dist": 62244672,
+"delta_f": 0.18540934563911524,
+"move_changed": true
+},
+{
+"board": 314,
+"kind": "couch_hsv27",
+"clk_antibody": 59596128,
+"clk_dist": 59443296,
+"delta_f": -0.10692688942491269,
+"move_changed": false
+},
+{
+"board": 315,
+"kind": "couch_hsv27",
+"clk_antibody": 62425584,
+"clk_dist": 62441184,
+"delta_f": 0.010914333876600698,
+"move_changed": false
+},
+{
+"board": 316,
+"kind": "couch_hsv27",
+"clk_antibody": 69645888,
+"clk_dist": 70313232,
+"delta_f": 0.4668984119580908,
+"move_changed": false
+},
+{
+"board": 317,
+"kind": "couch_hsv27",
+"clk_antibody": 70295664,
+"clk_dist": 70130352,
+"delta_f": -0.11565835652619325,
+"move_changed": true
+},
+{
+"board": 318,
+"kind": "couch_hsv27",
+"clk_antibody": 67442112,
+"clk_dist": 68062944,
+"delta_f": 0.4343569057229336,
+"move_changed": false
+},
+{
+"board": 319,
+"kind": "couch_hsv27",
+"clk_antibody": 50975712,
+"clk_dist": 51077952,
+"delta_f": 0.07153086509895226,
+"move_changed": true
+},
+{
+"board": 320,
+"kind": "couch_hsv27",
+"clk_antibody": 55419648,
+"clk_dist": 57065568,
+"delta_f": 1.151546180395809,
+"move_changed": true
+},
+{
+"board": 321,
+"kind": "couch_hsv27",
+"clk_antibody": 51686496,
+"clk_dist": 51692256,
+"delta_f": 0.0040299078928987195,
+"move_changed": false
+},
+{
+"board": 322,
+"kind": "couch_hsv27",
+"clk_antibody": 63286224,
+"clk_dist": 63292080,
+"delta_f": 0.004097073024447031,
+"move_changed": false
+},
+{
+"board": 323,
+"kind": "couch_hsv27",
+"clk_antibody": 61791888,
+"clk_dist": 61798320,
+"delta_f": 0.004500063813736903,
+"move_changed": false
+},
+{
+"board": 324,
+"kind": "couch_hsv27",
+"clk_antibody": 61385328,
+"clk_dist": 61341120,
+"delta_f": -0.03092954307799767,
+"move_changed": false
+},
+{
+"board": 325,
+"kind": "couch_hsv27",
+"clk_antibody": 52410192,
+"clk_dist": 52411968,
+"delta_f": 0.0012425549336437718,
+"move_changed": false
+},
+{
+"board": 326,
+"kind": "couch_hsv27",
+"clk_antibody": 67265232,
+"clk_dist": 66708960,
+"delta_f": -0.38918835475669383,
+"move_changed": true
+},
+{
+"board": 327,
+"kind": "couch_hsv27",
+"clk_antibody": 63335616,
+"clk_dist": 63491904,
+"delta_f": 0.10934483416065191,
+"move_changed": false
+},
+{
+"board": 328,
+"kind": "couch_hsv27",
+"clk_antibody": 54996336,
+"clk_dist": 55008432,
+"delta_f": 0.008462806575087311,
+"move_changed": false
+},
+{
+"board": 329,
+"kind": "couch_hsv27",
+"clk_antibody": 44632416,
+"clk_dist": 44648016,
+"delta_f": 0.010914333876600698,
+"move_changed": false
+},
+{
+"board": 330,
+"kind": "couch_hsv27",
+"clk_antibody": 44786784,
+"clk_dist": 45038592,
+"delta_f": 0.17617414005122234,
+"move_changed": false
+},
+{
+"board": 331,
+"kind": "couch_hsv27",
+"clk_antibody": 57357600,
+"clk_dist": 57415440,
+"delta_f": 0.04046699175785797,
+"move_changed": false
+},
+{
+"board": 332,
+"kind": "couch_hsv27",
+"clk_antibody": 54396240,
+"clk_dist": 54570672,
+"delta_f": 0.12203904402328287,
+"move_changed": false
+},
+{
+"board": 333,
+"kind": "couch_hsv27",
+"clk_antibody": 40347888,
+"clk_dist": 40353168,
+"delta_f": 0.0036940822351571594,
+"move_changed": false
+},
+{
+"board": 334,
+"kind": "couch_hsv27",
+"clk_antibody": 49601520,
+"clk_dist": 49612464,
+"delta_f": 0.007656824996507566,
+"move_changed": false
+},
+{
+"board": 335,
+"kind": "couch_hsv27",
+"clk_antibody": 55833696,
+"clk_dist": 55840560,
+"delta_f": 0.004802306905704307,
+"move_changed": false
+},
+{
+"board": 336,
+"kind": "couch_hsv27",
+"clk_antibody": 61934976,
+"clk_dist": 61942080,
+"delta_f": 0.004970219734575087,
+"move_changed": false
+},
+{
+"board": 337,
+"kind": "couch_hsv27",
+"clk_antibody": 61312752,
+"clk_dist": 61319904,
+"delta_f": 0.005003802300349243,
+"move_changed": false
+},
+{
+"board": 338,
+"kind": "couch_hsv27",
+"clk_antibody": 58784832,
+"clk_dist": 58792032,
+"delta_f": 0.005037384866123399,
+"move_changed": false
+},
+{
+"board": 339,
+"kind": "couch_hsv27",
+"clk_antibody": 51437616,
+"clk_dist": 51444288,
+"delta_f": 0.004667976642607683,
+"move_changed": false
+},
+{
+"board": 340,
+"kind": "couch_hsv27",
+"clk_antibody": 52168944,
+"clk_dist": 52175664,
+"delta_f": 0.004701559208381839,
+"move_changed": false
+},
+{
+"board": 341,
+"kind": "couch_hsv27",
+"clk_antibody": 52009728,
+"clk_dist": 52016448,
+"delta_f": 0.004701559208381839,
+"move_changed": false
+},
+{
+"board": 342,
+"kind": "couch_hsv27",
+"clk_antibody": 54279264,
+"clk_dist": 54285936,
+"delta_f": 0.004667976642607683,
+"move_changed": false
+},
+{
+"board": 343,
+"kind": "couch_hsv27",
+"clk_antibody": 43878096,
+"clk_dist": 43885008,
+"delta_f": 0.004835889471478463,
+"move_changed": false
+},
+{
+"board": 344,
+"kind": "couch_hsv27",
+"clk_antibody": 46024272,
+"clk_dist": 46031616,
+"delta_f": 0.005138132563445867,
+"move_changed": false
+},
+{
+"board": 345,
+"kind": "couch_hsv27",
+"clk_antibody": 47559984,
+"clk_dist": 47567808,
+"delta_f": 0.005473958221187427,
+"move_changed": false
+},
+{
+"board": 346,
+"kind": "couch_hsv27",
+"clk_antibody": 49900752,
+"clk_dist": 49909488,
+"delta_f": 0.006112026970896391,
+"move_changed": false
+},
+{
+"board": 347,
+"kind": "couch_hsv27",
+"clk_antibody": 52320048,
+"clk_dist": 52327776,
+"delta_f": 0.005406793089639115,
+"move_changed": false
+},
+{
+"board": 348,
+"kind": "couch_hsv27",
+"clk_antibody": 56410656,
+"clk_dist": 56419584,
+"delta_f": 0.006246357233993015,
+"move_changed": false
+},
+{
+"board": 349,
+"kind": "couch_hsv27",
+"clk_antibody": 49685232,
+"clk_dist": 49693296,
+"delta_f": 0.005641871050058207,
+"move_changed": false
+},
+{
+"board": 350,
+"kind": "couch_hsv27",
+"clk_antibody": 52300752,
+"clk_dist": 52308048,
+"delta_f": 0.005104549997671711,
+"move_changed": false
+},
+{
+"board": 351,
+"kind": "couch_hsv27",
+"clk_antibody": 41312160,
+"clk_dist": 41318832,
+"delta_f": 0.004667976642607683,
+"move_changed": false
+},
+{
+"board": 352,
+"kind": "couch_hsv27",
+"clk_antibody": 41248464,
+"clk_dist": 41255184,
+"delta_f": 0.004701559208381839,
+"move_changed": false
+},
+{
+"board": 353,
+"kind": "couch_hsv27",
+"clk_antibody": 44521680,
+"clk_dist": 44529072,
+"delta_f": 0.005171715129220023,
+"move_changed": false
+},
+{
+"board": 354,
+"kind": "couch_hsv27",
+"clk_antibody": 45319296,
+"clk_dist": 45326448,
+"delta_f": 0.005003802300349243,
+"move_changed": false
+},
+{
+"board": 355,
+"kind": "couch_hsv27",
+"clk_antibody": 44841936,
+"clk_dist": 44864544,
+"delta_f": 0.01581738847962747,
+"move_changed": false
+},
+{
+"board": 356,
+"kind": "couch_hsv27",
+"clk_antibody": 47512368,
+"clk_dist": 47539104,
+"delta_f": 0.01870548913620489,
+"move_changed": false
+},
+{
+"board": 357,
+"kind": "couch_hsv27",
+"clk_antibody": 45676560,
+"clk_dist": 45702048,
+"delta_f": 0.01783234242607683,
+"move_changed": false
+},
+{
+"board": 358,
+"kind": "couch_hsv27",
+"clk_antibody": 47482944,
+"clk_dist": 47505216,
+"delta_f": 0.015582310519208381,
+"move_changed": false
+},
+{
+"board": 359,
+"kind": "couch_hsv27",
+"clk_antibody": 45770544,
+"clk_dist": 45790176,
+"delta_f": 0.013735269401629802,
+"move_changed": false
+},
+{
+"board": 360,
+"kind": "couch_hsv27",
+"clk_antibody": 51199440,
+"clk_dist": 51210192,
+"delta_f": 0.0075224947334109424,
+"move_changed": false
+},
+{
+"board": 361,
+"kind": "couch_hsv27",
+"clk_antibody": 59218176,
+"clk_dist": 59422944,
+"delta_f": 0.14326322559254948,
+"move_changed": false
+},
+{
+"board": 362,
+"kind": "couch_hsv27",
+"clk_antibody": 63628848,
+"clk_dist": 63739152,
+"delta_f": 0.07717273614901048,
+"move_changed": false
+},
+{
+"board": 363,
+"kind": "couch_hsv27",
+"clk_antibody": 53185536,
+"clk_dist": 53400672,
+"delta_f": 0.15051705979976715,
+"move_changed": false
+},
+{
+"board": 364,
+"kind": "couch_hsv27",
+"clk_antibody": 56468832,
+"clk_dist": 56540112,
+"delta_f": 0.04987011017462165,
+"move_changed": false
+},
+{
+"board": 365,
+"kind": "couch_hsv27",
+"clk_antibody": 57740064,
+"clk_dist": 57763008,
+"delta_f": 0.016052466440046567,
+"move_changed": true
+},
+{
+"board": 366,
+"kind": "couch_hsv27",
+"clk_antibody": 58389312,
+"clk_dist": 58405248,
+"delta_f": 0.01114941183701979,
+"move_changed": false
+},
+{
+"board": 367,
+"kind": "couch_hsv27",
+"clk_antibody": 56577408,
+"clk_dist": 56554080,
+"delta_f": -0.016321126966239812,
+"move_changed": false
+},
+{
+"board": 368,
+"kind": "couch_hsv27",
+"clk_antibody": 51034896,
+"clk_dist": 51105792,
+"delta_f": 0.0496014496484284,
+"move_changed": false
+},
+{
+"board": 369,
+"kind": "couch_hsv27",
+"clk_antibody": 49106448,
+"clk_dist": 55366368,
+"delta_f": 4.379670315436554,
+"move_changed": true
+},
+{
+"board": 370,
+"kind": "couch_hsv27",
+"clk_antibody": 45618960,
+"clk_dist": 45702480,
+"delta_f": 0.05843366444703143,
+"move_changed": false
+},
+{
+"board": 371,
+"kind": "couch_hsv27",
+"clk_antibody": 47376864,
+"clk_dist": 47453568,
+"delta_f": 0.05366494010710128,
+"move_changed": false
+},
+{
+"board": 372,
+"kind": "couch_ctl26",
+"clk_antibody": 43660656,
+"clk_dist": 44059584,
+"delta_f": 0.27910470414901045,
+"move_changed": true
+},
+{
+"board": 373,
+"kind": "couch_ctl26",
+"clk_antibody": 59286816,
+"clk_dist": 59202384,
+"delta_f": -0.05907173319674039,
+"move_changed": false
+},
+{
+"board": 374,
+"kind": "couch_ctl26",
+"clk_antibody": 56284272,
+"clk_dist": 51353232,
+"delta_f": -3.4499369819790453,
+"move_changed": false
+},
+{
+"board": 375,
+"kind": "couch_ctl26",
+"clk_antibody": 56006544,
+"clk_dist": 50980848,
+"delta_f": -3.516161801685681,
+"move_changed": false
+},
+{
+"board": 376,
+"kind": "couch_ctl26",
+"clk_antibody": 57485328,
+"clk_dist": 52277328,
+"delta_f": -3.643708386495925,
+"move_changed": true
+},
+{
+"board": 377,
+"kind": "couch_ctl26",
+"clk_antibody": 52959168,
+"clk_dist": 53004240,
+"delta_f": 0.03153402926193248,
+"move_changed": true
+},
+{
+"board": 378,
+"kind": "couch_ctl26",
+"clk_antibody": 56806272,
+"clk_dist": 59014944,
+"delta_f": 1.545268181532014,
+"move_changed": true
+},
+{
+"board": 379,
+"kind": "couch_ctl26",
+"clk_antibody": 58351056,
+"clk_dist": 58692624,
+"delta_f": 0.23897353804889404,
+"move_changed": true
+},
+{
+"board": 380,
+"kind": "couch_ctl26",
+"clk_antibody": 60968688,
+"clk_dist": 62855136,
+"delta_f": 1.3198284174901047,
+"move_changed": false
+},
+{
+"board": 381,
+"kind": "couch_ctl26",
+"clk_antibody": 58637328,
+"clk_dist": 58647072,
+"delta_f": 0.0068172608521536665,
+"move_changed": false
+},
+{
+"board": 382,
+"kind": "couch_ctl26",
+"clk_antibody": 69091056,
+"clk_dist": 69101184,
+"delta_f": 0.007085921378346915,
+"move_changed": false
+},
+{
+"board": 383,
+"kind": "couch_ctl26",
+"clk_antibody": 74891856,
+"clk_dist": 74902416,
+"delta_f": 0.007388164470314319,
+"move_changed": false
+},
+{
+"board": 384,
+"kind": "couch_ctl26",
+"clk_antibody": 70235664,
+"clk_dist": 70176576,
+"delta_f": -0.04134013846798603,
+"move_changed": false
+},
+{
+"board": 385,
+"kind": "couch_ctl26",
+"clk_antibody": 80852544,
+"clk_dist": 80710368,
+"delta_f": -0.09947155982305005,
+"move_changed": true
+},
+{
+"board": 386,
+"kind": "couch_ctl26",
+"clk_antibody": 57644112,
+"clk_dist": 61517520,
+"delta_f": 2.709978727711292,
+"move_changed": true
+},
+{
+"board": 387,
+"kind": "couch_ctl26",
+"clk_antibody": 58870992,
+"clk_dist": 62298816,
+"delta_f": 2.398231769629802,
+"move_changed": true
+},
+{
+"board": 388,
+"kind": "couch_ctl26",
+"clk_antibody": 57024768,
+"clk_dist": 59559840,
+"delta_f": 1.7736296287962747,
+"move_changed": true
+},
+{
+"board": 389,
+"kind": "couch_ctl26",
+"clk_antibody": 53466048,
+"clk_dist": 53968128,
+"delta_f": 0.3512736379976717,
+"move_changed": true
+},
+{
+"board": 390,
+"kind": "couch_ctl26",
+"clk_antibody": 54885264,
+"clk_dist": 55787088,
+"delta_f": 0.6309492457648428,
+"move_changed": false
+},
+{
+"board": 391,
+"kind": "couch_ctl26",
+"clk_antibody": 55139280,
+"clk_dist": 54490320,
+"delta_f": -0.454036289266589,
+"move_changed": true
+},
+{
+"board": 392,
+"kind": "couch_ctl26",
+"clk_antibody": 63989712,
+"clk_dist": 63998304,
+"delta_f": 0.006011279273573923,
+"move_changed": false
+},
+{
+"board": 393,
+"kind": "couch_ctl26",
+"clk_antibody": 46377360,
+"clk_dist": 46324752,
+"delta_f": -0.03680649208847497,
+"move_changed": false
+},
+{
+"board": 394,
+"kind": "couch_ctl26",
+"clk_antibody": 75743232,
+"clk_dist": 74417712,
+"delta_f": -0.9273825538533178,
+"move_changed": false
+},
+{
+"board": 395,
+"kind": "couch_ctl26",
+"clk_antibody": 58176672,
+"clk_dist": 58160400,
+"delta_f": -0.011384489797438882,
+"move_changed": true
+},
+{
+"board": 396,
+"kind": "couch_ctl26",
+"clk_antibody": 55918080,
+"clk_dist": 55548960,
+"delta_f": -0.2582499308032596,
+"move_changed": false
+},
+{
+"board": 397,
+"kind": "couch_ctl26",
+"clk_antibody": 56250816,
+"clk_dist": 56257104,
+"delta_f": 0.004399316116414435,
+"move_changed": false
+},
+{
+"board": 398,
+"kind": "couch_ctl26",
+"clk_antibody": 63005664,
+"clk_dist": 61288800,
+"delta_f": -1.2011812126100117,
+"move_changed": false
+},
+{
+"board": 399,
+"kind": "couch_ctl26",
+"clk_antibody": 61629504,
+"clk_dist": 56401872,
+"delta_f": -3.657443655897555,
+"move_changed": false
+},
+{
+"board": 400,
+"kind": "couch_ctl26",
+"clk_antibody": 59449152,
+"clk_dist": 54066768,
+"delta_f": -3.765713847953434,
+"move_changed": false
+},
+{
+"board": 401,
+"kind": "couch_ctl26",
+"clk_antibody": 58989504,
+"clk_dist": 53650272,
+"delta_f": -3.7355231213224678,
+"move_changed": false
+},
+{
+"board": 402,
+"kind": "couch_ctl26",
+"clk_antibody": 65222688,
+"clk_dist": 59511504,
+"delta_f": -3.9957544235064026,
+"move_changed": false
+},
+{
+"board": 403,
+"kind": "couch_ctl26",
+"clk_antibody": 55374000,
+"clk_dist": 50068752,
+"delta_f": -3.7117466647543655,
+"move_changed": true
+},
+{
+"board": 404,
+"kind": "couch_ctl26",
+"clk_antibody": 53906400,
+"clk_dist": 48712560,
+"delta_f": -3.6338015295925494,
+"move_changed": false
+},
+{
+"board": 405,
+"kind": "couch_ctl26",
+"clk_antibody": 56617920,
+"clk_dist": 51035472,
+"delta_f": -3.905685982100116,
+"move_changed": false
+},
+{
+"board": 406,
+"kind": "couch_ctl26",
+"clk_antibody": 55650576,
+"clk_dist": 50331984,
+"delta_f": -3.721082618039581,
+"move_changed": false
+},
+{
+"board": 407,
+"kind": "couch_ctl26",
+"clk_antibody": 54993744,
+"clk_dist": 54938112,
+"delta_f": -0.0389221937322468,
+"move_changed": false
+},
+{
+"board": 408,
+"kind": "couch_ctl26",
+"clk_antibody": 66527712,
+"clk_dist": 66559728,
+"delta_f": 0.02239957137136205,
+"move_changed": true
+},
+{
+"board": 409,
+"kind": "couch_ctl26",
+"clk_antibody": 59626128,
+"clk_dist": 53689104,
+"delta_f": -4.153760395473807,
+"move_changed": false
+},
+{
+"board": 410,
+"kind": "couch_ctl26",
+"clk_antibody": 73744224,
+"clk_dist": 66042816,
+"delta_f": -5.388188348200233,
+"move_changed": false
+},
+{
+"board": 411,
+"kind": "couch_ctl26",
+"clk_antibody": 53895312,
+"clk_dist": 48488160,
+"delta_f": -3.7830424518928987,
+"move_changed": true
+},
+{
+"board": 412,
+"kind": "couch_ctl26",
+"clk_antibody": 49137840,
+"clk_dist": 49092576,
+"delta_f": -0.031668359525029104,
+"move_changed": false
+},
+{
+"board": 413,
+"kind": "couch_ctl26",
+"clk_antibody": 43540512,
+"clk_dist": 43558272,
+"delta_f": 0.012425549336437717,
+"move_changed": true
+},
+{
+"board": 414,
+"kind": "couch_ctl26",
+"clk_antibody": 41968896,
+"clk_dist": 41986800,
+"delta_f": 0.012526297033760186,
+"move_changed": false
+},
+{
+"board": 415,
+"kind": "couch_ctl26",
+"clk_antibody": 43014096,
+"clk_dist": 43032816,
+"delta_f": 0.013097200651920837,
+"move_changed": false
+},
+{
+"board": 416,
+"kind": "couch_ctl26",
+"clk_antibody": 49323264,
+"clk_dist": 57542976,
+"delta_f": 5.750812893429569,
+"move_changed": true
+},
+{
+"board": 417,
+"kind": "couch_ctl26",
+"clk_antibody": 52442448,
+"clk_dist": 67594704,
+"delta_f": 10.60107570305937,
+"move_changed": true
+},
+{
+"board": 418,
+"kind": "couch_ctl26",
+"clk_antibody": 52774752,
+"clk_dist": 53958192,
+"delta_f": 0.827978159161816,
+"move_changed": false
+},
+{
+"board": 419,
+"kind": "couch_ctl26",
+"clk_antibody": 56847984,
+"clk_dist": 63955536,
+"delta_f": 4.972704844442375,
+"move_changed": true
+},
+{
+"board": 420,
+"kind": "couch_ctl26",
+"clk_antibody": 49744944,
+"clk_dist": 49764096,
+"delta_f": 0.013399443743888241,
+"move_changed": false
+},
+{
+"board": 421,
+"kind": "couch_ctl26",
+"clk_antibody": 42298752,
+"clk_dist": 42317808,
+"delta_f": 0.01333227861233993,
+"move_changed": true
+},
+{
+"board": 422,
+"kind": "couch_ctl26",
+"clk_antibody": 49151376,
+"clk_dist": 49157040,
+"delta_f": 0.003962742761350407,
+"move_changed": true
+},
+{
+"board": 423,
+"kind": "couch_ctl26",
+"clk_antibody": 52886544,
+"clk_dist": 52892928,
+"delta_f": 0.004466481247962747,
+"move_changed": false
+},
+{
+"board": 424,
+"kind": "couch_ctl26",
+"clk_antibody": 52762944,
+"clk_dist": 52759248,
+"delta_f": -0.0025858575646100115,
+"move_changed": true
+},
+{
+"board": 425,
+"kind": "couch_ctl26",
+"clk_antibody": 53491968,
+"clk_dist": 53501568,
+"delta_f": 0.0067165131548311986,
+"move_changed": false
+},
+{
+"board": 426,
+"kind": "couch_ctl26",
+"clk_antibody": 63586272,
+"clk_dist": 63596352,
+"delta_f": 0.007052338812572758,
+"move_changed": false
+},
+{
+"board": 427,
+"kind": "couch_ctl26",
+"clk_antibody": 67244688,
+"clk_dist": 67255536,
+"delta_f": 0.007589659864959255,
+"move_changed": false
+},
+{
+"board": 428,
+"kind": "couch_ctl26",
+"clk_antibody": 47009616,
+"clk_dist": 47018016,
+"delta_f": 0.005876949010477299,
+"move_changed": false
+},
+{
+"board": 429,
+"kind": "couch_ctl26",
+"clk_antibody": 48692544,
+"clk_dist": 61354464,
+"delta_f": 8.858745025564609,
+"move_changed": false
+},
+{
+"board": 430,
+"kind": "couch_ctl26",
+"clk_antibody": 41649120,
+"clk_dist": 42590688,
+"delta_f": 0.658755610225844,
+"move_changed": false
+},
+{
+"board": 431,
+"kind": "couch_ctl26",
+"clk_antibody": 41434896,
+"clk_dist": 42446400,
+"delta_f": 0.7076854085587893,
+"move_changed": false
+},
+{
+"board": 432,
+"kind": "couch_ctl26",
+"clk_antibody": 55182864,
+"clk_dist": 55182192,
+"delta_f": -0.0004701559208381839,
+"move_changed": false
+},
+{
+"board": 433,
+"kind": "couch_ctl26",
+"clk_antibody": 49067424,
+"clk_dist": 49073280,
+"delta_f": 0.004097073024447031,
+"move_changed": false
+},
+{
+"board": 434,
+"kind": "couch_ctl26",
+"clk_antibody": 44217072,
+"clk_dist": 39130368,
+"delta_f": -3.558845242784633,
+"move_changed": false
+},
+{
+"board": 435,
+"kind": "couch_ctl26",
+"clk_antibody": 51602496,
+"clk_dist": 45894528,
+"delta_f": -3.9935043915995343,
+"move_changed": false
+},
+{
+"board": 436,
+"kind": "couch_ctl26",
+"clk_antibody": 44509632,
+"clk_dist": 44568240,
+"delta_f": 0.04100431281024447,
+"move_changed": false
+}
+]
+}
