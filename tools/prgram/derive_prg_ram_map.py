@@ -265,6 +265,11 @@ CONFIGS = {
     "seatlog-cvc": dict(DRSEATLOG=1, DRPROPH=1, DRHUMAN=0, DRP1NATIVE=1, DRPOCKET=0,
                         DRSTARTGUARD=1, DRPRESTART=0, DRMMC1RST=1, DRRTIVEC=1,
                         DRFCGATE=1, DRBUILDID=0),
+    # DRLATEGUARD on the couch shape (anytime + DRTAPP=2 + DRSPAWNEDGE + DRRELATCH + DISTGATE): the config that makes
+    # LG_* ($61D6-$61E0) -- and the DRTAPP / DRSPAWNEDGE neighbours $61D0-$61D5 -- show their writers.
+    "lateguard-couch": dict(DRLATEGUARD=1, DRTAPP=2, DRREACHTX=1, DRSPAWNEDGE=1, DRNOFREEZE=1, DRHUMAN=1,
+                            DRDISTGATE=1, DRRELATCH=1, DRPROPH=1, DRMMC1RST=1, DRRTIVEC=1, DRFCGATE=1,
+                            DRBUILDID=0),
 }
 
 

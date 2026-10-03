@@ -1,0 +1,29 @@
+source  policy     |   n ==final HYBRID ==python unscored regret/scored | tall n ==final HYBRID unscored regret
+mesen   ship       | 116     101      9       83        1          48.5 |     85      72      8        1   59.0
+model   ship       | 116     102      8       84        1          41.5 |     85      72      8        1   52.4
+mesen   guard      | 116      99      1       91        1          17.1 |     85      71      1        1   18.5
+model   guard      | 116     100      1       92        1          16.0 |     85      71      1        1   18.5
+mesen   freeze     | 116      70      0       71        1          46.0 |     85      51      0        1   42.8
+model   freeze     | 116      70      1       71        1          46.0 |     85      51      1        1   42.8
+model   tallfreeze | 116      89      1       85        1          23.0 |     85      59      1        1   26.9
+silicon (ship)     | 115      91     14       77        1          60.2 |     84      65     11        1   73.4
+
+with firmware root re-ordering (upper bound; tuck commits keep their time):
+model   ship+ro    | 116     108      7       88        2          29.7 |     85      77      7        2   38.8
+model   guard+ro   | 116     108      1       93        1          11.8 |     85      77      1        1   14.3
+model   freeze+ro  | 116     108      1       93        1          11.8 |     85      77      1        1   14.3
+model   tallfreeze+ro | 116     108      1       93        1          11.8 |     85      77      1        1   14.3
+G3: 86 placements, 6 tall
+  mesen ship       n= 86 ==final  82 HYBRID  1 ==python  81 ==silicon  80 | tall   6 hybrid  0
+  mesen guard      n= 86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 | tall   6 hybrid  0
+  model ship       n= 86 ==final  83 HYBRID  0 ==python  80 ==silicon  78 | tall   6 hybrid  0
+  model guard      n= 86 ==final  83 HYBRID  0 ==python  80 ==silicon  78 | tall   6 hybrid  0
+  model freeze     n= 86 ==final  60 HYBRID  0 ==python  61 ==silicon  59 | tall   6 hybrid  0
+  model tallfreeze n= 86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 | tall   6 hybrid  0
+G4: 133 placements, 5 tall
+  mesen ship       n=133 ==final 131 HYBRID  2 ==python 124 ==silicon 114 | tall   5 hybrid  0
+  mesen guard      n=133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 | tall   5 hybrid  0
+  model ship       n=133 ==final 132 HYBRID  1 ==python 125 ==silicon 114 | tall   5 hybrid  0
+  model guard      n=133 ==final 132 HYBRID  0 ==python 125 ==silicon 116 | tall   5 hybrid  0
+  model freeze     n=133 ==final  89 HYBRID  0 ==python  83 ==silicon  80 | tall   5 hybrid  0
+  model tallfreeze n=133 ==final 130 HYBRID  1 ==python 123 ==silicon 112 | tall   5 hybrid  0

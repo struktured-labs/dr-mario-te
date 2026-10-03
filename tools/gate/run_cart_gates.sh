@@ -103,6 +103,14 @@ run test_prg_ram_map
 # Combined-cart gate (#140): PP_RAN interlock premise + admissible-frame certificate for
 # the DRPRESPIPE+DRP1SLICE image, byte-identity vs the certified carts. ~0.5 s.
 run test_combo_cart
+# NMI-census cut gate (PR #30 review): the h2_cp + lg_live/lg_done cuts census.py applies to DRPRESPIPE phase hooks
+# are behaviourally true of the couch DRLATEGUARD image, and 5 premise-breaking mutants are killed. ~15 s.
+run test_lateguard_census_cut
+# GRAVITY-FIDELITY gate (settle lane, 2026-10-03): the P2 driver may change the game ONLY through the controller. The
+# real driver under py65 vs the unmodified game replaying the same pads, frame by frame (round starts, garbage
+# releases, stale-DONE edges exercised; zero activity = FAIL). Two-sided: the fair DRSETTLE builds must PASS, the
+# shipped 15-hook settle pin (464a4b75 / 387bb7bd flag sets) must be KILLED. ~10 s.
+run test_gravity_fidelity --frames 3000 --seed 5
 
 echo "----------------------------------------------------------------------"
 if [ $rc -eq 0 ]; then echo "cart hazard gates: ALL PASS"; else echo "cart hazard gates: FAILURES ABOVE"; fi

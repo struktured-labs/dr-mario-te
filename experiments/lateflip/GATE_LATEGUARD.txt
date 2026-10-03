@@ -1,0 +1,5 @@
+DRLATEGUARD=0: lg_gate emitted = False
+DRLATEGUARD=1 vs reference: 20000 states, mismatches 0, adopted 5284, refused 14716, worst measured cycles 817  []
+mutant always: 5000 states, mismatches vs reference 550 -> KILLED
+mutant never: 5000 states, mismatches vs reference 3248 -> KILLED
+GATE_LATEGUARD PASS
