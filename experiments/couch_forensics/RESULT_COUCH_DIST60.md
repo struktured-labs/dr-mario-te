@@ -191,7 +191,10 @@ cells.
 - **s6e_fin** (CHAIN + EXCAV/HANG off): finishes 87% of available finishes (vs 56%), but E1 is −0.59 (null) and race
   is −2.50.
 - **Post-hoc:** with no damage per sent tile (δ = 0), both arms win +3.0 pp of races. ⇒ The trade is **tempo vs
-  garbage damage**, and it hinges on vs_race's unfitted δ.
+  garbage damage**.
+  - δ 2.65 is fitted (tape n = 181, CI [0.95, 4.13]). At the CI's low end chain0's race result is null
+    (−1.8 [−4.5, +0.8]).
+  - The tap-out failure (+3.0) does not depend on δ, so **no δ flips the verdict**.
 
 ## Files
 **Cases (banked):**

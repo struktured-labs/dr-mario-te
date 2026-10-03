@@ -26,14 +26,17 @@
 | brain finishing take rate | 40.4% | **86.8%** |
 | **verdict** | **FAIL** (E1 only) | **FAIL** |
 
-**Post-hoc race sensitivity: damage per sent tile δ.** δ is "assumed, not fitted" in vs_race.
+**Post-hoc race sensitivity: damage per sent tile δ.**
+- vs_race's docstring calls δ "assumed", but δ 2.65 s/tile **is fitted**: tape, n = 181 hits, 95% CI [0.95, 4.13]
+  (memory `dr-mario-vs-race-endpoint`).
+- δ = 0 lies outside that CI. It is shown only to isolate the tempo effect.
 
 | δ | s6e_chain0 | s6e_fin |
 |---|---|---|
 | 0 | +3.00 [+0.67, +5.50] | +3.00 [+0.50, +5.50] |
-| 1.0 | −1.83 [−4.50, +0.83] | −1.33 [−4.00, +1.33] |
+| 1.0 (≈ fitted CI low end, 0.95) | −1.83 [−4.50, +0.83] | −1.33 [−4.00, +1.33] |
 | 2.0 | −3.83 [−6.17, −1.50] | −4.50 [−6.83, −2.33] |
-| 2.65 | −3.00 | −2.50 |
+| 2.65 (fitted point) | −3.00 | −2.50 |
 
 ## Reading
 **1. The owner's tempo complaint is real in the sim, and CHAIN540 is its endgame cause.**
@@ -46,9 +49,10 @@
   the tempo: race −3.0 pp.
 - **Without the chain term, tap-out rises 3 pp** (43 new vs 25 fixed). The pill-only cascades are also what keeps a
   colour-starved board from filling.
-- Near δ ≈ 1 the trade is about break-even.
-- ⇒ **The ship decision hinges on how much a human is actually slowed per received tile.** That number has never been
-  fitted. Fitting it from couch footage is a measurement, not a guess, and it could flip this.
+- **Race over the fitted δ range:** at the CI's low end (≈ 1) chain0 is about break-even, −1.8 [−4.5, +0.8], i.e.
+  null. At the fitted point it is −3.0.
+- So **no δ in the fitted range turns the race positive.**
+- The **E3 tap-out failure (+3.0 [+0.3, +5.7]) does not depend on δ at all.** The verdict cannot flip on δ.
 
 **3. Forcing the finish (s6e_fin) is not the lever.**
 - It finishes 87% of available finishes (vs 56%), yet endgames are not shorter and races are worse.
@@ -59,10 +63,10 @@
 
 **4. Nothing to ship from this screen.**
 - Leave ANTIBODY_DIST's endgame as built.
-- If anything follows, it is the δ measurement (sends → owner/lulu slowdown on couch footage). A chain re-weight would
-  only be worth a holdout once δ is known.
+- A chain re-weight is not worth a holdout on this evidence. Removing the chain costs tap-out regardless of δ.
 
 ## Caveats
 - **Declared seed reuse** (STEER5d / OPP1 / STEER6 block). Two arms; a pass would have needed a holdout anyway.
 - **Sim only.** The gate-(b) and race opponents are models.
-- **The race result is sensitive to the unfitted δ** (table above).
+- **The race point estimate depends on δ** (table above), but every δ inside the fitted CI gives a null or negative
+  race result. The tap-out bar fails independently of δ.
