@@ -1,0 +1,63 @@
+IDENTITY: S = 0 (block A) vs banked STEER6d 'full' rows (steer6/d6), every key of the banked row
+  gb: 600 / 600 identical (banked 600)
+  rc6: 600 / 600 identical (banked 600)
+  rc47: 600 / 600 identical (banked 600)
+  -> EXACT
+
+ACTIVITY (rule 26) per arm, block A gate (b) / race lam 6 / LULU race:
+  sp1  gb  : decisions 94965, answer frame mean  20.22 (nominal sample 19.24), clamp binds  0.06% of decisions, tempo over-credit 0.001 f/dec, mask T_LAT mean 19.98, tempo shift mean +0.98 f
+  sp1  rc6 : decisions 97899, answer frame mean  20.23 (nominal sample 19.25), clamp binds  0.05% of decisions, tempo over-credit 0.001 f/dec, mask T_LAT mean 19.99, tempo shift mean +0.99 f
+  sp1  rc47: decisions 93454, answer frame mean  20.23 (nominal sample 19.24), clamp binds  0.04% of decisions, tempo over-credit 0.001 f/dec, mask T_LAT mean 19.98, tempo shift mean +0.98 f
+  s0   gb  : decisions 93164, answer frame mean  19.22 (nominal sample 19.24), clamp binds  0.10% of decisions, tempo over-credit 0.002 f/dec, mask T_LAT mean 18.98, tempo shift mean -0.02 f
+  s0   rc6 : decisions 97277, answer frame mean  19.22 (nominal sample 19.24), clamp binds  0.07% of decisions, tempo over-credit 0.001 f/dec, mask T_LAT mean 18.99, tempo shift mean -0.01 f
+  s0   rc47: decisions 92659, answer frame mean  19.24 (nominal sample 19.25), clamp binds  0.08% of decisions, tempo over-credit 0.002 f/dec, mask T_LAT mean 18.99, tempo shift mean -0.01 f
+  sm1  gb  : decisions 94788, answer frame mean  18.23 (nominal sample 19.25), clamp binds  0.14% of decisions, tempo over-credit 0.003 f/dec, mask T_LAT mean 17.97, tempo shift mean -1.03 f
+  sm1  rc6 : decisions 94597, answer frame mean  18.23 (nominal sample 19.24), clamp binds  0.13% of decisions, tempo over-credit 0.003 f/dec, mask T_LAT mean 17.99, tempo shift mean -1.01 f
+  sm1  rc47: decisions 92397, answer frame mean  18.24 (nominal sample 19.24), clamp binds  0.09% of decisions, tempo over-credit 0.002 f/dec, mask T_LAT mean 17.99, tempo shift mean -1.01 f
+  sm2  gb  : decisions 95377, answer frame mean  17.23 (nominal sample 19.25), clamp binds  0.44% of decisions, tempo over-credit 0.008 f/dec, mask T_LAT mean 16.98, tempo shift mean -2.02 f
+  sm2  rc6 : decisions 94597, answer frame mean  17.23 (nominal sample 19.24), clamp binds  0.40% of decisions, tempo over-credit 0.007 f/dec, mask T_LAT mean 16.99, tempo shift mean -2.01 f
+  sm2  rc47: decisions 91079, answer frame mean  17.24 (nominal sample 19.24), clamp binds  0.43% of decisions, tempo over-credit 0.007 f/dec, mask T_LAT mean 16.99, tempo shift mean -2.01 f
+  sm4  gb  : decisions 94413, answer frame mean  15.28 (nominal sample 19.23), clamp binds  3.56% of decisions, tempo over-credit 0.076 f/dec, mask T_LAT mean 14.97, tempo shift mean -4.03 f
+  sm4  rc6 : decisions 95844, answer frame mean  15.28 (nominal sample 19.22), clamp binds  3.65% of decisions, tempo over-credit 0.077 f/dec, mask T_LAT mean 14.98, tempo shift mean -4.02 f
+  sm4  rc47: decisions 92398, answer frame mean  15.30 (nominal sample 19.24), clamp binds  3.57% of decisions, tempo over-credit 0.076 f/dec, mask T_LAT mean 14.99, tempo shift mean -4.01 f
+  ceil gb  : decisions 97371, answer frame mean   3.00 (nominal sample 19.25), clamp binds 100.00% of decisions, tempo over-credit 0.000 f/dec, mask T_LAT mean  3.00, tempo shift mean -16.25 f
+  ceil rc6 : decisions 92275, answer frame mean   3.00 (nominal sample 19.24), clamp binds 100.00% of decisions, tempo over-credit 0.000 f/dec, mask T_LAT mean  3.00, tempo shift mean -16.25 f
+  ceil rc47: decisions 85815, answer frame mean   3.00 (nominal sample 19.25), clamp binds 100.00% of decisions, tempo over-credit 0.000 f/dec, mask T_LAT mean  3.00, tempo shift mean -16.25 f
+  s0   gb  B: decisions 96458, answer frame mean  19.21 (nominal sample 19.22), clamp binds  0.10% of decisions, tempo over-credit 0.002 f/dec, mask T_LAT mean 18.98, tempo shift mean -0.02 f
+  s0   rc6 B: decisions 96884, answer frame mean  19.20 (nominal sample 19.22), clamp binds  0.09% of decisions, tempo over-credit 0.002 f/dec, mask T_LAT mean 18.98, tempo shift mean -0.02 f
+  sm1  gb  B: decisions 98006, answer frame mean  18.22 (nominal sample 19.23), clamp binds  0.14% of decisions, tempo over-credit 0.003 f/dec, mask T_LAT mean 17.98, tempo shift mean -1.02 f
+  sm1  rc6 B: decisions 93871, answer frame mean  18.21 (nominal sample 19.22), clamp binds  0.11% of decisions, tempo over-credit 0.003 f/dec, mask T_LAT mean 17.99, tempo shift mean -1.01 f
+
+PRIMARY (PREREG_STEER7 sec. 4): S = -1 f vs S = 0, paired, gate b n=1200, race n=1200
+  gate b tap-out 19.58% -> 19.33%  d -0.25 [-1.84, +1.42]  churn fixed 53 / new 50
+  race win (lam 6, M 177, delta 2.65) 75.50% -> 77.42%  d +1.92 [-0.92, +4.83]  churn fixed 168 / new 145
+  tap<=100 d -0.08 [-0.83, +0.67] (reported, no bar)
+    block A (n=600): tap-out d +0.00 [-2.17, +2.17]
+    block B (n=600): tap-out d -0.50 [-2.83, +2.00]
+  -> PRIMARY VERDICT: FAIL
+
+WORTH-PER-FRAME CURVE (block A, n=600 paired vs S = 0 = dist_target60 @ STEER6d latency):
+  arm | dframes | gb tap-out d [95%] | fix/new | tap<=100 d | race M177 d [95%] | fix/new | LULU M140 d [95%] | fix/new | race-row tap-out d | LULU-row tap-out d
+  sp1  |  +1.00 | +2.83 [+0.33, +5.33] | 22/39 | -0.50 [-1.67, +0.50] | -2.00 [-6.33, +2.50] | 83/95 | -2.50 [-6.00, +1.00] | 50/65 | +1.00 [-3.50, +5.17] | +0.83 [-2.67, +4.33]
+         Bonferroni 98.75% (4 secondary arms): tap-out +2.83 [-0.33, +6.17]  race -2.00 [-7.67, +3.83]
+         gate b tap-out 18.67% -> 21.50%   race 74.00% -> 72.00%   LULU 81.00% -> 78.50%
+  s0   |  +0.00 | +0.00 [+0.00, +0.00] | 0/0 | +0.00 [+0.00, +0.00] | +0.00 [+0.00, +0.00] | 0/0 | +0.00 [+0.00, +0.00] | 0/0 | +0.00 [+0.00, +0.00] | +0.00 [+0.00, +0.00]
+         gate b tap-out 18.67% -> 18.67%   race 74.00% -> 74.00%   LULU 81.00% -> 81.00%
+  sm1  |  -0.99 | +0.00 [-2.17, +2.17] | 22/22 | +0.00 [-1.00, +1.00] | +3.50 [-0.50, +7.33] | 87/66 | +0.67 [-3.00, +4.33] | 64/60 | -3.50 [-7.33, +0.50] | -0.50 [-4.17, +3.17]
+         gate b tap-out 18.67% -> 18.67%   race 74.00% -> 77.50%   LULU 81.00% -> 81.67%
+  sm2  |  -1.99 | -1.67 [-4.33, +1.00] | 38/28 | -0.50 [-1.83, +0.83] | +5.17 [+1.00, +9.50] | 100/69 | +0.33 [-3.33, +4.00] | 65/63 | -5.17 [-9.33, -1.00] | -0.33 [-4.00, +3.33]
+         Bonferroni 98.75% (4 secondary arms): tap-out -1.67 [-5.17, +1.67]  race +5.17 [-0.17, +10.50]
+         gate b tap-out 18.67% -> 17.00%   race 74.00% -> 79.17%   LULU 81.00% -> 81.33%
+  sm4  |  -3.94 | -4.17 [-7.17, -1.17] | 55/30 | -0.83 [-2.33, +0.67] | +10.00 [+6.00, +14.00] | 110/50 | +4.33 [+0.33, +8.50] | 88/62 | -10.17 [-14.17, -6.17] | -4.67 [-8.50, -0.83]
+         Bonferroni 98.75% (4 secondary arms): tap-out -4.17 [-8.00, -0.33]  race +10.00 [+4.83, +15.17]
+         gate b tap-out 18.67% -> 14.50%   race 74.00% -> 84.00%   LULU 81.00% -> 85.33%
+  ceil | -16.22 | -14.33 [-17.50, -11.33] | 94/8 | -2.33 [-3.83, -0.83] | +22.83 [+19.17, +26.50] | 148/11 | +17.00 [+13.83, +20.33] | 108/6 | -24.50 [-28.17, -20.83] | -16.00 [-19.17, -13.00]
+         Bonferroni 98.75% (4 secondary arms): tap-out -14.33 [-18.33, -10.50]  race +22.83 [+18.17, +27.67]
+         gate b tap-out 18.67% -> 4.33%   race 74.00% -> 96.83%   LULU 81.00% -> 98.00%
+
+SYMMETRY d(+1) + d(-1) (block A, paired; 0 = symmetric): tap-out +2.83 [-0.83, +6.50]  race +1.50 [-5.50, +8.83]
+
+SLOPE (descriptive, OLS over arm means, joint seed bootstrap, n=600): pp per +1 frame of latency
+  gate b tap-out       all (+1..-4): +1.30 [+0.66, +1.94]    faster side (0..-4): +1.12 [+0.36, +1.89]
+  race win M177        all (+1..-4): -2.42 [-3.14, -1.64]    faster side (0..-4): -2.42 [-3.38, -1.43]
+  LULU race win M140   all (+1..-4): -1.20 [-2.01, -0.43]    faster side (0..-4): -1.07 [-2.04, -0.09]
