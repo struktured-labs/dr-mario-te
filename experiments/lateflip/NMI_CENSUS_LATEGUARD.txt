@@ -1,0 +1,65 @@
+# NMI census, DRLATEGUARD=1 vs the shipped ANTIBODY_DIST carts (tools/nmi126 capture_ir + census).
+# lg_gate loops declared: lg_clr 8, lg_row 2, lg_cell 8. Pipelined-image cut points lg_live / lg_done (census.py prespipe_scenarios).
+== couch c960dd49 (DRLATEGUARD=0)
+  steady_play      hook worst =  12617 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  spawn_edge_p2    hook worst =  15362 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  release_edge     hook worst =  12617 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  p1_search        hook worst =  12617 cyc  (absent labels skipped: h1_start)
+  pp_edge          hook worst =   9368 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_idle          hook worst =   6644 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_spawn         hook worst =   9389 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph1           hook worst =  12617 cyc  (absent labels skipped: lg_live,lg_done,h1_start,p1n_nosearch)
+  pp_ph2           hook worst =  12593 cyc  (absent labels skipped: lg_live,lg_done,h1_start,p1n_nosearch)
+  pp_ph3           hook worst =  12598 cyc  (absent labels skipped: lg_live,lg_done,h1_start,p1n_nosearch)
+  pp_ph4           hook worst =  12045 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  ALL_PATHS        hook worst =  15540 cyc
+  SAME-FRAME PAIR (2 hooks) worst = 27979 cyc   [max(spike) + steady_play]
+    pp_ph1     + pp_ph2         =  25210  + head 2040 + eps 300 =  27550  OK  margin  +2230
+    pp_ph2     + pp_ph3         =  25191  + head 2040 + eps 300 =  27531  OK  margin  +2249
+    pp_ph3     + pp_ph4         =  24643  + head 2040 + eps 300 =  26983  OK  margin  +2797
+    pp_edge    + pp_ph1         =  21985  + head 2040 + eps 300 =  24325  OK  margin  +5455
+    pp_ph1     + pp_idle        =  19261  + head 2040 + eps 300 =  21601  OK  margin  +8179
+    pp_ph3     + pp_idle        =  19242  + head 2040 + eps 300 =  21582  OK  margin  +8198
+    pp_ph2     + pp_idle        =  19237  + head 2040 + eps 300 =  21577  OK  margin  +8203
+    pp_ph4     + pp_idle        =  18689  + head 2040 + eps 300 =  21029  OK  margin  +8751
+    pp_edge    + pp_idle        =  16012  + head 2040 + eps 300 =  18352  OK  margin +11428
+  WORST ADMISSIBLE FRAME = 27550 of 29780 (92.5%), margin 2230 cyc [pp_ph1 + pp_ph2]
+== couch DRLATEGUARD=1 (fd08d7a3)
+  steady_play      hook worst =  13495 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  spawn_edge_p2    hook worst =  16306 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  release_edge     hook worst =  13495 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  p1_search        hook worst =  13495 cyc  (absent labels skipped: h1_start)
+  pp_edge          hook worst =  10246 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_idle          hook worst =   7522 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_spawn         hook worst =  10333 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph1           hook worst =  12460 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph2           hook worst =  12436 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph3           hook worst =  12441 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  pp_ph4           hook worst =  12923 cyc  (absent labels skipped: h1_start,p1n_nosearch)
+  ALL_PATHS        hook worst =  16484 cyc
+  SAME-FRAME PAIR (2 hooks) worst = 29801 cyc   [max(spike) + steady_play]
+    pp_ph3     + pp_ph4         =  25364  + head 2040 + eps 300 =  27704  OK  margin  +2076
+    pp_ph1     + pp_ph2         =  24896  + head 2040 + eps 300 =  27236  OK  margin  +2544
+    pp_ph2     + pp_ph3         =  24877  + head 2040 + eps 300 =  27217  OK  margin  +2563
+    pp_edge    + pp_ph1         =  22706  + head 2040 + eps 300 =  25046  OK  margin  +4734
+    pp_ph4     + pp_idle        =  20445  + head 2040 + eps 300 =  22785  OK  margin  +6995
+    pp_ph1     + pp_idle        =  19982  + head 2040 + eps 300 =  22322  OK  margin  +7458
+    pp_ph3     + pp_idle        =  19963  + head 2040 + eps 300 =  22303  OK  margin  +7477
+    pp_ph2     + pp_idle        =  19958  + head 2040 + eps 300 =  22298  OK  margin  +7482
+    pp_edge    + pp_idle        =  17768  + head 2040 + eps 300 =  20108  OK  margin  +9672
+  WORST ADMISSIBLE FRAME = 27704 of 29780 (93.0%), margin 2076 cyc [pp_ph3 + pp_ph4]
+    $8811 lg_gate                       883
+== CvC 3b8737a9 (DRLATEGUARD=0)
+  steady_play      hook worst =   5499 cyc  (absent labels skipped: pt_edge,h1_start,do_init)
+  spawn_edge_p2    hook worst =   7630 cyc  (absent labels skipped: pt_edge,h1_start,do_init)
+  release_edge     hook worst =   5499 cyc  (absent labels skipped: h1_start,do_init)
+  p1_search        hook worst =  95532 cyc  (absent labels skipped: pt_edge,h1_start,do_init)
+  ALL_PATHS        hook worst =  97663 cyc
+  SAME-FRAME PAIR (2 hooks) worst = 103162 cyc   [p1_search + spawn_edge_p2]
+== CvC DRLATEGUARD=1 (387bb7bd)
+  steady_play      hook worst =   6335 cyc  (absent labels skipped: pt_edge,h1_start,do_init)
+  spawn_edge_p2    hook worst =   8576 cyc  (absent labels skipped: pt_edge,h1_start,do_init)
+  release_edge     hook worst =   6335 cyc  (absent labels skipped: h1_start,do_init)
+  p1_search        hook worst =  96368 cyc  (absent labels skipped: pt_edge,h1_start,do_init)
+  ALL_PATHS        hook worst =  98609 cyc
+  SAME-FRAME PAIR (2 hooks) worst = 104944 cyc   [p1_search + spawn_edge_p2]

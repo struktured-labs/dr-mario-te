@@ -113,6 +113,12 @@ LOOP_BOUNDS = {
     "dg_row": 16,
     # DISTGATE per-row cell walk: Y = DG_CSPAN <= 8 (span of a capsule +1).
     "dg_cell": 8,
+    # DRLATEGUARD fall scan: LG_N = min($0386, DRLATEGUARD_ROWCAP) rows, ROWCAP asserted <= 2 in the emitter.
+    "lg_row": 2,
+    # DRLATEGUARD current-row clearance walk: Y = LG_CS = span width <= 8.
+    "lg_clr": 8,
+    # DRLATEGUARD per-row cell walk: Y = LG_CS = span width <= 8.
+    "lg_cell": 8,
     # -------- v18 P1 AI placement passes --------
     # vertical pass: Z_COL 0..7, exit at CMP #8 -> 8 head passes.
     "v_loop": 8,
@@ -588,9 +594,18 @@ def prespipe_scenarios(have):
            "pp_spawn": [("into", "pp_disp"), ("into", "pt_edge"),
                         ("into", "h1_start"), ("into", "do_init"),
                         ("fallof", "p1n_nosearch")]}
+    # DRLATEGUARD (lg_live / lg_done, absent on images without the flag): both lg_gate call sites need ARMED2 != 0
+    # -- lg_done sits on handle(2)'s DONE path (reached only past `LDA ARMED2 / BNE`), lg_live on act's live-mailbox
+    # path (reached only past act's `LDA ARMED2 / BNE`). A phase runs only after pp_disp's abort checks saw ARMED2 == 0
+    # and PEND2 == 0, and a NON-committing phase never writes ARMED2, so handle(2) takes `_start` (PEND2 == 0 -> no GO)
+    # and act routes straight to act_p2: neither site is reachable on that hook. The COMMITTING (last) phase GOes the
+    # prestart search (ARMED2 := 1) inside pre_tick, so it keeps both sites. Same proof shape as the h2_cp cut above;
+    # tests/test_prespipe.py M3 (abort check deleted -> must fail) keeps the abort premise honest.
+    lg_cut = [("into", "lg_live"), ("into", "lg_done")]
     for i, entry in enumerate(phases):
         others = [("into", e) for e in phases if e != entry]
-        out[f"pp_ph{i + 1}"] = [("into", "ppd_skip")] + others + interlock + _PP_BASE
+        lg = lg_cut if i < len(phases) - 1 else []
+        out[f"pp_ph{i + 1}"] = [("into", "ppd_skip")] + others + lg + interlock + _PP_BASE
     return out, ["pp_edge"] + [f"pp_ph{i + 1}" for i in range(len(phases))]
 
 
