@@ -1,0 +1,30 @@
+rows dist: gb10 1500  rc10 600  lulu10 600  garbage cells/game gb10 16.1
+rows anti: gb10 1500  rc10 600  lulu10 600  garbage cells/game gb10 19.8
+rows tap: gb10 600  rc10 600  lulu10 600  garbage cells/game gb10 19.7
+
+PRIMARY (PREREG_STEER6r sec. 5): DIST60 vs ANTIBODY
+  gb10 tap-out (n=1500) 8.93% -> 5.13%  d -3.80 [-5.00, -2.73]  churn fixed 67 / new 10   tap<=100 d +0.00 [+0.00, +0.00]
+  rc10 race win M177 (n=600) 87.50% -> 91.33%  d +3.83 [+2.17, +5.67]  churn fixed 27 / new 4   race-row tap-out d -3.17 [-4.83, -1.50]
+  lulu10 race win M140 (n=600) 83.83% -> 90.67%  d +6.83 [+4.67, +9.17]  churn fixed 46 / new 5
+  -> GAIN SURVIVES
+     race gain survives (lower CI > 0): rc10 yes, lulu10 yes
+
+SECONDARY DIST vs TAP-only (95%; Bonferroni 97.5% below)
+  gb10 tap-out (n=600) 10.00% -> 5.00%  d -5.00 [-7.67, -2.33]  churn fixed 49 / new 19   tap<=100 d +0.33 [-0.67, +1.33]
+  rc10 race win M177 (n=600) 84.33% -> 91.33%  d +7.00 [+3.83, +10.50]  churn fixed 79 / new 37   race-row tap-out d -6.50 [-10.00, -3.33]
+  lulu10 race win M140 (n=600) 83.00% -> 90.67%  d +7.67 [+4.17, +11.17]  churn fixed 83 / new 37
+  Bonferroni 97.5%: tap-out -5.00 [-8.00, -2.00]  race +7.00 [+3.33, +11.00]  lulu +7.67 [+3.83, +11.67]
+
+SECONDARY ANTI vs TAP-only (95%; Bonferroni 97.5% below)
+  gb10 tap-out (n=600) 10.00% -> 8.83%  d -1.17 [-4.17, +1.83]  churn fixed 46 / new 39   tap<=100 d +0.33 [-0.67, +1.33]
+  rc10 race win M177 (n=600) 84.33% -> 87.50%  d +3.17 [-0.33, +7.00]  churn fixed 73 / new 54   race-row tap-out d -3.33 [-7.00, +0.00]
+  lulu10 race win M140 (n=600) 83.00% -> 83.83%  d +0.83 [-2.83, +4.50]  churn fixed 70 / new 65
+  Bonferroni 97.5%: tap-out -1.17 [-4.50, +2.33]  race +3.17 [-0.83, +7.33]  lulu +0.83 [-3.33, +5.17]
+
+OLD vs NEW (identical seeds)
+  s5b_hsv512         gate-b tap-out OWNER-0804 25.40%  ->  owner202610 8.93%   (n=1500; garbage cells/game 66.6 -> 19.8)
+  s6_dist_target60   gate-b tap-out OWNER-0804 20.00%  ->  owner202610 5.13%   (n=1500; garbage cells/game 57.7 -> 16.1)
+  DIST60 - ANTIBODY tap-out: old -5.40 [-7.00, -3.80]  new -3.80 [-5.00, -2.73]  new - old (DiD) +1.60 [-0.40, +3.53]
+  race M177: ANTIBODY win lam 6 69.17% -> lam 2.36 87.50%;  DIST60 - ANTIBODY old +8.50 [+5.83, +11.33]  new +3.83 [+2.17, +5.67]
+  race-row tap-out ANTIBODY lam 6 30.17% -> lam 2.36 11.67%
+  LULU old (lam 4.7, SCREEN block 37934-39132, a different seed block): ANTIBODY 68.5% -> DIST60 81.0% (+12.50 [+9.67, +15.50]), race-row tap-out 26.7% -> 16.7% (steer6/opp, RESULT_STEER6.md)
