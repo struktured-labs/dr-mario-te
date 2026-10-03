@@ -21,8 +21,12 @@ OFF = dict(mode="off", W=0)
 # timing (frames): g0 = gravity-start shift of the steer model (G0_CHOICES 7|8 = TODAY's pinned cart), g0_k0 = the same
 # for the round-start pill; ans = steer answer-frame shift; mask = reach_fw_tap T_LAT shift; mask_g0 = reach_fw_tap G0
 # shift; tempo = vs_race BASE_F / gate-b clock shift per placement
-T0 = dict(g0=0, g0_k0=0, ans=0, mask=0, mask_g0=0, tempo=0)
-# STEER8b fair-settle arms (settle lane, Mesen-measured on the couch carts; PREREG_STEER8b.md)
+T0 = dict(g0=0, g0_k0=0, ans=0, mask=0, mask_g0=0, tempo=0,
+          p_end=None, dg_b=False, ledge_c=False, mask_pend=None, mask_b=False, mask_ledge=None)
+# AMENDED 8b fields (PREREG_STEER8b amendment): p_end = steer PROPH window end (None = until the commit, the pre-STEER8b
+# model); dg_b / ledge_c = fix B / fix C in the steer; mask_pend / mask_b / mask_ledge = the same in reach_fw_tap
+# (None/False = the DEPLOYED fw mask: PROPH credited until T_LAT, no B, no C)
+# STEER8b fair-settle arms AS FIRST PRE-REGISTERED (94a7f82e) -- SUPERSEDED by the amendment before any 8b game; NOT RUN
 SETTLE = {
     "fD_sB_ref": dict(g0=-5, g0_k0=-4, ans=-6, mask=-6, mask_g0=-5, tempo=-6),  # fair DRSETTLE=3, mask refit T13/G0 3
     "fD_sB_dep": dict(g0=-5, g0_k0=-4, ans=-6, mask=0, mask_g0=0, tempo=-6),    # fair DRSETTLE=3, DEPLOYED fw mask T19/G0 8
@@ -38,6 +42,21 @@ ARMS = {
 }
 for name, t in SETTLE.items():
     ARMS[name] = dict(leaf6=DIST, sw=SW_ON, t={**T0, **t})
+# AMENDED STEER8b block 3 (settle lane, Mesen frame traces, CONFIRMED; PREREG_STEER8b.md amendment)
+FAIR = dict(g0=-5, g0_k0=-4)
+SETTLE2 = {
+    "fD_a2":      dict(p_end=10),                                                         # (a) today, PROPH to 1st pub
+    "fD_bdep2":   dict(**FAIR, ans=-6, tempo=-6, p_end=4),                                # (b) fair, DEPLOYED mask
+    "fD_bref2":   dict(**FAIR, ans=-6, tempo=-6, p_end=4, mask=-6, mask_g0=-5, mask_pend=4),   # (b) fair, REFIT mask
+    "fD_c2":      dict(**FAIR, p_end=10, mask_g0=-5),                                     # (c) fair, no settle cut
+    "fD_brefA":   dict(**FAIR, ans=-6, tempo=-6, p_end=None, mask=-6, mask_g0=-5),        # + fix A (PROPH to commit)
+    "fD_brefAB":  dict(**FAIR, ans=-6, tempo=-6, p_end=None, mask=-6, mask_g0=-5, dg_b=True, mask_b=True),
+    "fD_brefABC": dict(**FAIR, ans=-6, tempo=-6, p_end=4, mask=-6, mask_g0=-5, dg_b=True, mask_b=True,
+                       ledge_c=True, mask_ledge=4),                                       # + fix C (armed: commit at p_end)
+}
+for name, t in SETTLE2.items():
+    ARMS[name] = dict(leaf6=DIST, sw=SW_ON, t={**T0, **t})
+B_EXTRA = lambda thr, spd: min(7, max(0, thr - spd) // 2)    # fix B (DRDISTROW): replaces the 0-free-row budget
 
 def _git():
     try:
@@ -54,11 +73,14 @@ def make(arm):
     import cascade_leaf6fw_braingap_20261003 as FW
     spec = ARMS[arm]; t = spec["t"]
     assert RFT.T_LAT == 19 and RFT.G0 == 8 and V.BASE_F == 45.0 and SM.G0_CHOICES == (7, 8)
+    assert RFT.PROPH_END is None and RFT.LEDGE_T is None and RFT.DISTROW is False
+    RFT.PROPH_END = t["mask_pend"]; RFT.DISTROW = bool(t["mask_b"]); RFT.LEDGE_T = t["mask_ledge"]
     g_mid, g_k0 = (7 + t["g0"], 8 + t["g0"]), (7 + t["g0_k0"], 8 + t["g0_k0"])
     SM.G0_CHOICES = g_mid; RFT.G0 = 8 + t["mask_g0"]
     RFT.T_LAT = 19 + t["mask"]; V.BASE_F = 45.0 + t["tempo"]; CP.T_LAT = 0.6 + t["tempo"] / 60.0988
     steer = SM.Steer(proph="throat", pulse=True, tap_period=2, tap_unified=True)
     steer.lat = [max(SM.F0, x + t["ans"]) for x in steer.lat]
+    steer.proph_end_f = t["p_end"]; steer.dg_extra = B_EXTRA if t["dg_b"] else None; steer.ledge_commit = bool(t["ledge_c"])
     C.warmup_chain(topk2=8)
     w, fl = FX.variant("winner")
     dec = FW.Leaf6FwDecider(w, fl, sw=dict(spec["sw"]), topk2=8, maxpass=0, w_chain=540, ws=20, tap=2, **spec["leaf6"])

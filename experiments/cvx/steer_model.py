@@ -170,6 +170,9 @@ class Steer:
         self.lat = lat if lat is not None else latency_samples()
         self.seed = seed
         self.trace = trace
+        self.proph_end_f = None    # STEER8b: PROPH pulses only on [F0, proph_end_f) (None = until the answer, as before)
+        self.dg_extra = None       # STEER8b +B: callable(thr, spd) -> extra DISTGATE columns (None = none, as before)
+        self.ledge_commit = False  # STEER8b fix C: a PROPH-armed pill commits at proph_end_f (False = as before)
         self.reset(seed)
 
     def reset(self, seed):
@@ -189,7 +192,7 @@ class Steer:
             return xs[rng.randrange(len(xs))]
         return self.lat[rng.randrange(len(self.lat))]
 
-    def _eff(self, color, x, row, tcol):
+    def _eff(self, color, x, row, tcol, extra=0):
         if not self.distgate or tcol == x:
             return tcol
         Y = min(ROWS - 1 - row, 15)
@@ -202,7 +205,7 @@ class Steer:
                 fall += 1
             else:
                 break
-        b = self.dtable[fall]
+        b = self.dtable[fall] if not extra else min(7, self.dtable[fall] + extra)   # STEER8b +B hook (extra=0: unchanged)
         if tcol < x:
             return max(tcol, max(0, x - b))
         return min(tcol, min(7, x + b))
@@ -235,6 +238,8 @@ class Steer:
                     pd = "L"
                 elif side == "R" and color[0][5] == 0 and color[1][5] == 0:
                     pd = "R"
+        if self.ledge_commit and pd is not None and self.proph_end_f is not None:   # STEER8b fix C (DRLEDGECOMMIT):
+            t_ans = min(t_ans, max(F0, self.proph_end_f))                        # an armed pill commits at p_end
         # pre-hold (carry the charge toward the target side through the lock); only when it pays
         pre = None
         if self.prehold and pd is None and self.v_at_lock >= 10:
@@ -254,12 +259,12 @@ class Steer:
             if self.tap_unified:
                 want = None
                 if f < t_ans:
-                    if pd is not None:
+                    if pd is not None and (self.proph_end_f is None or f < self.proph_end_f):   # STEER8b p_end
                         want = RIGHT if pd == "R" else LEFT
                 elif rot != trot:
                     want = BTN_B if ((trot - rot) & 3) == 1 else BTN_A
                 else:
-                    eff = self._eff(color, x, row, tcol)
+                    eff = self._eff(color, x, row, tcol, 0 if self.dg_extra is None else self.dg_extra(thr, spd))
                     if eff != tcol:
                         clamped_ever = True
                     if x == eff:
@@ -271,7 +276,7 @@ class Steer:
                     if last_tap is None or f - last_tap >= self.tap_period:
                         raw = want; last_tap = f
             elif f < t_ans:
-                if pd is not None:
+                if pd is not None and (self.proph_end_f is None or f < self.proph_end_f):       # STEER8b p_end
                     clear = True
                     if (f + ph) % 2 == 0:
                         raw = RIGHT if pd == "R" else LEFT
@@ -285,7 +290,7 @@ class Steer:
             elif f < ta:
                 raw = 0                                    # byrot: rotated early, lateral waits for the gate
             else:
-                eff = self._eff(color, x, row, tcol)
+                eff = self._eff(color, x, row, tcol, 0 if self.dg_extra is None else self.dg_extra(thr, spd))
                 if eff != tcol:
                     clamped_ever = True
                 if x == eff:

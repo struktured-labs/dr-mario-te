@@ -2,7 +2,8 @@
 # STEER8a (PREREG_STEER8a.md) then STEER8b (PREREG_STEER8b.md), queued BEHIND steer7b-farm. Launch DETACHED:
 #   systemd-run --user --unit steer8-farm -p MemoryMax=20G -p MemorySwapMax=0 -p Nice=19 \
 #       /home/struktured/projects/dr-mario-h16-wt/experiments/cvx/steer8_farm.sh
-# 8 workers (coordinator: Quartus has priority). Phase A = 8a (108 jobs), audit, analysis; phase B = 8b (210 jobs).
+# 8 workers (coordinator: Quartus has priority). Phase A = 8a (108 jobs), audit, analysis; phase B = 8b.
+# STEER8_PHASES=A runs 8a only (8b was AMENDED before it ran; its farm is steer8b_farm.sh).
 set -uo pipefail
 CVX=/home/struktured/projects/dr-mario-h16-wt/experiments/cvx
 TMP=/home/struktured/projects/dr-mario-h16-wt/tmp/steer7
@@ -63,6 +64,7 @@ if audit "$JA" 5400; then
 else
   echo "[$(date -u +%FT%TZ)] FATAL 8a completion audit" >> "$LOG"
 fi
+[ "${STEER8_PHASES:-AB}" = A ] && { echo "[$(date -u +%FT%TZ)] phase A only: stop" >> "$LOG"; exit 0; }
 xargs -P "$W" -L 1 bash -c 'run_one "$@"' _ < "$JB"
 if audit "$JB" 10500; then
   echo "[$(date -u +%FT%TZ)] 8b audit OK 10500 rows; analysis" >> "$LOG"

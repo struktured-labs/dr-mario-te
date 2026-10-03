@@ -48,6 +48,9 @@ patch_cartridge_copro.py). Timing, replacing the DAS schedule above:
 """
 ROWS, COLS = 16, 8
 T_LAT, G0, F0 = 19, 8, 3
+PROPH_END = None    # STEER8b: the driver's PROPH window end (first publication); None = T_LAT, as before
+LEDGE_T = None      # STEER8b fix C: a PROPH-armed board commits at LEDGE_T instead of T_LAT (None = as before)
+DISTROW = False     # STEER8b fix B: on 0 free rows, budget = min(7, max(0, thr - counter) // 2) (False = 0)
 NROT = {0: 0, 1: 2, 2: 1, 3: 1}
 DT = [0, 2, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]
 
@@ -129,10 +132,12 @@ def reachable(color, top, thr, var, col, tap=None, rot_margin=0):
     last_press = None
     # ---- 0. PROPH pulse phase (capsule horizontal, rot 0, until the answer at T_LAT)
     pd = proph_dir(color, top)
+    TL = LEDGE_T if (LEDGE_T is not None and pd is not None) else T_LAT     # STEER8b fix C
     if pd is not None:
         step = 1 if pd == "R" else -1
         lockf = tick_frame(rest_from(color, x, 0, False), thr)
-        for f in (range(F0, T_LAT) if tap is None else range(F0, T_LAT, tap)):
+        pe = TL if PROPH_END is None else min(TL, PROPH_END)          # STEER8b: PROPH ends at p_end
+        for f in (range(F0, pe) if tap is None else range(F0, pe, tap)):
             if f >= lockf:
                 break
             if tap is not None or f % 2 == 1:                  # DAS: pulse on odd frames; TAP: every P from F0
@@ -141,19 +146,19 @@ def reachable(color, top, thr, var, col, tap=None, rot_margin=0):
                 if fits(None, x + step, r, False, color):
                     x += step
                     lockf = tick_frame(rest_from(color, x, r, False), thr)
-        if lockf <= T_LAT:                                     # locked before the answer: landing is fixed
+        if lockf <= TL:                                     # locked before the answer: landing is fixed
             r = row_at(lockf, thr) if lockf > G0 + thr else 0
             land = rest_from(color, x, min(r, rest_from(color, x, 0, False)), False)
             return var == 0 and x == col and land == straight_rest(top, x, False)
-    r = row_at(T_LAT - 1, thr)
+    r = row_at(TL - 1, thr)
     lockf = tick_frame(rest_from(color, x, r, False), thr)
     # ---- 1. rotation presses, one per frame from T_LAT, at the capsule's column
     # A blocked press is undone and the driver presses again next frame (fresh edge) until it succeeds or the
     # capsule locks; each successful press re-bases the lock on the new shape.
     nrot = NROT[var]
-    f = T_LAT
+    f = TL
     if tap is not None and last_press is not None:
-        f = max(T_LAT, last_press + tap)                       # the shared scheduler's next press slot
+        f = max(TL, last_press + tap)                       # the shared scheduler's next press slot
     if nrot:
         f += rot_margin                                        # STEER4 arm 3: rotation conservatism (k61 fix)
     rstep = 1 if tap is None else tap
@@ -188,7 +193,11 @@ def reachable(color, top, thr, var, col, tap=None, rot_margin=0):
         if ti >= lockf:                                        # (a) locked in the previous column first
             return False
         y = free_rows_below(color, row_at(ti - 1, thr), min(x, col), max(x, col))
-        if DT[y] == 0:                                         # (c) DISTGATE budget 0 -> aim = here -> soft drop
+        bud = DT[y]
+        if bud == 0 and DISTROW:                               # STEER8b fix B: credit the current row's frames
+            c = (ti - G0) % (thr + 1) if ti - 1 >= G0 else 0  # gravity counter before frame ti's tick
+            bud = min(7, max(0, thr - c) // 2)
+        if bud == 0:                                           # (c) DISTGATE budget 0 -> aim = here -> soft drop
             return False
         r = row_at(ti, thr)
         if not fits(None, x + sd, r, vert, color):             # (b) destination blocked at this row
