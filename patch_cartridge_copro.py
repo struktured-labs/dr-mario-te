@@ -660,6 +660,66 @@ LG_SPEED_TABLE = bytes([
     0x00])
 LG_SPEED_BASE = bytes([0x0F, 0x19, 0x1F])
 assert len(LG_SPEED_TABLE) == 81
+# DRSETTLE=N (default 15 -> byte-identical cart): the P2 post-spawn SETTLE, in driver hooks, between the new-pill edge
+# and the board+colour upload / GO. The edge hook loads DELAY2 <- N and handle(2) DECs it in the same hook, so the
+# upload runs at hook N-1 after the edge (2 hooks per frame, both inside the NMI): N=15 -> the 8th NMI (edge + 7 f),
+# N=3 -> the next NMI (edge + 1 f). History: 32c306c8 (2026-07-04) sized it "~3 frames" under a 5-hooks/frame
+# assumption; at the measured 2 hooks/frame it is 7.5 f.
+# WHAT THE SETTLE PROTECTS (measured in Mesen on the real couch/CvC carts, tools/settle/settle_probe.lua: every hook's
+# upload-source RAM vs the bytes actually uploaded at hook 14; experiments/settle/RESULT_SETTLE.md):
+#   * MID-ROUND spawns: generateNextPill writes capsule, preview, counter and Y in ONE main-loop pass, after the lock's
+#     clears, cascades and the garbage drop (checkAttack -> sendPill), so the upload is already final at the edge hook.
+#     The one way it could not be: an NMI landing inside currentP_toP2 (the $30-byte copy-back) AFTER Y (+$06) but
+#     before speedUps/preview (+$0A/+$1A/+$1B) -- the edge would fire on a half-copied state. One NMI later the copy is
+#     done (the census leaves the main loop >= 2k cycles per frame; the rest of the copy needs <= 770), so N >= 3.
+#   * ROUND STARTS: level init calls generateNextPill (Y=$0F) before the first throw, so the stock Y test fires a
+#     PRE-THROW edge while p2_nextAction = sendPill (6); the throw (generateNextPill again: capsule <- preview,
+#     preview <- reserve) lands 1-2 NMIs later. A short settle would upload the PREVIOUS capsule/preview. Hence the
+#     READINESS GUARD (emitted whenever N != 15): handle(2) does not upload while $0397 == 6 (the ROM has not thrown).
+#     The wait does not pin gravity (DRPENDBOUND pins only while DELAY2 != 0) and the capsule is not falling anyway.
+# GRAVITY / FAIRNESS: freeze_pending pins GRAV_P2 while the settle runs. On the unmodified game the speed counter reads
+# 0,0,1,2,3.. from the spawn frame (G0 = 1); on a stock 15-hook cart it reads 0,0,1,1,1,1,1,1,2.. (G0 = 6): an
+# OBSERVABLE 5-frame gravity pin on every pill. With N <= 4 the pin covers only the edge NMI, where the counter is 0
+# anyway (the ROM spends that frame in sendPillFinished), so it changes nothing; DRSETTLEPIN=0 removes it outright.
+SETTLE = int(_os.environ.get("DRSETTLE", "15"))
+assert 1 <= SETTLE <= 15, "DRSETTLE is a hook count 1..15 (15 = the shipped settle)"
+# TEST-ONLY mutant (never ship): "noguard" = the short settle WITHOUT the readiness guard -> round-start uploads carry
+# the pre-throw capsule/preview (the defect the guard exists for).
+SETTLE_MUT = _os.environ.get("DRSETTLE_MUT", "none") if SETTLE != 15 else "none"
+assert SETTLE_MUT in ("none", "noguard"), SETTLE_MUT
+SETTLE_GUARD = SETTLE != 15 and SETTLE_MUT != "noguard"
+# DRSETTLEPIN=0 (default 1 -> byte-identical): freeze_pending never pins P2's gravity counter during the settle.
+SETTLEPIN = _os.environ.get("DRSETTLEPIN", "1") != "0"
+# DRPROPHHOLD=1 (default 0 -> byte-identical; needs DRPROPH + DRROTFIX): keep DRPROPH's escape pulse running through the
+# MIN-THINK hold (answer published, orient reached, lateral still withheld until DONE / WDOG2 >= MIN_THINK) instead of
+# pressing nothing. WHY (Mesen, banked G2 timelines, settle lane 2026-10-03): on the shipped carts PROPH's pulse ran
+# inside the PINNED settle -- ~5 frames of lateral moves with P2's gravity counter frozen -- and that is what carried
+# throat-ledge spawns off the ledge before the answer arrived. A fair cart (no pin, DRSETTLE=3) publishes the answer at
+# ~f3, PROPH stops at that first publication, MIN_THINK then withholds lateral moves until ~f8, DISTGATE clamps a ledge
+# capsule (0 free rows below -> budget 0), and the first gravity tick locks it in the spawn column: 13 extra strands on
+# G2's tall endgame. With this flag the pulse continues under LIVE gravity (no pin, TAP-scheduled presses) until the
+# commit. A pill without a PROPH direction gets exactly today's bytes ($F6 = $F8 = 0: proph_pulse's inactive branch).
+PROPHHOLD = _os.environ.get("DRPROPHHOLD", "0") == "1"
+# DRLEDGECOMMIT=1 (default 0 -> byte-identical; needs DRPROPH + DRROTFIX): a PROPH-armed pill (throat-ledge spawn,
+# PROPH_DIR != 0) skips the MIN_THINK floor -- it commits (orient latched, lateral steering on) as soon as a valid
+# answer is published and its orient is reached, because on a ledge the first gravity tick (thr + 1 frames after the
+# spawn, no pin) locks it where it stands. LATEGUARD still refuses an unfinishable later change.
+LEDGECOMMIT = _os.environ.get("DRLEDGECOMMIT", "0") == "1"
+# DRDISTROW=1 (default 0 -> byte-identical; needs DRDISTGATE + DRLATEGUARD's gravity tables + DRTAPP=2): DISTGATE's
+# budget is DIST_TABLE[empty rows below the span], i.e. 0 when no row below is empty -- it ignores the frames still left
+# in the CURRENT row before the next gravity tick, which is when a ledge capsule locks. Credit them: with no empty row
+# below, budget = min(7, (thr - $0392) / P) columns (thr = speedCounterTable[base[$038B] + $038A]; checkYMove runs
+# before checkXMove, so a press must land strictly before the tick frame: thr - counter frames, one press per P).
+DISTROW = _os.environ.get("DRDISTROW", "0") == "1"
+# DRPROPHFIRST=1 (default 0 -> byte-identical; needs DRPROPH + DRROTFIX): on a PROPH-armed pill that is still on its
+# spawn row ($0386 == $0F), PROPH's lateral escape pulse takes priority over the rotation pre-phase until the commit
+# window opens (WDOG2 >= MIN_THINK, DONE, or > 256 hooks). This is the ORDER the shipped carts had -- PROPH's presses
+# at f1/3/5/7 inside the pinned settle, the answer's rotations after -- now under live gravity: on G2's tall endgame a
+# fair cart that rotated first (the answer is published at ~f3) spent every press slot on rotation churn and locked in
+# the spawn column at the first gravity tick. Pure pad inputs through the same TAP scheduler.
+PROPHFIRST = _os.environ.get("DRPROPHFIRST", "0") == "1"
+if PROPHHOLD or LEDGECOMMIT or PROPHFIRST:
+    assert PROPH and ROTFIX, "DRPROPHHOLD / DRLEDGECOMMIT / DRPROPHFIRST act on DRPROPH-armed pills of the DRROTFIX driver"
 # DRUNPAUSE (#133): a P1-driven cart is UNPAUSABLE -- the P1 executor rewrites $F5 (the raw P1
 # latch at hook time; the ROM derives pressed/held from it AFTER the hook) every hook from a
 # vocabulary {none,right,left,down,A} with no START, and it runs before the stock edge-detect,
@@ -1048,6 +1108,8 @@ RELATCH = ROTFIX and (_os.environ.get("DRRELATCH", "0") == "1")
 # the old defective indexing must demonstrably FAIL the new tests). NEVER ship it.
 # DRDISTGATE=0 rebuilds byte-exact (nothing emitted; verified in tests/test_task49_distgate.py).
 DISTGATE = _os.environ.get("DRDISTGATE", "0") == "1"
+if DISTROW:   # (DRDISTROW is defined with the settle flags, above)
+    assert DISTGATE and LATEGUARD and TAPP == 2, "DRDISTROW extends DRDISTGATE, reads DRLATEGUARD's gravity tables, P=2"
 DIST_FLOORREL = _os.environ.get("DRDIST_FLOORREL", "0") == "1"   # TEST-ONLY mutant, see above
 DIST_DASEDGE = int(_os.environ.get("DRDIST_DASEDGE", "12"))
 if TAPP:
@@ -2616,7 +2678,7 @@ def build_main(level=11, speed=1):
         # already published in TGT_C2/TGT_O2 instead of arriving ~7.5 frames + a search later.
         a.ins16("LDA_abs", PRE_ACT2); a.br("BNE", "p2_pre_own")
     a.ins("LDA_imm", 1); a.ins16("STA_abs", PEND2)
-    a.ins("LDA_imm", 15); a.ins16("STA_abs", DELAY2)        # ~3 frames settle before upload
+    a.ins("LDA_imm", SETTLE); a.ins16("STA_abs", DELAY2)    # settle before upload (DRSETTLE hooks, 15 = 7.5 f)
     if PRESTART:
         a.label("p2_pre_own")
     a.ins("LDA_imm", 0)
@@ -2851,6 +2913,11 @@ def build_main(level=11, speed=1):
         a.label(f"{L}_start")            # start a search: upload board+colors to THIS copro, GO
         a.ins16("LDA_abs", pend); a.br("BNE", f"{L}_st1"); a.jmp(f"{L}_done"); a.label(f"{L}_st1")
         a.ins16("LDA_abs", delay); a.br("BEQ", f"{L}_st2"); a.jmp(f"{L}_done"); a.label(f"{L}_st2")
+        if idx == 2 and SETTLE_GUARD:
+            # DRSETTLE READINESS GUARD: never upload while the ROM still holds p2_nextAction = sendPill (6) -- the
+            # round-start PRE-THROW edge, whose capsule/preview the throw is about to replace (flag block above).
+            a.ins16("LDA_abs", 0x0397); a.ins("CMP_imm", 6); a.br("BNE", f"{L}_st3"); a.jmp(f"{L}_done")
+            a.label(f"{L}_st3")
         if TUCK and idx == 2:
             # D2 FIX: invalidate only when a search ACTUALLY starts (pend/delay checks above
             # already passed). Emitted BEFORE those checks, this ran on EVERY frame with
@@ -2925,10 +2992,12 @@ def build_main(level=11, speed=1):
             a.ins16("LDA_abs", DELAY1); a.br("BEQ", "fp_p2")   # settle window closed -> no pin
         a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P1)
     a.label("fp_p2")
-    a.ins16("LDA_abs", PEND2); a.br("BEQ", "fp_done")
-    if PENDBOUND:
-        a.ins16("LDA_abs", DELAY2); a.br("BEQ", "fp_done")     # settle window closed -> no pin
-    a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
+    if SETTLEPIN:
+        a.ins16("LDA_abs", PEND2); a.br("BEQ", "fp_done")
+        if PENDBOUND:
+            a.ins16("LDA_abs", DELAY2); a.br("BEQ", "fp_done")     # settle window closed -> no pin
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
+    # (DRSETTLEPIN=0: no P2 gravity pin at all -- the settle guard in act_p2 already WITHHOLDS steering while PEND2)
     a.label("fp_done")
     a.ins("RTS")
 
@@ -3757,7 +3826,19 @@ def build_main(level=11, speed=1):
         #  - at the gate: LATCH ROT_DONE2 (orient locked) and fall through to the column phase.
         # (ROT_DONE2 set => this whole block is skipped: orient stays put, only the column moves.
         #  That is the feasibility lock -- a late candidate can't re-rotate a low/flush capsule.)
-        a.ins16("LDA_abs", ROT_DONE2); a.br("BNE", "mv_p2")           # committed -> column only
+        if PROPHFIRST:
+            # far branch (the escape block below pushes mv_p2 out of range): invert-and-JMP, gated
+            a.ins16("LDA_abs", ROT_DONE2); a.br("BEQ", "pf_nc"); a.jmp("mv_p2"); a.label("pf_nc")
+            # DRPROPHFIRST: escape the ledge first (PROPH-armed, still on the spawn row, commit window not open yet)
+            a.ins16("LDA_abs", PROPH_DIR); a.br("BEQ", "pf_skip")
+            a.ins16("LDA_abs", 0x0386); a.ins("CMP_imm", 0x0F); a.br("BNE", "pf_skip")
+            a.ins16("LDA_abs", ARMED2); a.br("BEQ", "pf_skip")              # DONE -> normal flow
+            a.ins16("LDA_abs", WDOGH2); a.br("BNE", "pf_skip")              # > 256 hooks -> normal flow
+            a.ins16("LDA_abs", WDOG2); a.ins("CMP_imm", MIN_THINK); a.br("BCS", "pf_skip")
+            a.jsr("proph_pulse"); a.jmp("act_p1")
+            a.label("pf_skip")
+        else:
+            a.ins16("LDA_abs", ROT_DONE2); a.br("BNE", "mv_p2")           # committed -> column only
         a.ins16("LDA_abs", 0x03A5); a.ins16("CMP_abs", TGT_O2); a.br("BEQ", "p2_orient_ok")
         if ROTDIR:
             # DRROTDIR: SHORTEST-DIRECTION rotation. The executor has always pressed only A, and
@@ -3807,8 +3888,13 @@ def build_main(level=11, speed=1):
             a.ins16("LDA_abs", 0x0386); a.ins("CMP_imm", CROSS_LOWY); a.br("BCC", "p2_commit")
             if MATURE:
                 a.label("p2_esc_skip")
+        if LEDGECOMMIT:
+            a.ins16("LDA_abs", PROPH_DIR); a.br("BNE", "p2_commit")      # DRLEDGECOMMIT: a ledge pill commits now
         a.ins16("LDA_abs", WDOG2); a.ins("CMP_imm", MIN_THINK); a.br("BCS", "p2_commit")
-        a.ins("LDA_imm", 0); a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8)   # gate closed: no ACT,
+        if PROPHHOLD and PROPH:
+            a.jsr("proph_pulse")                                     # DRPROPHHOLD: ledge pills keep escaping
+        else:
+            a.ins("LDA_imm", 0); a.ins("STA_zp", 0xF6); a.ins("STA_zp", 0xF8)   # gate closed: no ACT,
         a.jmp("act_p1")                                              # but NO pin -- capsule falls
         a.label("p2_commit")
         a.ins("LDA_imm", 1); a.ins16("STA_abs", ROT_DONE2)           # orient LOCKED -> begin descent
@@ -3901,6 +3987,22 @@ def build_main(level=11, speed=1):
             a.ins16("LDA_abs", DG_FALL); a.ins("TAX")          # DG_FALL <= DIST_SCANCAP < len
             a.ins16("LDA_absX", DIST_TABLE_ADDR)
             a.ins16("STA_abs", DG_BUDGET)
+            if DISTROW:
+                # DRDISTROW: no empty row below the span -> credit the frames left before the next gravity tick
+                a.ins16("LDA_abs", DG_FALL); a.br("BNE", "dgr_done")
+                a.ins16("LDX_abs", 0x038B); a.ins16("LDA_absX", LG_BASE)     # base[speed] (speed 0..2)
+                a.ins("CLC"); a.ins16("ADC_abs", 0x038A)                     # + speedUps (0..49)
+                a.ins("CMP_imm", 81); a.br("BCC", "dgr_ix"); a.ins("LDA_imm", 80)
+                a.label("dgr_ix")
+                a.ins("TAX"); a.ins16("LDA_absX", LG_SPD)                    # A = thr
+                a.ins("SEC"); a.ins16("SBC_abs", 0x0392); a.br("BCS", "dgr_pos")
+                a.ins("LDA_imm", 0)                                          # counter past thr: no frames left
+                a.label("dgr_pos")
+                a.ins("LSR_A")                                               # / P (P = 2)
+                a.ins("CMP_imm", 8); a.br("BCC", "dgr_cap"); a.ins("LDA_imm", 7)
+                a.label("dgr_cap")
+                a.ins16("STA_abs", DG_BUDGET)
+                a.label("dgr_done")
         #   direction: _EC (target) vs PX2 -- unsigned CMP is safe, both are 0..7
         a.ins16("LDA_abs", _EC); a.ins16("CMP_abs", 0x0385); a.br("BCS", "dg_right")
         # --- LEFTWARD: target < PX2. EFF = max(target, floor) where floor = max(0, PX2-budget) ---
@@ -4197,6 +4299,10 @@ _GATED_FLAGS = (
     # gate default mirrors STUDY's real resolution (ON for DRHUMAN=1), so a human cart that leaves
     # DRSTUDY unset is not falsely refused, while an explicit DRSTUDY=0 is.
     ("DRSTUDYEND",    "DRSTUDY",   "0", "1" if HUMAN_P1 else "0", "STUDYEND = STUDY and env"),
+    ("DRPROPHHOLD",   "DRPROPH",   "0", "0", "PROPHHOLD pulses only DRPROPH-armed pills (asserted at import too)"),
+    ("DRLEDGECOMMIT", "DRPROPH",   "0", "0", "LEDGECOMMIT keys on PROPH_DIR (asserted at import too)"),
+    ("DRDISTROW",     "DRDISTGATE", "0", "0", "DISTROW extends the DISTGATE budget (asserted at import too)"),
+    ("DRPROPHFIRST",  "DRPROPH",   "0", "0", "PROPHFIRST keys on PROPH_DIR (asserted at import too)"),
 )
 def _on(env, default):
     v = _os.environ.get(env)

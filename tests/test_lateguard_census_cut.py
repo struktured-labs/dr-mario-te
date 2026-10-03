@@ -79,9 +79,15 @@ MUTANTS = [
 ]
 
 
+# LGCUT_OVERLAY="K=V,K=V" (optional): run the whole gate on a derived image, e.g. the fair settle build
+# (LGCUT_OVERLAY=DRSETTLE=3,DRSETTLEPIN=0). Applied to the real image AND every mutant, so the mutants stay comparable.
+EXTRA = dict(kv.split("=", 1) for kv in os.environ.get("LGCUT_OVERLAY", "").split(",") if kv)
+
+
 def snapshot(overlay):
     snap = json.load(open(FLAGS))["flag_snapshot"]
     snap.update(overlay)
+    snap.update(EXTRA)
     return snap
 
 
