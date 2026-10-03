@@ -235,8 +235,43 @@ def main():
             print(f"  {name:20s} all (+1..-4): {a[0]:+.2f} [{a[1]:+.2f}, {a[2]:+.2f}]    faster side (0..-4): {f_[0]:+.2f} [{f_[1]:+.2f}, {f_[2]:+.2f}]")
 
 
+def refit():
+    """DECLARED SECONDARY (PREREG_STEER7 addendum, added AFTER the prereg because of the couch tracker bug): S = 0 / -1 /
+    -2 on block A with gate (b) on owner_fit_202610 and the LULU race at lam 2.56 (M 140, delta 2.65). Descriptive."""
+    G = {s: load(f"{ROOT}/A10/gb10_{s}_*.jsonl", SEEDS_A) for s in ("s0", "sm1", "sm2")}
+    L = {s: load(f"{ROOT}/A10/rcL10_{s}_*.jsonl", SEEDS_A) for s in ("s0", "sm1", "sm2")}
+    G0 = {s: load(f"{ROOT}/A/gb_{s}_*.jsonl", SEEDS_A) for s in ("s0", "sm1", "sm2")}
+    print("SECONDARY, added after the prereg (tracker bug): gate (b) owner_fit_202610 + LULU race lam 2.56")
+    for s in ("s0", "sm1", "sm2"):
+        print("  " + activity(list(G[s].values()), f"{s:4s} gb10") + "\n  " + activity(list(L[s].values()), f"{s:4s} rcL10"))
+    for s in ("sm1", "sm2"):
+        Sg = [x for x in SEEDS_A if x in G[s] and x in G["s0"]]; Sl = [x for x in SEEDS_A if x in L[s] and x in L["s0"]]
+        if not (Sg and Sl):
+            print(f"  {s}: incomplete gb10 {len(Sg)} rcL10 {len(Sl)}"); continue
+        tt = boot([G[s][x]["topout"] - G["s0"][x]["topout"] for x in Sg])
+        t1 = boot([int(G[s][x]["topout"] and G[s][x]["pills"] <= 100) - int(G["s0"][x]["topout"] and G["s0"][x]["pills"] <= 100) for x in Sg])
+        tl = boot([win(L[s][x], 140.) - win(L["s0"][x], 140.) for x in Sl])
+        lt = boot([(L[s][x]["how"] == "topout") - (L["s0"][x]["how"] == "topout") for x in Sl])
+        cg = churn([G["s0"][x] for x in Sg], [G[s][x] for x in Sg], lambda r: r["topout"])
+        cl = churn([L["s0"][x] for x in Sl], [L[s][x] for x in Sl], lambda r: not win(r, 140.))
+        print(f"\n  {s} vs s0 (n gb {len(Sg)}, lulu {len(Sl)})")
+        print(f"    gb10 tap-out {100 * np.mean([G['s0'][x]['topout'] for x in Sg]):.2f}% -> {100 * np.mean([G[s][x]['topout'] for x in Sg]):.2f}%  "
+              f"d {fmt(tt)}  churn fixed {cg[0]} / new {cg[1]}   tap<=100 d {fmt(t1)}")
+        print(f"    LULU10 race win M140 {100 * np.mean([win(L['s0'][x], 140.) for x in Sl]):.2f}% -> {100 * np.mean([win(L[s][x], 140.) for x in Sl]):.2f}%  "
+              f"d {fmt(tl)}  churn fixed {cl[0]} / new {cl[1]}   race-row tap-out d {fmt(lt)}")
+    print("\n  ABSOLUTE LEVELS, same 600 seeds: gate-b tap-out OWNER-0804 (primary rows) vs owner_fit_202610")
+    for s in ("s0", "sm1", "sm2"):
+        S = [x for x in SEEDS_A if x in G[s] and x in G0[s]]
+        if S:
+            print(f"    {s:4s} OWNER-0804 {100 * np.mean([G0[s][x]['topout'] for x in S]):5.2f}%  ->  owner202610 "
+                  f"{100 * np.mean([G[s][x]['topout'] for x in S]):5.2f}%   garbage cells/game "
+                  f"{np.mean([G0[s][x]['garbage'] for x in S]):.1f} -> {np.mean([G[s][x]['garbage'] for x in S]):.1f}  (n={len(S)})")
+
+
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     if "--selftest" in sys.argv:
         sys.exit(0 if selftest() else 1)
+    if "--refit" in sys.argv:
+        refit(); sys.exit(0)
     main()

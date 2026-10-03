@@ -156,3 +156,39 @@ writing to `steer7/analysis.txt`.
   - `steer7/smoke/` (2 gb + 2 rc6 games at S = 0, the identity check);
   - G3's 10 race games, on seeds 37936 and 38000 at S ∈ {0, −4, −12, ceil, +1}, whose outcomes were printed (n = 2
     per arm, not used in any analysis).
+
+## ADDENDUM (2026-10-03, DECLARED SECONDARY, added AFTER the prereg; written before any secondary game)
+**Why it exists.** The coordinator reported a couch tracker bug: same-colour consecutive spawns were read as garbage
+volleys. As a result the 202609 opponent send fits are inflated about 2× (`couch_forensics/RESULT_SENDS_REFIT_202610.md`).
+- The corrected fits:
+  - `owner_fit_202610.json`: 2.36 volleys/min, sizes 89/8/3%.
+  - `lulu_fit_202610.json`: 2.56/min, provisional, n = 2 games.
+- **The pre-registered primary is unchanged** and is reported first (OWNER-0804 gate (b), race lam 6, LULU lam 4.7).
+- **What has and hasn't been looked at:** while this addendum was being written, the only STEER7 numbers computed
+  were the row-identity checks of S = 0 against the banked STEER6d rows (S = 0 compared with itself). No arm
+  comparison had been computed.
+
+**Design** (wrapper `steer7_refit.py`, which imports `steer7_dlat.wrap` unchanged):
+- **Arms:** S ∈ {0, −1, −2}.
+- **Seeds:** block A (37934–39132, 600 paired).
+- **Cells:**
+
+| cell | setting |
+|---|---|
+| (gb10) gate (b) | opponent `owner202610`: the Owner202609 class on `owner_fit_202610.json` |
+| (rcL10) LULU race | lam **2.56** (her corrected rate), M 140, δ 2.65 |
+
+- **Total:** 3 × 2 × 600 = **3,600 games**. Queued after the primary farm.
+
+**Reporting:**
+- No bar; this is descriptive.
+- Per arm vs S = 0: tap-out Δ with 95% CI and churn (fixed / new), tap≤100, and the LULU race Δ with churn.
+- **Absolute levels:** S = 0 tap-out under owner202610 vs OWNER-0804 on the same 600 seeds.
+- **Label:** "secondary, added after the prereg (tracker bug)".
+
+**Known residual:** the opponent classes take gaps / size pmf / p_double from the fit, but their COLUMN model is
+unchanged. It still has 2-cell sends in one column 23% of the time, whereas the refit found they always land 4
+columns apart.
+
+**Identity gate before launch:** `steer7_refit.py` with owner0804 / lam 4.7 at S = 0 must reproduce the banked
+STEER6d rows (2 + 2 smoke games).
