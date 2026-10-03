@@ -63,8 +63,11 @@ spans 0, so the asymmetry is not established at n = 600.
 - **The lever is real at larger sizes:**
   - −4 f gives −4.2 pp tap-out (Bonferroni-significant) and +10 race.
   - The ceiling (answer at spawn) takes gate-(b) tap-out from 18.7% to **4.3%** and race win to 96.8%.
-- **Caveat on mechanism:** each arm moves all four latency channels together (answer frame, mask, race tempo,
-  gate-b clock), as STEER6c did. The curve does NOT separate "act sooner" from "play faster".
+- **Mechanism, by cell:** each arm moves all four latency channels together (answer frame, mask, race tempo, gate-b
+  clock), as STEER6c did. But gate (b)'s OWNER-0804 opponent injects garbage per AI CLEAR (`OwnerBursty.after_placement`),
+  never per unit of time. The gate-b clock only feeds `elapsed_s`.
+  - ⇒ **The gate-(b) tap-out curve is purely "act sooner":** the steering answer frame plus the reach mask.
+  - The race endpoints mix that with tempo (BASE_F).
 
 ## SECONDARY (added after the prereg: the couch tracker bug): see the addendum
 Gate (b) on owner_fit_202610, and the LULU race at lam 2.56, for S = 0/−1/−2. Results are in
@@ -90,6 +93,6 @@ Gate (b) on owner_fit_202610, and the LULU race at lam 2.56, for S = 0/−1/−2
 **Follow-ups this points to (none built):**
 - **(a) Model the driver's anytime commit in the sim.** Commit to the running best at the gate, using
   `steer7_anytime.py`'s trajectory. That would price lever 4 and the 34% non-final commits.
-- **(b) Separate the channels.** Shift only the steer answer frame + mask, vs only the tempo + clock, to see whether
-  the ceiling's −14 pp is "act sooner" or "play faster".
+- **(b) Separate the channels for the RACE.** Gate (b) is already pure "act sooner": its opponent is clear-keyed,
+  not time-keyed.
 - **(c) A Mesen RAM trace of the spawn edge.** This is the one check that gates lever 1.

@@ -241,7 +241,8 @@ class Steer:
             pre = self.hint_side if self.use_hint else target_side(tvar, tcol)
         x, row, rot = 3, 0, 0
         v = self.v
-        spd = 0
+        spd = max(0, F0 - g0)                         # STEER8b: a FAIR (unpinned) cart's gravity counts from G0 < F0;
+                                                      # 0 whenever g0 >= F0 (every pre-STEER8 use: G0 7|8) -> unchanged
         prev_held = (RIGHT if pre == "R" else LEFT) if pre else 0   # held since the lock: no edge at spawn
         clamped_ever = False
         lock_f = None
