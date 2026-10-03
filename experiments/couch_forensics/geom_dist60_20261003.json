@@ -1,0 +1,12 @@
+{
+ "capture": "2026-10-03 08-26-24.mkv (rivalmage, OBS 1080p60; NES box x 254-1665, y 0-1078)",
+ "fit": "seeded from single pill-half bounding boxes (col0 tile x 1136-1173, col7 x 1448-1487, row15 y 924-957, row5 y 538-571, preview y 223-258), then grid-searched (CW, CH, SX, SY, X0, Y0) to minimise link violations over 14 frames (8 viol / 461 cells)",
+ "SX": 5.55,
+ "SY": 4.825,
+ "CW": 44.4,
+ "CH": 38.6,
+ "P2_X0": 1129.5,
+ "P2_Y0": 341.2,
+ "PREV_Y0": 219.2,
+ "VIRUS_MIXED": false
+}

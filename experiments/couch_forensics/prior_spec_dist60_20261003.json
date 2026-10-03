@@ -1,0 +1,10 @@
+{
+ "AB-0927-M1G1": {"rawh": "rawh_prior_dist60_20261003_ab_m1g1.jsonl", "p0": 67, "label": "9/27 HSV G1 (owner)", "build": "ANTIBODY"},
+ "AB-0927-M1G3": {"rawh": "rawh_prior_dist60_20261003_ab_m1g3.jsonl", "p0": 147, "label": "9/27 HSV G3 (owner)", "build": "ANTIBODY"},
+ "AB-0927-M2G1": {"rawh": "rawh_prior_dist60_20261003_ab_m2g1.jsonl", "p0": 69, "label": "9/27 HSV match2 G1 (owner)", "build": "ANTIBODY"},
+ "AB-0927-M2G3": {"rawh": "rawh_prior_dist60_20261003_ab_m2g3.jsonl", "p0": 72, "label": "9/27 HSV match2 G3 (owner)", "build": "ANTIBODY"},
+ "AB-0927-LULU-G1": {"rawh": "rawh_prior_dist60_20261003_ab_lulu_g1.jsonl", "p0": 81, "label": "9/27 dr. lulu G1", "build": "ANTIBODY"},
+ "TAP-0926-T26bG1": {"rawh": "rawh_prior_dist60_20261003_tap_t26b_g1.jsonl", "p0": 91, "label": "9/26 TAP t26b G1 (owner)", "build": "CHAIN540+REACH+TAP (pre-HSV)"},
+ "TAP-0926-M2G1": {"rawh": "rawh_prior_dist60_20261003_tap_t26m2_g1.jsonl", "p0": 72, "label": "9/26 TAP m2 G1 (owner)", "build": "CHAIN540+REACH+TAP (pre-HSV)"},
+ "TAP-0926-M2G3": {"rawh": "rawh_prior_dist60_20261003_tap_t26m2_g3.jsonl", "p0": 80, "label": "9/26 TAP m2 G3 (owner)", "build": "CHAIN540+REACH+TAP (pre-HSV)"}
+}
