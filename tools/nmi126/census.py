@@ -549,8 +549,11 @@ SCENARIO_CUTS = {
     # spawn-edge upload are therefore mutually exclusive BY THE ABORT CHECKS.
     # Cutting `h2_cp` (the upload loop head) rather than `h2_start` keeps the
     # cheap guard path in the graph, so the cut removes only what the guard
-    # provably removes. tests/test_prespipe.py M3 deletes the abort check and
-    # must fail, which is what keeps this certificate honest.
+    # provably removes. tests/test_lateguard_census_cut.py enforces it: py65 runs
+    # real hooks over 3,840 states with an adversarial mailbox and requires every
+    # cut site to stay unreached per phase; mutants M_pend / M_armed (abort check
+    # deleted) must fail. (tests/test_prespipe.py, cited here before, exists only
+    # on the unmerged prestart-pipeline branches.)
 }
 
 # Common cuts for every DRPRESPIPE phase class: no spawn upload (proven above), no
@@ -600,7 +603,9 @@ def prespipe_scenarios(have):
     # and PEND2 == 0, and a NON-committing phase never writes ARMED2, so handle(2) takes `_start` (PEND2 == 0 -> no GO)
     # and act routes straight to act_p2: neither site is reachable on that hook. The COMMITTING (last) phase GOes the
     # prestart search (ARMED2 := 1) inside pre_tick, so it keeps both sites. Same proof shape as the h2_cp cut above;
-    # tests/test_prespipe.py M3 (abort check deleted -> must fail) keeps the abort premise honest.
+    # tests/test_lateguard_census_cut.py enforces both premises: mutants M_armed / M_pend (abort deleted), M_write
+    # (a non-committing phase writes ARMED2) and M_early (pp_m3 commits) must fail. Note the cut buys margin, not
+    # feasibility: without it the admissible worst frame is 29,306 (still under 29,780); with it, 27,704.
     lg_cut = [("into", "lg_live"), ("into", "lg_done")]
     for i, entry in enumerate(phases):
         others = [("into", e) for e in phases if e != entry]
