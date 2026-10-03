@@ -1,0 +1,66 @@
+rows 1961; final == Leaf6Decider.choose on 1957
+
+[all decisions] boards 1961
+  leaves/search: median 29,868 (pass0 30, ply2 896, ply3 28,672; ply3 share 0.960); roots 30
+  GO->DONE frames (x 1849 clk/leaf): p50 38.6 p75 38.8 p90 38.8 p95 38.8 mean 32.2
+  first publish f: p50 1.3 p75 1.3 p90 1.3 p95 1.3 mean 1.3
+  FINAL answer first published at f: p50 2.6 p75 9.1 p90 16.9 p95 23.3 mean 6.4   (fraction of search: median 0.10)
+  publishes/search p50 2.0 p75 3.0 p90 4.0 p95 4.0 mean 2.0; final answer's position in the processing order (0 = first root) p50 1.0 p75 6.0 p90 13.0 p95 18.0 mean 4.2
+  t = GO +  1.5 f: running best == final  43.3%  same orient  65.7%  no publish yet  0.0%  search DONE   0.8%
+  t = GO +  3.0 f: running best == final  51.2%  same orient  70.6%  no publish yet  0.0%  search DONE   0.9%
+  t = GO +  6.0 f: running best == final  65.8%  same orient  77.7%  no publish yet  0.0%  search DONE   1.0%
+  t = GO +  9.0 f: running best == final  74.7%  same orient  83.2%  no publish yet  0.0%  search DONE   1.8%
+  t = GO + 12.5 f: running best == final  84.2%  same orient  89.4%  no publish yet  0.0%  search DONE   3.1%
+  t = GO + 20.0 f: running best == final  92.7%  same orient  95.1%  no publish yet  0.0%  search DONE  15.1%
+
+[1-4 viruses (dist_target active)] boards 411
+  leaves/search: median 26,400 (pass0 28, ply2 840, ply3 25,200; ply3 share 0.960); roots 28
+  GO->DONE frames (x 1849 clk/leaf): p50 34.1 p75 38.8 p90 38.8 p95 38.8 mean 30.3
+  first publish f: p50 1.3 p75 1.3 p90 1.3 p95 1.3 mean 1.2
+  FINAL answer first published at f: p50 3.9 p75 10.4 p90 19.3 p95 27.2 mean 7.3   (fraction of search: median 0.17)
+  publishes/search p50 2.0 p75 3.0 p90 4.0 p95 4.0 mean 2.2; final answer's position in the processing order (0 = first root) p50 2.0 p75 7.0 p90 14.0 p95 20.0 mean 4.8
+  t = GO +  1.5 f: running best == final  39.2%  same orient  64.2%  no publish yet  0.0%  search DONE   3.4%
+  t = GO +  3.0 f: running best == final  47.2%  same orient  65.5%  no publish yet  0.0%  search DONE   3.4%
+  t = GO +  6.0 f: running best == final  59.9%  same orient  71.3%  no publish yet  0.0%  search DONE   3.6%
+  t = GO +  9.0 f: running best == final  68.6%  same orient  77.1%  no publish yet  0.0%  search DONE   6.8%
+  t = GO + 12.5 f: running best == final  80.5%  same orient  84.2%  no publish yet  0.0%  search DONE   8.5%
+  t = GO + 20.0 f: running best == final  91.0%  same orient  92.7%  no publish yet  0.0%  search DONE  15.6%
+
+[5-12 viruses] boards 772
+  leaves/search: median 22,700 (pass0 26, ply2 678, ply3 21,760; ply3 share 0.959); roots 26
+  GO->DONE frames (x 1849 clk/leaf): p50 29.4 p75 38.8 p90 38.8 p95 38.8 mean 29.0
+  first publish f: p50 1.3 p75 1.3 p90 1.3 p95 1.3 mean 1.2
+  FINAL answer first published at f: p50 3.9 p75 10.4 p90 19.0 p95 24.6 mean 7.1   (fraction of search: median 0.15)
+  publishes/search p50 2.0 p75 3.0 p90 4.0 p95 4.0 mean 2.2; final answer's position in the processing order (0 = first root) p50 2.0 p75 8.0 p90 14.0 p95 18.4 mean 5.0
+  t = GO +  1.5 f: running best == final  36.5%  same orient  60.0%  no publish yet  0.0%  search DONE   0.3%
+  t = GO +  3.0 f: running best == final  45.5%  same orient  65.9%  no publish yet  0.0%  search DONE   0.4%
+  t = GO +  6.0 f: running best == final  60.6%  same orient  72.9%  no publish yet  0.0%  search DONE   0.5%
+  t = GO +  9.0 f: running best == final  69.6%  same orient  78.1%  no publish yet  0.0%  search DONE   1.0%
+  t = GO + 12.5 f: running best == final  81.6%  same orient  87.4%  no publish yet  0.0%  search DONE   3.1%
+  t = GO + 20.0 f: running best == final  91.6%  same orient  94.6%  no publish yet  0.0%  search DONE  29.3%
+
+[13-24 viruses] boards 411
+  leaves/search: median 29,884 (pass0 30, ply2 896, ply3 28,688; ply3 share 0.960); roots 30
+  GO->DONE frames (x 1849 clk/leaf): p50 38.7 p75 38.8 p90 38.8 p95 38.8 mean 34.3
+  first publish f: p50 1.3 p75 1.3 p90 1.3 p95 1.3 mean 1.3
+  FINAL answer first published at f: p50 1.3 p75 6.5 p90 15.5 p95 22.0 mean 5.5   (fraction of search: median 0.06)
+  publishes/search p50 1.0 p75 2.0 p90 3.0 p95 4.0 mean 1.8; final answer's position in the processing order (0 = first root) p50 0.0 p75 4.0 p90 11.0 p95 16.0 mean 3.3
+  t = GO +  1.5 f: running best == final  50.6%  same orient  73.2%  no publish yet  0.0%  search DONE   0.0%
+  t = GO +  3.0 f: running best == final  56.4%  same orient  78.8%  no publish yet  0.0%  search DONE   0.0%
+  t = GO +  6.0 f: running best == final  70.1%  same orient  84.2%  no publish yet  0.0%  search DONE   0.0%
+  t = GO +  9.0 f: running best == final  80.5%  same orient  90.3%  no publish yet  0.0%  search DONE   0.0%
+  t = GO + 12.5 f: running best == final  87.1%  same orient  93.9%  no publish yet  0.0%  search DONE   0.5%
+  t = GO + 20.0 f: running best == final  93.9%  same orient  97.3%  no publish yet  0.0%  search DONE   1.5%
+
+[25+ viruses] boards 367
+  leaves/search: median 30,000 (pass0 30, ply2 900, ply3 28,800; ply3 share 0.960); roots 30
+  GO->DONE frames (x 1849 clk/leaf): p50 38.8 p75 38.8 p90 38.8 p95 38.8 mean 38.8
+  first publish f: p50 1.3 p75 1.3 p90 1.3 p95 1.3 mean 1.3
+  FINAL answer first published at f: p50 1.3 p75 3.9 p90 11.7 p95 19.4 mean 4.7   (fraction of search: median 0.03)
+  publishes/search p50 1.0 p75 2.0 p90 3.0 p95 3.0 mean 1.7; final answer's position in the processing order (0 = first root) p50 0.0 p75 2.0 p90 8.0 p95 14.0 mean 2.6
+  t = GO +  1.5 f: running best == final  54.2%  same orient  70.8%  no publish yet  0.0%  search DONE   0.0%
+  t = GO +  3.0 f: running best == final  62.1%  same orient  77.1%  no publish yet  0.0%  search DONE   0.0%
+  t = GO +  6.0 f: running best == final  78.5%  same orient  87.5%  no publish yet  0.0%  search DONE   0.0%
+  t = GO +  9.0 f: running best == final  85.6%  same orient  92.6%  no publish yet  0.0%  search DONE   0.0%
+  t = GO + 12.5 f: running best == final  90.5%  same orient  94.6%  no publish yet  0.0%  search DONE   0.0%
+  t = GO + 20.0 f: running best == final  95.4%  same orient  96.5%  no publish yet  0.0%  search DONE   0.0%
