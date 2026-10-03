@@ -1373,6 +1373,22 @@ STUDY2P = STUDY and _STUDY2P_ENV                     # driver-side 2P pause tail
 # where the $D2CC heartbeat runs during the PAUSE spin instead of during play (measured on the
 # human/TE cart 2026-09-03; see the s2p block). Requires DRSTUDY2P.
 S2P_INV = STUDY2P and _os.environ.get("DRSTUDY2P_INV", "0") == "1"
+# DRSTUDYEND=1 (owner request 2026-10-03, default OFF -> byte-identical; requires DRSTUDY): the 2P
+# round-end screen keeps BOTH final boards on screen so they can be studied. MEASURED in Mesen on
+# c960dd49 (exec counters on unit-0 PRG offsets + field write callbacks):
+#   * the BLANK is destructive RAM, not a screen overlay: anyPlayerLoses ($9532, mode 5, one frame)
+#     calls emptyLowerFieldOnLose_2P ($96C0) from $954F (P1 lost) / $9579 (P2 lost), which writes
+#     exactly 64 x $FF into the loser's field rows 8-15; the row redraw then blanks the nametable.
+#   * the X-sign + red virus are SPRITES (OAM slots 8-34), drawn every end-screen frame by the
+#     whoFailed!=0 branch of updateSprites_2p_endGame ($888C LDA $61 / BEQ exit / $8890 TAX ...).
+#   * pause is impossible there ($9532 stores $54=0); the end screen already waits for START.
+# Fix = 3 in-place bytes, zero free space, none of them executed during play:
+#   $954F/$9579 JSR $96C0 -> JSR $96CF (the routine's own tail: LDA #$0F / STA $80 / RTS, so the
+#   status redraw still happens, from the now-intact RAM); $8890 TAX -> RTS (whoFailed!=0 returns
+#   before the X-sign/virus draw; whoFailed==0 still takes the unchanged BEQ, same cycles).
+# Scope: 2P top-out round ends. The match-final GAME OVER wipe ($95CE, ~192 frames into the final
+# end screen), DRAW, STAGE CLEAR and 1P game over are untouched.
+STUDYEND = STUDY and _os.environ.get("DRSTUDYEND", "0") == "1"
 # Anchor on the pause loop's START/$F7 check (LDA $F5;CMP #$10;BEQ;LDA $F7;CMP #$F0;BEQ) —
 # these bytes are NEVER touched by the edits, so the locator stays valid + idempotent even
 # after patching (all 5 edits sit just before/after this window, never inside it).
@@ -3949,6 +3965,9 @@ _GATED_FLAGS = (
     ("DRRELATCH",     "DRROTFIX",  "0", "1", "RELATCH = ROTFIX and env"),
     ("DRNAV_HOLD",    "DRNAV_V4",  "1", "1", "NAV_HOLD = NAV_V4 and env"),   # default-ON -> never trips
     ("DRSEATLOG_MUT", "DRSEATLOG", "none", "0", "the mutant selector is consulted only when SEATLOG is on"),
+    # gate default mirrors STUDY's real resolution (ON for DRHUMAN=1), so a human cart that leaves
+    # DRSTUDY unset is not falsely refused, while an explicit DRSTUDY=0 is.
+    ("DRSTUDYEND",    "DRSTUDY",   "0", "1" if HUMAN_P1 else "0", "STUDYEND = STUDY and env"),
 )
 def _on(env, default):
     v = _os.environ.get(env)
@@ -4094,6 +4113,38 @@ def main():
         for o, orig in _saved:
             rom[o:o + len(orig)] = orig
         print(f"DRSTUDY v8.2 EVAC: part1-only ($D2CC RTS); tail $9FF8/$A371/$BE56/$BC26 -> base; {n} edit(s)")
+
+    if STUDYEND:
+        # DRSTUDYEND (see the flag block): keep both final boards on the 2P round-end screen.
+        # Every site is located by content, verified unique and inside bank 0 (the unit-0 low half,
+        # single copy after expand), and its original bytes are asserted before any write.
+        def _cpu0(off):
+            assert 0x10 <= off < 0x4010, f"DRSTUDYEND: file offset 0x{off:X} is not in bank 0"
+            return 0x8000 + off - 0x10
+        _el = bytes.fromhex("a9008557a040a9ff9157c8c080d0f7a90f858060")   # emptyLowerFieldOnLose_2P
+        _el_i = rom.find(_el)
+        assert _el_i >= 0 and rom.find(_el, _el_i + 1) < 0, "DRSTUDYEND: emptyLower anchor not found/unique"
+        _el_cpu = _cpu0(_el_i)
+        _tail_cpu = _el_cpu + 15                         # LDA #$0F / STA $80 / RTS
+        assert bytes(rom[_el_i + 15:_el_i + 20]) == bytes.fromhex("a90f858060")
+        assert (_tail_cpu >> 8) == (_el_cpu >> 8), "DRSTUDYEND: tail crosses a page; JSR hi byte would change"
+        _jsr = bytes([0x20, _el_cpu & 0xFF, _el_cpu >> 8])
+        _sites = [i for i in range(len(rom) - 2) if bytes(rom[i:i + 3]) == _jsr]
+        # anyPlayerLoses' two calls, recognised by their whoFailed stores (P1: LDA #1, P2: LDA #2)
+        _ctx = {bytes.fromhex("a9018561"): "P1", bytes.fromhex("a9028561"): "P2"}
+        assert sorted(_ctx.get(bytes(rom[s + 3:s + 7]), "?") for s in _sites) == ["P1", "P2"], (
+            f"DRSTUDYEND: expected exactly anyPlayerLoses' 2 JSR ${_el_cpu:04X} calls, found {_sites}")
+        for s in _sites:
+            _cpu0(s)
+            rom[s + 1] = _tail_cpu & 0xFF
+        _rv = bytes.fromhex("a561f020aabd")             # LDA $61 / BEQ +$20 / TAX / LDA tbl,X
+        _rv_i = rom.find(_rv)
+        assert _rv_i >= 0 and rom.find(_rv, _rv_i + 1) < 0, "DRSTUDYEND: red-virus anchor not found/unique"
+        assert rom[_rv_i + 4 + 0x20] == 0x60, "DRSTUDYEND: the BEQ target is not the routine's RTS"
+        rom[_rv_i + 4] = 0x60                           # TAX -> RTS: whoFailed!=0 draws no X-sign/virus
+        print(f"DRSTUDYEND: round-end lower-field wipe skipped (JSR ${_el_cpu:04X} -> ${_tail_cpu:04X} at "
+              + "/".join(f"${_cpu0(s):04X}" for s in _sites)
+              + f"); X-sign/red virus suppressed (RTS at ${_cpu0(_rv_i + 4):04X}); 3 B in place, 0 B new")
 
     if RTIVEC:
         # DRRTIVEC part 2 of 3 -- the BANK-DISCRIMINATING NMI SHIELD, emitted into BANK 1, i.e. the
