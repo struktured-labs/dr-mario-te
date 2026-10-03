@@ -1,0 +1,160 @@
+# tools/settle/audit_rom_writes.py: every store the emitted hook code makes into game-owned RAM, CFG-reachability from the
+# wrapper entry (LIVE = reachable). Configs: couch = c960dd49 snapshot + DRLATEGUARD=1 DRSTUDYEND=1 (= 464a4b75),
+# CvC = 3b8737a9 snapshot + DRLATEGUARD=1 (= 387bb7bd); S3np = + DRSETTLE=3 DRSETTLEPIN=0; S3 = + DRSETTLE=3 (pin kept).
+== couch464: 23 stores into game-owned state, 15 REACHABLE from the hook entry (units: main, wrapper)
+  LIVE main    $83D7 STA_zp    $00F6  p2 pad pressed               after `menus`
+  LIVE main    $87A7 STA_abs   $0392  p2 SPEED COUNTER (gravity)   after `fp_p2`
+  LIVE main    $8A29 STA_zp    $00F6  p2 pad pressed               after `proph_pulse`
+  LIVE main    $8A2B STA_zp    $00F8  p2 pad held                  after `proph_pulse`
+  LIVE main    $8A30 STA_zp    $00F6  p2 pad pressed               after `prp_act`
+  LIVE main    $8EBC STY_zp    $00F6  p2 pad pressed               after `p2_st_done`
+  LIVE main    $8EDD STA_zp    $00F8  p2 pad held                  after `act_p2_n`
+  LIVE main    $8EE1 STA_zp    $00F6  p2 pad pressed               after `act_p2_n`
+  LIVE main    $8EE8 STA_zp    $00F8  p2 pad held                  after `p2_rot_ccw`
+  LIVE main    $8EEC STA_zp    $00F6  p2 pad pressed               after `p2_rot_ccw`
+  LIVE main    $8F10 STA_zp    $00F6  p2 pad pressed               after `p2_esc_skip`
+  LIVE main    $8F12 STA_zp    $00F8  p2 pad held                  after `p2_esc_skip`
+  LIVE main    $9062 STY_zp    $00F6  p2 pad pressed               after `st_p2`
+  LIVE main    $9082 STA_zp    $00F6  p2 pad pressed               after `tap_rel`
+  LIVE main    $9087 STA_zp    $00F8  p2 pad held                  after `tap_out`
+  dead main    $9093 STA_abs   $0312  p1 SPEED COUNTER (gravity)   after `tap_out`
+  dead main    $9096 STA_zp    $00F5  p1 pad (raw/pressed)         after `tap_out`
+  dead main    $9098 STA_zp    $00F7  p1 pad held                  after `tap_out`
+  dead main    $90A6 STY_zp    $00F5  p1 pad (raw/pressed)         after `act_p1_go`
+  dead main    $90B5 STA_abs   $0312  p1 SPEED COUNTER (gravity)   after `act_p1_n`
+  dead main    $90BA STA_zp    $00F7  p1 pad held                  after `act_p1_n`
+  dead main    $90BE STA_zp    $00F5  p1 pad (raw/pressed)         after `act_p1_n`
+  dead main    $90DC STY_zp    $00F5  p1 pad (raw/pressed)         after `st_p1`
+
+== couchS3: 23 stores into game-owned state, 15 REACHABLE from the hook entry (units: main, wrapper)
+  LIVE main    $83D7 STA_zp    $00F6  p2 pad pressed               after `menus`
+  LIVE main    $87B1 STA_abs   $0392  p2 SPEED COUNTER (gravity)   after `fp_p2`
+  LIVE main    $8A33 STA_zp    $00F6  p2 pad pressed               after `proph_pulse`
+  LIVE main    $8A35 STA_zp    $00F8  p2 pad held                  after `proph_pulse`
+  LIVE main    $8A3A STA_zp    $00F6  p2 pad pressed               after `prp_act`
+  LIVE main    $8EC6 STY_zp    $00F6  p2 pad pressed               after `p2_st_done`
+  LIVE main    $8EE7 STA_zp    $00F8  p2 pad held                  after `act_p2_n`
+  LIVE main    $8EEB STA_zp    $00F6  p2 pad pressed               after `act_p2_n`
+  LIVE main    $8EF2 STA_zp    $00F8  p2 pad held                  after `p2_rot_ccw`
+  LIVE main    $8EF6 STA_zp    $00F6  p2 pad pressed               after `p2_rot_ccw`
+  LIVE main    $8F1A STA_zp    $00F6  p2 pad pressed               after `p2_esc_skip`
+  LIVE main    $8F1C STA_zp    $00F8  p2 pad held                  after `p2_esc_skip`
+  LIVE main    $906C STY_zp    $00F6  p2 pad pressed               after `st_p2`
+  LIVE main    $908C STA_zp    $00F6  p2 pad pressed               after `tap_rel`
+  LIVE main    $9091 STA_zp    $00F8  p2 pad held                  after `tap_out`
+  dead main    $909D STA_abs   $0312  p1 SPEED COUNTER (gravity)   after `tap_out`
+  dead main    $90A0 STA_zp    $00F5  p1 pad (raw/pressed)         after `tap_out`
+  dead main    $90A2 STA_zp    $00F7  p1 pad held                  after `tap_out`
+  dead main    $90B0 STY_zp    $00F5  p1 pad (raw/pressed)         after `act_p1_go`
+  dead main    $90BF STA_abs   $0312  p1 SPEED COUNTER (gravity)   after `act_p1_n`
+  dead main    $90C4 STA_zp    $00F7  p1 pad held                  after `act_p1_n`
+  dead main    $90C8 STA_zp    $00F5  p1 pad (raw/pressed)         after `act_p1_n`
+  dead main    $90E6 STY_zp    $00F5  p1 pad (raw/pressed)         after `st_p1`
+
+== couchS3np: 22 stores into game-owned state, 14 REACHABLE from the hook entry (units: main, wrapper)
+  LIVE main    $83D7 STA_zp    $00F6  p2 pad pressed               after `menus`
+  LIVE main    $8A24 STA_zp    $00F6  p2 pad pressed               after `proph_pulse`
+  LIVE main    $8A26 STA_zp    $00F8  p2 pad held                  after `proph_pulse`
+  LIVE main    $8A2B STA_zp    $00F6  p2 pad pressed               after `prp_act`
+  LIVE main    $8EB7 STY_zp    $00F6  p2 pad pressed               after `p2_st_done`
+  LIVE main    $8ED8 STA_zp    $00F8  p2 pad held                  after `act_p2_n`
+  LIVE main    $8EDC STA_zp    $00F6  p2 pad pressed               after `act_p2_n`
+  LIVE main    $8EE3 STA_zp    $00F8  p2 pad held                  after `p2_rot_ccw`
+  LIVE main    $8EE7 STA_zp    $00F6  p2 pad pressed               after `p2_rot_ccw`
+  LIVE main    $8F0B STA_zp    $00F6  p2 pad pressed               after `p2_esc_skip`
+  LIVE main    $8F0D STA_zp    $00F8  p2 pad held                  after `p2_esc_skip`
+  LIVE main    $905D STY_zp    $00F6  p2 pad pressed               after `st_p2`
+  LIVE main    $907D STA_zp    $00F6  p2 pad pressed               after `tap_rel`
+  LIVE main    $9082 STA_zp    $00F8  p2 pad held                  after `tap_out`
+  dead main    $908E STA_abs   $0312  p1 SPEED COUNTER (gravity)   after `tap_out`
+  dead main    $9091 STA_zp    $00F5  p1 pad (raw/pressed)         after `tap_out`
+  dead main    $9093 STA_zp    $00F7  p1 pad held                  after `tap_out`
+  dead main    $90A1 STY_zp    $00F5  p1 pad (raw/pressed)         after `act_p1_go`
+  dead main    $90B0 STA_abs   $0312  p1 SPEED COUNTER (gravity)   after `act_p1_n`
+  dead main    $90B5 STA_zp    $00F7  p1 pad held                  after `act_p1_n`
+  dead main    $90B9 STA_zp    $00F5  p1 pad (raw/pressed)         after `act_p1_n`
+  dead main    $90D7 STY_zp    $00F5  p1 pad (raw/pressed)         after `st_p1`
+
+== cvc387: 40 stores into game-owned state, 30 REACHABLE from the hook entry (units: main, wrapper, p1ai, p1swap)
+  LIVE main    $8173 STA_zp    $00F5  p1 pad (raw/pressed)         after `esc_win`
+  LIVE main    $8239 STA_zp    $00F5  p1 pad (raw/pressed)         after `fc_press`
+  LIVE main    $82E6 STA_zp    $00F6  p2 pad pressed               after `menus`
+  LIVE main    $8323 STA_abs   $0316  p1 level                     after `an_lvl`
+  LIVE main    $8326 STA_abs   $0396  p2 level                     after `an_lvl`
+  LIVE main    $8329 STA_zp    $0096                               after `an_lvl`
+  LIVE main    $8346 STA_zp    $00F5  p1 pad (raw/pressed)         after `inj_sta`
+  LIVE main    $8647 STA_abs   $0392  p2 SPEED COUNTER (gravity)   after `fp_p2`
+  LIVE main    $88A4 STA_zp    $00F6  p2 pad pressed               after `nf2_hold`
+  LIVE main    $88A6 STA_zp    $00F8  p2 pad held                  after `nf2_hold`
+  LIVE main    $88EF STA_zp    $00F6  p2 pad pressed               after `act_p2`
+  LIVE main    $88F1 STA_zp    $00F8  p2 pad held                  after `act_p2`
+  LIVE main    $892D STY_zp    $00F6  p2 pad pressed               after `p2_st_done`
+  LIVE main    $894E STA_zp    $00F8  p2 pad held                  after `act_p2_n`
+  LIVE main    $8952 STA_zp    $00F6  p2 pad pressed               after `act_p2_n`
+  LIVE main    $8959 STA_zp    $00F8  p2 pad held                  after `p2_rot_ccw`
+  LIVE main    $895D STA_zp    $00F6  p2 pad pressed               after `p2_rot_ccw`
+  LIVE main    $8981 STA_zp    $00F6  p2 pad pressed               after `p2_esc_skip`
+  LIVE main    $8983 STA_zp    $00F8  p2 pad held                  after `p2_esc_skip`
+  LIVE main    $8AD3 STY_zp    $00F6  p2 pad pressed               after `st_p2`
+  LIVE main    $8AF3 STA_zp    $00F6  p2 pad pressed               after `tap_rel`
+  LIVE main    $8AF8 STA_zp    $00F8  p2 pad held                  after `tap_out`
+  LIVE main    $8B02 STA_zp    $00F5  p1 pad (raw/pressed)         after `tap_out`
+  LIVE main    $8B2E STA_zp    $00F7  p1 pad held                  after `p1n_nosearch`
+  LIVE main    $8B32 STA_zp    $00F5  p1 pad (raw/pressed)         after `p1n_nosearch`
+  LIVE main    $8B4A STY_zp    $00F5  p1 pad (raw/pressed)         after `p1n_store`
+  dead main    $8B56 STA_abs   $0312  p1 SPEED COUNTER (gravity)   after `p1n_store`
+  dead main    $8B59 STA_zp    $00F5  p1 pad (raw/pressed)         after `p1n_store`
+  dead main    $8B5B STA_zp    $00F7  p1 pad held                  after `p1n_store`
+  dead main    $8B69 STY_zp    $00F5  p1 pad (raw/pressed)         after `act_p1_go`
+  dead main    $8B78 STA_abs   $0312  p1 SPEED COUNTER (gravity)   after `act_p1_n`
+  dead main    $8B7D STA_zp    $00F7  p1 pad held                  after `act_p1_n`
+  dead main    $8B81 STA_zp    $00F5  p1 pad (raw/pressed)         after `act_p1_n`
+  dead main    $8B9F STY_zp    $00F5  p1 pad (raw/pressed)         after `st_p1`
+  dead p1ai    $9000 STA_zp    $00F6  p2 pad pressed               after `?`
+  dead p1ai    $900B STA_zp    $00F6  p2 pad pressed               after `vs_active`
+  LIVE p1ai    $90B2 STA_absX  $0400                               after `eval_pair`
+  LIVE p1ai    $90B9 STA_absX  $0400                               after `eval_pair`
+  LIVE p1ai    $90F9 STA_absX  $0400                               after `ep_undo`
+  LIVE p1ai    $90FE STA_absX  $0400                               after `ep_undo`
+
+== cvcS3np: 39 stores into game-owned state, 29 REACHABLE from the hook entry (units: main, wrapper, p1ai, p1swap)
+  LIVE main    $8173 STA_zp    $00F5  p1 pad (raw/pressed)         after `esc_win`
+  LIVE main    $8239 STA_zp    $00F5  p1 pad (raw/pressed)         after `fc_press`
+  LIVE main    $82E6 STA_zp    $00F6  p2 pad pressed               after `menus`
+  LIVE main    $8323 STA_abs   $0316  p1 level                     after `an_lvl`
+  LIVE main    $8326 STA_abs   $0396  p2 level                     after `an_lvl`
+  LIVE main    $8329 STA_zp    $0096                               after `an_lvl`
+  LIVE main    $8346 STA_zp    $00F5  p1 pad (raw/pressed)         after `inj_sta`
+  LIVE main    $889F STA_zp    $00F6  p2 pad pressed               after `nf2_hold`
+  LIVE main    $88A1 STA_zp    $00F8  p2 pad held                  after `nf2_hold`
+  LIVE main    $88EA STA_zp    $00F6  p2 pad pressed               after `act_p2`
+  LIVE main    $88EC STA_zp    $00F8  p2 pad held                  after `act_p2`
+  LIVE main    $8928 STY_zp    $00F6  p2 pad pressed               after `p2_st_done`
+  LIVE main    $8949 STA_zp    $00F8  p2 pad held                  after `act_p2_n`
+  LIVE main    $894D STA_zp    $00F6  p2 pad pressed               after `act_p2_n`
+  LIVE main    $8954 STA_zp    $00F8  p2 pad held                  after `p2_rot_ccw`
+  LIVE main    $8958 STA_zp    $00F6  p2 pad pressed               after `p2_rot_ccw`
+  LIVE main    $897C STA_zp    $00F6  p2 pad pressed               after `p2_esc_skip`
+  LIVE main    $897E STA_zp    $00F8  p2 pad held                  after `p2_esc_skip`
+  LIVE main    $8ACE STY_zp    $00F6  p2 pad pressed               after `st_p2`
+  LIVE main    $8AEE STA_zp    $00F6  p2 pad pressed               after `tap_rel`
+  LIVE main    $8AF3 STA_zp    $00F8  p2 pad held                  after `tap_out`
+  LIVE main    $8AFD STA_zp    $00F5  p1 pad (raw/pressed)         after `tap_out`
+  LIVE main    $8B29 STA_zp    $00F7  p1 pad held                  after `p1n_nosearch`
+  LIVE main    $8B2D STA_zp    $00F5  p1 pad (raw/pressed)         after `p1n_nosearch`
+  LIVE main    $8B45 STY_zp    $00F5  p1 pad (raw/pressed)         after `p1n_store`
+  dead main    $8B51 STA_abs   $0312  p1 SPEED COUNTER (gravity)   after `p1n_store`
+  dead main    $8B54 STA_zp    $00F5  p1 pad (raw/pressed)         after `p1n_store`
+  dead main    $8B56 STA_zp    $00F7  p1 pad held                  after `p1n_store`
+  dead main    $8B64 STY_zp    $00F5  p1 pad (raw/pressed)         after `act_p1_go`
+  dead main    $8B73 STA_abs   $0312  p1 SPEED COUNTER (gravity)   after `act_p1_n`
+  dead main    $8B78 STA_zp    $00F7  p1 pad held                  after `act_p1_n`
+  dead main    $8B7C STA_zp    $00F5  p1 pad (raw/pressed)         after `act_p1_n`
+  dead main    $8B9A STY_zp    $00F5  p1 pad (raw/pressed)         after `st_p1`
+  dead p1ai    $9000 STA_zp    $00F6  p2 pad pressed               after `?`
+  dead p1ai    $900B STA_zp    $00F6  p2 pad pressed               after `vs_active`
+  LIVE p1ai    $90B2 STA_absX  $0400                               after `eval_pair`
+  LIVE p1ai    $90B9 STA_absX  $0400                               after `eval_pair`
+  LIVE p1ai    $90F9 STA_absX  $0400                               after `ep_undo`
+  LIVE p1ai    $90FE STA_absX  $0400                               after `ep_undo`
+
