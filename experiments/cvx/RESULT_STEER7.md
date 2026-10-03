@@ -81,7 +81,7 @@ Gate (b) on owner_fit_202610, and the LULU race at lam 2.56, for S = 0/−1/−2
 
 | lever | frames | sim-priced worth | risk |
 |---|---|---|---|
-| 1. settle cut, `DELAY2` 15 → ~3 hooks | −6 f on every searched decision (GO and DONE move too) | **≈ −6 pp tap-out, ≈ +14 race.** Interpolated between the −4 f and ceiling arms. | low–medium; RAM-trace the spawn edge first |
+| 1. settle cut, `DELAY2` 15 → ~3 hooks | −6 f on every searched decision (GO and DONE move too) | **UPPER BOUND ≈ −6 pp tap-out, ≈ +14 race** (interpolated between the −4 f and ceiling arms). ⚠ The settle also PINS gravity (`freeze_pending`: GRAV_P2 := 0 while PEND2 && DELAY2, with DRPENDBOUND=1 on the couch cart), and the silicon-fitted gravity start G0 = 7\|8 IS this pin. So a settle cut moves GO, the commit AND the gravity start together: no relative REACH gain, only TEMPO. STEER7's arms held G0 fixed, so the tempo-only share needs follow-up (b). (A fairness question about the pin itself is with the settle lane.) | low–medium; RAM-trace the spawn edge first |
 | 2. clear-window prestart (GO at the lock of a clearing placement) | ≈ ceiling on the ~35–40% of placements that clear (54 f idle window > ~32 f search) | **≈ −5 to −7 pp** by linear weighting. Not tested per placement class. | medium–high |
 | 3. 6502 / engine overlap | −6 f on DONE (−20% clocks) | not separable here: it moves endgame slams (tempo) and the final-at-gate rate, not the first action | medium (RTL) |
 | 4. two-pass root ordering (depth-2 key) | 0 f; final-at-gate 66 → 89% (endgame 60 → 84%) | **unpriced:** the sim acts on FINAL answers only | low (firmware) |
