@@ -96,9 +96,11 @@ against the September tree.
 
 > Strength-program status as of 2026-09-24 is the section above, not this July list.
 
-- **TE v8.2**: shipped. See `release/RELEASE_NOTES_V8_2.md`. v9 remains a release
-  candidate (`release/RELEASE_NOTES_V9.md`), unchanged by the September strength
-  campaign.
+- **TE (romhacking.net, standalone/no-copro)**: v9 published 2026-08-05
+  (`release/RELEASE_NOTES_V9.md`). **v10 = v9 + the end-of-round study screen
+  (DRSTUDYEND) + title stamp fix** is the next upload candidate, IPS + BPS built by
+  `build_te_v10.py`, Mesen-QA'd full games (`release/RELEASE_NOTES_V10.md`,
+  `release/V10_QA_EVIDENCE.md`). Owner uploads.
 - **Driver rev 2**: confidence-gated slam (commit when the search's answer is
   stable, not when it's exhaustively confirmed) + speed-aware gates — closes the
   human tempo gap on obvious placements and the late-game search-vs-gravity
