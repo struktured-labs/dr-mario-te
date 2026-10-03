@@ -26,9 +26,8 @@ the study/transport flags of sota_20260927_reproduce.sh + DRSPAWNEDGE=1) with th
      into the OAM shadow page (defect), ON writes nothing. whoFailed=0 (every play frame) ->
      both arms write nothing and take the SAME cycle count (play timing unchanged).
   E. GUARD: DRSTUDYEND=1 with DRSTUDY=0 REFUSES (exit != 0, names DRSTUDYEND); DRSTUDYEND=1 on a
-     DRHUMAN=1 cart that leaves DRSTUDY unset (STUDY defaults ON there) builds and emits. (That
-     arm drops DRSTUDYCOUNTS: its own guard entry declares gate default "0", so it would refuse
-     first -- a pre-existing false refusal outside this flag.)
+     DRHUMAN=1 cart that leaves DRSTUDY unset (STUDY defaults ON there) builds and emits -- with
+     DRSTUDYCOUNTS=1 still set (its guard entry's false refusal is fixed; tests/test_gated_flags.py).
   F. MATCH FINAL (py65, the real playerLoses_endScreen from $958A; the NMI wait $B654 is stubbed to
      one call = one frame, START held): BOTH arms reach the START loop after the SAME 192 frame
      waits with the same music ($06F5=$0B). There, OFF has wiped both fields + stamped GAME OVER and
@@ -173,7 +172,7 @@ def scen_E():
     _, r = build("refuse", couch_flags(DRSTUDY="0", DRSTUDYCOUNTS="0", DRSTUDYEND="1"), expect_ok=False)
     assert r.returncode != 0 and "##SUPPRESSED-FLAG## DRSTUDYEND" in r.stdout, \
         f"E FAIL: DRSTUDY=0 + DRSTUDYEND=1 was not refused (rc={r.returncode})"
-    _, r2 = build("human_default_study", couch_flags(DRSTUDY=None, DRSTUDYCOUNTS=None, DRSTUDYEND="1"))
+    _, r2 = build("human_default_study", couch_flags(DRSTUDY=None, DRSTUDYEND="1"))
     assert "DRSTUDYEND: round-end lower-field wipe skipped" in r2.stdout, \
         "E FAIL: DRHUMAN=1 with DRSTUDY unset did not emit DRSTUDYEND"
     print("E PASS  DRSTUDY=0 refuses (names DRSTUDYEND); DRHUMAN=1 + DRSTUDY unset builds and emits")

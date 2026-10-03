@@ -3969,7 +3969,9 @@ _GATED_FLAGS = (
     # Only DEFAULT-OFF flags are checked: setting a default-off flag =1 is a deliberate enable,
     # so suppressing it silently is the bug. A default-ON flag (e.g. DRSTUDY2P) carried in a
     # snapshot is NOT a deliberate deviation and must NOT trip this guard (that broke every build).
-    ("DRSTUDYCOUNTS", "DRSTUDY",   "0", "0", "STUDY counter redraw is emitted only inside `if STUDY and STUDYCOUNTS`"),
+    # DRSTUDY's declared default must mirror STUDY's real one ("1" for DRHUMAN=1): with "0" here a human cart that
+    # left DRSTUDY unset (STUDY on, counters emitted) was falsely refused (tests/test_gated_flags.py R1/R4).
+    ("DRSTUDYCOUNTS", "DRSTUDY",   "0", "1" if HUMAN_P1 else "0", "STUDY counter redraw is emitted only inside `if STUDY and STUDYCOUNTS`"),
     ("DRSTUDY2P_INV", "DRSTUDY2P", "0", "1", "S2P_INV = STUDY2P and env"),
     ("DRTUCKGUARD",   "DRTUCK",    "0", "0", "TUCKGUARD = TUCK and env; guard vetoes a descriptor the tuck executor must publish"),
     ("DRRELATCH",     "DRROTFIX",  "0", "1", "RELATCH = ROTFIX and env"),
