@@ -1,0 +1,6 @@
+=== brain-only replay (observed capsules + observed garbage, perfect execution) ===
+=== steering-model replay (20 latency seeds) ===
+from p  0 python      : outcomes {'CLEAR': 20}; viruses at end [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; top-out pills []
+from p  0 silicon     : outcomes {'alive': 19, 'TOPOUT': 1}; viruses at end [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 10]; top-out pills [96]
+from p 31 python      : outcomes {'alive': 20}; viruses at end [5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]; top-out pills []
+from p 31 silicon     : outcomes {'alive': 20}; viruses at end [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]; top-out pills []

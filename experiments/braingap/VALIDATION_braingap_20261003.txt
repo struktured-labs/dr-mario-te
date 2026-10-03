@@ -1,0 +1,44 @@
+Leaf6FwDecider validation on the 10/03 couch boards (validate_fwvariant_braingap_20261003.py)
+ground truth = Verilator co-sim final (RTL 3b164c7 + fw 1488e158); py65 = shipped fw logic + RTL-faithful engine
+G2: boards 116 (co-sim tuck commits 8)
+   all switches OFF == Leaf6Decider          116/116
+   python sim brain                 == co-sim  87/108
+   EH-only fix (hang+ehb1+ehnp)     == co-sim  108/108
+   faithful, python mask            == co-sim  108/108
+   faithful, firmware mask          == co-sim  108/108
+   py65 search final                == co-sim  108/108
+   python + veto   alone          == co-sim  87/108
+   python + hang   alone          == co-sim  95/108
+   python + ehb1   alone          == co-sim  91/108
+   python + ehnp   alone          == co-sim  87/108
+   python + wrap   alone          == co-sim  87/108
+   python + order  alone          == co-sim  87/108
+   per-root V1 (faithful, fw mask) == py65: boards 116/116, roots mismatching 0 of 3119; python vs firmware reach mask differs on 0 boards
+G3: boards 86 (co-sim tuck commits 1)
+   all switches OFF == Leaf6Decider          86/86
+   python sim brain                 == co-sim  78/85
+   EH-only fix (hang+ehb1+ehnp)     == co-sim  84/85
+   faithful, python mask            == co-sim  85/85
+   faithful, firmware mask          == co-sim  85/85
+   py65 search final                == co-sim  85/85
+   python + veto   alone          == co-sim  78/85
+   python + hang   alone          == co-sim  82/85
+   python + ehb1   alone          == co-sim  80/85
+   python + ehnp   alone          == co-sim  78/85
+   python + wrap   alone          == co-sim  78/85
+   python + order  alone          == co-sim  79/85
+   per-root V1 (faithful, fw mask) == py65: boards 86/86, roots mismatching 0 of 2580; python vs firmware reach mask differs on 0 boards
+G4: boards 133 (co-sim tuck commits 0)
+   all switches OFF == Leaf6Decider          133/133
+   python sim brain                 == co-sim  126/133
+   EH-only fix (hang+ehb1+ehnp)     == co-sim  133/133
+   faithful, python mask            == co-sim  133/133
+   faithful, firmware mask          == co-sim  133/133
+   py65 search final                == co-sim  133/133
+   python + veto   alone          == co-sim  126/133
+   python + hang   alone          == co-sim  131/133
+   python + ehb1   alone          == co-sim  127/133
+   python + ehnp   alone          == co-sim  126/133
+   python + wrap   alone          == co-sim  126/133
+   python + order  alone          == co-sim  126/133
+   per-root V1 (faithful, fw mask) == py65: boards 133/133, roots mismatching 0 of 3990; python vs firmware reach mask differs on 0 boards

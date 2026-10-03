@@ -1,0 +1,13 @@
+=== brain-only replay (observed capsules + observed garbage, perfect execution) ===
+from p  0 python      : 115 pills -> CLEAR  at p114 viruses 0 maxh 8 | viruses at p+10/20/40: 38 30 20
+from p  0 silicon     : 116 pills -> ok     at p115 viruses 5 maxh 10 | viruses at p+10/20/40: 38 33 21
+from p  0 eh_fix_only : 116 pills -> ok     at p115 viruses 5 maxh 10 | viruses at p+10/20/40: 38 33 21
+from p 31 python      :  85 pills -> ok     at p115 viruses 6 maxh 11 | viruses at p+10/20/40: 19 18 13
+from p 31 silicon     :  85 pills -> ok     at p115 viruses 3 maxh 7 | viruses at p+10/20/40: 21 18 16
+from p 31 eh_fix_only :  85 pills -> ok     at p115 viruses 3 maxh 7 | viruses at p+10/20/40: 21 18 16
+from p 59 python      :  57 pills -> ok     at p115 viruses 9 maxh 12 | viruses at p+10/20/40: 15 15 12
+from p 59 silicon     :  57 pills -> ok     at p115 viruses 12 maxh 15 | viruses at p+10/20/40: 15 15 14
+from p 59 eh_fix_only :  57 pills -> ok     at p115 viruses 12 maxh 15 | viruses at p+10/20/40: 15 15 14
+from p 90 python      :  26 pills -> ok     at p115 viruses 10 maxh 16 | viruses at p+10/20/40: 12 10 -
+from p 90 silicon     :  26 pills -> ok     at p115 viruses 9 maxh 10 | viruses at p+10/20/40: 13 11 -
+from p 90 eh_fix_only :  26 pills -> ok     at p115 viruses 9 maxh 10 | viruses at p+10/20/40: 13 11 -
