@@ -1,0 +1,15 @@
+[all decisions]
+boards 1961
+  fw     final answer first published: median GO + 2.6 f, p75 9.1, p90 16.9   P(final) at GO + 1.5 f: 43.3%  3 f: 51.2%  6 f: 65.8%  9 f: 74.7%  12.5 f: 84.2%
+  d2     final answer first published: median GO + 2.5 f, p75 2.5, p90 6.4   P(final) at GO + 1.5 f: 4.1%  3 f: 75.5%  6 f: 89.0%  9 f: 95.1%  12.5 f: 96.9%
+  oracle final answer first published: median GO + 1.3 f, p75 1.3, p90 1.3   P(final) at GO + 1.5 f: 100.0%  3 f: 100.0%  6 f: 100.0%  9 f: 100.0%  12.5 f: 100.0%
+[endgame 1-4 viruses]
+boards 411
+  fw     final answer first published: median GO + 3.9 f, p75 10.4, p90 19.3   P(final) at GO + 1.5 f: 39.2%  3 f: 47.2%  6 f: 59.9%  9 f: 68.6%  12.5 f: 80.5%
+  d2     final answer first published: median GO + 2.5 f, p75 3.8, p90 9.1   P(final) at GO + 1.5 f: 8.0%  3 f: 70.8%  6 f: 84.2%  9 f: 89.8%  12.5 f: 92.7%
+  oracle final answer first published: median GO + 1.3 f, p75 1.3, p90 1.3   P(final) at GO + 1.5 f: 100.0%  3 f: 100.0%  6 f: 100.0%  9 f: 100.0%  12.5 f: 100.0%
+[5-12 viruses]
+boards 772
+  fw     final answer first published: median GO + 3.9 f, p75 10.4, p90 19.0   P(final) at GO + 1.5 f: 36.5%  3 f: 45.5%  6 f: 60.6%  9 f: 69.6%  12.5 f: 81.6%
+  d2     final answer first published: median GO + 2.5 f, p75 3.3, p90 6.4   P(final) at GO + 1.5 f: 6.2%  3 f: 73.3%  6 f: 89.1%  9 f: 95.5%  12.5 f: 96.9%
+  oracle final answer first published: median GO + 1.3 f, p75 1.3, p90 1.3   P(final) at GO + 1.5 f: 100.0%  3 f: 100.0%  6 f: 100.0%  9 f: 100.0%  12.5 f: 100.0%

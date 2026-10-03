@@ -48,9 +48,10 @@ def _legal_count(b):
 
 @njit(cache=True)
 def trajectory(pcol, pvir, plnk, ca, cb, na, nb, topk2, w_excav, w_hang, w, fl, maxpass, w_chain, ws, allowed,
-               w_sv, r_hi, w_sp, hs, w5, w6, out_act, out_val, out_leaves, out_ply):
+               w_sv, r_hi, w_sp, hs, w5, w6, out_act, out_val, out_leaves, out_ply, out_d2, out_m2):
     """Fills, in FIRMWARE processing order: out_act[i], out_val[i], out_leaves[i] (leaves this root cost).
-    out_ply = [pass0 leaves, ply2 leaves, ply3 leaves]. Returns the number of roots processed."""
+    out_ply = [pass0 leaves, ply2 leaves, ply3 leaves]. out_d2[i] = a DEPTH-2 estimate of the root's value (best ply-2
+    key in place of the expectimax: a candidate cheap ordering key), out_m2[i] = its ply-2 leaf count. Returns n roots."""
     c1 = np.empty(NCELL, dtype=int8); v1 = np.empty(NCELL, dtype=int8); l1 = np.empty(NCELL, dtype=int8)
     b2col = np.empty((32, NCELL), dtype=int8); b2vir = np.empty((32, NCELL), dtype=int8)
     b2lnk = np.empty((32, NCELL), dtype=int8)
@@ -87,8 +88,9 @@ def trajectory(pcol, pvir, plnk, ca, cb, na, nb, topk2, w_excav, w_hang, w, fl, 
                                                 terms, maxpass, True, w5, w6)
         imm1 = _imm_chain(nv, cells, ch1, w, w_chain)
         lv = 1                                            # replay ply-1 (NODE)
+        d2 = int64(0); m2 = 0
         if _virus_count(v1) == 0:
-            val = imm1 + int64(_WIN_SHIP)
+            val = imm1 + int64(_WIN_SHIP); d2 = val
         else:
             _base_scan(c1, v1, fl, base2)
             m2 = 0
@@ -106,10 +108,11 @@ def trajectory(pcol, pvir, plnk, ca, cb, na, nb, topk2, w_excav, w_hang, w, fl, 
                     m2 += 1
             lv += m2; out_ply[1] += m2
             if m2 == 0:
-                val = imm1 + leaf1
+                val = imm1 + leaf1; d2 = val
                 lv += 1
             else:
                 _stable_desc(keys2, m2, order2)
+                d2 = imm1 + leaf1 + ((int64(keys2[order2[0]]) - leaf1) >> int64(1))
                 kk2 = m2 if topk2 <= 0 or topk2 > m2 else topk2
                 best2 = int64(0); have2 = False
                 for s2 in range(kk2):
@@ -128,13 +131,14 @@ def trajectory(pcol, pvir, plnk, ca, cb, na, nb, topk2, w_excav, w_hang, w, fl, 
                         best2 = v2; have2 = True
                 val = imm1 + leaf1 + ((best2 - leaf1) >> int64(1))
             val += w_excav * _g_excav_ship(c1, v1) + w_hang * _g_hang_ship(c1, v1)
-        val -= ws * _g_stranded47(c1, v1)
-        val += _shape_terms(pcol, var, cl, nv, cells, w_sv, r_hi, w_sp, hs)
-        out_act[j] = a; out_val[j] = val; out_leaves[j] = lv
+            d2 += w_excav * _g_excav_ship(c1, v1) + w_hang * _g_hang_ship(c1, v1)
+        extra = -ws * _g_stranded47(c1, v1) + _shape_terms(pcol, var, cl, nv, cells, w_sv, r_hi, w_sp, hs)
+        val += extra; d2 += extra
+        out_act[j] = a; out_val[j] = val; out_leaves[j] = lv; out_d2[j] = d2; out_m2[j] = m2
     return n1
 
 
-def summarise(n1, act, val, leaves, ply):
+def summarise(n1, act, val, leaves, ply, d2=None, m2=None):
     """Publishes in time order: the running best changes when val is STRICTLY greater (o_cand's BPL skip)."""
     pubs = []; best = None; cum = ply[0]
     for j in range(n1):
@@ -143,7 +147,12 @@ def summarise(n1, act, val, leaves, ply):
             best = val[j]; pubs.append((int(cum), int(act[j])))
     final = pubs[-1][1]
     stab = next(t for t, a in pubs if a == final)
-    return {"total": int(cum), "pass0": int(ply[0]), "ply2": int(ply[1]), "ply3": int(ply[2]), "roots": int(n1),
+    extra = {}
+    if d2 is not None:
+        extra = {"roots_act": [int(x) for x in act[:n1]], "roots_val": [int(x) for x in val[:n1]],
+                 "roots_leaves": [int(x) for x in leaves[:n1]], "roots_d2": [int(x) for x in d2[:n1]],
+                 "roots_m2": [int(x) for x in m2[:n1]]}
+    return {**extra, "total": int(cum), "pass0": int(ply[0]), "ply2": int(ply[1]), "ply3": int(ply[2]), "roots": int(n1),
             "first_pub": pubs[0][0], "stab": stab, "npub": len(pubs), "final": final, "pubs": pubs,
             "final_rank": int(next(j for j in range(n1) if act[j] == final))}
 
@@ -167,6 +176,7 @@ if __name__ == "__main__":
     n_seeds, outp = int(sys.argv[1]), sys.argv[2]
     boards = collect(n_seeds)
     act = np.empty(32, np.int64); val = np.empty(32, np.int64); lvs = np.empty(32, np.int64); ply = np.empty(3, np.int64)
+    d2 = np.empty(32, np.int64); m2 = np.empty(32, np.int64)
     same = diff = 0
     with open(outp, "w") as fh:
         for dec, b, cur, nxt, k in boards:
@@ -176,10 +186,10 @@ if __name__ == "__main__":
             w6 = dec.w6_for(col, vir, cur, allowed, k)
             n1 = trajectory(col, vir, lnk, cur.a, cur.b, nxt.a, nxt.b, dec.topk2, dec.w_excav, dec.w_hang, dec.w, dec.fl,
                             dec.maxpass, dec.w_chain, dec.ws, allowed, dec.w_sv, dec.r_hi, dec.w_sp, dec.hs, dec.w5, w6,
-                            act, val, lvs, ply)
+                            act, val, lvs, ply, d2, m2)
             if n1 == 0:
                 continue
-            s = summarise(n1, act, val, lvs, ply)
+            s = summarise(n1, act, val, lvs, ply, d2, m2)
             ref = dec.choose(b, cur, nxt, k)
             same += int(ref == s["final"]); diff += int(ref != s["final"])
             s.update(k=k, nv=int(vir.sum()), ref=ref, dist_active=int(w6[0] != 0))
