@@ -1,0 +1,280 @@
+# DRTUCKREACH / DRTUCKLIVE / DRROOTORD gates -- 2026-10-03T16:39:17-04:00 -- 9ee5f343
+
+## static (shipped-style delta hexes)
+off   md5 1488e1583ab7ad8b2011d4c136926faf  search ends $8B29 (window $9000)  tuck-image board reads {'CUR $07xx': 13}
+tr    md5 e5de03a49d46c74e756c6db23d62ac1f  search ends $8B29 (window $9000)  tuck-image board reads {'CUR $07xx': 13}
+ro    md5 08579c289bda77bc982ccf4caba45293  search ends $8C58 (window $9000)  tuck-image board reads {'CUR $07xx': 13}
+tl    md5 765fb5296827143bde3c93ef047117f0  search ends $8B29 (window $9000)  tuck-image board reads {'LIVE $05xx': 12, 'CUR $07xx': 1}
+trro  md5 2d79d9fcc0191016cce1cbd3190ae06e  search ends $8C58 (window $9000)  tuck-image board reads {'CUR $07xx': 13}
+trtl  md5 7c243c6fa705cacc08b03ce5e0e1f664  search ends $8B29 (window $9000)  tuck-image board reads {'LIVE $05xx': 12, 'CUR $07xx': 1}
+rotl  md5 fb2369b4325ad8ad6fdef0c8915ae8ab  search ends $8C35 (window $9000)  tuck-image board reads {'LIVE $05xx': 12, 'CUR $07xx': 1}
+ship  md5 a1ef31c896ce3c8080c2eb9cd5cb182d  search ends $8C35 (window $9000)  tuck-image board reads {'LIVE $05xx': 12, 'CUR $07xx': 1}
+IDENTITY every flag off == fw 1488e158: PASS; 8 distinct md5 for 8 arms: PASS
+GATE_STATIC PASS
+
+## py65 whole decision (stub -> search -> tuck extension -> DONE), golden-leaf engine emulator
+boards 62, arms ['off', 'tr', 'ro', 'tl', 'trtl', 'ship']
+RO  ro vs off: final+tuck identical 62/62; tuck candidate list identical 62/62; enumerator board ($0700) identical 62/62  PASS
+RO  ship vs trtl: final+tuck identical 62/62; tuck candidate list identical 62/62; enumerator board ($0700) identical 30/62  PASS
+TR  off: tuck commits 7/62, outside the mask (R_FLT=1) 6
+TR  tr == off where off's tuck did not fire / fired in-mask: 56/56; tr final in the mask (or filter off) 62/62; boards with a bare live tuck publish: tr 0, off 7  PASS
+    MASKED TUCK G2_p101: off ((6, 2), (6, 10)) -> tr ((0, 2), (255, 255)) (in mask: True)
+    MASKED TUCK G2_p102: off ((5, 3), (6, 10)) -> tr ((2, 3), (255, 255)) (in mask: True)
+    MASKED TUCK G2_p112: off ((2, 1), (7, 11)) -> tr ((6, 0), (255, 255)) (in mask: True)
+    MASKED TUCK G2_p113: off ((2, 2), (4, 3)) -> tr ((5, 0), (255, 255)) (in mask: True)
+    MASKED TUCK G2_p114: off ((2, 0), (2, 11)) -> tr ((6, 3), (255, 255)) (in mask: True)
+    MASKED TUCK G2_p111: off ((2, 1), (6, 11)) -> tr ((6, 2), (255, 255)) (in mask: True)
+REACH ROK[32] at the tuck entry == reach_fw(upload): 62/62; R_FLT=1 on 62 (0 = the all-masked Pass-0 fallback)  PASS
+TL  enumerator board != LIVE (stale CUR) on 62/62; candidate list changes 24; final/tuck changes 2; tl tuck commits 8 (off 7)
+    TL G2_p114: off ((2, 0), (2, 11)) in-mask False -> tl ((2, 3), (4, 3)) in-mask False
+    TL G2_p99: off ((3, 0), (255, 255)) in-mask True -> tl ((2, 1), (3, 11)) in-mask False
+TRTL final in the mask 62/62; tuck commits 1
+GATE_PY65 PASS
+### mutants + tie stress + RAM (banked run: gate_py65.py tmp/py65/couch_ab.jsonl --mutants --ram)
+mutant boards 21 (tuck 7, in-mask tr tuck 1, doubles 12, stale-CUR 12)
+  tie stress (every root's val1 forced equal at the comparison, 12 boards): ro == off 12/12; ro_notie != off 5
+  mutant tr_nomask     KILLED  (finals outside the mask 6)
+  mutant tr_livepub    KILLED  (boards with a bare publish: mutant 1, real tr 0)
+  mutant ro_notie      KILLED  (finals != off 5)
+  mutant ro_fworder    KILLED  (publish sequence != off: mutant 0, real ro 10)
+  mutant ro_norestore  KILLED  (tuck candidate list != off: mutant 9, real ro 0)
+RAM ro: writes outside (off's set U $0200-$0286 U tuck_bfs's own $0E00-$0FFF): 0 []; RO block bytes written 81; new bytes inside $0E00-$0FFF 0
+RAM ship: writes outside (off's set U $0200-$0286 U tuck_bfs's own $0E00-$0FFF): 0 []; RO block bytes written 81; new bytes inside $0E00-$0FFF 20
+RAM off arm never writes $0200-$02FF: True
+GATE_PY65 PASS
+
+## reach mask bijection, 6502 == reach_fw, V2 constants T_LAT 13 / G0 3 (run_reachparam.py gate_reach_mask.py --tap)
+run_reachparam: T_LAT=13 G0=3 on reach_6502 (/home/struktured/projects/dr-mario-fwtuckreach-wt/fpga/copro/reach_6502.py) and reach_fw (/home/struktured/projects/dr-mario-fwtuckreach-wt/experiments/reach/reach_fw.py)
+reach routine: 1564 B at $A800 (md5 ba33b150); RAM $0A80-$0ADC
+T  transport: thr mismatches 0/150; old cart (NB hi = 0) -> no filter: True
+M  game P=0: 1412 boards, 82464 legal candidate checks (x2 empty encodings), mismatches 0, max 459029 cycles
+M  synth P=0: 1500 boards, 79860 legal candidate checks (x2 empty encodings), mismatches 0, max 802384 cycles
+M  game P=2: 1412 boards, 82464 legal candidate checks (x2 empty encodings), mismatches 0, max 260752 cycles
+M  synth P=2: 1500 boards, 79860 legal candidate checks (x2 empty encodings), mismatches 0, max 440219 cycles
+M  game P=3: 1412 boards, 82464 legal candidate checks (x2 empty encodings), mismatches 0, max 238812 cycles
+M  synth P=3: 1500 boards, 79860 legal candidate checks (x2 empty encodings), mismatches 0, max 274437 cycles
+   mutant tlat_m1      (P=3): mismatches 309/11586 -> KILLED
+   mutant tlat_p1      (P=3): mismatches 339/11586 -> KILLED
+   mutant no_distgate  (P=3): mismatches 634/11586 -> KILLED
+   mutant no_fallback  (P=3): mismatches 446/11586 -> KILLED
+   mutant rot_das      (P=2): mismatches 151/11586 -> KILLED
+GATE_REACH_MASK PASS
+
+## legacy gate reach_search_V1 (dist-target tree 1f430974 + this branch's firmware patch; same hexes)
+S   static: 8 abs refs to S_NA/S_NB in search/tuck/stub of the DRREACH=1 image, non-(LDA;AND #$0F): none; reach decode reads [('0xa804', '0x27'), ('0xa82e', '0x26'), ('0xa855', '0x26'), ('0xa85f', '0x27')]
+G3  P=0: firmware == masked mirror 41/41; argmax moved 9
+G3  P=2: firmware == masked mirror 40/40; argmax moved 8
+G3  P=3: firmware == masked mirror 39/39; argmax moved 7
+G1a transport inert (DRREACH=0, random nibbles; colour args < 16): 60/60
+G1b old cart (DRREACH=1, no nibbles) == DRREACH=0:              60/60
+G3  game: firmware == masked mirror 60/60; mask non-trivial on 60; filter moved the argmax on 5
+G3  fast: firmware == masked mirror 40/40; mask non-trivial on 33; filter moved the argmax on 17
+G3  few : firmware == masked mirror 20/20; mask non-trivial on 3; filter moved the argmax on 2
+masked-winner board: unfiltered (0, 0)  skip (1, 2)  firmware (1, 2)
+   mutant PENALTY: firmware (0, 0) vs skip (1, 2) -> KILLED
+   mutant NOAND: static audit flags 2 site(s); colour-arg writes >= 16 on 2/3 boards -> KILLED
+GATE_REACH_SEARCH PASS
+
+## legacy gate reach_search_V2 (dist-target tree 1f430974 + this branch's firmware patch; same hexes)
+run_reachparam: T_LAT=13 G0=3 on reach_6502 (/home/struktured/projects/dr-mario-fwtuckreach-gate-wt/fpga/copro/reach_6502.py) and reach_fw (/home/struktured/projects/dr-mario-fwtuckreach-gate-wt/experiments/reach/reach_fw.py)
+S   static: 8 abs refs to S_NA/S_NB in search/tuck/stub of the DRREACH=1 image, non-(LDA;AND #$0F): none; reach decode reads [('0xa804', '0x27'), ('0xa82e', '0x26'), ('0xa855', '0x26'), ('0xa85f', '0x27')]
+G3  P=0: firmware == masked mirror 41/41; argmax moved 9
+G3  P=2: firmware == masked mirror 40/40; argmax moved 9
+G3  P=3: firmware == masked mirror 39/39; argmax moved 7
+G1a transport inert (DRREACH=0, random nibbles; colour args < 16): 60/60
+G1b old cart (DRREACH=1, no nibbles) == DRREACH=0:              60/60
+G3  game: firmware == masked mirror 60/60; mask non-trivial on 60; filter moved the argmax on 5
+G3  fast: firmware == masked mirror 40/40; mask non-trivial on 36; filter moved the argmax on 17
+G3  few : firmware == masked mirror 20/20; mask non-trivial on 4; filter moved the argmax on 3
+masked-winner board: unfiltered (0, 0)  skip (1, 2)  firmware (1, 2)
+   mutant PENALTY: firmware (0, 0) vs skip (1, 2) -> KILLED
+   mutant NOAND: static audit flags 2 site(s); colour-arg writes >= 16 on 2/3 boards -> KILLED
+GATE_REACH_SEARCH PASS
+
+## legacy gate dist_golden_V1 (dist-target tree 1f430974 + this branch's firmware patch; same hexes)
+game : firmware(+DIST engine) == golden mirror(+DIST) 154/154; target written == rule 154/154; active 154; the term moved the decision on 41
+couch: firmware(+DIST engine) == golden mirror(+DIST) 283/283; target written == rule 283/283; active 283; the term moved the decision on 82
+synth: firmware(+DIST engine) == golden mirror(+DIST) 60/60; target written == rule 60/60; active 60; the term moved the decision on 11
+big  : firmware(+DIST engine) == golden mirror(+DIST) 20/20; target written == rule 20/20; active 0; the term moved the decision on 0
+GATE_DIST_GOLDEN PASS
+
+## legacy gate dist_golden_V2 (dist-target tree 1f430974 + this branch's firmware patch; same hexes)
+run_reachparam: T_LAT=13 G0=3 on reach_6502 (/home/struktured/projects/dr-mario-fwtuckreach-gate-wt/fpga/copro/reach_6502.py) and reach_fw (/home/struktured/projects/dr-mario-fwtuckreach-gate-wt/experiments/reach/reach_fw.py)
+game : firmware(+DIST engine) == golden mirror(+DIST) 154/154; target written == rule 154/154; active 154; the term moved the decision on 41
+couch: firmware(+DIST engine) == golden mirror(+DIST) 283/283; target written == rule 283/283; active 283; the term moved the decision on 82
+synth: firmware(+DIST engine) == golden mirror(+DIST) 60/60; target written == rule 60/60; active 60; the term moved the decision on 11
+big  : firmware(+DIST engine) == golden mirror(+DIST) 20/20; target written == rule 20/20; active 0; the term moved the decision on 0
+GATE_DIST_GOLDEN PASS
+
+## Verilator co-sim (RTL NES_MiSTer-dist 3b164c7), 10/03 couch boards; off = fw 1488e158 (late-flip lane timelines where not rerun)
+[off] boards 335: tuck commits 9 (2.7%), of which DONE final outside the reach mask 8; finals outside the mask overall 8
+   DONE frames: median 44.09  p90 56.20  max 68.30
+   P(mailbox == final) at GO + 1.5 f: 38.2%  3 f: 49.9%  6 f: 64.2%  9 f: 74.9%  12.5 f: 80.3%   | final first visible: median 3.12 f, p75 9.19, p90 20.66
+   endgame (<= 4 viruses, n=51): P(final) at GO + 6 f 60.8%
+[ship] boards 335: tuck commits 4 (1.2%), of which DONE final outside the reach mask 0; finals outside the mask overall 0
+   DONE frames: median 44.91  p90 55.35  max 71.46
+   P(mailbox == final) at GO + 1.5 f: 4.2%  3 f: 57.6%  6 f: 89.9%  9 f: 93.1%  12.5 f: 96.7%   | final first visible: median 2.90 f, p75 3.43, p90 6.10
+   endgame (<= 4 viruses, n=51): P(final) at GO + 6 f 92.2%
+ship vs off: boards 335  final identical 325/335  final+tuck identical 325/335
+   DONE delta (ship - off) frames: mean +0.20  median +1.30  p90 +2.11  p95 +3.16  max +19.10  min -17.28
+   same boards, P(mailbox == own final) at GO + 6 f: off 64.2%  ship 89.9%; tuck commits off 9 (outside mask 8)  ship 4 (outside mask 0)
+   DIFF G2 p97: off final [1, 0, 17] tuck [255, 255] in-mask True | ship final [2, 1, 26] tuck [3, 11] in-mask True | python a19
+   DIFF G2 p99: off final [6, 3, 14] tuck [6, 10] in-mask False | ship final [3, 0, 19] tuck [255, 255] in-mask True | python a19
+   DIFF G2 p100: off final [6, 3, 14] tuck [6, 8] in-mask False | ship final [0, 3, 8] tuck [0, 7] in-mask True | python a16
+   DIFF G2 p101: off final [5, 2, 5] tuck [6, 10] in-mask False | ship final [0, 2, 0] tuck [255, 255] in-mask True | python a0
+   DIFF G2 p102: off final [5, 3, 13] tuck [6, 10] in-mask False | ship final [2, 1, 26] tuck [255, 255] in-mask True | python a26
+   DIFF G2 p103: off final [7, 0, 23] tuck [255, 255] in-mask True | ship final [6, 2, 6] tuck [6, 10] in-mask True | python a23
+   DIFF G2 p111: off final [2, 1, 26] tuck [6, 11] in-mask False | ship final [6, 2, 6] tuck [255, 255] in-mask True | python a6
+   DIFF G2 p112: off final [2, 1, 26] tuck [7, 11] in-mask False | ship final [6, 0, 22] tuck [255, 255] in-mask True | python a22
+   DIFF G2 p113: off final [2, 2, 2] tuck [4, 3] in-mask False | ship final [5, 0, 21] tuck [255, 255] in-mask True | python a21
+   DIFF G2 p114: off final [2, 0, 18] tuck [2, 11] in-mask False | ship final [5, 3, 13] tuck [255, 255] in-mask True | python a14
+
+   DONE frames: median 46.06  p90 56.20  max 62.69
+   P(mailbox == final) at GO + 1.5 f: 32.8%  3 f: 42.2%  6 f: 60.3%  9 f: 70.7%  12.5 f: 77.6%   | final first visible: median 3.95 f, p75 11.05, p90 23.57
+[tl] boards 42: tuck commits 10 (23.8%), of which DONE final outside the reach mask 7; finals outside the mask overall 7
+   DONE frames: median 45.58  p90 53.36  max 61.93
+   P(mailbox == final) at GO + 1.5 f: 14.3%  3 f: 21.4%  6 f: 45.2%  9 f: 61.9%  12.5 f: 69.0%   | final first visible: median 6.42 f, p75 13.11, p90 23.57
+tl vs off: boards 42  final identical 37/42  final+tuck identical 37/42
+   DONE delta (tl - off) frames: mean +0.34  median +0.03  p90 +7.76  p95 +10.68  max +17.30  min -5.42
+   same boards, P(mailbox == own final) at GO + 6 f: off 47.6%  tl 45.2%; tuck commits off 8 (outside mask 8)  tl 10 (outside mask 7)
+   DIFF G2 p97: off final [1, 0, 17] tuck [255, 255] in-mask True | tl final [2, 1, 26] tuck [3, 11] in-mask True | python a19
+   DIFF G2 p99: off final [6, 3, 14] tuck [6, 10] in-mask False | tl final [2, 1, 26] tuck [3, 11] in-mask False | python a19
+   DIFF G2 p100: off final [6, 3, 14] tuck [6, 8] in-mask False | tl final [0, 3, 8] tuck [0, 7] in-mask True | python a16
+   DIFF G2 p103: off final [7, 0, 23] tuck [255, 255] in-mask True | tl final [6, 2, 6] tuck [6, 10] in-mask True | python a23
+   DIFF G2 p114: off final [2, 0, 18] tuck [2, 11] in-mask False | tl final [2, 3, 10] tuck [4, 3] in-mask False | python a14
+
+   DONE frames: median 46.06  p90 56.20  max 62.69
+   P(mailbox == final) at GO + 1.5 f: 32.8%  3 f: 42.2%  6 f: 60.3%  9 f: 70.7%  12.5 f: 77.6%   | final first visible: median 3.95 f, p75 11.05, p90 23.57
+[ro] boards 42: tuck commits 8 (19.0%), of which DONE final outside the reach mask 8; finals outside the mask overall 8
+   DONE frames: median 43.77  p90 58.08  max 62.50
+   P(mailbox == final) at GO + 1.5 f: 2.4%  3 f: 35.7%  6 f: 81.0%  9 f: 85.7%  12.5 f: 90.5%   | final first visible: median 3.33 f, p75 5.19, p90 12.09
+ro vs off: boards 42  final identical 42/42  final+tuck identical 42/42
+   DONE delta (ro - off) frames: mean +1.26  median +1.43  p90 +1.78  p95 +2.06  max +2.11  min +0.05
+   same boards, P(mailbox == own final) at GO + 6 f: off 47.6%  ro 81.0%; tuck commits off 8 (outside mask 8)  ro 8 (outside mask 8)
+
+   DONE frames: median 46.06  p90 56.20  max 62.69
+   P(mailbox == final) at GO + 1.5 f: 32.8%  3 f: 42.2%  6 f: 60.3%  9 f: 70.7%  12.5 f: 77.6%   | final first visible: median 3.95 f, p75 11.05, p90 23.57
+[tr] boards 42: tuck commits 0 (0.0%), of which DONE final outside the reach mask 0; finals outside the mask overall 0
+   DONE frames: median 42.11  p90 56.32  max 60.85
+   P(mailbox == final) at GO + 1.5 f: 28.6%  3 f: 38.1%  6 f: 59.5%  9 f: 78.6%  12.5 f: 81.0%   | final first visible: median 4.48 f, p75 8.46, p90 23.45
+tr vs off: boards 42  final identical 34/42  final+tuck identical 34/42
+   DONE delta (tr - off) frames: mean -2.01  median +0.00  p90 +0.00  p95 +0.00  max +0.01  min -13.05
+   same boards, P(mailbox == own final) at GO + 6 f: off 47.6%  tr 59.5%; tuck commits off 8 (outside mask 8)  tr 0 (outside mask 0)
+   DIFF G2 p99: off final [6, 3, 14] tuck [6, 10] in-mask False | tr final [3, 0, 19] tuck [255, 255] in-mask True | python a19
+   DIFF G2 p100: off final [6, 3, 14] tuck [6, 8] in-mask False | tr final [0, 0, 16] tuck [255, 255] in-mask True | python a16
+   DIFF G2 p101: off final [5, 2, 5] tuck [6, 10] in-mask False | tr final [0, 2, 0] tuck [255, 255] in-mask True | python a0
+   DIFF G2 p102: off final [5, 3, 13] tuck [6, 10] in-mask False | tr final [2, 1, 26] tuck [255, 255] in-mask True | python a26
+   DIFF G2 p111: off final [2, 1, 26] tuck [6, 11] in-mask False | tr final [6, 2, 6] tuck [255, 255] in-mask True | python a6
+   DIFF G2 p112: off final [2, 1, 26] tuck [7, 11] in-mask False | tr final [6, 0, 22] tuck [255, 255] in-mask True | python a22
+   DIFF G2 p113: off final [2, 2, 2] tuck [4, 3] in-mask False | tr final [5, 0, 21] tuck [255, 255] in-mask True | python a21
+   DIFF G2 p114: off final [2, 0, 18] tuck [2, 11] in-mask False | tr final [5, 3, 13] tuck [255, 255] in-mask True | python a14
+
+   DONE frames: median 46.06  p90 56.20  max 62.69
+   P(mailbox == final) at GO + 1.5 f: 32.8%  3 f: 42.2%  6 f: 60.3%  9 f: 70.7%  12.5 f: 77.6%   | final first visible: median 3.95 f, p75 11.05, p90 23.57
+[trtl] boards 42: tuck commits 3 (7.1%), of which DONE final outside the reach mask 0; finals outside the mask overall 0
+   DONE frames: median 45.58  p90 53.36  max 61.94
+   P(mailbox == final) at GO + 1.5 f: 23.8%  3 f: 33.3%  6 f: 54.8%  9 f: 76.2%  12.5 f: 78.6%   | final first visible: median 5.50 f, p75 8.77, p90 23.57
+trtl vs off: boards 42  final identical 32/42  final+tuck identical 32/42
+   DONE delta (trtl - off) frames: mean -1.76  median -3.38  p90 +7.76  p95 +10.68  max +17.30  min -13.48
+   same boards, P(mailbox == own final) at GO + 6 f: off 47.6%  trtl 54.8%; tuck commits off 8 (outside mask 8)  trtl 3 (outside mask 0)
+   DIFF G2 p97: off final [1, 0, 17] tuck [255, 255] in-mask True | trtl final [2, 1, 26] tuck [3, 11] in-mask True | python a19
+   DIFF G2 p99: off final [6, 3, 14] tuck [6, 10] in-mask False | trtl final [3, 0, 19] tuck [255, 255] in-mask True | python a19
+   DIFF G2 p100: off final [6, 3, 14] tuck [6, 8] in-mask False | trtl final [0, 3, 8] tuck [0, 7] in-mask True | python a16
+   DIFF G2 p101: off final [5, 2, 5] tuck [6, 10] in-mask False | trtl final [0, 2, 0] tuck [255, 255] in-mask True | python a0
+   DIFF G2 p102: off final [5, 3, 13] tuck [6, 10] in-mask False | trtl final [2, 1, 26] tuck [255, 255] in-mask True | python a26
+   DIFF G2 p103: off final [7, 0, 23] tuck [255, 255] in-mask True | trtl final [6, 2, 6] tuck [6, 10] in-mask True | python a23
+   DIFF G2 p111: off final [2, 1, 26] tuck [6, 11] in-mask False | trtl final [6, 2, 6] tuck [255, 255] in-mask True | python a6
+   DIFF G2 p112: off final [2, 1, 26] tuck [7, 11] in-mask False | trtl final [6, 0, 22] tuck [255, 255] in-mask True | python a22
+   DIFF G2 p113: off final [2, 2, 2] tuck [4, 3] in-mask False | trtl final [5, 0, 21] tuck [255, 255] in-mask True | python a21
+   DIFF G2 p114: off final [2, 0, 18] tuck [2, 11] in-mask False | trtl final [5, 3, 13] tuck [255, 255] in-mask True | python a14
+
+ship vs trtl: boards 42  final identical 42/42  final+tuck identical 42/42
+   DONE delta (ship - trtl) frames: mean +1.24  median +1.42  p90 +1.76  p95 +2.05  max +2.09  min +0.03
+   same boards, P(mailbox == own final) at GO + 6 f: trtl 54.8%  ship 90.5%; tuck commits trtl 3 (outside mask 0)  ship 3 (outside mask 0)
+
+### V2 (mask 13 / 3) vs V1 (ship), G2, judged with the 13 / 3 mask
+v2 vs ship: boards 116  final identical 115/116  final+tuck identical 115/116
+   DONE delta (v2 - ship) frames: mean +0.02  median +0.00  p90 +0.00  p95 +0.00  max +1.98  min +0.00
+   same boards, P(mailbox == own final) at GO + 6 f: ship 91.4%  v2 90.5%; tuck commits ship 3 (outside mask 0)  v2 4 (outside mask 0)
+   DIFF G2 p99: ship final [3, 0, 19] tuck [255, 255] in-mask True | v2 final [2, 2, 2] tuck [2, 10] in-mask True | python a19
+
+### banked 9/27 couch boards (H927 = cases_hsv2_20260927, ANTIBODY games), off vs ship
+[off] boards 81: tuck commits 0 (0.0%), of which DONE final outside the reach mask 0; finals outside the mask overall 0
+   DONE frames: median 47.63  p90 57.35  max 64.34
+   P(mailbox == final) at GO + 1.5 f: 34.6%  3 f: 56.8%  6 f: 76.5%  9 f: 85.2%  12.5 f: 92.6%   | final first visible: median 2.15 f, p75 5.76, p90 10.01
+   endgame (<= 4 viruses, n=8): P(final) at GO + 6 f 37.5%
+[ship] boards 81: tuck commits 0 (0.0%), of which DONE final outside the reach mask 0; finals outside the mask overall 0
+   DONE frames: median 47.43  p90 55.43  max 65.55
+   P(mailbox == final) at GO + 1.5 f: 0.0%  3 f: 48.1%  6 f: 92.6%  9 f: 97.5%  12.5 f: 98.8%   | final first visible: median 3.01 f, p75 3.46, p90 4.86
+   endgame (<= 4 viruses, n=8): P(final) at GO + 6 f 75.0%
+ship vs off: boards 81  final identical 81/81  final+tuck identical 81/81
+   DONE delta (ship - off) frames: mean -0.29  median +1.21  p90 +1.81  p95 +1.95  max +5.57  min -4.91
+   same boards, P(mailbox == own final) at GO + 6 f: off 76.5%  ship 92.6%; tuck commits off 0 (outside mask 0)  ship 0 (outside mask 0)
+
+## Mesen replay of the timelines on REAL couch carts (the late-flip lane's probe; timelines keyed to each cart's own GO)
+# carts: c960 = DIST60 couch c960dd49 | lg = +LATEGUARD 464a4b75 | abc = fair settle + ledge fixes ABC d2fa0c01 |
+#        nopin = fair settle, no pin 1bc29003 | fairD = fair cart D dbbb5007 (settle kit) | fairDmt8 = D + DRMINTHINK=8 050b0a65
+# hexes: base1488 = fw 1488e158 | ship = V1 a1ef31c8 | v2 = V2 b7e54520 (mask 13/3)
+label                  game |   n ==final HYBRID ==python ==silicon unscored regret/scored reg-xT frozen lateRT | tall n ==final HYBRID regret
+base1488_c960          G2   | 116     101      9       83       102        1          48.5   48.5      0     65 |     85      72      8   59.0   (cases 116)
+ship_c960              G2   | 116     114      0       91        92        0          21.3   12.6      0      9 |     85      84      0   26.2   (cases 116)
+v2_c960                G2   | 116     113      1       90        92        0          27.7   19.2      0     10 |     85      83      1   35.0   (cases 116)
+base1488_lg            G2   | 116      99      1       91        96        1          17.1   17.1     14     50 |     85      71      1   18.5   (cases 116)
+ship_lg                G2   | 116     114      0       91        92        0          21.3   12.6      0      9 |     85      84      0   26.2   (cases 116)
+v2_lg                  G2   | 116     113      0       91        92        0          21.3   12.6      1      9 |     85      83      0   26.2   (cases 116)
+base1488_abc           G2   | 116      98      3       87        97        3          22.2   22.2     14     51 |     85      70      3   25.4   (cases 116)
+ship_abc               G2   | 116     114      0       91        92        0          21.3   12.6      0      9 |     85      84      0   26.2   (cases 116)
+v2_abc                 G2   | 116     113      0       91        92        0          21.3   12.6      1      9 |     85      83      0   26.2   (cases 116)
+base1488_nopin         G2   | 116      92     14       76        88       16          19.2   19.2     11     46 |     85      64     14   21.8   (cases 116)
+ship_nopin             G2   | 116     110      3       90        89        3          12.7   12.7      2      6 |     85      80      3   14.6   (cases 116)
+v2_nopin               G2   | 116     109      3       90        89        3          12.7   12.7      3      6 |     85      79      3   14.6   (cases 116)
+base1488_fairD         G2   | 116     100      1       90        96        1          17.2   17.2     13     50 |     85      72      1   18.5   (cases 116)
+ship_fairD             G2   | 116     113      1       90        91        1          21.5   12.7      0      6 |     85      83      1   26.6   (cases 116)
+v2_fairD               G2   | 116     112      1       90        91        1          21.5   12.7      1      6 |     85      82      1   26.6   (cases 116)
+base1488_fairDmt8      G2   | 116      99      2       88        94        2          18.1   18.1     15     72 |     85      71      2   19.8   (cases 116)
+v2_fairDmt8            G2   | 116     112      1       90        91        1          21.5   12.7      1     16 |     85      82      1   26.6   (cases 116)
+base1488_c960          G3   |  86      82      1       81        80        0             -      -      0     31 |      6       5      0      -   (cases 86)
+ship_c960              G3   |  86      85      0       79        77        0             -      -      0     12 |      6       6      0      -   (cases 86)
+base1488_lg            G3   |  86      82      0       81        79        0             -      -      2     29 |      6       5      0      -   (cases 86)
+ship_lg                G3   |  86      85      0       79        77        0             -      -      0     12 |      6       6      0      -   (cases 86)
+v2_lg                  G3   |  86      85      0       79        77        0             -      -      0     12 |      6       6      0      -   (cases 86)
+base1488_abc           G3   |  86      82      0       81        79        0             -      -      2     29 |      6       5      0      -   (cases 86)
+ship_abc               G3   |  86      85      0       79        77        0             -      -      0     12 |      6       6      0      -   (cases 86)
+v2_abc                 G3   |  86      85      0       79        77        0             -      -      0     12 |      6       6      0      -   (cases 86)
+base1488_nopin         G3   |  86      82      0       81        79        0             -      -      2     29 |      6       5      0      -   (cases 86)
+ship_nopin             G3   |  86      85      0       79        77        0             -      -      0     12 |      6       6      0      -   (cases 86)
+v2_nopin               G3   |  86      85      0       79        77        0             -      -      0     12 |      6       6      0      -   (cases 86)
+base1488_fairD         G3   |  86      82      0       81        79        0             -      -      2     29 |      6       5      0      -   (cases 86)
+ship_fairD             G3   |  86      85      0       79        77        0             -      -      0     12 |      6       6      0      -   (cases 86)
+v2_fairD               G3   |  86      85      0       79        77        0             -      -      0     12 |      6       6      0      -   (cases 86)
+v2_fairDmt8            G3   |  86      85      0       79        77        0             -      -      0     14 |      6       6      0      -   (cases 86)
+base1488_c960          G4   | 133     131      2      124       114        0             -      -      0     60 |      5       5      0      -   (cases 133)
+ship_c960              G4   | 133     133      0      126       115        0             -      -      0     14 |      5       5      0      -   (cases 133)
+base1488_lg            G4   | 133     131      0      124       115        0             -      -      2     58 |      5       5      0      -   (cases 133)
+ship_lg                G4   | 133     133      0      126       115        0             -      -      0     14 |      5       5      0      -   (cases 133)
+v2_lg                  G4   | 133     133      0      126       115        0             -      -      0     14 |      5       5      0      -   (cases 133)
+base1488_abc           G4   | 133     130      0      123       116        0             -      -      3     57 |      5       5      0      -   (cases 133)
+ship_abc               G4   | 133     133      0      126       115        0             -      -      0     14 |      5       5      0      -   (cases 133)
+v2_abc                 G4   | 133     133      0      126       115        0             -      -      0     14 |      5       5      0      -   (cases 133)
+base1488_nopin         G4   | 133     130      0      123       116        0             -      -      3     57 |      5       5      0      -   (cases 133)
+ship_nopin             G4   | 133     133      0      126       115        0             -      -      0     14 |      5       5      0      -   (cases 133)
+v2_nopin               G4   | 133     133      0      126       115        0             -      -      0     14 |      5       5      0      -   (cases 133)
+base1488_fairD         G4   | 133     130      0      123       116        0             -      -      3     57 |      5       5      0      -   (cases 133)
+ship_fairD             G4   | 133     133      0      126       115        0             -      -      0     14 |      5       5      0      -   (cases 133)
+v2_fairD               G4   | 133     133      0      126       115        0             -      -      0     14 |      5       5      0      -   (cases 133)
+v2_fairDmt8            G4   | 133     132      0      125       114        0             -      -      1     23 |      5       5      0      -   (cases 133)
+
+### per flag, G2 42-board subset (the 8 kill boards, the 21 copro != python boards, big DONE deltas, a few others)
+label                  game |   n ==final HYBRID ==python ==silicon unscored regret/scored reg-xT frozen lateRT | tall n ==final HYBRID regret
+base1488_c960          G2   |  42      32      8       14        37        1         115.6  115.6      0     30 |     29      19      8  163.5   (cases 42)
+base1488_lg            G2   |  42      30      1       22        30        1          30.3   30.3     10     19 |     29      18      1   42.1   (cases 42)
+tr_c960                G2   |  42      40      1       20        32        0          50.9   50.9      0     22 |     29      27      1   68.2   (cases 42)
+tr_lg                  G2   |  42      38      0       23        30        0          29.6   29.6      4     17 |     29      26      0   40.7   (cases 42)
+ro_c960                G2   |  42      34      7       14        36        1          96.6   96.6      0     10 |     29      21      7  135.8   (cases 42)
+ro_lg                  G2   |  42      34      1       19        31        1          33.2   33.2      6      4 |     29      21      1   42.9   (cases 42)
+tl_c960                G2   |  42      32      8       13        33        1         114.7   94.2      0     35 |     29      19      8  162.2   (cases 42)
+tl_lg                  G2   |  42      29      1       21        29        1          39.0   31.1     11     20 |     29      17      1   54.8   (cases 42)
+trtl_c960              G2   |  42      39      1       18        32        0          75.4   53.4      0     24 |     29      26      1  103.7   (cases 42)
+trtl_lg                G2   |  42      37      0       21        30        0          54.1   31.1      4     19 |     29      25      0   76.2   (cases 42)
+ship_c960              G2   |  42      41      0       18        31        0          56.9   34.0      0      4 |     29      28      0   76.9   (cases 42)
+ship_lg                G2   |  42      41      0       18        31        0          56.9   34.0      0      4 |     29      28      0   76.9   (cases 42)

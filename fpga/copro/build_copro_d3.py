@@ -192,6 +192,16 @@ def build_image(board, cA, cB, nA, nB):
     # byte-identical firmware). Needs an RTL built with DRDIST; on an older core the $70F5 write is ignored (no decode)
     # and the search is exactly ANTIBODY's. Routine at dist_6502.DIST_ROM ($A400).
     D3.DRDIST = int(os.environ.get("DRDIST", "0"))
+    # DRTUCKREACH (2026-10-03): the tuck root extension honours the DRREACH mask and publishes only at DONE (with its
+    # descriptor). Default 0 = byte-identical firmware. Spec + gates: experiments/tuckreach/, tuck_v3.TUCKREACH.
+    _tuckreach = int(os.environ.get("DRTUCKREACH", "0"))
+    assert not _tuckreach or D3.DRREACH, "DRTUCKREACH requires DRREACH=1 (it reads the reach routine's ROK/R_FLT)"
+    assert not _tuckreach or EMIT_TUCK_V3 or EMIT_TUCK_BFS, "DRTUCKREACH needs a tuck_v3 root extension"
+    # DRROOTORD (2026-10-03, STEER7 desk lever 4): two-pass root ordering -- a depth-2 pre-pass over every Pass-0 root,
+    # then the deep roots in descending depth-2 order, with an exact tie rule so the FINAL answer is today's. Only WHEN
+    # the final is first live-published moves. Default 0 = byte-identical firmware. See test_search_d3.DRROOTORD.
+    D3.DRROOTORD = int(os.environ.get("DRROOTORD", "0"))
+    D3.DRTUCKLIVE = int(os.environ.get("DRTUCKLIVE", "0"))
     import nes_d3_golden as _G
     _G.DISC_SHIFT = 1            # golden must match for the py65 gate
     _G.EXCAV_HANG_PLY1 = True    # golden must match for the py65 gate
@@ -226,6 +236,9 @@ def build_image(board, cA, cB, nA, nB):
 
     tuck_v3_code = b""
     tuck_v3_ep = None
+    if EMIT_TUCK_V3 or EMIT_TUCK_BFS:
+        import tuck_v3 as _TVR
+        _TVR.TUCKREACH = _tuckreach          # read by emit_tuck_root_extension at emit time (both enumerators)
     if EMIT_TUCK_V3:
         import tuck_v3 as TV
         resolve_capped_addr = 0x8000 + labels["resolve_capped"]
@@ -272,6 +285,20 @@ def build_image(board, cA, cB, nA, nB):
         import tuck_bfs_6502 as TB
         import tuck_bfs_translate_6502 as TRB
         import tuck_v3 as TV
+        # DRTUCKLIVE (2026-10-03): the enumerator modules bind `LIVE_BOARD = primitives.LIVE_BOARD` at IMPORT, and
+        # they are first imported here, AFTER D3.build() rebound primitives.LIVE_BOARD to CUR ($0700) for eh_terms. So
+        # every shipped tuck_bfs firmware (1488e158 included) enumerates, translates and tier-3-checks tucks on $0700 =
+        # the soft CUR the search left behind (the LAST-processed root's resolved child board), not on the live board
+        # at $0500. Default 0 keeps that binding (byte-identical); 1 points all three at LIVE. Saved/restored per build
+        # so one process can emit both arms.
+        _tb_mods = [TB, TRB]
+        if EMIT_TUCK_BFS_TIER3:
+            import tuck_bfs_tier3_6502 as _T3L
+            _tb_mods.append(_T3L)
+        for _m in _tb_mods:
+            if not hasattr(_m, "_LIVE_BOARD_AT_IMPORT"):
+                _m._LIVE_BOARD_AT_IMPORT = _m.LIVE_BOARD
+            _m.LIVE_BOARD = 0x0500 if int(os.environ.get("DRTUCKLIVE", "0")) else _m._LIVE_BOARD_AT_IMPORT
         resolve_capped_addr = 0x8000 + labels["resolve_capped"]
         expectimax_addr = 0x8000 + labels["expectimax"]
         eh_terms_scan_addr = 0x8000 + labels["eh_terms_scan"]
@@ -331,8 +358,18 @@ def build_image(board, cA, cB, nA, nB):
     if D3.DRREACH:
         import reach_6502 as RC
         assert not EMIT_TUCK, "DRREACH's mask routine lives in the v1 EMIT_TUCK window ($A800)"
+        # DRREACH_TLAT / DRREACH_G0 (2026-10-03): the mask's answer-latency and first-gravity-frame constants as
+        # build parameters. Default 19 / 8 = the pinned-settle couch carts (byte-identical: reach_6502's own values);
+        # the fair-settle cart (DRSETTLE) is 13 / 3. Set on the module for this emission, then restored.
+        _rc_t, _rc_g = RC.T_LAT, RC.G0
+        RC.T_LAT = int(os.environ.get("DRREACH_TLAT", str(_rc_t)))
+        RC.G0 = int(os.environ.get("DRREACH_G0", str(_rc_g)))
+        assert RC.F0 < RC.T_LAT <= 40 and 0 <= RC.G0 <= 16, (RC.T_LAT, RC.G0)
         ra = Asm6502(RC.REACH_ROM)
-        RC.emit_reach(ra, S_NA, S_NB, tap=bool(D3.DRREACHTAP))
+        try:
+            RC.emit_reach(ra, S_NA, S_NB, tap=bool(D3.DRREACHTAP))
+        finally:
+            RC.T_LAT, RC.G0 = _rc_t, _rc_g
         reach_code = ra.assemble()
         assert ra.labels["reach_mask"] == 0, "the search JSRs REACH_ROM: the entry must be its first byte"
         assert RC.REACH_ROM + len(reach_code) <= SQ_ROM, f"reach routine overruns the SQ tables ({len(reach_code)}B)"
