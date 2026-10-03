@@ -1,0 +1,93 @@
+rows fD_a2: gb10 600 rc10 600 lulu10 600;  8a fD: gb10 1500 rc10 600 lulu10 600
+rows fD_bdep2: gb10 600 rc10 600 lulu10 600
+rows fD_bref2: gb10 600 rc10 600 lulu10 600
+rows fD_c2: gb10 600 rc10 600 lulu10 600
+rows fD_brefD: gb10 600 rc10 600 lulu10 600
+rows fD_bdepD: gb10 600 rc10 600 lulu10 600
+rows fD_ehb0: gb10 600 rc10 600 lulu10 0
+
+=== a2 (today, PROPH to the first publication) vs 8a fD (today, PROPH to the commit) ===
+  a2 vs fD gb10: n=600  rows differing on any key 45  outcome (topout) differs 0
+  a2 vs fD rc10: n=600  rows differing on any key 54  outcome (how) differs 3
+  a2 vs fD lulu10: n=600  rows differing on any key 50  outcome (how) differs 0
+
+a2 - fD (paired)
+  gb10 tap-out (n=600) 7.50% -> 7.50%  d +0.00 [+0.00, +0.00]  churn fixed 0 / new 0   tap<=100 d +0.00 [+0.00, +0.00]
+  rc10 race win M177 (n=600) 91.50% -> 91.17%  d -0.33 [-1.00, +0.33]  churn fixed 1 / new 3   race-row tap-out d +0.17 [-0.33, +0.83]
+  lulu10 race win M140 (n=600) 89.17% -> 89.17%  d +0.00 [+0.00, +0.00]  churn fixed 0 / new 0   LULU-row tap-out d +0.00 [+0.00, +0.00]
+  Bonferroni 99.17%: tap-out +0.00 [+0.00, +0.00]  race -0.33 [-1.33, +0.50]  lulu +0.00 [+0.00, +0.00]
+
+=== BLOCK 3 (descriptive): every arm vs (a2) today ===
+
+(b) fair DRSETTLE + DEPLOYED mask  vs  (a2) today
+  gb10 tap-out (n=600) 7.50% -> 7.00%  d -0.50 [-1.67, +0.67]  churn fixed 8 / new 5   tap<=100 d +0.17 [-0.50, +1.00]
+  rc10 race win M177 (n=600) 91.17% -> 92.17%  d +1.00 [-1.67, +3.83]  churn fixed 39 / new 33   race-row tap-out d -0.50 [-3.33, +2.17]
+  lulu10 race win M140 (n=600) 89.17% -> 91.00%  d +1.83 [-0.83, +4.50]  churn fixed 39 / new 28   LULU-row tap-out d -1.17 [-3.67, +1.50]
+  Bonferroni 99.17%: tap-out -0.50 [-2.17, +1.00]  race +1.00 [-2.50, +4.67]  lulu +1.83 [-1.67, +5.50]
+
+(b) fair DRSETTLE + REFIT mask  vs  (a2) today
+  gb10 tap-out (n=600) 7.50% -> 7.17%  d -0.33 [-1.83, +1.17]  churn fixed 11 / new 9   tap<=100 d +0.33 [-0.67, +1.33]
+  rc10 race win M177 (n=600) 91.17% -> 93.17%  d +2.00 [-0.67, +4.83]  churn fixed 41 / new 29   race-row tap-out d -1.33 [-4.17, +1.33]
+  lulu10 race win M140 (n=600) 89.17% -> 91.50%  d +2.33 [-0.17, +5.00]  churn fixed 39 / new 25   LULU-row tap-out d -1.83 [-4.33, +0.67]
+  Bonferroni 99.17%: tap-out -0.33 [-2.17, +1.50]  race +2.00 [-1.50, +5.67]  lulu +2.33 [-1.17, +5.83]
+
+(c) fair, no settle cut  [= minus the pin's worth]  vs  (a2) today
+  gb10 tap-out (n=600) 7.50% -> 10.00%  d +2.50 [+0.33, +4.67]  churn fixed 15 / new 30   tap<=100 d +0.67 [-0.33, +1.67]
+  rc10 race win M177 (n=600) 91.17% -> 81.67%  d -9.50 [-12.50, -6.67]  churn fixed 15 / new 72   race-row tap-out d +10.17 [+7.17, +13.17]
+  lulu10 race win M140 (n=600) 89.17% -> 83.50%  d -5.67 [-8.33, -3.00]  churn fixed 16 / new 50   LULU-row tap-out d +6.50 [+3.83, +9.17]
+  Bonferroni 99.17%: tap-out +2.50 [-0.33, +5.50]  race -9.50 [-13.39, -5.67]  lulu -5.67 [-9.17, -2.50]
+
+(b-ref) + fix D (DRPROPHFIRST), refit mask  vs  (a2) today
+  gb10 tap-out (n=600) 7.50% -> 5.83%  d -1.67 [-3.33, -0.17]  churn fixed 17 / new 7   tap<=100 d -0.33 [-1.33, +0.50]
+  rc10 race win M177 (n=600) 91.17% -> 93.50%  d +2.33 [-0.33, +5.17]  churn fixed 43 / new 29   race-row tap-out d -1.67 [-4.50, +1.00]
+  lulu10 race win M140 (n=600) 89.17% -> 91.83%  d +2.67 [+0.00, +5.33]  churn fixed 42 / new 26   LULU-row tap-out d -2.17 [-4.83, +0.33]
+  Bonferroni 99.17%: tap-out -1.67 [-3.83, +0.33]  race +2.33 [-1.33, +6.17]  lulu +2.67 [-1.00, +6.17]
+
+(b-dep) + fix D, DEPLOYED fw mask  vs  (a2) today
+  gb10 tap-out (n=600) 7.50% -> 6.00%  d -1.50 [-2.83, -0.33]  churn fixed 12 / new 3   tap<=100 d -0.50 [-1.17, +0.00]
+  rc10 race win M177 (n=600) 91.17% -> 93.50%  d +2.33 [-0.33, +5.17]  churn fixed 42 / new 28   race-row tap-out d -1.83 [-4.50, +0.83]
+  lulu10 race win M140 (n=600) 89.17% -> 92.17%  d +3.00 [+0.33, +5.67]  churn fixed 43 / new 25   LULU-row tap-out d -2.33 [-5.00, +0.17]
+  Bonferroni 99.17%: tap-out -1.50 [-3.17, +0.00]  race +2.33 [-1.17, +6.17]  lulu +3.00 [-0.50, +6.56]
+
+=== BLOCK 3 decomposition (descriptive) ===
+
+settle cut under fair gravity: bref2 - c2
+  gb10 tap-out (n=600) 10.00% -> 7.17%  d -2.83 [-5.17, -0.67]  churn fixed 31 / new 14   tap<=100 d -0.33 [-1.67, +1.00]
+  rc10 race win M177 (n=600) 81.67% -> 93.17%  d +11.50 [+8.17, +14.84]  churn fixed 92 / new 23   race-row tap-out d -11.50 [-14.84, -8.17]
+  lulu10 race win M140 (n=600) 83.50% -> 91.50%  d +8.00 [+5.00, +11.00]  churn fixed 70 / new 22   LULU-row tap-out d -8.33 [-11.50, -5.33]
+  Bonferroni 99.17%: tap-out -2.83 [-5.83, +0.00]  race +11.50 [+6.83, +16.00]  lulu +8.00 [+3.67, +12.33]
+
+MASK DECISION: bref2 - bdep2
+  gb10 tap-out (n=600) 7.00% -> 7.17%  d +0.17 [-1.00, +1.33]  churn fixed 5 / new 6   tap<=100 d +0.17 [-0.50, +0.83]
+  rc10 race win M177 (n=600) 92.17% -> 93.17%  d +1.00 [-0.33, +2.33]  churn fixed 11 / new 5   race-row tap-out d -0.83 [-2.17, +0.50]
+  lulu10 race win M140 (n=600) 91.00% -> 91.50%  d +0.50 [-0.83, +1.83]  churn fixed 10 / new 7   LULU-row tap-out d -0.67 [-2.00, +0.67]
+  Bonferroni 99.17%: tap-out +0.17 [-1.33, +1.50]  race +1.00 [-0.67, +2.83]  lulu +0.50 [-1.33, +2.33]
+  -> no detectable difference -> keep the deployed fw constants (status quo)
+
+fix D under the refit mask: brefD - bref2
+  gb10 tap-out (n=600) 7.17% -> 5.83%  d -1.33 [-2.50, -0.33]  churn fixed 9 / new 1   tap<=100 d -0.67 [-1.50, +0.00]
+  rc10 race win M177 (n=600) 93.17% -> 93.50%  d +0.33 [-0.83, +1.50]  churn fixed 8 / new 6   race-row tap-out d -0.33 [-1.50, +0.83]
+  lulu10 race win M140 (n=600) 91.50% -> 91.83%  d +0.33 [-0.67, +1.33]  churn fixed 6 / new 4   LULU-row tap-out d -0.33 [-1.33, +0.67]
+  Bonferroni 99.17%: tap-out -1.33 [-2.89, -0.17]  race +0.33 [-1.33, +2.00]  lulu +0.33 [-1.00, +1.67]
+
+fix D under the deployed mask: bdepD - bdep2
+  gb10 tap-out (n=600) 7.00% -> 6.00%  d -1.00 [-1.83, -0.33]  churn fixed 6 / new 0   tap<=100 d -0.67 [-1.33, -0.17]
+  rc10 race win M177 (n=600) 92.17% -> 93.50%  d +1.33 [+0.17, +2.50]  churn fixed 10 / new 2   race-row tap-out d -1.33 [-2.50, -0.17]
+  lulu10 race win M140 (n=600) 91.00% -> 92.17%  d +1.17 [+0.17, +2.17]  churn fixed 8 / new 1   LULU-row tap-out d -1.17 [-2.17, -0.17]
+  Bonferroni 99.17%: tap-out -1.00 [-2.33, -0.17]  race +1.33 [-0.17, +2.83]  lulu +1.17 [+0.00, +2.50]
+
+MASK under D: brefD - bdepD
+  gb10 tap-out (n=600) 6.00% -> 5.83%  d -0.17 [-1.50, +1.00]  churn fixed 8 / new 7   tap<=100 d +0.17 [-0.67, +1.00]
+  rc10 race win M177 (n=600) 93.50% -> 93.50%  d +0.00 [-1.33, +1.50]  churn fixed 9 / new 9   race-row tap-out d +0.17 [-1.33, +1.50]
+  lulu10 race win M140 (n=600) 92.17% -> 91.83%  d -0.33 [-1.67, +1.00]  churn fixed 7 / new 9   LULU-row tap-out d +0.17 [-1.17, +1.50]
+  Bonferroni 99.17%: tap-out -0.17 [-1.89, +1.50]  race +0.00 [-1.83, +1.83]  lulu -0.33 [-2.17, +1.33]
+  -> no detectable difference under D -> the deployed fw can pair with D
+
+=== BLOCK 4: eh on the TRUE b1 (vs 8a fD, unchanged) ===
+
+fD_ehb0 (true b1) vs fD (soft b1, today's fw)
+  gb10 tap-out (n=600) 7.50% -> 6.00%  d -1.50 [-3.50, +0.33]  churn fixed 23 / new 14   tap<=100 d -0.17 [-1.00, +0.67]
+  rc10 race win M177 (n=600) 91.50% -> 90.50%  d -1.00 [-3.17, +1.00]  churn fixed 18 / new 24   race-row tap-out d +1.00 [-1.00, +3.17]
+  lulu10 race win M140 (n=0) nan% -> nan%  d +nan [+nan, +nan]  churn fixed 0 / new 0   LULU-row tap-out d +nan [+nan, +nan]
+  Bonferroni 99.17%: tap-out -1.50 [-4.33, +1.17]  race -1.00 [-4.00, +1.67]  lulu +nan [+nan, +nan]
+  -> no detectable difference -> no fw change needed

@@ -49,4 +49,51 @@ every model edit.
 **Reading:** on silicon's own brain, DIST60 is still a clear win on all three endpoints. The tap-out cut is somewhat
 smaller (−2.6 vs −3.8 pp) and the race gain somewhat larger.
 
-## STEER8b: pending (`steer8b-farm`; analysis → `steer8/analysis_8b.txt`)
+## STEER8b (amended twice before any game; 12,000 games; audit 12,000/12,000; `steer8/analysis_8b.txt`)
+**Setup:**
+- **Brain:** faithful DIST60.
+- **Seeds:** 600 paired per cell, 39134–40332.
+- **Driver model:** PROPH stops at the first publication (p_end 10 today and in (c), 4 under fair (b)).
+- **Fix D (DRPROPHFIRST)** as specified by the settle lane.
+- **Every arm vs `fD_a2` (today):** 6 gb10 comparisons, Bonferroni 99.17%.
+
+**Today's arm under the corrected PROPH window:**
+- `fD_a2` vs 8a's `fD` differs on **45 / 54 / 50 rows** (gb10 / rc10 / lulu10, any key).
+- Outcomes change on **0 / 3 / 0**.
+- So the PROPH-window correction barely moves today's pinned cart: PROPH runs inside the frozen-gravity settle either
+  way.
+
+| arm vs (a2) today, 7.50% gb10 tap-out | gb10 tap-out Δ [95%] | churn (fixed / new) | race M177 Δ | LULU Δ |
+|---|---|---|---|---|
+| (b) fair DRSETTLE, DEPLOYED fw mask | −0.50 [−1.67, +0.67] | 8/5 | +1.00 | +1.83 |
+| (b) fair DRSETTLE, REFIT mask | −0.33 [−1.83, +1.17] | 11/9 | +2.00 | +2.33 |
+| **(c) fair, NO settle cut** | **+2.50 [+0.33, +4.67]** | 15/30 | **−9.50 [−12.50, −6.67]** | **−5.67 [−8.33, −3.00]** |
+| **(b-ref) + fix D** | **−1.67 [−3.33, −0.17]** (Bonferroni [−3.83, +0.33]) | 17/7 | +2.33 | +2.67 [+0.00, +5.33] |
+| **(b-dep) + fix D, DEPLOYED fw mask** | **−1.50 [−2.83, −0.33]** (Bonferroni [−3.17, +0.00]) | **12/3** | +2.33 | **+3.00 [+0.33, +5.67]** |
+
+**Decomposition:**
+
+| comparison | gb10 tap-out | race | LULU |
+|---|---|---|---|
+| **pin worth** (c − a2) | today's pin is worth 2.5 pp | 9.5 | 5.7 |
+| **settle cut under fair gravity** (bref2 − c2) | **−2.83 [−5.17, −0.67]** | **+11.5 [+8.2, +14.8]** | +8.0 |
+| **mask refit** (bref2 − bdep2) | +0.17 [−1.00, +1.33] | | |
+| **fix D, deployed mask** (bdepD − bdep2) | **−1.00 [−1.83, −0.33]**, churn **6/0** | +1.33 [+0.17, +2.50] | +1.17 [+0.17, +2.17] |
+| **fix D, refit mask** (brefD − bref2) | −1.33 [−2.50, −0.33], churn 9/1 | | |
+| **mask under D** (brefD − bdepD) | −0.17 [−1.50, +1.00] | | |
+
+- **Settle cut:** removing the pin WITHOUT the settle cut loses all of that.
+- **Mask refit:** no detectable difference, so **keep the deployed fw constants (status quo).**
+- **Mask under D:** no difference, so **D can ship on the current fw.**
+
+**Block 4 (eh on the TRUE b1, `ehb1=0`, vs 8a fD):** tap-out −1.50 [−3.50, +0.33], race −1.00 [−3.17, +1.00]. No
+detectable difference, so **no fw change is needed**. (Block 5 was dropped.)
+
+**Reading (the sim's price for the fairness fix):**
+- The fair DRSETTLE cart (b) is **no worse than today's pinned cart** on any endpoint. Its point estimates are slightly
+  better.
+- **Adding fix D makes the fair cart BETTER than today's:** −1.5 pp tap-out, +2.3 race, +3.0 LULU on the DEPLOYED fw
+  mask. The D increment itself is clean (churn 6/0) and significant on all three endpoints at 95%.
+- **Shipping no-pin without the settle cut (c) would be a real regression:** +2.5 tap-out, −9.5 race.
+- **Model limitation:** rotation still starts at t_act. The ship decision rests on the settle lane's Mesen replay
+  bar plus the gravity-fidelity gate; these arms price it.
