@@ -1,0 +1,29 @@
+EXACTNESS identity arm vs banked STEER6 screen rows: 1200/1200 identical
+BASELINE s6_dist_target60: gate b n=600 tap-out 18.83%  race n=600 win 74.33%
+  baseline brain finishing take rate (gb, <=4 viruses): 1625/2899 = 56.1%
+
+s6e_chain0: gate b n=600  race n=600   -> fail   [E1 True E2 False E3 False]
+  E1 endgame pills (k4 -> clear, both won n=444): base mean 41.1  d -4.12 [-7.25, -1.06]   (sim s: -23.7 [-37.2, -10.0])
+     last-virus pills (k1 -> clear, both won n=370): base mean 17.2  d -3.78 [-6.58, -0.94]
+  E2 race win 71.33%  d -3.00 [-5.50, -0.50]   (delta 2.0: -3.83 [-6.17, -1.50])
+  E3 tap-out  21.83%  d +3.00 [+0.33, +5.67]   tap<=100 d +0.00 [+0.00, +0.00]
+  churn on tap-out: fixed 25 / new 43  (base failures 113)
+  endgame stall-pills/game (act-stall>=10 starting at <=4 viruses): base 30.2 arm 23.9  d -6.3 [-9.9, -2.9]
+  all act-stall(>=10) pills/game: d -6.2 [-9.8, -2.8];  endgame-stall deaths d +1.00 [-1.50, +3.67]
+  race endgame seconds (t4 -> clear, both cleared n=422): d -5.7 [-8.9, -2.1];  tiles sent/game d -7.53 [-8.76, -6.34]
+  brain finishing take rate (gb): 1574/3899 = 40.4%;  D-reducing take rate 3925/6521 = 60.2%
+
+s6e_fin: gate b n=600  race n=600   -> fail   [E1 False E2 False E3 False]
+  E1 endgame pills (k4 -> clear, both won n=455): base mean 41.9  d -0.59 [-4.65, +3.64]   (sim s: -1.8 [-19.3, +16.6])
+     last-virus pills (k1 -> clear, both won n=382): base mean 18.0  d +1.19 [-1.93, +4.40]
+  E2 race win 71.83%  d -2.50 [-4.67, -0.17]   (delta 2.0: -4.50 [-6.83, -2.33])
+  E3 tap-out  19.50%  d +0.67 [-1.83, +3.17]   tap<=100 d +0.00 [+0.00, +0.00]
+  churn on tap-out: fixed 28 / new 32  (base failures 113)
+  endgame stall-pills/game (act-stall>=10 starting at <=4 viruses): base 30.2 arm 31.7  d +1.5 [-2.6, +5.4]
+  all act-stall(>=10) pills/game: d +1.6 [-2.5, +5.5];  endgame-stall deaths d +0.67 [-1.83, +3.17]
+  race endgame seconds (t4 -> clear, both cleared n=433): d -5.1 [-8.9, -1.5];  tiles sent/game d -7.71 [-8.88, -6.59]
+  brain finishing take rate (gb): 1715/1975 = 86.8%;  D-reducing take rate 4374/4890 = 89.4%
+
+POST-HOC (not in the prereg bar): race win vs the assumed damage per sent tile delta (vs_race: 'assumed, not fitted')
+  s6e_chain0: delta 0.0: +3.00 [+0.67, +5.50] | delta 1.0: -1.83 [-4.50, +0.83] | delta 2.0: -3.83 [-6.17, -1.50] | delta 2.65: -3.00 [-5.50, -0.50]
+  s6e_fin: delta 0.0: +3.00 [+0.50, +5.50] | delta 1.0: -1.33 [-4.00, +1.33] | delta 2.0: -4.50 [-6.83, -2.33] | delta 2.65: -2.50 [-4.67, -0.17]

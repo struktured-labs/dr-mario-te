@@ -180,8 +180,18 @@ cells.
 - **dr. lulu G1's col-2 stall, re-counted:** 201.6 s / **117 pills** at 4 viruses (was ~99–102 with the old
   tracker), sealed (D = ∞) on 56. It is the sealed-target archetype. DIST's G4 seal lasted 8 pills.
 
-## 4. Fix screen (STEER6e)
-See `../cvx/PREREG_STEER6e.md` (committed before any game) and `../cvx/RESULT_STEER6e.md`.
+## 4. Fix screen (STEER6e): both arms FAIL; the combos pay for themselves in the sim
+- **Setup:** `../cvx/PREREG_STEER6e.md` (`1625e41e`), `../cvx/RESULT_STEER6e.md`.
+  - 600 paired seeds, gate (b) + race lam 6.
+  - The identity arm reproduces the banked STEER6 rows 1200/1200.
+- **s6e_chain0** (CHAIN off at ≤ 4 viruses):
+  - endgames faster: E1 −4.12 [−7.25, −1.06] pills, ≈ −24 sim-s;
+  - endgame stall-pills −6.3 / game;
+  - but race −3.00 [−5.50, −0.50] (7.5 fewer tiles sent per game) and tap-out +3.00 [+0.33, +5.67] (churn 25 / 43).
+- **s6e_fin** (CHAIN + EXCAV/HANG off): finishes 87% of available finishes (vs 56%), but E1 is −0.59 (null) and race
+  is −2.50.
+- **Post-hoc:** with no damage per sent tile (δ = 0), both arms win +3.0 pp of races. ⇒ The trade is **tempo vs
+  garbage damage**, and it hinges on vs_race's unfitted δ.
 
 ## Files
 **Cases (banked):**
