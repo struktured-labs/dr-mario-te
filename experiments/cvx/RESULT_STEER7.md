@@ -69,9 +69,27 @@ spans 0, so the asymmetry is not established at n = 600.
   - ⇒ **The gate-(b) tap-out curve is purely "act sooner":** the steering answer frame plus the reach mask.
   - The race endpoints mix that with tempo (BASE_F).
 
-## SECONDARY (added after the prereg: the couch tracker bug): see the addendum
-Gate (b) on owner_fit_202610, and the LULU race at lam 2.56, for S = 0/−1/−2. Results are in
-`steer7/analysis_refit.txt` (pending; queued in `steer7b_farm.sh`).
+## SECONDARY (added after the prereg: the couch tracker bug): corrected fits, S = 0 / −1 / −2, block A
+Rows `steer7/A10/`; analysis `steer7/analysis_refit.txt`. Descriptive, no bar.
+
+**Cells:**
+- gate (b) on owner_fit_202610 (2.36 volleys/min, placement-clocked);
+- the LULU race at lam 2.56 (M 140).
+
+| | gb10 tap-out | Δ [95%] | churn (fixed / new) | LULU win | Δ [95%] | churn (fixed / new) |
+|---|---|---|---|---|---|---|
+| S = 0 | **7.83%** | — | — | 88.33% | — | — |
+| −1 f | 7.00% | −0.83 [−2.50, +0.67] | 15 / 10 | 89.33% | +1.00 [−1.83, +3.83] | 40 / 34 |
+| −2 f | 5.67% | **−2.17 [−4.17, −0.17]** | 27 / 14 | 90.33% | +2.00 [−1.00, +5.00] | 48 / 36 |
+
+**Absolute levels on the same 600 seeds:**
+- Gate-b tap-out is 18.67% under OWNER-0804 and **7.83%** under owner_fit_202610.
+- Garbage falls from **56 to 16 cells/game**. OWNER-0804 is clear-keyed and ~3.5× the corrected owner.
+
+**Reading:**
+- Under realistic garbage the tap-out base is less than half as high, and the absolute worth of a frame shrinks with
+  it: about −1 pp per frame at −1/−2 f.
+- The direction is the same as the primary: faster helps.
 
 ## PART 2 (desk): where could frames come from? → `RESULT_STEER7_DESK.md`
 - **The silicon answer frame is set by DRIVER constants:** ~1.5 f edge + **7.5 f settle** (`DELAY2` = 15 hooks; it

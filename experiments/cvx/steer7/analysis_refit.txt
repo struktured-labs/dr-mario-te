@@ -1,0 +1,20 @@
+SECONDARY, added after the prereg (tracker bug): gate (b) owner_fit_202610 + LULU race lam 2.56
+  s0   gb10: decisions 74163, answer frame mean  19.23 (nominal sample 19.24), clamp binds  0.08% of decisions, tempo over-credit 0.001 f/dec, mask T_LAT mean 18.99, tempo shift mean -0.01 f
+  s0   rcL10: decisions 83487, answer frame mean  19.23 (nominal sample 19.24), clamp binds  0.08% of decisions, tempo over-credit 0.001 f/dec, mask T_LAT mean 18.98, tempo shift mean -0.02 f
+  sm1  gb10: decisions 74601, answer frame mean  18.23 (nominal sample 19.24), clamp binds  0.11% of decisions, tempo over-credit 0.002 f/dec, mask T_LAT mean 17.99, tempo shift mean -1.01 f
+  sm1  rcL10: decisions 80238, answer frame mean  18.24 (nominal sample 19.25), clamp binds  0.09% of decisions, tempo over-credit 0.002 f/dec, mask T_LAT mean 17.99, tempo shift mean -1.01 f
+  sm2  gb10: decisions 73340, answer frame mean  17.24 (nominal sample 19.25), clamp binds  0.40% of decisions, tempo over-credit 0.006 f/dec, mask T_LAT mean 16.99, tempo shift mean -2.01 f
+  sm2  rcL10: decisions 79771, answer frame mean  17.22 (nominal sample 19.23), clamp binds  0.41% of decisions, tempo over-credit 0.007 f/dec, mask T_LAT mean 16.98, tempo shift mean -2.02 f
+
+  sm1 vs s0 (n gb 600, lulu 600)
+    gb10 tap-out 7.83% -> 7.00%  d -0.83 [-2.50, +0.67]  churn fixed 15 / new 10   tap<=100 d -0.17 [-1.17, +0.83]
+    LULU10 race win M140 88.33% -> 89.33%  d +1.00 [-1.83, +3.83]  churn fixed 40 / new 34   race-row tap-out d -0.83 [-3.67, +1.83]
+
+  sm2 vs s0 (n gb 600, lulu 600)
+    gb10 tap-out 7.83% -> 5.67%  d -2.17 [-4.17, -0.17]  churn fixed 27 / new 14   tap<=100 d -0.17 [-1.17, +0.83]
+    LULU10 race win M140 88.33% -> 90.33%  d +2.00 [-1.00, +5.00]  churn fixed 48 / new 36   race-row tap-out d -0.50 [-3.17, +2.17]
+
+  ABSOLUTE LEVELS, same 600 seeds: gate-b tap-out OWNER-0804 (primary rows) vs owner_fit_202610
+    s0   OWNER-0804 18.67%  ->  owner202610  7.83%   garbage cells/game 56.1 -> 16.0  (n=600)
+    sm1  OWNER-0804 18.67%  ->  owner202610  7.00%   garbage cells/game 57.0 -> 16.1  (n=600)
+    sm2  OWNER-0804 17.00%  ->  owner202610  5.67%   garbage cells/game 57.5 -> 15.8  (n=600)
