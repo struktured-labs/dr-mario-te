@@ -1,0 +1,25 @@
+rows python ANTIBODY (STEER6r): gb10 1500 rc10 600 lulu10 600
+rows python DIST60 (STEER6r): gb10 1500 rc10 600 lulu10 600
+rows faithful ANTIBODY: gb10 1500 rc10 600 lulu10 600
+rows faithful DIST60: gb10 1500 rc10 600 lulu10 600
+
+BLOCK 1 (descriptive): faithful ANTIBODY - python ANTIBODY (how far the brain gap moved the levels)
+  gb10 tap-out (n=1500) 8.93% -> 9.47%  d +0.53 [-1.27, +2.40]  churn fixed 91 / new 99   tap<=100 d +0.33 [-0.20, +0.87]
+  rc10 race win M177 (n=600) 87.50% -> 86.17%  d -1.33 [-4.67, +2.00]  churn fixed 48 / new 56   race-row tap-out d +1.17 [-2.00, +4.33]
+  lulu10 race win M140 (n=600) 83.83% -> 83.17%  d -0.67 [-4.17, +3.00]  churn fixed 58 / new 62   LULU-row tap-out d +1.00 [-2.50, +4.33]
+
+BLOCK 2 (PRIMARY, STEER6r rule): faithful DIST60 vs faithful ANTIBODY
+  gb10 tap-out (n=1500) 9.47% -> 6.87%  d -2.60 [-3.67, -1.60]  churn fixed 51 / new 12   tap<=100 d +0.00 [+0.00, +0.00]
+  rc10 race win M177 (n=600) 86.17% -> 91.50%  d +5.33 [+3.33, +7.33]  churn fixed 35 / new 3   race-row tap-out d -4.83 [-6.67, -2.83]
+  lulu10 race win M140 (n=600) 83.17% -> 89.17%  d +6.00 [+4.00, +8.17]  churn fixed 39 / new 3   LULU-row tap-out d -4.83 [-6.67, -3.00]
+  -> GAIN SURVIVES
+     race gain survives (lower CI > 0): rc10 yes, lulu10 yes
+
+  DiD tap-out (faithful gain - python gain, n=1500): python d -3.80 [-5.00, -2.73]  faithful d -2.60 [-3.67, -1.60]  DiD +1.20 [-0.27, +2.67]
+  DiD race M177 (n=600): python d +3.83 [+2.17, +5.67]  faithful d +5.33 [+3.33, +7.33]
+  DiD LULU M140 (n=600): python d +6.83 [+4.67, +9.17]  faithful d +6.00 [+4.00, +8.17]
+
+  faithful DIST60 - python DIST60 (block-1 analogue for the candidate)
+  gb10 tap-out (n=1500) 5.13% -> 6.87%  d +1.73 [+0.27, +3.20]  churn fixed 55 / new 81   tap<=100 d +0.33 [-0.20, +0.87]
+  rc10 race win M177 (n=600) 91.33% -> 91.50%  d +0.17 [-2.67, +3.00]  churn fixed 37 / new 36   race-row tap-out d -0.50 [-3.33, +2.33]
+  lulu10 race win M140 (n=600) 90.67% -> 89.17%  d -1.50 [-4.50, +1.50]  churn fixed 36 / new 45   LULU-row tap-out d +1.50 [-1.17, +4.17]
