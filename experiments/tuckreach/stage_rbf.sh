@@ -3,11 +3,11 @@
 # Refuses unless: verdict SHIP AS-IS (fit_verdict.sh: copro >= +0.10, pll_hdmi >= -0.062, ALMs), the FW-in-image
 # bijection == the staged fw AND the DIST60 fw 1488e158 MISMATCHES, the RTL commit 3b164c7, the 5 macros, the
 # HSV / fallback / DRDIST logic present in the netlist, and both DIST60 carts at their md5s.
-#   stage_rbf.sh <seed> <fw-md5>
+#   stage_rbf.sh <seed> <tag v1|v2> <fw-md5>      (fit dir = ship/antibody-dist60-tuckreach-seed<seed>_<tag>)
 set -u
-SEED="${1:?seed}"; FWMD5="${2:?fw md5}"
+SEED="${1:?seed}"; TAG="${2:?tag}"; FWMD5="${3:?fw md5}"
 SHIPD=/home/struktured/projects/dr_mario_rl/tmp/rtl_chain/ship
-A=$SHIPD/antibody-dist60-tuckreach-seed$SEED; S=$SHIPD/antibody-dist60-tuckreach; D60=$SHIPD/antibody-dist60
+A=$SHIPD/antibody-dist60-tuckreach-seed${SEED}_$TAG; S=$SHIPD/antibody-dist60-tuckreach; D60=$SHIPD/antibody-dist60
 fail() { echo "REFUSE: $*"; exit 1; }
 command grep -a -q '^VERDICT: SHIP AS-IS' "$A/verdict.txt" || fail "verdict is not SHIP AS-IS"
 command grep -a -A2 "${FWMD5:0:8}.hex :" "$A/FW_IN_IMAGE_PROOF.txt" | command grep -a -q 'PERFECT BIJECTION' || fail "FW bijection"
@@ -23,10 +23,10 @@ C=$D60/drmario_te_couch_nmifix_reachtx_tap2_spawnedge_c960dd49.nes; V=$D60/drmar
 [ "$(md5sum < "$C" | cut -c1-32)" = c960dd499e877f01c483af1347ed8df6 ] || fail "couch cart md5"
 [ "$(md5sum < "$V" | cut -c1-32)" = 3b8737a939c19b1d592218f79bbf869c ] || fail "cvc cart md5"
 mkdir -p "$S"
-RBF=NES_antibody_dist60_tuckreach_seed${SEED}_$(date +%Y%m%d).rbf
+RBF=NES_antibody_dist60_tuckreach_${TAG}_seed${SEED}_$(date +%Y%m%d).rbf
 cp "$A/NES.rbf" "$S/$RBF"
-cp "$A/FW_IN_IMAGE_PROOF.txt" "$A/verdict.txt" "$A/NES.qsf.used" "$A/NETLIST_CHECK.txt" "$A/manifest.json" "$S/"
-cp "$A/copro_rom.hex" "$S/fw540_reachtap_dist_tuckreach_${FWMD5:0:8}.hex"
+for f in FW_IN_IMAGE_PROOF.txt verdict.txt NES.qsf.used NETLIST_CHECK.txt manifest.json; do cp "$A/$f" "$S/${TAG}_$f"; done
+cp "$A/copro_rom.hex" "$S/fw540_reachtap_dist_tuckreach_${TAG}_${FWMD5:0:8}.hex"
 cp "$C" "$V" "$S/"
 ( cd "$S" && md5sum ./*.rbf ./*.hex ./*.nes > MD5SUMS )
 echo "STAGED $S/$RBF md5 $(md5sum "$S/$RBF" | cut -d' ' -f1)"; ls -la "$S"
