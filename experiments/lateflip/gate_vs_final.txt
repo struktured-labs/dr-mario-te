@@ -1,0 +1,43 @@
+category         n gate==final final=tuck sil==final sil==gate sil in later pubs sil==python
+MATCH           77          57          1         74        56                19          77
+LATE-FLIP       11           0          4          3         1                 3           0
+OTHER           22           8          3         11         8                 8           0
+SHORT-LANDING    5           4          0          3         2                 1           0
+TUCK             1           1          0          0         0                 0           0
+
+LATE-FLIP and OTHER detail (gate = running best at GO+6 f; later = publishes after the gate):
+  LATE-FLIP p 17 python a 3 gate a0 final a 3      later [3] silicon a23 first-lateral R (gate side L, final side -, python side -)
+  LATE-FLIP p 18 python a 3 gate a0 final a 3      later [3] silicon a0 first-lateral L (gate side L, final side -, python side -)
+  LATE-FLIP p 31 python a12 gate a28 final a 5      later [12, 5] silicon a5 first-lateral R (gate side R, final side R, python side R)
+  LATE-FLIP p 47 python a 3 gate a3 final a27      later [27] silicon a27 first-lateral None (gate side -, final side -, python side -)
+  LATE-FLIP p 55 python a 2 gate a20 final a 0      later [0] silicon a0 first-lateral L (gate side R, final side L, python side L)
+  LATE-FLIP p 95 python a 9 gate a9 final a 6      later [6] silicon a1 first-lateral L (gate side L, final side R, python side L)
+  LATE-FLIP p 98 python a27 gate a27 final a 8      later [8] silicon a9 first-lateral L (gate side -, final side L, python side -)
+  LATE-FLIP p 99 python a19 gate a19 final a14 TUCK later [14] silicon a11 first-lateral None (gate side -, final side R, python side -)
+  LATE-FLIP p111 python a 6 gate a6 final a26 TUCK later [26] silicon a30 first-lateral R (gate side R, final side L, python side R)
+  LATE-FLIP p112 python a22 gate a22 final a26 TUCK later [26] silicon a23 first-lateral R (gate side R, final side L, python side R)
+  LATE-FLIP p113 python a21 gate a22 final a 2 TUCK later [21, 2] silicon a4 first-lateral R (gate side R, final side L, python side R)
+  OTHER     p 11 python a29 gate a1 final a29      later [29] silicon a12 first-lateral L (gate side L, final side R, python side R)
+  OTHER     p 26 python a20 gate a20 final a20      later [] silicon a4 first-lateral R (gate side R, final side R, python side R)
+  OTHER     p 42 python a11 gate a28 final a28      later [] silicon a28 first-lateral R (gate side R, final side R, python side -)
+  OTHER     p 43 python a11 gate a16 final a16      later [] silicon a16 first-lateral L (gate side L, final side L, python side -)
+  OTHER     p 51 python a26 gate a28 final a28      later [] silicon a28 first-lateral R (gate side R, final side R, python side L)
+  OTHER     p 59 python a24 gate a28 final a24      later [24] silicon a28 first-lateral R (gate side R, final side L, python side L)
+  OTHER     p 66 python a25 gate a25 final a25      later [] silicon a1 first-lateral L (gate side L, final side L, python side L)
+  OTHER     p 67 python a 1 gate a16 final a 1      later [12, 1] silicon a12 first-lateral L (gate side L, final side L, python side L)
+  OTHER     p 69 python a10 gate a1 final a 1      later [] silicon a1 first-lateral L (gate side L, final side L, python side L)
+  OTHER     p 73 python a21 gate a17 final a17      later [] silicon a17 first-lateral L (gate side L, final side L, python side R)
+  OTHER     p 74 python a21 gate a16 final a16      later [] silicon a16 first-lateral L (gate side L, final side L, python side R)
+  OTHER     p 75 python a21 gate a21 final a16      later [16] silicon a16 first-lateral L (gate side R, final side L, python side R)
+  OTHER     p 79 python a17 gate a16 final a20      later [0, 20] silicon a20 first-lateral L (gate side L, final side R, python side L)
+  OTHER     p 84 python a 4 gate a16 final a 4      later [4] silicon a16 first-lateral L (gate side L, final side R, python side R)
+  OTHER     p 85 python a19 gate a16 final a23      later [23] silicon a23 first-lateral R (gate side L, final side R, python side -)
+  OTHER     p 87 python a21 gate a23 final a21      later [16, 21] silicon a16 first-lateral L (gate side R, final side R, python side R)
+  OTHER     p 89 python a16 gate a23 final a28      later [28] silicon a28 first-lateral R (gate side R, final side R, python side L)
+  OTHER     p 94 python a21 gate a23 final a21      later [19, 17, 21] silicon a17 first-lateral L (gate side R, final side R, python side R)
+  OTHER     p 97 python a19 gate a19 final a17      later [17] silicon a17 first-lateral L (gate side -, final side L, python side -)
+  OTHER     p100 python a16 gate a16 final a14 TUCK later [14] silicon a8 first-lateral L (gate side L, final side R, python side L)
+  OTHER     p102 python a26 gate a29 final a13 TUCK later [13] silicon a10 first-lateral L (gate side R, final side R, python side L)
+  OTHER     p114 python a14 gate a14 final a18 TUCK later [13, 18] silicon a20 first-lateral R (gate side R, final side L, python side R)
+
+OTHER with first lateral opposite to the python target: 10; of those the first move matches the at-gate RTL best's side: 7, the RTL final's side: 5

@@ -1,0 +1,133 @@
+p  0 MATCH         sim a 4 sil a4 | cosim final a 4 DONE  42.4f | pubs a4@1.59
+p  1 MATCH         sim a20 sil a20 | cosim final a20 DONE  46.8f | pubs a20@1.39
+p  2 MATCH         sim a21 sil a21 | cosim final a21 DONE  43.4f | pubs a21@1.37
+p  3 MATCH         sim a 5 sil a5 | cosim final a 5 DONE  37.6f | pubs a12@1.25 a14@3.77 a5@5.0
+p  4 MATCH         sim a 5 sil a5 | cosim final a 5 DONE  40.0f | pubs a5@1.25
+p  5 MATCH         sim a 8 sil a8 | cosim final a 8 DONE  38.2f | pubs a14@1.29 a8@6.69
+p  6 MATCH         sim a 6 sil a6 | cosim final a 6 DONE  50.0f | pubs a6@1.64
+p  7 MATCH         sim a21 sil a21 | cosim final a19 DONE  53.0f | pubs a21@1.38 a19@4.21
+p  8 OTHER         sim a17 sil a21 | cosim final a17 DONE  56.2f | pubs a23@1.26 a21@3.67 a17@26.09
+p  9 MATCH         sim a16 sil a16 | cosim final a16 DONE  52.9f | pubs a16@1.42
+p 10 MATCH         sim a31 sil a31 | cosim final a31 DONE  46.4f | pubs a31@1.4
+p 11 MATCH         sim a13 sil a13 | cosim final a13 DONE  44.1f | pubs a21@1.39 a0@2.92 a13@27.9
+p 12 MATCH         sim a22 sil a22 | cosim final a22 DONE  41.4f | pubs a22@1.3
+p 13 MATCH         sim a 1 sil a1 | cosim final a 1 DONE  52.0f | pubs a6@1.28 a1@6.99
+p 14 MATCH         sim a25 sil a25 | cosim final a25 DONE  56.5f | pubs a1@1.45 a25@2.7
+p 15 MATCH         sim a19 sil a19 | cosim final a19 DONE  57.9f | pubs a19@1.53
+p 16 MATCH         sim a22 sil a22 | cosim final a22 DONE  60.1f | pubs a20@1.39 a22@6.54
+p 17 MATCH         sim a14 sil a14 | cosim final a14 DONE  68.3f | pubs a14@1.6
+p 18 MATCH         sim a 3 sil a3 | cosim final a 3 DONE  43.2f | pubs a3@1.62
+p 19 MATCH         sim a12 sil a12 | cosim final a12 DONE  62.8f | pubs a29@1.59 a1@4.46 a12@8.75
+p 20 MATCH         sim a12 sil a12 | cosim final a12 DONE  43.2f | pubs a3@1.41 a12@8.24
+p 21 MATCH         sim a 3 sil a3 | cosim final a 3 DONE  47.1f | pubs a3@1.37
+p 22 MATCH         sim a19 sil a19 | cosim final a19 DONE  44.8f | pubs a19@1.44
+p 23 OTHER         sim a13 sil a6 | cosim final a13 DONE  43.1f | pubs a19@1.42 a13@2.94
+p 24 MATCH         sim a18 sil a18 | cosim final a18 DONE  45.7f | pubs a2@1.68 a1@7.69 a18@13.76
+p 25 MATCH         sim a 2 sil a2 | cosim final a 2 DONE  46.6f | pubs a2@1.51
+p 26 MATCH         sim a 8 sil a8 | cosim final a 8 DONE  48.3f | pubs a5@1.26 a14@2.34 a8@8.73
+p 27 MATCH         sim a 0 sil a0 | cosim final a 0 DONE  55.7f | pubs a0@1.68
+p 28 MATCH         sim a22 sil a22 | cosim final a22 DONE  52.9f | pubs a22@1.5
+p 29 MATCH         sim a30 sil a30 | cosim final a30 DONE  36.5f | pubs a30@1.26
+p 30 MATCH         sim a 5 sil a5 | cosim final a 5 DONE  38.9f | pubs a5@1.29
+p 31 MATCH         sim a 6 sil a6 | cosim final a 6 DONE  38.5f | pubs a30@1.2 a1@3.4 a6@19.18
+p 32 MATCH         sim a23 sil a23 | cosim final a23 DONE  54.0f | pubs a23@1.41
+p 33 MATCH         sim a26 sil a26 | cosim final a26 DONE  48.7f | pubs a26@1.19
+p 34 MATCH         sim a18 sil a18 | cosim final a18 DONE  39.5f | pubs a18@1.28
+p 35 OTHER         sim a23 sil a17 | cosim final a23 DONE  43.3f | pubs a17@1.13 a23@3.31
+p 36 MATCH         sim a22 sil a22 | cosim final a22 DONE  38.1f | pubs a22@1.15
+p 37 MATCH         sim a25 sil a25 | cosim final a25 DONE  37.6f | pubs a5@1.1 a25@10.7
+p 38 MATCH         sim a 2 sil a2 | cosim final a 2 DONE  36.2f | pubs a2@1.26
+p 39 MATCH         sim a19 sil a19 | cosim final a19 DONE  40.6f | pubs a17@1.13 a18@3.06 a19@7.19
+p 40 MATCH         sim a27 sil a27 | cosim final a27 DONE  44.5f | pubs a27@1.17
+p 41 MATCH         sim a21 sil a21 | cosim final a21 DONE  42.2f | pubs a22@1.27 a21@5.64
+p 42 MATCH         sim a23 sil a23 | cosim final a23 DONE  43.2f | pubs a19@1.2 a23@3.37
+p 43 MATCH         sim a20 sil a20 | cosim final a20 DONE  49.4f | pubs a19@1.39 a2@8.33 a20@20.62
+p 44 MATCH         sim a 5 sil a5 | cosim final a 5 DONE  45.8f | pubs a21@1.71 a5@7.46
+p 45 MATCH         sim a21 sil a21 | cosim final a21 DONE  45.5f | pubs a21@1.6
+p 46 MATCH         sim a 9 sil a9 | cosim final a 9 DONE  52.1f | pubs a22@1.51 a9@8.25
+p 47 MATCH         sim a10 sil a10 | cosim final a10 DONE  56.1f | pubs a4@1.51 a14@5.27 a27@6.68 a30@9.37 a10@26.14
+p 48 MATCH         sim a18 sil a18 | cosim final a18 DONE  46.8f | pubs a18@1.73
+p 49 OTHER         sim a16 sil a3 | cosim final a 3 DONE  52.1f | pubs a3@1.42
+p 50 OTHER         sim a16 sil a23 | cosim final a16 DONE  52.8f | pubs a23@1.22 a6@3.27 a16@28.56
+p 51 MATCH         sim a 2 sil a2 | cosim final a 2 DONE  42.9f | pubs a22@1.2 a2@3.21
+p 52 MATCH         sim a20 sil a20 | cosim final a20 DONE  38.0f | pubs a22@1.18 a20@15.93
+p 53 OTHER         sim a19 sil a27 | cosim final a19 DONE  41.8f | pubs a19@1.18
+p 54 MATCH         sim a16 sil a16 | cosim final a16 DONE  34.9f | pubs a16@1.14
+p 55 MATCH         sim a12 sil a12 | cosim final a12 DONE  33.9f | pubs a25@1.07 a12@14.86
+p 56 MATCH         sim a30 sil a30 | cosim final a28 DONE  39.8f | pubs a11@1.29 a28@3.45
+p 57 MATCH         sim a22 sil a22 | cosim final a28 DONE  37.2f | pubs a11@1.24 a28@3.32
+p 58 MATCH         sim a30 sil a30 | cosim final a28 DONE  34.6f | pubs a11@1.22 a28@3.28
+p 59 OTHER         sim a19 sil a22 | cosim final a19 DONE  34.2f | pubs a4@1.13 a11@2.19 a28@3.26 a19@4.34
+p 60 MATCH         sim a12 sil a12 | cosim final a12 DONE  34.3f | pubs a12@1.16
+p 61 MATCH         sim a 3 sil a3 | cosim final a 3 DONE  33.5f | pubs a1@1.16 a3@10.49
+p 62 MATCH         sim a22 sil a22 | cosim final a22 DONE  33.6f | pubs a19@1.19 a21@2.3 a22@5.77
+p 63 MATCH         sim a 3 sil a3 | cosim final a 3 DONE  39.7f | pubs a20@1.4 a19@3.98 a21@6.69 a3@9.3
+p 64 MATCH         sim a19 sil a19 | cosim final a19 DONE  41.0f | pubs a20@1.44 a3@3.91 a4@6.43 a1@9.08 a19@11.88
+p 65 MATCH         sim a 3 sil a3 | cosim final a 3 DONE  45.7f | pubs a3@1.37
+p 66 MATCH         sim a21 sil a21 | cosim final a21 DONE  37.0f | pubs a22@1.2 a21@6.75
+p 67 MATCH         sim a30 sil a30 | cosim final a30 DONE  38.4f | pubs a13@1.23 a30@2.53
+p 68 MATCH         sim a13 sil a13 | cosim final a13 DONE  39.0f | pubs a13@1.17
+p 69 MATCH         sim a 4 sil a4 | cosim final a 4 DONE  31.7f | pubs a1@1.06 a25@1.93 a4@2.97
+p 70 MATCH         sim a 4 sil a4 | cosim final a 4 DONE  32.9f | pubs a1@1.08 a4@2.28
+p 71 MATCH         sim a 4 sil a4 | cosim final a 4 DONE  36.7f | pubs a4@1.24
+p 72 MATCH         sim a27 sil a27 | cosim final a27 DONE  35.4f | pubs a25@1.12 a27@3.12
+p 73 OTHER         sim a11 sil a19 | cosim final a11 DONE  35.4f | pubs a25@1.11 a19@4.12 a2@20.46 a11@23.53
+p 74 MATCH         sim a28 sil a28 | cosim final a28 DONE  35.9f | pubs a28@1.23
+p 75 MATCH         sim a21 sil a21 | cosim final a21 DONE  33.3f | pubs a21@1.24
+p 76 MATCH         sim a21 sil a21 | cosim final a21 DONE  34.9f | pubs a21@1.24
+p 77 MATCH         sim a20 sil a20 | cosim final a20 DONE  36.6f | pubs a20@1.29
+p 78 OTHER         sim a 4 sil a23 | cosim final a20 DONE  36.3f | pubs a20@1.31
+p 79 MATCH         sim a 6 sil a6 | cosim final a 6 DONE  35.6f | pubs a23@1.29 a20@3.52 a6@17.07
+p 80 SHORT-LANDING sim a22 sil a20 | cosim final a22 DONE  42.2f | pubs a23@1.17 a6@3.19 a20@5.46 a22@13.09
+p 81 MATCH         sim a 4 sil a4 | cosim final a 4 DONE  43.3f | pubs a4@1.31
+p 82 LATE-FLIP     sim a 3 sil a12 | cosim final a12 DONE  40.0f | pubs a25@1.2 a26@2.34 a20@4.51 a12@10.3
+p 83 MATCH         sim a 4 sil a4 | cosim final a 4 DONE  40.3f | pubs a17@1.18 a18@2.34 a28@6.82 a4@9.19
+p 84 MATCH         sim a11 sil a11 | cosim final a11 DONE  38.4f | pubs a14@1.15 a21@3.32 a29@4.46 a11@6.93
+p 85 MATCH         sim a22 sil a22 | cosim final a22 DONE  39.1f | pubs a21@1.37 a19@6.25 a20@7.4 a22@8.57
+p 86 MATCH         sim a21 sil a21 | cosim final a21 DONE  39.5f | pubs a21@1.3
+p 87 MATCH         sim a 6 sil a6 | cosim final a 6 DONE  39.2f | pubs a23@1.34 a20@8.26 a5@17.81 a6@22.28
+p 88 MATCH         sim a 6 sil a6 | cosim final a 6 DONE  37.8f | pubs a6@1.33
+p 89 MATCH         sim a 4 sil a4 | cosim final a 4 DONE  41.6f | pubs a4@1.31
+p 90 MATCH         sim a20 sil a20 | cosim final a20 DONE  39.1f | pubs a20@1.29
+p 91 MATCH         sim a16 sil a16 | cosim final a16 DONE  38.1f | pubs a20@1.24 a22@3.38 a19@5.67 a16@30.08
+p 92 MATCH         sim a28 sil a28 | cosim final a28 DONE  45.2f | pubs a28@1.27
+p 93 MATCH         sim a22 sil a22 | cosim final a22 DONE  44.3f | pubs a8@1.05 a16@2.06 a20@3.21 a30@4.34 a19@5.46 a22@7.69
+p 94 MATCH         sim a14 sil a14 | cosim final a14 DONE  42.2f | pubs a22@1.29 a14@2.44
+p 95 MATCH         sim a14 sil a14 | cosim final a14 DONE  38.9f | pubs a14@1.41
+p 96 MATCH         sim a30 sil a30 | cosim final a30 DONE  43.3f | pubs a8@1.24 a16@2.46 a22@3.66 a30@4.9
+p 97 MATCH         sim a22 sil a22 | cosim final a22 DONE  38.9f | pubs a16@1.29 a22@13.83
+p 98 MATCH         sim a23 sil a23 | cosim final a23 DONE  47.3f | pubs a23@1.32
+p 99 MATCH         sim a 1 sil a1 | cosim final a 1 DONE  38.7f | pubs a1@1.26
+p100 MATCH         sim a19 sil a19 | cosim final a19 DONE  41.2f | pubs a16@1.15 a22@5.14 a19@10.75
+p101 MATCH         sim a 2 sil a2 | cosim final a 2 DONE  51.7f | pubs a2@1.19
+p102 MATCH         sim a 0 sil a0 | cosim final a 0 DONE  42.7f | pubs a0@1.07
+p103 MATCH         sim a18 sil a18 | cosim final a18 DONE  33.4f | pubs a17@1.03 a18@5.42
+p104 OTHER         sim a18 sil a0 | cosim final a18 DONE  34.3f | pubs a26@1.1 a0@2.03 a18@3.9
+p105 MATCH         sim a22 sil a22 | cosim final a22 DONE  39.5f | pubs a28@1.05 a31@4.75 a22@6.65
+p106 MATCH         sim a 0 sil a0 | cosim final a 0 DONE  38.7f | pubs a0@1.21
+p107 MATCH         sim a28 sil a28 | cosim final a28 DONE  44.7f | pubs a28@1.28
+p108 MATCH         sim a21 sil a21 | cosim final a21 DONE  44.5f | pubs a21@1.14
+p109 MATCH         sim a24 sil a24 | cosim final a24 DONE  41.9f | pubs a24@1.03
+p110 MATCH         sim a 0 sil a0 | cosim final a 0 DONE  30.4f | pubs a0@1.1
+p111 MATCH         sim a 8 sil a8 | cosim final a 8 DONE  36.6f | pubs a8@1.02
+p112 MATCH         sim a14 sil a14 | cosim final a14 DONE  28.4f | pubs a17@1.0 a22@2.65 a14@8.44
+p113 MATCH         sim a19 sil a19 | cosim final a19 DONE  29.0f | pubs a17@1.02 a18@7.97 a19@13.21
+p114 MATCH         sim a19 sil a19 | cosim final a19 DONE  32.2f | pubs a19@1.05
+p115 MATCH         sim a14 sil a14 | cosim final a14 DONE  28.8f | pubs a22@1.01 a14@5.32
+p116 MATCH         sim a22 sil a22 | cosim final a22 DONE  29.6f | pubs a6@1.03 a22@7.4
+p117 MATCH         sim a14 sil a14 | cosim final a14 DONE  32.5f | pubs a14@1.07
+p118 OTHER         sim a23 sil a26 | cosim final a23 DONE  29.4f | pubs a18@1.04 a22@1.89 a23@2.82
+p119 MATCH         sim a28 sil a28 | cosim final a28 DONE  30.9f | pubs a18@1.12 a23@3.02 a28@4.99
+p120 MATCH         sim a 5 sil a5 | cosim final a 5 DONE  33.6f | pubs a18@1.22 a5@20.66
+p121 MATCH         sim a12 sil a12 | cosim final a12 DONE  41.4f | pubs a12@1.11
+p122 MATCH         sim a21 sil a21 | cosim final a21 DONE  31.0f | pubs a18@1.09 a21@7.5
+p123 OTHER         sim a22 sil a17 | cosim final a22 DONE  34.8f | pubs a21@1.18 a18@5.16 a17@9.32 a22@16.79
+p124 MATCH         sim a29 sil a29 | cosim final a29 DONE  34.4f | pubs a29@1.23
+p125 MATCH         sim a 5 sil a5 | cosim final a 5 DONE  33.5f | pubs a31@1.16 a5@17.14
+p126 MATCH         sim a 5 sil a5 | cosim final a 5 DONE  37.0f | pubs a31@1.27 a19@3.28 a20@4.38 a5@8.69
+p127 MATCH         sim a14 sil a14 | cosim final a14 DONE  40.4f | pubs a5@1.16 a14@2.16
+p128 OTHER         sim a20 sil a22 | cosim final a20 DONE  34.5f | pubs a18@1.18 a19@2.12 a29@7.17 a30@8.24 a20@10.38
+p129 MATCH         sim a16 sil a16 | cosim final a16 DONE  34.8f | pubs a21@1.16 a20@5.13 a23@7.65 a16@28.67
+p130 MATCH         sim a26 sil a26 | cosim final a26 DONE  33.8f | pubs a26@1.4
+p131 MATCH         sim a18 sil a18 | cosim final a18 DONE  32.1f | pubs a18@1.05
+p132 OTHER         sim a24 sil a0 | cosim final a24 DONE  39.1f | pubs a24@0.21

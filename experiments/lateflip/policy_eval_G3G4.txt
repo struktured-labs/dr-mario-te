@@ -1,0 +1,14 @@
+G3: 86 placements, 6 tall
+  mesen ship       n= 86 ==final  82 HYBRID  1 ==python  81 ==silicon  80 | tall   6 hybrid  0
+  mesen guard      n= 86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 | tall   6 hybrid  0
+  model ship       n= 86 ==final  83 HYBRID  0 ==python  80 ==silicon  78 | tall   6 hybrid  0
+  model guard      n= 86 ==final  83 HYBRID  0 ==python  80 ==silicon  78 | tall   6 hybrid  0
+  model freeze     n= 86 ==final  60 HYBRID  0 ==python  61 ==silicon  59 | tall   6 hybrid  0
+  model tallfreeze n= 86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 | tall   6 hybrid  0
+G4: 133 placements, 5 tall
+  mesen ship       n=133 ==final 131 HYBRID  2 ==python 124 ==silicon 114 | tall   5 hybrid  0
+  mesen guard      n=133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 | tall   5 hybrid  0
+  model ship       n=133 ==final 132 HYBRID  1 ==python 125 ==silicon 114 | tall   5 hybrid  0
+  model guard      n=133 ==final 132 HYBRID  0 ==python 125 ==silicon 116 | tall   5 hybrid  0
+  model freeze     n=133 ==final  89 HYBRID  0 ==python  83 ==silicon  80 | tall   5 hybrid  0
+  model tallfreeze n=133 ==final 130 HYBRID  1 ==python 123 ==silicon 112 | tall   5 hybrid  0

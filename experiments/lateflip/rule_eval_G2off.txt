@@ -1,0 +1,66 @@
+p  0 f= 22 (6,0) -> (4,1) a28 need= 6 avail= 24 K=2 thr=19 grav=15       rule=ACCEPT | flag-off landed a28 (completed) sil a28
+p  2 f= 16 (4,2) -> (3,0) a 3 need= 6 avail= 30 K=2 thr=19 grav=9        rule=ACCEPT | flag-off landed a3 (completed) sil a3
+p  8 f= 16 (2,3) -> (4,0) a 4 need= 6 avail= 30 K=2 thr=19 grav=9        rule=ACCEPT | flag-off landed a4 (completed) sil a4
+p 11 f= 19 (3,0) -> (5,1) a29 need= 6 avail= 25 K=2 thr=18 grav=12       rule=ACCEPT | flag-off landed a29 (completed) sil a12
+p 17 f= 34 (0,0) -> (3,0) a 3 need= 6 avail= 36 K=2 thr=18 grav=1        rule=ACCEPT | flag-off landed a3 (completed) sil a23
+p 24 f= 15 (2,3) -> (5,1) a29 need=10 avail= 27 K=2 thr=17 grav=8        rule=ACCEPT | flag-off landed a4 (NOT completed) sil a4
+p 24 f= 41 (5,1) -> (4,0) a 4 need= 4 avail= -1 own-row blocked          rule=REFUSE | flag-off landed a4 (completed) sil a4
+p 28 f= 17 (5,1) -> (4,1) a28 need= 2 avail= 25 K=2 thr=17 grav=10       rule=ACCEPT | flag-off landed a28 (completed) sil a28
+p 31 f= 16 (3,1) -> (4,2) a12 need= 4 avail= 24 K=2 thr=16 grav=9        rule=ACCEPT | flag-off landed a5 (NOT completed) sil a5
+p 31 f= 41 (4,2) -> (5,0) a 5 need= 6 avail= -1 K=0 thr=16 grav=1        rule=REFUSE | flag-off landed a5 (completed) sil a5
+p 34 f= 30 (3,0) -> (1,0) a 1 need= 4 avail= 33 K=2 thr=16 grav=0        rule=ACCEPT | flag-off landed a10 (NOT completed) sil a10
+p 34 f= 31 (2,0) -> (2,2) a10 need= 4 avail= 49 K=2 thr=16 grav=1        rule=ACCEPT | flag-off landed a10 (completed) sil a10
+p 45 f= 20 (0,3) -> (3,3) a19 need= 6 avail= 18 K=2 thr=15 grav=13       rule=ACCEPT | flag-off landed a18 (NOT completed) sil a18
+p 45 f= 23 (2,3) -> (2,3) a18 need= 0 avail= 47 K=2 thr=15 grav=0        rule=ACCEPT | flag-off landed a18 (completed) sil a18
+p 46 f= 16 (2,3) -> (4,3) a20 need= 4 avail= 22 K=2 thr=15 grav=9        rule=ACCEPT | flag-off landed a20 (completed) sil a20
+p 53 f= 16 (4,3) -> (3,3) a19 need= 2 avail= 20 K=2 thr=14 grav=9        rule=ACCEPT | flag-off landed a23 (NOT completed) sil a23
+p 53 f= 18 (3,3) -> (7,3) a23 need= 8 avail= 18 K=2 thr=14 grav=11       rule=ACCEPT | flag-off landed a23 (completed) sil a23
+p 54 f= 18 (4,3) -> (0,3) a16 need= 8 avail= 18 K=2 thr=14 grav=11       rule=ACCEPT | flag-off landed a16 (completed) sil a16
+p 55 f= 25 (4,3) -> (0,0) a 0 need=10 avail= 26 K=2 thr=14 grav=3        rule=ACCEPT | flag-off landed a0 (completed) sil a0
+p 57 f= 17 (1,3) -> (3,3) a19 need= 4 avail= 19 K=2 thr=14 grav=10       rule=ACCEPT | flag-off landed a19 (completed) sil a19
+p 59 f= 16 (3,1) -> (0,1) a24 need= 6 avail= 20 K=2 thr=14 grav=9        rule=ACCEPT | flag-off landed a24 (completed) sil a28
+p 62 f= 35 (4,2) -> (0,2) a 8 need= 8 avail= 12 K=1 thr=13 grav=1        rule=ACCEPT | flag-off landed a8 (completed) sil a8
+p 64 f= 17 (3,3) -> (4,0) a 4 need= 4 avail= 17 K=2 thr=13 grav=10       rule=ACCEPT | flag-off landed a23 (NOT completed) sil a23
+p 64 f= 22 (4,0) -> (7,3) a23 need= 8 avail= 26 K=2 thr=13 grav=1        rule=ACCEPT | flag-off landed a23 (completed) sil a23
+p 65 f= 16 (3,1) -> (4,0) a 4 need= 4 avail= 18 K=2 thr=13 grav=9        rule=ACCEPT | flag-off landed a9 (NOT completed) sil a9
+p 65 f= 35 (4,0) -> (1,2) a 9 need=10 avail= 26 K=2 thr=13 grav=1        rule=ACCEPT | flag-off landed a9 (completed) sil a9
+p 67 f= 15 (2,3) -> (4,2) a12 need= 6 avail= 19 K=2 thr=13 grav=8        rule=ACCEPT | flag-off landed a4 (NOT completed) sil a12
+p 67 f= 38 (4,2) -> (1,0) a 1 need=10 avail= -1 K=0 thr=13 grav=1        rule=REFUSE | flag-off landed a4 (NOT completed) sil a12
+p 68 f= 21 (2,3) -> (2,0) a 2 need= 2 avail= 41 K=2 thr=13 grav=0        rule=ACCEPT | flag-off landed a2 (completed) sil a2
+p 72 f= 24 (0,3) -> (1,3) a17 need= 2 avail= 21 K=2 thr=12 grav=4        rule=ACCEPT | flag-off landed a17 (completed) sil a17
+p 75 f= 15 (4,3) -> (0,3) a16 need= 8 avail= 17 K=2 thr=12 grav=8        rule=ACCEPT | flag-off landed a16 (completed) sil a16
+p 79 f= 19 (0,3) -> (0,0) a 0 need= 2 avail= 26 K=2 thr=12 grav=12       rule=ACCEPT | flag-off landed a20 (NOT completed) sil a20
+p 79 f= 32 (0,0) -> (4,3) a20 need=10 avail=  0 K=1 thr=12 grav=12       rule=REFUSE | flag-off landed a20 (completed) sil a20
+p 81 f= 16 (3,3) -> (4,3) a20 need= 2 avail= 14 K=2 thr=11 grav=9        rule=ACCEPT | flag-off landed a0 (NOT completed) sil a0
+p 81 f= 17 (4,3) -> (4,1) a28 need= 4 avail= 25 K=2 thr=11 grav=10       rule=ACCEPT | flag-off landed a0 (NOT completed) sil a0
+p 81 f= 19 (4,2) -> (3,2) a11 need= 2 avail= 11 K=1 thr=11 grav=0        rule=ACCEPT | flag-off landed a0 (NOT completed) sil a0
+p 81 f= 21 (3,2) -> (0,0) a 0 need=10 avail= 21 K=2 thr=11 grav=2        rule=ACCEPT | flag-off landed a0 (completed) sil a0
+p 84 f= 41 (0,3) -> (4,3) a20 need= 8 avail= -1 own-row blocked          rule=REFUSE | flag-off landed a16 (NOT completed) sil a16
+p 85 f= 15 (2,3) -> (7,3) a23 need=10 avail= 15 K=2 thr=11 grav=8        rule=ACCEPT | flag-off landed a23 (completed) sil a23
+p 86 f= 32 (0,3) -> (1,3) a17 need= 2 avail= 23 K=2 thr=11 grav=0        rule=ACCEPT | flag-off landed a17 (completed) sil a17
+p 87 f= 15 (4,3) -> (0,3) a16 need= 8 avail= 15 K=2 thr=11 grav=8        rule=ACCEPT | flag-off landed a16 (completed) sil a16
+p 87 f= 39 (0,3) -> (5,3) a21 need=10 avail= -1 own-row blocked          rule=REFUSE | flag-off landed a16 (NOT completed) sil a16
+p 89 f= 19 (6,3) -> (4,1) a28 need= 8 avail= 11 K=1 thr=11 grav=0        rule=ACCEPT | flag-off landed a28 (completed) sil a28
+p 91 f= 24 (3,3) -> (1,3) a17 need= 4 avail= 15 K=2 thr=10 grav=6        rule=ACCEPT | flag-off landed a17 (completed) sil a17
+p 93 f= 28 (3,3) -> (1,3) a17 need= 4 avail= 21 K=2 thr=10 grav=0        rule=ACCEPT | flag-off landed a17 (completed) sil a19
+p 93 f= 36 (1,3) -> (5,3) a21 need= 8 avail= -1 K=0 thr=10 grav=8        rule=REFUSE | flag-off landed a17 (NOT completed) sil a19
+p 93 f= 45 (1,3) -> (4,3) a20 need= 6 avail= -1 own-row blocked          rule=REFUSE | flag-off landed a17 (NOT completed) sil a19
+p 94 f= 15 (4,3) -> (3,3) a19 need= 2 avail= 13 K=2 thr=10 grav=8        rule=ACCEPT | flag-off landed a17 (NOT completed) sil a17
+p 94 f= 27 (3,3) -> (1,3) a17 need= 4 avail= 12 K=2 thr=10 grav=9        rule=ACCEPT | flag-off landed a17 (completed) sil a17
+p 94 f= 34 (1,3) -> (5,3) a21 need= 8 avail= -1 K=0 thr=10 grav=5        rule=REFUSE | flag-off landed a17 (NOT completed) sil a17
+p 95 f= 32 (1,2) -> (6,0) a 6 need=14 avail= -1 own-row blocked          rule=REFUSE | flag-off landed a1 (NOT completed) sil a1
+p 96 f= 20 (6,3) -> (2,3) a18 need= 8 avail=  8 K=1 thr=10 grav=2        rule=ACCEPT | flag-off landed a18 (completed) sil a18
+p 97 f= 15 (3,3) -> (1,3) a17 need= 4 avail= 13 K=2 thr=10 grav=8        rule=ACCEPT | flag-off landed a17 (completed) sil a17
+p 98 f= 21 (3,1) -> (0,2) a 8 need= 8 avail=  7 K=1 thr=10 grav=3        rule=REFUSE | flag-off landed a8 (completed) sil a9
+p 99 f= 24 (3,3) -> (6,2) a14 need= 8 avail= -1 K=0 thr=10 grav=6        rule=REFUSE | flag-off landed a11 (NOT completed) sil a11
+p100 f= 19 (0,3) -> (6,2) a14 need=14 avail= -1 K=0 thr=9 grav=2         rule=REFUSE | flag-off landed a8 (NOT completed) sil a8
+p102 f=277 (3,0) -> (2,3) a18 need= 4 avail=  7 K=1 thr=9 grav=2         rule=ACCEPT | flag-off landed a14 (NOT completed) sil a10
+p102 f=278 (3,3) -> (2,1) a26 need= 6 avail=  6 K=1 thr=9 grav=3         rule=ACCEPT | flag-off landed a14 (NOT completed) sil a10
+p102 f=281 (3,2) -> (5,1) a29 need= 6 avail=  3 K=1 thr=9 grav=6         rule=REFUSE | flag-off landed a14 (NOT completed) sil a10
+p102 f=283 (3,1) -> (5,2) a13 need= 6 avail=  1 K=1 thr=9 grav=8         rule=REFUSE | flag-off landed a14 (NOT completed) sil a10
+p111 f= 21 (6,0) -> (2,1) a26 need=10 avail= -1 own-row blocked          rule=REFUSE | flag-off landed a30 (NOT completed) sil a30
+p112 f= 20 (6,3) -> (2,1) a26 need=12 avail= -1 own-row blocked          rule=REFUSE | flag-off landed a31 (NOT completed) sil a23
+p113 f= 16 (6,3) -> (5,3) a21 need= 2 avail= 10 K=2 thr=9 grav=9         rule=ACCEPT | flag-off landed a4 (NOT completed) sil a4
+p113 f= 22 (5,3) -> (2,0) a 2 need= 8 avail= -1 own-row blocked          rule=REFUSE | flag-off landed a4 (NOT completed) sil a4
+p114 f= 23 (5,2) -> (2,3) a18 need= 8 avail= -1 own-row blocked          rule=REFUSE | flag-off landed a20 (NOT completed) sil a20
+{'acc&done': 30, 'acc&hyb': 16, 'ref&done': 4, 'ref&hyb': 15}
