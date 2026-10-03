@@ -7,10 +7,13 @@ chain, out = sys.argv[1], sys.argv[2]
 reach = sys.argv[3] if len(sys.argv) > 3 else "0"
 reachtap = sys.argv[4] if len(sys.argv) > 4 else "0"
 dist = sys.argv[5] if len(sys.argv) > 5 else "0"            # DRDIST (STEER6b dist_target60), default 0 = identical
+tuckreach = sys.argv[6] if len(sys.argv) > 6 else "0"       # DRTUCKREACH (tuck extension honours the reach mask, DONE-only publish)
+rootord = sys.argv[7] if len(sys.argv) > 7 else "0"         # DRROOTORD (two-pass depth-2 root ordering, same final answer)
+tucklive = sys.argv[8] if len(sys.argv) > 8 else "0"        # DRTUCKLIVE (tuck enumerator reads the LIVE board, not stale CUR)
 os.environ.update({"DRSTRAND": "20", "DRCHAIN": chain, "DRCOPRO_ARM": "1", "DRFIX": "1",
                    "DRCOPRO_TUCKBFS": "1", "DRCOPRO_TUCKBFS_TIER3": "1", "DRCOPRO_TUCKV3_THETA": "400",
                    "DRDBLCANON": "1", "DRCOPRO_TUCKV3_FIXSLOT": "1", "DRVETO": "1", "DRREACH": reach, "DRREACHTAP": reachtap,
-                   "DRDIST": dist})
+                   "DRDIST": dist, "DRTUCKREACH": tuckreach, "DRROOTORD": rootord, "DRTUCKLIVE": tucklive})
 for m in ("test_search_d3", "tuck_v3", "build_copro_d3"):
     sys.modules.pop(m, None)
 sys.path.insert(0, COPRO)

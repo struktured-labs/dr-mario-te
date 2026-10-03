@@ -20,6 +20,8 @@ patch_vs_cpu.OPS.setdefault("ASL_zp", 0x06)
 patch_vs_cpu.OPS.setdefault("ORA_zp", 0x05)
 patch_vs_cpu.OPS.setdefault("EOR_zp", 0x45)
 patch_vs_cpu.OPS.setdefault("EOR_abs", 0x4D)   # DRDBLCANON's double test (#123)
+patch_vs_cpu.OPS.setdefault("CPX_abs", 0xEC)   # DRROOTORD
+patch_vs_cpu.OPS.setdefault("STX_abs", 0x8E)   # DRROOTORD
 from py65_harness import Cpu
 from test_depth2 import (S_BEST_C, S_BEST_O,
                          _rand_board, _emit_calc_imm, _emit_copy, emit_landplace,
@@ -95,6 +97,32 @@ DRDIST = 0                     # STEER6b dist_target: pick the endgame target (f
                                # 0 = byte-identical firmware). The -60*D term itself is RTL (LeafEval `DRDIST`).
 DRREACHTAP = 0                 # DRREACH mask models the cart's DRTAPP taps (P from the nA/nB low-nibble bits 2-3);
                                # set by build_copro_d3. Only the reach routine changes (reach_6502.emit_reach(tap=)).
+DRROOTORD = 0                  # two-pass root ordering (STEER7 desk lever 4; set by build_copro_d3 from env DRROOTORD).
+                               # 0 emits NOTHING -> byte-identical firmware. After Pass 0 the select loop runs:
+                               #   A  today's processing order (repeated max over the Pass-0 keys, unchanged) -> RO_ORD
+                               #   B  a DEPTH-2 pre-pass over every root in that order: the root's own replay, eh_terms,
+                               #      stranded/veto terms and its ply-2 ranking, with best2 := the best ply-2 KEY (no
+                               #      expectimax) -> d2 = the val1 formula on that best2 -> RO_D2
+                               #   C  the deep pass (unchanged per-root code) over the roots in DESCENDING d2 (ties: the
+                               #      earlier today-rank first). The running best is replaced on a strictly greater val1,
+                               #      OR an equal val1 from an EARLIER today-rank (RO_BJ), so the final argmax is exactly
+                               #      today's (first-max-in-today's-order) for every processing order. Only WHEN the
+                               #      final answer is first live-published moves; DONE is later by the pre-pass.
+                               # Spec + gates: experiments/tuckreach/.
+RO_BASE = 0x0200               # DRROOTORD RAM (unused by every module of the ship build: py65 write-scan, gate_ram)
+RO_ORD, RO_D2L, RO_D2H, RO_USED = RO_BASE, RO_BASE + 0x20, RO_BASE + 0x40, RO_BASE + 0x60   # 32 B each
+RO_MODE, RO_J, RO_N, RO_CNT, RO_JC, RO_BJ, RO_LEH = range(RO_BASE + 0x80, RO_BASE + 0x87)
+DRTUCKLIVE = 0                 # set by build_copro_d3 from env DRTUCKLIVE: the tuck enumerator reads LIVE ($0500)
+                               # instead of the soft CUR ($0700) the search leaves behind. With DRROOTORD and
+                               # DRTUCKLIVE = 0 the search must hand the tuck extension TODAY's CUR (the eh_terms
+                               # rebuild of the last root in today's order that ran it), else the reordering would
+                               # change the tuck candidates -- see the o_done restore.
+_ROOTORD_NOTIE_MUT = False     # TEST-ONLY (gate mutant): drop the equal-val1 tie rule (strictly-greater only), which
+                               # makes the final depend on the processing order. Never set by any build.
+_ROOTORD_NORESTORE_MUT = False # TEST-ONLY (gate mutant): skip the o_done CUR restore -- the tuck enumerator then sees
+                               # pass C's last root. Never set by any build.
+_ROOTORD_FWORDER_MUT = False   # TEST-ONLY (gate mutant): run pass C in today's order (d2 ignored) -- the ordering
+                               # must be what moves the publish times. Never set by any build.
 _REACH_PENALTY_MUT = False     # TEST-ONLY (gate mutant): the o_cand PENALTY form instead of the
                                # Pass-0 skip (a masked winning candidate then still outranks).
 _REACH_NOAND_MUT = False       # TEST-ONLY (gate mutant): one S_NA read site without AND #$0F --
@@ -614,26 +642,86 @@ def _emit_search_d3_engine(a):
         a.ins("LDA_imm", 0); a.ins("STA_zp", _RC.R_FLT); a.jmp("p0_restart")
         a.label("p0_rkd")
     # ---- select loop ----
-    a.ins("LDA_imm", 0); a.ins("STA_zp", D_J1)
-    a.label("s_loop")
-    a.ins("LDA_zp", D_J1); a.ins("CMP_imm", TOPK1); a.br("BCC", "s_c1"); a.jmp("o_done"); a.label("s_c1")
-    a.ins("LDA_zp", D_J1); a.ins("CMP_zp", D_T1C); a.br("BCC", "s_c2"); a.jmp("o_done"); a.label("s_c2")
-    a.ins("LDA_imm", 0x00); a.ins("STA_zp", D_MKL); a.ins("LDA_imm", 0x80); a.ins("STA_zp", D_MKH)
-    a.ins("LDA_imm", 0xFF); a.ins("STA_zp", D_MI)
-    a.ins("LDX_imm", 0)
-    a.label("mx1_loop")
-    a.ins("CPX_zp", D_T1C); a.br("BEQ", "mx1_done")
-    a.ins("LDA_zp", D_MKL); a.ins("SEC"); a.ins16("SBC_absX", TK1_KL)
-    a.ins("LDA_zp", D_MKH); a.ins16("SBC_absX", TK1_KH)
-    a.br("BVC", "mx1_s1"); a.ins("EOR_imm", 0x80); a.label("mx1_s1")
-    a.br("BPL", "mx1_nx")
-    a.ins16("LDA_absX", TK1_KL); a.ins("STA_zp", D_MKL); a.ins16("LDA_absX", TK1_KH); a.ins("STA_zp", D_MKH)
-    a.ins("STX_zp", D_MI)
-    a.label("mx1_nx")
-    a.ins("INX"); a.jmp("mx1_loop")
-    a.label("mx1_done")
-    a.ins("LDX_zp", D_MI)
-    a.ins("LDA_imm", 0x00); a.ins16("STA_absX", TK1_KL); a.ins("LDA_imm", 0x80); a.ins16("STA_absX", TK1_KH)
+    def _mx1(t):
+        """Today's root extraction: the first max Pass-0 key still in TK1 -> X = D_MI, then retire it ($8000)."""
+        a.ins("LDA_imm", 0x00); a.ins("STA_zp", D_MKL); a.ins("LDA_imm", 0x80); a.ins("STA_zp", D_MKH)
+        a.ins("LDA_imm", 0xFF); a.ins("STA_zp", D_MI)
+        a.ins("LDX_imm", 0)
+        a.label(f"{t}_loop")
+        a.ins("CPX_zp", D_T1C); a.br("BEQ", f"{t}_done")
+        a.ins("LDA_zp", D_MKL); a.ins("SEC"); a.ins16("SBC_absX", TK1_KL)
+        a.ins("LDA_zp", D_MKH); a.ins16("SBC_absX", TK1_KH)
+        a.br("BVC", f"{t}_s1"); a.ins("EOR_imm", 0x80); a.label(f"{t}_s1")
+        a.br("BPL", f"{t}_nx")
+        a.ins16("LDA_absX", TK1_KL); a.ins("STA_zp", D_MKL); a.ins16("LDA_absX", TK1_KH); a.ins("STA_zp", D_MKH)
+        a.ins("STX_zp", D_MI)
+        a.label(f"{t}_nx")
+        a.ins("INX"); a.jmp(f"{t}_loop")
+        a.label(f"{t}_done")
+        a.ins("LDX_zp", D_MI)
+        a.ins("LDA_imm", 0x00); a.ins16("STA_absX", TK1_KL); a.ins("LDA_imm", 0x80); a.ins16("STA_absX", TK1_KH)
+
+    if not DRROOTORD:
+        a.ins("LDA_imm", 0); a.ins("STA_zp", D_J1)
+        a.label("s_loop")
+        a.ins("LDA_zp", D_J1); a.ins("CMP_imm", TOPK1); a.br("BCC", "s_c1"); a.jmp("o_done"); a.label("s_c1")
+        a.ins("LDA_zp", D_J1); a.ins("CMP_zp", D_T1C); a.br("BCC", "s_c2"); a.jmp("o_done"); a.label("s_c2")
+        _mx1("mx1")
+    else:
+        assert not DEBUG_VAL1, "DRROOTORD: the DEBUG_VAL1 ring is indexed by D_J1 (today's order); not supported"
+        # ---- A: today's processing order -> RO_ORD[j] = TK1 index (the SAME extraction, nothing evaluated)
+        a.ins("LDA_imm", 0); a.ins("STA_zp", D_J1)
+        a.label("ra_loop")
+        a.ins("LDA_zp", D_J1); a.ins("CMP_imm", TOPK1); a.br("BCC", "ra_c1"); a.jmp("ra_end"); a.label("ra_c1")
+        a.ins("LDA_zp", D_J1); a.ins("CMP_zp", D_T1C); a.br("BCC", "ra_c2"); a.jmp("ra_end"); a.label("ra_c2")
+        _mx1("ra_mx")
+        a.ins("TXA"); a.ins("LDX_zp", D_J1); a.ins16("STA_absX", RO_ORD)
+        a.ins("INC_zp", D_J1); a.jmp("ra_loop")
+        a.label("ra_end")
+        a.ins("LDA_zp", D_J1); a.ins16("STA_abs", RO_N)
+        a.ins("LDA_imm", 0)
+        a.ins16("STA_abs", RO_BJ)       # today-rank of the $8000 sentinel best: 0, so "rank < RO_BJ" never holds
+        a.ins16("STA_abs", RO_J); a.ins16("STA_abs", RO_CNT)
+        a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", RO_LEH)     # no root has rebuilt CUR yet
+        a.ins("LDA_imm", 0)
+        a.ins("LDX_imm", 31)
+        a.label("ro_clr"); a.ins16("STA_absX", RO_USED); a.ins("DEX"); a.br("BPL", "ro_clr")
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", RO_MODE)
+        a.label("s_loop")
+        a.ins16("LDA_abs", RO_MODE); a.br("BEQ", "s_main")
+        # ---- B: depth-2 pre-pass, today's order; o_cand stores d2 instead of competing
+        a.ins16("LDA_abs", RO_J); a.ins16("CMP_abs", RO_N); a.br("BCC", "s_pre")
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", RO_MODE)
+        a.jmp("s_main")
+        a.label("s_pre")
+        a.ins16("STA_abs", RO_JC); a.jmp("s_root")
+        # ---- C: the deep pass, descending d2 (first max = the earlier today-rank on equal d2)
+        a.label("s_main")
+        a.ins16("LDA_abs", RO_CNT); a.ins16("CMP_abs", RO_N); a.br("BCC", "s_m1"); a.jmp("o_done"); a.label("s_m1")
+        a.ins("LDA_imm", 0xFF); a.ins("STA_zp", D_MI)
+        a.ins("LDX_imm", 0)
+        a.label("ro_mx")
+        a.ins16("CPX_abs", RO_N); a.br("BEQ", "ro_mxd")
+        a.ins16("LDA_absX", RO_USED); a.br("BNE", "ro_nx")
+        a.ins("LDA_zp", D_MI); a.ins("CMP_imm", 0xFF)
+        if _ROOTORD_FWORDER_MUT:
+            a.br("BNE", "ro_nx")                         # mutant: first unused rank = today's order
+        else:
+            a.br("BEQ", "ro_tk")
+            a.ins("LDA_zp", D_MKL); a.ins("SEC"); a.ins16("SBC_absX", RO_D2L)
+            a.ins("LDA_zp", D_MKH); a.ins16("SBC_absX", RO_D2H)
+            a.br("BVC", "ro_s1"); a.ins("EOR_imm", 0x80); a.label("ro_s1")
+            a.br("BPL", "ro_nx")                         # best >= d2[X] -> keep (strictly greater replaces)
+        a.label("ro_tk")
+        a.ins16("LDA_absX", RO_D2L); a.ins("STA_zp", D_MKL); a.ins16("LDA_absX", RO_D2H); a.ins("STA_zp", D_MKH)
+        a.ins("STX_zp", D_MI)
+        a.label("ro_nx")
+        a.ins("INX"); a.jmp("ro_mx")
+        a.label("ro_mxd")
+        a.ins("LDX_zp", D_MI); a.ins("LDA_imm", 1); a.ins16("STA_absX", RO_USED)
+        a.ins16("STX_abs", RO_JC); a.ins16("INC_abs", RO_CNT)
+        a.label("s_root")
+        a.ins16("LDX_abs", RO_JC); a.ins16("LDA_absX", RO_ORD); a.ins("TAX")
     a.ins16("LDA_absX", TK1_O); a.ins("STA_zp", D_O1); a.ins16("LDA_absX", TK1_C); a.ins("STA_zp", D_C1)
     # replay ply1
     _e_copy(a, 1, True)
@@ -659,6 +747,11 @@ def _emit_search_d3_engine(a):
     a.jmp("o_cand")
     a.label("o_nw")
     _e_copy(a, 2, False)                                   # w1 <- cur
+    if DRROOTORD and not DRTUCKLIVE and EH_PLY1:
+        # pre-pass (B) visits the roots in TODAY's order: remember the last one whose eh_terms rebuilds CUR ($0700)
+        a.ins16("LDA_abs", RO_MODE); a.br("BEQ", "ro_nleh")
+        a.ins16("LDA_abs", RO_JC); a.ins16("STA_abs", RO_LEH)
+        a.label("ro_nleh")
     if EH_PLY1:
         a.jsr("eh_terms")                                 # D_AD = W_EXCAV*excav(b1)+W_HANG*hang(b1)
     if _d(DELTA_P2):
@@ -695,6 +788,23 @@ def _emit_search_d3_engine(a):
     a.ins("LDA_zp", D_I1H); a.ins("ADC_zp", D_V3H); a.ins("STA_zp", D_V1H)
     a.jmp("o_cand")
     a.label("have2")
+    if DRROOTORD:
+        # pre-pass (B): best2 := the best ply-2 KEY over the ranked children (TK_K[0..TKC-1], imm2 + leaf/WIN, first
+        # max) -- the d2 estimate stands in for the top-8 expectimax -- then the unchanged val1 combine at k_done.
+        a.ins16("LDA_abs", RO_MODE); a.br("BEQ", "h2_deep")
+        a.ins("LDX_imm", 0)
+        a.ins16("LDA_absX", TK_KL); a.ins("STA_zp", D_B2L); a.ins16("LDA_absX", TK_KH); a.ins("STA_zp", D_B2H)
+        a.label("h2_k")
+        a.ins("INX"); a.ins("CPX_zp", D_TKC); a.br("BCS", "h2_kd")
+        a.ins("LDA_zp", D_B2L); a.ins("SEC"); a.ins16("SBC_absX", TK_KL)
+        a.ins("LDA_zp", D_B2H); a.ins16("SBC_absX", TK_KH)
+        a.br("BVC", "h2_s1"); a.ins("EOR_imm", 0x80); a.label("h2_s1")
+        a.br("BPL", "h2_k")
+        a.ins16("LDA_absX", TK_KL); a.ins("STA_zp", D_B2L); a.ins16("LDA_absX", TK_KH); a.ins("STA_zp", D_B2H)
+        a.jmp("h2_k")
+        a.label("h2_kd")
+        a.jmp("k_done")
+        a.label("h2_deep")
     a.ins("LDA_imm", 0x00); a.ins("STA_zp", D_B2L); a.ins("LDA_imm", 0x80); a.ins("STA_zp", D_B2H)
     a.ins("LDA_imm", 0); a.ins("STA_zp", D_J)
     a.label("k_loop")
@@ -801,6 +911,14 @@ def _emit_search_d3_engine(a):
         a.ins("LDA_imm", 0x01); a.ins("STA_zp", D_V1L); a.ins("LDA_imm", 0x80)
         a.label("rkp_st"); a.ins("STA_zp", D_V1H)
         a.label("rkp_n")
+    if DRROOTORD:
+        # pre-pass (B): this root's d2 (val1's formula with best2 = the best ply-2 key, root terms and veto included,
+        # no jitter) -> RO_D2[today-rank]; nothing competes, nothing is published.
+        a.ins16("LDA_abs", RO_MODE); a.br("BEQ", "oc_deep")
+        a.ins16("LDX_abs", RO_JC)
+        a.ins("LDA_zp", D_V1L); a.ins16("STA_absX", RO_D2L); a.ins("LDA_zp", D_V1H); a.ins16("STA_absX", RO_D2H)
+        a.ins16("INC_abs", RO_J); a.jmp("s_loop")
+        a.label("oc_deep")
     if DEBUG_VAL1:                                    # dump (C1,O1,V1L,V1H,B2L,B2H) at
                                                         # ring[D_J1*8] (pre-jitter), PLUS
                                                         # (I1L,I1H,L1L,L1H,ADL,ADH) at
@@ -826,7 +944,21 @@ def _emit_search_d3_engine(a):
     a.ins("LDA_zp", D_V1H); a.ins("ADC_imm", 0); a.ins("STA_zp", D_V1H)
     a.label("o_nj")
     a.ins("LDA_zp", D_BVL); a.ins("SEC"); a.ins("SBC_zp", D_V1L); a.ins("LDA_zp", D_BVH); a.ins("SBC_zp", D_V1H)
-    a.br("BVC", "o_s1"); a.ins("EOR_imm", 0x80); a.label("o_s1"); a.br("BPL", "s_next")
+    a.br("BVC", "o_s1"); a.ins("EOR_imm", 0x80); a.label("o_s1")
+    if not DRROOTORD:
+        a.br("BPL", "s_next")
+    else:
+        # deep pass (C): replace on a strictly greater val1 (as today), OR on an EQUAL val1 whose today-rank is
+        # earlier than the incumbent's (RO_BJ) -- the winner is then today's first-max-in-today's-order whatever
+        # order pass C visits the roots in.
+        a.br("BMI", "o_take")
+        if not _ROOTORD_NOTIE_MUT:
+            a.ins("LDA_zp", D_BVL); a.ins("CMP_zp", D_V1L); a.br("BNE", "o_skip")
+            a.ins("LDA_zp", D_BVH); a.ins("CMP_zp", D_V1H); a.br("BNE", "o_skip")
+            a.ins16("LDA_abs", RO_JC); a.ins16("CMP_abs", RO_BJ); a.br("BCC", "o_take")
+        a.label("o_skip"); a.jmp("s_next")
+        a.label("o_take")
+        a.ins16("LDA_abs", RO_JC); a.ins16("STA_abs", RO_BJ)
     a.ins("LDA_zp", D_V1L); a.ins("STA_zp", D_BVL); a.ins("LDA_zp", D_V1H); a.ins("STA_zp", D_BVH)
     a.ins("LDA_zp", D_C1); a.ins("STA_zp", D_BC); a.ins("LDA_zp", D_O1); a.ins("STA_zp", D_BO)
     if DBLCANON:
@@ -852,7 +984,17 @@ def _emit_search_d3_engine(a):
     a.ins("LDA_zp", D_BO); a.ins16("STA_abs", S_BEST_O)
     a.label("s_next")
     a.ins("INC_zp", D_J1); a.jmp("s_loop")
-    a.label("o_done"); a.ins("RTS")
+    a.label("o_done")
+    if DRROOTORD and not DRTUCKLIVE and EH_PLY1 and not _ROOTORD_NORESTORE_MUT:
+        # Hand the tuck extension TODAY's CUR: the tuck enumerator (tuck_bfs/translate/tier3, bound to $0700 -- see
+        # build_copro_d3 DRTUCKLIVE) reads the board the search's LAST eh_terms rebuilt. Today that is the last root in
+        # today's order that ran eh_terms (RO_LEH, recorded by the pre-pass); pass C left a different one. Rebuild it.
+        a.ins16("LDX_abs", RO_LEH); a.ins("CPX_imm", 0xFF); a.br("BEQ", "od_x")
+        a.ins16("LDA_absX", RO_ORD); a.ins("TAX")
+        a.ins16("LDA_absX", TK1_O); a.ins("STA_zp", D_O1); a.ins16("LDA_absX", TK1_C); a.ins("STA_zp", D_C1)
+        a.jsr("eh_terms")
+        a.label("od_x")
+    a.ins("RTS")
 
 
 def _emit_expectimax_engine(a):
