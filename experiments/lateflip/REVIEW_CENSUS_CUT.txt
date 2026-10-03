@@ -1,0 +1,103 @@
+# PR #30 review (2026-10-03): is census.py's DRLATEGUARD cut (lg_live/lg_done on non-committing DRPRESPIPE phases) sound?
+# Raw outputs only. Branch claude/late-flip-census-review (from origin/claude/late-flip 395973c5).
+# IR = tools/nmi126/capture_ir.py on experiments/lateflip/couch_c960dd49_flags.json + DRLATEGUARD=1 DRSTUDYEND=1;
+#   its main+wrapper bytes are byte-identical to 464a4b75's driver bank (tools/lateflip/nmi_addrs.py refuses otherwise).
+
+## census_lgcut_variants.py (couch 464a4b75 IR)
+  pp_abort          10376
+  pp_abort_cut       6530
+  pp_edge           10246
+  pp_edge_nolg      10246
+  pp_idle            7522
+  pp_idle_nolg       7522
+  pp_ph1            12460
+  pp_ph1_nolg       13495
+  pp_ph2            12436
+  pp_ph2_nolg       13471
+  pp_ph3            12441
+  pp_ph3_nolg       13476
+  pp_ph4            12923
+  pp_ph4_nolg       12923
+  pp_spawn          10333
+  pp_spawn_nolg     10333
+pairs (hook1+hook2+12+head2040+eps300):
+  [PR (lg cut)] worst = 27704  [pp_ph3 + pp_ph4]  margin +2076
+      pp_ph3       + pp_ph4       = 27704
+      pp_ph1       + pp_ph2       = 27236
+      pp_ph2       + pp_ph3       = 27217
+      pp_edge      + pp_ph1       = 25046
+  [no lg cut] worst = 29306  [pp_ph1_nolg + pp_ph2_nolg]  margin +474
+      pp_ph1_nolg  + pp_ph2_nolg  = 29306
+      pp_ph2_nolg  + pp_ph3_nolg  = 29287
+      pp_ph3_nolg  + pp_ph4_nolg  = 28739
+      pp_edge      + pp_ph1_nolg  = 26081
+  aborted-hook pairs (not in the census table):
+      pp_edge      + pp_abort     = 22962  margin +6818
+      pp_ph1       + pp_abort     = 25176  margin +4604
+      pp_ph2       + pp_abort     = 25152  margin +4628
+      pp_ph3       + pp_abort     = 25157  margin +4623
+      pp_abort     + pp_idle      = 20238  margin +9542
+      pp_abort     + pp_edge      = 22962  margin +6818
+      pp_abort     + pp_spawn     = 23049  margin +6731
+
+## census.py generic line (unchanged by the lg cut; the census itself calls it the wrong model on a pipelined image)
+tmp/review/couch_lg1_census.txt:  SAME-FRAME PAIR (2 hooks) worst = 29801 cyc   [max(spike) + steady_play]
+tmp/review/couch_lg1_census.txt:  WORST ADMISSIBLE FRAME = 27704 of 29780 (93.0%), margin 2076 cyc [pp_ph3 + pp_ph4]
+tmp/review/couch_lg0_census.txt:  SAME-FRAME PAIR (2 hooks) worst = 27979 cyc   [max(spike) + steady_play]
+tmp/review/couch_lg0_census.txt:  WORST ADMISSIBLE FRAME = 27550 of 29780 (92.5%), margin 2230 cyc [pp_ph1 + pp_ph2]
+
+## python -O strips the emitter's ROWCAP assert; census still certifies lg_gate 883 / frame 27,704 on a ROWCAP=3 image
+wrapper: base=$FF54 112 B 49 records  GROUND-TRUTH OK
+  WORST ADMISSIBLE FRAME = 27704 of 29780 (93.0%), margin 2076 cyc [pp_ph3 + pp_ph4]
+    $8811 lg_gate                       883
+
+## tests/test_lateguard_census_cut.py
+== real image: couch flags + DRLATEGUARD=1
+  [PASS] census cut map: lg cut on ['pp_ph1', 'pp_ph2', 'pp_ph3']; last phase pp_ph4 (pp_m4) keeps lg
+  [PASS] real: no census-cut label runs in its class: 3840 hooks, per-phase {0: 48, 1: 48, 2: 48, 3: 48}, aborted 2880; violations 0 []
+  [PASS] PC: every phase class populated: {0: 48, 1: 48, 2: 48, 3: 48}
+  [PASS] PC: lg_gate witness alive (aborted/idle hooks): lg_gate entered in 1556 hooks, 1224 of them aborted phase hooks
+  [PASS] PC: spawn-upload witness alive: h2_cp in 1624 hooks
+  [PASS] PC: committing phase reaches lg_gate (why census keeps it): pp_m4 hooks with lg_gate: 36
+  [PASS] measured py65 cycles <= census bound of the hook's class: 0 over []
+  [PASS] aborted-hook bound dominated by every phase scenario: pp_abort 10376 vs phase bounds {'pp_ph1': 12460, 'pp_ph2': 12436, 'pp_ph3': 12441, 'pp_ph4': 12923}
+  [PASS] lg_row bound covers the IR's ROWCAP: IR ROWCAP CMP#2 LDA#2 vs LOOP_BOUNDS lg_row 2
+== mutants (each must be KILLED)
+  [PASS] M_armed KILLED (pp_disp ARMED2 abort dead): pp_ph1 hook executed census-cut label lg_live @ {'pp': 1, 'armed': 1, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+  [PASS] M_pend KILLED (pp_disp PEND2 abort dead): pp_ph1 hook executed census-cut label h2_cp @ {'pp': 1, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 1, 'done': 0, 'orient': 255}
+  [PASS] M_write KILLED (non-committing phase 1 writes ARMED2 := 1): pp_ph1 hook executed census-cut label lg_live @ {'pp': 1, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+  [PASS] M_early KILLED (non-last match phase commits (GO, ARMED2 := 1)): pp_m3 hook executed census-cut label lg_live @ {'pp': 3, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+== mutant M_rowcap: python -O strips the emitter's ROWCAP assert
+  [PASS] M_rowcap KILLED (IR ROWCAP > census lg_row): IR ROWCAP 3/3 vs lg_row 2
+GATE_LGCUT PASS
+
+## Mesen NMI census (tools/lateflip/run_nmi.sh; NMI entry $8005 .. RTI $8035 +13; frame budget 29,780)
+[G2_lg1] cart md5 464a4b7586061a265a4759568eca2363
+SUMMARY tag=G2_lg1 frames=11095 nmis=11090 max=6934@f7384 (h1=3654 h2=1005) over29780=0 nested=0 shield_absorbed=0 hooks_gt2=0 maxhook=3678[h2_cp] hist(<12k,<16k,<20k,<24k,<29780,>=)=11090,0,0,0,0,0 phase_hooks=0 nc_phase_hooks=0 lg_hooks=9560 abort_hooks=0 commits=0 frames_phase&lg=0 frames_ncphase&lg=0 REFUTE_same_hook=0 max_nmi_with_phase=0 release_edges=0 pokes=0 game_share(max pre=2039 mid=408 post+13=129 head=total-h1-h2=2568@f83; in play: head=2278@f5021 total=6934)
+SUMMARY tag=G2_lg1 frames=11095 goes=120 dones=120 cases=116
+NMIMAX f=7384 total=6934 h1=3654 h2=1005 bits1=h2_cp bits2= mode=04
+[G2_lg0] cart md5 8c6e419631ee80612379e8f5f0259d62
+SUMMARY tag=G2_lg0 frames=10781 nmis=10776 max=6907@f10572 (h1=3642 h2=1009) over29780=0 nested=0 shield_absorbed=0 hooks_gt2=0 maxhook=3666[h2_cp] hist(<12k,<16k,<20k,<24k,<29780,>=)=10776,0,0,0,0,0 phase_hooks=0 nc_phase_hooks=0 lg_hooks=0 abort_hooks=0 commits=0 frames_phase&lg=0 frames_ncphase&lg=0 REFUTE_same_hook=0 max_nmi_with_phase=0 release_edges=0 pokes=0 game_share(max pre=2039 mid=408 post+13=129 head=total-h1-h2=2568@f83; in play: head=2279@f1237 total=6907)
+SUMMARY tag=G2_lg0 frames=10781 goes=120 dones=120 cases=116
+NMIMAX f=10572 total=6907 h1=3642 h2=1009 bits1=h2_cp bits2= mode=04
+[CH_lg1] cart md5 464a4b7586061a265a4759568eca2363
+SUMMARY tag=CH_lg1 frames=40000 nmis=39995 max=11459@f28397 (h1=5265 h2=3937) over29780=0 nested=0 hooks_gt2=0 maxhook=5307[ph_nc+pp_disp] hist(<12k,<16k,<20k,<24k,<29780,>=)=39995,0,0,0,0,0 phase_hooks=507 nc_phase_hooks=383 lg_hooks=12130 abort_hooks=0 commits=124 frames_phase&lg=0 frames_ncphase&lg=0 REFUTE_same_hook=0 max_nmi_with_phase=11459 release_edges=134 pokes=134 game_share(max pre=2039 mid=408 post+13=129 head=total-h1-h2=2568@f83)
+CVC goes=156 modes=00:40,01:200,02:15,03:14,04:35934,05:13,07:1908,08:1876
+NMIMAX f=28397 total=11459 h1=5265 h2=3937 bits1=ph_nc+pp_disp bits2=ph_nc+pp_disp mode=04
+[CH_lg0] cart md5 8c6e419631ee80612379e8f5f0259d62
+SUMMARY tag=CH_lg0 frames=40000 nmis=39995 max=11388@f15111 (h1=5226 h2=3906) over29780=0 nested=0 shield_absorbed=0 hooks_gt2=0 maxhook=5324[ph_nc+pp_disp] hist(<12k,<16k,<20k,<24k,<29780,>=)=39995,0,0,0,0,0 phase_hooks=531 nc_phase_hooks=401 lg_hooks=0 abort_hooks=0 commits=130 frames_phase&lg=0 frames_ncphase&lg=0 REFUTE_same_hook=0 max_nmi_with_phase=11388 release_edges=138 pokes=139 game_share(max pre=2040 mid=408 post+13=129 head=total-h1-h2=2569@f12243; in play: head=2283@f31551 total=11388)
+CVC goes=160 modes=00:40,01:200,02:15,03:14,04:35892,05:13,07:1951,08:1876
+NMIMAX f=15111 total=11388 h1=5226 h2=3906 bits1=ph_nc+pp_disp bits2=ph_nc+pp_disp mode=04
+[CVC_lg1] cart md5 387bb7bd419ffaf9055ea64b7442f317
+SUMMARY tag=CVC_lg1 frames=40000 nmis=39995 max=21092@f32485 (h1=15777 h2=3331) over29780=0 nested=0 shield_absorbed=0 hooks_gt2=0 maxhook=18207[] hist(<12k,<16k,<20k,<24k,<29780,>=)=39798,0,154,43,0,0 phase_hooks=0 nc_phase_hooks=0 lg_hooks=21943 abort_hooks=0 commits=0 frames_phase&lg=0 frames_ncphase&lg=0 REFUTE_same_hook=0 max_nmi_with_phase=0 release_edges=0 pokes=0 game_share(max pre=2040 mid=408 post+13=129 head=total-h1-h2=2569@f2129; in play: head=2279@f38213 total=21092)
+CVC goes=302 modes=00:21,01:352,02:66,03:67,04:15871,05:66,07:9068,08:14489
+NMIMAX f=32485 total=21092 h1=15777 h2=3331 bits1=lg_done+lg_gate bits2=h2_cp mode=04
+[CVC_lg0] cart md5 3b8737a939c19b1d592218f79bbf869c
+SUMMARY tag=CVC_lg0 frames=40000 nmis=39995 max=21247@f34953 (h1=18241 h2=739) over29780=0 nested=0 shield_absorbed=0 hooks_gt2=0 maxhook=18241[h2_cp] hist(<12k,<16k,<20k,<24k,<29780,>=)=39784,0,181,30,0,0 phase_hooks=0 nc_phase_hooks=0 lg_hooks=0 abort_hooks=0 commits=0 frames_phase&lg=0 frames_ncphase&lg=0 REFUTE_same_hook=0 max_nmi_with_phase=0 release_edges=0 pokes=0 game_share(max pre=2040 mid=408 post+13=129 head=total-h1-h2=2569@f2495; in play: head=2279@f3668 total=21247)
+CVC goes=297 modes=00:21,01:320,02:60,03:63,04:17431,05:62,07:8406,08:13637
+NMIMAX f=34953 total=21247 h1=18241 h2=739 bits1=h2_cp bits2= mode=04
+# G2_* = lateflip_nmi.lua: the 116 banked G2 timelines (pubtrace_G2_fw1488e158.jsonl, chained as in the lane's run), no garbage
+#        -> release_edges=0: a lateflip replay NEVER runs the prestart pipeline, so it cannot test the cut by itself.
+# CH_* = cvc_nmi.lua LN_HUMAN=1 LN_SEED=7: churning P2 mailbox + garbage pokes every 30 f (P2 falling) -> pipelines run.
+# CVC_* = cvc_nmi.lua on the CvC carts (no DRPRESPIPE): churning P2 mailbox, P1 native AI, LN_SEED=7.
+# CH_lg1 ran an earlier witness build (no shield_absorbed / in-play head fields); its max NMI 11,459 cannot overrun.

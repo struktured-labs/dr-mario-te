@@ -103,6 +103,9 @@ run test_prg_ram_map
 # Combined-cart gate (#140): PP_RAN interlock premise + admissible-frame certificate for
 # the DRPRESPIPE+DRP1SLICE image, byte-identity vs the certified carts. ~0.5 s.
 run test_combo_cart
+# NMI-census cut gate (PR #30 review): the h2_cp + lg_live/lg_done cuts census.py applies to DRPRESPIPE phase hooks
+# are behaviourally true of the couch DRLATEGUARD image, and 5 premise-breaking mutants are killed. ~15 s.
+run test_lateguard_census_cut
 
 echo "----------------------------------------------------------------------"
 if [ $rc -eq 0 ]; then echo "cart hazard gates: ALL PASS"; else echo "cart hazard gates: FAILURES ABOVE"; fi
