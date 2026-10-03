@@ -30,7 +30,8 @@ FWDIR = os.path.join(ROOT, "tmp", "fw")
 ARMS = {  # flag set beyond fw 1488e158's recipe -> hex built by experiments/reach/build_fw.py 540 _ 1 1 1 TR RO TL
     "off": "fw_tr0_ro0_tl0.hex", "tr": "fw_tr1_ro0_tl0.hex", "ro": "fw_tr0_ro1_tl0.hex", "tl": "fw_tr0_ro0_tl1.hex",
     "trro": "fw_tr1_ro1_tl0.hex", "trtl": "fw_tr1_ro0_tl1.hex", "rotl": "fw_tr0_ro1_tl1.hex",
-    "ship": "fw_tr1_ro1_tl1.hex"}
+    "ship": "fw_tr1_ro1_tl1.hex",
+    "v2": "fw_ship_v2_13_3.hex"}       # ship + reach mask T_LAT 13 / G0 3 (fair-settle cart): build_fw.py ... 1 1 1 13 3
 FRAME = 29780.5 * 48          # master clocks per NES frame (sim bus: 48 clocks per NES CPU cycle)
 SEED, TAPP, SPEED = 0, 2, 1
 VAR_OF_O4 = [2, 3, 0, 1]      # cosim_farm/cosim.py VAR_OF_O4 (copro o4 -> sim var); asserted below
@@ -142,7 +143,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--arms", required=True); ap.add_argument("--games", default="G2")
     ap.add_argument("--out-dir", required=True); ap.add_argument("--j", type=int, default=4)
-    ap.add_argument("--p", default="")
+    ap.add_argument("--p", default=""); ap.add_argument("--interleave", action="store_true")
     args = ap.parse_args()
     os.makedirs(args.out_dir, exist_ok=True)
     cases = load_cases(args.games.split(","))
@@ -162,6 +163,8 @@ def main():
             for q in cases:
                 if q["game"] == g and q["p"] not in done:
                     jobs.append((arm, md5, d, q, outp))
+    if args.interleave:                         # all arms of one board together, so a partial run stays paired
+        jobs.sort(key=lambda j: (j[3]["game"], j[3]["p"]))
     print(f"{len(jobs)} co-sim decisions to run (j={args.j})", flush=True)
     with ThreadPoolExecutor(args.j) as ex:
         futs = [(j, ex.submit(run_one, (j[2], j[3]["_line"]))) for j in jobs]

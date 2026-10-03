@@ -21,6 +21,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(ROOT, "experiments", "reach"))
 import reach_fw as RF  # noqa: E402
+RF.T_LAT = int(os.environ.get("DRREACH_TLAT", RF.T_LAT))   # mask constants of the firmware being judged (13 / 3 = V2)
+RF.G0 = int(os.environ.get("DRREACH_G0", RF.G0))
 
 LF = "/home/struktured/projects/dr-mario-h16-wt/experiments/lateflip"
 LF_FILES = {"G2": "pubtrace_g2_seed0_tuck.jsonl", "G3": "pubtrace_G3_seed0.jsonl", "G4": "pubtrace_G4_seed0.jsonl"}
@@ -60,13 +62,13 @@ def mask_of(upload):
 def load(d, arm, games, ref_lateflip=False):
     out = {}
     for g in games:
+        if arm == "off" and ref_lateflip:              # the lane's fw 1488e158 timelines, overlaid by any local rerun
+            for l in open(os.path.join(LF, LF_FILES[g])):
+                r = json.loads(l); r["game"] = g; out[(g, r["p"])] = r
         p = os.path.join(d, f"pubtrace_{g}_{arm}.jsonl")
         if os.path.exists(p):
             for l in open(p):
                 r = json.loads(l); out[(g, r["p"])] = r
-        elif arm == "off" and ref_lateflip:
-            for l in open(os.path.join(LF, LF_FILES[g])):
-                r = json.loads(l); r["game"] = g; out[(g, r["p"])] = r
     return out
 
 
@@ -132,7 +134,12 @@ def compare(A, B, la, lb):
     out = [f"{lb} vs {la}: boards {len(keys)}  final identical {len(fin)}/{len(keys)}  final+tuck identical "
            f"{len(tk)}/{len(keys)}",
            f"   DONE delta ({lb} - {la}) frames: mean {st.mean(dd):+.2f}  median {st.median(dd):+.2f}  p90 {pct(dd, .9):+.2f}  "
-           f"p95 {pct(dd, .95):+.2f}  max {max(dd):+.2f}  min {min(dd):+.2f}"]
+           f"p95 {pct(dd, .95):+.2f}  max {max(dd):+.2f}  min {min(dd):+.2f}",
+           f"   same boards, P(mailbox == own final) at GO + 6 f: {la} "
+           f"{100 * sum(at(A[k], 6.0) == tuple(A[k]['final'][:2]) for k in keys) / len(keys):.1f}%  {lb} "
+           f"{100 * sum(at(B[k], 6.0) == tuple(B[k]['final'][:2]) for k in keys) / len(keys):.1f}%; tuck commits "
+           f"{la} {sum(tucked(A[k]) for k in keys)} (outside mask {sum(tucked(A[k]) and not in_mask(A[k]) for k in keys)})  "
+           f"{lb} {sum(tucked(B[k]) for k in keys)} (outside mask {sum(tucked(B[k]) and not in_mask(B[k]) for k in keys)})"]
     for k in keys:
         if k not in tk:
             a, b = A[k], B[k]

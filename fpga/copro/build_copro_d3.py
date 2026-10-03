@@ -358,8 +358,18 @@ def build_image(board, cA, cB, nA, nB):
     if D3.DRREACH:
         import reach_6502 as RC
         assert not EMIT_TUCK, "DRREACH's mask routine lives in the v1 EMIT_TUCK window ($A800)"
+        # DRREACH_TLAT / DRREACH_G0 (2026-10-03): the mask's answer-latency and first-gravity-frame constants as
+        # build parameters. Default 19 / 8 = the pinned-settle couch carts (byte-identical: reach_6502's own values);
+        # the fair-settle cart (DRSETTLE) is 13 / 3. Set on the module for this emission, then restored.
+        _rc_t, _rc_g = RC.T_LAT, RC.G0
+        RC.T_LAT = int(os.environ.get("DRREACH_TLAT", str(_rc_t)))
+        RC.G0 = int(os.environ.get("DRREACH_G0", str(_rc_g)))
+        assert RC.F0 < RC.T_LAT <= 40 and 0 <= RC.G0 <= 16, (RC.T_LAT, RC.G0)
         ra = Asm6502(RC.REACH_ROM)
-        RC.emit_reach(ra, S_NA, S_NB, tap=bool(D3.DRREACHTAP))
+        try:
+            RC.emit_reach(ra, S_NA, S_NB, tap=bool(D3.DRREACHTAP))
+        finally:
+            RC.T_LAT, RC.G0 = _rc_t, _rc_g
         reach_code = ra.assemble()
         assert ra.labels["reach_mask"] == 0, "the search JSRs REACH_ROM: the entry must be its first byte"
         assert RC.REACH_ROM + len(reach_code) <= SQ_ROM, f"reach routine overruns the SQ tables ({len(reach_code)}B)"

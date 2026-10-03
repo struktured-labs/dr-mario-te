@@ -149,6 +149,55 @@ def mut_task(t):
     return res
 
 
+def run_forced(img, board, go, C=1000):
+    """One whole decision with every root's val1 FORCED to the same value C at the deep comparison: reads of D_V1L/H
+    return C while the search runs (in DRROOTORD images only during pass C, RO_MODE == 0, so the pre-pass d2 values --
+    and therefore pass C's order -- stay genuine), and stop at the tuck-extension entry. All roots then tie: today's
+    firmware keeps the FIRST root in today's order, which the tie rule must reproduce for any pass-C order."""
+    from py65.memory import ObservableMemory
+    from py65_harness import Cpu
+    import fwlib as F
+    D3, TV = F.D3, F.TV
+    cpu = Cpu()
+    for a, v in enumerate(img):
+        cpu.mem[a] = v
+    cpu.set_board(board)
+    D3.attach_engine_emu(cpu)
+    base = cpu.mem
+    obs = ObservableMemory(subject=base)
+    st = {"on": True}
+    ro = bool(MUT.get("_ro_img") is img)
+
+    def rd(addr):
+        if st["on"] and (not ro or base[D3.RO_MODE] == 0):
+            return (C & 0xFF) if addr == D3.D_V1L else (C >> 8)
+        return base[addr]
+
+    def on_bk(addr, v):
+        base[addr] = v
+        if v == 0 and st["on"]:
+            st["on"] = False
+            st["main"] = (base[D3.D_BC], base[D3.D_BO])       # the SEARCH's answer, before any tuck can replace it
+    obs.subscribe_to_read([D3.D_V1L, D3.D_V1H], rd)
+    obs.subscribe_to_write([TV.TK2_BKIND], on_bk)
+    cpu.mpu.memory = obs; cpu.mem = obs
+    cpu.mem[F.S_CA], cpu.mem[F.S_CB], cpu.mem[F.S_NA], cpu.mem[F.S_NB] = go
+    cpu.mem[F.DONE] = 0
+    m = cpu.mpu; m.pc = F.B.STUB; m.sp = 0xFF
+    while base[F.DONE] != 1:
+        m.step()
+    return st.get("main")
+
+
+def tie_task(t):
+    """Tie-rule stress: off / ro / ro_notie with every root's val1 forced equal at the comparison (run_forced)."""
+    res = {"id": t["id"]}
+    for a in ("off", "ro", "ro_notie"):
+        MUT["_ro_img"] = MUT[a] if a != "off" else None
+        res[a] = run_forced(MUT[a], t["nes"], t["go"])
+    return res
+
+
 def part2(rows, workers):
     """Targeted boards from the A/B rows: tuck boards (off committed), double-pill boards, and a plain sample."""
     tuckb = [r for r in rows if tucked(r["off"])]
@@ -174,6 +223,15 @@ def part2(rows, workers):
     k4r = sum(r["ro"]["seq"] != r["off"]["seq"] for r in R)
     k5 = sum((r["ro_norestore"]["entry"] or {}).get("cand") != (r["off"]["entry"] or {}).get("cand") for r in R)
     k5r = sum((r["ro"]["entry"] or {}).get("cand") != (r["off"]["entry"] or {}).get("cand") for r in R)
+    tie_boards = [dict(id=r["id"], nes=r["nes"], go=r["go"]) for r in rows[::3][:12]]
+    with mp.get_context("fork").Pool(workers, initializer=mut_init) as pool:
+        TR = pool.map(tie_task, tie_boards, chunksize=1)
+    t_same = sum(r["ro"] == r["off"] for r in TR)
+    t_kill = sum(r["ro_notie"] != r["off"] for r in TR)
+    out.append(f"  tie stress (every root's val1 forced equal at the comparison, {len(TR)} boards): ro == off "
+               f"{t_same}/{len(TR)}; ro_notie != off {t_kill}")
+    ok &= t_same == len(TR)
+    k3 += t_kill
     for name, killed, detail in (
             ("tr_nomask", k1 > 0, f"finals outside the mask {k1}"),
             ("tr_livepub", k2 > 0 and k2r == 0, f"boards with a bare publish: mutant {k2}, real tr {k2r}"),
@@ -196,11 +254,13 @@ def part3(rows, workers):
             s |= F.run(img, r["nes"], *r["go"], ramscan=True)["ram"]
         used[a] = s
     blk = set(range(0x0200, 0x0287))
-    out, ok = [], True
+    bfs = set(range(0x0E00, 0x1000))   # tuck_bfs VISITED/OUT arrays + tier3 MONO_VIS: its own claim; how far the OUT
+    out, ok = [], True                 # arrays fill depends on the candidate count, which DRTUCKLIVE changes
     for a in ("ro", "ship"):
-        extra = sorted(used[a] - used["off"] - blk)
-        out.append(f"RAM {a}: writes outside (off's set U $0200-$0286): {len(extra)} {[hex(x) for x in extra[:8]]}; "
-                   f"RO block bytes written {len(used[a] & blk)}")
+        extra = sorted(used[a] - used["off"] - blk - bfs)
+        out.append(f"RAM {a}: writes outside (off's set U $0200-$0286 U tuck_bfs's own $0E00-$0FFF): {len(extra)} "
+                   f"{[hex(x) for x in extra[:8]]}; RO block bytes written {len(used[a] & blk)}; new bytes inside "
+                   f"$0E00-$0FFF {len((used[a] - used['off']) & bfs)}")
         ok &= not extra
     out.append(f"RAM off arm never writes $0200-$02FF: {not any(0x0200 <= x < 0x0300 for x in used['off'])}")
     ok &= not any(0x0200 <= x < 0x0300 for x in used["off"])
