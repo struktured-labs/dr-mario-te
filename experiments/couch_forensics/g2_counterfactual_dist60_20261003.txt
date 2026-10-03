@@ -1,0 +1,77 @@
+=== (1) brain-only replay (observed capsules + observed garbage, perfect execution) ===
+from p0: 115 pills -> end CLEAR at p114 viruses 0 heights [0, 1, 8, 0, 2, 2, 1, 1]
+    p  0 ok     vir 48 h [10, 10, 10, 10, 11, 8, 10, 10] max 11 | silicon next board: vir 48 h [10, 10, 10, 10, 11, 8, 10, 10]
+    p 10 ok     vir 38 h [10, 8, 11, 9, 8, 5, 10, 12] max 12 | silicon next board: vir 38 h [10, 8, 11, 9, 8, 5, 10, 12]
+    p 20 ok     vir 30 h [10, 10, 8, 8, 7, 7, 0, 4] max 10 | silicon next board: vir 34 h [9, 11, 8, 10, 10, 7, 10, 8]
+    p 30 ok     vir 25 h [11, 7, 8, 6, 9, 8, 0, 6] max 11 | silicon next board: vir 27 h [9, 8, 8, 9, 3, 4, 10, 8]
+    p 40 ok     vir 20 h [11, 7, 4, 6, 6, 8, 3, 6] max 11 | silicon next board: vir 21 h [5, 8, 8, 2, 0, 11, 12, 8]
+    p 50 ok     vir 16 h [11, 8, 4, 3, 3, 11, 3, 0] max 11 | silicon next board: vir 18 h [6, 9, 9, 5, 4, 12, 12, 8]
+    p 60 ok     vir 12 h [11, 9, 9, 2, 5, 5, 6, 0] max 11 | silicon next board: vir 15 h [5, 8, 9, 8, 11, 12, 12, 3]
+    p 70 ok     vir  9 h [11, 7, 0, 4, 5, 7, 5, 0] max 11 | silicon next board: vir 15 h [4, 8, 9, 5, 12, 12, 11, 3]
+    p 80 ok     vir  6 h [7, 3, 5, 4, 5, 7, 4, 0] max 7 | silicon next board: vir 15 h [6, 8, 9, 4, 11, 13, 11, 3]
+    p 90 ok     vir  5 h [3, 3, 5, 1, 1, 6, 6, 0] max 6 | silicon next board: vir 15 h [7, 5, 9, 6, 13, 13, 11, 5]
+    p 96 ok     vir  5 h [3, 4, 5, 2, 2, 3, 7, 0] max 7 | silicon next board: vir 15 h [8, 11, 12, 3, 13, 14, 11, 5]
+    p100 ok     vir  5 h [5, 4, 5, 3, 4, 4, 1, 0] max 5 | silicon next board: vir 15 h [15, 15, 14, 14, 14, 14, 11, 5]
+    p104 ok     vir  4 h [3, 6, 5, 3, 1, 2, 2, 0] max 6 | silicon next board: vir 15 h [16, 16, 15, 15, 13, 13, 11, 7]
+    p110 ok     vir  3 h [4, 4, 8, 0, 2, 2, 1, 1] max 8 | silicon next board: vir 10 h [16, 16, 15, 15, 10, 6, 4, 4]
+    p114 CLEAR  vir  0 h [0, 1, 8, 0, 2, 2, 1, 1] max 8 | silicon next board: vir 18 h [16, 16, 16, 15, 13, 11, 7, 6]
+from p31: 85 pills -> end ok at p115 viruses 6 heights [2, 2, 1, 2, 6, 8, 11, 4]
+    p 40 ok     vir 19 h [3, 8, 3, 2, 7, 6, 11, 8] max 11 | silicon next board: vir 21 h [5, 8, 8, 2, 0, 11, 12, 8]
+    p 50 ok     vir 18 h [7, 9, 1, 2, 7, 7, 10, 8] max 10 | silicon next board: vir 18 h [6, 9, 9, 5, 4, 12, 12, 8]
+    p 60 ok     vir 16 h [8, 8, 8, 3, 7, 5, 10, 8] max 10 | silicon next board: vir 15 h [5, 8, 9, 8, 11, 12, 12, 3]
+    p 70 ok     vir 13 h [5, 4, 9, 3, 5, 1, 10, 8] max 10 | silicon next board: vir 15 h [4, 8, 9, 5, 12, 12, 11, 3]
+    p 80 ok     vir 12 h [8, 5, 8, 3, 5, 0, 10, 7] max 10 | silicon next board: vir 15 h [6, 8, 9, 4, 11, 13, 11, 3]
+    p 90 ok     vir 11 h [5, 4, 4, 3, 5, 4, 10, 6] max 10 | silicon next board: vir 15 h [7, 5, 9, 6, 13, 13, 11, 5]
+    p 96 ok     vir  7 h [5, 3, 2, 0, 3, 0, 10, 6] max 10 | silicon next board: vir 15 h [8, 11, 12, 3, 13, 14, 11, 5]
+    p100 ok     vir  6 h [0, 3, 4, 4, 4, 0, 10, 6] max 10 | silicon next board: vir 15 h [15, 15, 14, 14, 14, 14, 11, 5]
+    p104 ok     vir  6 h [1, 1, 1, 0, 0, 0, 10, 6] max 10 | silicon next board: vir 15 h [16, 16, 15, 15, 13, 13, 11, 7]
+    p110 ok     vir  6 h [0, 0, 0, 2, 2, 5, 10, 4] max 10 | silicon next board: vir 10 h [16, 16, 15, 15, 10, 6, 4, 4]
+    p114 ok     vir  6 h [2, 0, 1, 2, 6, 8, 11, 4] max 11 | silicon next board: vir 18 h [16, 16, 16, 15, 13, 11, 7, 6]
+from p59: 57 pills -> end ok at p115 viruses 9 heights [5, 4, 5, 5, 2, 1, 12, 6]
+    p 60 ok     vir 15 h [7, 8, 9, 6, 7, 12, 12, 3] max 12 | silicon next board: vir 15 h [5, 8, 9, 8, 11, 12, 12, 3]
+    p 70 ok     vir 15 h [9, 8, 9, 3, 6, 11, 11, 3] max 11 | silicon next board: vir 15 h [4, 8, 9, 5, 12, 12, 11, 3]
+    p 80 ok     vir 15 h [9, 11, 9, 3, 6, 3, 11, 3] max 11 | silicon next board: vir 15 h [6, 8, 9, 4, 11, 13, 11, 3]
+    p 90 ok     vir 15 h [6, 6, 9, 3, 9, 4, 11, 3] max 11 | silicon next board: vir 15 h [7, 5, 9, 6, 13, 13, 11, 5]
+    p 96 ok     vir 14 h [6, 7, 6, 3, 8, 6, 11, 3] max 11 | silicon next board: vir 15 h [8, 11, 12, 3, 13, 14, 11, 5]
+    p100 ok     vir 12 h [6, 7, 4, 4, 7, 3, 11, 4] max 11 | silicon next board: vir 15 h [15, 15, 14, 14, 14, 14, 11, 5]
+    p104 ok     vir 11 h [7, 5, 0, 2, 7, 3, 11, 6] max 11 | silicon next board: vir 15 h [16, 16, 15, 15, 13, 13, 11, 7]
+    p110 ok     vir 10 h [7, 5, 5, 9, 7, 1, 11, 6] max 11 | silicon next board: vir 10 h [16, 16, 15, 15, 10, 6, 4, 4]
+    p114 ok     vir  9 h [5, 4, 5, 3, 2, 1, 12, 6] max 12 | silicon next board: vir 18 h [16, 16, 16, 15, 13, 11, 7, 6]
+from p90: 26 pills -> end ok at p115 viruses 10 heights [5, 5, 5, 5, 11, 16, 12, 5]
+    p 90 ok     vir 15 h [7, 5, 9, 6, 13, 13, 11, 5] max 13 | silicon next board: vir 15 h [7, 5, 9, 6, 13, 13, 11, 5]
+    p 96 ok     vir 14 h [8, 5, 3, 3, 13, 16, 11, 5] max 16 | silicon next board: vir 15 h [8, 11, 12, 3, 13, 14, 11, 5]
+    p100 ok     vir 12 h [7, 5, 5, 6, 13, 16, 11, 5] max 16 | silicon next board: vir 15 h [15, 15, 14, 14, 14, 14, 11, 5]
+    p104 ok     vir 10 h [7, 5, 4, 4, 12, 16, 11, 5] max 16 | silicon next board: vir 15 h [16, 16, 15, 15, 13, 13, 11, 7]
+    p110 ok     vir 10 h [6, 4, 7, 7, 12, 16, 11, 5] max 16 | silicon next board: vir 10 h [16, 16, 15, 15, 10, 6, 4, 4]
+    p114 ok     vir 10 h [5, 5, 3, 5, 11, 16, 12, 5] max 16 | silicon next board: vir 18 h [16, 16, 16, 15, 13, 11, 7, 6]
+from p96: 20 pills -> end ok at p115 viruses 9 heights [3, 5, 7, 3, 11, 14, 12, 5]
+    p 96 ok     vir 15 h [8, 11, 12, 3, 13, 14, 11, 5] max 14 | silicon next board: vir 15 h [8, 11, 12, 3, 13, 14, 11, 5]
+    p100 ok     vir 13 h [8, 8, 5, 5, 13, 14, 11, 5] max 14 | silicon next board: vir 15 h [15, 15, 14, 14, 14, 14, 11, 5]
+    p104 ok     vir 12 h [8, 8, 0, 2, 13, 14, 11, 5] max 14 | silicon next board: vir 15 h [16, 16, 15, 15, 13, 13, 11, 7]
+    p110 ok     vir 10 h [7, 7, 6, 1, 11, 14, 11, 5] max 14 | silicon next board: vir 10 h [16, 16, 15, 15, 10, 6, 4, 4]
+    p114 ok     vir  9 h [2, 6, 8, 4, 11, 14, 12, 5] max 14 | silicon next board: vir 18 h [16, 16, 16, 15, 13, 11, 7, 6]
+
+=== (2) tower-building decisions of the SIM brain (choice raises max(h4,h5) to >= 11) ===
+  p  0 t187 vir48 h[10, 10, 10, 10, 9, 8, 10, 10] sim ['V', 4, [1, 3], 5] -> tower 11 | silicon MATCH | vs ['H', 6, [3, 1], 5] margin 161: VIR+90 CELLS+6 LEAF-167 HSV+256 EXHANG-24
+  p  2 t190 vir45 h[10, 10, 9, 8, 10, 9, 9, 10] sim ['H', 3, [3, 1], 5] -> tower 11 | silicon MATCH | vs ['H', 1, [1, 3], 5] margin 383: VIR+135 CELLS+20 CHAIN-68 LEAF+32 HSV+256 EXHANG+8
+  p 84 t406 vir15 h[4, 6, 9, 6, 11, 13, 11, 3] sim ['H', 4, [2, 3], 2] -> tower 14 | silicon OTHER | vs ['V', 0, [2, 3], 10] margin 66: CELLS+10 CHAIN+68 LEAF-83 EXHANG+112 STRAND-40
+  p 87 t410 vir15 h[6, 8, 9, 6, 11, 13, 11, 5] sim ['V', 5, [3, 3], 1] -> tower 15 | silicon OTHER | vs ['V', 7, [3, 3], 9] margin 35: CELLS-35 CHAIN+68 LEAF-306 EXHANG+288 STRAND+20
+  p 94 t420 vir15 h[8, 4, 9, 3, 13, 13, 11, 5] sim ['V', 5, [3, 3], 1] -> tower 15 | silicon OTHER | vs ['V', 7, [3, 3], 9] margin 38: VIR-90 CELLS-30 CHAIN+68 LEAF-197 EXHANG+288
+  n=5 mean: VIR+27 CELLS-6 CHAIN+27 LEAF-144 HSV+102 EXHANG+134 STRAND-4
+
+=== (3) LATE-FLIP probe ===
+  p 17 cur(2, 3) nxt(2, 3) sim ['H', 3] final ['V', 7] held 9 f | hypotheses {'preview_pill': ('H', 3), 'swapped': ('H', 3), 'capsule_baked': ('V', 7)} -> match ['capsule_baked']
+  p 18 cur(2, 3) nxt(2, 2) sim ['H', 3] final ['H', 0] held 11 f | hypotheses {'preview_pill': ('V', 0), 'swapped': ('V', 7), 'capsule_baked': ('V', 7)} -> match -
+  p 31 cur(2, 1) nxt(1, 1) sim ['H', 4] final ['H', 5] held 19 f | hypotheses {'preview_pill': ('V', 4), 'swapped': ('V', 4), 'capsule_baked': ('H', 4)} -> match -
+  p 47 cur(1, 3) nxt(3, 3) sim ['H', 3] final ['V', 3] held 11 f | hypotheses {'preview_pill': ('V', 3), 'swapped': ('V', 4), 'capsule_baked': ('V', 2)} -> match ['preview_pill']
+  p 55 cur(1, 2) nxt(3, 3) sim ['H', 2] final ['H', 0] held 4 f | hypotheses {'preview_pill': ('V', 1), 'swapped': ('V', 1), 'capsule_baked': ('V', 7)} -> match -
+  p 95 cur(1, 3) nxt(3, 3) sim ['H', 1] final ['H', 1] held 19 f | hypotheses {'preview_pill': ('V', 1), 'swapped': ('V', 7), 'capsule_baked': ('H', 2)} -> match -
+  p 98 cur(1, 2) nxt(3, 1) sim ['V', 3] final ['H', 1] held 6 f | hypotheses {'preview_pill': ('V', 2), 'swapped': ('V', 2), 'capsule_baked': ('H', 6)} -> match -
+  p 99 cur(3, 1) nxt(3, 2) sim ['V', 3] final ['H', 3] held 9 f | hypotheses {'preview_pill': ('V', 3), 'swapped': ('H', 4), 'capsule_baked': ('H', 6)} -> match -
+  p111 cur(2, 1) nxt(1, 1) sim ['H', 6] final ['V', 6] held 15 f | hypotheses {'preview_pill': ('V', 7), 'swapped': ('V', 7), 'capsule_baked': ('H', 6)} -> match -
+  p112 cur(1, 1) nxt(3, 3) sim ['V', 6] final ['V', 7] held 7 f | hypotheses {'preview_pill': ('V', 5), 'swapped': ('V', 5), 'capsule_baked': ('V', 4)} -> match -
+  p113 cur(3, 3) nxt(1, 3) sim ['V', 5] final ['H', 4] held 6 f | hypotheses {'preview_pill': ('H', 5), 'swapped': ('H', 5), 'capsule_baked': ('V', 6)} -> match -
+steering-model replay from p0, 20 latency seeds: outcomes {'CLEAR': 20}; viruses at end [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; top-out pills []
+steering-model replay from p31, 20 latency seeds: outcomes {'alive': 20}; viruses at end [5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]; top-out pills []
+steering-model replay from p59, 20 latency seeds: outcomes {'alive': 20}; viruses at end [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9]; top-out pills []
+steering-model replay from p90, 20 latency seeds: outcomes {'alive': 20}; viruses at end [8, 8, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 13]; top-out pills []

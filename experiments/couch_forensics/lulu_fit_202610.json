@@ -1,0 +1,105 @@
+{
+ "name": "lulu_fit_202610",
+ "supersedes": "lulu_fit_202609 (kept unchanged): its volleys included missed same-colour spawns",
+ "source": "refit_sends_202610.py, hidden-spawn tracker on the banked 9/27 clean-HDMI per-frame reads; dr. lulu (P1) sends as RECEIVED by ANTIBODY (P2)",
+ "population": {
+  "games": 2,
+  "minutes": 12.91,
+  "note": "n=2 games: PROVISIONAL (<10 games)"
+ },
+ "model": "independent renewal process of volleys (same form as owner_fit_202610)",
+ "clear_pace_viruses_per_min": {
+  "G1": 5.63,
+  "G2": 10.13
+ },
+ "rate_volleys_per_min": 2.56,
+ "cells_per_min": 6.12,
+ "size_hist": {
+  "1": 1,
+  "2": 24,
+  "3": 4,
+  "4": 3,
+  "6": 1
+ },
+ "size_pmf": {
+  "2": 0.774,
+  "3": 0.129,
+  "4": 0.097
+ },
+ "size_pmf_note": "renormalised over sizes 2-4 (one 1-cell and one 6-cell reading are excluded, as in 202609)",
+ "p_merged_double": 0.03,
+ "inter_volley_gap_s": {
+  "quantiles": {
+   "p10": 7.3,
+   "p25": 10.6,
+   "p50": 16.3,
+   "p75": 31.1,
+   "p90": 46.46
+  },
+  "mean": 23.12,
+  "cv": 0.69,
+  "p_gap_le_3s": 0.032,
+  "samples": [
+   24.69,
+   11.28,
+   58.83,
+   8.95,
+   2.65,
+   34.59,
+   43.56,
+   13.87,
+   25.57,
+   40.16,
+   7.3,
+   7.49,
+   58.96,
+   16.3,
+   26.25,
+   11.82,
+   4.9,
+   8.97,
+   20.48,
+   31.87,
+   10.9,
+   31.1,
+   14.35,
+   12.79,
+   46.46,
+   6.6,
+   29.99,
+   12.93,
+   51.38,
+   10.6,
+   31.09
+  ]
+ },
+ "unexplained_volleys": 37,
+ "unexplained_with_new_cells": 31,
+ "unexplained_rom_plausible_multi_column": 2,
+ "rate_upper_bound_volleys_per_min": 4.96,
+ "rate_plausible_upper_bound_volleys_per_min": 2.71,
+ "upper_bound_note": "soft 720p capture: most unexplained steps add ONE cell in one column (reader errors, not a ROM volley shape)",
+ "rom_column_rule": {
+  "conform": 24,
+  "violate": 0
+ },
+ "phase": {
+  "note": "NOT recomputed (202609 phase counted hidden pills)"
+ },
+ "compare": {
+  "lulu_fit_202609": {
+   "rate_volleys_per_min": 4.73,
+   "cells_per_min": 11.39,
+   "size_pmf": {
+    "2": 0.783,
+    "3": 0.033,
+    "4": 0.167
+   },
+   "rate_upper_bound_volleys_per_min": 7.13
+  },
+  "old_method_reproduced": {
+   "rate": 4.73,
+   "cells_per_min": 11.39
+  }
+ }
+}

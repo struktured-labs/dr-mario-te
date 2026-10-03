@@ -1,0 +1,635 @@
+{
+ "owner L11 9/24-26 (owner_fit_202609 population)": {
+  "old": {
+   "games": 11,
+   "minutes": 25.68,
+   "volleys": 125,
+   "rate_volleys_per_min": 4.87,
+   "rate_ci95_game_bootstrap": [
+    4.17,
+    5.56
+   ],
+   "cells_per_min": 11.25,
+   "mean_size": 2.31,
+   "size_hist": {
+    "2": 105,
+    "3": 3,
+    "4": 15,
+    "5": 2
+   },
+   "size_pmf_le4": {
+    "1": 0.0,
+    "2": 0.854,
+    "3": 0.024,
+    "4": 0.122
+   },
+   "p_merged_double": 0.016,
+   "two_cell_same_col_share": 0.228,
+   "residual_linked_pairs": 37,
+   "unexplained": 11,
+   "unexplained_with_new_cells": 9,
+   "rom_column_rule": {
+    "conform": 45,
+    "violate": 19
+   },
+   "per_session_rate": {
+    "9/24": 5.02,
+    "9/25": 4.7,
+    "9/26 AM": 4.91
+   },
+   "gap_s": {
+    "p10": 4.17,
+    "p25": 5.74,
+    "p50": 8.3,
+    "p75": 13.85,
+    "p90": 23.89,
+    "mean": 11.78,
+    "cv": 0.81,
+    "p_le_3s": 0.018
+   }
+  },
+  "new": {
+   "games": 11,
+   "minutes": 25.72,
+   "volleys": 66,
+   "rate_volleys_per_min": 2.57,
+   "rate_ci95_game_bootstrap": [
+    2.1,
+    3.16
+   ],
+   "cells_per_min": 5.44,
+   "mean_size": 2.12,
+   "size_hist": {
+    "2": 59,
+    "3": 6,
+    "4": 1
+   },
+   "size_pmf_le4": {
+    "1": 0.0,
+    "2": 0.894,
+    "3": 0.091,
+    "4": 0.015
+   },
+   "p_merged_double": 0.0,
+   "two_cell_same_col_share": 0.0,
+   "residual_linked_pairs": 0,
+   "unexplained": 1,
+   "unexplained_with_new_cells": 0,
+   "rom_column_rule": {
+    "conform": 58,
+    "violate": 0
+   },
+   "per_session_rate": {
+    "9/24": 1.95,
+    "9/25": 2.8,
+    "9/26 AM": 2.82
+   },
+   "gap_s": {
+    "p10": 5.73,
+    "p25": 9.27,
+    "p50": 15.84,
+    "p75": 26.75,
+    "p90": 44.52,
+    "mean": 21.02,
+    "cv": 0.73,
+    "p_le_3s": 0.0
+   }
+  }
+ },
+ "owner L10 9/26 PM": {
+  "old": {
+   "games": 3,
+   "minutes": 8.09,
+   "volleys": 29,
+   "rate_volleys_per_min": 3.59,
+   "rate_ci95_game_bootstrap": [
+    2.85,
+    4.85
+   ],
+   "cells_per_min": 9.77,
+   "mean_size": 2.72,
+   "size_hist": {
+    "2": 23,
+    "4": 4,
+    "7": 1,
+    "10": 1
+   },
+   "size_pmf_le4": {
+    "1": 0.0,
+    "2": 0.852,
+    "3": 0.0,
+    "4": 0.148
+   },
+   "p_merged_double": 0.069,
+   "two_cell_same_col_share": 0.375,
+   "residual_linked_pairs": 12,
+   "unexplained": 6,
+   "unexplained_with_new_cells": 6,
+   "rom_column_rule": {
+    "conform": 4,
+    "violate": 7
+   },
+   "per_session_rate": {
+    "9/26 PM": 3.59
+   },
+   "gap_s": {
+    "p10": 3.82,
+    "p25": 5.43,
+    "p50": 12.83,
+    "p75": 21.86,
+    "p90": 29.04,
+    "mean": 15.41,
+    "cv": 0.7,
+    "p_le_3s": 0.077
+   }
+  },
+  "new": {
+   "games": 3,
+   "minutes": 8.17,
+   "volleys": 17,
+   "rate_volleys_per_min": 2.08,
+   "rate_ci95_game_bootstrap": [
+    1.47,
+    2.27
+   ],
+   "cells_per_min": 5.14,
+   "mean_size": 2.47,
+   "size_hist": {
+    "2": 13,
+    "3": 2,
+    "4": 1,
+    "6": 1
+   },
+   "size_pmf_le4": {
+    "1": 0.0,
+    "2": 0.812,
+    "3": 0.125,
+    "4": 0.062
+   },
+   "p_merged_double": 0.059,
+   "two_cell_same_col_share": 0.0,
+   "residual_linked_pairs": 0,
+   "unexplained": 0,
+   "unexplained_with_new_cells": 0,
+   "rom_column_rule": {
+    "conform": 12,
+    "violate": 0
+   },
+   "per_session_rate": {
+    "9/26 PM": 2.08
+   },
+   "gap_s": {
+    "p10": 6.56,
+    "p25": 11.99,
+    "p50": 29.46,
+    "p75": 34.11,
+    "p90": 51.03,
+    "mean": 29.39,
+    "cv": 0.61,
+    "p_le_3s": 0.0
+   }
+  }
+ },
+ "owner L11 10/03 match 1": {
+  "new": {
+   "games": 4,
+   "minutes": 11.51,
+   "volleys": 22,
+   "rate_volleys_per_min": 1.91,
+   "rate_ci95_game_bootstrap": [
+    1.62,
+    2.35
+   ],
+   "cells_per_min": 4.26,
+   "mean_size": 2.23,
+   "size_hist": {
+    "2": 19,
+    "3": 1,
+    "4": 2
+   },
+   "size_pmf_le4": {
+    "1": 0.0,
+    "2": 0.864,
+    "3": 0.045,
+    "4": 0.091
+   },
+   "p_merged_double": 0.0,
+   "two_cell_same_col_share": 0.0,
+   "residual_linked_pairs": 0,
+   "unexplained": 1,
+   "unexplained_with_new_cells": 1,
+   "rom_column_rule": {
+    "conform": 18,
+    "violate": 0
+   },
+   "per_session_rate": {
+    "10/03": 1.91
+   },
+   "gap_s": {
+    "p10": 7.9,
+    "p25": 16.07,
+    "p50": 26.11,
+    "p75": 30.7,
+    "p90": 48.75,
+    "mean": 28.21,
+    "cv": 0.53,
+    "p_le_3s": 0.0
+   }
+  }
+ },
+ "owner L11 9/27 (HSV days, sensitivity)": {
+  "old": {
+   "games": 6,
+   "minutes": 22.45,
+   "volleys": 97,
+   "rate_volleys_per_min": 4.32,
+   "rate_ci95_game_bootstrap": [
+    4.03,
+    4.67
+   ],
+   "cells_per_min": 10.73,
+   "mean_size": 2.48,
+   "size_hist": {
+    "1": 1,
+    "2": 72,
+    "3": 5,
+    "4": 16,
+    "5": 1,
+    "6": 2
+   },
+   "size_pmf_le4": {
+    "1": 0.011,
+    "2": 0.766,
+    "3": 0.053,
+    "4": 0.17
+   },
+   "p_merged_double": 0.031,
+   "two_cell_same_col_share": 0.296,
+   "residual_linked_pairs": 30,
+   "unexplained": 7,
+   "unexplained_with_new_cells": 7,
+   "rom_column_rule": {
+    "conform": 29,
+    "violate": 14
+   },
+   "per_session_rate": {
+    "9/27": 4.32
+   },
+   "gap_s": {
+    "p10": 4.98,
+    "p25": 6.28,
+    "p50": 10.28,
+    "p75": 17.55,
+    "p90": 27.52,
+    "mean": 13.43,
+    "cv": 0.72,
+    "p_le_3s": 0.033
+   }
+  },
+  "new": {
+   "games": 6,
+   "minutes": 22.53,
+   "volleys": 53,
+   "rate_volleys_per_min": 2.35,
+   "rate_ci95_game_bootstrap": [
+    2.16,
+    2.56
+   ],
+   "cells_per_min": 5.77,
+   "mean_size": 2.45,
+   "size_hist": {
+    "2": 40,
+    "3": 5,
+    "4": 6,
+    "5": 1,
+    "6": 1
+   },
+   "size_pmf_le4": {
+    "1": 0.0,
+    "2": 0.784,
+    "3": 0.098,
+    "4": 0.118
+   },
+   "p_merged_double": 0.038,
+   "two_cell_same_col_share": 0.03,
+   "residual_linked_pairs": 2,
+   "unexplained": 2,
+   "unexplained_with_new_cells": 2,
+   "rom_column_rule": {
+    "conform": 38,
+    "violate": 0
+   },
+   "per_session_rate": {
+    "9/27": 2.35
+   },
+   "gap_s": {
+    "p10": 8.1,
+    "p25": 12.17,
+    "p50": 18.6,
+    "p75": 30.33,
+    "p90": 40.22,
+    "mean": 22.78,
+    "cv": 0.71,
+    "p_le_3s": 0.021
+   }
+  }
+ },
+ "owner L11 9/24-26 + 10/03 (owner_fit_202610)": {
+  "old": {
+   "games": 11,
+   "minutes": 25.68,
+   "volleys": 125,
+   "rate_volleys_per_min": 4.87,
+   "rate_ci95_game_bootstrap": [
+    4.17,
+    5.56
+   ],
+   "cells_per_min": 11.25,
+   "mean_size": 2.31,
+   "size_hist": {
+    "2": 105,
+    "3": 3,
+    "4": 15,
+    "5": 2
+   },
+   "size_pmf_le4": {
+    "1": 0.0,
+    "2": 0.854,
+    "3": 0.024,
+    "4": 0.122
+   },
+   "p_merged_double": 0.016,
+   "two_cell_same_col_share": 0.228,
+   "residual_linked_pairs": 37,
+   "unexplained": 11,
+   "unexplained_with_new_cells": 9,
+   "rom_column_rule": {
+    "conform": 45,
+    "violate": 19
+   },
+   "per_session_rate": {
+    "9/24": 5.02,
+    "9/25": 4.7,
+    "9/26 AM": 4.91
+   },
+   "gap_s": {
+    "p10": 4.17,
+    "p25": 5.74,
+    "p50": 8.3,
+    "p75": 13.85,
+    "p90": 23.89,
+    "mean": 11.78,
+    "cv": 0.81,
+    "p_le_3s": 0.018
+   }
+  },
+  "new": {
+   "games": 15,
+   "minutes": 37.23,
+   "volleys": 88,
+   "rate_volleys_per_min": 2.36,
+   "rate_ci95_game_bootstrap": [
+    1.99,
+    2.85
+   ],
+   "cells_per_min": 5.08,
+   "mean_size": 2.15,
+   "size_hist": {
+    "2": 78,
+    "3": 7,
+    "4": 3
+   },
+   "size_pmf_le4": {
+    "1": 0.0,
+    "2": 0.886,
+    "3": 0.08,
+    "4": 0.034
+   },
+   "p_merged_double": 0.0,
+   "two_cell_same_col_share": 0.0,
+   "residual_linked_pairs": 0,
+   "unexplained": 2,
+   "unexplained_with_new_cells": 1,
+   "rom_column_rule": {
+    "conform": 76,
+    "violate": 0
+   },
+   "per_session_rate": {
+    "10/03": 1.91,
+    "9/24": 1.95,
+    "9/25": 2.8,
+    "9/26 AM": 2.82
+   },
+   "gap_s": {
+    "p10": 6.55,
+    "p25": 9.85,
+    "p50": 20.04,
+    "p75": 30.67,
+    "p90": 48.34,
+    "mean": 22.79,
+    "cv": 0.68,
+    "p_le_3s": 0.0
+   }
+  }
+ },
+ "owner L11 all (9/24-27 + 10/03, sensitivity)": {
+  "old": {
+   "games": 17,
+   "minutes": 48.13,
+   "volleys": 222,
+   "rate_volleys_per_min": 4.61,
+   "rate_ci95_game_bootstrap": [
+    4.21,
+    5.07
+   ],
+   "cells_per_min": 11.01,
+   "mean_size": 2.39,
+   "size_hist": {
+    "1": 1,
+    "2": 177,
+    "3": 8,
+    "4": 31,
+    "5": 3,
+    "6": 2
+   },
+   "size_pmf_le4": {
+    "1": 0.005,
+    "2": 0.816,
+    "3": 0.037,
+    "4": 0.143
+   },
+   "p_merged_double": 0.023,
+   "two_cell_same_col_share": 0.256,
+   "residual_linked_pairs": 67,
+   "unexplained": 18,
+   "unexplained_with_new_cells": 16,
+   "rom_column_rule": {
+    "conform": 74,
+    "violate": 33
+   },
+   "per_session_rate": {
+    "9/24": 5.02,
+    "9/25": 4.7,
+    "9/26 AM": 4.91,
+    "9/27": 4.32
+   },
+   "gap_s": {
+    "p10": 4.23,
+    "p25": 6.02,
+    "p50": 9.09,
+    "p75": 15.34,
+    "p90": 25.8,
+    "mean": 12.51,
+    "cv": 0.77,
+    "p_le_3s": 0.024
+   }
+  },
+  "new": {
+   "games": 21,
+   "minutes": 59.76,
+   "volleys": 141,
+   "rate_volleys_per_min": 2.36,
+   "rate_ci95_game_bootstrap": [
+    2.11,
+    2.64
+   ],
+   "cells_per_min": 5.34,
+   "mean_size": 2.26,
+   "size_hist": {
+    "2": 118,
+    "3": 12,
+    "4": 9,
+    "5": 1,
+    "6": 1
+   },
+   "size_pmf_le4": {
+    "1": 0.0,
+    "2": 0.849,
+    "3": 0.086,
+    "4": 0.065
+   },
+   "p_merged_double": 0.014,
+   "two_cell_same_col_share": 0.01,
+   "residual_linked_pairs": 2,
+   "unexplained": 4,
+   "unexplained_with_new_cells": 3,
+   "rom_column_rule": {
+    "conform": 114,
+    "violate": 0
+   },
+   "per_session_rate": {
+    "10/03": 1.91,
+    "9/24": 1.95,
+    "9/25": 2.8,
+    "9/26 AM": 2.82,
+    "9/27": 2.35
+   },
+   "gap_s": {
+    "p10": 6.55,
+    "p25": 9.85,
+    "p50": 18.8,
+    "p75": 30.45,
+    "p90": 46.5,
+    "mean": 22.79,
+    "cv": 0.69,
+    "p_le_3s": 0.008
+   }
+  }
+ },
+ "dr. lulu L11 9/27 (lulu_fit_202610)": {
+  "old": {
+   "games": 2,
+   "minutes": 12.91,
+   "volleys": 61,
+   "rate_volleys_per_min": 4.73,
+   "rate_ci95_game_bootstrap": [
+    4.64,
+    4.77
+   ],
+   "cells_per_min": 11.39,
+   "mean_size": 2.41,
+   "size_hist": {
+    "1": 1,
+    "2": 47,
+    "3": 2,
+    "4": 10,
+    "6": 1
+   },
+   "size_pmf_le4": {
+    "1": 0.017,
+    "2": 0.783,
+    "3": 0.033,
+    "4": 0.167
+   },
+   "p_merged_double": 0.016,
+   "two_cell_same_col_share": 0.444,
+   "residual_linked_pairs": 5,
+   "unexplained": 40,
+   "unexplained_with_new_cells": 31,
+   "rom_column_rule": {
+    "conform": 18,
+    "violate": 6
+   },
+   "per_session_rate": {
+    "9/27 lulu": 4.73
+   },
+   "gap_s": {
+    "p10": 3.58,
+    "p25": 5.69,
+    "p50": 8.66,
+    "p75": 14.95,
+    "p90": 25.57,
+    "mean": 12.13,
+    "cv": 0.73,
+    "p_le_3s": 0.051
+   }
+  },
+  "new": {
+   "games": 2,
+   "minutes": 12.91,
+   "volleys": 33,
+   "rate_volleys_per_min": 2.56,
+   "rate_ci95_game_bootstrap": [
+    2.53,
+    2.57
+   ],
+   "cells_per_min": 6.12,
+   "mean_size": 2.39,
+   "size_hist": {
+    "1": 1,
+    "2": 24,
+    "3": 4,
+    "4": 3,
+    "6": 1
+   },
+   "size_pmf_le4": {
+    "1": 0.031,
+    "2": 0.75,
+    "3": 0.125,
+    "4": 0.094
+   },
+   "p_merged_double": 0.03,
+   "two_cell_same_col_share": 0.0,
+   "residual_linked_pairs": 0,
+   "unexplained": 37,
+   "unexplained_with_new_cells": 31,
+   "rom_column_rule": {
+    "conform": 24,
+    "violate": 0
+   },
+   "per_session_rate": {
+    "9/27 lulu": 2.56
+   },
+   "gap_s": {
+    "p10": 7.3,
+    "p25": 10.6,
+    "p50": 16.3,
+    "p75": 31.1,
+    "p90": 46.46,
+    "mean": 23.12,
+    "cv": 0.69,
+    "p_le_3s": 0.032
+   }
+  }
+ }
+}

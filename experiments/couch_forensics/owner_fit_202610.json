@@ -1,0 +1,199 @@
+{
+ "name": "owner_fit_202610",
+ "supersedes": "owner_fit_202609 (kept unchanged): its volleys included missed same-colour spawns (a 2nd pill read as a 2-cell volley)",
+ "source": "refit_sends_202610.py on the banked per-frame reads, hidden-spawn tracker (track_hidden_dist60_20261003.py); owner sends as RECEIVED by the AI (P2): 9/24-26 (owner_fit_202609's games) + 10/03 match 1",
+ "population": {
+  "L11_games": 15,
+  "L11_minutes": 37.23,
+  "L10_games": 3,
+  "note": "10/03 match 1 owner self-reported groggy, cat on lap (rate 1.91/min, lowest session)"
+ },
+ "model": "NOT linked to the AI's clears or board; independent renewal process of volleys (as 202609)",
+ "rate_volleys_per_min": {
+  "L11": 2.36,
+  "L11_ci95_game_bootstrap": [
+   1.99,
+   2.85
+  ],
+  "L10": 2.08,
+  "per_session": {
+   "10/03": 1.91,
+   "9/24": 1.95,
+   "9/25": 2.8,
+   "9/26 AM": 2.82
+  }
+ },
+ "cells_per_min": {
+  "L11": 5.08,
+  "L10": 5.14
+ },
+ "size_pmf": {
+  "2": 0.886,
+  "3": 0.08,
+  "4": 0.034,
+  "note": "L11, sizes <= 4; with the fixed tracker 4-cell sends are rare (most old '4s' were two merged hidden pills)"
+ },
+ "size_hist_L11": {
+  "2": 78,
+  "3": 7,
+  "4": 3
+ },
+ "p_double_in_one_placement_interval": 0.0,
+ "inter_volley_gap_s": {
+  "quantiles": {
+   "p10": 6.55,
+   "p25": 9.85,
+   "p50": 20.04,
+   "p75": 30.67,
+   "p90": 48.34
+  },
+  "mean": 22.79,
+  "cv": 0.68,
+  "p_gap_le_3s": 0.0,
+  "samples_L11": [
+   44.52,
+   9.27,
+   26.52,
+   62.56,
+   20.04,
+   11.11,
+   26.75,
+   8.85,
+   21.79,
+   45.85,
+   11.36,
+   50.15,
+   12.32,
+   12.78,
+   23.92,
+   12.08,
+   25.8,
+   9.62,
+   20.45,
+   14.72,
+   3.41,
+   15.84,
+   22.38,
+   10.15,
+   17.3,
+   19.37,
+   55.65,
+   10.6,
+   3.11,
+   21.34,
+   8.8,
+   5.41,
+   21.03,
+   39.47,
+   26.99,
+   35.51,
+   11.7,
+   16.62,
+   7.0,
+   15.33,
+   5.73,
+   52.57,
+   9.85,
+   32.63,
+   54.3,
+   43.27,
+   7.9,
+   29.03,
+   15.74,
+   7.11,
+   38.85,
+   7.04,
+   3.83,
+   6.55,
+   4.23,
+   6.52,
+   23.55,
+   22.6,
+   7.9,
+   30.67,
+   46.5,
+   30.7,
+   26.11,
+   23.38,
+   8.32,
+   27.06,
+   16.07,
+   49.46,
+   10.4,
+   48.75,
+   48.34,
+   52.21,
+   29.25
+  ],
+  "note": "board time (inter-spawn intervals > 15 s = STUDY pauses are capped, as the durations)"
+ },
+ "columns": {
+  "rom_column_rule_checkable_volleys": {
+   "conform": 76,
+   "violate": 0
+  },
+  "2_cells": "always 2 columns 4 apart ({0,4},{1,5},{2,6},{3,7}: rom_attack_rule.py); the 202609 '23% same column' were vertical pills",
+  "note": "every checkable volley conforms to the ROM attack-column rule with the new tracker (0 violations); the old extraction had 19 violations of 64"
+ },
+ "phase": {
+  "note": "NOT recomputed; the 202609 phase table counted hidden pills as volleys. Treat the rate as flat."
+ },
+ "sensitivity": {
+  "L11_all_incl_9_27_HSV_days": {
+   "games": 21,
+   "minutes": 59.76,
+   "rate_volleys_per_min": 2.36,
+   "rate_ci95_game_bootstrap": [
+    2.11,
+    2.64
+   ],
+   "cells_per_min": 5.34,
+   "size_pmf_le4": {
+    "1": 0.0,
+    "2": 0.849,
+    "3": 0.086,
+    "4": 0.065
+   }
+  },
+  "L11_same_games_as_202609": {
+   "games": 11,
+   "minutes": 25.72,
+   "rate_volleys_per_min": 2.57,
+   "rate_ci95_game_bootstrap": [
+    2.1,
+    3.16
+   ],
+   "cells_per_min": 5.44,
+   "size_pmf_le4": {
+    "1": 0.0,
+    "2": 0.894,
+    "3": 0.091,
+    "4": 0.015
+   }
+  }
+ },
+ "compare": {
+  "owner_fit_202609": {
+   "rate_L11": 4.87,
+   "cells_per_min_L11": 11.25,
+   "size_pmf": {
+    "2": 0.854,
+    "3": 0.024,
+    "4": 0.122
+   }
+  },
+  "old_method_reproduced_on_same_games": {
+   "rate": 4.87,
+   "cells_per_min": 11.25
+  },
+  "vs_race_model": {
+   "lam": 6.0,
+   "sizes": {
+    "2": 0.73,
+    "3": 0.17,
+    "4": 0.1
+   },
+   "cells_per_min": 14.2
+  }
+ }
+}
