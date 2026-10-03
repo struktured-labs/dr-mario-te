@@ -1382,12 +1382,22 @@ S2P_INV = STUDY2P and _os.environ.get("DRSTUDY2P_INV", "0") == "1"
 #   * the X-sign + red virus are SPRITES (OAM slots 8-34), drawn every end-screen frame by the
 #     whoFailed!=0 branch of updateSprites_2p_endGame ($888C LDA $61 / BEQ exit / $8890 TAX ...).
 #   * pause is impossible there ($9532 stores $54=0); the end screen already waits for START.
-# Fix = 3 in-place bytes, zero free space, none of them executed during play:
+#   * MATCH FINAL (3rd win, playerLoses_endScreen $958A): after the 2P final-music store the stock
+#     code waits 128 frames ($95C9), fills BOTH fields with $FF ($95CE), stamps GAME OVER into both
+#     ($95DB/$95E7), then sets whoFailed=0 / whoWon=winner ($95F3-$9606) so Dr. Mario dances over the
+#     winner's bottle, and waits for START ($9607). 1P game over enters the same code at $95C9.
+# Fix = 15 in-place bytes, zero free space, none of them executed during play:
 #   $954F/$9579 JSR $96C0 -> JSR $96CF (the routine's own tail: LDA #$0F / STA $80 / RTS, so the
 #   status redraw still happens, from the now-intact RAM); $8890 TAX -> RTS (whoFailed!=0 returns
 #   before the X-sign/virus draw; whoFailed==0 still takes the unchanged BEQ, same cycles).
-# Scope: 2P top-out round ends. The match-final GAME OVER wipe ($95CE, ~192 frames into the final
-# end screen), DRAW, STAGE CLEAR and 1P game over are untouched.
+#   $95BD-$95C8 (12 B, the 2P-only path's redundant `LDA $0727 / CMP #2 / BNE` re-check -- always 2
+#   there -- plus the final-music store) -> `LDA #$0B / STA $06F5 / LDA #$80 / JSR $9701 / BEQ $9607`:
+#   same music, same 128-frame wait, then straight to the START loop ($9701 always returns Z=1:
+#   DEC/LDA/BNE/RTS). Skipped on the 2P final only: the fill, both GAME OVER stamps and the
+#   whoFailed/whoWon stores (whoFailed keeps the loser -> no sign, no previews; whoWon stays 0 -> no
+#   Dr. Mario). START then runs the stock tail ($9629: fill $FE, mode 1, ...); level init ($8206)
+#   zeroes $55/$61 before the next match. 1P still enters at $95C9 and runs every stock byte.
+# Untouched: DRAW, STAGE CLEAR, 1P game over.
 STUDYEND = STUDY and _os.environ.get("DRSTUDYEND", "0") == "1"
 # Anchor on the pause loop's START/$F7 check (LDA $F5;CMP #$10;BEQ;LDA $F7;CMP #$F0;BEQ) —
 # these bytes are NEVER touched by the edits, so the locator stays valid + idempotent even
@@ -4142,9 +4152,33 @@ def main():
         assert _rv_i >= 0 and rom.find(_rv, _rv_i + 1) < 0, "DRSTUDYEND: red-virus anchor not found/unique"
         assert rom[_rv_i + 4 + 0x20] == 0x60, "DRSTUDYEND: the BEQ target is not the routine's RTS"
         rom[_rv_i + 4] = 0x60                           # TAX -> RTS: whoFailed!=0 draws no X-sign/virus
+        # MATCH FINAL: the 2P final block of playerLoses_endScreen, from its fail-music store through
+        # the both-field $FF fill call. The 12 rewritten bytes start after `LDA #$05 / STA $06F5`.
+        _fin = bytes.fromhex("a9058df506" "ad2707c902d005" "a90b8df506" "a980200197" "a9ffa204a005" "2094b8")
+        _fin_i = rom.find(_fin)
+        assert _fin_i >= 0 and rom.find(_fin, _fin_i + 1) < 0, "DRSTUDYEND: match-final anchor not found/unique"
+        _wait_cpu = rom[_fin_i + 20] | (rom[_fin_i + 21] << 8)   # operand of the stock `JSR $9701`
+        _wi = 0x10 + _wait_cpu - 0x8000                  # waitFor_A_frames must exit with Z=1 for the BEQ:
+        assert bytes(rom[_wi:_wi + 16]) == bytes.fromhex(   # STA $51 / LDA #1 / STA $5D / JSR $B654 /
+            "8551a901855d2054b6c651a551d0f760"), (          # DEC $51 / LDA $51 / BNE / RTS -> A=0, Z=1
+            "DRSTUDYEND: waitFor_A_frames changed; the always-taken BEQ is no longer proven")
+        _loop = bytes.fromhex("a5432908f013a96d8544")    # the START-wait loop head (first one after the block)
+        _loop_i = rom.find(_loop, _fin_i)
+        assert _loop_i > _fin_i, "DRSTUDYEND: final START-wait loop not found after the final block"
+        _site = _fin_i + 5                               # $95BD: the 12 bytes to rewrite
+        _old = bytes(rom[_site:_site + 12])
+        assert _old == bytes.fromhex("ad2707c902d005a90b8df506"), f"DRSTUDYEND: final block bytes {_old.hex()}"
+        _rel = _loop_i - (_site + 12)                    # BEQ at _site+10, next PC = _site+12
+        assert 0 < _rel < 0x80, f"DRSTUDYEND: START loop out of branch range ({_rel})"
+        _new = bytes([0xA9, 0x0B, 0x8D, 0xF5, 0x06,     # LDA #$0B / STA $06F5   final-victory music
+                      0xA9, 0x80, 0x20, _wait_cpu & 0xFF, _wait_cpu >> 8,   # LDA #$80 / JSR $9701
+                      0xF0, _rel])                       # BEQ -> START loop (always taken)
+        rom[_site:_site + 12] = _new
         print(f"DRSTUDYEND: round-end lower-field wipe skipped (JSR ${_el_cpu:04X} -> ${_tail_cpu:04X} at "
               + "/".join(f"${_cpu0(s):04X}" for s in _sites)
-              + f"); X-sign/red virus suppressed (RTS at ${_cpu0(_rv_i + 4):04X}); 3 B in place, 0 B new")
+              + f"); X-sign/red virus suppressed (RTS at ${_cpu0(_rv_i + 4):04X}); match final: "
+              + f"${_cpu0(_site):04X} -> wait 128f then BEQ ${_cpu0(_loop_i):04X} (no fill / GAME OVER / "
+              + "win-state stores); 15 B in place, 0 B new")
 
     if RTIVEC:
         # DRRTIVEC part 2 of 3 -- the BANK-DISCRIMINATING NMI SHIELD, emitted into BANK 1, i.e. the

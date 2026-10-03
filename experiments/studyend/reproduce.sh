@@ -15,6 +15,6 @@ build studyend DRSTUDYEND=1
 ok=1
 chk() { got=$(md5sum < "$1" | cut -c1-32); [ "$got" = "$2" ] && echo "PASS $3 $got" || { echo "FAIL $3 got $got want $2"; ok=0; }; }
 chk "$OUT/control.nes" c960dd499e877f01c483af1347ed8df6 "control (== staged DIST60 couch cart)"
-chk "$OUT/studyend.nes" d7d4ad923f35648af50121982812465c "DRSTUDYEND couch cart"
+chk "$OUT/studyend.nes" 8c6e419631ee80612379e8f5f0259d62 "DRSTUDYEND couch cart"
 $PY tests/test_studyend.py || ok=0
 [ $ok = 1 ] && echo "STUDYEND_REPRODUCE_PASS" || { echo "STUDYEND_REPRODUCE_FAIL"; exit 1; }

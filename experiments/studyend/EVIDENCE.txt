@@ -1,5 +1,7 @@
 DRSTUDYEND -- measured cases (Mesen 2 --testrunner, experiments/studyend/run_probe.sh; P1 idle -> tops out, P2 = tools/copro_emu.lua)
-Carts: control c960dd499e877f01c483af1347ed8df6 (staged DIST60 couch cart) | flag d7d4ad923f35648af50121982812465c (= control + DRSTUDYEND=1)
+Carts: control c960dd499e877f01c483af1347ed8df6 (staged DIST60 couch cart) | flag = control + DRSTUDYEND=1:
+  8c6e419631ee80612379e8f5f0259d62 (current, 15 B: round ends + match final; sections 1-5 re-run on it give dumps
+  byte-identical to the round-end-only cart d7d4ad923f35648af50121982812465c (3 B), on which they were first measured)
 Probe settings: nav with START only -> P1/P2 level 00 MED (4 viruses), round-1 end screen held 1500 frames, rounds 2-3 held 400.
 
 1. WHAT THE SIGN AND THE BLANK ARE (control, exec counters keyed on unit-0 PRG offsets + write callbacks on field rows 8-15)
@@ -56,5 +58,26 @@ Probe settings: nav with START only -> P1/P2 level 00 MED (4 viruses), round-1 e
      flag     START@+1501   957 / 5623 / 8850       none   <- frame-for-frame equal to control START@+1501
   So post-round play depends on sub-frame phase the human already randomises with every START press.
 
-6. SCOPE NOT CHANGED: match-final screen (3rd win) -- the board stays (no sign) for ~192 frames, then the stock fill + GAME OVER
-   + Dr. Mario win animation run unchanged (finalWipe=1 in both carts). DRAW, STAGE CLEAR and 1P game over are untouched.
+6. MATCH FINAL (3rd win) -- experiments/studyend/run_final.sh + compare_final.py
+  Stock playerLoses_endScreen on the final: wait 64f, final music, wait 128f, fill BOTH fields $FF ($95CE), GAME OVER
+  into both ($95DB/$95E7), whoFailed=0 / whoWon=winner (Dr. Mario dances over the winner's bottle), wait for START.
+  DRSTUDYEND rewrites the 2P-only redundant re-check at $95BD (12 B) to: music $0B, the same 128f wait, BEQ $9607
+  (START loop). 1P game over enters at $95C9 and keeps every stock byte (unreachable on this couch cart anyway: the
+  DRNAV_V4 nav rewrites $0727=2 on every menu hook -- 624 writes in 160 title frames; run_final.sh oneplayer exits 5).
+  Exact pair "final2p" (both carts get P2 victories $039E=2 written on the same frame, so round 1's end is the final):
+     mode transitions identical (13), RAM identical to f897, PRG-RAM never differs, START loop iterations 208 = 208
+     exec: stock finalFill=1 gameOverP1=1 gameOverP2=1 ; DRSTUDYEND 0/0/0 (and never enters the shared $95C9 block)
+     +30/+150f  stock: P1 lower half wiped (11 cells left) + 27 sign sprites   flag: boards intact, 0 bottle sprites
+     +260/+390f stock: both fields = GAME OVER box (56/56) + 15 Dr. Mario sprites   flag: boards unchanged since +30
+     after START (f1298): fields differ only on the START frame (stock $FE fill runs next frame in BOTH), OAM shadow
+     until the menu redraws it, $55/$61 until level init (mode 3, f1364); $0000-$07FF identical from f1365 on except
+     single-frame $BF/$C7 pad-read-scratch blips (f1366, f1727); victories at the next match 0/0 in both; the
+     next match's field/OAM/nametable dumps and screenshots at +0 and +200 are byte-identical.
+  Genuine 3-round match "final3" (no writes): rounds end on identical frames (898/4464/7691), mode transitions
+     identical (23), play frames never differ beyond $BF/$C7 and the stack page (the NMI's pushed return address =
+     CPU phase; 15 single frames), next match identical from f8165 (level init), victories 0/0, dumps identical.
+  py65 (tests/test_studyend.py F/G): both arms reach the START loop after the same 192 frame-waits; post-START RAM
+     differs only in $55/$61 (+ NMI-drained $0300/$0380); after level init $0000-$07FF identical; the 1P game over
+     gives the identical write trace (1761 writes) in both carts.
+
+7. STILL UNTOUCHED: DRAW, STAGE CLEAR (virus-clear wins), and 1P game over.
