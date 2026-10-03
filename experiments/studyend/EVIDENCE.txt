@@ -1,0 +1,83 @@
+DRSTUDYEND -- measured cases (Mesen 2 --testrunner, experiments/studyend/run_probe.sh; P1 idle -> tops out, P2 = tools/copro_emu.lua)
+Carts: control c960dd499e877f01c483af1347ed8df6 (staged DIST60 couch cart) | flag = control + DRSTUDYEND=1:
+  8c6e419631ee80612379e8f5f0259d62 (current, 15 B: round ends + match final; sections 1-5 re-run on it give dumps
+  byte-identical to the round-end-only cart d7d4ad923f35648af50121982812465c (3 B), on which they were first measured)
+Probe settings: nav with START only -> P1/P2 level 00 MED (4 viruses), round-1 end screen held 1500 frames, rounds 2-3 held 400.
+
+1. WHAT THE SIGN AND THE BLANK ARE (control, exec counters keyed on unit-0 PRG offsets + write callbacks on field rows 8-15)
+  ctrl   [end+30] mode=7 enablePause$54=0 whoWon$55=0 whoFailed$61=1 vict P1/P2=0/1 virus P1/P2=04/04 pills P1/P2=10/11 pillY P1/P2=15/8 f$43=214 copro goes=9 dones=9
+  ctrl   [end+30] EXEC anyPlayerLoses=1 emptyLower=1 emptyLowerTail=1 endNonFinal=0 finalWipe=0 jsrEmpty_P1=1 jsrEmpty_P2=0 pauseLoop=60 redVirusBody=30 studyHB_u0=0 studyHB_u1=60 whoFailedChk=844
+  ctrl   [end+30] FFWRITES P1lower@end1=64 P1lower@nav=128 P1lower@play=488 P2lower@nav=128 P2lower@play=425
+  ctrl   [end+150] mode=7 enablePause$54=0 whoWon$55=0 whoFailed$61=1 vict P1/P2=0/1 virus P1/P2=04/04 pills P1/P2=10/11 pillY P1/P2=15/8 f$43=78 copro goes=9 dones=9
+  => anyPlayerLoses ($9532) runs ONCE per round end (mode 4->5->7); JSR $96C0 from $954F (P1 lost) runs emptyLowerFieldOnLose_2P,
+     which writes exactly 64 x $FF into $0440-$047F (P1lower@end1=64). The BLANK is destroyed RAM, redrawn to the nametable.
+  => the X-sign + red virus are SPRITES: OAM slots 8-23 (X box, tiles $10-$13, Y 151-175) + 24-34 (virus, Y 183-199), drawn
+     every end-screen frame by $8890 (redVirusBody == frames on the end screen; 0 during play).
+  => pause cannot be entered there: enablePause $54 = 0 in mode 7; START leaves the end screen (mode 7 -> 3 -> 8 -> 4).
+     The end screen holds indefinitely without input (1500 frames tested, mode stays 7).
+
+2. FLAG CART, SAME RUN
+  flag   [end+30] mode=7 enablePause$54=0 whoWon$55=0 whoFailed$61=1 vict P1/P2=0/1 virus P1/P2=04/04 pills P1/P2=10/11 pillY P1/P2=15/8 f$43=214 copro goes=9 dones=9
+  flag   [end+30] EXEC anyPlayerLoses=1 emptyLower=0 emptyLowerTail=1 endNonFinal=0 finalWipe=0 jsrEmpty_P1=1 jsrEmpty_P2=0 pauseLoop=60 redVirusBody=30 studyHB_u0=0 studyHB_u1=60 whoFailedChk=844
+  flag   [end+30] FFWRITES P1lower@nav=128 P1lower@play=488 P2lower@nav=128 P2lower@play=425
+  flag   [end+150] mode=7 enablePause$54=0 whoWon$55=0 whoFailed$61=1 vict P1/P2=0/1 virus P1/P2=04/04 pills P1/P2=10/11 pillY P1/P2=15/8 f$43=78 copro goes=9 dones=9
+  => emptyLower never runs (0 vs 3); its tail $96CF runs instead (status redraw); no $FF writes into the loser's rows at round end.
+
+3. END SCREEN, ROUND 1 = EXACT PAIR (byte-identical RAM $0000-$07FF and PRG-RAM on every frame 1..957)
+  == r1_end30  (round 1: both carts had byte-identical RAM on every frame up to the round end, f957)
+  P1 field rows 0-7 identical ctrl/flag: True;  P2 field identical: True
+  P1 field rows 8-15  ctrl: ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff
+  P1 field rows 8-15  flag: ffffffffffd1ffff ffd0ffffffffffff ffffffffffffffff ffffffffffffffff d2ffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff
+  X-sign/red-virus sprites (OAM 8-34, Y 140-200, X<100)  ctrl: 27   flag: 0
+  flag: other visible sprites in OAM 8-34: []
+  nametable P1 bottle (NT rows 10-25, cols 4-11) == P1 field RAM:  ctrl True  flag True
+  NT rows 18-25 cols 4-11  ctrl: ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff
+  NT rows 18-25 cols 4-11  flag: ffffffffffd1ffff ffd0ffffffffffff ffffffffffffffff ffffffffffffffff d2ffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff
+  == r1_end150  (round 1: both carts had byte-identical RAM on every frame up to the round end, f957)
+  (later dumps r1_end150/r1_end260: same field/nametable result; ctrl 22 sign sprites (animation frame), flag 0; the 5 other
+   visible flag sprites in slots 8-12 are the crown/virus-count sprites, shifted down into the freed slots.)
+
+4. NOTHING CHANGES DURING PLAY
+  - RAM $0000-$07FF and PRG-RAM $6000-$7FFF identical on every frame 1..957 (nav, round-1 play, mid-game STUDY pause at f519,
+    resume at f579); first difference at f958 = the anyPlayerLoses frame.
+  - mid-game STUDY: OAM, nametable, both fields and the screenshot byte-identical between carts (STUDY Y=$98, previews Y=51);
+    resume check identical (P2 pill Y 14->4, pills 11->13 in 120 frames).
+  - none of the 3 patched bytes executes during play (jsrEmpty_P1/P2 count only round ends; $8890 runs only with whoFailed!=0,
+    which level init clears at $823B). tests/test_studyend.py D: whoFailed=0 path is 24 cycles in both carts.
+
+5. AFTER A ROUND END THE TRAJECTORIES DRIFT -- STOCK DMC PHASE SENSITIVITY, NOT THE FLAG
+  The mode-5 frame does less CPU work (no 64-cell wipe) -> NMI/APU phase differs (apu.dmc timer/bits, frameCounter phase,
+  noise LFSR) while RAM reconverges (identical f2491-f3473). At f3474 a phantom P1 RIGHT ($F5=$F7=$01, no input injected)
+  appears in the flag run: the DMC-DMA / $4016 controller-read conflict of the stock ROM, landing at a different moment.
+  The stock cart does the same when the human START press moves by a frame:
+     run                    round ends (f)          phantom P1 input
+     control  START@+1500   957 / 5620 / 8846       none
+     control  START@+1501   957 / 5623 / 8850       none
+     control  START@+1502   957 / 5622 / 8848       f8671 (round 3)
+     flag     START@+1500   957 / 5600 / 8826       f3474 (round 2)
+     flag     START@+1501   957 / 5623 / 8850       none   <- frame-for-frame equal to control START@+1501
+  So post-round play depends on sub-frame phase the human already randomises with every START press.
+
+6. MATCH FINAL (3rd win) -- experiments/studyend/run_final.sh + compare_final.py
+  Stock playerLoses_endScreen on the final: wait 64f, final music, wait 128f, fill BOTH fields $FF ($95CE), GAME OVER
+  into both ($95DB/$95E7), whoFailed=0 / whoWon=winner (Dr. Mario dances over the winner's bottle), wait for START.
+  DRSTUDYEND rewrites the 2P-only redundant re-check at $95BD (12 B) to: music $0B, the same 128f wait, BEQ $9607
+  (START loop). 1P game over enters at $95C9 and keeps every stock byte (unreachable on this couch cart anyway: the
+  DRNAV_V4 nav rewrites $0727=2 on every menu hook -- 624 writes in 160 title frames; run_final.sh oneplayer exits 5).
+  Exact pair "final2p" (both carts get P2 victories $039E=2 written on the same frame, so round 1's end is the final):
+     mode transitions identical (13), RAM identical to f897, PRG-RAM never differs, START loop iterations 208 = 208
+     exec: stock finalFill=1 gameOverP1=1 gameOverP2=1 ; DRSTUDYEND 0/0/0 (and never enters the shared $95C9 block)
+     +30/+150f  stock: P1 lower half wiped (11 cells left) + 27 sign sprites   flag: boards intact, 0 bottle sprites
+     +260/+390f stock: both fields = GAME OVER box (56/56) + 15 Dr. Mario sprites   flag: boards unchanged since +30
+     after START (f1298): fields differ only on the START frame (stock $FE fill runs next frame in BOTH), OAM shadow
+     until the menu redraws it, $55/$61 until level init (mode 3, f1364); $0000-$07FF identical from f1365 on except
+     single-frame $BF/$C7 pad-read-scratch blips (f1366, f1727); victories at the next match 0/0 in both; the
+     next match's field/OAM/nametable dumps and screenshots at +0 and +200 are byte-identical.
+  Genuine 3-round match "final3" (no writes): rounds end on identical frames (898/4464/7691), mode transitions
+     identical (23), play frames never differ beyond $BF/$C7 and the stack page (the NMI's pushed return address =
+     CPU phase; 15 single frames), next match identical from f8165 (level init), victories 0/0, dumps identical.
+  py65 (tests/test_studyend.py F/G): both arms reach the START loop after the same 192 frame-waits; post-START RAM
+     differs only in $55/$61 (+ NMI-drained $0300/$0380); after level init $0000-$07FF identical; the 1P game over
+     gives the identical write trace (1761 writes) in both carts.
+
+7. STILL UNTOUCHED: DRAW, STAGE CLEAR (virus-clear wins), and 1P game over.
