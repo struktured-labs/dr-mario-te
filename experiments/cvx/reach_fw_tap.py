@@ -51,6 +51,7 @@ T_LAT, G0, F0 = 19, 8, 3
 PROPH_END = None    # STEER8b: the driver's PROPH window end (first publication); None = T_LAT, as before
 LEDGE_T = None      # STEER8b fix C: a PROPH-armed board commits at LEDGE_T instead of T_LAT (None = as before)
 DISTROW = False     # STEER8b fix B: on 0 free rows, budget = min(7, max(0, thr - counter) // 2) (False = 0)
+PROPHFIRST = False  # STEER8b fix D: an armed board's PROPH window also ends when the capsule leaves the spawn row
 NROT = {0: 0, 1: 2, 2: 1, 3: 1}
 DT = [0, 2, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]
 
@@ -137,6 +138,9 @@ def reachable(color, top, thr, var, col, tap=None, rot_margin=0):
         step = 1 if pd == "R" else -1
         lockf = tick_frame(rest_from(color, x, 0, False), thr)
         pe = TL if PROPH_END is None else min(TL, PROPH_END)          # STEER8b: PROPH ends at p_end
+        if PROPHFIRST:                                         # STEER8b fix D: leaving the spawn row (first gravity
+            TL = min(TL, max(F0, G0 + thr + 1))                # step at G0+thr) ends the window and commits
+            pe = min(pe, TL)
         for f in (range(F0, pe) if tap is None else range(F0, pe, tap)):
             if f >= lockf:
                 break

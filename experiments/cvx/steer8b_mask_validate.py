@@ -13,8 +13,10 @@ import cascade_chain_x as C, cascade_shape_x as S, fast_rtl_x as FX
 
 TAP = 2
 B_EXTRA = lambda thr, spd: min(7, max(0, thr - spd) // 2)
-# name: (G0 shift, T, steer p_end, steer B, steer C, mask PROPH_END, mask DISTROW, mask LEDGE_T, kind)
+# name: (G0 shift, T, steer p_end, steer B, steer C, mask PROPH_END, mask DISTROW, mask LEDGE_T, kind[, steer D, mask D])
 CONFIGS = {
+    "b-ref+D":               (-5, 13, None, False, False, None, False, 11, "consistent", 11, True),
+    "b-dep+D DEPLOYED mask": (-5, 13, None, False, False, None, False, None, "deployed", 11, False),
     "a2 today-consistent":   (0, 19, 10, False, False, 10, False, None, "consistent"),
     "a2 DEPLOYED mask":      (0, 19, 10, False, False, None, False, None, "deployed"),
     "b-ref":                 (-5, 13, 4, False, False, 4, False, None, "consistent"),
@@ -26,13 +28,13 @@ CONFIGS = {
 }
 
 
-def strict_mask(color, k, t, pend, b, c):
+def strict_mask(color, k, t, pend, b, c, d=None):
     out = [0] * 32
     for a in range(32):
         if SM.straight_cells(color, a // 8, a % 8) is None:
             continue
         st = SM.Steer(proph="throat", seed=0, pulse=True, tap_period=TAP, tap_unified=True)
-        st.proph_end_f = pend; st.dg_extra = B_EXTRA if b else None; st.ledge_commit = c
+        st.proph_end_f = pend; st.dg_extra = B_EXTRA if b else None; st.ledge_commit = c; st.proph_first_end = d
         r = st.execute(color, a, k, t_act=t, phase=1)
         out[a] = int(r["exact"] and SM.is_straight(color, r))
     return out if any(out) else [1] * 32
@@ -52,13 +54,15 @@ if __name__ == "__main__":
                steer=SM.Steer(proph="throat", pulse=True, tap_period=TAP, tap_unified=True))
     armed = sum(1 for color, k in recs if SM.proph_throat(color) in ("L", "R"))
     out = {"level": level, "seeds": seeds, "boards": len(recs), "proph_armed_boards": armed}
-    for name, (g0s, t, pend, b, c, mpe, mrow, mledge, kind) in CONFIGS.items():
+    for name, cfg in CONFIGS.items():
+        g0s, t, pend, b, c, mpe, mrow, mledge, kind = cfg[:9]
+        d, md = (cfg[9], cfg[10]) if len(cfg) > 9 else (None, False)
         SM.G0_CHOICES = (7 + g0s, 8 + g0s); RT.G0 = 8 + g0s; RT.T_LAT = t
-        RT.PROPH_END = mpe; RT.DISTROW = mrow; RT.LEDGE_T = mledge
+        RT.PROPH_END = mpe; RT.DISTROW = mrow; RT.LEDGE_T = mledge; RT.PROPHFIRST = md
         n = agree = n_arm = agree_arm = 0
         for color, k in recs:
             fw = RT.reach_mask_fw(color, SM.table_threshold(k), tap=TAP)
-            st = strict_mask(color, k, t, pend, b, c)
+            st = strict_mask(color, k, t, pend, b, c, d)
             arm = SM.proph_throat(color) in ("L", "R")
             for a in range(32):
                 n += 1; agree += int(fw[a] == st[a])
@@ -67,6 +71,7 @@ if __name__ == "__main__":
         out[name] = {"kind": kind, "agree_pct": round(100 * agree / n, 3), "mismatch": n - agree,
                      "armed_candidates": n_arm, "armed_agree_pct": round(100 * agree_arm / max(1, n_arm), 3)}
     SM.G0_CHOICES = (7, 8); RT.G0 = 8; RT.T_LAT = 19; RT.PROPH_END = None; RT.DISTROW = False; RT.LEDGE_T = None
+    RT.PROPHFIRST = False
     ok = all(v["agree_pct"] == 100.0 for v in out.values() if isinstance(v, dict) and v.get("kind") == "consistent")
     out["consistent_all_100"] = ok
     print(json.dumps(out, indent=1))

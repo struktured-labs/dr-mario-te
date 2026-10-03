@@ -166,3 +166,57 @@ coordinator's allowance).
 - **Identity:** the 8a arms `fA_off` / `fD_off` under the amended runner reproduce the banked python rows (2 + 2).
   STEER7's `steer7_dlat` S=0 still reproduces STEER6d (2/2) after the guarded edits.
 - **Smoke:** every amended arm runs.
+
+---
+
+## SECOND AMENDMENT (2026-10-03, before ANY 8b game): fix D (DRPROPHFIRST) replaces A/B/C
+**Status:** no 8b game had run. `steer8b-farm` was stopped while still waiting for 8a. The A, A+B and A+B+C arms from
+the first amendment are **DROPPED, NOT RUN**: the settle lane's Mesen replays ruled them out (hybrids 3–5, or regret 22
+for ABC).
+
+**Fix D (DRPROPHFIRST)** is the settle lane's pick. It meets the G2 bar vs 464a4b75: landing == final 100 vs 99,
+hybrids 1 vs 1, regret 17.2 vs 17.1.
+- **What it does:** a PROPH-armed pill that is still on its spawn row, not committed, not DONE, and has
+  WDOG2 < MIN_THINK pulses PROPH INSTEAD of running the rotation pre-phase and the MIN_THINK hold.
+- **Window:** [F0, min(GO + 6 f, leaving the spawn row, DONE)), in PROPH's own direction, at the TAP rate.
+- **After the window:** rotation, then the answer's lateral steering.
+- **Measured:** 4 presses, commit at their f10 median = our **f11**.
+
+**Modelled as:**
+- **steer:** `proph_first_end = 11`. An armed pill gets t_ans = 11, and PROPH pulses while f < t_ans. If the capsule's
+  row > 0 at a decision frame, t_ans = that frame. Rotation and lateral start at t_ans (the declared limitation).
+  p_end = None for D arms, so the window is not cut at 4.
+- **mask (refit):** `LEDGE_T = 11` and `PROPHFIRST`. An armed board's commit is TL = min(11, G0 + thr + 1), the
+  closed-form spawn-row exit, and PROPH is credited on [F0, TL).
+- **DONE** before GO + 6 is not modelled. The search rarely DONEs that early (anytime replay: 1% by GO + 6 f).
+
+**Block 3 arms** (600 per cell; gb10, rc10, lulu10):
+- `fD_a2`, `fD_bdep2`, `fD_bref2`, `fD_c2` (unchanged from the first amendment);
+- **`fD_brefD`** (fair, refit mask T13 / G0 3, D driver);
+- **`fD_bdepD`** (fair, DEPLOYED fw mask T19 / G0 8, D driver). The next couch build may pair D with the current fw.
+
+Block 4 is unchanged. **Total: 6 × 1,800 + 1,200 = 12,000 games.**
+
+**Analysis** (`analyze_steer8b2.py`):
+- Each arm vs a2. These 5 comparisons plus block 4 make 6 gb10 comparisons, so Bonferroni is **99.17%**.
+- **Decomposition:**
+
+| comparison | what it shows |
+|---|---|
+| c2 − a2 | minus the pin's worth |
+| bref2 − c2 | the settle cut under fair gravity |
+| bref2 − bdep2 | the mask refit |
+| brefD − bref2 | fix D under the refit mask |
+| bdepD − bdep2 | fix D under the deployed mask |
+| **brefD − bdepD** | the mask under D: can D ship on the current fw? Status quo unless the CI excludes 0 |
+
+- The a2-vs-fD discordance count is reported.
+
+**Gates (before this commit):**
+- **Mask vs frame sim:** `b-ref+D` is a consistent config and agrees **100.000%** (840 boards, 11 armed, 352 armed
+  candidates).
+- **Deployed mask vs the D driver:** 8 mismatches, all armed (97.7% armed agreement). Without D it is 24, i.e. 93.2%.
+- **Identity after the D edits:** fA_off gb and fD_off rc47 still match the banked python rows (2 + 2). STEER7's
+  `steer7_dlat` S=0 still matches STEER6d (2/2).
+- **The D arms run, and D is active:** `fD_bdepD` LULU seed 39134 fires PROPH 34× vs 1× under the first-amendment arm
+  on the same seed.

@@ -1,5 +1,5 @@
 """STEER8b AMENDED analysis (PREREG_STEER8b.md amendment): block 3 fair settle with the driver's real PROPH window and
-ledge fixes A/B/C; block 4 eh on the true b1. All faithful DIST60, corrected 2026-10 fits, 600 paired per cell.
+ledge fix D (A/B/C ruled out by Mesen, not run); block 4 eh on the true b1. All faithful DIST60, corrected 2026-10 fits, 600 paired per cell.
 
   python analyze_steer8b2.py
 """
@@ -8,13 +8,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analyze_steer8a import cells, diff
 from analyze_steer6r import fmt, RC_SEEDS
 
-BONF = (100 * 0.05 / 7 / 2, 100 - 100 * 0.05 / 7 / 2)        # 7 gb10 tap-out comparisons -> 99.29%
+BONF = (100 * 0.05 / 6 / 2, 100 - 100 * 0.05 / 6 / 2)        # 6 gb10 tap-out comparisons (5 arms vs a2 + block 4) -> 99.17%
 
 
 def show(name, X, Y, rule=None):
     tt, tr, tl, ns, txt = diff(X, Y)
     b = diff(X, Y, *BONF)
-    print(f"\n{name}\n{txt}\n  Bonferroni 99.29%: tap-out {fmt(b[0])}  race {fmt(b[1])}  lulu {fmt(b[2])}")
+    print(f"\n{name}\n{txt}\n  Bonferroni 99.17%: tap-out {fmt(b[0])}  race {fmt(b[1])}  lulu {fmt(b[2])}")
     if rule:
         print("  -> " + rule(tt, tr))
 
@@ -30,7 +30,7 @@ def discord(X, Y, label):
 
 def main():
     A = cells("steer8/{c}_fD_a2_*.jsonl", "fD_a2")
-    names = ("fD_bdep2", "fD_bref2", "fD_c2", "fD_brefA", "fD_brefAB", "fD_brefABC", "fD_ehb0")
+    names = ("fD_bdep2", "fD_bref2", "fD_c2", "fD_brefD", "fD_bdepD", "fD_ehb0")
     X = {k: cells(f"steer8/{{c}}_{k}_*.jsonl", k) for k in names}
     F = cells("steer8/{c}_fD_*.jsonl", "fD")                              # 8a's faithful DIST60 (pre-amendment model)
     print(f"rows fD_a2: gb10 {len(A[0])} rc10 {len(A[1])} lulu10 {len(A[2])};  8a fD: gb10 {len(F[0])} rc10 {len(F[1])} lulu10 {len(F[2])}")
@@ -41,8 +41,9 @@ def main():
     show("a2 - fD (paired)", A, F)
     print("\n=== BLOCK 3 (descriptive): every arm vs (a2) today ===")
     for k, lab in (("fD_bdep2", "(b) fair DRSETTLE + DEPLOYED mask"), ("fD_bref2", "(b) fair DRSETTLE + REFIT mask"),
-                   ("fD_c2", "(c) fair, no settle cut  [= minus the pin's worth]"), ("fD_brefA", "(b-ref) + fix A"),
-                   ("fD_brefAB", "(b-ref) + fixes A+B"), ("fD_brefABC", "(b-ref) + fixes A+B+C")):
+                   ("fD_c2", "(c) fair, no settle cut  [= minus the pin's worth]"),
+                   ("fD_brefD", "(b-ref) + fix D (DRPROPHFIRST), refit mask"),
+                   ("fD_bdepD", "(b-dep) + fix D, DEPLOYED fw mask")):
         show(f"{lab}  vs  (a2) today", X[k], A)
     print("\n=== BLOCK 3 decomposition (descriptive) ===")
     show("settle cut under fair gravity: bref2 - c2", X["fD_bref2"], X["fD_c2"])
@@ -50,9 +51,11 @@ def main():
          lambda t, r: ("REFIT mask better -> recommend T13/G0 3/PROPH end 4" if t[2] < 0 else
                        "DEPLOYED mask better -> keep fw constants" if t[1] > 0 else
                        "no detectable difference -> keep the deployed fw constants (status quo)"))
-    show("fix A: brefA - bref2", X["fD_brefA"], X["fD_bref2"])
-    show("fix B: brefAB - brefA", X["fD_brefAB"], X["fD_brefA"])
-    show("fix C: brefABC - brefAB", X["fD_brefABC"], X["fD_brefAB"])
+    show("fix D under the refit mask: brefD - bref2", X["fD_brefD"], X["fD_bref2"])
+    show("fix D under the deployed mask: bdepD - bdep2", X["fD_bdepD"], X["fD_bdep2"])
+    show("MASK under D: brefD - bdepD", X["fD_brefD"], X["fD_bdepD"],
+         lambda t, r: ("REFIT mask better under D" if t[2] < 0 else "DEPLOYED mask better under D" if t[1] > 0 else
+                       "no detectable difference under D -> the deployed fw can pair with D"))
     print("\n=== BLOCK 4: eh on the TRUE b1 (vs 8a fD, unchanged) ===")
     show("fD_ehb0 (true b1) vs fD (soft b1, today's fw)", X["fD_ehb0"], F,
          lambda t, r: ("RECOMMEND the fw fix" if (t[2] < 0 and r[2] >= 0) else

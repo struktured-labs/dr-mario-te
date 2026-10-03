@@ -173,6 +173,7 @@ class Steer:
         self.proph_end_f = None    # STEER8b: PROPH pulses only on [F0, proph_end_f) (None = until the answer, as before)
         self.dg_extra = None       # STEER8b +B: callable(thr, spd) -> extra DISTGATE columns (None = none, as before)
         self.ledge_commit = False  # STEER8b fix C: a PROPH-armed pill commits at proph_end_f (False = as before)
+        self.proph_first_end = None  # STEER8b fix D: armed pill: PROPH on [F0, min(this, spawn-row exit)), then commit
         self.reset(seed)
 
     def reset(self, seed):
@@ -238,6 +239,9 @@ class Steer:
                     pd = "L"
                 elif side == "R" and color[0][5] == 0 and color[1][5] == 0:
                     pd = "R"
+        d_first = self.proph_first_end is not None and pd is not None      # STEER8b fix D (DRPROPHFIRST): an armed
+        if d_first:                                                         # pill pulses PROPH instead of the rotation
+            t_ans = self.proph_first_end                                    # pre-phase + MIN_THINK hold, commit at its end
         if self.ledge_commit and pd is not None and self.proph_end_f is not None:   # STEER8b fix C (DRLEDGECOMMIT):
             t_ans = min(t_ans, max(F0, self.proph_end_f))                        # an armed pill commits at p_end
         # pre-hold (carry the charge toward the target side through the lock); only when it pays
@@ -255,6 +259,8 @@ class Steer:
         tr = [] if self.trace else None
         for f in range(F0, F0 + 4000):
             # ---------------- driver decision (from last frame's state) ----------------
+            if d_first and f < t_ans and row > 0:                           # fix D: leaving the spawn row ends the window
+                t_ans = f
             raw, clear = 0, False
             if self.tap_unified:
                 want = None

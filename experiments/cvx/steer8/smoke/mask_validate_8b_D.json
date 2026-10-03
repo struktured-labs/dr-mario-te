@@ -1,0 +1,82 @@
+{
+ "level": 11,
+ "seeds": [
+  37934,
+  37936,
+  38000,
+  38002
+ ],
+ "boards": 840,
+ "proph_armed_boards": 11,
+ "b-ref+D": {
+  "kind": "consistent",
+  "agree_pct": 100.0,
+  "mismatch": 0,
+  "armed_candidates": 352,
+  "armed_agree_pct": 100.0
+ },
+ "b-dep+D DEPLOYED mask": {
+  "kind": "deployed",
+  "agree_pct": 99.97,
+  "mismatch": 8,
+  "armed_candidates": 352,
+  "armed_agree_pct": 97.727
+ },
+ "a2 today-consistent": {
+  "kind": "consistent",
+  "agree_pct": 100.0,
+  "mismatch": 0,
+  "armed_candidates": 352,
+  "armed_agree_pct": 100.0
+ },
+ "a2 DEPLOYED mask": {
+  "kind": "deployed",
+  "agree_pct": 100.0,
+  "mismatch": 0,
+  "armed_candidates": 352,
+  "armed_agree_pct": 100.0
+ },
+ "b-ref": {
+  "kind": "consistent",
+  "agree_pct": 100.0,
+  "mismatch": 0,
+  "armed_candidates": 352,
+  "armed_agree_pct": 100.0
+ },
+ "b-dep DEPLOYED mask": {
+  "kind": "deployed",
+  "agree_pct": 99.911,
+  "mismatch": 24,
+  "armed_candidates": 352,
+  "armed_agree_pct": 93.182
+ },
+ "c-consistent": {
+  "kind": "consistent",
+  "agree_pct": 100.0,
+  "mismatch": 0,
+  "armed_candidates": 352,
+  "armed_agree_pct": 100.0
+ },
+ "b-ref+A": {
+  "kind": "consistent",
+  "agree_pct": 100.0,
+  "mismatch": 0,
+  "armed_candidates": 352,
+  "armed_agree_pct": 100.0
+ },
+ "b-ref+A+B": {
+  "kind": "consistent",
+  "agree_pct": 100.0,
+  "mismatch": 0,
+  "armed_candidates": 352,
+  "armed_agree_pct": 100.0
+ },
+ "b-ref+A+B+C": {
+  "kind": "consistent",
+  "agree_pct": 100.0,
+  "mismatch": 0,
+  "armed_candidates": 352,
+  "armed_agree_pct": 100.0
+ },
+ "consistent_all_100": true
+}

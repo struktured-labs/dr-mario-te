@@ -22,7 +22,8 @@ OFF = dict(mode="off", W=0)
 # for the round-start pill; ans = steer answer-frame shift; mask = reach_fw_tap T_LAT shift; mask_g0 = reach_fw_tap G0
 # shift; tempo = vs_race BASE_F / gate-b clock shift per placement
 T0 = dict(g0=0, g0_k0=0, ans=0, mask=0, mask_g0=0, tempo=0,
-          p_end=None, dg_b=False, ledge_c=False, mask_pend=None, mask_b=False, mask_ledge=None)
+          p_end=None, dg_b=False, ledge_c=False, mask_pend=None, mask_b=False, mask_ledge=None,
+          p_first=None, mask_pfirst=False)   # fix D (DRPROPHFIRST): steer window end / mask spawn-row exit
 # AMENDED 8b fields (PREREG_STEER8b amendment): p_end = steer PROPH window end (None = until the commit, the pre-STEER8b
 # model); dg_b / ledge_c = fix B / fix C in the steer; mask_pend / mask_b / mask_ledge = the same in reach_fw_tap
 # (None/False = the DEPLOYED fw mask: PROPH credited until T_LAT, no B, no C)
@@ -56,6 +57,15 @@ SETTLE2 = {
 }
 for name, t in SETTLE2.items():
     ARMS[name] = dict(leaf6=DIST, sw=SW_ON, t={**T0, **t})
+# SECOND AMENDMENT (fix D, settle lane Mesen pick; A/AB/ABC above ruled out by Mesen -- NOT RUN)
+SETTLE3 = {
+    # armed pills: D's window [F0, min(11, spawn-row exit)) governs PROPH (p_end must stay None so it is not cut at 4)
+    "fD_brefD": dict(**FAIR, ans=-6, tempo=-6, mask=-6, mask_g0=-5,
+                     p_first=11, mask_ledge=11, mask_pfirst=True),          # fair, REFIT mask (PROPH [F0, GO+6)), D driver
+    "fD_bdepD": dict(**FAIR, ans=-6, tempo=-6, p_first=11),                 # fair, DEPLOYED fw mask, D driver
+}
+for name, t in SETTLE3.items():
+    ARMS[name] = dict(leaf6=DIST, sw=SW_ON, t={**T0, **t})
 B_EXTRA = lambda thr, spd: min(7, max(0, thr - spd) // 2)    # fix B (DRDISTROW): replaces the 0-free-row budget
 
 def _git():
@@ -73,7 +83,8 @@ def make(arm):
     import cascade_leaf6fw_braingap_20261003 as FW
     spec = ARMS[arm]; t = spec["t"]
     assert RFT.T_LAT == 19 and RFT.G0 == 8 and V.BASE_F == 45.0 and SM.G0_CHOICES == (7, 8)
-    assert RFT.PROPH_END is None and RFT.LEDGE_T is None and RFT.DISTROW is False
+    assert RFT.PROPH_END is None and RFT.LEDGE_T is None and RFT.DISTROW is False and RFT.PROPHFIRST is False
+    RFT.PROPHFIRST = bool(t["mask_pfirst"])
     RFT.PROPH_END = t["mask_pend"]; RFT.DISTROW = bool(t["mask_b"]); RFT.LEDGE_T = t["mask_ledge"]
     g_mid, g_k0 = (7 + t["g0"], 8 + t["g0"]), (7 + t["g0_k0"], 8 + t["g0_k0"])
     SM.G0_CHOICES = g_mid; RFT.G0 = 8 + t["mask_g0"]
@@ -81,6 +92,7 @@ def make(arm):
     steer = SM.Steer(proph="throat", pulse=True, tap_period=2, tap_unified=True)
     steer.lat = [max(SM.F0, x + t["ans"]) for x in steer.lat]
     steer.proph_end_f = t["p_end"]; steer.dg_extra = B_EXTRA if t["dg_b"] else None; steer.ledge_commit = bool(t["ledge_c"])
+    steer.proph_first_end = t["p_first"]
     C.warmup_chain(topk2=8)
     w, fl = FX.variant("winner")
     dec = FW.Leaf6FwDecider(w, fl, sw=dict(spec["sw"]), topk2=8, maxpass=0, w_chain=540, ws=20, tap=2, **spec["leaf6"])
