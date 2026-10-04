@@ -157,7 +157,7 @@ def cmd_dumpcmp(path):
             bad.append((k, "duration"))
         if a[0] == "go":
             cmd = a[2]; sl = int(a[3]["lev_a_sl"], 16); continue
-        regs = list(PROD.get(cmd, ())) + ["bcell", "blink"]
+        regs = list(dict.fromkeys(list(PROD.get(cmd, ())) + ["bcell", "blink"]))
         # sco/win are produced by a legal NODE, and by a legal NON-clearing DELTA (a clearing one sets dv_fallback, and
         # rv_cells > 0, and leaves sco for the CMD 4 the firmware re-issues; dv_fallback is reset-cleared, not dumped)
         if (cmd == 4 and a[3]["legal"] == "1") or (cmd == 7 and a[3]["legal"] == "1" and a[3]["rv_cells"] == "0"):
@@ -171,8 +171,7 @@ def cmd_dumpcmp(path):
     print(f"  from the first BASE on, {ncmd} engine commands: sequence, durations, produced results and CUR board identical: "
           f"{'YES' if not bad else 'NO ' + str(bad[:6])}")
     still = sorted(k for k in A[ia + n - 1][3] if A[ia + n - 1][3][k] != F[iff + n - 1][3][k])
-    print(f"  registers still holding pair-only values after the last dumped command (stale, never read before written): "
-          f"{still}")
+    print(f"  registers differing pair vs fresh after the last dumped command: {still}")
     return 0 if not bad and da[1] - ga[1] == df[1] - gf[1] else 1
 
 

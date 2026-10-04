@@ -1,0 +1,268 @@
+# DRLEFLUSH -- copro firmware flush for the LeafEval GO-reset gap (2026-10-04, branch claude/fw-leflush)
+# RTL NES_MiSTer-drmario claude/dist-leaf 3b164c7 (DIST60: -DDRHSV -DDRLEV_SQREG -DDRLEV_WRREG -DDRLEV_VNPF -DDRDIST),
+# unchanged. Firmware V11 = V1 a1ef31c8 (1488e158 + DRTUCKREACH + DRTUCKLIVE + DRROOTORD, mask 19/8) + DRLEFLUSH
+#   build_fw.py 540 OUT 1 1 1 1 1 1 19 8 1   -> c51d2e21af8ed98ad929a2254befb2b5
+#   (DIST60 1488e158 + DRLEFLUSH: build_fw.py 540 OUT 1 1 1 0 0 0 19 8 1 -> 25bdb23a, used as the 1488 positive arm)
+# Problem (copro-pipeline lane, experiments/abortstale/COSIM.txt section 6, PR #33): a GO preempting a search resets
+# LeafEval's st/done/modes only; after a reset MID LeafEval command the next search's first BASE ran 241 clocks instead
+# of 1,590 and latched base_holes 0x17 vs 0x16; preempt-at-50 % changed intermediate publishes on 3/115 G2 pairs (1488).
+
+## 0. verdict
+- Exactly ONE of the 180 engine registers that survive the GO reset can carry stale state into a result: dphase. Static
+  enumeration (coverage-checked against the RTL), and measured: poisoning ALL 179 others with random values changes 0 of
+  335 searches (flag off), while dphase := 1 or 2 alone changes 77/116 (2 publish-sequence changes).
+- DRLEFLUSH (stub CMD 7 with an illegal landing, +18 bytes, +22 clocks = 1.5e-5 frame per search) neutralises it: with
+  every register randomised (+ the work RAM on G2) the flushed search is bit-identical to a fresh run on 335 + 116 + 116
+  searches; dphase := 1 / 2 -> 232/232 exact.
+- Real preemptions: adversarial pairs 345/345 exact (q 0.25 / 0.5 / 0.75) and 115/115 on 1488+flush (lane without the
+  flush: 1488 3 DECISION + 8 mesen-same, V1 12 mesen-same); chained abort-cart co-sim G2/G3/G4 335/335 exact whole-game
+  (27 preempted searches) + 107/107 windows.
+- No preemption: finals, tucks and publish values identical to V1 on all 335 co-sim boards (on 9 a publish is seen one
+  poll later, 3,264 clocks = 0.0023 f, same Mesen frame; 1488+flush vs 1488e158: 3/116 likewise) and on 264 py65 boards; Mesen replay on the abort cart == A+V1 exactly
+  (G2 113/1/21.5, G3 85/0, G4 133/0, 0 landing and 0 GO-frame differences).
+- rbf seed 21: copro +0.364 ns, pll_hdmi -0.058 ns (bar -0.062), ALMs 37737; 16/16 bijection; md5 b64d8ea9.
+
+## 1. which registers survive the reset, and which of them can reach a result  (enumerate_regs.py, gen_poison.py)
+  registers surviving the GO reset: 180 (LeafEval 171, CoproDrMario engine args 9); cleared by the reset (not counted): st, done, sl_cpw, base_mode, delta_mode, dv_fallback, h_wr, lev_a_tgt
+  by class: LIVE-IN 1, DETOUR 25, PIPE 17, BOARD 2, SLOT 1, BASEL 17, RESULT 8, ARG 8, SCRATCH 98, DEAD 3
+    LIVE-IN  dphase
+             -> read by S_VSPAN_D (LeafEval.sv:1045) on EVERY per-virus walk of CMD 1 / 4 / 6; written only by CMD 7 entry (:624), S_DBUR (:1261) and S_DADV (:1297). A completed search leaves 0; a GO mid CMD 7 leaves 1 or 2
+    DETOUR   od_bur nd_bur od_rdy nd_rdy od_vrdy nd_vrdy od_set nd_set dd_matched dd_pol dd_holes pca pcb dsoff dscnt dstep dcol drow dbur_new dcolstep dlmask dws dwhi dwrow dwsecond
+             -> CMD 7 scratch (entry zeroes od_/nd_/dd_; S_DNEW/S_DPOL/S_DBUR/S_DADV set the cursors) -- and read by the stale dphase detour (S_DUNPL even WRITES bcell at stale off_a/off_b)
+    PIPE     bl_rq h_waddr h_wdata h_wlnk h_wslot vn_hit sq_h_in sq_v_in dw_col dw_vir dw_v dw_r dw_c dt_fin slotram.q_a slotram.q_b lev_q
+             -> unconditional nonblocking load every clk_cpu edge
+    BOARD    bcell blink
+             -> CMD 2 S_CP_R: all 128 cells (+ the link funnel's S_CP_R arm); the flush CMD 7 only reads column 7's occupancy for its own <= 17-clock walk
+    SLOT     slotram.mem
+             -> slot 1: 128 window stores (cell + link) per search; slots 2/3: CMD 3 (search :749, :1002; tuck_slot0_inject dest 2) before every CMD 2 from them
+    BASEL    colh base_maxh base_holes base_toprisk base_spawn base_setup base_pol base_buried base_matched base_rdy base_vrdy base_anyvir b_row b_colv b_top b_tvir b_tcol
+             -> CMD 6: colh zeroed at entry + walk, base_* at S_DONE, b_* at dt_fin && base_mode; every pass issues its CMD 6 before its CMD 7s (also read by the DETOUR's S_DCOMB)
+    RESULT   sco win legal rv_cells rv_vir imm chain strand
+             -> S_DONE/S_DONE2 (sco, win), NODE/DELTA entry + resolve (legal, rv_*, imm, chain), CMD 8 (strand)
+    ARG      lev_wslot lev_a_o4 lev_a_sl lev_a_ca lev_a_cb lev_a_col lev_a_fix lev_a_chw
+             -> stores before use: wslot around the upload, a_sl before each CMD 2/3, o4/col/ca/cb before each CMD 4/7 (the CMD 4 after a CMD 7 fallback reuses that CMD 7's), fix/chw at search entry
+    SCRATCH  bl_ra fwp2 ap_m ap_vir ap_lk ap_i ap_unl ap_pixr
+             -> S_EOL / S_APPLY / S_APPLY_P
+    SCRATCH  sr_addr cpw_p cmd_l
+             -> CMD 2/3 entry / S_COPY
+    SCRATCH  node_leaf fo1 fwp off_a off_b markb anyclear chain_bonus fullscan
+             -> CMD 4 / 7 entry, S_FO1/S_FO2 (off_a/off_b also on the DETOUR)
+    SCRATCH  str_i rs_c rs_u rs_d rs_l rs_r rs_p
+             -> CMD 8 entry / S_STR_R
+    SCRATCH  li soff sstep scnt srun smcol srstart fli
+             -> S_PLACE / S_FPREP / S_EOL (srstart set when a run starts; li also on the DETOUR)
+    SCRATCH  gr gc gmoved gk1 g_do g_has ga_isrep ga_occ ga_vir ga_blk0 g_k0 g_k1 g_cell g_lnk
+             -> S_APPLY2 end / S_GRAV / S_GRAV_D / S_GRAV_M
+    SCRATCH  wc wr_ maxh holes toprisk spawn setup pollution buried matched60 rdy_ext vrdy anyvir seen fillcnt curcol curlen vseen
+             -> CMD 1 / 6 entry, S_RESDONE (node leaf)
+    SCRATCH  maxh_p holes_p toprisk_p spawn_p setup_p pollution_p buried_p rdy_ext_p vrdy_p matched60_p
+             -> S_DONE before S_DONE2
+    SCRATCH  vo run_h run_v p span_lo span_hi vspan_lo vspan_hi
+             -> end of S_COLWALK / S_VNEXT / the run states
+    SCRATCH  dt_row dt_colv dt_top dt_tvir dt_tcol dq dh_v dh_i dv_v dv_i dsw dbest dt_pen
+             -> DRDIST D-FSM: every latch rewritten by the full walk's cell pipeline (or copied from b_* at S_DNEW); dq / dt_pen restarted at dt_fin / S_DNEW (~20-clock D-FSM), final before S_DONE reads dt_pen (Verilator witness dt_late)
+    DEAD     fo2 daff affbit
+             -> never read
+  COVERAGE PASS: every surviving register classified exactly once
+
+Mechanism, measured (poison_cosim.py dump/dumpcmp: every register dumped at B's first 60 engine commands, pair A->B with
+A preempted at q 0.5 (board bytes 18 NES cycles apart) vs B fresh, same firmware; 1488e158 / a1ef31c8 = no flush,
+25bdb23a / c51d2e21 = the same firmware + DRLEFLUSH). Without the flush the stale dphase (1 or 2) sends B's first BASE
+down the delta detour (p27->p28: 499 clocks instead of 1,590 in this harness; 241 in the lane's sim_ramdiag schedule),
+wrong base_* latches follow, and on p27->p28 the detour's S_DUNPL also wrote CUR cells; the next DELTA leaf scores
+differ. With the flush: dphase 0 at the first BASE, the BASE and every one of the next 58 engine commands identical in
+sequence, duration, produced results and CUR board. The 79-81 registers that still differ at the first BASE are all
+PIPE / SCRATCH / DETOUR / SLOT / BASEL / RESULT / ARG class (section above); by the end of the dump only gk1 (cascade-gravity
+scratch) and slot 3 (written by the ply-3 CMD 3 before it is read) still hold A's values.
+Flush timing in the same dumps: CMD 7 issued 82 clocks after the GO write, DONE at 92-93 (pair: the stale CUR has
+column 7 occupied near the top) vs 100 (fresh: empty board, full 17-row walk); the next command (CMD 2) is issued at
+the SAME clock in both (137,087 / 163,148): the late poll absorbs the board-dependent walk.
+  G2_1488e158_p27_p28.txt: events pair 120 fresh 120
+    first BASE issue: clk pair 163271 fresh 163271; 85 registers differ; LIVE-IN differing: ['dphase'] (dphase pair 1 fresh 0)
+    first BASE DONE: took pair 499 fresh 1590 clocks; BASE outputs differing: ['base_holes', 'base_setup', 'base_pol', 'base_buried', 'base_matched', 'base_rdy', 'base_vrdy', 'bcell']
+    from the first BASE on, 59 engine commands: sequence, durations, produced results and CUR board identical: NO [(1, 'duration'), (1, 6, ['base_holes', 'base_setup', 'base_pol', 'base_buried', 'base_matched', 'base_rdy', 'base_vrdy', 'bcell']), (2, 'duration'), (3, 7, ['bcell', 'sco']), (5, 'duration'), (5, 7, ['bcell', 'sco'])]
+    registers differing pair vs fresh after the last dumped command: ['b_colv', 'b_top', 'base_buried', 'base_holes', 'base_pol', 'base_rdy', 'base_setup', 'base_vrdy', 'bcell', 'blink', 'buried', 'buried_p', 'colh', 'dcol', 'dcolstep', 'dd_holes', 'dd_pol', 'dlmask', 'dsoff', 'dstep', 'dt_colv', 'dt_top', 'dv_i', 'dwhi', 'dwrow', 'dws', 'dwsecond', 'fillcnt', 'fo1', 'fwp', 'gk1', 'h_waddr', 'holes', 'holes_p', 'lev_a_col', 'lev_a_o4', 'li', 'maxh', 'maxh_p', 'nd_bur', 'nd_rdy', 'nd_vrdy', 'od_bur', 'od_rdy', 'od_vrdy', 'off_a', 'off_b', 'p', 'pca', 'pcb', 'pollution', 'pollution_p', 'rdy_ext', 'rdy_ext_p', 'sco', 'setup', 'setup_p', 'slotram.mem', 'soff', 'span_hi', 'srstart', 'strand', 'vo', 'vrdy', 'vrdy_p', 'vseen', 'vspan_hi', 'vspan_lo']
+  G2_1488e158_p51_p52.txt: events pair 120 fresh 120
+    first BASE issue: clk pair 154654 fresh 154654; 93 registers differ; LIVE-IN differing: ['dphase'] (dphase pair 2 fresh 0)
+    first BASE DONE: took pair 268 fresh 1140 clocks; BASE outputs differing: ['base_maxh', 'base_holes', 'base_pol', 'base_buried', 'base_rdy']
+    from the first BASE on, 59 engine commands: sequence, durations, produced results and CUR board identical: NO [(1, 'duration'), (1, 6, ['base_maxh', 'base_holes', 'base_pol', 'base_buried', 'base_rdy']), (2, 'duration'), (3, 7, ['sco']), (5, 7, ['sco']), (15, 7, ['sco'])]
+    registers differing pair vs fresh after the last dumped command: ['b_top', 'base_matched', 'base_pol', 'base_rdy', 'base_setup', 'base_vrdy', 'bcell', 'blink', 'colh', 'dcol', 'dd_pol', 'dsoff', 'dt_top', 'dwhi', 'dwrow', 'dws', 'fillcnt', 'fo1', 'gk1', 'h_waddr', 'lev_a_col', 'lev_a_o4', 'matched60', 'matched60_p', 'nd_bur', 'nd_rdy', 'nd_vrdy', 'od_bur', 'od_rdy', 'od_vrdy', 'off_a', 'off_b', 'p', 'pollution', 'pollution_p', 'rdy_ext', 'rdy_ext_p', 'sco', 'setup', 'setup_p', 'slotram.mem', 'soff', 'span_hi', 'span_lo', 'srstart', 'strand', 'vo', 'vrdy', 'vrdy_p', 'vseen', 'vspan_hi', 'vspan_lo']
+  G2_1488e158_p62_p63.txt: events pair 120 fresh 120
+    first BASE issue: clk pair 135806 fresh 135806; 93 registers differ; LIVE-IN differing: ['dphase'] (dphase pair 2 fresh 0)
+    first BASE DONE: took pair 320 fresh 1031 clocks; BASE outputs differing: ['base_maxh', 'base_holes', 'base_pol', 'base_buried', 'base_rdy', 'base_vrdy']
+    from the first BASE on, 59 engine commands: sequence, durations, produced results and CUR board identical: NO [(1, 'duration'), (1, 6, ['base_maxh', 'base_holes', 'base_pol', 'base_buried', 'base_rdy', 'base_vrdy']), (2, 'duration'), (3, 7, ['sco']), (5, 7, ['sco']), (7, 7, ['sco'])]
+    registers differing pair vs fresh after the last dumped command: ['gk1', 'slotram.mem']
+  G2_25bdb23a_p27_p28.txt: events pair 120 fresh 120
+    first BASE issue: clk pair 163293 fresh 163293; 80 registers differ; LIVE-IN differing: [] (dphase pair 0 fresh 0)
+    first BASE DONE: took pair 1590 fresh 1590 clocks; BASE outputs differing: []
+    from the first BASE on, 58 engine commands: sequence, durations, produced results and CUR board identical: YES
+    registers differing pair vs fresh after the last dumped command: ['gk1', 'slotram.mem']
+  G2_25bdb23a_p51_p52.txt: events pair 120 fresh 120
+    first BASE issue: clk pair 154676 fresh 154676; 79 registers differ; LIVE-IN differing: [] (dphase pair 0 fresh 0)
+    first BASE DONE: took pair 1140 fresh 1140 clocks; BASE outputs differing: []
+    from the first BASE on, 58 engine commands: sequence, durations, produced results and CUR board identical: YES
+    registers differing pair vs fresh after the last dumped command: ['gk1', 'slotram.mem']
+  G2_25bdb23a_p62_p63.txt: events pair 120 fresh 120
+    first BASE issue: clk pair 135828 fresh 135828; 80 registers differ; LIVE-IN differing: [] (dphase pair 0 fresh 0)
+    first BASE DONE: took pair 1031 fresh 1031 clocks; BASE outputs differing: []
+    from the first BASE on, 58 engine commands: sequence, durations, produced results and CUR board identical: YES
+    registers differing pair vs fresh after the last dumped command: ['gk1', 'slotram.mem']
+  G2_a1ef31c8_p88_p89.txt: events pair 120 fresh 120
+    first BASE issue: clk pair 137210 fresh 137210; 89 registers differ; LIVE-IN differing: ['dphase'] (dphase pair 1 fresh 0)
+    first BASE DONE: took pair 354 fresh 1018 clocks; BASE outputs differing: ['base_maxh', 'base_toprisk', 'base_pol', 'base_buried', 'base_rdy', 'base_vrdy']
+    from the first BASE on, 59 engine commands: sequence, durations, produced results and CUR board identical: NO [(1, 'duration'), (1, 6, ['base_maxh', 'base_toprisk', 'base_pol', 'base_buried', 'base_rdy', 'base_vrdy']), (2, 'duration'), (11, 7, ['sco']), (13, 7, ['sco']), (23, 7, ['sco'])]
+    registers differing pair vs fresh after the last dumped command: ['gk1', 'slotram.mem']
+  G2_c51d2e21_p88_p89.txt: events pair 120 fresh 120
+    first BASE issue: clk pair 137232 fresh 137232; 81 registers differ; LIVE-IN differing: [] (dphase pair 0 fresh 0)
+    first BASE DONE: took pair 1018 fresh 1018 clocks; BASE outputs differing: []
+    from the first BASE on, 58 engine commands: sequence, durations, produced results and CUR board identical: YES
+    registers differing pair vs fresh after the last dumped command: ['gk1', 'slotram.mem']
+
+## 2. the flush
+Reset stub ($BF80), DRLEFLUSH=1, +18 bytes (the only bytes that differ from the flag-off image):
+    SEI / CLD
+    LDA #2 / STA $70E0   ; a_o4 = 2: horizontal ...
+    LDA #7 / STA $70E1   ; a_col = 7: ... at column 7 -- an ILLEGAL landing by construction (S_FO1: a_o4[1] && a_col == 7)
+    STA $70F4            ; CMD 7. Its S_IDLE entry writes dphase := 0 (and zeroes legal / rv / imm / markb / chain /
+                         ; od_* nd_* dd_* / dv_fallback); S_FO1 walks column 7 (<= 17 clocks) and exits with done = 1,
+                         ; legal = 0, without placing, resolving or touching CUR, the slots or the CMD 6 latches
+    LDX #$FF / TXS / LDX #15 / cp2: LDA $B030,X / STA $09C0,X / DEX / BPL cp2     ; unchanged pill-table copy (~229 clk)
+    lfp: LDA $70F8 / BEQ lfp                                                      ; DONE long since: exits on the 1st read
+    ...                  ; unchanged (tuck descriptor defaults, JSR search, JSR tuck, publish, DONE)
+Why CMD 7 and not a dummy evaluation: CMD 7's ENTRY is the only writer of dphase outside the delta path itself; a dummy
+LEAF / NODE / BASE READS dphase (S_VSPAN_D) and would itself take the stale detour. Unconditional (the firmware cannot
+tell a preempted predecessor: GO clears DONE): it costs less than a conditional test would.
+Cost (measured): +22 copro clocks per search, constant (Verilator: first BASE issued at clk 137,232 vs 137,210 for V1
+p89, 163,293 vs 163,271 for 1488e158 p28, identical in the preempted and the fresh run; py65: +22 cycles, +7
+instructions on all 264 boards). At 85.909 MHz = 0.256 us = 1.54e-5 frame (1 frame = 1,429,464 clocks):
+~4e-5 pp tap-out at +2.8 pp per frame. No other byte of the search, tuck, reach or dist images moves.
+
+## 3. poison matrix (sim_poison.cpp: every surviving register randomised over its full width at the GO's reset release,
+##    each decision in its own process, compared with the SAME firmware's fresh run; chain_cosim.classify)
+fresh references (no preemption):
+  lane-ref-repro V1 G2: G2_a1ef31c8.jsonl: n=116 DONE 116 ABORT 0 | exact 116 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+  flush-vs-V1 fresh G2: G2_c51d2e21.jsonl: n=116 DONE 116 ABORT 0 | exact 116 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+  flush-vs-V1 fresh G3: G3_c51d2e21.jsonl: n=86 DONE 86 ABORT 0 | exact 83 mesen-same 3 timing 0 DECISION 0 | max |dclk| 3264 (0.0023 f)
+  flush-vs-V1 fresh G3:   mesen-same: [61, 78, 81]
+  flush-vs-V1 fresh G4: G4_c51d2e21.jsonl: n=133 DONE 133 ABORT 0 | exact 127 mesen-same 6 timing 0 DECISION 0 | max |dclk| 3264 (0.0023 f)
+  flush-vs-V1 fresh G4:   mesen-same: [5, 17, 27, 58, 90, 125]
+  flush-vs-1488 fresh G2: G2_25bdb23a.jsonl: n=116 DONE 116 ABORT 0 | exact 113 mesen-same 3 timing 0 DECISION 0 | max |dclk| 3264 (0.0023 f)
+  flush-vs-1488 fresh G2:   mesen-same: [15, 20, 87]
+poison arms:
+
+  ON_all_G2.jsonl seed 1: n=116 exact 116 mesen-same 0 timing 0 DECISION 0 hang 0
+  ON_all_G3.jsonl seed 1: n=86 exact 86 mesen-same 0 timing 0 DECISION 0 hang 0
+  ON_all_G4.jsonl seed 1: n=133 exact 133 mesen-same 0 timing 0 DECISION 0 hang 0
+  ON_all_s2_G2.jsonl seed 2: n=116 exact 116 mesen-same 0 timing 0 DECISION 0 hang 0
+  ON_dph1_G2.jsonl seed 0: n=116 exact 116 mesen-same 0 timing 0 DECISION 0 hang 0
+  ON_dph2_G2.jsonl seed 0: n=116 exact 116 mesen-same 0 timing 0 DECISION 0 hang 0
+  OFF_dph1_G2.jsonl seed 0: n=116 exact 39 mesen-same 75 timing 0 DECISION 2 hang 0
+    DECISION: [(62, 0), (103, 0)]
+    mesen-same: [(0, 0), (1, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (14, 0), (15, 0), (16, 0), (17, 0), (19, 0), (20, 0), (22, 0), (23, 0), (24, 0), (25, 0), (26, 0), (27, 0), (28, 0), (29, 0), (30, 0), (31, 0), (34, 0), (35, 0), (37, 0), (38, 0), (39, 0), (41, 0), (42, 0), (43, 0), (44, 0), (45, 0), (46, 0), (48, 0)]
+  OFF_dph2_G2.jsonl seed 0: n=116 exact 39 mesen-same 75 timing 0 DECISION 2 hang 0
+    DECISION: [(62, 0), (103, 0)]
+    mesen-same: [(0, 0), (1, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (14, 0), (15, 0), (16, 0), (17, 0), (19, 0), (20, 0), (22, 0), (23, 0), (24, 0), (25, 0), (26, 0), (27, 0), (28, 0), (29, 0), (30, 0), (31, 0), (34, 0), (35, 0), (37, 0), (38, 0), (39, 0), (41, 0), (42, 0), (43, 0), (44, 0), (45, 0), (46, 0), (48, 0)]
+  OFF_all_G2.jsonl seed 1: n=116 exact 68 mesen-same 48 timing 0 DECISION 0 hang 0
+    mesen-same: [(0, 1), (1, 1), (3, 1), (5, 1), (6, 1), (7, 1), (12, 1), (14, 1), (15, 1), (16, 1), (17, 1), (20, 1), (22, 1), (23, 1), (24, 1), (25, 1), (27, 1), (28, 1), (29, 1), (30, 1), (31, 1), (34, 1), (35, 1), (36, 1), (37, 1), (39, 1), (41, 1), (42, 1), (43, 1), (44, 1), (45, 1), (48, 1), (50, 1), (51, 1), (54, 1), (56, 1), (68, 1), (69, 1), (72, 1), (75, 1)]
+  OFF_allbut_G2.jsonl seed 1: n=116 exact 116 mesen-same 0 timing 0 DECISION 0 hang 0
+  OFF_allbut_G3.jsonl seed 1: n=86 exact 86 mesen-same 0 timing 0 DECISION 0 hang 0
+  OFF_allbut_G4.jsonl seed 1: n=133 exact 133 mesen-same 0 timing 0 DECISION 0 hang 0
+  ON_allram_G2.jsonl seed 1: n=116 exact 116 mesen-same 0 timing 0 DECISION 0 hang 0
+
+## 4. adversarial preempt pairs (the copro-pipeline lane's test: every consecutive G2 pair, A preempted at q * DONE(A),
+##    board bytes 18 NES cycles apart, B run to DONE, vs B fresh, same firmware)
+
+  G2_c51d2e21_q0.5.jsonl: n=115 DONE 115 ABORT 0 | exact 115 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+  G2_c51d2e21_q0.25.jsonl: n=115 DONE 115 ABORT 0 | exact 115 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+  G2_c51d2e21_q0.75.jsonl: n=115 DONE 115 ABORT 0 | exact 115 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+  G2_25bdb23a_q0.5.jsonl: n=115 DONE 115 ABORT 0 | exact 115 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+  (same test, copro-pipeline lane, no flush, q 0.5: fw 1488e158 exact 104 mesen-same 8 DECISION 3; V1 a1ef31c8 exact 103 mesen-same 12)
+
+## 5. chained pipeline co-sim, abort cart b1b57638 GO schedule (chain_cosim.py run --abort / window, Mesen GO frames of
+##    the A-cart runs; the AV1 and AV11 GO schedules are identical frame for frame on G2/G3/G4)
+  G2_c51d2e21_abort_AV1.jsonl: n=116 DONE 100 ABORT 16 | exact 116 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+  window: 18 aborted-into pills, 8 windows, 55 records -> /home/struktured/projects/dr_mario_rl/tmp/v11/cosim/chain/G2_c51d2e21_win_AV1.jsonl
+  G2_c51d2e21_win_AV1.jsonl: n=55 DONE 39 ABORT 16 | exact 55 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+  G3_c51d2e21_abort_AV1.jsonl: n=86 DONE 79 ABORT 7 | exact 86 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+  window: 9 aborted-into pills, 6 windows, 31 records -> /home/struktured/projects/dr_mario_rl/tmp/v11/cosim/chain/G3_c51d2e21_win_AV1.jsonl
+  G3_c51d2e21_win_AV1.jsonl: n=31 DONE 24 ABORT 7 | exact 31 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+  G4_c51d2e21_abort_AV1.jsonl: n=133 DONE 129 ABORT 4 | exact 133 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+  window: 7 aborted-into pills, 2 windows, 21 records -> /home/struktured/projects/dr_mario_rl/tmp/v11/cosim/chain/G4_c51d2e21_win_AV1.jsonl
+  G4_c51d2e21_win_AV1.jsonl: n=21 DONE 17 ABORT 4 | exact 21 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+  (lane, V1 without the flush, same schedule: G2 whole game exact 115 mesen-same 1; windows G2 54+1, G3 30+1, G4 21+0; 1488e158 windows G2 19 + 1 timing, G3 20+2, G4 16+1)
+
+## 6. Mesen replay, abort cart b1b57638 (fair kit D + DRABORTSTALE), case files = banked V1 case pills + V11 fresh timelines
+  TOOLING G2: regen(V1 fresh refs) == banked chained V1 case file: PASS
+  TOOLING G3: regen(V1 fresh refs) == banked chained V1 case file: PASS
+  TOOLING G4: regen(V1 fresh refs) == banked chained V1 case file: PASS
+  CASES G2 V11: 2fc93e4d (V1 banked 2fc93e4d)
+  CASES G3 V11: 519afcad (V1 banked 5e150b96)
+  CASES G4 V11: b5020e99 (V1 banked ee5e7c41)
+  SUMMARY tag=G2_AV11 frames=9823 goes=119 dones=101 cases=116
+  SUMMARY tag=G3_AV11 frames=20000 goes=89 dones=80 cases_done=86 TIMEOUT
+  SUMMARY tag=G4_AV11 frames=20000 goes=136 dones=129 cases_done=133 TIMEOUT
+  game arm    |   n up==case ==final HYBRID refusals  regret(sc) reg-xT | ==python ==silicon lateRT | stale waits wmax wsum
+  G2   AV1    | 116      116     113      1        1  21.5 (115)   12.7 |       90        91      6 |    18     0    0    0  [D+ABORT b1b57638 + fw V1 a1ef31c8 (abort-stale lane run)]
+  G2   AV11   | 116      116     113      1        1  21.5 (115)   12.7 |       90        91      6 |    18     0    0    0  [D+ABORT b1b57638 + fw V11]
+  G3   AV1    |  86       86      85      0        0           -      - |       79        77     11 |     9     0    0    0  [D+ABORT b1b57638 + fw V1 a1ef31c8 (abort-stale lane run)]
+  G3   AV11   |  86       86      85      0        0           -      - |       79        77     11 |     9     0    0    0  [D+ABORT b1b57638 + fw V11]
+  G4   AV1    | 133      133     133      0        0           -      - |      126       115     12 |     7     0    0    0  [D+ABORT b1b57638 + fw V1 a1ef31c8 (abort-stale lane run)]
+  G4   AV11   | 133      133     133      0        0           -      - |      126       115     12 |     7     0    0    0  [D+ABORT b1b57638 + fw V11]
+
+  G2 landings differing AV1 vs AV11: 0/116 
+  G2 GO frame / stale-edge differences AV1 vs AV11: 0 
+  G3 landings differing AV1 vs AV11: 0/86 
+  G3 GO frame / stale-edge differences AV1 vs AV11: 0 
+  G4 landings differing AV1 vs AV11: 0/133 
+  G4 GO frame / stale-edge differences AV1 vs AV11: 0 
+
+## 7. firmware gates
+  IDENTITY flag off, V1 recipe     md5 a1ef31c896ce3c8080c2eb9cd5cb182d == a1ef31c8: PASS
+  IDENTITY flag off, DIST60 recipe md5 1488e1583ab7ad8b2011d4c136926faf == 1488e158: PASS
+  STUB V1 flag on md5 c51d2e21af8ed98ad929a2254befb2b5: 64 bytes differ, all inside $BF80-$BFFF: True; flush inserted as specified: True; remaining stub identical (spin JMP +18): True
+  STUB DIST60 flag on md5 25bdb23a0cd2c2d3f04678a5b0d4e5ac: 64 bytes differ, all inside $BF80-$BFFF: True; flush inserted as specified: True; remaining stub identical (spin JMP +18): True
+  GATE_STATIC PASS
+  py65: 264 boards (62 fw-lane gate boards + game corpus step 7), 0 banked, running 264
+  REPRO flag off == the fw lane's banked 'ship' rows (final, tuck, publish values): 62/62
+  IDENTITY flag on == flag off (final, tuck, commits, publish values, tuck-entry reach state): 264/264
+  RAM write set identical: 264/264;  6502 cycles on - off == 22: 264/264
+  GATE_PY65_FLUSH PASS
+  gate_reach_search (dist-target tree 1f430974 + fw-tuckreach patch + this patch, DRROOTORD=1 DRTUCKLIVE=1 DRLEFLUSH=1; output identical line for line to the fw lane's V1 run):
+    S   static: 8 abs refs to S_NA/S_NB in search/tuck/stub of the DRREACH=1 image, non-(LDA;AND #$0F): none; reach decode reads [('0xa804', '0x27'), ('0xa82e', '0x26'), ('0xa855', '0x26'), ('0xa85f', '0x27')]
+    G3  P=0: firmware == masked mirror 41/41; argmax moved 9
+    G3  P=2: firmware == masked mirror 40/40; argmax moved 8
+    G3  P=3: firmware == masked mirror 39/39; argmax moved 7
+    G1a transport inert (DRREACH=0, random nibbles; colour args < 16): 60/60
+    G1b old cart (DRREACH=1, no nibbles) == DRREACH=0:              60/60
+    G3  game: firmware == masked mirror 60/60; mask non-trivial on 60; filter moved the argmax on 5
+    G3  fast: firmware == masked mirror 40/40; mask non-trivial on 33; filter moved the argmax on 17
+    G3  few : firmware == masked mirror 20/20; mask non-trivial on 3; filter moved the argmax on 2
+    masked-winner board: unfiltered (0, 0)  skip (1, 2)  firmware (1, 2)
+       mutant PENALTY: firmware (0, 0) vs skip (1, 2) -> KILLED
+       mutant NOAND: static audit flags 2 site(s); colour-arg writes >= 16 on 2/3 boards -> KILLED
+    GATE_REACH_SEARCH PASS
+  gate_dist_golden (same tree, + DRTUCKREACH=1; identical to the fw lane's V1 run):
+    game : firmware(+DIST engine) == golden mirror(+DIST) 154/154; target written == rule 154/154; active 154; the term moved the decision on 41
+    couch: firmware(+DIST engine) == golden mirror(+DIST) 283/283; target written == rule 283/283; active 283; the term moved the decision on 82
+    synth: firmware(+DIST engine) == golden mirror(+DIST) 60/60; target written == rule 60/60; active 60; the term moved the decision on 11
+    big  : firmware(+DIST engine) == golden mirror(+DIST) 20/20; target written == rule 20/20; active 0; the term moved the decision on 0
+    GATE_DIST_GOLDEN PASS
+
+## 8. rbf
+  PRE: RTL 3b164c7 fw c51d2e21 qsf=DIST60 (a7a0ce8b); compiling seed 21 antibody-dist60-v11  2026-10-04T01:28:05-04:00
+  Fitter status : Successful - Sun Oct  4 02:23:46 2026
+  ALMs          : 37737 / 41910  (4173 free)   PASS
+  copro slack   : 0.364 ns (bar +0.10)   PASS
+  pll_hdmi      : -0.058 ns (baseline -0.012)   PASS
+  VERDICT: SHIP AS-IS -- all three criteria met; BRAM conversion (#27) not needed.
+  SHIP rc=0  2026-10-04T02:24:26-04:00
+  PROOF rc=0
+  /home/struktured/projects/dr_mario_rl/tmp/rtl_chain/ship/antibody-dist60/fw540_reachtap_dist_1488e158.hex :
+    blocks with >=1 slice match: 0/16 ; slices covered by bijection: 0/16 ; unmatched blocks: 16
+    VERDICT: MISMATCH -- uncovered slices (lane,half): [(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (2, 1), (3, 0), (3, 1), (4, 0), (4, 1), (5, 0), (5, 1), (6, 0), (6, 1), (7, 0), (7, 1)]
+  /home/struktured/projects/dr_mario_rl/tmp/rtl_chain/ship/antibody-dist60-tuckreach/fw540_reachtap_dist_tuckreach_v1_a1ef31c8.hex :
+    blocks with >=1 slice match: 8/16 ; slices covered by bijection: 8/16 ; unmatched blocks: 8
+    VERDICT: MISMATCH -- uncovered slices (lane,half): [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1)]
+  netlist check: matched60[14] refs=45 vn_hit refs=34 h_waddr refs=327 dt_pen refs=95 dbest refs=213 lev_a_tgt refs=639
+  RESTORED fork: HEAD 18cf064 hex f78f1e93 qsf 701f6962 rtl-clean=yes
+  rbf md5 b64d8ea99b94aaac26dd64a3f12a52bd, staged in dr_mario_rl/tmp/rtl_chain/ship/antibody-dist60-v11/ (BUILD.md, proofs, verdict, MD5SUMS; NOT deployed)
