@@ -67,6 +67,13 @@ ARMS = {   # name: (flags json, overlays, expectation)
     "couch_fair_D":   ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1"},
                        "pass"),
+    # DRABORTSTALE (abort-stale lane): the fair candidate + the stale-search abort at the new-pill edge, couch and CvC.
+    # Must PASS, and additionally upload NO dead pill (see dead_pill_uploads below; the flag-off arms are only counted).
+    "couch_fair_D_abort": ("experiments/lateflip/couch_c960dd49_flags.json",
+                       {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
+                        "DRABORTSTALE": "1"}, "pass"),
+    "cvc_fair_abort": ("experiments/lateflip/cvc_3b8737a9_flags.json",
+                       {"DRLATEGUARD": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRABORTSTALE": "1"}, "pass"),
     "couch_464a4b75": ("experiments/lateflip/couch_c960dd49_flags.json", {"DRLATEGUARD": "1", "DRSTUDYEND": "1"}, "fail"),
     "couch_settle3_noguard": ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0",
@@ -448,9 +455,15 @@ def run_arm(name, frames, seed):
         else:
             act["pills_without_settle_upload"] += 1
     prev = -1
-    for lf, *_ in world.locks:
+    for lf, ca, cb, na_, nb_ in world.locks:
         st = min([s_ for s_ in world.starts if s_ > lf], default=10 ** 9)
-        act["gos_between_lock_and_next_edge"] += sum(1 for g in gos if lf < g[0] < st)
+        between = [g for g in gos if lf < g[0] < st]
+        act["gos_between_lock_and_next_edge"] += len(between)
+        # DEAD-PILL UPLOAD: a GO after this pill locked (before the next edge) that carries THIS pill's capsule and
+        # preview -- the stale-DONE path re-searching a capsule that no longer exists (a DRPRESTART GO in the same
+        # window carries the NEXT capsule = this pill's preview, so it is not counted unless all four colours collide).
+        act["dead_pill_uploads"] += sum(1 for g in between
+                                        if (g[1][128] & 3, g[1][129] & 3, g[1][130] & 3, g[1][131] & 3) == (ca, cb, na_, nb_))
     act["pills"] = world.pills; act["goes"] = copro.goes; act["stale_searches"] = copro.stale
     # ---------------- run B: the unmodified game, same world seed, the recorded pads replayed, no driver
     baseB = fresh_mem(seed)
@@ -492,10 +505,14 @@ def main():
             need.append("goes")
         missing = [k for k in need if act.get(k, 0) == 0]
         nbad = res["upload_mismatches"]
+        dead = act.get("dead_pill_uploads", 0)
+        abort_arm = ARMS[name][1].get("DRABORTSTALE") == "1"
         if res["expect"] == "pass":
-            good = (not res["diverged"]) and nbad == 0 and not missing
+            good = (not res["diverged"]) and nbad == 0 and not missing and not (abort_arm and dead)
             verdict = ("PASS" if good else "FAIL (diverged)" if res["diverged"] else
-                       f"FAIL ({nbad} wrong uploads)" if nbad else f"FAIL (unexercised: {missing})")
+                       f"FAIL ({nbad} wrong uploads)" if nbad else
+                       f"FAIL ({dead} dead-pill uploads with DRABORTSTALE)" if (abort_arm and dead) else
+                       f"FAIL (unexercised: {missing})")
         elif res["expect"] == "fail_upload":
             good = nbad > 0 and not res["diverged"]
             verdict = (f"KILLED ({nbad} wrong-pill uploads)" if good else
@@ -510,6 +527,7 @@ def main():
         d = res["first_divergence"]
         print(f"{name:24s} expect={res['expect']:11s} {verdict:34s} pills={act.get('pills', 0)} uploads_ok={act.get('uploads_checked', 0) - nbad} rounds={act.get('round_starts', 0)} "
               f"garbage={act.get('garbage', 0)} stale_edges={act.get('stale_armed_edges', 0)} goes={act.get('goes', 0)} "
+              f"dead_pill_uploads={dead} no_settle_upload={act.get('pills_without_settle_upload', 0)} "
               f"stores_changing_world={res['driver_stores_changing_world_ram']}"
               + (f" | first divergence f={d['frame']} {d['diff'][:3]} driver stores {d['driver_stores_near']}" if d else ""))
         if res["upload_mismatch_examples"]:
