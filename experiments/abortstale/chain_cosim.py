@@ -16,6 +16,8 @@ still RUNNING while the new board is uploaded and the GO's reset pulse lands. Su
         a whole game in ONE process. SCHED = "mesen:<lateflip log>" (GO frames of that Mesen run; the same pill
         order), "frac:<q>" (pill i uploaded at q * DONE(i-1)), "after:<frames>". --abort: the upload starts on
         schedule even if the previous search has not DONE'd (DRABORTSTALE); else it waits for DONE (today).
+  window FW_HEX TIMELINE.jsonl FRESH.jsonl OUT.jsonl --log <A-cart lateflip log> [--tail 2] [--wgap N] [-j J]
+        the abort arm restricted to its non-idle stretches (see cmd_window); records carry window / lead
   cmp   FRESH.jsonl OUT.jsonl      exact comparison vs the fresh reference (see classify())
 
 Every record: p, end DONE|ABORT, end_clk (master clocks since GO), raw [[clk, col, orient], ...] (every change the
@@ -170,6 +172,47 @@ def cmd_run(fw, tl, out, sched, abort, wgap, only, fresh=None):
     print(f"run: {len(R)} -> {out}")
 
 
+def cmd_window(fw, tl, fresh, out, log, wgap, j, tail=2):
+    """Abort-arm co-sim restricted to the stretches where the pipeline is NOT idle at GO. A pill is aborted-into when
+    its Mesen GO (DRABORTSTALE cart run `log`) comes before the previous pill's fresh DONE. Each cluster of such pills
+    runs in ONE process from the pill before the cluster (whose own GO found a DONE'd copro) through `tail` pills past
+    the last abort, on the Mesen GO schedule, aborting on schedule. Every other pill's GO finds a copro that DONE'd and
+    spins: the wait-mode chains measure that state (and the window's own lead-in / tail pills re-check it)."""
+    R = load_tl(tl)
+    Fr = {x["p"]: x for x in map(json.loads, open(fresh))}
+    gos = mesen_go_frames(log)
+    R = [r for r in R if r["p"] in gos]
+    idx = {r["p"]: i for i, r in enumerate(R)}
+    ab = [False] * len(R)
+    for i in range(1, len(R)):
+        gap = (gos[R[i]["p"]] - gos[R[i - 1]["p"]]) * FRAME
+        ab[i] = gap < Fr[R[i - 1]["p"]]["end_clk"] + 2 * FRAME     # +2 f: frame-quantised GO, decide in the sim
+    wins = []
+    for i in range(1, len(R)):
+        if not ab[i]:
+            continue
+        s0, e0 = i - 1, min(len(R) - 1, i + tail)
+        if wins and s0 <= wins[-1][1]:
+            wins[-1][1] = max(wins[-1][1], e0)
+        else:
+            wins.append([s0, e0])
+    jobs = []
+    for s0, e0 in wins:
+        lines = []
+        for k in range(s0, e0 + 1):
+            go_at = 0 if k == s0 else int(round((gos[R[k]["p"]] - gos[R[k - 1]["p"]]) * FRAME))
+            lines.append(f"{go_at} 1 {R[k]['upload']}")
+        jobs.append(([R[k]["p"] for k in range(s0, e0 + 1)], lines))
+    with ThreadPoolExecutor(j) as ex:
+        reps = list(ex.map(lambda x: sim(fw, x[1], wgap), jobs))
+    n = 0
+    with open(out, "w") as f:
+        for (ps, _), ds in zip(jobs, reps):
+            for k, (pp, d) in enumerate(zip(ps, ds)):
+                f.write(json.dumps(record(pp, d, window=[ps[0], ps[-1]], lead=(k == 0))) + "\n"); n += 1
+    print(f"window: {sum(ab)} aborted-into pills, {len(wins)} windows, {n} records -> {out}")
+
+
 def served(clk):
     """The frame (since GO) at which lateflip_probe.lua serves an event at `clk`: its schedule holds times rounded to
     0.01 f and serves an event once the integer frame count k >= t."""
@@ -249,6 +292,8 @@ if __name__ == "__main__":
         cmd_pairs(a[1], a[2], a[3], a[4], [float(x) for x in opt(rest, "--q", "0.3,0.6,0.9").split(",")], wgap, only, j)
     elif a[0] == "run":
         cmd_run(a[1], a[2], a[3], a[4], "--abort" in rest, wgap, only, opt(rest, "--fresh"))
+    elif a[0] == "window":
+        cmd_window(a[1], a[2], a[3], a[4], opt(rest, "--log"), wgap, j, opt(rest, "--tail", 2, int))
     elif a[0] == "cmp":
         sys.exit(1 if cmd_cmp(a[1], a[2]) else 0)
     else:

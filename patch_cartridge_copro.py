@@ -727,7 +727,12 @@ PROPHFIRST = _os.environ.get("DRPROPHFIRST", "0") == "1"
 # clears DONE and holds the copro 6502 + LeafEval in reset (CoproDrMario.sv), so no firmware or RTL change is needed.
 # MATURE's lock-while-armed disarm (SLAM_ARM <- 0) is applied here, before ARMED2 is cleared, so the slam state sees
 # what it sees today. Prestart-owned edges (PRE_ACT2 != 0: the running search IS for the new capsule) are untouched.
-# Evidence and the chained co-sim of the preemption: experiments/abortstale/.
+# ⚠ KNOWN RTL GAP this flag exercises more often (pre-existing: DRPRESTART's abort and the watchdog re-queue also GO into
+# a running search): the copro reset clears LeafEval's st/done/modes but not its other registers, and a reset that lands
+# in the MIDDLE of a LeafEval command can skew the next search's first BASE (chained co-sim, experiments/abortstale/
+# COSIM.txt: G2 pairs preempted at 50% change the next search's intermediate publishes on 3/115 with fw 1488e158, 0/115
+# with a1ef31c8, finals unchanged; at the measured couch abort points 51 aborts gave 0 decision changes). Fix = RTL or
+# firmware (a Quartus compile), not this flag. Evidence: experiments/abortstale/.
 ABORTSTALE = _os.environ.get("DRABORTSTALE", "0") == "1"
 if PROPHHOLD or LEDGECOMMIT or PROPHFIRST:
     assert PROPH and ROTFIX, "DRPROPHHOLD / DRLEDGECOMMIT / DRPROPHFIRST act on DRPROPH-armed pills of the DRROTFIX driver"

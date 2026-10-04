@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
+#include "dump_lev.inc"   // generated: every LeafEval register (experiments/abortstale, diagnostic only)
 
 static VCoproDrMario* t;
 static long clocks = 0;
@@ -26,7 +27,17 @@ static void tick() {
     bool lo = (ab >> 12) == 0, st = (ab >> 8) == 0x61;
     if (!rst && levn < 400) {
       int go = r->CoproDrMario__DOT__lev_cmd_go, stt = r->CoproDrMario__DOT__lev_start, dn = r->CoproDrMario__DOT__lev_done;
-      if (go || stt) { printf("LEV %ld go %s cmd=%d slot=%d\n", clocks - track_go, go ? "cmd" : "leaf", (int)(r->CoproDrMario__DOT__DO & 15), (int)r->CoproDrMario__DOT__lev_a_sl); levn++; }
+      if (go || stt) {
+        printf("LEV %ld go %s cmd=%d slot=%d\n", clocks - track_go, go ? "cmd" : "leaf", (int)(r->CoproDrMario__DOT__DO & 15), (int)r->CoproDrMario__DOT__lev_a_sl); levn++;
+        if (levn < 12) {      // engine state at the first commands: CUR cells + links, and the 4 slots
+          printf("ENG %ld cur ", clocks - track_go);
+          for (int i = 0; i < 128; i++) printf("%d%d", (int)r->CoproDrMario__DOT__leafeval__DOT__bcell[i], (int)r->CoproDrMario__DOT__leafeval__DOT__blink[i]);
+          printf(" slots ");
+          for (int i = 0; i < 512; i++) printf("%02x", (int)r->CoproDrMario__DOT__leafeval__DOT__slotram__DOT__mem[i]);
+          printf("\n");
+          printf("REG %ld", clocks - track_go); dump_lev(r);
+        }
+      }
       if (dn && !lev_done_prev) { printf("LEV %ld done\n", clocks - track_go); levn++; }
       lev_done_prev = dn;
     }
