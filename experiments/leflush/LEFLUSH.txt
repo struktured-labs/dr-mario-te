@@ -20,7 +20,8 @@
 - No preemption: finals, tucks and publish values identical to V1 on all 335 co-sim boards (on 9 a publish is seen one
   poll later, 3,264 clocks = 0.0023 f, same Mesen frame; 1488+flush vs 1488e158: 3/116 likewise) and on 264 py65 boards; Mesen replay on the abort cart == A+V1 exactly
   (G2 113/1/21.5, G3 85/0, G4 133/0, 0 landing and 0 GO-frame differences).
-- rbf seed 21: copro +0.364 ns, pll_hdmi -0.058 ns (bar -0.062), ALMs 37737; 16/16 bijection; md5 b64d8ea9.
+- rbf: RECOMMENDED seed 3 (copro +0.453 ns, pll_hdmi -0.023 ns, md5 43aa62d5); backup seed 21 (+0.364 / -0.058, md5
+  b64d8ea9); seed 7 +0.299 / -0.051. 16/16 bijection on every seed (section 9).
 
 ## 1. which registers survive the reset, and which of them can reach a result  (enumerate_regs.py, gen_poison.py)
   registers surviving the GO reset: 180 (LeafEval 171, CoproDrMario engine args 9); cleared by the reset (not counted): st, done, sl_cpw, base_mode, delta_mode, dv_fallback, h_wr, lev_a_tgt
@@ -266,3 +267,11 @@ poison arms:
   netlist check: matched60[14] refs=45 vn_hit refs=34 h_waddr refs=327 dt_pen refs=95 dbest refs=213 lev_a_tgt refs=639
   RESTORED fork: HEAD 18cf064 hex f78f1e93 qsf 701f6962 rtl-clean=yes
   rbf md5 b64d8ea99b94aaac26dd64a3f12a52bd, staged in dr_mario_rl/tmp/rtl_chain/ship/antibody-dist60-v11/ (BUILD.md, proofs, verdict, MD5SUMS; NOT deployed)
+
+## 9. seed sweep (follow-up: pll_hdmi had 4 ps of margin at seed 21) -- same fw c51d2e21, RTL 3b164c7, qsf a7a0ce8b + SEED
+  seed | rbf md5                          | copro (>= +0.10) | pll_hdmi (>= -0.062) | worst-case margin | ALMs  | fw 16/16 | staged
+  3    | 43aa62d5712c7a28e9ce42c56387fdaf | +0.453           | -0.023               | +0.039 (pll_hdmi) | 37571 | yes      | RECOMMENDED
+  21   | b64d8ea99b94aaac26dd64a3f12a52bd | +0.364           | -0.058               | +0.004 (pll_hdmi) | 37737 | yes      | backup
+  7    | 527e8dd6b990f38e575d23a96024e65e | +0.299           | -0.051               | +0.011 (pll_hdmi) | 37625 | yes      | fit dir only
+  Seed 9 not run (seed 3 beats seed 21 and reaches the preferred pll_hdmi >= -0.040). Every seed: SHIP AS-IS, controls
+  1488e158 (0/16) and V1 a1ef31c8 (high-half slices only) MISMATCH, fork tree restored (18cf064 / f78f1e93 / rtl clean).

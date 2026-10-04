@@ -4,7 +4,7 @@
 # FW-in-image bijection == the staged fw AND both controls MISMATCH (DIST60 1488e158; V1 a1ef31c8, which differs only in
 # the reset stub), RTL commit 3b164c7, the 5 macros, the HSV / fallback / DRDIST logic present in the netlist, and the
 # paired carts at their md5s: couch b1b57638 (fair kit D + DRABORTSTALE) and CvC 821cafdb (CvC fair + DRABORTSTALE).
-#   stage_rbf.sh <seed> <fw-md5>
+#   stage_rbf.sh <seed> <fw-md5>     (several seeds can be staged side by side: proofs are named seed<N>_*)
 set -u
 SEED="${1:?seed}"; FWMD5="${2:?fw md5}"
 SHIPD=/home/struktured/projects/dr_mario_rl/tmp/rtl_chain/ship
@@ -28,7 +28,7 @@ done
 mkdir -p "$S"
 RBF=NES_antibody_dist60_v11_seed${SEED}_$(date +%Y%m%d).rbf
 cp "$A/NES.rbf" "$S/$RBF"
-for f in FW_IN_IMAGE_PROOF.txt verdict.txt NES.qsf.used NETLIST_CHECK.txt manifest.json; do cp "$A/$f" "$S/$f"; done
+for f in FW_IN_IMAGE_PROOF.txt verdict.txt NES.qsf.used NETLIST_CHECK.txt manifest.json; do cp "$A/$f" "$S/seed${SEED}_$f"; done
 cp "$A/copro_rom.hex" "$S/fw540_reachtap_dist_tuckreach_leflush_${FWMD5:0:8}.hex"
 cp "$COUCH" "$S/drmario_te_couch_fair_abort_b1b57638.nes"
 cp "$CVC" "$S/drmario_cvc_fair_abort_821cafdb.nes"
