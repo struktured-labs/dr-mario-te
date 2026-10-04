@@ -70,7 +70,13 @@ def record(p, d, **extra):
                 tuck=d["tuck"], **extra)
 
 
+PAUSE = os.environ.get("COSIM_PAUSE", "/home/struktured/projects/dr_mario_rl/tmp/abort_stale/PAUSE")
+
+
 def sim(fw, lines, wgap=0):
+    import time
+    while os.path.exists(PAUSE):          # shared-box pause switch: start no new co-sim while it exists
+        time.sleep(5)
     simdir = os.path.dirname(os.path.abspath(fw))
     assert os.path.basename(fw) == "copro_rom.hex", "FW_HEX must be a .../copro_rom.hex (the RTL $readmemh's it)"
     proc = subprocess.run(["nice", "-n", "19", VSIM, "64", str(wgap), "0"], cwd=simdir,

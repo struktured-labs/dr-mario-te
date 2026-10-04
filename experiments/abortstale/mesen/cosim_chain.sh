@@ -12,7 +12,7 @@ for g in ${GAMES:-G2 G3 G4}; do
   for fw in 1488e158 a1ef31c8; do
     case $fw in 1488e158) T=$TL/pubtrace_${g}_fw1488e158.jsonl; a=1488;; a1ef31c8) T=$TL/pubtrace_${g}_fwa1ef31c8_fwlane.jsonl; a=V1;; esac
     for mode in ${MODES:-wait abort}; do
-      case $mode in wait) log=$RUNS/${g}_D$a/lateflip_${g}_D$a.log; ab="";; abort) log=$RUNS/${g}_A$a/lateflip_${g}_A$a.log; ab=--abort;; esac
+      case $mode in wait) log=$RUNS/${g}_D$a/lateflip_${g}_D$a.log; ab=--wait;; abort) log=$RUNS/${g}_A$a/lateflip_${g}_A$a.log; ab=--abort;; esac
       echo "$g $fw $mode $T $log $ab"
     done
   done
