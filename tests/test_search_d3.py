@@ -1106,6 +1106,16 @@ def attach_engine_emu(cpu):
             st["slots"][st["sl"] & 3] = list(cur); base[LEV_GO] = 1
         elif cmd == 1:
             sco, win = leaf_of(cur); post(1, 0, 0, sco, win)
+        elif cmd == 7:
+            # CMD 7 (DELTA) is modelled ONLY for an ILLEGAL landing: the DRLEFLUSH stub's flush (horizontal at column 7,
+            # build_copro_d3). Its entry zeroes legal / rv_cells / rv_vir / imm / dv_fallback and S_FO1 exits without
+            # touching CUR, sco or win. A LEGAL CMD 7 is the RTL delta engine (child leaf from the CMD 6 base), which this
+            # emulator does not model (the py65 gates run the non-delta build): refuse loudly instead of ignoring it.
+            o4, col = st["o4"] & 3, st["col"] & 7
+            if _landing(cur, 0 if o4 < 2 else 1, col) is not None:
+                raise NotImplementedError("attach_engine_emu: a legal CMD 7 (the RTL delta engine) is not modelled")
+            base[LEV_LEGAL] = 0; base[LEV_RVC] = 0; base[LEV_RVV] = 0; base[LEV_IMM] = 0; base[LEV_IMM + 1] = 0
+            base[LEV_DVFB] = 0; base[LEV_GO] = 1
         elif cmd == 4:
             o4, col = st["o4"] & 3, st["col"] & 7
             orient = 0 if o4 < 2 else 1

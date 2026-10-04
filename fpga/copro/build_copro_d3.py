@@ -392,13 +392,32 @@ def build_image(board, cA, cB, nA, nB):
             assert TUCK_V3_ROM + len(tuck_v3_code) <= DT.DIST_ROM, "tuck_v3 overruns the dist routine"
         assert not tuck_code, "dist routine shares the v1 EMIT_TUCK window"
 
+    # DRLEFLUSH (2026-10-04, abort-stale RTL reset gap): the GO reset clears LeafEval's st/done/sl_cpw/base_mode/
+    # delta_mode/dv_fallback only. Every other engine register keeps the value the previous search left, and ONE of them
+    # is read before it is written by a later command: `dphase` (the CMD 7 rdy/vrdy rescore phase), which S_VSPAN_D
+    # tests on EVERY per-virus walk -- LEAF (1), NODE (4) and BASE (6) included. A completed search always leaves it 0
+    # (S_DADV clears it before the delta's setup windows), but a GO that lands MID CMD 7 leaves it 1 or 2, and the next
+    # search's first BASE then detours into the delta rescore path at its first virus (measured: G2 p27 -> p28, BASE 241
+    # clocks instead of 1,590, base_holes 0x17 instead of 0x16). CMD 7 ENTRY writes dphase := 0 (plus the delta
+    # accumulators), so the flush is a CMD 7 whose landing is ILLEGAL by construction -- horizontal (o4 = 2) at column 7
+    # -- which exits from S_FO1 (<= 17 clocks, column-7 walk) without placing, resolving or touching CUR. It is ISSUED
+    # first and POLLED only after the pill-table copy (~220 clocks), so the poll always finds DONE on its first read:
+    # constant cost whatever the stale board. Default 0 emits nothing (byte-identical firmware).
+    # Register enumeration + proofs: experiments/leflush/.
+    leflush = int(os.environ.get("DRLEFLUSH", "0"))
     stub = Asm6502(STUB)
     stub.ins("SEI"); stub.ins("CLD")
+    if leflush:
+        stub.ins("LDA_imm", 2); stub.ins16("STA_abs", D3.LEV_A_O4)      # horizontal ...
+        stub.ins("LDA_imm", 7); stub.ins16("STA_abs", D3.LEV_A_COL)     # ... at column 7: illegal landing
+        stub.ins16("STA_abs", D3.LEV_CMD)                               # CMD 7 (A = 7): its entry clears dphase
     stub.ins("LDX_imm", 0xFF); stub.ins("TXS")
     stub.ins("LDX_imm", 15)                     # PILLA[8]+PILLB[8] ROM -> $09C0 RAM
     stub.label("cp2")
     stub.ins16("LDA_absX", PILL_ROM); stub.ins16("STA_absX", PILLA)
     stub.ins("DEX"); stub.br("BPL", "cp2")
+    if leflush:
+        stub.label("lfp"); stub.ins16("LDA_abs", D3.LEV_GO); stub.br("BEQ", "lfp")   # DONE long since: one read
     if EMIT_TUCK or EMIT_TUCK_V3 or EMIT_TUCK_BFS:
         # descriptor defaults BEFORE the search: wiring $5087/$5088 in CoproDrMario turned
         # them from a scratch alias into real copro RAM, so an uninitialised pair would make

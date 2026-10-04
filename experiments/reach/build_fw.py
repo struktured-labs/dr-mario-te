@@ -12,11 +12,12 @@ rootord = sys.argv[7] if len(sys.argv) > 7 else "0"         # DRROOTORD (two-pas
 tucklive = sys.argv[8] if len(sys.argv) > 8 else "0"        # DRTUCKLIVE (tuck enumerator reads the LIVE board, not stale CUR)
 tlat = sys.argv[9] if len(sys.argv) > 9 else "19"           # DRREACH_TLAT: reach-mask answer latency (19 pinned cart, 13 fair)
 g0 = sys.argv[10] if len(sys.argv) > 10 else "8"             # DRREACH_G0: reach-mask first gravity frame (8 pinned cart, 3 fair)
+leflush = sys.argv[11] if len(sys.argv) > 11 else "0"        # DRLEFLUSH: the stub flushes LeafEval's stale CMD 7 phase (abort-stale)
 os.environ.update({"DRSTRAND": "20", "DRCHAIN": chain, "DRCOPRO_ARM": "1", "DRFIX": "1",
                    "DRCOPRO_TUCKBFS": "1", "DRCOPRO_TUCKBFS_TIER3": "1", "DRCOPRO_TUCKV3_THETA": "400",
                    "DRDBLCANON": "1", "DRCOPRO_TUCKV3_FIXSLOT": "1", "DRVETO": "1", "DRREACH": reach, "DRREACHTAP": reachtap,
                    "DRDIST": dist, "DRTUCKREACH": tuckreach, "DRROOTORD": rootord, "DRTUCKLIVE": tucklive,
-                   "DRREACH_TLAT": tlat, "DRREACH_G0": g0})
+                   "DRREACH_TLAT": tlat, "DRREACH_G0": g0, "DRLEFLUSH": leflush})
 for m in ("test_search_d3", "tuck_v3", "build_copro_d3"):
     sys.modules.pop(m, None)
 sys.path.insert(0, COPRO)
