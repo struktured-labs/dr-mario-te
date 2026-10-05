@@ -1,0 +1,4286 @@
+{
+ "games": [
+  {
+   "game": "m1g1",
+   "build": "FAIR",
+   "match": 1,
+   "g": 1,
+   "rec": 1,
+   "log": "AI full clear, owner 17 / AI 0",
+   "t_round": 1.75,
+   "t0_first_spawn": 4.05,
+   "t_end": 326.5833,
+   "dur_s": 322.5,
+   "ai_placements": 184,
+   "owner_placements": 126,
+   "hidden_spawns_ai": 21,
+   "hidden_spawns_owner": 15,
+   "mech_gate_ai": {
+    "steps": 183,
+    "exact": 169,
+    "garbage": 12,
+    "unexplained": 2
+   },
+   "mech_gate_owner": {
+    "steps": 125,
+    "exact": 100,
+    "garbage": 18,
+    "unexplained": 7
+   },
+   "final_virus_owner": 17,
+   "final_virus_ai": 0,
+   "layout": {
+    "viruses": 48,
+    "top_virus_row": 6,
+    "viruses_rows_le_8": 11,
+    "viruses_cols34": 13,
+    "viruses_cols34_rows_le_8": 2
+   },
+   "ai_first_send_s": 3.667,
+   "owner_first_recv_s": 6.6,
+   "ai_sent_sizes": {
+    "2": 22,
+    "3": 7
+   },
+   "owner_recv_sizes": {
+    "1": 2,
+    "2": 13,
+    "3": 2,
+    "4": 1,
+    "5": 1
+   },
+   "rom_column_rule_owner_recv": {
+    "conform": 11,
+    "violate": 0
+   },
+   "sender_receiver_match": {
+    "sent": 29,
+    "assigned_to_a_volley": 20,
+    "in_flight_at_end": 9,
+    "recv_volleys": 19,
+    "recv_size_eq_min(sum,4)": 16,
+    "recv_with_merged_sends": 1,
+    "recv_unmatched": 0,
+    "recv_unexplained": 6,
+    "lag_s_median": 3.3
+   },
+   "windows": {
+    "30": {
+     "window_s": 30,
+     "covered_s": 30.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 4,
+     "ai_sent_cells": 8,
+     "ai_sent_volleys_per_min": 8.0,
+     "ai_sent_cells_per_min": 16.0,
+     "owner_recv_volleys": 4,
+     "owner_recv_cells": 8,
+     "owner_recv_volleys_per_min": 8.0,
+     "ai_pills": 17,
+     "ai_pills_per_min": 34.0,
+     "ai_viruses_cleared": 16,
+     "ai_viruses_per_min": 32.0,
+     "ai_combo_placements": 4,
+     "owner_pills": 14,
+     "owner_pills_per_min": 28.0,
+     "owner_viruses_cleared": 7,
+     "owner_viruses_per_min": 14.0,
+     "owner_sent_volleys": 2,
+     "owner_sent_cells": 4
+    },
+    "60": {
+     "window_s": 60,
+     "covered_s": 60.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 5,
+     "ai_sent_cells": 10,
+     "ai_sent_volleys_per_min": 5.0,
+     "ai_sent_cells_per_min": 10.0,
+     "owner_recv_volleys": 5,
+     "owner_recv_cells": 10,
+     "owner_recv_volleys_per_min": 5.0,
+     "ai_pills": 37,
+     "ai_pills_per_min": 37.0,
+     "ai_viruses_cleared": 24,
+     "ai_viruses_per_min": 24.0,
+     "ai_combo_placements": 5,
+     "owner_pills": 30,
+     "owner_pills_per_min": 30.0,
+     "owner_viruses_cleared": 11,
+     "owner_viruses_per_min": 11.0,
+     "owner_sent_volleys": 3,
+     "owner_sent_cells": 6
+    },
+    "120": {
+     "window_s": 120,
+     "covered_s": 120.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 10,
+     "ai_sent_cells": 21,
+     "ai_sent_volleys_per_min": 5.0,
+     "ai_sent_cells_per_min": 10.5,
+     "owner_recv_volleys": 9,
+     "owner_recv_cells": 19,
+     "owner_recv_volleys_per_min": 4.5,
+     "ai_pills": 77,
+     "ai_pills_per_min": 38.5,
+     "ai_viruses_cleared": 39,
+     "ai_viruses_per_min": 19.5,
+     "ai_combo_placements": 10,
+     "owner_pills": 52,
+     "owner_pills_per_min": 26.0,
+     "owner_viruses_cleared": 17,
+     "owner_viruses_per_min": 8.5,
+     "owner_sent_volleys": 3,
+     "owner_sent_cells": 6
+    },
+    "all": {
+     "window_s": 1000000000.0,
+     "covered_s": 322.5,
+     "game_shorter": true,
+     "ai_sent_volleys": 29,
+     "ai_sent_cells": 65,
+     "ai_sent_volleys_per_min": 5.39,
+     "ai_sent_cells_per_min": 12.09,
+     "owner_recv_volleys": 19,
+     "owner_recv_cells": 43,
+     "owner_recv_volleys_per_min": 3.53,
+     "ai_pills": 184,
+     "ai_pills_per_min": 34.23,
+     "ai_viruses_cleared": 48,
+     "ai_viruses_per_min": 8.93,
+     "ai_combo_placements": 29,
+     "owner_pills": 126,
+     "owner_pills_per_min": 23.44,
+     "owner_viruses_cleared": 31,
+     "owner_viruses_per_min": 5.77,
+     "owner_sent_volleys": 12,
+     "owner_sent_cells": 25
+    }
+   },
+   "death": {
+    "owner": {
+     "t_last_throw": 326.5333,
+     "t_last_placement": 324.3,
+     "last_landing": [
+      "H",
+      11,
+      3,
+      [
+       2,
+       3
+      ]
+     ],
+     "heights_at_death": [
+      11,
+      4,
+      7,
+      5,
+      5,
+      14,
+      11,
+      16
+     ],
+     "max_h": 16,
+     "h34": [
+      5,
+      5
+     ],
+     "virus_final": 17,
+     "cells": 61,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 11,
+     "garbage_cells_into_cols34_all_game": 11
+    },
+    "ai": {
+     "t_last_throw": 326.5333,
+     "t_last_placement": 324.4833,
+     "last_landing": [
+      "V",
+      11,
+      7,
+      [
+       3,
+       3
+      ]
+     ],
+     "heights_at_death": [
+      4,
+      3,
+      2,
+      1,
+      1,
+      1,
+      3,
+      5
+     ],
+     "max_h": 5,
+     "h34": [
+      1,
+      1
+     ],
+     "virus_final": 1,
+     "cells": 20,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       11,
+       7,
+       3
+      ],
+      [
+       12,
+       7,
+       3
+      ],
+      [
+       13,
+       7,
+       3
+      ],
+      [
+       14,
+       7,
+       3
+      ],
+      [
+       15,
+       7,
+       3
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 6,
+     "garbage_cells_into_cols34_all_game": 6
+    }
+   }
+  },
+  {
+   "game": "m1g2",
+   "build": "FAIR",
+   "match": 1,
+   "g": 2,
+   "rec": 1,
+   "log": "owner tapped out 25 / 5",
+   "t_round": 350.4833,
+   "t0_first_spawn": 352.7833,
+   "t_end": 589.2333,
+   "dur_s": 236.4,
+   "ai_placements": 132,
+   "owner_placements": 99,
+   "hidden_spawns_ai": 14,
+   "hidden_spawns_owner": 9,
+   "mech_gate_ai": {
+    "steps": 131,
+    "exact": 122,
+    "garbage": 9,
+    "unexplained": 0
+   },
+   "mech_gate_owner": {
+    "steps": 98,
+    "exact": 78,
+    "garbage": 19,
+    "unexplained": 1
+   },
+   "final_virus_owner": 25,
+   "final_virus_ai": 5,
+   "layout": {
+    "viruses": 48,
+    "top_virus_row": 6,
+    "viruses_rows_le_8": 11,
+    "viruses_cols34": 14,
+    "viruses_cols34_rows_le_8": 3
+   },
+   "ai_first_send_s": 2.8,
+   "owner_first_recv_s": 5.9,
+   "ai_sent_sizes": {
+    "2": 19,
+    "3": 3
+   },
+   "owner_recv_sizes": {
+    "2": 16,
+    "3": 3,
+    "6": 1
+   },
+   "rom_column_rule_owner_recv": {
+    "conform": 17,
+    "violate": 0
+   },
+   "sender_receiver_match": {
+    "sent": 22,
+    "assigned_to_a_volley": 20,
+    "in_flight_at_end": 2,
+    "recv_volleys": 20,
+    "recv_size_eq_min(sum,4)": 18,
+    "recv_with_merged_sends": 1,
+    "recv_unmatched": 1,
+    "recv_unexplained": 0,
+    "lag_s_median": 3.33
+   },
+   "windows": {
+    "30": {
+     "window_s": 30,
+     "covered_s": 30.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 2,
+     "ai_sent_cells": 4,
+     "ai_sent_volleys_per_min": 4.0,
+     "ai_sent_cells_per_min": 8.0,
+     "owner_recv_volleys": 2,
+     "owner_recv_cells": 4,
+     "owner_recv_volleys_per_min": 4.0,
+     "ai_pills": 21,
+     "ai_pills_per_min": 42.0,
+     "ai_viruses_cleared": 19,
+     "ai_viruses_per_min": 38.0,
+     "ai_combo_placements": 3,
+     "owner_pills": 17,
+     "owner_pills_per_min": 34.0,
+     "owner_viruses_cleared": 9,
+     "owner_viruses_per_min": 18.0,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "60": {
+     "window_s": 60,
+     "covered_s": 60.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 4,
+     "ai_sent_cells": 8,
+     "ai_sent_volleys_per_min": 4.0,
+     "ai_sent_cells_per_min": 8.0,
+     "owner_recv_volleys": 4,
+     "owner_recv_cells": 8,
+     "owner_recv_volleys_per_min": 4.0,
+     "ai_pills": 39,
+     "ai_pills_per_min": 39.0,
+     "ai_viruses_cleared": 25,
+     "ai_viruses_per_min": 25.0,
+     "ai_combo_placements": 4,
+     "owner_pills": 29,
+     "owner_pills_per_min": 29.0,
+     "owner_viruses_cleared": 15,
+     "owner_viruses_per_min": 15.0,
+     "owner_sent_volleys": 2,
+     "owner_sent_cells": 4
+    },
+    "120": {
+     "window_s": 120,
+     "covered_s": 120.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 8,
+     "ai_sent_cells": 17,
+     "ai_sent_volleys_per_min": 4.0,
+     "ai_sent_cells_per_min": 8.5,
+     "owner_recv_volleys": 8,
+     "owner_recv_cells": 17,
+     "owner_recv_volleys_per_min": 4.0,
+     "ai_pills": 72,
+     "ai_pills_per_min": 36.0,
+     "ai_viruses_cleared": 37,
+     "ai_viruses_per_min": 18.5,
+     "ai_combo_placements": 8,
+     "owner_pills": 56,
+     "owner_pills_per_min": 28.0,
+     "owner_viruses_cleared": 21,
+     "owner_viruses_per_min": 10.5,
+     "owner_sent_volleys": 5,
+     "owner_sent_cells": 14
+    },
+    "all": {
+     "window_s": 1000000000.0,
+     "covered_s": 236.4,
+     "game_shorter": true,
+     "ai_sent_volleys": 22,
+     "ai_sent_cells": 47,
+     "ai_sent_volleys_per_min": 5.58,
+     "ai_sent_cells_per_min": 11.93,
+     "owner_recv_volleys": 20,
+     "owner_recv_cells": 47,
+     "owner_recv_volleys_per_min": 5.08,
+     "ai_pills": 132,
+     "ai_pills_per_min": 33.5,
+     "ai_viruses_cleared": 43,
+     "ai_viruses_per_min": 10.91,
+     "ai_combo_placements": 22,
+     "owner_pills": 99,
+     "owner_pills_per_min": 25.12,
+     "owner_viruses_cleared": 23,
+     "owner_viruses_per_min": 5.84,
+     "owner_sent_volleys": 9,
+     "owner_sent_cells": 22
+    }
+   },
+   "death": {
+    "owner": {
+     "t_last_throw": 589.1833,
+     "t_last_placement": 588.8333,
+     "last_landing": [
+      "H",
+      0,
+      3,
+      [
+       2,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      14,
+      10,
+      12,
+      16,
+      16,
+      15,
+      5,
+      6
+     ],
+     "max_h": 16,
+     "h34": [
+      16,
+      16
+     ],
+     "virus_final": 25,
+     "cells": 80,
+     "plug": [
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [
+      [
+       0,
+       3,
+       "linked"
+      ],
+      [
+       0,
+       4,
+       "linked"
+      ]
+     ],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 12,
+     "garbage_cells_into_cols34_all_game": 12
+    },
+    "ai": {
+     "t_last_throw": 589.1833,
+     "t_last_placement": 589.0667,
+     "last_landing": [
+      "H",
+      0,
+      3,
+      [
+       2,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      3,
+      3,
+      2,
+      16,
+      8,
+      8,
+      6,
+      4
+     ],
+     "max_h": 16,
+     "h34": [
+      16,
+      8
+     ],
+     "virus_final": 5,
+     "cells": 38,
+     "plug": [
+      [
+       0,
+       3
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [
+      [
+       0,
+       3,
+       "linked"
+      ]
+     ],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 4,
+     "garbage_cells_into_cols34_all_game": 4
+    }
+   }
+  },
+  {
+   "game": "m2g1",
+   "build": "FAIR2",
+   "match": 2,
+   "g": 1,
+   "rec": 2,
+   "log": "owner tapped out 42 / 27",
+   "t_round": 44.4167,
+   "t0_first_spawn": 46.7,
+   "t_end": 118.2667,
+   "dur_s": 71.6,
+   "ai_placements": 47,
+   "owner_placements": 40,
+   "hidden_spawns_ai": 7,
+   "hidden_spawns_owner": 6,
+   "mech_gate_ai": {
+    "steps": 46,
+    "exact": 45,
+    "garbage": 1,
+    "unexplained": 0
+   },
+   "mech_gate_owner": {
+    "steps": 39,
+    "exact": 33,
+    "garbage": 6,
+    "unexplained": 0
+   },
+   "final_virus_owner": 41,
+   "final_virus_ai": 28,
+   "layout": {
+    "viruses": 48,
+    "top_virus_row": 6,
+    "viruses_rows_le_8": 13,
+    "viruses_cols34": 14,
+    "viruses_cols34_rows_le_8": 5
+   },
+   "ai_first_send_s": 15.25,
+   "owner_first_recv_s": 17.55,
+   "ai_sent_sizes": {
+    "2": 7
+   },
+   "owner_recv_sizes": {
+    "2": 6
+   },
+   "rom_column_rule_owner_recv": {
+    "conform": 6,
+    "violate": 0
+   },
+   "sender_receiver_match": {
+    "sent": 7,
+    "assigned_to_a_volley": 6,
+    "in_flight_at_end": 1,
+    "recv_volleys": 6,
+    "recv_size_eq_min(sum,4)": 6,
+    "recv_with_merged_sends": 0,
+    "recv_unmatched": 0,
+    "recv_unexplained": 0,
+    "lag_s_median": 2.57
+   },
+   "windows": {
+    "30": {
+     "window_s": 30,
+     "covered_s": 30.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 3,
+     "ai_sent_cells": 6,
+     "ai_sent_volleys_per_min": 6.0,
+     "ai_sent_cells_per_min": 12.0,
+     "owner_recv_volleys": 2,
+     "owner_recv_cells": 4,
+     "owner_recv_volleys_per_min": 4.0,
+     "ai_pills": 21,
+     "ai_pills_per_min": 42.0,
+     "ai_viruses_cleared": 9,
+     "ai_viruses_per_min": 18.0,
+     "ai_combo_placements": 3,
+     "owner_pills": 17,
+     "owner_pills_per_min": 34.0,
+     "owner_viruses_cleared": 5,
+     "owner_viruses_per_min": 10.0,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "60": {
+     "window_s": 60,
+     "covered_s": 60.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 6,
+     "ai_sent_cells": 12,
+     "ai_sent_volleys_per_min": 6.0,
+     "ai_sent_cells_per_min": 12.0,
+     "owner_recv_volleys": 6,
+     "owner_recv_cells": 12,
+     "owner_recv_volleys_per_min": 6.0,
+     "ai_pills": 41,
+     "ai_pills_per_min": 41.0,
+     "ai_viruses_cleared": 18,
+     "ai_viruses_per_min": 18.0,
+     "ai_combo_placements": 6,
+     "owner_pills": 30,
+     "owner_pills_per_min": 30.0,
+     "owner_viruses_cleared": 7,
+     "owner_viruses_per_min": 7.0,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "120": {
+     "window_s": 120,
+     "covered_s": 71.6,
+     "game_shorter": true,
+     "ai_sent_volleys": 7,
+     "ai_sent_cells": 14,
+     "ai_sent_volleys_per_min": 5.87,
+     "ai_sent_cells_per_min": 11.74,
+     "owner_recv_volleys": 6,
+     "owner_recv_cells": 12,
+     "owner_recv_volleys_per_min": 5.03,
+     "ai_pills": 47,
+     "ai_pills_per_min": 39.4,
+     "ai_viruses_cleared": 20,
+     "ai_viruses_per_min": 16.77,
+     "ai_combo_placements": 7,
+     "owner_pills": 40,
+     "owner_pills_per_min": 33.54,
+     "owner_viruses_cleared": 7,
+     "owner_viruses_per_min": 5.87,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "all": {
+     "window_s": 1000000000.0,
+     "covered_s": 71.6,
+     "game_shorter": true,
+     "ai_sent_volleys": 7,
+     "ai_sent_cells": 14,
+     "ai_sent_volleys_per_min": 5.87,
+     "ai_sent_cells_per_min": 11.74,
+     "owner_recv_volleys": 6,
+     "owner_recv_cells": 12,
+     "owner_recv_volleys_per_min": 5.03,
+     "ai_pills": 47,
+     "ai_pills_per_min": 39.4,
+     "ai_viruses_cleared": 20,
+     "ai_viruses_per_min": 16.77,
+     "ai_combo_placements": 7,
+     "owner_pills": 40,
+     "owner_pills_per_min": 33.54,
+     "owner_viruses_cleared": 7,
+     "owner_viruses_per_min": 5.87,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    }
+   },
+   "death": {
+    "owner": {
+     "t_last_throw": 118.2167,
+     "t_last_placement": 117.8833,
+     "last_landing": [
+      "H",
+      0,
+      3,
+      [
+       1,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      10,
+      14,
+      15,
+      16,
+      16,
+      15,
+      10,
+      11
+     ],
+     "max_h": 16,
+     "h34": [
+      16,
+      16
+     ],
+     "virus_final": 41,
+     "cells": 79,
+     "plug": [
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [
+      [
+       0,
+       3,
+       "linked"
+      ],
+      [
+       0,
+       4,
+       "linked"
+      ]
+     ],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 3,
+     "garbage_cells_into_cols34_all_game": 3
+    },
+    "ai": {
+     "t_last_throw": 118.2167,
+     "t_last_placement": 114.75,
+     "last_landing": [
+      "H",
+      1,
+      3,
+      [
+       1,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      7,
+      10,
+      4,
+      5,
+      3,
+      12,
+      6,
+      7
+     ],
+     "max_h": 12,
+     "h34": [
+      5,
+      3
+     ],
+     "virus_final": 28,
+     "cells": 44,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       11,
+       3,
+       1
+      ],
+      [
+       12,
+       2,
+       3
+      ],
+      [
+       12,
+       3,
+       1
+      ],
+      [
+       13,
+       3,
+       1
+      ],
+      [
+       14,
+       3,
+       1
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 0,
+     "garbage_cells_into_cols34_all_game": 0
+    }
+   }
+  },
+  {
+   "game": "m2g2",
+   "build": "FAIR2",
+   "match": 2,
+   "g": 2,
+   "rec": 2,
+   "log": "owner topped out 32 / AI 1 (logged as a full clear; the recording shows 1 virus left)",
+   "t_round": 150.85,
+   "t0_first_spawn": 153.15,
+   "t_end": 353.3833,
+   "dur_s": 200.2,
+   "ai_placements": 119,
+   "owner_placements": 100,
+   "hidden_spawns_ai": 17,
+   "hidden_spawns_owner": 12,
+   "mech_gate_ai": {
+    "steps": 118,
+    "exact": 112,
+    "garbage": 6,
+    "unexplained": 0
+   },
+   "mech_gate_owner": {
+    "steps": 99,
+    "exact": 80,
+    "garbage": 19,
+    "unexplained": 0
+   },
+   "final_virus_owner": 31,
+   "final_virus_ai": 1,
+   "layout": {
+    "viruses": 48,
+    "top_virus_row": 6,
+    "viruses_rows_le_8": 16,
+    "viruses_cols34": 13,
+    "viruses_cols34_rows_le_8": 5
+   },
+   "ai_first_send_s": 17.667,
+   "owner_first_recv_s": 3.217,
+   "ai_sent_sizes": {
+    "2": 16,
+    "3": 1
+   },
+   "owner_recv_sizes": {
+    "2": 16,
+    "3": 2,
+    "4": 1
+   },
+   "rom_column_rule_owner_recv": {
+    "conform": 16,
+    "violate": 0
+   },
+   "sender_receiver_match": {
+    "sent": 17,
+    "assigned_to_a_volley": 16,
+    "in_flight_at_end": 1,
+    "recv_volleys": 19,
+    "recv_size_eq_min(sum,4)": 16,
+    "recv_with_merged_sends": 0,
+    "recv_unmatched": 3,
+    "recv_unexplained": 0,
+    "lag_s_median": 3.13
+   },
+   "windows": {
+    "30": {
+     "window_s": 30,
+     "covered_s": 30.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 2,
+     "ai_sent_cells": 4,
+     "ai_sent_volleys_per_min": 4.0,
+     "ai_sent_cells_per_min": 8.0,
+     "owner_recv_volleys": 3,
+     "owner_recv_cells": 8,
+     "owner_recv_volleys_per_min": 6.0,
+     "ai_pills": 20,
+     "ai_pills_per_min": 40.0,
+     "ai_viruses_cleared": 19,
+     "ai_viruses_per_min": 38.0,
+     "ai_combo_placements": 3,
+     "owner_pills": 17,
+     "owner_pills_per_min": 34.0,
+     "owner_viruses_cleared": 7,
+     "owner_viruses_per_min": 14.0,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "60": {
+     "window_s": 60,
+     "covered_s": 60.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 5,
+     "ai_sent_cells": 10,
+     "ai_sent_volleys_per_min": 5.0,
+     "ai_sent_cells_per_min": 10.0,
+     "owner_recv_volleys": 6,
+     "owner_recv_cells": 14,
+     "owner_recv_volleys_per_min": 6.0,
+     "ai_pills": 41,
+     "ai_pills_per_min": 41.0,
+     "ai_viruses_cleared": 28,
+     "ai_viruses_per_min": 28.0,
+     "ai_combo_placements": 5,
+     "owner_pills": 31,
+     "owner_pills_per_min": 31.0,
+     "owner_viruses_cleared": 11,
+     "owner_viruses_per_min": 11.0,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "120": {
+     "window_s": 120,
+     "covered_s": 120.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 11,
+     "ai_sent_cells": 22,
+     "ai_sent_volleys_per_min": 5.5,
+     "ai_sent_cells_per_min": 11.0,
+     "owner_recv_volleys": 12,
+     "owner_recv_cells": 26,
+     "owner_recv_volleys_per_min": 6.0,
+     "ai_pills": 74,
+     "ai_pills_per_min": 37.0,
+     "ai_viruses_cleared": 41,
+     "ai_viruses_per_min": 20.5,
+     "ai_combo_placements": 11,
+     "owner_pills": 58,
+     "owner_pills_per_min": 29.0,
+     "owner_viruses_cleared": 15,
+     "owner_viruses_per_min": 7.5,
+     "owner_sent_volleys": 2,
+     "owner_sent_cells": 4
+    },
+    "all": {
+     "window_s": 1000000000.0,
+     "covered_s": 200.2,
+     "game_shorter": true,
+     "ai_sent_volleys": 17,
+     "ai_sent_cells": 35,
+     "ai_sent_volleys_per_min": 5.09,
+     "ai_sent_cells_per_min": 10.49,
+     "owner_recv_volleys": 19,
+     "owner_recv_cells": 42,
+     "owner_recv_volleys_per_min": 5.69,
+     "ai_pills": 119,
+     "ai_pills_per_min": 35.66,
+     "ai_viruses_cleared": 47,
+     "ai_viruses_per_min": 14.08,
+     "ai_combo_placements": 17,
+     "owner_pills": 100,
+     "owner_pills_per_min": 29.97,
+     "owner_viruses_cleared": 17,
+     "owner_viruses_per_min": 5.09,
+     "owner_sent_volleys": 6,
+     "owner_sent_cells": 12
+    }
+   },
+   "death": {
+    "owner": {
+     "t_last_throw": 353.3333,
+     "t_last_placement": 352.9833,
+     "last_landing": [
+      "H",
+      0,
+      3,
+      [
+       3,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      10,
+      9,
+      14,
+      16,
+      16,
+      13,
+      13,
+      14
+     ],
+     "max_h": 16,
+     "h34": [
+      16,
+      16
+     ],
+     "virus_final": 31,
+     "cells": 79,
+     "plug": [
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [
+      [
+       0,
+       3,
+       "linked"
+      ],
+      [
+       0,
+       4,
+       "linked"
+      ]
+     ],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 11,
+     "garbage_cells_into_cols34_all_game": 12
+    },
+    "ai": {
+     "t_last_throw": 353.3333,
+     "t_last_placement": 352.1167,
+     "last_landing": [
+      "V",
+      10,
+      3,
+      [
+       2,
+       3
+      ]
+     ],
+     "heights_at_death": [
+      2,
+      2,
+      10,
+      6,
+      10,
+      7,
+      11,
+      3
+     ],
+     "max_h": 11,
+     "h34": [
+      6,
+      10
+     ],
+     "virus_final": 1,
+     "cells": 46,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 4,
+     "garbage_cells_into_cols34_all_game": 4
+    }
+   }
+  },
+  {
+   "game": "m2g3",
+   "build": "FAIR2",
+   "match": 2,
+   "g": 3,
+   "rec": 2,
+   "log": "owner tapped out 19 / 4",
+   "t_round": 373.25,
+   "t0_first_spawn": 375.55,
+   "t_end": 543.85,
+   "dur_s": 168.3,
+   "ai_placements": 99,
+   "owner_placements": 73,
+   "hidden_spawns_ai": 11,
+   "hidden_spawns_owner": 8,
+   "mech_gate_ai": {
+    "steps": 98,
+    "exact": 92,
+    "garbage": 6,
+    "unexplained": 0
+   },
+   "mech_gate_owner": {
+    "steps": 72,
+    "exact": 57,
+    "garbage": 15,
+    "unexplained": 0
+   },
+   "final_virus_owner": 18,
+   "final_virus_ai": 4,
+   "layout": {
+    "viruses": 48,
+    "top_virus_row": 6,
+    "viruses_rows_le_8": 18,
+    "viruses_cols34": 11,
+    "viruses_cols34_rows_le_8": 4
+   },
+   "ai_first_send_s": 18.2,
+   "owner_first_recv_s": 20.217,
+   "ai_sent_sizes": {
+    "2": 15,
+    "3": 1
+   },
+   "owner_recv_sizes": {
+    "2": 12,
+    "3": 1,
+    "4": 2
+   },
+   "rom_column_rule_owner_recv": {
+    "conform": 13,
+    "violate": 0
+   },
+   "sender_receiver_match": {
+    "sent": 16,
+    "assigned_to_a_volley": 15,
+    "in_flight_at_end": 1,
+    "recv_volleys": 15,
+    "recv_size_eq_min(sum,4)": 12,
+    "recv_with_merged_sends": 1,
+    "recv_unmatched": 1,
+    "recv_unexplained": 0,
+    "lag_s_median": 3.43
+   },
+   "windows": {
+    "30": {
+     "window_s": 30,
+     "covered_s": 30.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 3,
+     "ai_sent_cells": 6,
+     "ai_sent_volleys_per_min": 6.0,
+     "ai_sent_cells_per_min": 12.0,
+     "owner_recv_volleys": 2,
+     "owner_recv_cells": 4,
+     "owner_recv_volleys_per_min": 4.0,
+     "ai_pills": 24,
+     "ai_pills_per_min": 48.0,
+     "ai_viruses_cleared": 15,
+     "ai_viruses_per_min": 30.0,
+     "ai_combo_placements": 3,
+     "owner_pills": 17,
+     "owner_pills_per_min": 34.0,
+     "owner_viruses_cleared": 8,
+     "owner_viruses_per_min": 16.0,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "60": {
+     "window_s": 60,
+     "covered_s": 60.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 3,
+     "ai_sent_cells": 6,
+     "ai_sent_volleys_per_min": 3.0,
+     "ai_sent_cells_per_min": 6.0,
+     "owner_recv_volleys": 4,
+     "owner_recv_cells": 10,
+     "owner_recv_volleys_per_min": 4.0,
+     "ai_pills": 41,
+     "ai_pills_per_min": 41.0,
+     "ai_viruses_cleared": 18,
+     "ai_viruses_per_min": 18.0,
+     "ai_combo_placements": 3,
+     "owner_pills": 33,
+     "owner_pills_per_min": 33.0,
+     "owner_viruses_cleared": 17,
+     "owner_viruses_per_min": 17.0,
+     "owner_sent_volleys": 2,
+     "owner_sent_cells": 4
+    },
+    "120": {
+     "window_s": 120,
+     "covered_s": 120.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 9,
+     "ai_sent_cells": 18,
+     "ai_sent_volleys_per_min": 4.5,
+     "ai_sent_cells_per_min": 9.0,
+     "owner_recv_volleys": 10,
+     "owner_recv_cells": 22,
+     "owner_recv_volleys_per_min": 5.0,
+     "ai_pills": 75,
+     "ai_pills_per_min": 37.5,
+     "ai_viruses_cleared": 36,
+     "ai_viruses_per_min": 18.0,
+     "ai_combo_placements": 9,
+     "owner_pills": 56,
+     "owner_pills_per_min": 28.0,
+     "owner_viruses_cleared": 24,
+     "owner_viruses_per_min": 12.0,
+     "owner_sent_volleys": 5,
+     "owner_sent_cells": 11
+    },
+    "all": {
+     "window_s": 1000000000.0,
+     "covered_s": 168.3,
+     "game_shorter": true,
+     "ai_sent_volleys": 16,
+     "ai_sent_cells": 33,
+     "ai_sent_volleys_per_min": 5.7,
+     "ai_sent_cells_per_min": 11.76,
+     "owner_recv_volleys": 15,
+     "owner_recv_cells": 35,
+     "owner_recv_volleys_per_min": 5.35,
+     "ai_pills": 99,
+     "ai_pills_per_min": 35.29,
+     "ai_viruses_cleared": 44,
+     "ai_viruses_per_min": 15.69,
+     "ai_combo_placements": 16,
+     "owner_pills": 73,
+     "owner_pills_per_min": 26.02,
+     "owner_viruses_cleared": 30,
+     "owner_viruses_per_min": 10.7,
+     "owner_sent_volleys": 6,
+     "owner_sent_cells": 15
+    }
+   },
+   "death": {
+    "owner": {
+     "t_last_throw": 543.8,
+     "t_last_placement": 543.4167,
+     "last_landing": [
+      "V",
+      2,
+      4,
+      [
+       2,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      9,
+      11,
+      11,
+      15,
+      16,
+      16,
+      7,
+      4
+     ],
+     "max_h": 16,
+     "h34": [
+      15,
+      16
+     ],
+     "virus_final": 18,
+     "cells": 63,
+     "plug": [
+      [
+       0,
+       4
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [
+      [
+       0,
+       4
+      ]
+     ],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       0,
+       4,
+       2
+      ],
+      [
+       0,
+       5,
+       2
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 8,
+     "garbage_cells_into_cols34_all_game": 8
+    },
+    "ai": {
+     "t_last_throw": 543.8,
+     "t_last_placement": 542.4333,
+     "last_landing": [
+      "H",
+      10,
+      3,
+      [
+       1,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      14,
+      4,
+      4,
+      6,
+      6,
+      2,
+      0,
+      4
+     ],
+     "max_h": 14,
+     "h34": [
+      6,
+      6
+     ],
+     "virus_final": 4,
+     "cells": 31,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       10,
+       3,
+       1
+      ],
+      [
+       10,
+       4,
+       2
+      ],
+      [
+       11,
+       4,
+       2
+      ],
+      [
+       12,
+       0,
+       1
+      ],
+      [
+       12,
+       1,
+       1
+      ],
+      [
+       12,
+       2,
+       1
+      ],
+      [
+       12,
+       4,
+       2
+      ],
+      [
+       13,
+       4,
+       2
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 4,
+     "garbage_cells_into_cols34_all_game": 4
+    }
+   }
+  },
+  {
+   "game": "m3g1",
+   "build": "FAIR",
+   "match": 3,
+   "g": 1,
+   "rec": 2,
+   "log": "owner topped out 42 / 26 ('garbage killed the spawn cells')",
+   "t_round": 620.1167,
+   "t0_first_spawn": 622.4,
+   "t_end": 659.1667,
+   "dur_s": 36.8,
+   "ai_placements": 26,
+   "owner_placements": 15,
+   "hidden_spawns_ai": 2,
+   "hidden_spawns_owner": 0,
+   "mech_gate_ai": {
+    "steps": 25,
+    "exact": 24,
+    "garbage": 1,
+    "unexplained": 0
+   },
+   "mech_gate_owner": {
+    "steps": 14,
+    "exact": 11,
+    "garbage": 3,
+    "unexplained": 0
+   },
+   "final_virus_owner": 40,
+   "final_virus_ai": 27,
+   "layout": {
+    "viruses": 48,
+    "top_virus_row": 6,
+    "viruses_rows_le_8": 13,
+    "viruses_cols34": 10,
+    "viruses_cols34_rows_le_8": 2
+   },
+   "ai_first_send_s": 13.633,
+   "owner_first_recv_s": 14.533,
+   "ai_sent_sizes": {
+    "2": 5
+   },
+   "owner_recv_sizes": {
+    "2": 2,
+    "4": 1
+   },
+   "rom_column_rule_owner_recv": {
+    "conform": 2,
+    "violate": 0
+   },
+   "sender_receiver_match": {
+    "sent": 5,
+    "assigned_to_a_volley": 4,
+    "in_flight_at_end": 1,
+    "recv_volleys": 3,
+    "recv_size_eq_min(sum,4)": 3,
+    "recv_with_merged_sends": 1,
+    "recv_unmatched": 0,
+    "recv_unexplained": 0,
+    "lag_s_median": 3.23
+   },
+   "windows": {
+    "30": {
+     "window_s": 30,
+     "covered_s": 30.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 4,
+     "ai_sent_cells": 8,
+     "ai_sent_volleys_per_min": 8.0,
+     "ai_sent_cells_per_min": 16.0,
+     "owner_recv_volleys": 3,
+     "owner_recv_cells": 8,
+     "owner_recv_volleys_per_min": 6.0,
+     "ai_pills": 22,
+     "ai_pills_per_min": 44.0,
+     "ai_viruses_cleared": 20,
+     "ai_viruses_per_min": 40.0,
+     "ai_combo_placements": 5,
+     "owner_pills": 14,
+     "owner_pills_per_min": 28.0,
+     "owner_viruses_cleared": 6,
+     "owner_viruses_per_min": 12.0,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "60": {
+     "window_s": 60,
+     "covered_s": 36.8,
+     "game_shorter": true,
+     "ai_sent_volleys": 5,
+     "ai_sent_cells": 10,
+     "ai_sent_volleys_per_min": 8.16,
+     "ai_sent_cells_per_min": 16.32,
+     "owner_recv_volleys": 3,
+     "owner_recv_cells": 8,
+     "owner_recv_volleys_per_min": 4.9,
+     "ai_pills": 26,
+     "ai_pills_per_min": 42.43,
+     "ai_viruses_cleared": 21,
+     "ai_viruses_per_min": 34.27,
+     "ai_combo_placements": 5,
+     "owner_pills": 15,
+     "owner_pills_per_min": 24.48,
+     "owner_viruses_cleared": 8,
+     "owner_viruses_per_min": 13.06,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "120": {
+     "window_s": 120,
+     "covered_s": 36.8,
+     "game_shorter": true,
+     "ai_sent_volleys": 5,
+     "ai_sent_cells": 10,
+     "ai_sent_volleys_per_min": 8.16,
+     "ai_sent_cells_per_min": 16.32,
+     "owner_recv_volleys": 3,
+     "owner_recv_cells": 8,
+     "owner_recv_volleys_per_min": 4.9,
+     "ai_pills": 26,
+     "ai_pills_per_min": 42.43,
+     "ai_viruses_cleared": 21,
+     "ai_viruses_per_min": 34.27,
+     "ai_combo_placements": 5,
+     "owner_pills": 15,
+     "owner_pills_per_min": 24.48,
+     "owner_viruses_cleared": 8,
+     "owner_viruses_per_min": 13.06,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "all": {
+     "window_s": 1000000000.0,
+     "covered_s": 36.8,
+     "game_shorter": true,
+     "ai_sent_volleys": 5,
+     "ai_sent_cells": 10,
+     "ai_sent_volleys_per_min": 8.16,
+     "ai_sent_cells_per_min": 16.32,
+     "owner_recv_volleys": 3,
+     "owner_recv_cells": 8,
+     "owner_recv_volleys_per_min": 4.9,
+     "ai_pills": 26,
+     "ai_pills_per_min": 42.43,
+     "ai_viruses_cleared": 21,
+     "ai_viruses_per_min": 34.27,
+     "ai_combo_placements": 5,
+     "owner_pills": 15,
+     "owner_pills_per_min": 24.48,
+     "owner_viruses_cleared": 8,
+     "owner_viruses_per_min": 13.06,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    }
+   },
+   "death": {
+    "owner": {
+     "t_last_throw": 659.1167,
+     "t_last_placement": 654.0167,
+     "last_landing": [
+      "H",
+      8,
+      2,
+      [
+       2,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      9,
+      13,
+      13,
+      12,
+      16,
+      10,
+      10,
+      10
+     ],
+     "max_h": 16,
+     "h34": [
+      12,
+      16
+     ],
+     "virus_final": 40,
+     "cells": 60,
+     "plug": [
+      [
+       0,
+       4
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [
+      [
+       0,
+       4
+      ]
+     ],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       0,
+       4,
+       2
+      ],
+      [
+       7,
+       0,
+       2
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 2,
+     "garbage_cells_into_cols34_all_game": 2
+    },
+    "ai": {
+     "t_last_throw": 659.1167,
+     "t_last_placement": 657.8833,
+     "last_landing": [
+      "H",
+      11,
+      4,
+      [
+       3,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      8,
+      9,
+      7,
+      7,
+      5,
+      5,
+      1,
+      5
+     ],
+     "max_h": 9,
+     "h34": [
+      7,
+      5
+     ],
+     "virus_final": 27,
+     "cells": 32,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       11,
+       4,
+       3
+      ],
+      [
+       12,
+       4,
+       3
+      ],
+      [
+       13,
+       4,
+       3
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 1,
+     "garbage_cells_into_cols34_all_game": 1
+    }
+   }
+  },
+  {
+   "game": "m3g2",
+   "build": "FAIR",
+   "match": 3,
+   "g": 2,
+   "rec": 2,
+   "log": "owner out 43 / 33 ('I messed up')",
+   "t_round": 693.6333,
+   "t0_first_spawn": 695.9167,
+   "t_end": 723.1833,
+   "dur_s": 27.3,
+   "ai_placements": 22,
+   "owner_placements": 17,
+   "hidden_spawns_ai": 4,
+   "hidden_spawns_owner": 2,
+   "mech_gate_ai": {
+    "steps": 21,
+    "exact": 20,
+    "garbage": 1,
+    "unexplained": 0
+   },
+   "mech_gate_owner": {
+    "steps": 16,
+    "exact": 14,
+    "garbage": 2,
+    "unexplained": 0
+   },
+   "final_virus_owner": 43,
+   "final_virus_ai": 33,
+   "layout": {
+    "viruses": 48,
+    "top_virus_row": 6,
+    "viruses_rows_le_8": 12,
+    "viruses_cols34": 11,
+    "viruses_cols34_rows_le_8": 3
+   },
+   "ai_first_send_s": 15.167,
+   "owner_first_recv_s": 17.233,
+   "ai_sent_sizes": {
+    "2": 2
+   },
+   "owner_recv_sizes": {
+    "2": 2
+   },
+   "rom_column_rule_owner_recv": {
+    "conform": 2,
+    "violate": 0
+   },
+   "sender_receiver_match": {
+    "sent": 2,
+    "assigned_to_a_volley": 2,
+    "in_flight_at_end": 0,
+    "recv_volleys": 2,
+    "recv_size_eq_min(sum,4)": 2,
+    "recv_with_merged_sends": 0,
+    "recv_unmatched": 0,
+    "recv_unexplained": 0,
+    "lag_s_median": 2.06
+   },
+   "windows": {
+    "30": {
+     "window_s": 30,
+     "covered_s": 27.3,
+     "game_shorter": true,
+     "ai_sent_volleys": 2,
+     "ai_sent_cells": 4,
+     "ai_sent_volleys_per_min": 4.4,
+     "ai_sent_cells_per_min": 8.8,
+     "owner_recv_volleys": 2,
+     "owner_recv_cells": 4,
+     "owner_recv_volleys_per_min": 4.4,
+     "ai_pills": 22,
+     "ai_pills_per_min": 48.41,
+     "ai_viruses_cleared": 15,
+     "ai_viruses_per_min": 33.01,
+     "ai_combo_placements": 2,
+     "owner_pills": 17,
+     "owner_pills_per_min": 37.41,
+     "owner_viruses_cleared": 5,
+     "owner_viruses_per_min": 11.0,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "60": {
+     "window_s": 60,
+     "covered_s": 27.3,
+     "game_shorter": true,
+     "ai_sent_volleys": 2,
+     "ai_sent_cells": 4,
+     "ai_sent_volleys_per_min": 4.4,
+     "ai_sent_cells_per_min": 8.8,
+     "owner_recv_volleys": 2,
+     "owner_recv_cells": 4,
+     "owner_recv_volleys_per_min": 4.4,
+     "ai_pills": 22,
+     "ai_pills_per_min": 48.41,
+     "ai_viruses_cleared": 15,
+     "ai_viruses_per_min": 33.01,
+     "ai_combo_placements": 2,
+     "owner_pills": 17,
+     "owner_pills_per_min": 37.41,
+     "owner_viruses_cleared": 5,
+     "owner_viruses_per_min": 11.0,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "120": {
+     "window_s": 120,
+     "covered_s": 27.3,
+     "game_shorter": true,
+     "ai_sent_volleys": 2,
+     "ai_sent_cells": 4,
+     "ai_sent_volleys_per_min": 4.4,
+     "ai_sent_cells_per_min": 8.8,
+     "owner_recv_volleys": 2,
+     "owner_recv_cells": 4,
+     "owner_recv_volleys_per_min": 4.4,
+     "ai_pills": 22,
+     "ai_pills_per_min": 48.41,
+     "ai_viruses_cleared": 15,
+     "ai_viruses_per_min": 33.01,
+     "ai_combo_placements": 2,
+     "owner_pills": 17,
+     "owner_pills_per_min": 37.41,
+     "owner_viruses_cleared": 5,
+     "owner_viruses_per_min": 11.0,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    },
+    "all": {
+     "window_s": 1000000000.0,
+     "covered_s": 27.3,
+     "game_shorter": true,
+     "ai_sent_volleys": 2,
+     "ai_sent_cells": 4,
+     "ai_sent_volleys_per_min": 4.4,
+     "ai_sent_cells_per_min": 8.8,
+     "owner_recv_volleys": 2,
+     "owner_recv_cells": 4,
+     "owner_recv_volleys_per_min": 4.4,
+     "ai_pills": 22,
+     "ai_pills_per_min": 48.41,
+     "ai_viruses_cleared": 15,
+     "ai_viruses_per_min": 33.01,
+     "ai_combo_placements": 2,
+     "owner_pills": 17,
+     "owner_pills_per_min": 37.41,
+     "owner_viruses_cleared": 5,
+     "owner_viruses_per_min": 11.0,
+     "owner_sent_volleys": 1,
+     "owner_sent_cells": 2
+    }
+   },
+   "death": {
+    "owner": {
+     "t_last_throw": 723.1333,
+     "t_last_placement": 722.6333,
+     "last_landing": [
+      "H",
+      0,
+      3,
+      [
+       2,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      8,
+      10,
+      6,
+      16,
+      16,
+      16,
+      16,
+      12
+     ],
+     "max_h": 16,
+     "h34": [
+      16,
+      16
+     ],
+     "virus_final": 43,
+     "cells": 61,
+     "plug": [
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [
+      [
+       0,
+       3,
+       "linked"
+      ],
+      [
+       0,
+       4,
+       "linked"
+      ]
+     ],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 0,
+     "garbage_cells_into_cols34_all_game": 0
+    },
+    "ai": {
+     "t_last_throw": 723.1333,
+     "t_last_placement": 722.85,
+     "last_landing": [
+      "H",
+      0,
+      3,
+      [
+       2,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      5,
+      12,
+      10,
+      16,
+      9,
+      6,
+      9,
+      8
+     ],
+     "max_h": 16,
+     "h34": [
+      16,
+      9
+     ],
+     "virus_final": 33,
+     "cells": 43,
+     "plug": [
+      [
+       0,
+       3
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [
+      [
+       0,
+       3,
+       "linked"
+      ]
+     ],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 0,
+     "garbage_cells_into_cols34_all_game": 0
+    }
+   }
+  },
+  {
+   "game": "m3g3",
+   "build": "FAIR",
+   "match": 3,
+   "g": 3,
+   "rec": 2,
+   "log": "owner out 44 / 31 ('messed up again')",
+   "t_round": 735.2,
+   "t0_first_spawn": 737.5,
+   "t_end": 767.7833,
+   "dur_s": 30.3,
+   "ai_placements": 19,
+   "owner_placements": 16,
+   "hidden_spawns_ai": 2,
+   "hidden_spawns_owner": 2,
+   "mech_gate_ai": {
+    "steps": 18,
+    "exact": 16,
+    "garbage": 2,
+    "unexplained": 0
+   },
+   "mech_gate_owner": {
+    "steps": 15,
+    "exact": 12,
+    "garbage": 3,
+    "unexplained": 0
+   },
+   "final_virus_owner": 42,
+   "final_virus_ai": 31,
+   "layout": {
+    "viruses": 48,
+    "top_virus_row": 6,
+    "viruses_rows_le_8": 16,
+    "viruses_cols34": 11,
+    "viruses_cols34_rows_le_8": 4
+   },
+   "ai_first_send_s": 3.4,
+   "owner_first_recv_s": 6.583,
+   "ai_sent_sizes": {
+    "2": 4
+   },
+   "owner_recv_sizes": {
+    "2": 2,
+    "4": 1
+   },
+   "rom_column_rule_owner_recv": {
+    "conform": 2,
+    "violate": 0
+   },
+   "sender_receiver_match": {
+    "sent": 4,
+    "assigned_to_a_volley": 4,
+    "in_flight_at_end": 0,
+    "recv_volleys": 3,
+    "recv_size_eq_min(sum,4)": 3,
+    "recv_with_merged_sends": 1,
+    "recv_unmatched": 0,
+    "recv_unexplained": 0,
+    "lag_s_median": 2.46
+   },
+   "windows": {
+    "30": {
+     "window_s": 30,
+     "covered_s": 30.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 4,
+     "ai_sent_cells": 8,
+     "ai_sent_volleys_per_min": 8.0,
+     "ai_sent_cells_per_min": 16.0,
+     "owner_recv_volleys": 3,
+     "owner_recv_cells": 8,
+     "owner_recv_volleys_per_min": 6.0,
+     "ai_pills": 19,
+     "ai_pills_per_min": 38.0,
+     "ai_viruses_cleared": 17,
+     "ai_viruses_per_min": 34.0,
+     "ai_combo_placements": 4,
+     "owner_pills": 16,
+     "owner_pills_per_min": 32.0,
+     "owner_viruses_cleared": 6,
+     "owner_viruses_per_min": 12.0,
+     "owner_sent_volleys": 2,
+     "owner_sent_cells": 4
+    },
+    "60": {
+     "window_s": 60,
+     "covered_s": 30.3,
+     "game_shorter": true,
+     "ai_sent_volleys": 4,
+     "ai_sent_cells": 8,
+     "ai_sent_volleys_per_min": 7.93,
+     "ai_sent_cells_per_min": 15.85,
+     "owner_recv_volleys": 3,
+     "owner_recv_cells": 8,
+     "owner_recv_volleys_per_min": 5.94,
+     "ai_pills": 19,
+     "ai_pills_per_min": 37.64,
+     "ai_viruses_cleared": 17,
+     "ai_viruses_per_min": 33.68,
+     "ai_combo_placements": 4,
+     "owner_pills": 16,
+     "owner_pills_per_min": 31.7,
+     "owner_viruses_cleared": 6,
+     "owner_viruses_per_min": 11.89,
+     "owner_sent_volleys": 2,
+     "owner_sent_cells": 4
+    },
+    "120": {
+     "window_s": 120,
+     "covered_s": 30.3,
+     "game_shorter": true,
+     "ai_sent_volleys": 4,
+     "ai_sent_cells": 8,
+     "ai_sent_volleys_per_min": 7.93,
+     "ai_sent_cells_per_min": 15.85,
+     "owner_recv_volleys": 3,
+     "owner_recv_cells": 8,
+     "owner_recv_volleys_per_min": 5.94,
+     "ai_pills": 19,
+     "ai_pills_per_min": 37.64,
+     "ai_viruses_cleared": 17,
+     "ai_viruses_per_min": 33.68,
+     "ai_combo_placements": 4,
+     "owner_pills": 16,
+     "owner_pills_per_min": 31.7,
+     "owner_viruses_cleared": 6,
+     "owner_viruses_per_min": 11.89,
+     "owner_sent_volleys": 2,
+     "owner_sent_cells": 4
+    },
+    "all": {
+     "window_s": 1000000000.0,
+     "covered_s": 30.3,
+     "game_shorter": true,
+     "ai_sent_volleys": 4,
+     "ai_sent_cells": 8,
+     "ai_sent_volleys_per_min": 7.93,
+     "ai_sent_cells_per_min": 15.85,
+     "owner_recv_volleys": 3,
+     "owner_recv_cells": 8,
+     "owner_recv_volleys_per_min": 5.94,
+     "ai_pills": 19,
+     "ai_pills_per_min": 37.64,
+     "ai_viruses_cleared": 17,
+     "ai_viruses_per_min": 33.68,
+     "ai_combo_placements": 4,
+     "owner_pills": 16,
+     "owner_pills_per_min": 31.7,
+     "owner_viruses_cleared": 6,
+     "owner_viruses_per_min": 11.89,
+     "owner_sent_volleys": 2,
+     "owner_sent_cells": 4
+    }
+   },
+   "death": {
+    "owner": {
+     "t_last_throw": 767.7333,
+     "t_last_placement": 767.2333,
+     "last_landing": [
+      "H",
+      0,
+      2,
+      [
+       3,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      10,
+      9,
+      16,
+      16,
+      15,
+      8,
+      10,
+      10
+     ],
+     "max_h": 16,
+     "h34": [
+      16,
+      15
+     ],
+     "virus_final": 42,
+     "cells": 60,
+     "plug": [
+      [
+       0,
+       3
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [
+      [
+       0,
+       3,
+       "linked"
+      ]
+     ],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 3,
+     "garbage_cells_into_cols34_all_game": 3
+    },
+    "ai": {
+     "t_last_throw": 767.7333,
+     "t_last_placement": 767.4167,
+     "last_landing": [
+      "V",
+      1,
+      1,
+      [
+       3,
+       3
+      ]
+     ],
+     "heights_at_death": [
+      4,
+      16,
+      10,
+      10,
+      9,
+      3,
+      10,
+      11
+     ],
+     "max_h": 16,
+     "h34": [
+      10,
+      9
+     ],
+     "virus_final": 31,
+     "cells": 41,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       0,
+       1,
+       3
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 1,
+     "garbage_cells_into_cols34_all_game": 1
+    }
+   }
+  },
+  {
+   "game": "m4g1",
+   "build": "FAIR2",
+   "match": 4,
+   "g": 1,
+   "rec": 2,
+   "log": "AI full clear, owner at 5 (race loss)",
+   "t_round": 858.3833,
+   "t0_first_spawn": 860.6667,
+   "t_end": 1102.1,
+   "dur_s": 241.4,
+   "ai_placements": 134,
+   "owner_placements": 92,
+   "hidden_spawns_ai": 11,
+   "hidden_spawns_owner": 8,
+   "mech_gate_ai": {
+    "steps": 133,
+    "exact": 124,
+    "garbage": 8,
+    "unexplained": 1
+   },
+   "mech_gate_owner": {
+    "steps": 91,
+    "exact": 73,
+    "garbage": 16,
+    "unexplained": 2
+   },
+   "final_virus_owner": 5,
+   "final_virus_ai": 0,
+   "layout": {
+    "viruses": 48,
+    "top_virus_row": 6,
+    "viruses_rows_le_8": 10,
+    "viruses_cols34": 11,
+    "viruses_cols34_rows_le_8": 2
+   },
+   "ai_first_send_s": 29.95,
+   "owner_first_recv_s": 33.167,
+   "ai_sent_sizes": {
+    "2": 17,
+    "3": 2,
+    "4": 1
+   },
+   "owner_recv_sizes": {
+    "2": 14,
+    "3": 1,
+    "4": 1,
+    "5": 1
+   },
+   "rom_column_rule_owner_recv": {
+    "conform": 15,
+    "violate": 0
+   },
+   "sender_receiver_match": {
+    "sent": 20,
+    "assigned_to_a_volley": 18,
+    "in_flight_at_end": 2,
+    "recv_volleys": 17,
+    "recv_size_eq_min(sum,4)": 16,
+    "recv_with_merged_sends": 1,
+    "recv_unmatched": 0,
+    "recv_unexplained": 1,
+    "lag_s_median": 4.01
+   },
+   "windows": {
+    "30": {
+     "window_s": 30,
+     "covered_s": 30.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 1,
+     "ai_sent_cells": 2,
+     "ai_sent_volleys_per_min": 2.0,
+     "ai_sent_cells_per_min": 4.0,
+     "owner_recv_volleys": 0,
+     "owner_recv_cells": 0,
+     "owner_recv_volleys_per_min": 0.0,
+     "ai_pills": 17,
+     "ai_pills_per_min": 34.0,
+     "ai_viruses_cleared": 14,
+     "ai_viruses_per_min": 28.0,
+     "ai_combo_placements": 1,
+     "owner_pills": 17,
+     "owner_pills_per_min": 34.0,
+     "owner_viruses_cleared": 17,
+     "owner_viruses_per_min": 34.0,
+     "owner_sent_volleys": 2,
+     "owner_sent_cells": 6
+    },
+    "60": {
+     "window_s": 60,
+     "covered_s": 60.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 3,
+     "ai_sent_cells": 6,
+     "ai_sent_volleys_per_min": 3.0,
+     "ai_sent_cells_per_min": 6.0,
+     "owner_recv_volleys": 2,
+     "owner_recv_cells": 4,
+     "owner_recv_volleys_per_min": 2.0,
+     "ai_pills": 33,
+     "ai_pills_per_min": 33.0,
+     "ai_viruses_cleared": 22,
+     "ai_viruses_per_min": 22.0,
+     "ai_combo_placements": 3,
+     "owner_pills": 31,
+     "owner_pills_per_min": 31.0,
+     "owner_viruses_cleared": 23,
+     "owner_viruses_per_min": 23.0,
+     "owner_sent_volleys": 3,
+     "owner_sent_cells": 8
+    },
+    "120": {
+     "window_s": 120,
+     "covered_s": 120.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 9,
+     "ai_sent_cells": 18,
+     "ai_sent_volleys_per_min": 4.5,
+     "ai_sent_cells_per_min": 9.0,
+     "owner_recv_volleys": 7,
+     "owner_recv_cells": 14,
+     "owner_recv_volleys_per_min": 3.5,
+     "ai_pills": 66,
+     "ai_pills_per_min": 33.0,
+     "ai_viruses_cleared": 34,
+     "ai_viruses_per_min": 17.0,
+     "ai_combo_placements": 9,
+     "owner_pills": 52,
+     "owner_pills_per_min": 26.0,
+     "owner_viruses_cleared": 35,
+     "owner_viruses_per_min": 17.5,
+     "owner_sent_volleys": 5,
+     "owner_sent_cells": 12
+    },
+    "all": {
+     "window_s": 1000000000.0,
+     "covered_s": 241.4,
+     "game_shorter": true,
+     "ai_sent_volleys": 20,
+     "ai_sent_cells": 44,
+     "ai_sent_volleys_per_min": 4.97,
+     "ai_sent_cells_per_min": 10.93,
+     "owner_recv_volleys": 17,
+     "owner_recv_cells": 40,
+     "owner_recv_volleys_per_min": 4.22,
+     "ai_pills": 134,
+     "ai_pills_per_min": 33.3,
+     "ai_viruses_cleared": 48,
+     "ai_viruses_per_min": 11.93,
+     "ai_combo_placements": 20,
+     "owner_pills": 92,
+     "owner_pills_per_min": 22.86,
+     "owner_viruses_cleared": 43,
+     "owner_viruses_per_min": 10.69,
+     "owner_sent_volleys": 8,
+     "owner_sent_cells": 18
+    }
+   },
+   "death": {
+    "owner": {
+     "t_last_throw": 1102.05,
+     "t_last_placement": 1098.6,
+     "last_landing": [
+      "H",
+      8,
+      5,
+      [
+       2,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      3,
+      0,
+      12,
+      6,
+      9,
+      8,
+      12,
+      4
+     ],
+     "max_h": 12,
+     "h34": [
+      6,
+      9
+     ],
+     "virus_final": 5,
+     "cells": 41,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       4,
+       2,
+       1
+      ],
+      [
+       4,
+       6,
+       2
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 9,
+     "garbage_cells_into_cols34_all_game": 9
+    },
+    "ai": {
+     "t_last_throw": 1102.05,
+     "t_last_placement": 1099.7167,
+     "last_landing": [
+      "V",
+      14,
+      4,
+      [
+       1,
+       3
+      ]
+     ],
+     "heights_at_death": [
+      4,
+      4,
+      2,
+      2,
+      2,
+      0,
+      1,
+      2
+     ],
+     "max_h": 4,
+     "h34": [
+      2,
+      2
+     ],
+     "virus_final": 1,
+     "cells": 16,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       12,
+       1,
+       2
+      ],
+      [
+       13,
+       1,
+       3
+      ],
+      [
+       14,
+       2,
+       1
+      ],
+      [
+       14,
+       3,
+       1
+      ],
+      [
+       14,
+       4,
+       1
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 2,
+     "garbage_cells_into_cols34_all_game": 2
+    }
+   }
+  },
+  {
+   "game": "m4g2",
+   "build": "FAIR2",
+   "match": 4,
+   "g": 2,
+   "rec": 2,
+   "log": "AI TAPPED OUT, owner 12 / AI 16",
+   "t_round": 1129.6833,
+   "t0_first_spawn": 1131.9833,
+   "t_end": 1295.55,
+   "dur_s": 163.6,
+   "ai_placements": 109,
+   "owner_placements": 65,
+   "hidden_spawns_ai": 17,
+   "hidden_spawns_owner": 13,
+   "mech_gate_ai": {
+    "steps": 108,
+    "exact": 97,
+    "garbage": 11,
+    "unexplained": 0
+   },
+   "mech_gate_owner": {
+    "steps": 64,
+    "exact": 53,
+    "garbage": 11,
+    "unexplained": 0
+   },
+   "final_virus_owner": 12,
+   "final_virus_ai": 16,
+   "layout": {
+    "viruses": 48,
+    "top_virus_row": 6,
+    "viruses_rows_le_8": 17,
+    "viruses_cols34": 13,
+    "viruses_cols34_rows_le_8": 6
+   },
+   "ai_first_send_s": 36.833,
+   "owner_first_recv_s": 40.45,
+   "ai_sent_sizes": {
+    "2": 12
+   },
+   "owner_recv_sizes": {
+    "2": 10,
+    "4": 1
+   },
+   "rom_column_rule_owner_recv": {
+    "conform": 9,
+    "violate": 0
+   },
+   "sender_receiver_match": {
+    "sent": 12,
+    "assigned_to_a_volley": 12,
+    "in_flight_at_end": 0,
+    "recv_volleys": 11,
+    "recv_size_eq_min(sum,4)": 9,
+    "recv_with_merged_sends": 2,
+    "recv_unmatched": 1,
+    "recv_unexplained": 0,
+    "lag_s_median": 4.99
+   },
+   "windows": {
+    "30": {
+     "window_s": 30,
+     "covered_s": 30.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 0,
+     "ai_sent_cells": 0,
+     "ai_sent_volleys_per_min": 0.0,
+     "ai_sent_cells_per_min": 0.0,
+     "owner_recv_volleys": 0,
+     "owner_recv_cells": 0,
+     "owner_recv_volleys_per_min": 0.0,
+     "ai_pills": 13,
+     "ai_pills_per_min": 26.0,
+     "ai_viruses_cleared": 8,
+     "ai_viruses_per_min": 16.0,
+     "ai_combo_placements": 0,
+     "owner_pills": 23,
+     "owner_pills_per_min": 46.0,
+     "owner_viruses_cleared": 16,
+     "owner_viruses_per_min": 32.0,
+     "owner_sent_volleys": 3,
+     "owner_sent_cells": 6
+    },
+    "60": {
+     "window_s": 60,
+     "covered_s": 60.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 2,
+     "ai_sent_cells": 4,
+     "ai_sent_volleys_per_min": 2.0,
+     "ai_sent_cells_per_min": 4.0,
+     "owner_recv_volleys": 2,
+     "owner_recv_cells": 4,
+     "owner_recv_volleys_per_min": 2.0,
+     "ai_pills": 34,
+     "ai_pills_per_min": 34.0,
+     "ai_viruses_cleared": 16,
+     "ai_viruses_per_min": 16.0,
+     "ai_combo_placements": 3,
+     "owner_pills": 32,
+     "owner_pills_per_min": 32.0,
+     "owner_viruses_cleared": 27,
+     "owner_viruses_per_min": 27.0,
+     "owner_sent_volleys": 6,
+     "owner_sent_cells": 13
+    },
+    "120": {
+     "window_s": 120,
+     "covered_s": 120.0,
+     "game_shorter": false,
+     "ai_sent_volleys": 10,
+     "ai_sent_cells": 20,
+     "ai_sent_volleys_per_min": 5.0,
+     "ai_sent_cells_per_min": 10.0,
+     "owner_recv_volleys": 8,
+     "owner_recv_cells": 18,
+     "owner_recv_volleys_per_min": 4.0,
+     "ai_pills": 75,
+     "ai_pills_per_min": 37.5,
+     "ai_viruses_cleared": 31,
+     "ai_viruses_per_min": 15.5,
+     "ai_combo_placements": 10,
+     "owner_pills": 49,
+     "owner_pills_per_min": 24.5,
+     "owner_viruses_cleared": 33,
+     "owner_viruses_per_min": 16.5,
+     "owner_sent_volleys": 7,
+     "owner_sent_cells": 15
+    },
+    "all": {
+     "window_s": 1000000000.0,
+     "covered_s": 163.6,
+     "game_shorter": true,
+     "ai_sent_volleys": 12,
+     "ai_sent_cells": 24,
+     "ai_sent_volleys_per_min": 4.4,
+     "ai_sent_cells_per_min": 8.8,
+     "owner_recv_volleys": 11,
+     "owner_recv_cells": 24,
+     "owner_recv_volleys_per_min": 4.04,
+     "ai_pills": 109,
+     "ai_pills_per_min": 39.98,
+     "ai_viruses_cleared": 32,
+     "ai_viruses_per_min": 11.74,
+     "ai_combo_placements": 12,
+     "owner_pills": 65,
+     "owner_pills_per_min": 23.84,
+     "owner_viruses_cleared": 36,
+     "owner_viruses_per_min": 13.21,
+     "owner_sent_volleys": 11,
+     "owner_sent_cells": 23
+    }
+   },
+   "death": {
+    "owner": {
+     "t_last_throw": 1295.5,
+     "t_last_placement": 1292.4,
+     "last_landing": [
+      "V",
+      7,
+      4,
+      [
+       1,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      16,
+      8,
+      9,
+      4,
+      6,
+      3,
+      7,
+      9
+     ],
+     "max_h": 16,
+     "h34": [
+      4,
+      6
+     ],
+     "virus_final": 12,
+     "cells": 47,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       10,
+       4,
+       1
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 5,
+     "garbage_cells_into_cols34_all_game": 5
+    },
+    "ai": {
+     "t_last_throw": 1295.5,
+     "t_last_placement": 1295.15,
+     "last_landing": [
+      "H",
+      0,
+      3,
+      [
+       1,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      15,
+      15,
+      15,
+      16,
+      11,
+      15,
+      15,
+      13
+     ],
+     "max_h": 16,
+     "h34": [
+      16,
+      11
+     ],
+     "virus_final": 16,
+     "cells": 82,
+     "plug": [
+      [
+       0,
+       3
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [
+      [
+       0,
+       3,
+       "linked"
+      ]
+     ],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 3,
+     "garbage_cells_into_cols34_all_game": 3
+    }
+   }
+  }
+ ],
+ "compare": {
+  "all": {
+   "FAIR_games": [
+    "m1g1",
+    "m1g2",
+    "m3g1",
+    "m3g2",
+    "m3g3"
+   ],
+   "FAIR2_games": [
+    "m2g1",
+    "m2g2",
+    "m2g3",
+    "m4g1",
+    "m4g2"
+   ],
+   "30": {
+    "ai_sent_volleys": {
+     "FAIR": [
+      4,
+      2,
+      4,
+      2,
+      4
+     ],
+     "FAIR2": [
+      3,
+      2,
+      3,
+      1,
+      0
+     ],
+     "mean_FAIR": 3.2,
+     "mean_FAIR2": 1.8,
+     "perm_p": 0.167
+    },
+    "ai_sent_cells": {
+     "FAIR": [
+      8,
+      4,
+      8,
+      4,
+      8
+     ],
+     "FAIR2": [
+      6,
+      4,
+      6,
+      2,
+      0
+     ],
+     "mean_FAIR": 6.4,
+     "mean_FAIR2": 3.6,
+     "perm_p": 0.167
+    },
+    "ai_sent_volleys_per_min": {
+     "FAIR": [
+      8.0,
+      4.0,
+      8.0,
+      4.4,
+      8.0
+     ],
+     "FAIR2": [
+      6.0,
+      4.0,
+      6.0,
+      2.0,
+      0.0
+     ],
+     "mean_FAIR": 6.48,
+     "mean_FAIR2": 3.6,
+     "perm_p": 0.095
+    },
+    "ai_sent_cells_per_min": {
+     "FAIR": [
+      16.0,
+      8.0,
+      16.0,
+      8.8,
+      16.0
+     ],
+     "FAIR2": [
+      12.0,
+      8.0,
+      12.0,
+      4.0,
+      0.0
+     ],
+     "mean_FAIR": 12.96,
+     "mean_FAIR2": 7.2,
+     "perm_p": 0.095
+    },
+    "owner_recv_volleys": {
+     "FAIR": [
+      4,
+      2,
+      3,
+      2,
+      3
+     ],
+     "FAIR2": [
+      2,
+      3,
+      2,
+      0,
+      0
+     ],
+     "mean_FAIR": 2.8,
+     "mean_FAIR2": 1.4,
+     "perm_p": 0.175
+    },
+    "owner_recv_cells": {
+     "FAIR": [
+      8,
+      4,
+      8,
+      4,
+      8
+     ],
+     "FAIR2": [
+      4,
+      8,
+      4,
+      0,
+      0
+     ],
+     "mean_FAIR": 6.4,
+     "mean_FAIR2": 3.2,
+     "perm_p": 0.238
+    },
+    "ai_pills_per_min": {
+     "FAIR": [
+      34.0,
+      42.0,
+      44.0,
+      48.41,
+      38.0
+     ],
+     "FAIR2": [
+      42.0,
+      40.0,
+      48.0,
+      34.0,
+      26.0
+     ],
+     "mean_FAIR": 41.28,
+     "mean_FAIR2": 38.0,
+     "perm_p": 0.516
+    },
+    "ai_viruses_per_min": {
+     "FAIR": [
+      32.0,
+      38.0,
+      40.0,
+      33.01,
+      34.0
+     ],
+     "FAIR2": [
+      18.0,
+      38.0,
+      30.0,
+      28.0,
+      16.0
+     ],
+     "mean_FAIR": 35.4,
+     "mean_FAIR2": 26.0,
+     "perm_p": 0.079
+    },
+    "owner_pills_per_min": {
+     "FAIR": [
+      28.0,
+      34.0,
+      28.0,
+      37.41,
+      32.0
+     ],
+     "FAIR2": [
+      34.0,
+      34.0,
+      34.0,
+      34.0,
+      46.0
+     ],
+     "mean_FAIR": 31.88,
+     "mean_FAIR2": 36.4,
+     "perm_p": 0.198
+    },
+    "owner_viruses_per_min": {
+     "FAIR": [
+      14.0,
+      18.0,
+      12.0,
+      11.0,
+      12.0
+     ],
+     "FAIR2": [
+      10.0,
+      14.0,
+      16.0,
+      34.0,
+      32.0
+     ],
+     "mean_FAIR": 13.4,
+     "mean_FAIR2": 21.2,
+     "perm_p": 0.254
+    },
+    "owner_sent_volleys": {
+     "FAIR": [
+      2,
+      1,
+      1,
+      1,
+      2
+     ],
+     "FAIR2": [
+      1,
+      1,
+      1,
+      2,
+      3
+     ],
+     "mean_FAIR": 1.4,
+     "mean_FAIR2": 1.6,
+     "perm_p": 1.0
+    },
+    "pooled_ai_sent_volleys_per_min": {
+     "FAIR": 6.52,
+     "FAIR2": 3.6,
+     "minutes": [
+      2.46,
+      2.5
+     ]
+    }
+   },
+   "60": {
+    "ai_sent_volleys": {
+     "FAIR": [
+      5,
+      4,
+      5,
+      2,
+      4
+     ],
+     "FAIR2": [
+      6,
+      5,
+      3,
+      3,
+      2
+     ],
+     "mean_FAIR": 4,
+     "mean_FAIR2": 3.8,
+     "perm_p": 1.0
+    },
+    "ai_sent_cells": {
+     "FAIR": [
+      10,
+      8,
+      10,
+      4,
+      8
+     ],
+     "FAIR2": [
+      12,
+      10,
+      6,
+      6,
+      4
+     ],
+     "mean_FAIR": 8,
+     "mean_FAIR2": 7.6,
+     "perm_p": 1.0
+    },
+    "ai_sent_volleys_per_min": {
+     "FAIR": [
+      5.0,
+      4.0,
+      8.16,
+      4.4,
+      7.93
+     ],
+     "FAIR2": [
+      6.0,
+      5.0,
+      3.0,
+      3.0,
+      2.0
+     ],
+     "mean_FAIR": 5.9,
+     "mean_FAIR2": 3.8,
+     "perm_p": 0.127
+    },
+    "ai_sent_cells_per_min": {
+     "FAIR": [
+      10.0,
+      8.0,
+      16.32,
+      8.8,
+      15.85
+     ],
+     "FAIR2": [
+      12.0,
+      10.0,
+      6.0,
+      6.0,
+      4.0
+     ],
+     "mean_FAIR": 11.79,
+     "mean_FAIR2": 7.6,
+     "perm_p": 0.127
+    },
+    "owner_recv_volleys": {
+     "FAIR": [
+      5,
+      4,
+      3,
+      2,
+      3
+     ],
+     "FAIR2": [
+      6,
+      6,
+      4,
+      2,
+      2
+     ],
+     "mean_FAIR": 3.4,
+     "mean_FAIR2": 4,
+     "perm_p": 0.706
+    },
+    "owner_recv_cells": {
+     "FAIR": [
+      10,
+      8,
+      8,
+      4,
+      8
+     ],
+     "FAIR2": [
+      12,
+      14,
+      10,
+      4,
+      4
+     ],
+     "mean_FAIR": 7.6,
+     "mean_FAIR2": 8.8,
+     "perm_p": 0.738
+    },
+    "ai_pills_per_min": {
+     "FAIR": [
+      37.0,
+      39.0,
+      42.43,
+      48.41,
+      37.64
+     ],
+     "FAIR2": [
+      41.0,
+      41.0,
+      41.0,
+      33.0,
+      34.0
+     ],
+     "mean_FAIR": 40.9,
+     "mean_FAIR2": 38.0,
+     "perm_p": 0.333
+    },
+    "ai_viruses_per_min": {
+     "FAIR": [
+      24.0,
+      25.0,
+      34.27,
+      33.01,
+      33.68
+     ],
+     "FAIR2": [
+      18.0,
+      28.0,
+      18.0,
+      22.0,
+      16.0
+     ],
+     "mean_FAIR": 29.99,
+     "mean_FAIR2": 20.4,
+     "perm_p": 0.032
+    },
+    "owner_pills_per_min": {
+     "FAIR": [
+      30.0,
+      29.0,
+      24.48,
+      37.41,
+      31.7
+     ],
+     "FAIR2": [
+      30.0,
+      31.0,
+      33.0,
+      31.0,
+      32.0
+     ],
+     "mean_FAIR": 30.52,
+     "mean_FAIR2": 31.4,
+     "perm_p": 0.651
+    },
+    "owner_viruses_per_min": {
+     "FAIR": [
+      11.0,
+      15.0,
+      13.06,
+      11.0,
+      11.89
+     ],
+     "FAIR2": [
+      7.0,
+      11.0,
+      17.0,
+      23.0,
+      27.0
+     ],
+     "mean_FAIR": 12.39,
+     "mean_FAIR2": 17.0,
+     "perm_p": 0.302
+    },
+    "owner_sent_volleys": {
+     "FAIR": [
+      3,
+      2,
+      1,
+      1,
+      2
+     ],
+     "FAIR2": [
+      1,
+      1,
+      2,
+      3,
+      6
+     ],
+     "mean_FAIR": 1.8,
+     "mean_FAIR2": 2.6,
+     "perm_p": 0.69
+    },
+    "pooled_ai_sent_volleys_per_min": {
+     "FAIR": 5.6,
+     "FAIR2": 3.8,
+     "minutes": [
+      3.57,
+      5.0
+     ]
+    }
+   },
+   "120": {
+    "ai_sent_volleys": {
+     "FAIR": [
+      10,
+      8,
+      5,
+      2,
+      4
+     ],
+     "FAIR2": [
+      7,
+      11,
+      9,
+      9,
+      10
+     ],
+     "mean_FAIR": 5.8,
+     "mean_FAIR2": 9.2,
+     "perm_p": 0.087
+    },
+    "ai_sent_cells": {
+     "FAIR": [
+      21,
+      17,
+      10,
+      4,
+      8
+     ],
+     "FAIR2": [
+      14,
+      22,
+      18,
+      18,
+      20
+     ],
+     "mean_FAIR": 12,
+     "mean_FAIR2": 18.4,
+     "perm_p": 0.103
+    },
+    "ai_sent_volleys_per_min": {
+     "FAIR": [
+      5.0,
+      4.0,
+      8.16,
+      4.4,
+      7.93
+     ],
+     "FAIR2": [
+      5.87,
+      5.5,
+      4.5,
+      4.5,
+      5.0
+     ],
+     "mean_FAIR": 5.9,
+     "mean_FAIR2": 5.07,
+     "perm_p": 0.429
+    },
+    "ai_sent_cells_per_min": {
+     "FAIR": [
+      10.5,
+      8.5,
+      16.32,
+      8.8,
+      15.85
+     ],
+     "FAIR2": [
+      11.74,
+      11.0,
+      9.0,
+      9.0,
+      10.0
+     ],
+     "mean_FAIR": 11.99,
+     "mean_FAIR2": 10.15,
+     "perm_p": 0.389
+    },
+    "owner_recv_volleys": {
+     "FAIR": [
+      9,
+      8,
+      3,
+      2,
+      3
+     ],
+     "FAIR2": [
+      6,
+      12,
+      10,
+      7,
+      8
+     ],
+     "mean_FAIR": 5,
+     "mean_FAIR2": 8.6,
+     "perm_p": 0.095
+    },
+    "owner_recv_cells": {
+     "FAIR": [
+      19,
+      17,
+      8,
+      4,
+      8
+     ],
+     "FAIR2": [
+      12,
+      26,
+      22,
+      14,
+      18
+     ],
+     "mean_FAIR": 11.2,
+     "mean_FAIR2": 18.4,
+     "perm_p": 0.119
+    },
+    "ai_pills_per_min": {
+     "FAIR": [
+      38.5,
+      36.0,
+      42.43,
+      48.41,
+      37.64
+     ],
+     "FAIR2": [
+      39.4,
+      37.0,
+      37.5,
+      33.0,
+      37.5
+     ],
+     "mean_FAIR": 40.6,
+     "mean_FAIR2": 36.88,
+     "perm_p": 0.198
+    },
+    "ai_viruses_per_min": {
+     "FAIR": [
+      19.5,
+      18.5,
+      34.27,
+      33.01,
+      33.68
+     ],
+     "FAIR2": [
+      16.77,
+      20.5,
+      18.0,
+      17.0,
+      15.5
+     ],
+     "mean_FAIR": 27.79,
+     "mean_FAIR2": 17.55,
+     "perm_p": 0.032
+    },
+    "owner_pills_per_min": {
+     "FAIR": [
+      26.0,
+      28.0,
+      24.48,
+      37.41,
+      31.7
+     ],
+     "FAIR2": [
+      33.54,
+      29.0,
+      28.0,
+      26.0,
+      24.5
+     ],
+     "mean_FAIR": 29.52,
+     "mean_FAIR2": 28.21,
+     "perm_p": 0.69
+    },
+    "owner_viruses_per_min": {
+     "FAIR": [
+      8.5,
+      10.5,
+      13.06,
+      11.0,
+      11.89
+     ],
+     "FAIR2": [
+      5.87,
+      7.5,
+      12.0,
+      17.5,
+      16.5
+     ],
+     "mean_FAIR": 10.99,
+     "mean_FAIR2": 11.87,
+     "perm_p": 0.746
+    },
+    "owner_sent_volleys": {
+     "FAIR": [
+      3,
+      5,
+      1,
+      1,
+      2
+     ],
+     "FAIR2": [
+      1,
+      2,
+      5,
+      5,
+      7
+     ],
+     "mean_FAIR": 2.4,
+     "mean_FAIR2": 4,
+     "perm_p": 0.349
+    },
+    "pooled_ai_sent_volleys_per_min": {
+     "FAIR": 5.2,
+     "FAIR2": 5.0,
+     "minutes": [
+      5.57,
+      9.19
+     ]
+    }
+   },
+   "all": {
+    "ai_sent_volleys": {
+     "FAIR": [
+      29,
+      22,
+      5,
+      2,
+      4
+     ],
+     "FAIR2": [
+      7,
+      17,
+      16,
+      20,
+      12
+     ],
+     "mean_FAIR": 12.4,
+     "mean_FAIR2": 14.4,
+     "perm_p": 0.778
+    },
+    "ai_sent_cells": {
+     "FAIR": [
+      65,
+      47,
+      10,
+      4,
+      8
+     ],
+     "FAIR2": [
+      14,
+      35,
+      33,
+      44,
+      24
+     ],
+     "mean_FAIR": 26.8,
+     "mean_FAIR2": 30,
+     "perm_p": 0.825
+    },
+    "ai_sent_volleys_per_min": {
+     "FAIR": [
+      5.39,
+      5.58,
+      8.16,
+      4.4,
+      7.93
+     ],
+     "FAIR2": [
+      5.87,
+      5.09,
+      5.7,
+      4.97,
+      4.4
+     ],
+     "mean_FAIR": 6.29,
+     "mean_FAIR2": 5.21,
+     "perm_p": 0.254
+    },
+    "ai_sent_cells_per_min": {
+     "FAIR": [
+      12.09,
+      11.93,
+      16.32,
+      8.8,
+      15.85
+     ],
+     "FAIR2": [
+      11.74,
+      10.49,
+      11.76,
+      10.93,
+      8.8
+     ],
+     "mean_FAIR": 13.0,
+     "mean_FAIR2": 10.74,
+     "perm_p": 0.175
+    },
+    "owner_recv_volleys": {
+     "FAIR": [
+      19,
+      20,
+      3,
+      2,
+      3
+     ],
+     "FAIR2": [
+      6,
+      19,
+      15,
+      17,
+      11
+     ],
+     "mean_FAIR": 9.4,
+     "mean_FAIR2": 13.6,
+     "perm_p": 0.413
+    },
+    "owner_recv_cells": {
+     "FAIR": [
+      43,
+      47,
+      8,
+      4,
+      8
+     ],
+     "FAIR2": [
+      12,
+      42,
+      35,
+      40,
+      24
+     ],
+     "mean_FAIR": 22,
+     "mean_FAIR2": 30.6,
+     "perm_p": 0.437
+    },
+    "ai_pills_per_min": {
+     "FAIR": [
+      34.23,
+      33.5,
+      42.43,
+      48.41,
+      37.64
+     ],
+     "FAIR2": [
+      39.4,
+      35.66,
+      35.29,
+      33.3,
+      39.98
+     ],
+     "mean_FAIR": 39.24,
+     "mean_FAIR2": 36.73,
+     "perm_p": 0.46
+    },
+    "ai_viruses_per_min": {
+     "FAIR": [
+      8.93,
+      10.91,
+      34.27,
+      33.01,
+      33.68
+     ],
+     "FAIR2": [
+      16.77,
+      14.08,
+      15.69,
+      11.93,
+      11.74
+     ],
+     "mean_FAIR": 24.16,
+     "mean_FAIR2": 14.04,
+     "perm_p": 0.167
+    },
+    "owner_pills_per_min": {
+     "FAIR": [
+      23.44,
+      25.12,
+      24.48,
+      37.41,
+      31.7
+     ],
+     "FAIR2": [
+      33.54,
+      29.97,
+      26.02,
+      22.86,
+      23.84
+     ],
+     "mean_FAIR": 28.43,
+     "mean_FAIR2": 27.25,
+     "perm_p": 0.738
+    },
+    "owner_viruses_per_min": {
+     "FAIR": [
+      5.77,
+      5.84,
+      13.06,
+      11.0,
+      11.89
+     ],
+     "FAIR2": [
+      5.87,
+      5.09,
+      10.7,
+      10.69,
+      13.21
+     ],
+     "mean_FAIR": 9.51,
+     "mean_FAIR2": 9.11,
+     "perm_p": 0.762
+    },
+    "owner_sent_volleys": {
+     "FAIR": [
+      12,
+      9,
+      1,
+      1,
+      2
+     ],
+     "FAIR2": [
+      1,
+      6,
+      6,
+      8,
+      11
+     ],
+     "mean_FAIR": 5,
+     "mean_FAIR2": 6.4,
+     "perm_p": 0.659
+    },
+    "pooled_ai_sent_volleys_per_min": {
+     "FAIR": 5.69,
+     "FAIR2": 5.11,
+     "minutes": [
+      10.89,
+      14.09
+     ]
+    }
+   },
+   "first_send_s": {
+    "FAIR": [
+     3.667,
+     2.8,
+     13.633,
+     15.167,
+     3.4
+    ],
+    "FAIR2": [
+     15.25,
+     17.667,
+     18.2,
+     29.95,
+     36.833
+    ],
+    "perm_p": 0.008
+   }
+  },
+  "asked_M3_vs_M2": {
+   "FAIR_games": [
+    "m3g1",
+    "m3g2",
+    "m3g3"
+   ],
+   "FAIR2_games": [
+    "m2g1",
+    "m2g2",
+    "m2g3"
+   ],
+   "30": {
+    "ai_sent_volleys": {
+     "FAIR": [
+      4,
+      2,
+      4
+     ],
+     "FAIR2": [
+      3,
+      2,
+      3
+     ],
+     "mean_FAIR": 3.33,
+     "mean_FAIR2": 2.67,
+     "perm_p": 0.6
+    },
+    "ai_sent_cells": {
+     "FAIR": [
+      8,
+      4,
+      8
+     ],
+     "FAIR2": [
+      6,
+      4,
+      6
+     ],
+     "mean_FAIR": 6.67,
+     "mean_FAIR2": 5.33,
+     "perm_p": 0.6
+    },
+    "ai_sent_volleys_per_min": {
+     "FAIR": [
+      8.0,
+      4.4,
+      8.0
+     ],
+     "FAIR2": [
+      6.0,
+      4.0,
+      6.0
+     ],
+     "mean_FAIR": 6.8,
+     "mean_FAIR2": 5.33,
+     "perm_p": 0.3
+    },
+    "ai_sent_cells_per_min": {
+     "FAIR": [
+      16.0,
+      8.8,
+      16.0
+     ],
+     "FAIR2": [
+      12.0,
+      8.0,
+      12.0
+     ],
+     "mean_FAIR": 13.6,
+     "mean_FAIR2": 10.67,
+     "perm_p": 0.3
+    },
+    "owner_recv_volleys": {
+     "FAIR": [
+      3,
+      2,
+      3
+     ],
+     "FAIR2": [
+      2,
+      3,
+      2
+     ],
+     "mean_FAIR": 2.67,
+     "mean_FAIR2": 2.33,
+     "perm_p": 1.0
+    },
+    "owner_recv_cells": {
+     "FAIR": [
+      8,
+      4,
+      8
+     ],
+     "FAIR2": [
+      4,
+      8,
+      4
+     ],
+     "mean_FAIR": 6.67,
+     "mean_FAIR2": 5.33,
+     "perm_p": 1.0
+    },
+    "ai_pills_per_min": {
+     "FAIR": [
+      44.0,
+      48.41,
+      38.0
+     ],
+     "FAIR2": [
+      42.0,
+      40.0,
+      48.0
+     ],
+     "mean_FAIR": 43.47,
+     "mean_FAIR2": 43.33,
+     "perm_p": 1.0
+    },
+    "ai_viruses_per_min": {
+     "FAIR": [
+      40.0,
+      33.01,
+      34.0
+     ],
+     "FAIR2": [
+      18.0,
+      38.0,
+      30.0
+     ],
+     "mean_FAIR": 35.67,
+     "mean_FAIR2": 28.67,
+     "perm_p": 0.4
+    },
+    "owner_pills_per_min": {
+     "FAIR": [
+      28.0,
+      37.41,
+      32.0
+     ],
+     "FAIR2": [
+      34.0,
+      34.0,
+      34.0
+     ],
+     "mean_FAIR": 32.47,
+     "mean_FAIR2": 34.0,
+     "perm_p": 0.7
+    },
+    "owner_viruses_per_min": {
+     "FAIR": [
+      12.0,
+      11.0,
+      12.0
+     ],
+     "FAIR2": [
+      10.0,
+      14.0,
+      16.0
+     ],
+     "mean_FAIR": 11.67,
+     "mean_FAIR2": 13.33,
+     "perm_p": 0.5
+    },
+    "owner_sent_volleys": {
+     "FAIR": [
+      1,
+      1,
+      2
+     ],
+     "FAIR2": [
+      1,
+      1,
+      1
+     ],
+     "mean_FAIR": 1.33,
+     "mean_FAIR2": 1,
+     "perm_p": 1.0
+    },
+    "pooled_ai_sent_volleys_per_min": {
+     "FAIR": 6.87,
+     "FAIR2": 5.33,
+     "minutes": [
+      1.45,
+      1.5
+     ]
+    }
+   },
+   "60": {
+    "ai_sent_volleys": {
+     "FAIR": [
+      5,
+      2,
+      4
+     ],
+     "FAIR2": [
+      6,
+      5,
+      3
+     ],
+     "mean_FAIR": 3.67,
+     "mean_FAIR2": 4.67,
+     "perm_p": 0.6
+    },
+    "ai_sent_cells": {
+     "FAIR": [
+      10,
+      4,
+      8
+     ],
+     "FAIR2": [
+      12,
+      10,
+      6
+     ],
+     "mean_FAIR": 7.33,
+     "mean_FAIR2": 9.33,
+     "perm_p": 0.6
+    },
+    "ai_sent_volleys_per_min": {
+     "FAIR": [
+      8.16,
+      4.4,
+      7.93
+     ],
+     "FAIR2": [
+      6.0,
+      5.0,
+      3.0
+     ],
+     "mean_FAIR": 6.83,
+     "mean_FAIR2": 4.67,
+     "perm_p": 0.3
+    },
+    "ai_sent_cells_per_min": {
+     "FAIR": [
+      16.32,
+      8.8,
+      15.85
+     ],
+     "FAIR2": [
+      12.0,
+      10.0,
+      6.0
+     ],
+     "mean_FAIR": 13.66,
+     "mean_FAIR2": 9.33,
+     "perm_p": 0.3
+    },
+    "owner_recv_volleys": {
+     "FAIR": [
+      3,
+      2,
+      3
+     ],
+     "FAIR2": [
+      6,
+      6,
+      4
+     ],
+     "mean_FAIR": 2.67,
+     "mean_FAIR2": 5.33,
+     "perm_p": 0.1
+    },
+    "owner_recv_cells": {
+     "FAIR": [
+      8,
+      4,
+      8
+     ],
+     "FAIR2": [
+      12,
+      14,
+      10
+     ],
+     "mean_FAIR": 6.67,
+     "mean_FAIR2": 12,
+     "perm_p": 0.1
+    },
+    "ai_pills_per_min": {
+     "FAIR": [
+      42.43,
+      48.41,
+      37.64
+     ],
+     "FAIR2": [
+      41.0,
+      41.0,
+      41.0
+     ],
+     "mean_FAIR": 42.83,
+     "mean_FAIR2": 41.0,
+     "perm_p": 0.7
+    },
+    "ai_viruses_per_min": {
+     "FAIR": [
+      34.27,
+      33.01,
+      33.68
+     ],
+     "FAIR2": [
+      18.0,
+      28.0,
+      18.0
+     ],
+     "mean_FAIR": 33.65,
+     "mean_FAIR2": 21.33,
+     "perm_p": 0.1
+    },
+    "owner_pills_per_min": {
+     "FAIR": [
+      24.48,
+      37.41,
+      31.7
+     ],
+     "FAIR2": [
+      30.0,
+      31.0,
+      33.0
+     ],
+     "mean_FAIR": 31.2,
+     "mean_FAIR2": 31.33,
+     "perm_p": 1.0
+    },
+    "owner_viruses_per_min": {
+     "FAIR": [
+      13.06,
+      11.0,
+      11.89
+     ],
+     "FAIR2": [
+      7.0,
+      11.0,
+      17.0
+     ],
+     "mean_FAIR": 11.98,
+     "mean_FAIR2": 11.67,
+     "perm_p": 0.9
+    },
+    "owner_sent_volleys": {
+     "FAIR": [
+      1,
+      1,
+      2
+     ],
+     "FAIR2": [
+      1,
+      1,
+      2
+     ],
+     "mean_FAIR": 1.33,
+     "mean_FAIR2": 1.33,
+     "perm_p": 1.0
+    },
+    "pooled_ai_sent_volleys_per_min": {
+     "FAIR": 6.99,
+     "FAIR2": 4.67,
+     "minutes": [
+      1.57,
+      3.0
+     ]
+    }
+   },
+   "120": {
+    "ai_sent_volleys": {
+     "FAIR": [
+      5,
+      2,
+      4
+     ],
+     "FAIR2": [
+      7,
+      11,
+      9
+     ],
+     "mean_FAIR": 3.67,
+     "mean_FAIR2": 9,
+     "perm_p": 0.1
+    },
+    "ai_sent_cells": {
+     "FAIR": [
+      10,
+      4,
+      8
+     ],
+     "FAIR2": [
+      14,
+      22,
+      18
+     ],
+     "mean_FAIR": 7.33,
+     "mean_FAIR2": 18,
+     "perm_p": 0.1
+    },
+    "ai_sent_volleys_per_min": {
+     "FAIR": [
+      8.16,
+      4.4,
+      7.93
+     ],
+     "FAIR2": [
+      5.87,
+      5.5,
+      4.5
+     ],
+     "mean_FAIR": 6.83,
+     "mean_FAIR2": 5.29,
+     "perm_p": 0.4
+    },
+    "ai_sent_cells_per_min": {
+     "FAIR": [
+      16.32,
+      8.8,
+      15.85
+     ],
+     "FAIR2": [
+      11.74,
+      11.0,
+      9.0
+     ],
+     "mean_FAIR": 13.66,
+     "mean_FAIR2": 10.58,
+     "perm_p": 0.4
+    },
+    "owner_recv_volleys": {
+     "FAIR": [
+      3,
+      2,
+      3
+     ],
+     "FAIR2": [
+      6,
+      12,
+      10
+     ],
+     "mean_FAIR": 2.67,
+     "mean_FAIR2": 9.33,
+     "perm_p": 0.1
+    },
+    "owner_recv_cells": {
+     "FAIR": [
+      8,
+      4,
+      8
+     ],
+     "FAIR2": [
+      12,
+      26,
+      22
+     ],
+     "mean_FAIR": 6.67,
+     "mean_FAIR2": 20,
+     "perm_p": 0.1
+    },
+    "ai_pills_per_min": {
+     "FAIR": [
+      42.43,
+      48.41,
+      37.64
+     ],
+     "FAIR2": [
+      39.4,
+      37.0,
+      37.5
+     ],
+     "mean_FAIR": 42.83,
+     "mean_FAIR2": 37.97,
+     "perm_p": 0.2
+    },
+    "ai_viruses_per_min": {
+     "FAIR": [
+      34.27,
+      33.01,
+      33.68
+     ],
+     "FAIR2": [
+      16.77,
+      20.5,
+      18.0
+     ],
+     "mean_FAIR": 33.65,
+     "mean_FAIR2": 18.42,
+     "perm_p": 0.1
+    },
+    "owner_pills_per_min": {
+     "FAIR": [
+      24.48,
+      37.41,
+      31.7
+     ],
+     "FAIR2": [
+      33.54,
+      29.0,
+      28.0
+     ],
+     "mean_FAIR": 31.2,
+     "mean_FAIR2": 30.18,
+     "perm_p": 0.9
+    },
+    "owner_viruses_per_min": {
+     "FAIR": [
+      13.06,
+      11.0,
+      11.89
+     ],
+     "FAIR2": [
+      5.87,
+      7.5,
+      12.0
+     ],
+     "mean_FAIR": 11.98,
+     "mean_FAIR2": 8.46,
+     "perm_p": 0.3
+    },
+    "owner_sent_volleys": {
+     "FAIR": [
+      1,
+      1,
+      2
+     ],
+     "FAIR2": [
+      1,
+      2,
+      5
+     ],
+     "mean_FAIR": 1.33,
+     "mean_FAIR2": 2.67,
+     "perm_p": 0.7
+    },
+    "pooled_ai_sent_volleys_per_min": {
+     "FAIR": 6.99,
+     "FAIR2": 5.2,
+     "minutes": [
+      1.57,
+      5.19
+     ]
+    }
+   },
+   "all": {
+    "ai_sent_volleys": {
+     "FAIR": [
+      5,
+      2,
+      4
+     ],
+     "FAIR2": [
+      7,
+      17,
+      16
+     ],
+     "mean_FAIR": 3.67,
+     "mean_FAIR2": 13.33,
+     "perm_p": 0.1
+    },
+    "ai_sent_cells": {
+     "FAIR": [
+      10,
+      4,
+      8
+     ],
+     "FAIR2": [
+      14,
+      35,
+      33
+     ],
+     "mean_FAIR": 7.33,
+     "mean_FAIR2": 27.33,
+     "perm_p": 0.1
+    },
+    "ai_sent_volleys_per_min": {
+     "FAIR": [
+      8.16,
+      4.4,
+      7.93
+     ],
+     "FAIR2": [
+      5.87,
+      5.09,
+      5.7
+     ],
+     "mean_FAIR": 6.83,
+     "mean_FAIR2": 5.55,
+     "perm_p": 0.4
+    },
+    "ai_sent_cells_per_min": {
+     "FAIR": [
+      16.32,
+      8.8,
+      15.85
+     ],
+     "FAIR2": [
+      11.74,
+      10.49,
+      11.76
+     ],
+     "mean_FAIR": 13.66,
+     "mean_FAIR2": 11.33,
+     "perm_p": 0.4
+    },
+    "owner_recv_volleys": {
+     "FAIR": [
+      3,
+      2,
+      3
+     ],
+     "FAIR2": [
+      6,
+      19,
+      15
+     ],
+     "mean_FAIR": 2.67,
+     "mean_FAIR2": 13.33,
+     "perm_p": 0.1
+    },
+    "owner_recv_cells": {
+     "FAIR": [
+      8,
+      4,
+      8
+     ],
+     "FAIR2": [
+      12,
+      42,
+      35
+     ],
+     "mean_FAIR": 6.67,
+     "mean_FAIR2": 29.67,
+     "perm_p": 0.1
+    },
+    "ai_pills_per_min": {
+     "FAIR": [
+      42.43,
+      48.41,
+      37.64
+     ],
+     "FAIR2": [
+      39.4,
+      35.66,
+      35.29
+     ],
+     "mean_FAIR": 42.83,
+     "mean_FAIR2": 36.78,
+     "perm_p": 0.2
+    },
+    "ai_viruses_per_min": {
+     "FAIR": [
+      34.27,
+      33.01,
+      33.68
+     ],
+     "FAIR2": [
+      16.77,
+      14.08,
+      15.69
+     ],
+     "mean_FAIR": 33.65,
+     "mean_FAIR2": 15.51,
+     "perm_p": 0.1
+    },
+    "owner_pills_per_min": {
+     "FAIR": [
+      24.48,
+      37.41,
+      31.7
+     ],
+     "FAIR2": [
+      33.54,
+      29.97,
+      26.02
+     ],
+     "mean_FAIR": 31.2,
+     "mean_FAIR2": 29.84,
+     "perm_p": 0.8
+    },
+    "owner_viruses_per_min": {
+     "FAIR": [
+      13.06,
+      11.0,
+      11.89
+     ],
+     "FAIR2": [
+      5.87,
+      5.09,
+      10.7
+     ],
+     "mean_FAIR": 11.98,
+     "mean_FAIR2": 7.22,
+     "perm_p": 0.1
+    },
+    "owner_sent_volleys": {
+     "FAIR": [
+      1,
+      1,
+      2
+     ],
+     "FAIR2": [
+      1,
+      6,
+      6
+     ],
+     "mean_FAIR": 1.33,
+     "mean_FAIR2": 4.33,
+     "perm_p": 0.4
+    },
+    "pooled_ai_sent_volleys_per_min": {
+     "FAIR": 6.99,
+     "FAIR2": 5.45,
+     "minutes": [
+      1.57,
+      7.33
+     ]
+    }
+   },
+   "first_send_s": {
+    "FAIR": [
+     13.633,
+     15.167,
+     3.4
+    ],
+    "FAIR2": [
+     15.25,
+     17.667,
+     18.2
+    ],
+    "perm_p": 0.1
+   }
+  }
+ }
+}

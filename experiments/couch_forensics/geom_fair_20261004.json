@@ -1,0 +1,15 @@
+{
+ "capture": "2026-10-04 08-59-07.mkv and 2026-10-04 19-15-50.mkv (rivalmage, OBS 1080p60, same path as 10/03)",
+ "fit": "10/03 pitch kept; origins grid-searched on 15 frames (6 + 9) by geomfit_fair_20261004.py, score = linked halves - 2 x link violations. P2 x0 1129.5 (= 10/03): 6 viol / 574 cells / 152 linked. P1 x0 424.6: 12 viol / 815 cells / 158 linked. y0 1 px either way is within 1 violation; 10/03 y0 kept. Board virus counts == HUD on 2 frames checked by eye (43/36, 38/25).",
+ "SX": 5.55,
+ "SY": 4.825,
+ "CW": 44.4,
+ "CH": 38.6,
+ "P1_X0": 424.6,
+ "P2_X0": 1129.5,
+ "P2_Y0": 341.2,
+ "PREV_Y0": 219.2,
+ "VIRUS_MIXED": false,
+ "HUD_X": {"p1t": 859.5, "p1o": 904.0, "p2t": 971.0, "p2o": 1015.5},
+ "HUD_Y": 881.5
+}

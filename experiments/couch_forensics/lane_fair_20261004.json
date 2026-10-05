@@ -1,0 +1,566 @@
+{
+ "m1g1": {
+  "build": "FAIR",
+  "log": "AI full clear, owner 17 / AI 0",
+  "lane": {
+   "3": {
+    "height": 5,
+    "cells_above_top_virus": 4,
+    "by_provenance": {
+     "P": 2,
+     "G": 2
+    },
+    "top_cells": [
+     [
+      11,
+      "P125"
+     ],
+     [
+      12,
+      "G123"
+     ],
+     [
+      13,
+      "G123"
+     ],
+     [
+      14,
+      "P123"
+     ]
+    ]
+   },
+   "4": {
+    "height": 5,
+    "cells_above_top_virus": 5,
+    "by_provenance": {
+     "P": 3,
+     "G": 2
+    },
+    "top_cells": [
+     [
+      11,
+      "P125"
+     ],
+     [
+      12,
+      "G122"
+     ],
+     [
+      13,
+      "G122"
+     ],
+     [
+      14,
+      "P88"
+     ]
+    ]
+   }
+  }
+ },
+ "m1g2": {
+  "build": "FAIR",
+  "log": "owner tapped out 25 / 5",
+  "lane": {
+   "3": {
+    "height": 16,
+    "cells_above_top_virus": 10,
+    "by_provenance": {
+     "P": 8,
+     "G": 2
+    },
+    "top_cells": [
+     [
+      0,
+      "P98"
+     ],
+     [
+      1,
+      "P97"
+     ],
+     [
+      2,
+      "P96"
+     ],
+     [
+      3,
+      "P96"
+     ]
+    ]
+   },
+   "4": {
+    "height": 16,
+    "cells_above_top_virus": 11,
+    "by_provenance": {
+     "P": 7,
+     "G": 4
+    },
+    "top_cells": [
+     [
+      0,
+      "P98"
+     ],
+     [
+      1,
+      "P97"
+     ],
+     [
+      4,
+      "P94"
+     ],
+     [
+      5,
+      "P91"
+     ]
+    ]
+   }
+  }
+ },
+ "m2g1": {
+  "build": "FAIR2",
+  "log": "owner tapped out 42 / 27",
+  "lane": {
+   "3": {
+    "height": 16,
+    "cells_above_top_virus": 8,
+    "by_provenance": {
+     "P": 8
+    },
+    "top_cells": [
+     [
+      0,
+      "P39"
+     ],
+     [
+      1,
+      "P38"
+     ],
+     [
+      2,
+      "P37"
+     ],
+     [
+      3,
+      "P35"
+     ]
+    ]
+   },
+   "4": {
+    "height": 16,
+    "cells_above_top_virus": 6,
+    "by_provenance": {
+     "P": 5,
+     "G": 1
+    },
+    "top_cells": [
+     [
+      0,
+      "P39"
+     ],
+     [
+      1,
+      "P38"
+     ],
+     [
+      2,
+      "P37"
+     ],
+     [
+      3,
+      "P32"
+     ]
+    ]
+   }
+  }
+ },
+ "m2g2": {
+  "build": "FAIR2",
+  "log": "owner topped out 32 / AI 1 (logged as a full clear; the recording shows 1 virus left)",
+  "lane": {
+   "3": {
+    "height": 16,
+    "cells_above_top_virus": 7,
+    "by_provenance": {
+     "P": 6,
+     "G": 1
+    },
+    "top_cells": [
+     [
+      0,
+      "P99"
+     ],
+     [
+      1,
+      "P98"
+     ],
+     [
+      2,
+      "P97"
+     ],
+     [
+      3,
+      "G88"
+     ]
+    ]
+   },
+   "4": {
+    "height": 16,
+    "cells_above_top_virus": 6,
+    "by_provenance": {
+     "P": 6
+    },
+    "top_cells": [
+     [
+      0,
+      "P99"
+     ],
+     [
+      1,
+      "P98"
+     ],
+     [
+      4,
+      "P81"
+     ],
+     [
+      5,
+      "P78"
+     ]
+    ]
+   }
+  }
+ },
+ "m2g3": {
+  "build": "FAIR2",
+  "log": "owner tapped out 19 / 4",
+  "lane": {
+   "3": {
+    "height": 15,
+    "cells_above_top_virus": 7,
+    "by_provenance": {
+     "P": 5,
+     "G": 2
+    },
+    "top_cells": [
+     [
+      1,
+      "P71"
+     ],
+     [
+      2,
+      "P71"
+     ],
+     [
+      3,
+      "G70"
+     ],
+     [
+      4,
+      "P68"
+     ]
+    ]
+   },
+   "4": {
+    "height": 16,
+    "cells_above_top_virus": 9,
+    "by_provenance": {
+     "P": 8,
+     "G": 1
+    },
+    "top_cells": [
+     [
+      0,
+      "P72"
+     ],
+     [
+      4,
+      "P68"
+     ],
+     [
+      5,
+      "P63"
+     ],
+     [
+      8,
+      "P53"
+     ]
+    ]
+   }
+  }
+ },
+ "m3g1": {
+  "build": "FAIR",
+  "log": "owner topped out 42 / 26 ('garbage killed the spawn cells')",
+  "lane": {
+   "3": {
+    "height": 12,
+    "cells_above_top_virus": 4,
+    "by_provenance": {
+     "P": 4
+    },
+    "top_cells": [
+     [
+      4,
+      "P11"
+     ],
+     [
+      5,
+      "P6"
+     ],
+     [
+      8,
+      "P14"
+     ],
+     [
+      11,
+      "P4"
+     ]
+    ]
+   },
+   "4": {
+    "height": 16,
+    "cells_above_top_virus": 6,
+    "by_provenance": {
+     "G": 4,
+     "P": 2
+    },
+    "top_cells": [
+     [
+      0,
+      "Gend"
+     ],
+     [
+      1,
+      "G11"
+     ],
+     [
+      2,
+      "G10"
+     ],
+     [
+      3,
+      "G10"
+     ]
+    ]
+   }
+  }
+ },
+ "m3g2": {
+  "build": "FAIR",
+  "log": "owner out 43 / 33 ('I messed up')",
+  "lane": {
+   "3": {
+    "height": 16,
+    "cells_above_top_virus": 2,
+    "by_provenance": {
+     "P": 2
+    },
+    "top_cells": [
+     [
+      0,
+      "P16"
+     ],
+     [
+      9,
+      "P13"
+     ],
+     [
+      10,
+      "V"
+     ],
+     [
+      11,
+      "V"
+     ]
+    ]
+   },
+   "4": {
+    "height": 16,
+    "cells_above_top_virus": 2,
+    "by_provenance": {
+     "P": 2
+    },
+    "top_cells": [
+     [
+      0,
+      "P16"
+     ],
+     [
+      1,
+      "P14"
+     ],
+     [
+      8,
+      "V"
+     ],
+     [
+      10,
+      "V"
+     ]
+    ]
+   }
+  }
+ },
+ "m3g3": {
+  "build": "FAIR",
+  "log": "owner out 44 / 31 ('messed up again')",
+  "lane": {
+   "3": {
+    "height": 16,
+    "cells_above_top_virus": 4,
+    "by_provenance": {
+     "P": 3,
+     "G": 1
+    },
+    "top_cells": [
+     [
+      0,
+      "P15"
+     ],
+     [
+      1,
+      "P14"
+     ],
+     [
+      2,
+      "P13"
+     ],
+     [
+      7,
+      "G12"
+     ]
+    ]
+   },
+   "4": {
+    "height": 15,
+    "cells_above_top_virus": 5,
+    "by_provenance": {
+     "P": 3,
+     "G": 2
+    },
+    "top_cells": [
+     [
+      1,
+      "P14"
+     ],
+     [
+      2,
+      "P13"
+     ],
+     [
+      3,
+      "G5"
+     ],
+     [
+      4,
+      "G5"
+     ]
+    ]
+   }
+  }
+ },
+ "m4g1": {
+  "build": "FAIR2",
+  "log": "AI full clear, owner at 5 (race loss)",
+  "lane": {
+   "3": {
+    "height": 6,
+    "cells_above_top_virus": 6,
+    "by_provenance": {
+     "G": 4,
+     "P": 2
+    },
+    "top_cells": [
+     [
+      10,
+      "G90"
+     ],
+     [
+      11,
+      "P88"
+     ],
+     [
+      12,
+      "G75"
+     ],
+     [
+      13,
+      "P69"
+     ]
+    ]
+   },
+   "4": {
+    "height": 9,
+    "cells_above_top_virus": 8,
+    "by_provenance": {
+     "P": 5,
+     "G": 3
+    },
+    "top_cells": [
+     [
+      7,
+      "P90"
+     ],
+     [
+      8,
+      "G88"
+     ],
+     [
+      9,
+      "P73"
+     ],
+     [
+      10,
+      "P73"
+     ]
+    ]
+   }
+  }
+ },
+ "m4g2": {
+  "build": "FAIR2",
+  "log": "AI TAPPED OUT, owner 12 / AI 16",
+  "lane": {
+   "3": {
+    "height": 4,
+    "cells_above_top_virus": 0,
+    "by_provenance": {},
+    "top_cells": [
+     [
+      12,
+      "V"
+     ],
+     [
+      13,
+      "V"
+     ]
+    ]
+   },
+   "4": {
+    "height": 6,
+    "cells_above_top_virus": 5,
+    "by_provenance": {
+     "P": 4,
+     "G": 1
+    },
+    "top_cells": [
+     [
+      10,
+      "P64"
+     ],
+     [
+      12,
+      "G56"
+     ],
+     [
+      13,
+      "P34"
+     ],
+     [
+      14,
+      "P33"
+     ]
+    ]
+   }
+  }
+ }
+}

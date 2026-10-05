@@ -1,0 +1,382 @@
+[
+ {
+  "game": "m1g1",
+  "build": "FAIR",
+  "n": 184,
+  "categories": {
+   "MATCH": 150,
+   "OTHER": 24,
+   "LATE-FLIP": 4,
+   "SHORT-LANDING": 5,
+   "NOTRAJ": 1
+  },
+  "match_pct": 81.5,
+  "late_flip": 4,
+  "hybrid_proxy": 19,
+  "repairs": 10,
+  "opening_brain_only": {
+   "30": {
+    "pills": 17,
+    "brain_sent_volleys": 4,
+    "brain_sent_cells": 8,
+    "brain_viruses_cleared": 16,
+    "alive": true
+   },
+   "60": {
+    "pills": 37,
+    "brain_sent_volleys": 8,
+    "brain_sent_cells": 17,
+    "brain_viruses_cleared": 28,
+    "alive": true
+   },
+   "120": {
+    "pills": 77,
+    "brain_sent_volleys": 15,
+    "brain_sent_cells": 31,
+    "brain_viruses_cleared": 40,
+    "alive": true
+   }
+  }
+ },
+ {
+  "game": "m1g2",
+  "build": "FAIR",
+  "n": 132,
+  "categories": {
+   "MATCH": 110,
+   "OTHER": 15,
+   "SHORT-LANDING": 3,
+   "LATE-FLIP": 3,
+   "TUCK": 1
+  },
+  "match_pct": 83.3,
+  "late_flip": 3,
+  "hybrid_proxy": 14,
+  "repairs": 4,
+  "opening_brain_only": {
+   "30": {
+    "pills": 21,
+    "brain_sent_volleys": 3,
+    "brain_sent_cells": 6,
+    "brain_viruses_cleared": 16,
+    "alive": true
+   },
+   "60": {
+    "pills": 39,
+    "brain_sent_volleys": 6,
+    "brain_sent_cells": 12,
+    "brain_viruses_cleared": 27,
+    "alive": true
+   },
+   "120": {
+    "pills": 72,
+    "brain_sent_volleys": 12,
+    "brain_sent_cells": 25,
+    "brain_viruses_cleared": 42,
+    "alive": true
+   }
+  }
+ },
+ {
+  "game": "m2g1",
+  "build": "FAIR2",
+  "n": 47,
+  "categories": {
+   "MATCH": 42,
+   "OTHER": 4,
+   "LATE-FLIP": 1
+  },
+  "match_pct": 89.4,
+  "late_flip": 1,
+  "hybrid_proxy": 3,
+  "repairs": 4,
+  "opening_brain_only": {
+   "30": {
+    "pills": 21,
+    "brain_sent_volleys": 2,
+    "brain_sent_cells": 4,
+    "brain_viruses_cleared": 16,
+    "alive": true
+   },
+   "60": {
+    "pills": 41,
+    "brain_sent_volleys": 6,
+    "brain_sent_cells": 13,
+    "brain_viruses_cleared": 31,
+    "alive": true
+   },
+   "120": {
+    "pills": 47,
+    "brain_sent_volleys": 8,
+    "brain_sent_cells": 17,
+    "brain_viruses_cleared": 35,
+    "alive": true
+   }
+  }
+ },
+ {
+  "game": "m2g2",
+  "build": "FAIR2",
+  "n": 119,
+  "categories": {
+   "MATCH": 93,
+   "OTHER": 20,
+   "SHORT-LANDING": 2,
+   "LATE-FLIP": 3,
+   "TUCK": 1
+  },
+  "match_pct": 78.2,
+  "late_flip": 3,
+  "hybrid_proxy": 19,
+  "repairs": 4,
+  "opening_brain_only": {
+   "30": {
+    "pills": 20,
+    "brain_sent_volleys": 3,
+    "brain_sent_cells": 6,
+    "brain_viruses_cleared": 22,
+    "alive": true
+   },
+   "60": {
+    "pills": 41,
+    "brain_sent_volleys": 5,
+    "brain_sent_cells": 10,
+    "brain_viruses_cleared": 40,
+    "alive": true
+   },
+   "120": {
+    "pills": 74,
+    "brain_sent_volleys": 10,
+    "brain_sent_cells": 20,
+    "brain_viruses_cleared": 45,
+    "alive": true
+   }
+  }
+ },
+ {
+  "game": "m2g3",
+  "build": "FAIR2",
+  "n": 99,
+  "categories": {
+   "MATCH": 88,
+   "OTHER": 7,
+   "SHORT-LANDING": 3,
+   "LATE-FLIP": 1
+  },
+  "match_pct": 88.9,
+  "late_flip": 1,
+  "hybrid_proxy": 9,
+  "repairs": 4,
+  "opening_brain_only": {
+   "30": {
+    "pills": 24,
+    "brain_sent_volleys": 3,
+    "brain_sent_cells": 6,
+    "brain_viruses_cleared": 19,
+    "alive": true
+   },
+   "60": {
+    "pills": 41,
+    "brain_sent_volleys": 7,
+    "brain_sent_cells": 14,
+    "brain_viruses_cleared": 33,
+    "alive": true
+   },
+   "120": {
+    "pills": 75,
+    "brain_sent_volleys": 13,
+    "brain_sent_cells": 26,
+    "brain_viruses_cleared": 44,
+    "alive": true
+   }
+  }
+ },
+ {
+  "game": "m3g1",
+  "build": "FAIR",
+  "n": 26,
+  "categories": {
+   "MATCH": 23,
+   "OTHER": 3
+  },
+  "match_pct": 88.5,
+  "late_flip": 0,
+  "hybrid_proxy": 3,
+  "repairs": 4,
+  "opening_brain_only": {
+   "30": {
+    "pills": 22,
+    "brain_sent_volleys": 3,
+    "brain_sent_cells": 6,
+    "brain_viruses_cleared": 16,
+    "alive": true
+   },
+   "60": {
+    "pills": 26,
+    "brain_sent_volleys": 3,
+    "brain_sent_cells": 6,
+    "brain_viruses_cleared": 16,
+    "alive": true
+   },
+   "120": {
+    "pills": 26,
+    "brain_sent_volleys": 3,
+    "brain_sent_cells": 6,
+    "brain_viruses_cleared": 16,
+    "alive": true
+   }
+  }
+ },
+ {
+  "game": "m3g2",
+  "build": "FAIR",
+  "n": 22,
+  "categories": {
+   "SHORT-LANDING": 3,
+   "MATCH": 15,
+   "NOTRAJ": 2,
+   "OTHER": 1,
+   "TUCK": 1
+  },
+  "match_pct": 68.2,
+  "late_flip": 0,
+  "hybrid_proxy": 5,
+  "repairs": 6,
+  "opening_brain_only": {
+   "30": {
+    "pills": 22,
+    "brain_sent_volleys": 2,
+    "brain_sent_cells": 4,
+    "brain_viruses_cleared": 15,
+    "alive": true
+   },
+   "60": {
+    "pills": 22,
+    "brain_sent_volleys": 2,
+    "brain_sent_cells": 4,
+    "brain_viruses_cleared": 15,
+    "alive": true
+   },
+   "120": {
+    "pills": 22,
+    "brain_sent_volleys": 2,
+    "brain_sent_cells": 4,
+    "brain_viruses_cleared": 15,
+    "alive": true
+   }
+  }
+ },
+ {
+  "game": "m3g3",
+  "build": "FAIR",
+  "n": 19,
+  "categories": {
+   "MATCH": 17,
+   "NOTRAJ": 1,
+   "TUCK": 1
+  },
+  "match_pct": 89.5,
+  "late_flip": 0,
+  "hybrid_proxy": 0,
+  "repairs": 8,
+  "opening_brain_only": {
+   "30": {
+    "pills": 19,
+    "brain_sent_volleys": 4,
+    "brain_sent_cells": 8,
+    "brain_viruses_cleared": 19,
+    "alive": true
+   },
+   "60": {
+    "pills": 19,
+    "brain_sent_volleys": 4,
+    "brain_sent_cells": 8,
+    "brain_viruses_cleared": 19,
+    "alive": true
+   },
+   "120": {
+    "pills": 19,
+    "brain_sent_volleys": 4,
+    "brain_sent_cells": 8,
+    "brain_viruses_cleared": 19,
+    "alive": true
+   }
+  }
+ },
+ {
+  "game": "m4g1",
+  "build": "FAIR2",
+  "n": 134,
+  "categories": {
+   "MATCH": 110,
+   "OTHER": 19,
+   "SHORT-LANDING": 3,
+   "LATE-FLIP": 2
+  },
+  "match_pct": 82.1,
+  "late_flip": 2,
+  "hybrid_proxy": 16,
+  "repairs": 3,
+  "opening_brain_only": {
+   "30": {
+    "pills": 17,
+    "brain_sent_volleys": 1,
+    "brain_sent_cells": 2,
+    "brain_viruses_cleared": 19,
+    "alive": true
+   },
+   "60": {
+    "pills": 33,
+    "brain_sent_volleys": 4,
+    "brain_sent_cells": 8,
+    "brain_viruses_cleared": 27,
+    "alive": true
+   },
+   "120": {
+    "pills": 66,
+    "brain_sent_volleys": 8,
+    "brain_sent_cells": 16,
+    "brain_viruses_cleared": 37,
+    "alive": true
+   }
+  }
+ },
+ {
+  "game": "m4g2",
+  "build": "FAIR2",
+  "n": 109,
+  "categories": {
+   "MATCH": 93,
+   "OTHER": 10,
+   "SHORT-LANDING": 4,
+   "LATE-FLIP": 2
+  },
+  "match_pct": 85.3,
+  "late_flip": 2,
+  "hybrid_proxy": 7,
+  "repairs": 6,
+  "opening_brain_only": {
+   "30": {
+    "pills": 13,
+    "brain_sent_volleys": 2,
+    "brain_sent_cells": 4,
+    "brain_viruses_cleared": 13,
+    "alive": true
+   },
+   "60": {
+    "pills": 34,
+    "brain_sent_volleys": 7,
+    "brain_sent_cells": 14,
+    "brain_viruses_cleared": 27,
+    "alive": true
+   },
+   "120": {
+    "pills": 75,
+    "brain_sent_volleys": 10,
+    "brain_sent_cells": 20,
+    "brain_viruses_cleared": 48,
+    "alive": true
+   }
+  }
+ }
+]
