@@ -51,6 +51,11 @@ expect "$OUT/ctl_couch_A_explicit.nes"   b1b576388dc2e1abffe6d1390430ebca
 expect "$OUT/ctl_couch_464_explicit.nes" 464a4b7586061a265a4759568eca2363
 expect "$OUT/ctl_cvc_A.nes"              821cafdbc3017129cad3c66fcc93d605
 expect "$OUT/ctl_cvc_A_explicit.nes"     821cafdbc3017129cad3c66fcc93d605
+# DRDISTROW=1 must stay the settle lane's B byte-for-byte after the =2 variant was added (pinned from the pre-=2 build)
+couch ctl_couch_D_row1       $D DRDISTROW=1
+couch ctl_couch_A_row1       $A DRDISTROW=1
+expect "$OUT/ctl_couch_D_row1.nes"       78bc8e75992f4cabe06bc9045b58bc4b
+expect "$OUT/ctl_couch_A_row1.nes"       45e3fe7c5ffba1c4da7b7eea816415d1
 # ---- candidates (each default-off flag on its own, then combined; combined flags need a combined cert)
 couch couch_D_lgp            $D DRLGPRESTART=1
 couch couch_A_lgp            $A DRLGPRESTART=1
@@ -58,7 +63,11 @@ couch couch_D_row            $D DRDISTROW=1
 couch couch_A_row            $A DRDISTROW=1
 couch couch_D_lgp_row        $D DRLGPRESTART=1 DRDISTROW=1
 couch couch_A_lgp_row        $A DRLGPRESTART=1 DRDISTROW=1
+couch couch_D_row2           $D DRDISTROW=2
+couch couch_A_row2           $A DRDISTROW=2
+couch couch_D_lgp_row2       $D DRLGPRESTART=1 DRDISTROW=2
+couch couch_A_lgp_row2       $A DRLGPRESTART=1 DRDISTROW=2
 # (no CvC candidate: the CvC snapshot has DRPRESTART=0, so the defect cannot occur there)
-for f in couch_D_lgp couch_A_lgp couch_D_row couch_A_row couch_D_lgp_row couch_A_lgp_row; do
+for f in couch_D_lgp couch_A_lgp couch_D_row couch_A_row couch_D_lgp_row couch_A_lgp_row couch_D_row2 couch_A_row2 couch_D_lgp_row2 couch_A_lgp_row2; do
   echo "BUILT $(md5 "$OUT/$f.nes")  $f.nes"; done
 [ $fail = 0 ] && echo "NEGATIVE CONTROLS: ALL PASS" || { echo "NEGATIVE CONTROLS: FAILED"; exit 1; }

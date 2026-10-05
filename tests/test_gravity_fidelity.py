@@ -90,6 +90,15 @@ ARMS = {   # name: (flags json, overlays, expectation)
     "couch_fair_A_lgp_row": ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
                         "DRABORTSTALE": "1", "DRLGPRESTART": "1", "DRDISTROW": "1"}, "pass"),
+    "couch_fair_A_row2": ("experiments/lateflip/couch_c960dd49_flags.json",
+                       {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
+                        "DRABORTSTALE": "1", "DRDISTROW": "2"}, "pass"),
+    "couch_fair_D_lgp_row2": ("experiments/lateflip/couch_c960dd49_flags.json",
+                       {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
+                        "DRLGPRESTART": "1", "DRDISTROW": "2"}, "pass"),
+    "couch_fair_A_lgp_row2": ("experiments/lateflip/couch_c960dd49_flags.json",
+                       {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
+                        "DRABORTSTALE": "1", "DRLGPRESTART": "1", "DRDISTROW": "2"}, "pass"),
     "couch_464a4b75": ("experiments/lateflip/couch_c960dd49_flags.json", {"DRLATEGUARD": "1", "DRSTUDYEND": "1"}, "fail"),
     "couch_settle3_noguard": ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0",
@@ -428,6 +437,7 @@ def run_arm(name, frames, seed):
                 raise RuntimeError(f"hook runaway pc=${mpu.pc:04X}")
 
     pads, statesA = [], []
+    prestart_go_frames = set()
     act = collections.Counter()
     prev_y = 15; prev_pc = None
     for f in range(frames):
@@ -435,7 +445,7 @@ def run_arm(name, frames, seed):
         copro.tick(f)
         cur_f[0] = f
         outs = []
-        armed_before = base[ARMED2]; pend_before = base[PEND2]
+        armed_before = base[ARMED2]; pend_before = base[PEND2]; pre_before = base[PRE_ACT2]; ngo = len(gos)
         for _ in (1, 2):
             base[0xF6] = 0; base[0xF5] = 0
             in_hook[0] = True
@@ -446,6 +456,8 @@ def run_arm(name, frames, seed):
         held_used = base[0xF8]
         pressed = R & (R ^ held_used)
         base[0xF6] = pressed; base[0xF8] = R
+        if len(gos) > ngo and base[PRE_ACT2] and not pre_before:
+            prestart_go_frames.add(f)                      # a DRPRESTART GO (PRE_ACT2 is stored after the GO write)
         if base[PEND2] and not pend_before and armed_before:
             act["stale_armed_edges"] += 1                  # new-pill edge while the previous search is still ARMED
         pads.append((pressed, R))
@@ -478,8 +490,12 @@ def run_arm(name, frames, seed):
         # DEAD-PILL UPLOAD: a GO after this pill locked (before the next edge) that carries THIS pill's capsule and
         # preview -- the stale-DONE path re-searching a capsule that no longer exists (a DRPRESTART GO in the same
         # window carries the NEXT capsule = this pill's preview, so it is not counted unless all four colours collide).
-        act["dead_pill_uploads"] += sum(1 for g in between
-                                        if (g[1][128] & 3, g[1][129] & 3, g[1][130] & 3, g[1][131] & 3) == (ca, cb, na_, nb_))
+        # A DRPRESTART GO is identified by PRE_ACT2 going 0 -> 1 in the GO's frame and is never a dead-pill upload, even
+        # when its capsule + preview happen to equal the locked pill's (execfid lane: seen as a 4-colour collision
+        # (2,0,2,0) on couch_fair_A_row2 seed 5, a false FAIL); such GOs are counted separately.
+        coll = [g for g in between if (g[1][128] & 3, g[1][129] & 3, g[1][130] & 3, g[1][131] & 3) == (ca, cb, na_, nb_)]
+        act["dead_pill_uploads"] += sum(1 for g in coll if g[0] not in prestart_go_frames)
+        act["prestart_gos_colour_collision"] += sum(1 for g in coll if g[0] in prestart_go_frames)
     act["pills"] = world.pills; act["goes"] = copro.goes; act["stale_searches"] = copro.stale
     # ---------------- run B: the unmodified game, same world seed, the recorded pads replayed, no driver
     baseB = fresh_mem(seed)

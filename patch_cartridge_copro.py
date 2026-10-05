@@ -710,7 +710,14 @@ LEDGECOMMIT = _os.environ.get("DRLEDGECOMMIT", "0") == "1"
 # in the CURRENT row before the next gravity tick, which is when a ledge capsule locks. Credit them: with no empty row
 # below, budget = min(7, (thr - $0392) / P) columns (thr = speedCounterTable[base[$038B] + $038A]; checkYMove runs
 # before checkXMove, so a press must land strictly before the tick frame: thr - counter frames, one press per P).
-DISTROW = _os.environ.get("DRDISTROW", "0") == "1"
+DISTROW = _os.environ.get("DRDISTROW", "0") in ("1", "2")
+# DRDISTROW=2 (execfid lane, 2026-10-04): ALL-OR-NOTHING row credit. The DRDISTROW=1 budget lets a capsule start a
+# PARTIAL move toward a target it cannot finish before the tick (10/03 G2 p101 on the fair D cart: a late tuck answer 5
+# columns away, 1 press of frames left -> lands one column over, a hybrid; plain DISTGATE parks it on the earlier
+# answer's column). With =2 the current-row credit applies only if it covers the WHOLE distance |target - X|; otherwise the
+# budget stays DIST_TABLE[0] = 0 exactly as without the flag. The p107-type ledge drop (answer reachable in the frames
+# left, slammed at the clamped column) is fixed the same way as =1. =1 stays byte-identical to the settle lane's B.
+DISTROW_FULL = _os.environ.get("DRDISTROW", "0") == "2"
 # DRPROPHFIRST=1 (default 0 -> byte-identical; needs DRPROPH + DRROTFIX): on a PROPH-armed pill that is still on its
 # spawn row ($0386 == $0F), PROPH's lateral escape pulse takes priority over the rotation pre-phase until the commit
 # window opens (WDOG2 >= MIN_THINK, DONE, or > 256 hooks). This is the ORDER the shipped carts had -- PROPH's presses
@@ -4041,6 +4048,15 @@ def build_main(level=11, speed=1):
                 a.ins("LSR_A")                                               # / P (P = 2)
                 a.ins("CMP_imm", 8); a.br("BCC", "dgr_cap"); a.ins("LDA_imm", 7)
                 a.label("dgr_cap")
+                if DISTROW_FULL:
+                    # DRDISTROW=2: credit the row only if it covers the whole distance (DG_N is dead after the scan)
+                    a.ins16("STA_abs", DG_N)                                 # DG_N = row budget (columns)
+                    a.ins16("LDA_abs", _EC); a.ins("SEC"); a.ins16("SBC_abs", 0x0385); a.br("BCS", "dgr_dpos")
+                    a.ins("EOR_imm", 0xFF); a.ins("CLC"); a.ins("ADC_imm", 1)   # A = |target - X|
+                    a.label("dgr_dpos")
+                    a.ins16("CMP_abs", DG_N); a.br("BEQ", "dgr_full"); a.br("BCS", "dgr_done")  # short -> keep 0
+                    a.label("dgr_full")
+                    a.ins16("LDA_abs", DG_N)
                 a.ins16("STA_abs", DG_BUDGET)
                 a.label("dgr_done")
         #   direction: _EC (target) vs PX2 -- unsigned CMP is safe, both are 0..7
