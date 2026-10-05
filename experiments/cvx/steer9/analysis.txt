@@ -1,0 +1,49 @@
+rows FAIR fD_bdepD (banked STEER8b): gb10 600 rc10 600 lulu10 600
+IDENTITY s9_base vs banked fD_bdepD gb10: 0/0 overlapping rows identical on every non-stamp key
+IDENTITY s9_base vs banked fD_bdepD rc10: 0/0 overlapping rows identical on every non-stamp key
+IDENTITY s9_base vs banked fD_bdepD lulu10: 0/0 overlapping rows identical on every non-stamp key
+FAIR gb10 on the 600 new seeds = s9_base rows: 600
+
+rows s9_V150: gb10 1200 rc10 600 lulu10 600
+
+=== s9_V150 vs FAIR (fD_bdepD) ===
+  gb10 tap-out (n=1200) 6.17% -> 10.08%  d +3.92 [+1.92, +5.92]  Bonf +3.92 [+1.50, +6.50]  churn fixed 54 / new 101
+  rc10 race win M177 (n=600) 93.50% -> 90.83%  d -2.67 [-5.67, +0.17]  Bonf -2.67 [-6.17, +1.00]  churn fixed 31 / new 47
+  lulu10 race win M140 (n=600) 92.17% -> 86.00%  d -6.17 [-9.67, -2.83]  Bonf -6.17 [-10.50, -2.00]  churn fixed 39 / new 76
+  gb10 per game: endgame stall-pills (act>=10 from <=4 v) 12.9 -> 13.7 d +0.77 [-1.92, +3.29]; all act-stall pills 23.9 -> 26.7 d +2.87 [-1.15, +6.63]; SEALED (str) stall pills 17.3 -> 18.1 d +0.87 [-2.91, +4.41]
+  rc10 per game: endgame stall-pills (act>=10 from <=4 v) 11.3 -> 12.7 d +1.37 [-2.37, +4.72]; all act-stall pills 22.3 -> 26.4 d +4.16 [-1.21, +9.40]; SEALED (str) stall pills 15.4 -> 17.2 d +1.75 [-3.32, +6.73]
+  lulu10 per game: endgame stall-pills (act>=10 from <=4 v) 9.9 -> 12.2 d +2.32 [-1.05, +5.66]; all act-stall pills 24.6 -> 28.6 d +3.97 [-1.78, +9.75]; SEALED (str) stall pills 17.6 -> 19.5 d +1.91 [-3.61, +7.29]
+  ACTIVITY gb10: decisions 155677, rule fired 134438 (86.4%), changed the root 21917 (14.08% of decisions, 18.3/game)
+  ACTIVITY rc10: decisions 79907, rule fired 70361 (88.1%), changed the root 11405 (14.27% of decisions, 19.0/game)
+  ACTIVITY lulu10: decisions 80290, rule fired 69547 (86.6%), changed the root 11396 (14.19% of decisions, 19.0/game)
+  VERDICT (primary, Bonferroni 99.17%): FAIL   [declared secondary, STEER6r form: would fail]
+
+rows s9_VVETO: gb10 1200 rc10 600 lulu10 600
+
+=== s9_VVETO vs FAIR (fD_bdepD) ===
+  gb10 tap-out (n=1200) 6.17% -> 76.67%  d +70.50 [+67.75, +73.25]  Bonf +70.50 [+67.25, +73.75]  churn fixed 14 / new 860
+  rc10 race win M177 (n=600) 93.50% -> 27.33%  d -66.17 [-70.17, -62.00]  Bonf -66.17 [-71.00, -61.17]  churn fixed 11 / new 408
+  lulu10 race win M140 (n=600) 92.17% -> 25.17%  d -67.00 [-71.00, -63.00]  Bonf -67.00 [-71.83, -62.17]  churn fixed 8 / new 410
+  gb10 per game: endgame stall-pills (act>=10 from <=4 v) 12.9 -> 5.9 d -7.01 [-9.74, -4.38]; all act-stall pills 23.9 -> 17.8 d -6.06 [-9.81, -2.43]; SEALED (str) stall pills 17.3 -> 9.9 d -7.38 [-10.91, -4.09]
+  rc10 per game: endgame stall-pills (act>=10 from <=4 v) 11.3 -> 6.2 d -5.14 [-8.70, -1.85]; all act-stall pills 22.3 -> 20.9 d -1.39 [-6.59, +3.85]; SEALED (str) stall pills 15.4 -> 12.2 d -3.20 [-7.99, +1.69]
+  lulu10 per game: endgame stall-pills (act>=10 from <=4 v) 9.9 -> 4.1 d -5.72 [-8.72, -2.85]; all act-stall pills 24.6 -> 17.7 d -6.96 [-12.34, -1.95]; SEALED (str) stall pills 17.6 -> 9.4 d -8.12 [-13.08, -3.58]
+  ACTIVITY gb10: decisions 106212, rule fired 88555 (83.4%), changed the root 34544 (32.52% of decisions, 28.8/game)
+  ACTIVITY rc10: decisions 56691, rule fired 47166 (83.2%), changed the root 17778 (31.36% of decisions, 29.6/game)
+  ACTIVITY lulu10: decisions 54613, rule fired 46321 (84.8%), changed the root 17584 (32.20% of decisions, 29.3/game)
+  VERDICT (primary, Bonferroni 99.17%): FAIL   [declared secondary, STEER6r form: would fail]
+
+rows s9_CVETO: gb10 1200 rc10 600 lulu10 600
+
+=== s9_CVETO vs FAIR (fD_bdepD) ===
+  gb10 tap-out (n=1200) 6.17% -> 93.50%  d +87.33 [+85.33, +89.25]  Bonf +87.33 [+84.92, +89.58]  churn fixed 5 / new 1053
+  rc10 race win M177 (n=600) 93.50% -> 6.67%  d -86.83 [-89.67, -83.83]  Bonf -86.83 [-90.17, -83.17]  churn fixed 4 / new 525
+  lulu10 race win M140 (n=600) 92.17% -> 7.33%  d -84.83 [-87.83, -81.67]  Bonf -84.83 [-88.50, -81.00]  churn fixed 5 / new 514
+  gb10 per game: endgame stall-pills (act>=10 from <=4 v) 12.9 -> 1.3 d -11.65 [-14.08, -9.53]; all act-stall pills 23.9 -> 6.9 d -16.91 [-20.42, -13.70]; SEALED (str) stall pills 17.3 -> 3.3 d -13.96 [-17.22, -10.93]
+  rc10 per game: endgame stall-pills (act>=10 from <=4 v) 11.3 -> 1.6 d -9.75 [-12.86, -7.06]; all act-stall pills 22.3 -> 7.8 d -14.50 [-19.19, -10.03]; SEALED (str) stall pills 15.4 -> 3.8 d -11.60 [-15.94, -7.38]
+  lulu10 per game: endgame stall-pills (act>=10 from <=4 v) 9.9 -> 1.5 d -8.36 [-11.18, -5.76]; all act-stall pills 24.6 -> 7.2 d -17.39 [-22.18, -12.83]; SEALED (str) stall pills 17.6 -> 3.4 d -14.16 [-18.59, -10.06]
+  ACTIVITY gb10: decisions 71737, rule fired 60753 (84.7%), changed the root 27724 (38.65% of decisions, 23.1/game)
+  ACTIVITY rc10: decisions 37109, rule fired 31383 (84.6%), changed the root 14442 (38.92% of decisions, 24.1/game)
+  ACTIVITY lulu10: decisions 37584, rule fired 32129 (85.5%), changed the root 14342 (38.16% of decisions, 23.9/game)
+  VERDICT (primary, Bonferroni 99.17%): FAIL   [declared secondary, STEER6r form: would fail]
+
+SUMMARY: s9_V150=FAIL  s9_VVETO=FAIL  s9_CVETO=FAIL
