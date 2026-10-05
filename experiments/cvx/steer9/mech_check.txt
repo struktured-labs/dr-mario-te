@@ -1,0 +1,161 @@
+STEER9 MECHANISM CHECK on banked couch boards (silicon-faithful brain = Leaf6FwDecider all fw switches on, DIST60, deployed reach mask)
+
+Variants: {"V_P60": {"kind": 0, "mode": 0, "P": 60}, "V_P150": {"kind": 0, "mode": 0, "P": 150}, "V_P400": {"kind": 0, "mode": 0, "P": 400}, "V_VETO": {"kind": 0, "mode": 1, "P": 20000}, "C_P150": {"kind": 1, "mode": 0, "P": 150}, "C_P400": {"kind": 1, "mode": 0, "P": 400}, "C_VETO": {"kind": 1, "mode": 1, "P": 20000}, "L_W30": {"wleaf": 30}, "L_W60": {"wleaf": 60}}
+
+################ m5g2: 190 placements ################
+silicon == base brain 149/190; base choice newly seals >=1 virus on 20/190 (11%); silicon move newly seals on 21/190; root boards with a 0-seal allowed alternative 190/190; sealed viruses on the root board, median 6 of median 10
+  V_P60  : changes the base choice on 10/190 (5%); new choice seals 0 (sealV) on 10/10; choices that newly seal (V) 10/190
+  V_P150 : changes the base choice on 13/190 (7%); new choice seals 0 (sealV) on 12/13; choices that newly seal (V) 8/190
+  V_P400 : changes the base choice on 17/190 (9%); new choice seals 0 (sealV) on 17/17; choices that newly seal (V) 3/190
+  V_VETO : changes the base choice on 20/190 (11%); new choice seals 0 (sealV) on 20/20; choices that newly seal (V) 0/190
+  C_P150 : changes the base choice on 4/190 (2%); new choice seals 0 (sealC) on 4/4; choices that newly seal (V) 16/190
+  C_P400 : changes the base choice on 9/190 (5%); new choice seals 0 (sealC) on 9/9; choices that newly seal (V) 12/190
+  C_VETO : changes the base choice on 12/190 (6%); new choice seals 0 (sealC) on 12/12; choices that newly seal (V) 9/190
+  L_W30  : changes the base choice on 7/190 (4%); new choice seals 0 (sealV) on 6/7; choices that newly seal (V) 16/190
+  L_W60  : changes the base choice on 11/190 (6%); new choice seals 0 (sealV) on 9/11; choices that newly seal (V) 17/190
+
+  SEAL EVENTS on the observed m5g2 trajectory (virus live on board k, sealed on board k+1):
+    p  0 vc 48  OWN (7,2):  silicon==base N  base seals same N  V_P60 -/open  V_P150 -/open  V_P400 -/open  V_VETO -/open  C_P150 -/open  C_P400 -/open  C_VETO -/open  L_W30 -/open  L_W60 -/open
+    p  1 vc 48  OWN (8,1),(9,1):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p  4 vc 45  OWN (6,6):  silicon==base N  base seals same N  V_P60 -/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 -/open  L_W60 -/open
+    p  5 vc 45  OWN (8,0),(9,0):  silicon==base N  base seals same N  V_P60 -/open  V_P150 -/open  V_P400 -/open  V_VETO -/open  C_P150 -/open  C_P400 -/open  C_VETO -/open  L_W30 -/open  L_W60 -/open
+    p  8 vc 43  OWN (10,0):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 10 vc 43  (10,4): NOT the AI's move (garbage / board change between reads)
+    p 11 vc 41  OWN (10,1),(11,1):  silicon==base N  base seals same N  V_P60 -/open  V_P150 -/open  V_P400 -/open  V_VETO -/open  C_P150 -/open  C_P400 -/open  C_VETO -/open  L_W30 -/open  L_W60 -/open
+    p 16 vc 41  OWN (10,4):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 chg/open  L_W60 chg/open
+    p 26 vc 29  OWN (8,6),(9,2),(10,2),(13,3):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 28 vc 29  (12,5),(13,5): NOT the AI's move (garbage / board change between reads)
+    p 30 vc 27  OWN (8,6):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO -/SEALS  L_W30 -/SEALS  L_W60 -/SEALS
+    p 31 vc 27  (9,2),(10,2): NOT the AI's move (garbage / board change between reads)
+    p 33 vc 27  OWN (6,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 -/SEALS  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 35 vc 27  OWN (12,1):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 39 vc 24  OWN (8,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 -/SEALS  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO -/SEALS  L_W30 -/SEALS  L_W60 -/SEALS
+    p 41 vc 23  OWN (13,1):  silicon==base N  base seals same N  V_P60 -/open  V_P150 chg/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/open  C_P400 -/open  C_VETO chg/open  L_W30 -/open  L_W60 -/open
+    p 49 vc 17  OWN (10,6):  silicon==base N  base seals same N  V_P60 -/open  V_P150 -/open  V_P400 -/open  V_VETO -/open  C_P150 -/open  C_P400 -/open  C_VETO -/open  L_W30 chg/SEALS  L_W60 chg/SEALS
+    p 52 vc 16  OWN (12,5),(13,5):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 55 vc 15  OWN (10,6):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO -/SEALS  L_W30 -/SEALS  L_W60 -/SEALS
+    p 66 vc 11  OWN (14,6):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO -/SEALS  L_W30 chg/open  L_W60 chg/open
+    p127 vc  9  OWN (10,6):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO -/SEALS  L_W30 chg/open  L_W60 chg/open
+    p137 vc  9  OWN (8,6):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO -/SEALS  L_W30 -/SEALS  L_W60 -/SEALS
+    p138 vc  9  (7,7),(8,7): NOT the AI's move (garbage / board change between reads)
+    p144 vc  9  OWN (6,6):  silicon==base N  base seals same N  V_P60 -/open  V_P150 -/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/open  C_P400 -/open  C_VETO -/open  L_W30 -/open  L_W60 -/open
+  totals: 27 viruses sealed by the AI's own move, 7 by something else; own-seal decisions 20: silicon==base 13, base would seal the same virus 13
+    V_P60  : own-seal decisions where the rule's choice keeps that virus open 14/20; of the 13 the BASE brain would also have sealed: 7
+    V_P150 : own-seal decisions where the rule's choice keeps that virus open 14/20; of the 13 the BASE brain would also have sealed: 8
+    V_P400 : own-seal decisions where the rule's choice keeps that virus open 18/20; of the 13 the BASE brain would also have sealed: 11
+    V_VETO : own-seal decisions where the rule's choice keeps that virus open 20/20; of the 13 the BASE brain would also have sealed: 13
+    C_P150 : own-seal decisions where the rule's choice keeps that virus open 8/20; of the 13 the BASE brain would also have sealed: 1
+    C_P400 : own-seal decisions where the rule's choice keeps that virus open 12/20; of the 13 the BASE brain would also have sealed: 5
+    C_VETO : own-seal decisions where the rule's choice keeps that virus open 14/20; of the 13 the BASE brain would also have sealed: 7
+    L_W30  : own-seal decisions where the rule's choice keeps that virus open 9/20; of the 13 the BASE brain would also have sealed: 3
+    L_W60  : own-seal decisions where the rule's choice keeps that virus open 9/20; of the 13 the BASE brain would also have sealed: 3
+
+  M5 G2 critical moves (col-6 wall): p4 / p13 / p14
+    p4: silicon a=5 (col-6 cells 1, sealV 1) base a=11 (col-6 cells 0, sealV 1) silicon==base False; V_P60 a=11 c6=0; V_P150 a=14 c6=1; V_P400 a=14 c6=1; V_VETO a=14 c6=1; C_P150 a=14 c6=1; C_P400 a=14 c6=1; C_VETO a=14 c6=1; L_W30 a=11 c6=0; L_W60 a=11 c6=0
+    p13: silicon a=5 (col-6 cells 1, sealV 0) base a=11 (col-6 cells 0, sealV 0) silicon==base False; V_P60 a=11 c6=0; V_P150 a=11 c6=0; V_P400 a=11 c6=0; V_VETO a=11 c6=0; C_P150 a=11 c6=0; C_P400 a=11 c6=0; C_VETO a=11 c6=0; L_W30 a=11 c6=0; L_W60 a=11 c6=0
+    p14: silicon a=5 (col-6 cells 1, sealV 0) base a=21 (col-6 cells 0, sealV 0) silicon==base False; V_P60 a=21 c6=0; V_P150 a=21 c6=0; V_P400 a=21 c6=0; V_VETO a=21 c6=0; C_P150 a=21 c6=0; C_P400 a=21 c6=0; C_VETO a=21 c6=0; L_W30 a=21 c6=0; L_W60 a=21 c6=0
+    col-6 cells placed p0..p65: silicon 3, base brain 1 (per-decision counterfactual on the observed boards), V_P60 1, V_P150 1, V_P400 1, V_VETO 1, C_P150 2, C_P400 2, C_VETO 1, L_W30 1, L_W60 1
+    silicon moves that put a cell in col 6 (p<=65): p4(xbase), p13(xbase), p14(xbase)
+
+################ m4g2: 109 placements ################
+silicon == base brain 93/109; base choice newly seals >=1 virus on 24/109 (22%); silicon move newly seals on 26/109; root boards with a 0-seal allowed alternative 109/109; sealed viruses on the root board, median 17 of median 20
+  V_P60  : changes the base choice on 12/109 (11%); new choice seals 0 (sealV) on 9/12; choices that newly seal (V) 15/109
+  V_P150 : changes the base choice on 17/109 (16%); new choice seals 0 (sealV) on 17/17; choices that newly seal (V) 7/109
+  V_P400 : changes the base choice on 23/109 (21%); new choice seals 0 (sealV) on 23/23; choices that newly seal (V) 1/109
+  V_VETO : changes the base choice on 24/109 (22%); new choice seals 0 (sealV) on 24/24; choices that newly seal (V) 0/109
+  C_P150 : changes the base choice on 12/109 (11%); new choice seals 0 (sealC) on 12/12; choices that newly seal (V) 14/109
+  C_P400 : changes the base choice on 16/109 (15%); new choice seals 0 (sealC) on 16/16; choices that newly seal (V) 11/109
+  C_VETO : changes the base choice on 17/109 (16%); new choice seals 0 (sealC) on 17/17; choices that newly seal (V) 10/109
+  L_W30  : changes the base choice on 9/109 (8%); new choice seals 0 (sealV) on 4/9; choices that newly seal (V) 22/109
+  L_W60  : changes the base choice on 13/109 (12%); new choice seals 0 (sealV) on 8/13; choices that newly seal (V) 20/109
+
+  SEAL EVENTS on the observed m4g2 trajectory (virus live on board k, sealed on board k+1):
+    p  1 vc 48  (6,2),(6,6): NOT the AI's move (garbage / board change between reads)
+    p  4 vc 42  (6,0): NOT the AI's move (garbage / board change between reads)
+    p  5 vc 42  OWN (6,7),(7,7):  silicon==base N  base seals same N  V_P60 -/open  V_P150 -/open  V_P400 -/open  V_VETO -/open  C_P150 -/open  C_P400 -/open  C_VETO -/open  L_W30 -/open  L_W60 -/open
+    p  6 vc 42  (6,1): NOT the AI's move (garbage / board change between reads)
+    p  7 vc 41  OWN (9,5):  silicon==base N  base seals same N  V_P60 -/open  V_P150 -/open  V_P400 -/open  V_VETO -/open  C_P150 -/open  C_P400 -/open  C_VETO -/open  L_W30 -/open  L_W60 -/open
+    p 10 vc 40  OWN (6,2),(6,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 12 vc 40  (6,2),(6,6),(9,5): NOT the AI's move (garbage / board change between reads)
+    p 17 vc 39  (6,6),(7,3): NOT the AI's move (garbage / board change between reads)
+    p 19 vc 34  OWN (6,2):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 chg/open  L_W60 chg/open
+    p 24 vc 34  OWN (6,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 26 vc 33  OWN (13,5):  silicon==base N  base seals same N  V_P60 -/open  V_P150 -/open  V_P400 -/open  V_VETO -/open  C_P150 -/open  C_P400 -/open  C_VETO -/open  L_W30 -/open  L_W60 -/open
+    p 27 vc 33  OWN (6,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 -/SEALS  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 30 vc 32  OWN (8,2),(8,6),(10,3):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 chg/open
+    p 31 vc 32  OWN (6,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 32 vc 32  OWN (6,2):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 36 vc 31  OWN (14,5):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 38 vc 28  OWN (9,2):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO -/SEALS  L_W30 -/SEALS  L_W60 -/SEALS
+    p 39 vc 28  OWN (8,2),(8,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO -/SEALS  L_W30 -/SEALS  L_W60 -/SEALS
+    p 41 vc 27  OWN (11,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO -/SEALS  L_W30 chg/SEALS  L_W60 chg/SEALS
+    p 43 vc 27  OWN (6,6),(8,2),(8,6),(9,2),(12,3):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 54 vc 20  OWN (14,5):  silicon==base N  base seals same N  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/open  C_P400 -/open  C_VETO -/open  L_W30 chg/SEALS  L_W60 chg/SEALS
+    p 57 vc 20  OWN (12,2):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 60 vc 20  OWN (6,1),(8,0),(8,1),(8,6):  silicon==base Y  base seals same Y  V_P60 chg/SEALS  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/SEALS  C_P400 chg/SEALS  C_VETO chg/SEALS  L_W30 chg/SEALS  L_W60 chg/SEALS
+    p 65 vc 17  OWN (8,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO -/SEALS  L_W30 -/SEALS  L_W60 -/SEALS
+    p 67 vc 17  OWN (6,1),(6,6),(15,2):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 69 vc 17  OWN (6,1),(6,6):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 chg/open  L_W60 chg/open
+    p 73 vc 17  OWN (8,6):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO -/SEALS  L_W30 -/SEALS  L_W60 chg/open
+    p 78 vc 17  OWN (6,1),(6,6):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 82 vc 17  OWN (6,1),(6,6):  silicon==base Y  base seals same Y  V_P60 chg/SEALS  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 chg/SEALS  L_W60 chg/SEALS
+    p 84 vc 17  OWN (15,2):  silicon==base N  base seals same N  V_P60 -/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 -/open  L_W60 -/open
+    p 85 vc 17  OWN (6,0):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 chg/open  L_W60 chg/open
+  totals: 43 viruses sealed by the AI's own move, 9 by something else; own-seal decisions 26: silicon==base 21, base would seal the same virus 21
+    V_P60  : own-seal decisions where the rule's choice keeps that virus open 13/26; of the 21 the BASE brain would also have sealed: 8
+    V_P150 : own-seal decisions where the rule's choice keeps that virus open 19/26; of the 21 the BASE brain would also have sealed: 14
+    V_P400 : own-seal decisions where the rule's choice keeps that virus open 25/26; of the 21 the BASE brain would also have sealed: 20
+    V_VETO : own-seal decisions where the rule's choice keeps that virus open 26/26; of the 21 the BASE brain would also have sealed: 21
+    C_P150 : own-seal decisions where the rule's choice keeps that virus open 15/26; of the 21 the BASE brain would also have sealed: 10
+    C_P400 : own-seal decisions where the rule's choice keeps that virus open 19/26; of the 21 the BASE brain would also have sealed: 14
+    C_VETO : own-seal decisions where the rule's choice keeps that virus open 20/26; of the 21 the BASE brain would also have sealed: 15
+    L_W30  : own-seal decisions where the rule's choice keeps that virus open 7/26; of the 21 the BASE brain would also have sealed: 3
+    L_W60  : own-seal decisions where the rule's choice keeps that virus open 9/26; of the 21 the BASE brain would also have sealed: 5
+
+################ lulu1: 235 placements ################
+silicon == base brain 114/235; base choice newly seals >=1 virus on 20/235 (9%); silicon move newly seals on 18/235; root boards with a 0-seal allowed alternative 235/235; sealed viruses on the root board, median 3 of median 4
+  V_P60  : changes the base choice on 9/235 (4%); new choice seals 0 (sealV) on 7/9; choices that newly seal (V) 13/235
+  V_P150 : changes the base choice on 13/235 (6%); new choice seals 0 (sealV) on 13/13; choices that newly seal (V) 7/235
+  V_P400 : changes the base choice on 18/235 (8%); new choice seals 0 (sealV) on 18/18; choices that newly seal (V) 2/235
+  V_VETO : changes the base choice on 20/235 (9%); new choice seals 0 (sealV) on 20/20; choices that newly seal (V) 0/235
+  C_P150 : changes the base choice on 11/235 (5%); new choice seals 0 (sealC) on 11/11; choices that newly seal (V) 10/235
+  C_P400 : changes the base choice on 17/235 (7%); new choice seals 0 (sealC) on 17/17; choices that newly seal (V) 4/235
+  C_VETO : changes the base choice on 21/235 (9%); new choice seals 0 (sealC) on 21/21; choices that newly seal (V) 2/235
+  L_W30  : changes the base choice on 7/235 (3%); new choice seals 0 (sealV) on 6/7; choices that newly seal (V) 15/235
+  L_W60  : changes the base choice on 9/235 (4%); new choice seals 0 (sealV) on 7/9; choices that newly seal (V) 15/235
+
+  SEAL EVENTS on the observed lulu1 trajectory (virus live on board k, sealed on board k+1):
+    p  2 vc 48  (8,3): NOT the AI's move (garbage / board change between reads)
+    p  6 vc 44  OWN (9,0) (+other (7,1),(8,1)):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 chg/open
+    p  7 vc 43  OWN (8,2):  silicon==base N  base seals same N  V_P60 -/open  V_P150 -/open  V_P400 -/open  V_VETO -/open  C_P150 -/open  C_P400 -/open  C_VETO -/open  L_W30 -/open  L_W60 -/open
+    p 10 vc 37  OWN (9,1),(9,2),(11,4):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 chg/open  L_W60 chg/open
+    p 11 vc 37  OWN (10,3):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 14 vc 35  OWN (11,4):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 15 vc 33  OWN (9,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 17 vc 33  (10,3): NOT the AI's move (garbage / board change between reads)
+    p 19 vc 31  OWN (9,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 -/SEALS  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 21 vc 31  OWN (9,7):  silicon==base N  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 23 vc 30  (10,6): NOT the AI's move (garbage / board change between reads)
+    p 27 vc 27  OWN (12,5):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 29 vc 27  OWN (11,2),(11,3):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 -/SEALS  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 35 vc 22  OWN (14,5):  silicon==base N  base seals same N  V_P60 -/open  V_P150 -/open  V_P400 -/open  V_VETO -/open  C_P150 -/open  C_P400 -/open  C_VETO -/open  L_W30 -/open  L_W60 -/open
+    p 36 vc 22  OWN (9,7):  silicon==base N  base seals same Y  V_P60 chg/SEALS  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 chg/SEALS  L_W60 chg/SEALS
+    p 42 vc 18  OWN (10,6),(11,6),(12,6):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 chg/open  L_W60 chg/open
+    p 51 vc 15  OWN (11,6),(12,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 -/SEALS  C_VETO -/SEALS  L_W30 -/SEALS  L_W60 -/SEALS
+    p 56 vc 13  OWN (11,6),(12,6),(15,5):  silicon==base Y  base seals same Y  V_P60 chg/open  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 -/SEALS  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 66 vc  8  OWN (15,6):  silicon==base Y  base seals same Y  V_P60 -/SEALS  V_P150 chg/open  V_P400 chg/open  V_VETO chg/open  C_P150 chg/open  C_P400 chg/open  C_VETO chg/open  L_W30 -/SEALS  L_W60 -/SEALS
+    p 68 vc  8  OWN (15,7):  silicon==base N  base seals same N  V_P60 -/open  V_P150 -/open  V_P400 -/open  V_VETO -/open  C_P150 -/open  C_P400 -/open  C_VETO -/open  L_W30 -/open  L_W60 -/open
+  totals: 25 viruses sealed by the AI's own move, 5 by something else; own-seal decisions 17: silicon==base 12, base would seal the same virus 14
+    V_P60  : own-seal decisions where the rule's choice keeps that virus open 7/17; of the 14 the BASE brain would also have sealed: 4
+    V_P150 : own-seal decisions where the rule's choice keeps that virus open 12/17; of the 14 the BASE brain would also have sealed: 9
+    V_P400 : own-seal decisions where the rule's choice keeps that virus open 16/17; of the 14 the BASE brain would also have sealed: 13
+    V_VETO : own-seal decisions where the rule's choice keeps that virus open 17/17; of the 14 the BASE brain would also have sealed: 14
+    C_P150 : own-seal decisions where the rule's choice keeps that virus open 9/17; of the 14 the BASE brain would also have sealed: 6
+    C_P400 : own-seal decisions where the rule's choice keeps that virus open 14/17; of the 14 the BASE brain would also have sealed: 11
+    C_VETO : own-seal decisions where the rule's choice keeps that virus open 16/17; of the 14 the BASE brain would also have sealed: 13
+    L_W30  : own-seal decisions where the rule's choice keeps that virus open 5/17; of the 14 the BASE brain would also have sealed: 2
+    L_W60  : own-seal decisions where the rule's choice keeps that virus open 6/17; of the 14 the BASE brain would also have sealed: 3
+
+  lulu G1 critical column 2 (yellow (8,2) sealed under a mixed own stack):
+    silicon moves adding cells to col 2: p3(=base), p7(xbase), p193(xbase), p207(xbase), p209(xbase), p211(=base), p217(=base), p218(=base), p221(=base), p222(xbase), p223(xbase), p230(=base), p235(xbase)
+    col-2 cells placed over the game: silicon 22, base 15, V_P60 14, V_P150 14, V_P400 15, V_VETO 15, C_P150 14, C_P400 15, C_VETO 13, L_W30 14, L_W60 14
