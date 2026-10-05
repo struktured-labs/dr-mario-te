@@ -1,0 +1,74 @@
+== Q1 timing (base cart, chained + silicon garbage)
+  m1g1 FAIR  same-landing 156/181 | OLD last-lock median  21.0 (p10 15, p90 35) | ARRIVAL median +1.0 |d|<=2 127 (81%) | FIRST 0/1  STALE 6/7  armed 112/138  armed+GARB 9/10 | STALE-predicted pills 9/181
+  m1g2 FAIR  same-landing 115/130 | OLD last-lock median    21 (p10 14, p90 33) | ARRIVAL median +1 |d|<=2 97 (84%) | FIRST 0/1  STALE 5/9  armed 85/98  armed+GARB 7/7 | STALE-predicted pills 9/130
+  m3g1 FAIR  same-landing  22/ 25 | OLD last-lock median  30.5 (p10 14, p90 36) | ARRIVAL median +1.0 |d|<=2 20 (91%) | FIRST 0/1  STALE 2/2  armed 17/18  armed+GARB 1/1 | STALE-predicted pills 2/25
+  m3g2 FAIR  same-landing  17/ 19 | OLD last-lock median    26 (p10 10, p90 33) | ARRIVAL median +1 |d|<=2 14 (82%) | STALE 2/3  armed 11/13  armed+GARB 1/1 | STALE-predicted pills 3/19
+  m3g3 FAIR  same-landing  14/ 16 | OLD last-lock median  31.0 (p10 13, p90 34) | ARRIVAL median +1.0 |d|<=2 12 (86%) | FIRST 0/1  STALE 1/1  armed 10/10  armed+GARB 1/2 | STALE-predicted pills 1/16
+  m5g2 FAIR  same-landing 107/143 | OLD last-lock median    22 (p10 17, p90 34) | ARRIVAL median +1 |d|<=2 90 (84%) | STALE 3/4  STALE+GARB 0/1  armed 84/99  armed+GARB 3/3 | STALE-predicted pills 6/143
+  m2g1 FAIR2 same-landing  40/ 46 | OLD last-lock median  15.5 (p10 9, p90 33) | ARRIVAL median +1.0 |d|<=2 30 (75%) | FIRST 0/1  STALE 7/13  armed 22/25  armed+GARB 1/1 | STALE-predicted pills 15/46
+  m2g2 FAIR2 same-landing  92/117 | OLD last-lock median  20.5 (p10 14, p90 33) | ARRIVAL median +1.0 |d|<=2 74 (80%) | FIRST 0/1  STALE 3/6  armed 68/82  armed+GARB 3/3 | STALE-predicted pills 8/117
+  m2g3 FAIR2 same-landing  85/ 98 | OLD last-lock median    23 (p10 13, p90 35) | ARRIVAL median +1 |d|<=2 66 (78%) | FIRST 0/1  STALE 5/9  armed 57/70  armed+GARB 4/5 | STALE-predicted pills 9/98
+  m4g1 FAIR2 same-landing 110/134 | OLD last-lock median  22.5 (p10 14, p90 36) | ARRIVAL median +1.0 |d|<=2 86 (78%) | FIRST 0/1  STALE 8/12  armed 76/95  armed+GARB 2/2 | STALE-predicted pills 17/134
+  m4g2 FAIR2 same-landing  94/107 | OLD last-lock median  18.0 (p10 12, p90 34) | ARRIVAL median +1.0 |d|<=2 81 (86%) | FIRST 0/1  STALE 5/12  armed 69/73  armed+GARB 7/8 | STALE-predicted pills 12/107
+
+== Q1 on 10/03 ANTIBODY_DIST (silicon c960dd49 + fw 1488e158): late-flip lane's UNCHAINED Mesen replays (c960dd49)
+  10/03 G2 same-landing 102/116 | OLD last-lock median  20.0 (p10 13, p90 34) | ARRIVAL median +1.0 |d|<=2 85 (83%) | STALE-predicted 4, GARB early (< -2 f) 5/7
+  10/03 G3 same-landing  80/ 86 | OLD last-lock median  24.0 (p10 14, p90 36) | ARRIVAL median +1.0 |d|<=2 54 (68%) | STALE-predicted 2, GARB early (< -2 f) 3/5
+  10/03 G4 same-landing 114/133 | OLD last-lock median  22.0 (p10 15, p90 34) | ARRIVAL median +1.0 |d|<=2 85 (75%) | STALE-predicted 4, GARB early (< -2 f) 3/5
+
+== Q2 DISTGATE clamps (committed capsule parked at the clamped column; slam = DOWN before the lock) on the base runs
+  m1g1 FAIR  pills 184 PROPH-armed  0 clamps 0 (slam 0; PROPH-armed 0, reachable in the current row 0, landing != final 0, Mesen landing == silicon 0)
+  m1g2 FAIR  pills 132 PROPH-armed  0 clamps 0 (slam 0; PROPH-armed 0, reachable in the current row 0, landing != final 0, Mesen landing == silicon 0)
+  m3g1 FAIR  pills  26 PROPH-armed  0 clamps 0 (slam 0; PROPH-armed 0, reachable in the current row 0, landing != final 0, Mesen landing == silicon 0)
+  m3g2 FAIR  pills  22 PROPH-armed  0 clamps 0 (slam 0; PROPH-armed 0, reachable in the current row 0, landing != final 0, Mesen landing == silicon 0)
+  m3g3 FAIR  pills  19 PROPH-armed  0 clamps 0 (slam 0; PROPH-armed 0, reachable in the current row 0, landing != final 0, Mesen landing == silicon 0)
+  m5g2 FAIR  pills 190 PROPH-armed  0 clamps 0 (slam 0; PROPH-armed 0, reachable in the current row 0, landing != final 0, Mesen landing == silicon 0)
+  m2g1 FAIR2 pills  47 PROPH-armed  6 clamps 0 (slam 0; PROPH-armed 0, reachable in the current row 0, landing != final 0, Mesen landing == silicon 0)
+  m2g2 FAIR2 pills 119 PROPH-armed  0 clamps 2 (slam 2; PROPH-armed 0, reachable in the current row 2, landing != final 2, Mesen landing == silicon 0)
+     p 22 plain slam clamp f77 x=1 answer col 0 frames-left 16 REACHABLE | base a25 final a24 silicon a21 | DISTROW=2 a24 LGP+DISTROW=2 a24
+     p 82 plain slam clamp f65 x=6 answer col 7 frames-left 10 REACHABLE | base a30 final a31 silicon a22 | DISTROW=2 a31 LGP+DISTROW=2 a31
+  m2g3 FAIR2 pills  99 PROPH-armed  0 clamps 0 (slam 0; PROPH-armed 0, reachable in the current row 0, landing != final 0, Mesen landing == silicon 0)
+  m4g1 FAIR2 pills 134 PROPH-armed  0 clamps 0 (slam 0; PROPH-armed 0, reachable in the current row 0, landing != final 0, Mesen landing == silicon 0)
+  m4g2 FAIR2 pills 109 PROPH-armed  2 clamps 2 (slam 1; PROPH-armed 1, reachable in the current row 2, landing != final 2, Mesen landing == silicon 1)
+     p107 PROPH slam clamp f5 x=2 answer col 0 frames-left 5 REACHABLE | base a2 final a0 silicon a2 | DISTROW=2 a0 LGP+DISTROW=2 a0
+     p108 plain gravity clamp f8 x=3 answer col 4 frames-left 2 REACHABLE | base a19 final a20 silicon a3 | DISTROW=2 a20 LGP+DISTROW=2 a20
+
+== Q3 previous-target executions after a garbage window: silicon census + Mesen base vs DRLGPRESTART
+  m1g1 FAIR  after-garbage pills 12: silicon previous-target  7 | Mesen base reproduces 7 | DRLGPRESTART lands the copro final 6
+  m1g2 FAIR  after-garbage pills  9: silicon previous-target  3 | Mesen base reproduces 3 | DRLGPRESTART lands the copro final 3
+  m3g1 FAIR  after-garbage pills  1: silicon previous-target  1 | Mesen base reproduces 1 | DRLGPRESTART lands the copro final 1
+  m3g2 FAIR  after-garbage pills  1: silicon previous-target  1 | Mesen base reproduces 1 | DRLGPRESTART lands the copro final 1
+  m3g3 FAIR  after-garbage pills  2: silicon previous-target  0 | Mesen base reproduces 0 | DRLGPRESTART lands the copro final 0
+  m5g2 FAIR  after-garbage pills 15: silicon previous-target  5 | Mesen base reproduces 1 | DRLGPRESTART lands the copro final 5
+  m2g1 FAIR2 after-garbage pills  1: silicon previous-target  1 | Mesen base reproduces 1 | DRLGPRESTART lands the copro final 1
+  m2g2 FAIR2 after-garbage pills  6: silicon previous-target  3 | Mesen base reproduces 2 | DRLGPRESTART lands the copro final 3
+  m2g3 FAIR2 after-garbage pills  6: silicon previous-target  0 | Mesen base reproduces 0 | DRLGPRESTART lands the copro final 0
+  m4g1 FAIR2 after-garbage pills  8: silicon previous-target  2 | Mesen base reproduces 1 | DRLGPRESTART lands the copro final 2
+  m4g2 FAIR2 after-garbage pills 11: silicon previous-target  5 | Mesen base reproduces 4 | DRLGPRESTART lands the copro final 5
+
+== replay before/after (chained + silicon garbage): ==silicon / ==copro-final / hybrid
+  m1g1 FAIR  n=184 | chain - | base 160/160/8 | lgp 155/168/0 | row - | lgp_row - | row2 160/160/8 | lgp_row2 155/168/0
+  m1g2 FAIR  n=132 | chain - | base 117/119/6 | lgp 113/125/0 | row - | lgp_row - | row2 117/119/6 | lgp_row2 113/126/0
+  m3g1 FAIR  n= 26 | chain 23/26/0 | base 24/25/0 | lgp 23/26/0 | row 24/25/0 | lgp_row 23/26/0 | row2 24/25/0 | lgp_row2 23/26/0
+  m3g2 FAIR  n= 22 | chain - | base 18/18/1 | lgp 17/19/0 | row - | lgp_row - | row2 18/18/1 | lgp_row2 17/19/0
+  m3g3 FAIR  n= 19 | chain - | base 17/19/0 | lgp 17/19/0 | row - | lgp_row - | row2 17/19/0 | lgp_row2 17/19/0
+  m5g2 FAIR  n=190 | chain - | base 147/171/9 | lgp 151/181/0 | row - | lgp_row - | row2 147/171/9 | lgp_row2 151/181/0
+  m2g1 FAIR2 n= 47 | chain - | base 42/39/1 | lgp 41/40/0 | row - | lgp_row - | row2 42/39/1 | lgp_row2 41/40/0
+  m2g2 FAIR2 n=119 | chain - | base 94/114/5 | lgp 93/117/2 | row - | lgp_row - | row2 94/116/3 | lgp_row2 93/119/0
+  m2g3 FAIR2 n= 99 | chain - | base 87/96/1 | lgp 88/97/0 | row - | lgp_row - | row2 87/96/1 | lgp_row2 88/97/0
+  m4g1 FAIR2 n=134 | chain - | base 111/122/6 | lgp 111/128/0 | row - | lgp_row - | row2 111/122/6 | lgp_row2 111/128/0
+  m4g2 FAIR2 n=109 | chain 94/94/2 | base 97/90/8 | lgp 93/96/2 | row 96/92/6 | lgp_row 93/98/0 | row2 96/92/6 | lgp_row2 93/98/0
+  TOTAL FAIR  base     n= 573 ==silicon  483 ==final  512 hybrid  24
+  TOTAL FAIR  chain    n=  26 ==silicon   23 ==final   26 hybrid   0
+  TOTAL FAIR  lgp      n= 573 ==silicon  476 ==final  538 hybrid   0
+  TOTAL FAIR  lgp_row  n=  26 ==silicon   23 ==final   26 hybrid   0
+  TOTAL FAIR  lgp_row2 n= 573 ==silicon  476 ==final  539 hybrid   0
+  TOTAL FAIR  row      n=  26 ==silicon   24 ==final   25 hybrid   0
+  TOTAL FAIR  row2     n= 573 ==silicon  483 ==final  512 hybrid  24
+  TOTAL FAIR2 base     n= 508 ==silicon  431 ==final  461 hybrid  21
+  TOTAL FAIR2 chain    n= 109 ==silicon   94 ==final   94 hybrid   2
+  TOTAL FAIR2 lgp      n= 508 ==silicon  426 ==final  478 hybrid   4
+  TOTAL FAIR2 lgp_row  n= 109 ==silicon   93 ==final   98 hybrid   0
+  TOTAL FAIR2 lgp_row2 n= 508 ==silicon  426 ==final  482 hybrid   0
+  TOTAL FAIR2 row      n= 109 ==silicon   96 ==final   92 hybrid   6
+  TOTAL FAIR2 row2     n= 508 ==silicon  430 ==final  465 hybrid  17
