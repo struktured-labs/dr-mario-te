@@ -222,3 +222,18 @@ It changes NOTHING in sections 1–9: primary, guards, verdict and seeds are as 
 - So on the corrected clock the fast end of the prior describes an opponent much faster than the couch dr. lulu.
 - Re-deriving M belongs to a FUTURE prereg, and from FAIR-only levels: never from an arm contrast, which has now been
   seen at every M. The pre-registered primary stays as committed. Per-M results are pre-registered secondaries.
+
+## ABANDONED BEFORE ANALYSIS (2026-10-06 16:14:54Z)
+- **Launched** 16:04Z at git 0b79f3d8. **Stopped** on the coordinator's priority ruling: the same-seed pilot was
+  negative on couch11 (−1.23), and power at the design effect was 0.42.
+- **Partial rows** are banked untouched in `steer11/confirm/` (663 rows, 16 files):
+
+  | cell | FAIR rows | A16 rows |
+  |---|---|---|
+  | lulu11 | 132 | 113 |
+  | gb11 | 132 | 85 |
+  | rc11 | 116 | 85 |
+
+  Only these counts were read.
+- **No verdict exists.** `analyze_steer11.py confirm` refuses to run.
+- A16 is parked. See RESULT_STEER11.md.

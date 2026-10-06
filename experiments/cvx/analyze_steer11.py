@@ -172,7 +172,13 @@ def confirm_seeds():
     return [c["lo"] + 2 * i for i in range(c["n"])], c["n"]
 
 
+ABANDONED = ("STEER11 confirmation ABANDONED BEFORE ANALYSIS (coordinator, 2026-10-06 16:14Z, priority): the farm was "
+             "stopped at 663 of 24,000 rows; the partial rows are banked untouched and must NOT be analysed "
+             "(PREREG_STEER11.md, RESULT_STEER11.md).")
+
+
 def confirm():
+    raise SystemExit(ABANDONED)
     lines = []
 
     def out(s=""):
