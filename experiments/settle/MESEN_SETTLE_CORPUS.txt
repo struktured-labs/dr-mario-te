@@ -1,0 +1,165 @@
+# Mesen corpus, tools/settle/settle_probe.lua + base_gravity_probe.lua (tools/settle/run_probe.sh), 2026-10-03.
+# Per run: the SUMMARY line, the per-kind STABLE_HIST (earliest hook after the edge from which the upload-source RAM
+# already equals the bytes actually uploaded; 'mid' = mid-round spawn, 'prethrow' = the round-start pre-throw edge),
+# G0_HIST (frames of gravity not counted since spawn; unmodified game = 1), the main-loop PCs the NMIs interrupted.
+
+== couch464_s11  (settle_probe couch464_s11 settle=15 human=true poke_every=500 prand=0.15 tapp=2 reachtx=true maxf=60000)
+STABLE_HIST mid+garbage 0:6
+STABLE_HIST prethrow+cntmoved 0:1 2:7
+STABLE_HIST mid 0:377
+STABLE_HIST prethrow+cntmoved+garbage 2:1
+KINDS mid:383 prethrow+cntmoved:9
+G0_HIST 1:99 5:9 6:383
+NATURAL_KDROP_HIST 18:6 19:18 20:32 21:40 22:38 23:47 24:57 25:64 26:34 softfirst=155
+NMI_PC_TOP B664:30097 B662:29876 B677:9 B679:7 DF01:1 DD32:1 DE35:1 DB5F:1 DE14:1 DD1D:1
+MODES 0:40 1:120 2:9 3:9 4:57409 5:8 7:1199 8:1206
+SUMMARY tag=couch464_s11 frames=60000 hooks=119990 nmis=59995 pills=492 goes=492 dones=491 edges=392 locks=491 selfcheck_bad=100 noedge_go=100 first_eq_bad=8 worst_stable=2 lock_bad=8 multi_edge=0 go_without_lock=1 pokes=106 releases=106 grav_recs=491 absorbed=0 late_eq=0 late_ne=0 late_locked=0 cberr=0
+
+== couchS3np_s11  (settle_probe couchS3np_s11 settle=3 human=true poke_every=500 prand=0.15 tapp=2 reachtx=true maxf=60000)
+STABLE_HIST prethrow+cntmoved 0:1 2:5
+STABLE_HIST mid 0:302
+STABLE_HIST mid+garbage 0:6
+KINDS mid:308 prethrow+cntmoved:6
+G0_HIST 1:392
+NATURAL_KDROP_HIST 12:3 13:8 14:18 15:19 16:36 17:43 18:35 19:36 20:37 21:24 softfirst=133
+NMI_PC_TOP B662:30122 B664:29854 B677:8 B679:4 B65E:2 B660:1 DD31:1 DD6F:1 DD30:1 DF1F:1
+MODES 0:40 1:80 2:6 3:6 4:58400 5:5 7:659 8:804
+SUMMARY tag=couchS3np_s11 frames=60000 hooks=119990 nmis=59995 pills=392 goes=392 dones=389 edges=314 locks=392 selfcheck_bad=78 noedge_go=78 first_eq_bad=5 worst_stable=2 lock_bad=4 multi_edge=0 go_without_lock=0 pokes=84 releases=84 grav_recs=392 absorbed=0 late_eq=314 late_ne=0 late_locked=0 cberr=0
+
+== couchS3_s11  (settle_probe couchS3_s11 settle=3 human=true poke_every=500 prand=0.15 tapp=2 reachtx=true maxf=60000)
+STABLE_HIST mid 0:302
+STABLE_HIST mid+garbage 0:6
+STABLE_HIST prethrow+cntmoved 0:1 2:5
+KINDS mid:308 prethrow+cntmoved:6
+G0_HIST 1:392
+NATURAL_KDROP_HIST 12:3 13:8 14:18 15:19 16:36 17:43 18:35 19:36 20:37 21:24 softfirst=133
+NMI_PC_TOP B662:30056 B664:29920 B677:6 B679:6 D4DE:2 DF16:1 DD67:1 DD21:1 DD2C:1 D4E2:1
+MODES 0:40 1:80 2:6 3:6 4:58400 5:5 7:659 8:804
+SUMMARY tag=couchS3_s11 frames=60000 hooks=119990 nmis=59995 pills=392 goes=392 dones=389 edges=314 locks=392 selfcheck_bad=78 noedge_go=78 first_eq_bad=5 worst_stable=2 lock_bad=4 multi_edge=0 go_without_lock=0 pokes=84 releases=84 grav_recs=392 absorbed=0 late_eq=314 late_ne=0 late_locked=0 cberr=0
+
+== cvc387_s21  (settle_probe cvc387_s21 settle=15 human=false poke_every=400 prand=0.15 tapp=2 reachtx=true maxf=60000)
+STABLE_HIST mid+garbage 0:88
+STABLE_HIST mid 0:386
+STABLE_HIST prethrow+cntmoved 0:1 2:57
+STABLE_HIST prethrow+cntmoved+garbage 0:3 2:9
+KINDS mid:474 prethrow+cntmoved:70
+G0_HIST 5:70 6:454 7:19
+NATURAL_KDROP_HIST 25:120 26:221 27:1 softfirst=201
+NMI_PC_TOP B664:30013 B662:29817 B679:54 B677:38 90C4:3 D4DE:2 DE0C:2 9227:2 9229:2 90BE:2 DE20:2 DD32:2 92C0:1 9240:1 90C0:1 923E:1 DE26:1 92B9:1 DD2E:1 DD42:1 9237:1 93BD:1 DEE4:1 DF24:1 D2AB:1
+MODES 0:21 1:352 2:66 3:71 4:34718 5:71 7:9425 8:15276
+SUMMARY tag=cvc387_s21 frames=60000 hooks=119990 nmis=59995 pills=544 goes=544 dones=523 edges=545 locks=543 selfcheck_bad=0 noedge_go=0 first_eq_bad=66 worst_stable=2 lock_bad=0 multi_edge=1 go_without_lock=1 pokes=97 releases=99 grav_recs=543 absorbed=0 late_eq=0 late_ne=0 late_locked=0 cberr=0
+
+== cvcS3np_s21  (settle_probe cvcS3np_s21 settle=3 human=false poke_every=400 prand=0.15 tapp=2 reachtx=true maxf=60000)
+STABLE_HIST mid+garbage 0:86
+STABLE_HIST mid 0:420
+STABLE_HIST prethrow+cntmoved 2:67
+STABLE_HIST prethrow+cntmoved+garbage 2:8
+KINDS mid:506 prethrow+cntmoved:75
+G0_HIST 1:546 2:32
+NATURAL_KDROP_HIST 19:2 20:55 21:84 22:5 softfirst=432
+NMI_PC_TOP B664:29978 B662:29838 B677:49 B679:47 D4DE:4 D4E1:3 DD2E:3 948A:2 DE77:2 90C0:2 B65E:2 DD15:2 E00F:2 D4E2:2 DD21:1 DD5E:1 DD2C:1 8CC4:1 90C4:1 DD23:1 DE23:1 93BD:1 DD77:1 937E:1 92B5:1
+MODES 0:21 1:368 2:69 3:76 4:33223 5:76 7:9944 8:16223
+SUMMARY tag=cvcS3np_s21 frames=60000 hooks=119990 nmis=59995 pills=581 goes=581 dones=560 edges=582 locks=577 selfcheck_bad=0 noedge_go=0 first_eq_bad=75 worst_stable=2 lock_bad=0 multi_edge=1 go_without_lock=4 pokes=94 releases=94 grav_recs=578 absorbed=0 late_eq=578 late_ne=0 late_locked=3 cberr=0
+
+== mutNG_s11  (settle_probe mutNG_s11 settle=3 human=true poke_every=0 prand=0.50 tapp=2 reachtx=true maxf=30000)
+STABLE_HIST mid 0:376
+STABLE_HIST prethrow+cntmoved 0:1 2:7
+KINDS mid:376 prethrow+cntmoved:8
+G0_HIST 1:384
+NATURAL_KDROP_HIST 12:6 13:9 14:10 15:17 16:35 17:42 18:44 19:49 20:61 21:47 softfirst=64
+NMI_PC_TOP B662:15160 B664:14815 B679:8 B677:8 DE1E:1 DB67:1 DDFA:1 D4DE:1
+MODES 0:40 1:120 2:9 3:8 4:27709 5:7 7:1035 8:1072
+SUMMARY tag=mutNG_s11 frames=30000 hooks=59990 nmis=29995 pills=384 goes=384 dones=381 edges=384 locks=383 selfcheck_bad=0 noedge_go=0 first_eq_bad=7 worst_stable=2 lock_bad=0 multi_edge=0 go_without_lock=0 pokes=0 releases=0 grav_recs=384 absorbed=0 late_eq=384 late_ne=0 late_locked=0 cberr=0
+
+== tempoA_s31  (settle_probe tempoA_s31 settle=15 human=true poke_every=0 prand=0.15 tapp=2 reachtx=true maxf=40000)
+STABLE_HIST mid 0:69
+STABLE_HIST prethrow+cntmoved 2:1
+KINDS mid:69 prethrow+cntmoved:1
+G0_HIST 5:1 6:69
+NATURAL_KDROP_HIST 19:2 20:10 21:10 22:7 23:7 24:7 25:7 26:6 softfirst=14
+NMI_PC_TOP B662:19999 B664:19987 B677:5 B679:3 DD74:1
+MODES 0:40 1:40 2:3 3:1 4:39782 8:134
+SUMMARY tag=tempoA_s31 frames=40000 hooks=79990 nmis=39995 pills=70 goes=70 dones=70 edges=70 locks=70 selfcheck_bad=0 noedge_go=0 first_eq_bad=1 worst_stable=2 lock_bad=0 multi_edge=0 go_without_lock=0 pokes=0 releases=0 grav_recs=70 absorbed=0 late_eq=0 late_ne=0 late_locked=0 cberr=0
+
+== tempoB_s31  (settle_probe tempoB_s31 settle=3 human=true poke_every=0 prand=0.15 tapp=2 reachtx=true maxf=40000)
+STABLE_HIST mid 0:69
+STABLE_HIST prethrow+cntmoved 2:1
+KINDS mid:69 prethrow+cntmoved:1
+G0_HIST 1:70
+NATURAL_KDROP_HIST 14:1 15:10 16:10 17:7 18:6 19:7 20:4 21:7 softfirst=18
+NMI_PC_TOP B662:20044 B664:19943 B677:5 B679:3
+MODES 0:40 1:40 2:3 3:1 4:39782 8:134
+SUMMARY tag=tempoB_s31 frames=40000 hooks=79990 nmis=39995 pills=70 goes=70 dones=70 edges=70 locks=70 selfcheck_bad=0 noedge_go=0 first_eq_bad=1 worst_stable=2 lock_bad=0 multi_edge=0 go_without_lock=0 pokes=0 releases=0 grav_recs=70 absorbed=0 late_eq=70 late_ne=0 late_locked=0 cberr=0
+
+== tempoC_s31  (settle_probe tempoC_s31 settle=15 human=true poke_every=0 prand=0.15 tapp=2 reachtx=true maxf=40000)
+STABLE_HIST prethrow+cntmoved 2:1
+STABLE_HIST mid 0:69
+KINDS mid:69 prethrow+cntmoved:1
+G0_HIST 1:70
+NATURAL_KDROP_HIST 14:2 15:10 16:10 17:10 18:10 19:10 20:8 21:7 softfirst=3
+NMI_PC_TOP B662:20061 B664:19926 B677:5 B679:3
+MODES 0:40 1:40 2:3 3:1 4:39782 8:134
+SUMMARY tag=tempoC_s31 frames=40000 hooks=79990 nmis=39995 pills=70 goes=70 dones=70 edges=70 locks=70 selfcheck_bad=0 noedge_go=0 first_eq_bad=1 worst_stable=2 lock_bad=0 multi_edge=0 go_without_lock=0 pokes=0 releases=0 grav_recs=70 absorbed=0 late_eq=0 late_ne=0 late_locked=0 cberr=0
+
+== base_smoke (base_gravity_probe base_smoke speed=1 level=11 maxf=20000)
+G0_HIST P1 1:274
+NATURAL_KDROP_HIST P1 19:3 20:127 21:144 soft=18
+G0_BY_THR P1 thr=18 1:127
+G0_BY_THR P1 thr=19 1:144
+G0_BY_THR P1 thr=17 1:3
+G0_HIST P2 1:274
+NATURAL_KDROP_HIST P2 19:3 20:127 21:144 soft=18
+G0_BY_THR P2 thr=18 1:127
+G0_BY_THR P2 thr=19 1:144
+G0_BY_THR P2 thr=17 1:3
+MODES 0:80 1:40 2:3 3:18 4:14671 5:18 7:1960 8:3210
+SUMMARY tag=base_smoke frames=20000 P1recs=292 P2recs=292 cberr=0
+
+== base_med (base_gravity_probe base_med speed=1 level=11 maxf=60000)
+G0_HIST P1 1:815
+NATURAL_KDROP_HIST P1 19:8 20:373 21:434 soft=55
+G0_BY_THR P1 thr=18 1:373
+G0_BY_THR P1 thr=19 1:434
+G0_BY_THR P1 thr=17 1:8
+G0_HIST P2 1:815
+NATURAL_KDROP_HIST P2 19:8 20:373 21:434 soft=55
+G0_BY_THR P2 thr=18 1:373
+G0_BY_THR P2 thr=19 1:434
+G0_BY_THR P2 thr=17 1:8
+MODES 0:80 1:40 2:3 3:55 4:43661 5:54 7:6282 8:9825
+SUMMARY tag=base_med frames=60000 P1recs=870 P2recs=870 cberr=0
+
+== base_hi (base_gravity_probe base_hi speed=2 level=11 maxf=60000)
+G0_HIST P1 1:934
+NATURAL_KDROP_HIST P1 13:8 14:430 15:496 soft=63
+G0_BY_THR P1 thr=12 1:430
+G0_BY_THR P1 thr=13 1:496
+G0_BY_THR P1 thr=11 1:8
+G0_HIST P2 1:934
+NATURAL_KDROP_HIST P2 13:8 14:430 15:496 soft=63
+G0_BY_THR P2 thr=12 1:430
+G0_BY_THR P2 thr=13 1:496
+G0_BY_THR P2 thr=11 1:8
+MODES 0:80 1:80 2:6 3:63 4:41402 5:62 7:7212 8:11095
+SUMMARY tag=base_hi frames=60000 P1recs=997 P2recs=997 cberr=0
+
+== couchD_s11  (settle_probe couchD_s11 settle=3 human=true poke_every=500 prand=0.15 tapp=2 reachtx=true maxf=60000)
+STABLE_HIST prethrow+cntmoved 0:1 2:8
+STABLE_HIST prethrow+cntmoved+garbage 2:2
+STABLE_HIST mid 0:406
+STABLE_HIST mid+garbage 0:5
+KINDS mid:411 prethrow+cntmoved:11
+G0_HIST 1:528
+NATURAL_KDROP_HIST 14:1 15:19 16:41 17:39 18:62 19:75 20:61 21:52 softfirst=178
+NMI_PC_TOP B664:30075 B662:29891 B677:12 B679:8 DD3E:1 DE77:1 DD23:1 DE1E:1 DE28:1 DD2E:1 DE23:1 DDAD:1 D4E2:1
+MODES 0:40 1:160 2:12 3:11 4:56844 5:10 7:1449 8:1474
+SUMMARY tag=couchD_s11 frames=60000 hooks=119990 nmis=59995 pills=530 goes=530 dones=530 edges=422 locks=528 selfcheck_bad=108 noedge_go=108 first_eq_bad=10 worst_stable=2 lock_bad=8 multi_edge=0 go_without_lock=1 pokes=114 releases=114 grav_recs=528 absorbed=0 late_eq=422 late_ne=0 late_locked=0 cberr=0
+== tempoD_s31  (settle_probe tempoD_s31 settle=3 human=true poke_every=0 prand=0.15 tapp=2 reachtx=true maxf=40000)
+STABLE_HIST mid 0:69
+STABLE_HIST prethrow+cntmoved 2:1
+KINDS mid:69 prethrow+cntmoved:1
+G0_HIST 1:70
+NATURAL_KDROP_HIST 14:1 15:10 16:10 17:7 18:6 19:7 20:4 21:7 softfirst=18
+NMI_PC_TOP B662:20026 B664:19961 B677:5 B679:3
+MODES 0:40 1:40 2:3 3:1 4:39782 8:134
+SUMMARY tag=tempoD_s31 frames=40000 hooks=79990 nmis=39995 pills=70 goes=70 dones=70 edges=70 locks=70 selfcheck_bad=0 noedge_go=0 first_eq_bad=1 worst_stable=2 lock_bad=0 multi_edge=0 go_without_lock=0 pokes=0 releases=0 grav_recs=70 absorbed=0 late_eq=70 late_ne=0 late_locked=0 cberr=0

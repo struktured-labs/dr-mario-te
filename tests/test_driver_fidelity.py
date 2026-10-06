@@ -277,13 +277,18 @@ for _ in range(120):                       # full lifecycle: rotate -> min-think
     s.frame()
 check("gravity pinned 0 frames across a full pill (rotate+min-think+descend)", not any(s.froze_hist),
       f"pinned={sum(s.froze_hist)}/{len(s.froze_hist)} frames -- everything ran under live gravity")
-# control: the ONE remaining pin is freeze_pending's PEND2 settle (deployed, inside the spawn no-fall window)
+# control: the ONE remaining pin is freeze_pending's PEND2 settle. ⚠ CORRECTED 2026-10-03 (settle lane): this was
+# exempted as "inside the spawn no-fall window", but this mock reloads the drop timer every frame, whereas the ROM's
+# speed counter is CUMULATIVE -- every pinned frame delays the first drop. Mesen: stock carts G0 = 6 vs the unmodified
+# game's 1 = an OBSERVABLE 5-frame pin per pill (15 hooks = 7.5 f, not ~3). DRSETTLE=3 makes it a no-op and
+# DRSETTLEPIN=0 removes it; tests/test_gravity_fidelity.py (in tools/gate/run_cart_gates.sh) is the gate that sees it.
 s2 = Sim(rotfix=True)
 spawn_pill(s2, y=0x0D, x=3, orient=0)
 s2.mem[PEND2] = 1                          # pill still PENDING its search
 s2.frame(apply_physics=False)
-check("PENDING settle IS pinned (freeze_pending, the one deployed in-window pin)", s2.froze_hist[-1] is True,
-      "bounded by DELAY2 ~15 hooks ~3 frames, entirely inside the ~20f spawn animation")
+check("PENDING settle IS pinned (freeze_pending; the shipped settle pin -- see test_gravity_fidelity.py)",
+      s2.froze_hist[-1] is True,
+      "15 hooks = 7.5 f; holds P2's gravity 5 frames per pill on the stock carts (measured), a fairness defect")
 
 # ---------------------------------------------------------------- OLD driver regression demo
 print("SCENARIO 3-OLD (DRROTFIX=0): same late retarget -> OLD driver rotates LOW (backwards-lock)")

@@ -1,0 +1,159 @@
+# tools/settle/replay_eval.py tmp/lateflip 464 <ARM>: the banked G2/G3/G4 couch copro timelines (fw 1488e158, case files
+# byte-identical to the late-flip lane's) replayed on each cart in Mesen (tools/lateflip/run_lateflip.sh). 464 = 464a4b75.
+# S3np = fair settle (DRSETTLE=3 DRSETTLEPIN=0); S15np = no pin, settle 15; A/B/C/D = the fair ledge fixes on top of S3np
+# (A DRPROPHHOLD, B DRDISTROW, C DRLEDGECOMMIT, D DRPROPHFIRST); 464B = DRDISTROW on the stock settle.
+
+######## arm S3np
+== G2: 116 placements
+  464    n=116 upload==case 115 ==final  99 HYBRID  1 ==python  91 ==silicon  96 late-retarget pills  36 frozen 14 | python regret/scored 17.1 (scored 115) | tall n 85 hybrid 1
+  S3np   n=116 upload==case 116 ==final  92 HYBRID 14 ==python  76 ==silicon  88 late-retarget pills  35 frozen 11 | python regret/scored 19.2 (scored 100) | tall n 85 hybrid 14
+  landings differing 464 vs S3np: 17/116 p98:27->8 p100:16->17 p101:0->5 p102:14->29 p103:23->19 p104:6->3 p105:6->3 p106:30->27 p107:14->11 p108:22->19 p109:22->19 p110:20->19 p111:6->3 p112:22->19 p113:21->19 p114:13->11 p115:6->3
+== G3: 86 placements
+  464    n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  S3np   n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  landings differing 464 vs S3np: 0/86 
+== G4: 133 placements
+  464    n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 late-retarget pills  42 frozen  2 | tall n 5 hybrid 0
+  S3np   n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 117 late-retarget pills  43 frozen  2 | tall n 5 hybrid 0
+  landings differing 464 vs S3np: 2/133 p11:0->13 p123:22->17
+
+######## arm S15np
+== G2: 116 placements
+  464    n=116 upload==case 115 ==final  99 HYBRID  1 ==python  91 ==silicon  96 late-retarget pills  36 frozen 14 | python regret/scored 17.1 (scored 115) | tall n 85 hybrid 1
+  S15np  n=116 upload==case 116 ==final  95 HYBRID  0 ==python  90 ==silicon  92 late-retarget pills  32 frozen 18 | python regret/scored 18.8 (scored 116) | tall n 85 hybrid 0
+  landings differing 464 vs S15np: 5/116 p62:8->12 p79:20->0 p89:28->23 p96:18->23 p102:14->26
+== G3: 86 placements
+  464    n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  S15np  n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  landings differing 464 vs S15np: 0/86 
+== G4: 133 placements
+  464    n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 late-retarget pills  42 frozen  2 | tall n 5 hybrid 0
+  S15np  n=133 upload==case 133 ==final 130 HYBRID  0 ==python 123 ==silicon 114 late-retarget pills  42 frozen  3 | tall n 5 hybrid 0
+  landings differing 464 vs S15np: 1/133 p129:16->23
+
+######## arm A
+== G2: 116 placements
+  464    n=116 upload==case 115 ==final  99 HYBRID  1 ==python  91 ==silicon  96 late-retarget pills  36 frozen 14 | python regret/scored 17.1 (scored 115) | tall n 85 hybrid 1
+  A      n=116 upload==case 115 ==final  98 HYBRID  4 ==python  88 ==silicon  96 late-retarget pills  37 frozen 12 | python regret/scored 17.2 (scored 112) | tall n 85 hybrid 4
+  landings differing 464 vs A: 4/116 p98:27->8 p107:14->11 p114:13->11 p115:6->3
+== G3: 86 placements
+  464    n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  A      n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  landings differing 464 vs A: 0/86 
+== G4: 133 placements
+  464    n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 late-retarget pills  42 frozen  2 | tall n 5 hybrid 0
+  A      n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 117 late-retarget pills  43 frozen  2 | tall n 5 hybrid 0
+  landings differing 464 vs A: 2/133 p11:0->13 p123:22->17
+
+######## arm B
+== G2: 116 placements
+  464    n=116 upload==case 115 ==final  99 HYBRID  1 ==python  91 ==silicon  96 late-retarget pills  36 frozen 14 | python regret/scored 17.1 (scored 115) | tall n 85 hybrid 1
+  B      n=116 upload==case 116 ==final  98 HYBRID  4 ==python  87 ==silicon  95 late-retarget pills  36 frozen 13 | python regret/scored 17.3 (scored 111) | tall n 85 hybrid 4
+  landings differing 464 vs B: 6/116 p98:27->8 p101:0->6 p102:14->29 p107:14->11 p114:13->11 p115:6->3
+== G3: 86 placements
+  464    n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  B      n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  landings differing 464 vs B: 0/86 
+== G4: 133 placements
+  464    n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 late-retarget pills  42 frozen  2 | tall n 5 hybrid 0
+  B      n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 117 late-retarget pills  43 frozen  2 | tall n 5 hybrid 0
+  landings differing 464 vs B: 2/133 p11:0->13 p123:22->17
+
+######## arm C
+== G2: 116 placements
+  464    n=116 upload==case 115 ==final  99 HYBRID  1 ==python  91 ==silicon  96 late-retarget pills  36 frozen 14 | python regret/scored 17.1 (scored 115) | tall n 85 hybrid 1
+  C      n=116 upload==case 116 ==final  92 HYBRID 13 ==python  77 ==silicon  88 late-retarget pills  36 frozen 13 | python regret/scored 19.0 (scored 101) | tall n 85 hybrid 13
+  landings differing 464 vs C: 16/116 p98:27->8 p101:0->5 p102:14->29 p103:23->19 p104:6->3 p105:6->3 p106:30->27 p107:14->19 p108:22->19 p109:22->19 p110:20->19 p111:6->3 p112:22->19 p113:21->19 p114:13->11 p115:6->3
+== G3: 86 placements
+  464    n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  C      n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  landings differing 464 vs C: 0/86 
+== G4: 133 placements
+  464    n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 late-retarget pills  42 frozen  2 | tall n 5 hybrid 0
+  C      n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 117 late-retarget pills  43 frozen  2 | tall n 5 hybrid 0
+  landings differing 464 vs C: 2/133 p11:0->13 p123:22->17
+
+######## arm AB
+== G2: 116 placements
+  464    n=116 upload==case 115 ==final  99 HYBRID  1 ==python  91 ==silicon  96 late-retarget pills  36 frozen 14 | python regret/scored 17.1 (scored 115) | tall n 85 hybrid 1
+  AB     n=116 upload==case 115 ==final  98 HYBRID  5 ==python  87 ==silicon  95 late-retarget pills  37 frozen 12 | python regret/scored 17.3 (scored 111) | tall n 85 hybrid 5
+  landings differing 464 vs AB: 5/116 p98:27->8 p101:0->1 p107:14->11 p114:13->11 p115:6->3
+== G3: 86 placements
+  464    n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  AB     n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  landings differing 464 vs AB: 0/86 
+== G4: 133 placements
+  464    n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 late-retarget pills  42 frozen  2 | tall n 5 hybrid 0
+  AB     n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 117 late-retarget pills  43 frozen  2 | tall n 5 hybrid 0
+  landings differing 464 vs AB: 2/133 p11:0->13 p123:22->17
+
+######## arm BC
+== G2: 116 placements
+  464    n=116 upload==case 115 ==final  99 HYBRID  1 ==python  91 ==silicon  96 late-retarget pills  36 frozen 14 | python regret/scored 17.1 (scored 115) | tall n 85 hybrid 1
+  BC     n=116 upload==case 115 ==final  98 HYBRID  3 ==python  87 ==silicon  97 late-retarget pills  37 frozen 14 | python regret/scored 22.2 (scored 113) | tall n 85 hybrid 3
+  landings differing 464 vs BC: 5/116 p98:27->8 p107:14->22 p112:22->23 p114:13->11 p115:6->3
+== G3: 86 placements
+  464    n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  BC     n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  landings differing 464 vs BC: 0/86 
+== G4: 133 placements
+  464    n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 late-retarget pills  42 frozen  2 | tall n 5 hybrid 0
+  BC     n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 117 late-retarget pills  43 frozen  2 | tall n 5 hybrid 0
+  landings differing 464 vs BC: 2/133 p11:0->13 p123:22->17
+
+######## arm ABC
+== G2: 116 placements
+  464    n=116 upload==case 115 ==final  99 HYBRID  1 ==python  91 ==silicon  96 late-retarget pills  36 frozen 14 | python regret/scored 17.1 (scored 115) | tall n 85 hybrid 1
+  ABC    n=116 upload==case 115 ==final  98 HYBRID  3 ==python  87 ==silicon  97 late-retarget pills  37 frozen 14 | python regret/scored 22.2 (scored 113) | tall n 85 hybrid 3
+  landings differing 464 vs ABC: 5/116 p98:27->8 p107:14->22 p112:22->23 p114:13->11 p115:6->3
+== G3: 86 placements
+  464    n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  ABC    n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  landings differing 464 vs ABC: 0/86 
+== G4: 133 placements
+  464    n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 late-retarget pills  42 frozen  2 | tall n 5 hybrid 0
+  ABC    n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 117 late-retarget pills  43 frozen  2 | tall n 5 hybrid 0
+  landings differing 464 vs ABC: 2/133 p11:0->13 p123:22->17
+
+######## arm 464B
+== G2: 116 placements
+  464    n=116 upload==case 115 ==final  99 HYBRID  1 ==python  91 ==silicon  96 late-retarget pills  36 frozen 14 | python regret/scored 17.1 (scored 115) | tall n 85 hybrid 1
+  464B   n=116 upload==case 115 ==final  99 HYBRID  2 ==python  90 ==silicon  95 late-retarget pills  36 frozen 14 | python regret/scored 17.3 (scored 114) | tall n 85 hybrid 2
+  landings differing 464 vs 464B: 1/116 p101:0->1
+== G3: 86 placements
+  464    n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  464B   n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  landings differing 464 vs 464B: 0/86 
+== G4: 133 placements
+  464    n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 late-retarget pills  42 frozen  2 | tall n 5 hybrid 0
+  464B   n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 late-retarget pills  42 frozen  2 | tall n 5 hybrid 0
+  landings differing 464 vs 464B: 0/133 
+
+######## arm D
+== G2: 116 placements
+  464    n=116 upload==case 115 ==final  99 HYBRID  1 ==python  91 ==silicon  96 late-retarget pills  36 frozen 14 | python regret/scored 17.1 (scored 115) | tall n 85 hybrid 1
+  D      n=116 upload==case 115 ==final 100 HYBRID  1 ==python  90 ==silicon  96 late-retarget pills  36 frozen 13 | python regret/scored 17.2 (scored 115) | tall n 85 hybrid 1
+  landings differing 464 vs D: 1/116 p98:27->8
+== G3: 86 placements
+  464    n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  D      n= 86 upload==case  86 ==final  82 HYBRID  0 ==python  81 ==silicon  79 late-retarget pills  22 frozen  2 | tall n 6 hybrid 0
+  landings differing 464 vs D: 0/86 
+== G4: 133 placements
+  464    n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 115 late-retarget pills  42 frozen  2 | tall n 5 hybrid 0
+  D      n=133 upload==case 133 ==final 131 HYBRID  0 ==python 124 ==silicon 117 late-retarget pills  43 frozen  2 | tall n 5 hybrid 0
+  landings differing 464 vs D: 2/133 p11:0->13 p123:22->17
+
+######## DB (G2 only)
+== G2: 116 placements
+  464    n=116 upload==case 115 ==final  99 HYBRID  1 ==python  91 ==silicon  96 late-retarget pills  36 frozen 14 | python regret/scored 17.1 (scored 115) | tall n 85 hybrid 1
+  DB     n=116 upload==case 115 ==final 100 HYBRID  2 ==python  89 ==silicon  95 late-retarget pills  36 frozen 13 | python regret/scored 17.3 (scored 114) | tall n 85 hybrid 2
+  landings differing 464 vs DB: 2/116 p98:27->8 p101:0->1
+
+######## PROPH window (tools/settle/proph_window.py)
+G2_464: PROPH-armed pills 17 | first valid publication f median 9 | commit f median 14 | PROPH lateral presses before publication median 4 (dist [(0, 1), (4, 15), (5, 1)]) | lateral presses before commit median 4 | gravity counter first >=2 at f median 8
+G2_S3np: PROPH-armed pills 17 | first valid publication f median 3 | commit f median 8 | PROPH lateral presses before publication median 1 (dist [(1, 16), (2, 1)]) | lateral presses before commit median 1 | gravity counter first >=2 at f median 3
+G2_S15np: PROPH-armed pills 17 | first valid publication f median 9 | commit f median 14.0 | PROPH lateral presses before publication median 4 (dist [(4, 16), (5, 1)]) | lateral presses before commit median 4 | gravity counter first >=2 at f median 3
+G2_A: PROPH-armed pills 17 | first valid publication f median 3 | commit f median 8 | PROPH lateral presses before publication median 1 (dist [(0, 1), (1, 15), (2, 1)]) | lateral presses before commit median 3 | gravity counter first >=2 at f median 3
+G2_C: PROPH-armed pills 17 | first valid publication f median 3 | commit f median 4 | PROPH lateral presses before publication median 1 (dist [(1, 16), (2, 1)]) | lateral presses before commit median 1 | gravity counter first >=2 at f median 3
+G2_ABC: PROPH-armed pills 17 | first valid publication f median 3 | commit f median 4 | PROPH lateral presses before publication median 1 (dist [(0, 1), (1, 15), (2, 1)]) | lateral presses before commit median 1 | gravity counter first >=2 at f median 3
+G2_D: PROPH-armed pills 17 | first valid publication f median 3 | commit f median 10 | PROPH lateral presses before publication median 1 (dist [(0, 1), (1, 15), (2, 1)]) | lateral presses before commit median 4 | gravity counter first >=2 at f median 3
