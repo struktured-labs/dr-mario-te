@@ -1,0 +1,281 @@
+PART 2 -- brain-only replays (observed capsules + observed garbage, perfect execution), per start
+variant                          m1g1             m1g2             m1g3             m1g4             m1g5             m2g1             m2g2             m2g3             m2g4             m5g2
+                        WIN/LOSS/OPEN    WIN/LOSS/OPEN    WIN/LOSS/OPEN    WIN/LOSS/OPEN    WIN/LOSS/OPEN    WIN/LOSS/OPEN    WIN/LOSS/OPEN    WIN/LOSS/OPEN    WIN/LOSS/OPEN    WIN/LOSS/OPEN
+base                   26/ 17/  0 +0-0    5/ 39/  0 +0-0   16/  0/  0 +0-0    9/  0/107 +0-0   17/  0/  5 +0-0   13/  2/ 15 +0-0    5/  3/ 19 +0-0    2/ 25/  0 +0-0    3/  0/ 17 +0-0    3/ 35/  0 +0-0
+A_vk8                  31/ 12/  0 +5-0    5/ 39/  0 +0-0   16/  0/  0 +0-0    9/  0/107 +0-0   16/  0/  6 +3-4   16/  2/ 12 +3-0    6/  3/ 18 +1-0    2/ 25/  0 +0-0    4/  0/ 16 +1-0    4/ 34/  0 +2-1
+A_vk12                 33/ 10/  0 +7-0    4/ 40/  0 +0-1   16/  0/  0 +0-0    9/  0/107 +0-0   17/  0/  5 +3-3   19/  0/ 11 +6-0    7/  3/ 17 +3-1    2/ 25/  0 +0-0    3/  0/ 17 +0-0    7/ 31/  0 +4-0
+A_vk16                 36/  7/  0 +10-0    4/ 40/  0 +0-1   16/  0/  0 +0-0    9/  0/107 +0-0   14/  0/  8 +0-3   17/  2/ 11 +4-0   11/  3/ 13 +7-1    2/ 25/  0 +0-0    4/  0/ 16 +1-0    8/ 30/  0 +5-0
+A_vk12_W120            32/ 11/  0 +7-1    6/ 38/  0 +2-1   16/  0/  0 +0-0    9/  0/107 +0-0   12/  0/ 10 +0-5   22/  2/  6 +10-1    6/  3/ 18 +2-1    6/ 21/  0 +6-2    3/  0/ 17 +0-0    2/ 36/  0 +0-1
+AE_vk16                33/ 10/  0 +7-0    5/ 39/  0 +1-1   16/  0/  0 +0-0    0/  0/116 +0-9   15/  0/  7 +0-2   19/  2/  9 +7-1    5/  3/ 19 +1-1    6/ 21/  0 +6-2    3/  0/ 17 +0-0    2/ 36/  0 +0-1
+AE_vk48                33/ 10/  0 +7-0    8/ 36/  0 +4-1   14/  2/  0 +0-2    2/  0/114 +0-7   12/  0/ 10 +1-6   24/  2/  4 +12-1    3/  2/ 22 +1-3    3/ 24/  0 +3-2    5/  0/ 15 +3-1    3/ 35/  0 +1-1
+AK_vk12_kdig3          32/ 11/  0 +7-1    4/ 40/  0 +0-1   16/  0/  0 +0-0    9/  0/107 +0-0   14/  0/  8 +3-6   11/  2/ 17 +1-3    7/  3/ 17 +3-1    2/ 25/  0 +0-0    3/  0/ 17 +0-0    2/ 36/  0 +0-1
+B_eseal150             26/ 17/  0 +0-0    6/ 38/  0 +1-0   16/  0/  0 +0-0    0/  0/116 +0-9   18/  0/  4 +1-0   10/  5/ 15 +0-3    9/  2/ 16 +4-0    2/ 25/  0 +0-0    6/  0/ 14 +3-0    3/ 35/  0 +0-0
+B_eseal400             26/ 17/  0 +0-0    4/ 40/  0 +0-1   16/  0/  0 +0-0    2/  0/114 +0-7   16/  0/  6 +1-2   15/  2/ 13 +5-3    2/  2/ 23 +1-4    2/ 25/  0 +0-0    6/  0/ 14 +3-0    2/ 36/  0 +0-1
+C_edig60_vk12          29/ 14/  0 +3-0    5/ 39/  0 +0-0   16/  0/  0 +0-0    9/  0/107 +0-0   11/  0/ 11 +0-6   14/  2/ 14 +1-0    4/  3/ 20 +0-1    2/ 25/  0 +0-0    2/  0/ 18 +0-1    2/ 36/  0 +0-1
+C_edig60_vk16          34/  9/  0 +8-0    5/ 39/  0 +0-0   16/  0/  0 +0-0    9/  0/107 +0-0   12/  0/ 10 +0-5   14/  2/ 14 +1-0    4/  3/ 20 +0-1    2/ 25/  0 +0-0    5/  0/ 15 +3-1    2/ 36/  0 +0-1
+C_edig120_vk16         38/  5/  0 +12-0    5/ 39/  0 +0-0   16/  0/  0 +0-0    0/  0/116 +0-9   15/  0/  7 +1-3   13/  2/ 15 +1-1    4/  3/ 20 +2-3    2/ 25/  0 +0-0    6/  0/ 14 +3-0    3/ 35/  0 +1-1
+C_edig60_vk16_all      34/  9/  0 +8-0    5/ 39/  0 +0-0   16/  0/  0 +0-0    0/  0/116 +0-9    8/  0/ 14 +0-9   14/  0/ 16 +1-0    5/  3/ 19 +1-1    0/ 27/  0 +0-2    4/  0/ 16 +2-1    6/ 32/  0 +4-1
+D_reach60_h11          35/  8/  0 +10-1    3/ 41/  0 +1-3   16/  0/  0 +0-0    7/  0/109 +0-2   17/  0/  5 +0-0   16/  2/ 12 +3-0    7/  0/ 20 +3-1    2/ 25/  0 +0-0    3/  0/ 17 +0-0    4/ 34/  0 +1-0
+D_reach120_h11         37/  6/  0 +11-0    2/ 42/  0 +1-4   16/  0/  0 +0-0    7/  0/109 +0-2   16/  0/  6 +0-1   18/  2/ 10 +5-0    8/  1/ 18 +4-1    3/ 24/  0 +1-0    5/  0/ 15 +2-0    4/ 34/  0 +1-0
+D_reach120_h10         39/  4/  0 +13-0    2/ 42/  0 +1-4   16/  0/  0 +0-0    0/  0/116 +0-9   16/  0/  6 +0-1   16/  2/ 12 +3-0    8/  2/ 17 +4-1    0/ 27/  0 +0-2    3/  0/ 17 +1-1    5/ 33/  0 +3-1
+D_reach60_h12          35/  8/  0 +10-1    6/ 38/  0 +1-0   16/  0/  0 +0-0    9/  0/107 +0-0   17/  0/  5 +0-0   13/  2/ 15 +0-0    7/  0/ 20 +3-1    2/ 25/  0 +0-0    3/  0/ 17 +0-0    4/ 34/  0 +1-0
+D_reach250_h11         42/  1/  0 +16-0    2/ 42/  0 +1-4   16/  0/  0 +0-0    9/  0/107 +0-0   17/  0/  5 +0-0   12/  2/ 16 +2-3    7/  0/ 20 +3-1    1/ 26/  0 +1-2    5/  0/ 15 +2-0    4/ 34/  0 +2-1
+AD_vk16_reach120_h11   42/  1/  0 +16-0    1/ 43/  0 +1-5   16/  0/  0 +0-0    9/  2/105 +0-0   14/  0/  8 +0-3   20/  0/ 10 +7-0    9/  1/ 17 +5-1    3/ 24/  0 +1-0    4/  0/ 16 +1-0    6/ 32/  0 +3-0
+AD_vk16_reach60_h11    38/  5/  0 +12-0    5/ 39/  0 +1-1   16/  0/  0 +0-0    7/  0/109 +0-2   14/  0/  8 +0-3   17/  0/ 13 +7-3   12/  0/ 15 +8-1    2/ 25/  0 +0-0    4/  0/ 16 +1-0    7/ 31/  0 +4-0
+
+SUMMARY: her wins (m1g2, m1g4, m2g3) + m5g2: starts the brain WINS from; the AI's 6 wins: starts it LOSES from; fixed/new vs base summed over all games
+  base                 her-win games: AI wins from  19/225   AI-win games: AI loses from  22/158   starts fixed   0 / new   0   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):   5, median viruses at the end 12
+  A_vk8                her-win games: AI wins from  20/225   AI-win games: AI loses from  17/158   starts fixed  15 / new   5   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):  18, median viruses at the end 12
+  A_vk12               her-win games: AI wins from  22/225   AI-win games: AI loses from  13/158   starts fixed  23 / new   5   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):  12, median viruses at the end 12
+  A_vk16               her-win games: AI wins from  23/225   AI-win games: AI loses from  12/158   starts fixed  27 / new   5   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):  22, median viruses at the end 6
+  A_vk12_W120          her-win games: AI wins from  23/225   AI-win games: AI loses from  16/158   starts fixed  27 / new  12   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):   4, median viruses at the end 12
+  AE_vk16              her-win games: AI wins from  13/225   AI-win games: AI loses from  15/158   starts fixed  22 / new  17   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):  17, median viruses at the end 6
+  AE_vk48              her-win games: AI wins from  16/225   AI-win games: AI loses from  16/158   starts fixed  32 / new  24   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):  25, median viruses at the end 6
+  AK_vk12_kdig3        her-win games: AI wins from  17/225   AI-win games: AI loses from  16/158   starts fixed  14 / new  13   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):  10, median viruses at the end 12
+  B_eseal150           her-win games: AI wins from  11/225   AI-win games: AI loses from  24/158   starts fixed   9 / new  12   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):  28, median viruses at the end 13
+  B_eseal400           her-win games: AI wins from  10/225   AI-win games: AI loses from  21/158   starts fixed  10 / new  18   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):  21, median viruses at the end 13
+  C_edig60_vk12        her-win games: AI wins from  18/225   AI-win games: AI loses from  19/158   starts fixed   4 / new   9   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):   2, median viruses at the end 12
+  C_edig60_vk16        her-win games: AI wins from  18/225   AI-win games: AI loses from  14/158   starts fixed  12 / new   8   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):   9, median viruses at the end 10
+  C_edig120_vk16       her-win games: AI wins from  10/225   AI-win games: AI loses from  10/158   starts fixed  20 / new  17   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):   9, median viruses at the end 12
+  C_edig60_vk16_all    her-win games: AI wins from  11/225   AI-win games: AI loses from  12/158   starts fixed  16 / new  23   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):   8, median viruses at the end 6
+  D_reach60_h11        her-win games: AI wins from  16/225   AI-win games: AI loses from  10/158   starts fixed  18 / new   7   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):   5, median viruses at the end 13
+  D_reach120_h11       her-win games: AI wins from  16/225   AI-win games: AI loses from   9/158   starts fixed  25 / new   8   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):   7, median viruses at the end 12
+  D_reach120_h10       her-win games: AI wins from   7/225   AI-win games: AI loses from   8/158   starts fixed  25 / new  19   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):  14, median viruses at the end 5
+  D_reach60_h12        her-win games: AI wins from  21/225   AI-win games: AI loses from  10/158   starts fixed  15 / new   2   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):   5, median viruses at the end 13
+  D_reach250_h11       her-win games: AI wins from  16/225   AI-win games: AI loses from   3/158   starts fixed  27 / new  11   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):   0, median viruses at the end 12
+  AD_vk16_reach120_h11 her-win games: AI wins from  19/225   AI-win games: AI loses from   2/158   starts fixed  34 / new   9   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):  14, median viruses at the end 10
+  AD_vk16_reach60_h11  her-win games: AI wins from  21/225   AI-win games: AI loses from   5/158   starts fixed  33 / new  10   m1g4 OPEN starts at <= 3 viruses (ahead of her 3):  16, median viruses at the end 11
+
+PART 1 -- decisions on the observed boards (silicon / base = DIST60 faithful brain / variant)
+variant              game  | sil eseal base eseal var eseal kept open | dig boards var digs more d dig cost | changed fired | reach-loss raises: base    var avoided
+base                 m1g1  |         5          6         6         0 |        168             0         +0 |       0     0 |      3      3      0
+base                 m1g2  |         1          1         1         0 |          1             0         +0 |       0     0 |      0      0      0
+base                 m1g3  |         2          4         4         0 |         36             0         +0 |       0     0 |      0      0      0
+base                 m1g4  |         9          9         9         0 |        115             0         +0 |       0     0 |      2      2      0
+base                 m1g5  |         3          1         1         0 |         53             0         +0 |       0     0 |      0      0      0
+base                 m2g1  |         5          7         7         0 |         76             0         +0 |       0     0 |      0      0      0
+base                 m2g2  |        10          8         8         0 |         90             0         +0 |       0     0 |      1      1      0
+base                 m2g3  |         6          7         7         0 |         90             0         +0 |       0     0 |     10     10      0
+base                 m2g4  |         5          4         4         0 |         44             0         +0 |       0     0 |      0      0      0
+base                 m5g2  |         2          2         2         0 |         54             0         +0 |       0     0 |      0      0      0
+
+A_vk8                m1g1  |         5          6         5         1 |        168             2         -2 |      25     0 |      3      3      0
+A_vk8                m1g2  |         1          1         1         0 |          1             0         +0 |       2     0 |      0      0      0
+A_vk8                m1g3  |         2          4         3         1 |         36             0         +0 |       1     0 |      0      0      0
+A_vk8                m1g4  |         9          9         9         0 |        115             0         +0 |       0     0 |      2      2      0
+A_vk8                m1g5  |         3          1         1         0 |         53             0         +0 |       0     0 |      0      0      0
+A_vk8                m2g1  |         5          7         7         0 |         76             0         +2 |       6     0 |      0      0      0
+A_vk8                m2g2  |        10          8         8         0 |         90             0         +0 |       2     0 |      1      1      0
+A_vk8                m2g3  |         6          7         7         0 |         90             0         +0 |       0     0 |     10     10      0
+A_vk8                m2g4  |         5          4         4         0 |         44             0         +0 |       3     0 |      0      0      0
+A_vk8                m5g2  |         2          2         2         0 |         54             0         +0 |      29     0 |      0      0      0
+
+A_vk12               m1g1  |         5          6         4         2 |        168             3         -3 |      27     0 |      3      3      0
+A_vk12               m1g2  |         1          1         1         0 |          1             0         +0 |       7     0 |      0      0      0
+A_vk12               m1g3  |         2          4         3         1 |         36             0         +0 |       1     0 |      0      0      0
+A_vk12               m1g4  |         9          9         9         0 |        115             0         +0 |       0     0 |      2      2      0
+A_vk12               m1g5  |         3          1         1         0 |         53             0         +0 |       1     0 |      0      0      0
+A_vk12               m2g1  |         5          7         7         0 |         76             0         +2 |       6     0 |      0      0      0
+A_vk12               m2g2  |        10          8         7         1 |         90             1         -4 |       5     0 |      1      1      0
+A_vk12               m2g3  |         6          7         8         0 |         90             0         +0 |       3     0 |     10     10      0
+A_vk12               m2g4  |         5          4         4         0 |         44             0         +0 |       4     0 |      0      0      0
+A_vk12               m5g2  |         2          2         2         0 |         54             0         +0 |      33     0 |      0      0      0
+
+A_vk16               m1g1  |         5          6         4         2 |        168             3         -3 |      30     0 |      3      2      1
+A_vk16               m1g2  |         1          1         1         0 |          1             0         +0 |       8     0 |      0      0      0
+A_vk16               m1g3  |         2          4         3         1 |         36             0         +0 |       3     0 |      0      0      0
+A_vk16               m1g4  |         9          9         9         0 |        115             0         +0 |       6     0 |      2      2      0
+A_vk16               m1g5  |         3          1         1         0 |         53             0         +0 |       3     0 |      0      0      0
+A_vk16               m2g1  |         5          7         7         0 |         76             0         +2 |       7     0 |      0      0      0
+A_vk16               m2g2  |        10          8         7         1 |         90             1         -4 |       5     0 |      1      1      0
+A_vk16               m2g3  |         6          7         7         1 |         90             0         +0 |       7     0 |     10      9      1
+A_vk16               m2g4  |         5          4         4         0 |         44             0         +0 |       4     0 |      0      0      0
+A_vk16               m5g2  |         2          2         2         0 |         54             0         +0 |      33     0 |      0      0      0
+
+A_vk12_W120          m1g1  |         5          6         4         2 |        168             4         -4 |      34     0 |      3      2      1
+A_vk12_W120          m1g2  |         1          1         1         0 |          1             0         +0 |      10     0 |      0      0      0
+A_vk12_W120          m1g3  |         2          4         3         1 |         36             0         +0 |       1     0 |      0      0      0
+A_vk12_W120          m1g4  |         9          9         9         0 |        115             0         +0 |       0     0 |      2      2      0
+A_vk12_W120          m1g5  |         3          1         1         0 |         53             0         +0 |       1     0 |      0      0      0
+A_vk12_W120          m2g1  |         5          7         6         1 |         76             0         +4 |       9     0 |      0      0      0
+A_vk12_W120          m2g2  |        10          8         7         1 |         90             1         +9 |      11     0 |      1      1      0
+A_vk12_W120          m2g3  |         6          7         8         0 |         90             0         +0 |       4     0 |     10     10      0
+A_vk12_W120          m2g4  |         5          4         4         0 |         44             0         +0 |       4     0 |      0      0      0
+A_vk12_W120          m5g2  |         2          2         2         0 |         54             0         +0 |      46     0 |      0      0      0
+
+AE_vk16              m1g1  |         5          6         4         2 |        168             3         -2 |      11     0 |      3      2      1
+AE_vk16              m1g2  |         1          1         1         0 |          1             0         +0 |       4     0 |      0      0      0
+AE_vk16              m1g3  |         2          4         3         1 |         36             0         +0 |       1     0 |      0      0      0
+AE_vk16              m1g4  |         9          9         7         2 |        115             0         +0 |       5     0 |      2      2      0
+AE_vk16              m1g5  |         3          1         1         0 |         53             0         +0 |       1     0 |      0      0      0
+AE_vk16              m2g1  |         5          7         4         3 |         76             0         +2 |      12     0 |      0      0      0
+AE_vk16              m2g2  |        10          8         7         1 |         90             0         +0 |       3     0 |      1      1      0
+AE_vk16              m2g3  |         6          7         8         0 |         90             0         +0 |       4     0 |     10      9      1
+AE_vk16              m2g4  |         5          4         4         0 |         44             0         +0 |       3     0 |      0      0      0
+AE_vk16              m5g2  |         2          2         2         0 |         54             0         +0 |       3     0 |      0      0      0
+
+AE_vk48              m1g1  |         5          6         1         5 |        168             4         -1 |      16     0 |      3      2      1
+AE_vk48              m1g2  |         1          1         0         1 |          1             0         +0 |       6     0 |      0      0      0
+AE_vk48              m1g3  |         2          4         1         3 |         36             0         +0 |       5     0 |      0      0      0
+AE_vk48              m1g4  |         9          9         3         6 |        115             1         -4 |      21     0 |      2      1      1
+AE_vk48              m1g5  |         3          1         0         1 |         53             0         +0 |       5     0 |      0      0      0
+AE_vk48              m2g1  |         5          7         4         3 |         76             0         +2 |      14     0 |      0      0      0
+AE_vk48              m2g2  |        10          8         3         6 |         90             1         -2 |      13     0 |      1      1      0
+AE_vk48              m2g3  |         6          7         6         2 |         90             0         +0 |       8     0 |     10      7      3
+AE_vk48              m2g4  |         5          4         4         0 |         44             1         -6 |       7     0 |      0      0      0
+AE_vk48              m5g2  |         2          2         2         0 |         54             0         +0 |       5     0 |      0      0      0
+
+AK_vk12_kdig3        m1g1  |         5          6         5         1 |        168             3         +0 |       8     0 |      3      3      0
+AK_vk12_kdig3        m1g2  |         1          1         1         0 |          1             0         +0 |       7     0 |      0      0      0
+AK_vk12_kdig3        m1g3  |         2          4         4         0 |         36             0         +0 |       0     0 |      0      0      0
+AK_vk12_kdig3        m1g4  |         9          9         9         0 |        115             0         +0 |       0     0 |      2      2      0
+AK_vk12_kdig3        m1g5  |         3          1         1         0 |         53             0         +0 |       1     0 |      0      0      0
+AK_vk12_kdig3        m2g1  |         5          7         8         1 |         76             0         +0 |       6     0 |      0      0      0
+AK_vk12_kdig3        m2g2  |        10          8         7         1 |         90             1         -4 |       5     0 |      1      1      0
+AK_vk12_kdig3        m2g3  |         6          7         8         0 |         90             0         +0 |       2     0 |     10     10      0
+AK_vk12_kdig3        m2g4  |         5          4         4         0 |         44             0         +0 |       3     0 |      0      0      0
+AK_vk12_kdig3        m5g2  |         2          2         2         0 |         54             0         +0 |       6     0 |      0      0      0
+
+B_eseal150           m1g1  |         5          6         4         2 |        168             0         +0 |       2    46 |      3      3      0
+B_eseal150           m1g2  |         1          1         0         1 |          1             0         +0 |       1    58 |      0      0      0
+B_eseal150           m1g3  |         2          4         2         2 |         36             0         +0 |       2    31 |      0      0      0
+B_eseal150           m1g4  |         9          9         3         6 |        115             0         +0 |       6    97 |      2      2      0
+B_eseal150           m1g5  |         3          1         1         0 |         53             0         +0 |       0    42 |      0      0      0
+B_eseal150           m2g1  |         5          7         7         0 |         76             0         +0 |       0    39 |      0      0      0
+B_eseal150           m2g2  |        10          8         4         4 |         90             0         +0 |       4    64 |      1      1      0
+B_eseal150           m2g3  |         6          7         2         5 |         90             0         +0 |       5    82 |     10      9      1
+B_eseal150           m2g4  |         5          4         2         2 |         44             0         +0 |       2    54 |      0      0      0
+B_eseal150           m5g2  |         2          2         1         1 |         54             0         +0 |       1    48 |      0      0      0
+
+B_eseal400           m1g1  |         5          6         4         2 |        168             0         +0 |       2    46 |      3      3      0
+B_eseal400           m1g2  |         1          1         0         1 |          1             0         +0 |       1    58 |      0      0      0
+B_eseal400           m1g3  |         2          4         1         3 |         36             0         +0 |       3    31 |      0      0      0
+B_eseal400           m1g4  |         9          9         1         8 |        115             0         +0 |       8    97 |      2      2      0
+B_eseal400           m1g5  |         3          1         0         1 |         53             0         +0 |       1    42 |      0      0      0
+B_eseal400           m2g1  |         5          7         6         1 |         76             0         +0 |       1    39 |      0      0      0
+B_eseal400           m2g2  |        10          8         3         5 |         90             0         +0 |       5    64 |      1      1      0
+B_eseal400           m2g3  |         6          7         0         7 |         90             0         +0 |       7    82 |     10      9      1
+B_eseal400           m2g4  |         5          4         2         2 |         44             0         +0 |       2    54 |      0      0      0
+B_eseal400           m5g2  |         2          2         0         2 |         54             0         +0 |       2    48 |      0      0      0
+
+C_edig60_vk12        m1g1  |         5          6         6         0 |        168             4         -4 |       4    55 |      3      2      1
+C_edig60_vk12        m1g2  |         1          1         1         0 |          1             0         +0 |       0     0 |      0      0      0
+C_edig60_vk12        m1g3  |         2          4         4         0 |         36             0         +0 |       0     4 |      0      0      0
+C_edig60_vk12        m1g4  |         9          9         9         0 |        115             0         +0 |       0     0 |      2      2      0
+C_edig60_vk12        m1g5  |         3          1         1         0 |         53             2         -3 |       2    22 |      0      0      0
+C_edig60_vk12        m2g1  |         5          7         7         0 |         76             1         -1 |       1    22 |      0      0      0
+C_edig60_vk12        m2g2  |        10          8         8         0 |         90             2        -18 |       2    19 |      1      1      0
+C_edig60_vk12        m2g3  |         6          7         7         0 |         90             1         -3 |       1     4 |     10     10      0
+C_edig60_vk12        m2g4  |         5          4         4         0 |         44             2         -3 |       2    28 |      0      0      0
+C_edig60_vk12        m5g2  |         2          2         2         0 |         54             0         +0 |       0     0 |      0      0      0
+
+C_edig60_vk16        m1g1  |         5          6         6         0 |        168             5         -6 |       5    61 |      3      1      2
+C_edig60_vk16        m1g2  |         1          1         1         0 |          1             0         +0 |       0     0 |      0      0      0
+C_edig60_vk16        m1g3  |         2          4         4         0 |         36             1         -2 |       1    14 |      0      0      0
+C_edig60_vk16        m1g4  |         9          9         9         0 |        115             3         -7 |       3    48 |      2      2      0
+C_edig60_vk16        m1g5  |         3          1         1         0 |         53             3         -5 |       3    33 |      0      0      0
+C_edig60_vk16        m2g1  |         5          7         7         0 |         76             1         -1 |       1    33 |      0      0      0
+C_edig60_vk16        m2g2  |        10          8         8         0 |         90             3        -19 |       3    29 |      1      1      0
+C_edig60_vk16        m2g3  |         6          7         7         0 |         90             1         -3 |       1     5 |     10     10      0
+C_edig60_vk16        m2g4  |         5          4         4         0 |         44             3         -5 |       3    30 |      0      0      0
+C_edig60_vk16        m5g2  |         2          2         2         0 |         54             0         +0 |       0     0 |      0      0      0
+
+C_edig120_vk16       m1g1  |         5          6         6         0 |        168             6         -7 |       6    61 |      3      1      2
+C_edig120_vk16       m1g2  |         1          1         1         0 |          1             0         +0 |       0     0 |      0      0      0
+C_edig120_vk16       m1g3  |         2          4         4         0 |         36             2         -4 |       2    14 |      0      0      0
+C_edig120_vk16       m1g4  |         9          9         9         0 |        115             3         -7 |       3    48 |      2      2      0
+C_edig120_vk16       m1g5  |         3          1         1         0 |         53             5         -8 |       5    33 |      0      0      0
+C_edig120_vk16       m2g1  |         5          7         7         0 |         76             3         -3 |       3    33 |      0      0      0
+C_edig120_vk16       m2g2  |        10          8         8         0 |         90             4        -24 |       4    29 |      1      1      0
+C_edig120_vk16       m2g3  |         6          7         7         0 |         90             1         -3 |       1     5 |     10     10      0
+C_edig120_vk16       m2g4  |         5          4         4         0 |         44             4         -7 |       4    30 |      0      1      0
+C_edig120_vk16       m5g2  |         2          2         2         0 |         54             0         +0 |       0     0 |      0      0      0
+
+C_edig60_vk16_all    m1g1  |         5          6         6         0 |        168             5         -6 |       9    80 |      3      1      2
+C_edig60_vk16_all    m1g2  |         1          1         1         0 |          1             0         +0 |       0     8 |      0      0      0
+C_edig60_vk16_all    m1g3  |         2          4         4         0 |         36             0         +0 |       1    19 |      0      0      0
+C_edig60_vk16_all    m1g4  |         9          9         8         1 |        115             4         -8 |      19    49 |      2      2      0
+C_edig60_vk16_all    m1g5  |         3          1         1         0 |         53             1         -2 |       8    44 |      0      0      0
+C_edig60_vk16_all    m2g1  |         5          7         7         0 |         76             1         -1 |       2    38 |      0      0      0
+C_edig60_vk16_all    m2g2  |        10          8         8         0 |         90             2        -18 |       3    29 |      1      1      0
+C_edig60_vk16_all    m2g3  |         6          7         6         1 |         90             1         -3 |      13    63 |     10     10      0
+C_edig60_vk16_all    m2g4  |         5          4         4         0 |         44             1         -1 |       6    36 |      0      0      0
+C_edig60_vk16_all    m5g2  |         2          2         2         0 |         54             0         +0 |       1     9 |      0      0      0
+
+D_reach60_h11        m1g1  |         5          6         6         1 |        168             3         -5 |      13   163 |      3      1      2
+D_reach60_h11        m1g2  |         1          1         1         0 |          1             0         +0 |       0    69 |      0      0      0
+D_reach60_h11        m1g3  |         2          4         4         0 |         36             0         +0 |       0    19 |      0      0      0
+D_reach60_h11        m1g4  |         9          9         9         0 |        115             1         -4 |       3   139 |      2      1      1
+D_reach60_h11        m1g5  |         3          1         1         0 |         53             0         +0 |       0    22 |      0      0      0
+D_reach60_h11        m2g1  |         5          7         6         1 |         76             1         -2 |       3   120 |      0      0      0
+D_reach60_h11        m2g2  |        10          8         8         0 |         90             1         -3 |       1    60 |      1      1      0
+D_reach60_h11        m2g3  |         6          7         7         1 |         90             3         -2 |      13   109 |     10      2      8
+D_reach60_h11        m2g4  |         5          4         4         0 |         44             0         +0 |       1    42 |      0      0      0
+D_reach60_h11        m5g2  |         2          2         2         0 |         54             0         +0 |       0    60 |      0      0      0
+
+D_reach120_h11       m1g1  |         5          6         4         3 |        168             3         -3 |      18   163 |      3      1      2
+D_reach120_h11       m1g2  |         1          1         1         0 |          1             0         +0 |       0    69 |      0      0      0
+D_reach120_h11       m1g3  |         2          4         4         0 |         36             0         +0 |       0    19 |      0      0      0
+D_reach120_h11       m1g4  |         9          9         9         0 |        115             2         -7 |       5   139 |      2      0      2
+D_reach120_h11       m1g5  |         3          1         1         0 |         53             0         +0 |       1    22 |      0      0      0
+D_reach120_h11       m2g1  |         5          7         6         1 |         76             1         +1 |       4   120 |      0      0      0
+D_reach120_h11       m2g2  |        10          8         8         0 |         90             1         -3 |       2    60 |      1      0      1
+D_reach120_h11       m2g3  |         6          7         7         1 |         90             3         +0 |      15   109 |     10      1      9
+D_reach120_h11       m2g4  |         5          4         4         0 |         44             0         +2 |       3    42 |      0      0      0
+D_reach120_h11       m5g2  |         2          2         2         0 |         54             0         +0 |       1    60 |      0      0      0
+
+D_reach120_h10       m1g1  |         5          6         4         3 |        168             5         -5 |      23   175 |      3      1      2
+D_reach120_h10       m1g2  |         1          1         1         0 |          1             0         +0 |       0    69 |      0      0      0
+D_reach120_h10       m1g3  |         2          4         5         0 |         36             1         -2 |       2    30 |      0      0      0
+D_reach120_h10       m1g4  |         9          9         9         0 |        115             3         -8 |      11   145 |      2      0      2
+D_reach120_h10       m1g5  |         3          1         1         0 |         53             0         +0 |       4    59 |      0      0      0
+D_reach120_h10       m2g1  |         5          7         6         1 |         76             1         +7 |       7   120 |      0      0      0
+D_reach120_h10       m2g2  |        10          8         8         0 |         90             1         -3 |       4    86 |      1      0      1
+D_reach120_h10       m2g3  |         6          7         6         1 |         90             3         +0 |      18   120 |     10      1      9
+D_reach120_h10       m2g4  |         5          4         4         0 |         44             0         +2 |       6    55 |      0      0      0
+D_reach120_h10       m5g2  |         2          2         3         0 |         54             0         +0 |       2    60 |      0      0      0
+
+D_reach60_h12        m1g1  |         5          6         7         0 |        168             2         -2 |       8   159 |      3      1      2
+D_reach60_h12        m1g2  |         1          1         1         0 |          1             0         +0 |       0    53 |      0      0      0
+D_reach60_h12        m1g3  |         2          4         4         0 |         36             0         +0 |       0     8 |      0      0      0
+D_reach60_h12        m1g4  |         9          9         9         0 |        115             1         -4 |       1   121 |      2      1      1
+D_reach60_h12        m1g5  |         3          1         1         0 |         53             0         +0 |       0     7 |      0      0      0
+D_reach60_h12        m2g1  |         5          7         6         1 |         76             0         +0 |       1   116 |      0      0      0
+D_reach60_h12        m2g2  |        10          8         8         0 |         90             1         -3 |       1    51 |      1      1      0
+D_reach60_h12        m2g3  |         6          7         7         1 |         90             1         +1 |       6    91 |     10      6      4
+D_reach60_h12        m2g4  |         5          4         4         0 |         44             0         +0 |       0    28 |      0      0      0
+D_reach60_h12        m5g2  |         2          2         2         0 |         54             0         +0 |       0    56 |      0      0      0
+
+D_reach250_h11       m1g1  |         5          6         4         3 |        168             3         -3 |      20   163 |      3      1      2
+D_reach250_h11       m1g2  |         1          1         1         0 |          1             0         +0 |       0    69 |      0      0      0
+D_reach250_h11       m1g3  |         2          4         4         0 |         36             0         +0 |       0    19 |      0      0      0
+D_reach250_h11       m1g4  |         9          9         9         1 |        115             3         -8 |      10   139 |      2      0      2
+D_reach250_h11       m1g5  |         3          1         1         0 |         53             0         +0 |       3    22 |      0      0      0
+D_reach250_h11       m2g1  |         5          7         6         1 |         76             1         +7 |       8   120 |      0      0      0
+D_reach250_h11       m2g2  |        10          8         8         0 |         90             1         +1 |       6    60 |      1      0      1
+D_reach250_h11       m2g3  |         6          7         8         1 |         90             4         -2 |      19   109 |     10      1      9
+D_reach250_h11       m2g4  |         5          4         4         0 |         44             0         +2 |       3    42 |      0      0      0
+D_reach250_h11       m5g2  |         2          2         2         0 |         54             0         +0 |       1    60 |      0      0      0
+
+AD_vk16_reach120_h11 m1g1  |         5          6         3         4 |        168             5         -5 |      45   163 |      3      1      2
+AD_vk16_reach120_h11 m1g2  |         1          1         1         0 |          1             0         +0 |       8    69 |      0      0      0
+AD_vk16_reach120_h11 m1g3  |         2          4         3         1 |         36             0         +0 |       3    19 |      0      0      0
+AD_vk16_reach120_h11 m1g4  |         9          9        10         0 |        115             2         -7 |      11   139 |      2      0      2
+AD_vk16_reach120_h11 m1g5  |         3          1         1         0 |         53             0         +0 |       4    22 |      0      0      0
+AD_vk16_reach120_h11 m2g1  |         5          7         6         1 |         76             1         +3 |      11   120 |      0      0      0
+AD_vk16_reach120_h11 m2g2  |        10          8         7         1 |         90             2         -7 |       7    60 |      1      0      1
+AD_vk16_reach120_h11 m2g3  |         6          7         7         2 |         90             3         +0 |      21   109 |     10      1      9
+AD_vk16_reach120_h11 m2g4  |         5          4         4         0 |         44             0         +2 |       7    42 |      0      0      0
+AD_vk16_reach120_h11 m5g2  |         2          2         2         0 |         54             0         +0 |      34    60 |      0      0      0
+
+AD_vk16_reach60_h11  m1g1  |         5          6         3         3 |        168             5         -7 |      39   163 |      3      1      2
+AD_vk16_reach60_h11  m1g2  |         1          1         1         0 |          1             0         +0 |       8    69 |      0      0      0
+AD_vk16_reach60_h11  m1g3  |         2          4         3         1 |         36             0         +0 |       3    19 |      0      0      0
+AD_vk16_reach60_h11  m1g4  |         9          9         9         0 |        115             1         -4 |       9   139 |      2      1      1
+AD_vk16_reach60_h11  m1g5  |         3          1         1         0 |         53             0         +0 |       3    22 |      0      0      0
+AD_vk16_reach60_h11  m2g1  |         5          7         6         1 |         76             1         +0 |      10   120 |      0      0      0
+AD_vk16_reach60_h11  m2g2  |        10          8         7         1 |         90             2         -7 |       6    60 |      1      1      0
+AD_vk16_reach60_h11  m2g3  |         6          7         7         2 |         90             3         -2 |      19   109 |     10      2      8
+AD_vk16_reach60_h11  m2g4  |         5          4         4         0 |         44             0         +0 |       5    42 |      0      0      0
+AD_vk16_reach60_h11  m5g2  |         2          2         2         0 |         54             0         +0 |      33    60 |      0      0      0
+
