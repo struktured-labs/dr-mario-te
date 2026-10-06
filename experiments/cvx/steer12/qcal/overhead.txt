@@ -1,0 +1,8 @@
+ex_perfect n 60 both-clear 53: overhead  +0.00 pills [+0.00, +0.00], realised miss rate 0.00%
+q00        n 60 both-clear 51: overhead  +4.53 pills [-0.14, +13.16], realised miss rate 0.00%
+ex_q01     n 60 both-clear 46: overhead  +4.26 pills [-1.76, +10.52], realised miss rate 1.14%
+ex_q02     n 60 both-clear 45: overhead  +9.29 pills [+2.44, +17.47], realised miss rate 1.99%
+ex_q03     n 60 both-clear 42: overhead +19.31 pills [+8.69, +31.10], realised miss rate 2.83%
+ex_q04     n 60 both-clear 35: overhead +16.86 pills [+5.88, +28.58], realised miss rate 3.74%
+ex_q06     n 60 both-clear 34: overhead +33.82 pills [+17.00, +53.24], realised miss rate 5.49%
+ex_q08     n 60 both-clear 26: overhead +24.65 pills [+10.04, +41.23], realised miss rate 7.58%

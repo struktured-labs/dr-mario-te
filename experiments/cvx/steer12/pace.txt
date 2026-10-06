@@ -1,0 +1,30 @@
+STEER12 desk: OPPONENT-MEASURED pace for the vs_race human model, from couch data only (no sim win rate is read).
+
+== lulu (delta 2.65) ==
+  m1g1: AI lulu topped out                       T  346.5 s, viruses left  6, AI cells landed on lulu  73 (-193.4 s) -> tau_end  153.1 s, f_end 0.88 | T0  167.5 s (linear extrapolation  174.9)
+  m1g2: lulu cleared                             T  389.4 s, viruses left  0, AI cells landed on lulu  69 (-182.8 s) -> tau_end  206.5 s, f_end 1.00 | T0 (cleared)  206.5 s (linear extrapolation  206.5)
+  m1g3: AI lulu topped out                       T  106.4 s, viruses left 25, AI cells landed on lulu  23 (- 60.9 s) -> tau_end   45.5 s, f_end 0.48 | T0  140.9 s (linear extrapolation   94.9)
+  m1g4: lulu AI topped out                       T  221.6 s, viruses left  3, AI cells landed on lulu  25 (- 66.2 s) -> tau_end  155.4 s, f_end 0.94 | T0  171.4 s (linear extrapolation  165.7)
+  m1g5: AI cleared                               T  184.0 s, viruses left 26, AI cells landed on lulu  31 (- 82.1 s) -> tau_end  101.8 s, f_end 0.46 | T0  265.8 s (linear extrapolation  222.1)
+  m2g1: AI cleared                               T  258.6 s, viruses left 14, AI cells landed on lulu  38 (-100.7 s) -> tau_end  157.9 s, f_end 0.71 | T0  223.5 s (linear extrapolation  222.9)
+  m2g2: AI cleared                               T  232.3 s, viruses left  6, AI cells landed on lulu  41 (-108.6 s) -> tau_end  123.7 s, f_end 0.88 | T0  140.9 s (linear extrapolation  141.3)
+  m2g3: lulu cleared                             T  208.4 s, viruses left  0, AI cells landed on lulu  21 (- 55.6 s) -> tau_end  152.8 s, f_end 1.00 | T0 (cleared)  152.8 s (linear extrapolation  152.8)
+  m2g4: AI cleared                               T  186.1 s, viruses left 14, AI cells landed on lulu  32 (- 84.8 s) -> tau_end  101.3 s, f_end 0.71 | T0  142.5 s (linear extrapolation  143.0)
+  excluded (< 12 viruses cleared): []
+  pooled shape exponent a = 0.725 (f = (tau/T0)^a; a > 1 = slower start, a < 1 = slower finish)
+  MEASURED PACE M = 167.5 s [game bootstrap 95% 140.9, 223.5] (linear extrapolation instead: 165.7); per-game sigma of log T0 = 0.229
+
+== owner (delta 2.65) ==
+  m1g1: AI full clear, owner 17 / AI 0           T  322.5 s, viruses left 17, AI cells landed on owner  43 (-114.0 s) -> tau_end  208.6 s, f_end 0.65 | T0  402.7 s (linear extrapolation  323.0)
+  m1g2: owner tapped out 25 / 5                  T  236.4 s, viruses left 25, AI cells landed on owner  47 (-124.5 s) -> tau_end  111.9 s, f_end 0.48 | T0  301.7 s (linear extrapolation  233.5)
+  m2g2: owner topped out 32 / AI 1 (logged as a full clear; the recording shows 1 virus left) T  200.2 s, viruses left 32, AI cells landed on owner  42 (-111.3 s) -> tau_end   88.9 s, f_end 0.33 | T0  371.4 s (linear extrapolation  266.8)
+  m2g3: owner tapped out 19 / 4                  T  168.3 s, viruses left 19, AI cells landed on owner  35 (- 92.8 s) -> tau_end   75.6 s, f_end 0.60 | T0  190.2 s (linear extrapolation  125.0)
+  m4g1: AI full clear, owner at 5 (race loss)    T  241.4 s, viruses left  5, AI cells landed on owner  40 (-106.0 s) -> tau_end  135.4 s, f_end 0.90 | T0  154.5 s (linear extrapolation  151.2)
+  m4g2: AI TAPPED OUT, owner 12 / AI 16          T  163.6 s, viruses left 12, AI cells landed on owner  24 (- 63.6 s) -> tau_end  100.0 s, f_end 0.75 | T0  142.5 s (linear extrapolation  133.3)
+  excluded (< 12 viruses cleared): [('m2g1', 42, 71.6), ('m3g1', 42, 36.8), ('m3g2', 43, 27.3), ('m3g3', 44, 30.3)]
+  pooled shape exponent a = 0.625 (f = (tau/T0)^a; a > 1 = slower start, a < 1 = slower finish)
+  MEASURED PACE M = 239.5 s [game bootstrap 95% 148.4, 386.7] (linear extrapolation instead: 187.9); per-game sigma of log T0 = 0.454
+
+SENSITIVITY to delta (M only):
+  delta 1.5: lulu M 248.0 s, owner M 369.3 s
+  delta 4.0: lulu M 113.4 s, owner M 116.4 s
