@@ -1,0 +1,98 @@
+IDENTITY s10_base vs banked fD_bdepD gb10: 3/3 rows identical on every non-stamp key
+IDENTITY s10_base vs banked fD_bdepD rc10: 3/3 rows identical on every non-stamp key
+IDENTITY s10_base vs banked fD_bdepD lulu10: 3/3 rows identical on every non-stamp key
+rows FAIR: lulu10b 1200 gb10 1200 rc10 600
+
+rows s10_A16: lulu10b 1200 gb10 1200 rc10 600
+
+=== s10_A16 vs FAIR (fD_bdepD) ===
+  PRIMARY lulu10b LULU race win, pace prior M80/100/120/140 d2.65 (n=1200): 87.00% -> 88.35% (loss 13.00% -> 11.65%)  d +1.35 [+0.02, +2.71]  Bonf +1.35 [-0.38, +3.06]
+    M80: 78.00% -> 78.58%  d +0.58 [-1.67, +2.67]  churn fixed 87 / new 80
+    M100: 87.83% -> 89.42%  d +1.58 [-0.08, +3.25]  churn fixed 60 / new 41
+    M120: 90.58% -> 92.08%  d +1.50 [+0.00, +2.92]  churn fixed 48 / new 30
+    M140: 91.58% -> 93.33%  d +1.75 [+0.42, +3.08]  churn fixed 44 / new 23
+    (secondary) garbage-time-charged pace-prior win (+3.2 s per received release): 75.06% -> 75.48%  d +0.42 [-1.00, +1.83]
+    (secondary) M100 d2.0: d +1.08 [-1.17, +3.33]
+    (secondary) M140 d2.0: d +2.42 [+0.83, +4.00]
+    lulu10b tap-out (how == topout): 8.00% -> 6.17%  d -1.83 [-3.08, -0.58]  churn fixed 40 / new 18
+  GUARD gb10 tap-out (n=1200) 6.17% -> 6.58%  d +0.42 [-1.08, +1.92]  Bonf +0.42 [-1.58, +2.17]  churn fixed 37 / new 42
+    gb10 tap<=100: d +0.50 [+0.17, +0.92]
+  GUARD rc10 owner race win M177 d2.65 (n=600) 93.50% -> 92.17%  d -1.33 [-3.00, +0.33]  Bonf -1.33 [-3.50, +0.67]  churn fixed 9 / new 17
+  lulu10b per game: stall-pills act>=10 from <=16 v 24.9 -> 17.9 d -7.00 [-10.08, -4.13]; from <=4 v 12.2 -> 12.0 d -0.19 [-2.38, +1.91]; longest stall (pills) 18.1 -> 13.6 d -4.56 [-7.05, -2.15]; longest stall (s) 23.9 -> 17.6 d -6.29 [-9.66, -3.04]; edge-virus str-stuck decisions 689.3 -> 646.9 d -42.44 [-55.97, -29.50]; games with a stall >= 36 s 13.2% -> 10.2%
+  gb10 per game: stall-pills act>=10 from <=16 v 23.3 -> 19.7 d -3.55 [-7.14, -0.10]; from <=4 v 12.9 -> 13.8 d +0.85 [-1.92, +3.75]; longest stall (pills) 17.4 -> 15.9 d -1.53 [-4.64, +1.50]; longest stall (s) 81.3 -> 72.7 d -8.63 [-23.80, +6.36]; edge-virus str-stuck decisions 630.6 -> 606.3 d -24.32 [-37.77, -11.49]; games with a stall >= 36 s 51.1% -> 50.2%
+  rc10 per game: stall-pills act>=10 from <=16 v 21.2 -> 19.5 d -1.76 [-5.13, +1.75]; from <=4 v 11.3 -> 12.5 d +1.21 [-1.40, +3.96]; longest stall (pills) 16.0 -> 15.8 d -0.18 [-2.94, +2.88]; longest stall (s) 21.0 -> 20.7 d -0.31 [-4.04, +3.77]; edge-virus str-stuck decisions 653.8 -> 640.0 d -13.81 [-29.28, +3.30]; games with a stall >= 36 s 11.7% -> 9.0%
+  ACTIVITY lulu10b: fired 0 (0.0%), changed 0 (0.0%), tgt_on 80256 (55.3%), tgt_edge 0 (0.0%), tgt_diff 48112 (33.2%) of 145063 decisions
+  ACTIVITY gb10: fired 0 (0.0%), changed 0 (0.0%), tgt_on 82580 (57.5%), tgt_edge 0 (0.0%), tgt_diff 47478 (33.1%) of 143556 decisions
+  ACTIVITY rc10: fired 0 (0.0%), changed 0 (0.0%), tgt_on 40988 (56.1%), tgt_edge 0 (0.0%), tgt_diff 24423 (33.4%) of 73044 decisions
+  VERDICT (Bonferroni 99.375%): FAIL
+
+rows s10_R60: lulu10b 1200 gb10 1200 rc10 600
+
+=== s10_R60 vs FAIR (fD_bdepD) ===
+  PRIMARY lulu10b LULU race win, pace prior M80/100/120/140 d2.65 (n=1200): 87.00% -> 87.29% (loss 13.00% -> 12.71%)  d +0.29 [-1.50, +2.08]  Bonf +0.29 [-1.90, +2.62]
+    M80: 78.00% -> 76.92%  d -1.08 [-3.50, +1.42]  churn fixed 109 / new 122
+    M100: 87.83% -> 87.75%  d -0.08 [-2.25, +2.08]  churn fixed 86 / new 87
+    M120: 90.58% -> 91.67%  d +1.08 [-0.83, +3.00]  churn fixed 76 / new 63
+    M140: 91.58% -> 92.83%  d +1.25 [-0.50, +3.08]  churn fixed 69 / new 54
+    (secondary) garbage-time-charged pace-prior win (+3.2 s per received release): 75.06% -> 74.50%  d -0.56 [-2.31, +1.23]
+    (secondary) M100 d2.0: d -1.58 [-4.17, +0.92]
+    (secondary) M140 d2.0: d -0.17 [-2.25, +2.00]
+    lulu10b tap-out (how == topout): 8.00% -> 6.92%  d -1.08 [-2.83, +0.67]  churn fixed 66 / new 53
+  GUARD gb10 tap-out (n=1200) 6.17% -> 5.25%  d -0.92 [-2.50, +0.67]  Bonf -0.92 [-2.92, +1.17]  churn fixed 53 / new 42
+    gb10 tap<=100: d +0.00 [-0.58, +0.58]
+  GUARD rc10 owner race win M177 d2.65 (n=600) 93.50% -> 93.00%  d -0.50 [-3.00, +1.83]  Bonf -0.50 [-3.67, +2.50]  churn fixed 26 / new 29
+  lulu10b per game: stall-pills act>=10 from <=16 v 24.9 -> 27.0 d +2.07 [-1.74, +5.84]; from <=4 v 12.2 -> 11.7 d -0.46 [-2.85, +1.96]; longest stall (pills) 18.1 -> 18.7 d +0.54 [-2.58, +3.46]; longest stall (s) 23.9 -> 24.6 d +0.74 [-3.47, +4.69]; edge-virus str-stuck decisions 689.3 -> 705.0 d +15.65 [-6.30, +37.29]; games with a stall >= 36 s 13.2% -> 15.8%
+  gb10 per game: stall-pills act>=10 from <=16 v 23.3 -> 22.4 d -0.91 [-4.47, +2.51]; from <=4 v 12.9 -> 12.1 d -0.84 [-3.31, +1.55]; longest stall (pills) 17.4 -> 15.5 d -1.95 [-4.90, +0.80]; longest stall (s) 81.3 -> 72.2 d -9.13 [-23.35, +4.23]; edge-virus str-stuck decisions 630.6 -> 631.7 d +1.08 [-16.45, +17.57]; games with a stall >= 36 s 51.1% -> 52.8%
+  rc10 per game: stall-pills act>=10 from <=16 v 21.2 -> 23.4 d +2.15 [-3.08, +7.28]; from <=4 v 11.3 -> 11.2 d -0.11 [-3.02, +2.54]; longest stall (pills) 16.0 -> 16.2 d +0.14 [-3.85, +3.88]; longest stall (s) 21.0 -> 21.2 d +0.23 [-5.13, +5.26]; edge-virus str-stuck decisions 653.8 -> 684.7 d +30.93 [+1.09, +60.54]; games with a stall >= 36 s 11.7% -> 11.7%
+  ACTIVITY lulu10b: fired 90639 (57.4%), changed 2812 (1.8%), tgt_on 32337 (20.5%), tgt_edge 0 (0.0%), tgt_diff 0 (0.0%) of 157859 decisions
+  ACTIVITY gb10: fired 78603 (53.7%), changed 2329 (1.6%), tgt_on 32448 (22.2%), tgt_edge 0 (0.0%), tgt_diff 0 (0.0%) of 146393 decisions
+  ACTIVITY rc10: fired 44164 (57.3%), changed 1371 (1.8%), tgt_on 15928 (20.7%), tgt_edge 0 (0.0%), tgt_diff 0 (0.0%) of 77067 decisions
+  VERDICT (Bonferroni 99.375%): FAIL
+
+rows s10_R120: lulu10b 1200 gb10 1200 rc10 600
+
+=== s10_R120 vs FAIR (fD_bdepD) ===
+  PRIMARY lulu10b LULU race win, pace prior M80/100/120/140 d2.65 (n=1200): 87.00% -> 85.54% (loss 13.00% -> 14.46%)  d -1.46 [-3.48, +0.56]  Bonf -1.46 [-4.12, +1.23]
+    M80: 78.00% -> 73.25%  d -4.75 [-7.50, -2.00]  churn fixed 117 / new 174
+    M100: 87.83% -> 86.50%  d -1.33 [-3.75, +1.08]  churn fixed 98 / new 114
+    M120: 90.58% -> 90.42%  d -0.17 [-2.33, +2.08]  churn fixed 85 / new 87
+    M140: 91.58% -> 92.00%  d +0.42 [-1.67, +2.42]  churn fixed 79 / new 74
+    (secondary) garbage-time-charged pace-prior win (+3.2 s per received release): 75.06% -> 70.67%  d -4.40 [-6.42, -2.33]
+    (secondary) M100 d2.0: d -6.75 [-9.58, -3.92]
+    (secondary) M140 d2.0: d -1.17 [-3.50, +1.17]
+    lulu10b tap-out (how == topout): 8.00% -> 7.08%  d -0.92 [-2.92, +1.00]  churn fixed 76 / new 65
+  GUARD gb10 tap-out (n=1200) 6.17% -> 5.67%  d -0.50 [-2.17, +1.17]  Bonf -0.50 [-2.58, +1.67]  churn fixed 55 / new 49
+    gb10 tap<=100: d -0.17 [-0.75, +0.42]
+  GUARD rc10 owner race win M177 d2.65 (n=600) 93.50% -> 93.00%  d -0.50 [-3.00, +1.83]  Bonf -0.50 [-3.67, +2.67]  churn fixed 26 / new 29
+  lulu10b per game: stall-pills act>=10 from <=16 v 24.9 -> 31.7 d +6.75 [+2.23, +11.13]; from <=4 v 12.2 -> 12.0 d -0.17 [-2.66, +2.34]; longest stall (pills) 18.1 -> 21.1 d +2.94 [-0.72, +6.37]; longest stall (s) 23.9 -> 27.8 d +3.92 [-1.04, +8.58]; edge-virus str-stuck decisions 689.3 -> 744.7 d +55.39 [+29.14, +81.39]; games with a stall >= 36 s 13.2% -> 18.2%
+  gb10 per game: stall-pills act>=10 from <=16 v 23.3 -> 27.4 d +4.06 [+0.10, +8.12]; from <=4 v 12.9 -> 13.9 d +0.96 [-1.58, +3.62]; longest stall (pills) 17.4 -> 18.9 d +1.48 [-1.68, +4.76]; longest stall (s) 81.3 -> 88.9 d +7.62 [-7.87, +23.66]; edge-virus str-stuck decisions 630.6 -> 667.0 d +36.42 [+16.72, +56.02]; games with a stall >= 36 s 51.1% -> 54.9%
+  rc10 per game: stall-pills act>=10 from <=16 v 21.2 -> 29.1 d +7.90 [+2.14, +14.02]; from <=4 v 11.3 -> 10.9 d -0.41 [-3.91, +2.92]; longest stall (pills) 16.0 -> 19.7 d +3.64 [-0.77, +8.28]; longest stall (s) 21.0 -> 25.9 d +4.92 [-1.07, +11.21]; edge-virus str-stuck decisions 653.8 -> 731.1 d +77.35 [+47.96, +108.09]; games with a stall >= 36 s 11.7% -> 16.0%
+  ACTIVITY lulu10b: fired 99625 (59.9%), changed 5009 (3.0%), tgt_on 33232 (20.0%), tgt_edge 0 (0.0%), tgt_diff 0 (0.0%) of 166399 decisions
+  ACTIVITY gb10: fired 88207 (57.3%), changed 4429 (2.9%), tgt_on 34888 (22.7%), tgt_edge 0 (0.0%), tgt_diff 0 (0.0%) of 153917 decisions
+  ACTIVITY rc10: fired 49507 (61.1%), changed 2548 (3.1%), tgt_on 16025 (19.8%), tgt_edge 0 (0.0%), tgt_diff 0 (0.0%) of 81000 decisions
+  VERDICT (Bonferroni 99.375%): FAIL
+
+rows s10_A16R120: lulu10b 1200 gb10 1200 rc10 600
+
+=== s10_A16R120 vs FAIR (fD_bdepD) ===
+  PRIMARY lulu10b LULU race win, pace prior M80/100/120/140 d2.65 (n=1200): 87.00% -> 87.19% (loss 13.00% -> 12.81%)  d +0.19 [-1.77, +2.17]  Bonf +0.19 [-2.31, +2.79]
+    M80: 78.00% -> 74.33%  d -3.67 [-6.42, -0.92]  churn fixed 129 / new 173
+    M100: 87.83% -> 88.08%  d +0.25 [-2.08, +2.58]  churn fixed 101 / new 98
+    M120: 90.58% -> 92.67%  d +2.08 [+0.08, +4.17]  churn fixed 90 / new 65
+    M140: 91.58% -> 93.67%  d +2.08 [+0.17, +4.08]  churn fixed 84 / new 59
+    (secondary) garbage-time-charged pace-prior win (+3.2 s per received release): 75.06% -> 72.15%  d -2.92 [-4.92, -0.90]
+    (secondary) M100 d2.0: d -4.83 [-7.75, -1.83]
+    (secondary) M140 d2.0: d +1.50 [-0.75, +3.67]
+    lulu10b tap-out (how == topout): 8.00% -> 5.92%  d -2.08 [-4.00, -0.17]  churn fixed 80 / new 55
+  GUARD gb10 tap-out (n=1200) 6.17% -> 4.92%  d -1.25 [-3.00, +0.42]  Bonf -1.25 [-3.42, +0.92]  churn fixed 62 / new 47
+    gb10 tap<=100: d -0.08 [-0.67, +0.50]
+  GUARD rc10 owner race win M177 d2.65 (n=600) 93.50% -> 95.67%  d +2.17 [+0.17, +4.33]  Bonf +2.17 [-0.50, +4.83]  churn fixed 27 / new 14
+  lulu10b per game: stall-pills act>=10 from <=16 v 24.9 -> 21.5 d -3.39 [-7.37, +0.37]; from <=4 v 12.2 -> 14.0 d +1.80 [-0.78, +4.37]; longest stall (pills) 18.1 -> 15.4 d -2.68 [-5.86, +0.28]; longest stall (s) 23.9 -> 20.2 d -3.73 [-8.02, +0.31]; edge-virus str-stuck decisions 689.3 -> 684.9 d -4.38 [-27.20, +17.61]; games with a stall >= 36 s 13.2% -> 12.9%
+  gb10 per game: stall-pills act>=10 from <=16 v 23.3 -> 21.7 d -1.57 [-5.40, +2.24]; from <=4 v 12.9 -> 14.6 d +1.63 [-1.21, +4.46]; longest stall (pills) 17.4 -> 16.5 d -0.95 [-4.17, +2.25]; longest stall (s) 81.3 -> 75.5 d -5.82 [-21.28, +9.73]; edge-virus str-stuck decisions 630.6 -> 634.0 d +3.43 [-14.51, +22.19]; games with a stall >= 36 s 51.1% -> 54.9%
+  rc10 per game: stall-pills act>=10 from <=16 v 21.2 -> 19.7 d -1.53 [-6.30, +3.15]; from <=4 v 11.3 -> 12.3 d +0.98 [-2.63, +4.47]; longest stall (pills) 16.0 -> 13.9 d -2.11 [-6.14, +1.98]; longest stall (s) 21.0 -> 18.2 d -2.79 [-8.27, +2.76]; edge-virus str-stuck decisions 653.8 -> 672.4 d +18.62 [-4.27, +41.13]; games with a stall >= 36 s 11.7% -> 10.0%
+  ACTIVITY lulu10b: fired 93887 (61.1%), changed 4532 (2.9%), tgt_on 87829 (57.1%), tgt_edge 0 (0.0%), tgt_diff 52294 (34.0%) of 153750 decisions
+  ACTIVITY gb10: fired 82383 (56.1%), changed 3953 (2.7%), tgt_on 85939 (58.6%), tgt_edge 0 (0.0%), tgt_diff 49929 (34.0%) of 146738 decisions
+  ACTIVITY rc10: fired 45688 (61.0%), changed 2285 (3.0%), tgt_on 42432 (56.6%), tgt_edge 0 (0.0%), tgt_diff 25751 (34.4%) of 74929 decisions
+  VERDICT (Bonferroni 99.375%): FAIL
+
+SUMMARY: s10_A16=FAIL  s10_R60=FAIL  s10_R120=FAIL  s10_A16R120=FAIL
