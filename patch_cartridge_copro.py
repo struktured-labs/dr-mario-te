@@ -718,6 +718,22 @@ DISTROW = _os.environ.get("DRDISTROW", "0") == "1"
 # fair cart that rotated first (the answer is published at ~f3) spent every press slot on rotation churn and locked in
 # the spawn column at the first gravity tick. Pure pad inputs through the same TAP scheduler.
 PROPHFIRST = _os.environ.get("DRPROPHFIRST", "0") == "1"
+# DRABORTSTALE=1 (default 0 -> byte-identical): abort the STALE P2 search at the new-pill edge. Today, when a capsule
+# locks while its own search is still running (ARMED2 != 0 at the next edge), handle(2) keeps polling the dead search:
+# its live publishes and its DONE answer are adopted as the NEW capsule's target (act's nf2 path, handle's DONE path),
+# and the new board is uploaded only after that DONE. With this flag the edge tears the stale search down the way
+# DRPRESTART's second-volley abort already does (ARMED2/WDOG2/WDOGH2 <- 0; its DONE is never read), so handle(2) routes
+# to `_start` and uploads at the normal settle. That GO preempts the running search in hardware: a write to +$84
+# clears DONE and holds the copro 6502 + LeafEval in reset (CoproDrMario.sv), so no firmware or RTL change is needed.
+# MATURE's lock-while-armed disarm (SLAM_ARM <- 0) is applied here, before ARMED2 is cleared, so the slam state sees
+# what it sees today. Prestart-owned edges (PRE_ACT2 != 0: the running search IS for the new capsule) are untouched.
+# ⚠ KNOWN RTL GAP this flag exercises more often (pre-existing: DRPRESTART's abort and the watchdog re-queue also GO into
+# a running search): the copro reset clears LeafEval's st/done/modes but not its other registers, and a reset that lands
+# in the MIDDLE of a LeafEval command can skew the next search's first BASE (chained co-sim, experiments/abortstale/
+# COSIM.txt: G2 pairs preempted at 50% change the next search's intermediate publishes on 3/115 with fw 1488e158, 0/115
+# with a1ef31c8, finals unchanged; at the measured couch abort points 51 aborts gave 0 decision changes). Fix = RTL or
+# firmware (a Quartus compile), not this flag. Evidence: experiments/abortstale/.
+ABORTSTALE = _os.environ.get("DRABORTSTALE", "0") == "1"
 if PROPHHOLD or LEDGECOMMIT or PROPHFIRST:
     assert PROPH and ROTFIX, "DRPROPHHOLD / DRLEDGECOMMIT / DRPROPHFIRST act on DRPROPH-armed pills of the DRROTFIX driver"
 # DRUNPAUSE (#133): a P1-driven cart is UNPAUSABLE -- the P1 executor rewrites $F5 (the raw P1
@@ -2679,6 +2695,11 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", PRE_ACT2); a.br("BNE", "p2_pre_own")
     a.ins("LDA_imm", 1); a.ins16("STA_abs", PEND2)
     a.ins("LDA_imm", SETTLE); a.ins16("STA_abs", DELAY2)    # settle before upload (DRSETTLE hooks, 15 = 7.5 f)
+    if ABORTSTALE:
+        # DRABORTSTALE (flag block above): tear a stale search down. JSR'd (3 B; body after act_done) so the code
+        # below moves by 3 bytes only: inline, the 19-byte shift pushed handle(2)'s 128-iteration upload loop across
+        # a page boundary (+1 cycle per byte uploaded).
+        a.jsr("abort_stale")
     if PRESTART:
         a.label("p2_pre_own")
     a.ins("LDA_imm", 0)
@@ -4202,6 +4223,20 @@ def build_main(level=11, speed=1):
     a.label("st_p1"); a.ins("STY_zp", 0xF5)
     a.label("act_done")
     a.ins("RTS")
+    if ABORTSTALE:
+        # ---- abort_stale (DRABORTSTALE; JSR-only territory, after act_done so nothing above it moves) -------------
+        # in: none. The P2 new-pill edge (non-prestart path) found the previous capsule's search still ARMED: tear it
+        # down without adopting its answer (DRPRESTART's second-volley abort idiom). handle(2) then routes to `_start`
+        # and its upload + GO resets the copro mid-search. MATURE's lock-while-armed disarm is applied first because
+        # its own check, later in the edge block, reads ARMED2.
+        a.label("abort_stale")
+        a.ins16("LDA_abs", ARMED2); a.br("BEQ", "as_none")
+        a.ins("LDA_imm", 0)
+        if MATURE:
+            a.ins16("STA_abs", SLAM_ARM)
+        a.ins16("STA_abs", ARMED2); a.ins16("STA_abs", WDOG2); a.ins16("STA_abs", WDOGH2)
+        a.label("as_none")
+        a.ins("RTS")
     return a.assemble(), a.labels
 
 

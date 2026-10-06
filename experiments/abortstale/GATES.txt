@@ -1,0 +1,115 @@
+# DRABORTSTALE gates (2026-10-04T01:07Z, branch claude/abort-stale)
+
+## negative controls + candidates (tools/abortstale/build_carts.sh)
+IDENTITY ctl_couch_D.nes == dbbb5007: PASS
+IDENTITY ctl_couch_D_explicit.nes == dbbb5007: PASS
+IDENTITY ctl_couch_464_explicit.nes == 464a4b75: PASS
+IDENTITY ctl_cvc_fair.nes == 4dfa9c79: PASS
+IDENTITY ctl_cvc_fair_explicit.nes == 4dfa9c79: PASS
+BUILT b1b576388dc2e1abffe6d1390430ebca  couch_D_abort.nes
+BUILT 821cafdbc3017129cad3c66fcc93d605  cvc_fair_abort.nes
+NEGATIVE CONTROLS: ALL PASS
+
+## tools/gate/run_cart_gates.sh
+----------------------------------------------------------------------
+test_rtivec              PASS   test_rtivec: ALL PASS (defect reproduced, fix holds, 4/4 mutants killed)
+test_mmc1rst             PASS   test_mmc1rst: ALL PASS (defect reproduced, fix holds, 3/3 mutants killed)
+test_rtivec_aclobber     PASS   PASS: defect reproduced on the shipped cart AND absent on v6e (both directions)
+test_prg_ram_map         PASS   ALL PASS: the deriver fails on injected faults and passes on the real tree
+test_combo_cart          PASS   test_combo_cart: ALL PASS
+test_lateguard_census_cut PASS   GATE_LGCUT PASS
+test_gravity_fidelity    PASS   GRAVITY-FIDELITY GATE: ALL PASS
+----------------------------------------------------------------------
+cart hazard gates: ALL PASS
+
+## tests/test_gravity_fidelity.py, more seeds (6000 frames)
+seed 11
+couch_fair_D             expect=pass        PASS                               pills=130 uploads_ok=56 rounds=10 garbage=12 stale_edges=13 goes=61 dead_pill_uploads=0 no_settle_upload=71 stores_changing_world={}
+couch_fair_D_abort       expect=pass        PASS                               pills=151 uploads_ok=139 rounds=12 garbage=12 stale_edges=45 goes=148 dead_pill_uploads=0 no_settle_upload=8 stores_changing_world={}
+cvc_fair                 expect=pass        PASS                               pills=122 uploads_ok=69 rounds=14 garbage=15 stale_edges=22 goes=72 dead_pill_uploads=2 no_settle_upload=40 stores_changing_world={}
+cvc_fair_abort           expect=pass        PASS                               pills=153 uploads_ok=140 rounds=19 garbage=11 stale_edges=41 goes=141 dead_pill_uploads=0 no_settle_upload=0 stores_changing_world={}
+GRAVITY-FIDELITY GATE: ALL PASS
+seed 23
+couch_fair_D             expect=pass        PASS                               pills=169 uploads_ok=97 rounds=15 garbage=16 stale_edges=17 goes=108 dead_pill_uploads=2 no_settle_upload=61 stores_changing_world={}
+couch_fair_D_abort       expect=pass        PASS                               pills=155 uploads_ok=135 rounds=13 garbage=22 stale_edges=40 goes=151 dead_pill_uploads=0 no_settle_upload=14 stores_changing_world={}
+cvc_fair                 expect=pass        PASS                               pills=114 uploads_ok=68 rounds=12 garbage=17 stale_edges=20 goes=68 dead_pill_uploads=0 no_settle_upload=35 stores_changing_world={}
+cvc_fair_abort           expect=pass        PASS                               pills=144 uploads_ok=131 rounds=16 garbage=19 stale_edges=40 goes=131 dead_pill_uploads=0 no_settle_upload=0 stores_changing_world={}
+GRAVITY-FIDELITY GATE: ALL PASS
+seed 77
+couch_fair_D             expect=pass        PASS                               pills=124 uploads_ok=75 rounds=15 garbage=20 stale_edges=23 goes=83 dead_pill_uploads=0 no_settle_upload=36 stores_changing_world={}
+couch_fair_D_abort       expect=pass        PASS                               pills=134 uploads_ok=119 rounds=16 garbage=12 stale_edges=34 goes=125 dead_pill_uploads=0 no_settle_upload=4 stores_changing_world={}
+cvc_fair                 expect=pass        PASS                               pills=133 uploads_ok=89 rounds=20 garbage=17 stale_edges=21 goes=90 dead_pill_uploads=1 no_settle_upload=26 stores_changing_world={}
+cvc_fair_abort           expect=pass        PASS                               pills=131 uploads_ok=119 rounds=16 garbage=12 stale_edges=23 goes=120 dead_pill_uploads=0 no_settle_upload=0 stores_changing_world={}
+GRAVITY-FIDELITY GATE: ALL PASS
+
+## tests/test_lateguard_census_cut.py, LGCUT_OVERLAY = cart D flags + DRABORTSTALE=1
+  [PASS] PC: lg_gate witness alive (aborted/idle hooks): lg_gate entered in 1376 hooks, 1080 of them aborted phase hooks
+  [PASS] PC: spawn-upload witness alive: h2_cp in 1624 hooks
+  [PASS] PC: committing phase reaches lg_gate (why census keeps it): pp_m4 hooks with lg_gate: 36
+  [PASS] measured py65 cycles <= census bound of the hook's class: 0 over []
+  [PASS] aborted-hook bound dominated by every phase scenario: pp_abort 10448 vs phase bounds {'pp_ph1': 12516, 'pp_ph2': 12492, 'pp_ph3': 12497, 'pp_ph4': 12986}
+  [PASS] lg_row bound covers the IR's ROWCAP: IR ROWCAP CMP#2 LDA#2 vs LOOP_BOUNDS lg_row 2
+== mutants (each must be KILLED)
+  [PASS] M_armed KILLED (pp_disp ARMED2 abort dead): pp_ph1 hook executed census-cut label lg_live @ {'pp': 1, 'armed': 1, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+  [PASS] M_pend KILLED (pp_disp PEND2 abort dead): pp_ph1 hook executed census-cut label h2_cp @ {'pp': 1, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 1, 'done': 0, 'orient': 255}
+  [PASS] M_write KILLED (non-committing phase 1 writes ARMED2 := 1): pp_ph1 hook executed census-cut label lg_live @ {'pp': 1, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+  [PASS] M_early KILLED (non-last match phase commits (GO, ARMED2 := 1)): pp_m3 hook executed census-cut label lg_live @ {'pp': 3, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+== mutant M_rowcap: python -O strips the emitter's ROWCAP assert
+  [PASS] M_rowcap KILLED (IR ROWCAP > census lg_row): IR ROWCAP 3/3 vs lg_row 2
+GATE_LGCUT PASS
+
+## tools/nmi126/test_census.py
+PART C: py65 whole-chain anchor
+  anchor (v6e, bound 34320): idle_menu=326cyc, play_unarmed=1062cyc, cold_init=497cyc  ALL <= bound
+test_census: ALL PASS
+
+## static NMI census (tools/nmi126/census.py on capture_ir.py IR), couch D vs D+abort, CvC fair vs +abort
+-- couch_D
+  steady_play      hook worst =  13523 cyc  
+  spawn_edge_p2    hook worst =  16343 cyc  
+  release_edge     hook worst =  13523 cyc  
+  p1_search        hook worst =  13523 cyc  
+  pp_edge          hook worst =  10274 cyc  
+  pp_idle          hook worst =   7550 cyc  
+  pp_spawn         hook worst =  10370 cyc  
+  pp_ph1           hook worst =  12480 cyc  
+  pp_ph2           hook worst =  12456 cyc  
+  pp_ph3           hook worst =  12461 cyc  
+  pp_ph4           hook worst =  12951 cyc  
+  ALL_PATHS        hook worst =  16521 cyc
+  SAME-FRAME PAIR (2 hooks) worst = 29866 cyc   [max(spike) + steady_play]
+  WORST ADMISSIBLE FRAME = 27752 of 29780 (93.2%), margin 2028 cyc [pp_ph3 + pp_ph4]
+-- couch_D_abort
+  steady_play      hook worst =  13558 cyc  
+  spawn_edge_p2    hook worst =  16378 cyc  
+  release_edge     hook worst =  13558 cyc  
+  p1_search        hook worst =  13558 cyc  
+  pp_edge          hook worst =  10309 cyc  
+  pp_idle          hook worst =   7585 cyc  
+  pp_spawn         hook worst =  10405 cyc  
+  pp_ph1           hook worst =  12516 cyc  
+  pp_ph2           hook worst =  12492 cyc  
+  pp_ph3           hook worst =  12497 cyc  
+  pp_ph4           hook worst =  12986 cyc  
+  ALL_PATHS        hook worst =  16556 cyc
+  SAME-FRAME PAIR (2 hooks) worst = 29936 cyc   [max(spike) + steady_play]
+  WORST ADMISSIBLE FRAME = 27823 of 29780 (93.4%), margin 1957 cyc [pp_ph3 + pp_ph4]
+-- cvc_D
+  steady_play      hook worst =   6318 cyc  
+  spawn_edge_p2    hook worst =   8568 cyc  
+  release_edge     hook worst =   6318 cyc  
+  p1_search        hook worst =  96351 cyc  
+  ALL_PATHS        hook worst =  98601 cyc
+  SAME-FRAME PAIR (2 hooks) worst = 104919 cyc   [p1_search + spawn_edge_p2]
+-- cvc_D_abort
+  steady_play      hook worst =   6354 cyc  
+  spawn_edge_p2    hook worst =   8604 cyc  
+  release_edge     hook worst =   6354 cyc  
+  p1_search        hook worst =  96387 cyc  
+  ALL_PATHS        hook worst =  98637 cyc
+  SAME-FRAME PAIR (2 hooks) worst = 104991 cyc   [p1_search + spawn_edge_p2]
+
+## Mesen NMI witness (tools/lateflip/run_nmi.sh)
+SUMMARY tag=CH_Dabort frames=40000 nmis=39995 max=12735@f31449 (h1=5234 h2=5231) over29780=0 nested=0 shield_absorbed=0 hooks_gt2=0 maxhook=5286[ph_nc+pp_disp] hist(<12k,<16k,<20k,<24k,<29780,>=)=39989,6,0,0,0,0 phase_hooks=516 nc_phase_hooks=390 lg_hooks=12520 abort_hooks=0 commits=126 frames_phase&lg=0 frames_ncphase&lg=0 REFU
+SUMMARY tag=LFN_G2_AV1 frames=9823 nmis=9818 max=6914@f5413 (h1=3646 h2=998) over29780=0 nested=0 shield_absorbed=0 hooks_gt2=0 maxhook=3811[h2_cp] hist(<12k,<16k,<20k,<24k,<29780,>=)=9818,0,0,0,0,0 phase_hooks=0 nc_phase_hooks=0 lg_hooks=9055 abort_hooks=0 commits=0 frames_phase&lg=0 frames_ncphase&lg=0 REFUTE_same_hook=0 max_n
+SUMMARY tag=LFN_G2_DV1 frames=9423 nmis=9418 max=7058@f6423 (h1=1156 h2=3624) over29780=0 nested=0 shield_absorbed=0 hooks_gt2=0 maxhook=3811[h2_cp] hist(<12k,<16k,<20k,<24k,<29780,>=)=9418,0,0,0,0,0 phase_hooks=0 nc_phase_hooks=0 lg_hooks=9393 abort_hooks=0 commits=0 frames_phase&lg=0 frames_ncphase&lg=0 REFUTE_same_hook=0 max_

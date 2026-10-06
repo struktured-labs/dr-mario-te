@@ -1,0 +1,49 @@
+# Mesen replays of the banked 10/03 copro timelines, CHAINED (fair_v1_replay case files), 2026-10-04T01:22Z
+# D = dbbb5007 (couch fair kit); A = D + DRABORTSTALE=1 = b1b57638 (an earlier inline build 26754b9d gave landing-for-landing identical runs)
+# stale = new-pill edges where the previous search had not finished; waits/wmax/wsum = GO later than the nominal f1 on those edges (frames)
+game arm    |   n up==case ==final HYBRID refusals  regret(sc) reg-xT | ==python ==silicon lateRT | stale waits wmax wsum
+G2   D1488  | 116      115     100      1       13  17.2 (115)   17.2 |       90        96     36 |     7     3   10   19  [D dbbb5007 + fw 1488e158]
+G2   A1488  | 116      115     100      1       13  17.2 (115)   17.2 |       90        96     36 |     6     0    0    0  [D+ABORT b1b57638 + fw 1488e158]
+G2   DV1    | 116      116     111      3        1  31.1 (115)   22.5 |       88        90      5 |    20    18   27  156  [D dbbb5007 + fw V1 a1ef31c8]
+G2   AV1    | 116      116     113      1        1  21.5 (115)   12.7 |       90        91      6 |    18     0    0    0  [D+ABORT b1b57638 + fw V1 a1ef31c8]
+G3   D1488  |  86       86      82      0        2           -      - |       81        79     22 |     7     5    9   22  [D dbbb5007 + fw 1488e158]
+G3   A1488  |  86       86      82      0        2           -      - |       81        79     22 |     6     0    0    0  [D+ABORT b1b57638 + fw 1488e158]
+G3   DV1    |  86       86      85      0        0           -      - |       79        77     11 |    11     8   12   45  [D dbbb5007 + fw V1 a1ef31c8]
+G3   AV1    |  86       86      85      0        0           -      - |       79        77     11 |     9     0    0    0  [D+ABORT b1b57638 + fw V1 a1ef31c8]
+G4   D1488  | 133      133     131      0        2           -      - |      124       117     43 |     3     3    8   15  [D dbbb5007 + fw 1488e158]
+G4   A1488  | 133      133     130      0        3           -      - |      123       116     42 |     5     0    0    0  [D+ABORT b1b57638 + fw 1488e158]
+G4   DV1    | 133      133     133      0        0           -      - |      126       115     12 |     7     4   17   39  [D dbbb5007 + fw V1 a1ef31c8]
+G4   AV1    | 133      133     133      0        0           -      - |      126       115     12 |     7     0    0    0  [D+ABORT b1b57638 + fw V1 a1ef31c8]
+
+G2 landings differing D1488 vs A1488: 0/116 
+G2 landings differing DV1 vs AV1: 2/116 p80:10->11 p94:19->21
+G2 landings differing D1488 vs AV1: 13/116 p17:3->0 p18:0->3 p31:12->5 p67:12->1 p84:16->4 p87:16->21 p93:17->20 p94:17->21 p95:9->6 p100:16->8 p101:0->2 p102:14->26 p103:23->6
+G2 landings differing D1488 vs DV1: 14/116 p17:3->0 p18:0->3 p31:12->5 p67:12->1 p80:11->10 p84:16->4 p87:16->21 p93:17->20 p94:17->19 p95:9->6 p100:16->8 p101:0->2 p102:14->26 p103:23->6
+G3 landings differing D1488 vs A1488: 0/86 
+G3 landings differing DV1 vs AV1: 0/86 
+G3 landings differing D1488 vs AV1: 3/86 p21:9->0 p30:29->12 p40:18->11
+G3 landings differing D1488 vs DV1: 3/86 p21:9->0 p30:29->12 p40:18->11
+G4 landings differing D1488 vs A1488: 1/133 p11:13->0
+G4 landings differing DV1 vs AV1: 0/133 
+G4 landings differing D1488 vs AV1: 2/133 p8:21->17 p123:17->22
+G4 landings differing D1488 vs DV1: 2/133 p8:21->17 p123:17->22
+
+REPRO G2 D1488 vs fair_v1_replay: 0/116 landings differ 
+REPRO G2 DV1 vs fair_v1_replay: 0/116 landings differ 
+REPRO G3 D1488 vs fair_v1_replay: 0/86 landings differ 
+REPRO G3 DV1 vs fair_v1_replay: 0/86 landings differ 
+REPRO G4 D1488 vs fair_v1_replay: 0/133 landings differ 
+REPRO G4 DV1 vs fair_v1_replay: 0/133 landings differ 
+
+G2 1488 stale-edge pills, GO frame after the edge D/A: p11:11/1 p12:1/1 p68:2/1 p88:1/1 p90:9/1 p97:1/1 p98:1/1 p99:1/1
+G2 1488 non-stale late GOs D: {102: 254}  A: {102: 257}
+G2 V1 stale-edge pills, GO frame after the edge D/A: p11:12/1 p12:3/1 p25:1/1 p32:11/1 p35:6/1 p56:4/1 p61:5/1 p64:4/1 p66:9/1 p68:4/1 p69:4/1 p73:1/1 p80:13/1 p82:4/1 p85:8/1 p88:13/1 p90:13/1 p94:28/1 p95:1/1 p96:20/1 p97:13/1
+G2 V1 non-stale late GOs D: {}  A: {}
+G3 1488 stale-edge pills, GO frame after the edge D/A: p3:1/1 p7:2/1 p8:6/1 p9:6/1 p18:10/1 p36:1/1 p42:3/1
+G3 1488 non-stale late GOs D: {}  A: {}
+G3 V1 stale-edge pills, GO frame after the edge D/A: p3:13/1 p7:3/1 p8:1/1 p9:3/1 p18:11/1 p21:3/1 p29:1/1 p31:7/1 p36:3/1 p41:1/1 p42:10/1
+G3 V1 non-stale late GOs D: {}  A: {}
+G4 1488 stale-edge pills, GO frame after the edge D/A: p1:1/1 p7:7/1 p12:1/1 p14:2/1 p17:9/1
+G4 1488 non-stale late GOs D: {}  A: {}
+G4 V1 stale-edge pills, GO frame after the edge D/A: p1:1/1 p7:4/1 p9:18/1 p12:1/1 p14:9/1 p17:12/1 p20:1/1
+G4 V1 non-stale late GOs D: {}  A: {}
