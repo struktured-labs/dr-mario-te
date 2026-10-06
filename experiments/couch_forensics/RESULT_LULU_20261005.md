@@ -39,9 +39,10 @@
    - **lulu_fit_202610b** (11 games pooled): 2.84 [2.63, 3.13] volleys/min (was 2.56 on n=2), size mix 2/3/4 = 83/7/10%.
    - The AI sent her about 1.5× more: 4.21 volleys/min, 10.05 cells/min.
 7. **FAIRPLUS:** see sections 4 and 7.
-   - Per pill, it lands the copro's final answer more often and removes every replayed hybrid.
-   - **However,** about half of silicon's misses are NOT reproduced by Mesen of the same cart (the "silicon-only" misses). FAIRPLUS
-     cannot target those.
+   - Per pill, it lands the copro's final answer more often (768 vs 728 of 842 replayed pills) and removes every replayed hybrid
+     (36 → 0).
+   - **However,** about two thirds of silicon's misses (102 of 158 in the 5 replayed games) are NOT reproduced by Mesen of the same
+     cart (the "silicon-only" misses). FAIRPLUS cannot target those.
    - Brain-only replays say perfect execution would have flipped only 16 of 187 start points across her 3 wins.
    - **⇒ FAIRPLUS would most likely not have changed her wins, except plausibly M1 G4.**
 
@@ -185,13 +186,13 @@ Same key layout as lulu_fit_202610, plus `sessions`, `per_session_rate` and `rat
 |---|---|---|---|---|---|---|---|
 | M1 G1 | 212 | 170 (80.2%) | PREV-TARGET:9 EARLIER-PUB:7 TUCK:4 HYBRID:11 SHORT-LANDING:5 LATE-FLIP:6 | FINAL:157 HYBRID:21 AT-GATE:17 TUCK:4 OTHER-PUB:13 | 9 of 12 | 20 of 42 | 184/212 |
 | M1 G2 | 217 | 178 (82.0%) | PREV-TARGET:8 HYBRID:10 SHORT-LANDING:3 EARLIER-PUB:16 LATE-FLIP:1 TUCK:1 | FINAL:174 HYBRID:21 OTHER-PUB:8 AT-GATE:13 TUCK:1 | 8 of 15 | 32 of 39 | 212/217 |
-| M1 G3 | – | (co-sim / Mesen not run) |  |  |  |  |  |
+| M1 G3 | 62 | 50 (80.6%) | EARLIER-PUB:4 HYBRID:3 PREV-TARGET:3 SHORT-LANDING:1 TUCK:1 | FINAL:50 OTHER-PUB:3 HYBRID:6 AT-GATE:2 TUCK:1 | 3 of 4 | – | 62/62 |
 | M1 G4 | 146 | 118 (80.8%) | PREV-TARGET:6 HYBRID:6 TUCK:1 EARLIER-PUB:12 LATE-FLIP:3 | FINAL:104 HYBRID:15 OTHER-PUB:11 TUCK:1 AT-GATE:15 | 6 of 12 | 20 of 28 | 128/146 |
-| M1 G5 | – | (co-sim / Mesen not run) |  |  |  |  |  |
-| M2 G1 | – | (co-sim / Mesen not run) |  |  |  |  |  |
-| M2 G2 | – | (co-sim / Mesen not run) |  |  |  |  |  |
-| M2 G3 | – | (co-sim / Mesen not run) |  |  |  |  |  |
-| M2 G4 | – | (co-sim / Mesen not run) |  |  |  |  |  |
+| M1 G5 | 107 | 88 (82.2%) | EARLIER-PUB:8 LATE-FLIP:3 HYBRID:3 PREV-TARGET:3 SHORT-LANDING:2 | FINAL:88 AT-GATE:10 HYBRID:7 OTHER-PUB:2 | 3 of 9 | – | 107/107 |
+| M2 G1 | 148 | 123 (83.1%) | PREV-TARGET:8 OTHER:12 LATE-FLIP:2 SHORT-LANDING:3 |  | 8 of 12 | – | – (no co-sim) |
+| M2 G2 | 133 | 109 (82.0%) | LATE-FLIP:4 EARLIER-PUB:10 TUCK:2 PREV-TARGET:6 HYBRID:2 | FINAL:108 HYBRID:12 OTHER-PUB:6 AT-GATE:5 TUCK:2 | 6 of 10 | 16 of 24 | 130/133 |
+| M2 G3 | 134 | 109 (81.3%) | PREV-TARGET:4 SHORT-LANDING:4 EARLIER-PUB:10 LATE-FLIP:1 HYBRID:3 TUCK:3 | FINAL:107 HYBRID:9 OTHER-PUB:6 AT-GATE:9 TUCK:3 | 4 of 7 | 14 of 25 | 131/134 |
+| M2 G4 | 97 | 80 (82.5%) | OTHER:10 TUCK:1 SHORT-LANDING:1 PREV-TARGET:5 |  | 5 of 10 | – | – (no co-sim) |
 
 - **Labels** come from `ai_lulu_20261005.py`; the first match wins:
   1. TUCK
@@ -360,6 +361,10 @@ by provenance: P = the AI's own pill halves, G = her garbage):
 - **M2 G2 (06/00), the closest race:**
   - She led at 120 s (16/21) and was level at 150–180 s (13/14, 9/10).
   - The AI then cleared its last 10 in about 52 s while she went 9→6 (3/min over her last minute).
+  - **The last 60 s:**
+    - The AI placed 29 pills and cleared 11→2. Its endgame combos landed 7 volleys / 16 cells on her: 16 cells/min, against her game
+      average of 10.7.
+    - She slowed to 19 pills/min (from about 30) and sent only 2 cells back.
   - Perfect brain execution would NOT have done better: brain-only replays topped out from 3 of 27 starts and were mostly left at 1
     virus when silicon cleared.
 - **M2 G3 (her win):**
@@ -389,18 +394,41 @@ by provenance: P = the AI's own pill halves, G = her garbage):
 
 ## 7. FAIRPLUS counterfactual (D7)
 
+Method:
+- Chained + silicon-garbage Mesen replays of the REAL carts, on silicon's own boards: execfid probe + `gen_cases_garb.py`, with her
+  volleys delivered through $0318/$0329.
+- Each pill gets the shipped copro's Verilator publish timeline (fw 1488e158, seed 0).
+- **Trimmed per the coordinator:** her 3 wins (M1 G2, M1 G4, M2 G3) and the 2 closest AI wins (M1 G1 06/04, M2 G2 06/00).
+  - M1 G3 and M1 G5 got co-sim timelines (banked) but no Mesen runs.
+  - M2 G1 and M2 G4 got neither; their D4 labels lack the co-sim categories, so their HYBRID / EARLIER-PUB misses show as OTHER.
+
 | game | AI pills replayed | FAIR dbbb5007: landing == copro final | FAIR hybrids | FAIRPLUS 5b3d8183: == copro final | FAIRPLUS hybrids | silicon previous-target pills |
 |---|---|---|---|---|---|---|
 | M1 G1 | 212 | 173 (82%) | 8 | 182 (86%) | 0 | 9 → FAIR reproduces 8, FAIRPLUS lands final 8 |
 | M1 G2 | 217 | 201 (93%) | 9 | 210 (97%) | 0 | 8 → FAIR reproduces 4, FAIRPLUS lands final 8 |
-| M1 G3 | not run (trimmed) |  |  |  |  |  |
+| M1 G3 | not replayed (trimmed): co-sim timeline banked |  |  |  |  |  |
 | M1 G4 | 146 | 116 (79%) | 5 | 124 (85%) | 0 | 6 → FAIR reproduces 4, FAIRPLUS lands final 5 |
-| M1 G5 | not run (trimmed) |  |  |  |  |  |
-| M2 G1 | not run (trimmed) |  |  |  |  |  |
-| M2 G2 | not run (trimmed) |  |  |  |  |  |
-| M2 G3 | not run (trimmed) |  |  |  |  |  |
-| M2 G4 | not run (trimmed) |  |  |  |  |  |
-| **total** | 575 | **490** (85%) | **22** | **516** (90%) | **0** | 23 → 16 / 21 |
+| M1 G5 | not replayed (trimmed): co-sim timeline banked |  |  |  |  |  |
+| M2 G1 | not replayed (trimmed) |  |  |  |  |  |
+| M2 G2 | 133 | 118 (89%) | 10 | 127 (95%) | 0 | 6 → FAIR reproduces 4, FAIRPLUS lands final 5 |
+| M2 G3 | 134 | 120 (90%) | 4 | 125 (93%) | 0 | 4 → FAIR reproduces 3, FAIRPLUS lands final 4 |
+| M2 G4 | not replayed (trimmed) |  |  |  |  |  |
+| **total** | 842 | **728** (86%) | **36** | **768** (91%) | **0** | 33 → 23 / 30 |
+
+**Verdict:**
+- **Per pill,** FAIRPLUS lands the copro final more often in every replayed game: 768 vs 728 of 842 pills. Its hybrids are 0 in
+  every game, against 4–10 per game on FAIR.
+- **The LATEGUARD×PRESTART previous-target defect was common this session.** On silicon it hit 33 of the 56 pills that followed a
+  garbage window in the 5 replayed games, and 52 of 91 over all 9 games (57%; canonical census).
+  - FAIR's Mesen replay reproduces 23 of the 33.
+  - FAIRPLUS lands the copro final on 30 of them.
+- **102 of the 158 silicon misses in the replayed games are silicon-only,** and FAIRPLUS leaves those exactly where FAIR's replay
+  puts them.
+- **Outcome: it plausibly flips M1 G4,** whose decisive pill p61 is a previous-target that FAIRPLUS fixes.
+- **The other two wins:** M1 G2 and M2 G3 were lost by the AI to sealed edge-column stalls that the faithful brain itself does not
+  escape, so they would most likely stay hers.
+- **Its own close wins:** nothing in the replays suggests FAIRPLUS would cost the AI M1 G1 or M2 G2. Those were won or lost on
+  structure: brain-only replays topped out on M1 G1 from 17 of 43 start points.
 
 ## 8. Highlights (D8)
 
@@ -419,7 +447,8 @@ cropped to the NES picture (x 255–1666):
 ## Open / hand-offs
 
 1. **SILICON-ONLY MISSES (new top question; coordinator: bank, don't investigate here).**
-   - About half of silicon's misses are not reproduced by Mesen of the same cart fed the co-sim timeline (M1 G4: 20 of 28).
+   - Two thirds of silicon's misses are not reproduced by Mesen of the same cart fed the co-sim timeline: 102 of 158 in the 5 replayed
+     games (M1 G1 20/42, M1 G2 32/39, M1 G4 20/28, M2 G2 16/24, M2 G3 14/25).
    - Not the tie-break seed, not a uniform answer delay.
    - All are banked in `cases_ai_misses_lulu_20261005.jsonl`. Next candidates: the board the cart actually uploads, upload timing vs
      the settle, and the stale-search state.

@@ -118,7 +118,7 @@ def _():
                      " ".join(f"{k}:{v}" for k, v in a["cosim"].items()),
                      f"{a['prev_target']} of {a['after_garbage_pills']}",
                      f"{a['silicon_only_misses']} of {a['misses']}" if a.get("replay_fair") else "–",
-                     f"{a['copro_final_eq_brain']}/{a['with_cosim']}"])
+                     f"{a['copro_final_eq_brain']}/{a['with_cosim']}" if a["with_cosim"] else "– (no co-sim)"])
     t(["game", "AI pills", "silicon == faithful brain", "misses by label", "co-sim category of silicon's landing",
        "previous-target / pills after a garbage window", "silicon-only misses", "copro final == python brain"], rows)
 
@@ -163,7 +163,7 @@ def _():
     for g in ORDER:
         a = AI.get(g)
         if not a or not a.get("replay_fair") or not a.get("replay_fairplus"):
-            rows.append([name(g), "not run (trimmed)", "", "", "", "", ""]); continue
+            rows.append([name(g), "not replayed (trimmed)" + (": co-sim timeline banked" if a and a.get("with_cosim") else ""), "", "", "", "", ""]); continue
         f, p = a["replay_fair"], a["replay_fairplus"]
         rows.append([name(g), f["n"], f"{f['eq_final']} ({100 * f['eq_final'] / f['n']:.0f}%)", f["hybrid"],
                      f"{p['eq_final']} ({100 * p['eq_final'] / p['n']:.0f}%)", p["hybrid"],
