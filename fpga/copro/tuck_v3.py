@@ -133,6 +133,24 @@ FIXSLOT = os.environ.get("DRCOPRO_TUCKV3_FIXSLOT", "0") == "1"
 # more important one and costs one RTL decision per board instead of 55 games.
 NOSCAN = os.environ.get("DRCOPRO_TUCKV3_NOSCAN", "0") == "1"
 
+# DRTUCKREACH (2026-10-03, couch G2 forensics): the root extension honours the DRREACH mask and never live-publishes.
+# Set per build by build_copro_d3.build_image from env DRTUCKREACH (requires DRREACH); 0 emits NOTHING new, so the
+# image stays byte-identical. Two defects it closes, both measured on the 10/03 G2 kill boards (p99-p114):
+#   (1) MASK. The search's Pass 0 skips every root candidate with R_FLT && !ROK[o4*8+col] (reach_6502). This loop
+#       did not, so a tuck could replace the reachable argmax with a placement the couch driver cannot land (all 8
+#       G2 tuck commits were outside the mask). With the flag a candidate whose (O4_TABLE[orient], target) is masked
+#       is skipped BEFORE scoring -- the same key and the same skip-never-penalty semantics as the root, and the same
+#       switch: R_FLT = 0 (old cart, or the all-masked Pass-0 fallback cleared it) filters nothing.
+#   (2) BARE LIVE PUBLISH. tre_commit stored the tuck's (col, o4) to S_BEST_C/O the moment it committed, but the
+#       descriptor (TUCK_COL/ROW) is written only at tre_done and the cart reads $5087/$5088 only at DONE. So a
+#       committed driver steered to the tuck TARGET as a straight drop for several frames (the late flip / hybrid
+#       landings). With the flag the commit stores only the zero-page D_BC/D_BO; the stub publishes them at DONE,
+#       after tre_done has written the descriptor. The live mailbox keeps the main search's (reachable) best until
+#       DONE, and the answer and its descriptor become visible together.
+TUCKREACH = 0
+_TUCKREACH_NOMASK_MUT = False   # TEST-ONLY gate mutant: DRTUCKREACH without the mask skip (publish fix only)
+_TUCKREACH_LIVEPUB_MUT = False  # TEST-ONLY gate mutant: DRTUCKREACH keeping the bare tre_commit live publish
+
 # orient (H/V/RH/RV) -> o4 (test_depth2.py's convention: 0-1 vertical, 2-3 horizontal).
 # Derivation + self-check: fpga/copro/tuck_validation/tuck_orient_map.py (qa-harness).
 O4_TABLE = [2, 1, 3, 0]      # index by H=0,V=1,RH=2,RV=3
@@ -658,6 +676,7 @@ def emit_tuck_ply2_score(a, *, D_C2, D_O2, D_TKC, D_J, D_MKL, D_MKH, D_MI, D_B2L
 def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
                               D_V1L, D_V1H, D_I1L, D_I1H, resolve_capped_addr,
                               cp_live_cur_addr):
+    assert not (TUCKREACH and (DBGPUB or NOSCAN)), "DRTUCKREACH is a ship flag: no debug-readout / NOSCAN builds"
     a.label("tuck_o4_table")
     a.raw(*O4_TABLE)
 
@@ -695,6 +714,17 @@ def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
     # bug (all three independently verified correct before this was found).
     a.jsr(cp_live_cur_addr)            # raw address (cross-image into the search's own code)
     a.jsr("tuck_cell_prep")
+    if TUCKREACH and not _TUCKREACH_NOMASK_MUT:
+        # DRTUCKREACH (1): skip a masked candidate exactly as Pass 0 skips a masked root (test_search_d3 p0_leg):
+        # R_FLT && !ROK[o4*8+col], here with o4 = O4_TABLE[TP_ORIENT] and col = TP_TARGET (= the D_BC/D_BO a commit
+        # would publish). tuck_cell_prep has just loaded TP_*; nothing has been scored or written yet.
+        import reach_6502 as _RC
+        a.ins("LDA_zp", _RC.R_FLT); a.br("BEQ", "tre_rk")
+        a.ins("LDX_zp", TP_ORIENT); _lda_absx_label(a, "tuck_o4_table")
+        a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ORA_zp", TP_TARGET); a.ins("TAX")
+        a.ins16("LDA_absX", _RC.ROK); a.br("BNE", "tre_rk")
+        a.jmp("tre_next")
+        a.label("tre_rk")
     a.jsr("land_place_at")
     a.jsr(resolve_capped_addr)         # raw address (cross-image into the search's own code)
     if DBGPUB == 3:
@@ -744,8 +774,10 @@ def emit_tuck_root_extension(a, *, D_BVL, D_BVH, D_BC, D_BO, S_BEST_C, S_BEST_O,
     a.ins("LDA_zp", D_V1H); a.ins("STA_zp", D_BVH)
     a.ins("LDA_zp", TP_TARGET); a.ins("STA_zp", D_BC)
     a.ins("LDX_zp", TP_ORIENT); _lda_absx_label(a, "tuck_o4_table"); a.ins("STA_zp", D_BO)
-    a.ins("LDA_zp", D_BC); a.ins16("STA_abs", S_BEST_C)
-    a.ins("LDA_zp", D_BO); a.ins16("STA_abs", S_BEST_O)
+    if not TUCKREACH or _TUCKREACH_LIVEPUB_MUT:
+        # (DRTUCKREACH (2) drops this bare live publish: the stub stores D_BC/D_BO at DONE, after the descriptor.)
+        a.ins("LDA_zp", D_BC); a.ins16("STA_abs", S_BEST_C)
+        a.ins("LDA_zp", D_BO); a.ins16("STA_abs", S_BEST_O)
     if DBGPUB == 3:                    # mode 3 latches THIS candidate's board census
         a.ins("LDA_zp", DBG_OCC); a.ins("STA_zp", TK2_APP)
         a.ins("LDA_zp", DBG_VIR); a.ins("STA_zp", TK2_TRIG)
