@@ -456,6 +456,17 @@ DG_BUDGET, EFF_DIST2 = 0x6193, 0x6194
 # both. Secondary to the re-entrancy guard (only bites on genuine ~48s timeouts, rare once the storm is gone).
 WRETRY_FIX = _os.environ.get("DRWRETRY", "0") != "0"
 USE_SEEDS = _os.environ.get("DRSEED", "1") != "0"   # DRSEED=0 -> seeds stay 0 = deterministic mirror
+# DRSEEDZERO=1 (silicon-fidelity lane 2026-10-06, default 0 -> byte-identical): on the first play frame of every match,
+# STORE 0 into SEED1/SEED2 instead of deriving them from NAV_T. The tie-break seed rides the colour uploads' high nibbles
+# and the firmware then (a) jitters every root by +0..3 before the strict argmax and (b) -- a firmware leak, not by design --
+# feeds the RAW S_CA/S_CB bytes (seed nibbles included) to the tuck extension's tuck_cell_prep, so the tuck's own placed
+# cells are written as (nibble|4)<<4 | colour: $5x/$7x/$Dx(=VIRUS)/$Fx instead of $4x. Every replay instrument (co-sim
+# pubtrace, the Mesen chained replay, the python faithful brain) runs seed 0, so silicon was a DIFFERENT DECIDER from all of
+# them on near-tie / tuck plies: a measured part of the 10/05 "silicon-only" misses (h16 experiments/silfid). Why a store and
+# not DRSEED=0: DRSEED=0 only skips the derivation, and SEED1/SEED2 are zeroed solely by the PRG-RAM POWER-ON init
+# (NAV_MAGIC != $A5); MiSTer PRG-RAM is sticky across load_core, so a DRSEED=0 cart loaded after any seeded cart keeps
+# uploading the previous cart's last seed. The couch (P1 = human) has no mirror to desync, the seed's only purpose.
+SEEDZERO = _os.environ.get("DRSEEDZERO", "0") == "1"
 # WEAVE steering: when sliding to the target column is blocked at the pill's row (stuck
 # >= WEAVE_LIM hook-cycles), release the gravity freeze for one drop so the pill descends
 # a row and can slide past the obstruction (down-and-over), instead of hovering frozen and
@@ -2318,10 +2329,14 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "s2p_ma_ok")
         a.ins("LDA_imm", S2P_TTL_N); a.ins16("STA_abs", S2P_TTL)
         a.label("s2p_ma_ok")
-    if USE_SEEDS:
+    if USE_SEEDS or SEEDZERO:
         a.ins16("LDA_abs", MATCH_ACTIVE); a.br("BNE", "ga_on")  # first play frame of this match:
-        a.ins16("LDA_abs", NAV_T); a.ins("ORA_imm", 0x01); a.ins16("STA_abs", SEED1)   # root seed
-        a.ins("EOR_imm", 0xA4); a.ins16("STA_abs", SEED2)       # bit0 kept -> both odd, distinct
+        if SEEDZERO:
+            # DRSEEDZERO: seed 0 = jitter off and clean tuck colours, every match, whatever PRG-RAM inherited
+            a.ins("LDA_imm", 0); a.ins16("STA_abs", SEED1); a.ins16("STA_abs", SEED2)
+        else:
+            a.ins16("LDA_abs", NAV_T); a.ins("ORA_imm", 0x01); a.ins16("STA_abs", SEED1)   # root seed
+            a.ins("EOR_imm", 0xA4); a.ins16("STA_abs", SEED2)       # bit0 kept -> both odd, distinct
         a.label("ga_on")
     if HOLDONCE:
         # DRHOLDONCE reset. This runs on the go_ai play path, which fc_clear pre-empts (it owns the

@@ -111,6 +111,9 @@ run test_lateguard_census_cut
 # releases, stale-DONE edges exercised; zero activity = FAIL). Two-sided: the fair DRSETTLE builds must PASS, the
 # shipped 15-hook settle pin (464a4b75 / 387bb7bd flag sets) must be KILLED. ~10 s.
 run test_gravity_fidelity --frames 3000 --seed 5
+# SEED-ZERO gate (silfid lane, 2026-10-06): with sticky PRG-RAM and a stale seed, the shipped fair carts (and DRSEED=0)
+# upload tie-break seed nibbles; DRSEEDZERO=1 uploads none. Two-sided (defect arms must reproduce). ~40 s.
+run test_seedzero --frames 1500 --seeds 5
 
 echo "----------------------------------------------------------------------"
 if [ $rc -eq 0 ]; then echo "cart hazard gates: ALL PASS"; else echo "cart hazard gates: FAILURES ABOVE"; fi

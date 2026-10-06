@@ -99,6 +99,13 @@ ARMS = {   # name: (flags json, overlays, expectation)
     "couch_fair_A_lgp_row2": ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
                         "DRABORTSTALE": "1", "DRLGPRESTART": "1", "DRDISTROW": "2"}, "pass"),
+    # silfid lane (2026-10-06): DRSEEDZERO (seed nibbles forced to 0 on every match) on FAIRPLUS / FAIR2PLUS.
+    "couch_fair_D_lgp_row2_sz": ("experiments/lateflip/couch_c960dd49_flags.json",
+                       {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
+                        "DRLGPRESTART": "1", "DRDISTROW": "2", "DRSEEDZERO": "1"}, "pass"),
+    "couch_fair_A_lgp_row2_sz": ("experiments/lateflip/couch_c960dd49_flags.json",
+                       {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
+                        "DRABORTSTALE": "1", "DRLGPRESTART": "1", "DRDISTROW": "2", "DRSEEDZERO": "1"}, "pass"),
     "couch_464a4b75": ("experiments/lateflip/couch_c960dd49_flags.json", {"DRLATEGUARD": "1", "DRSTUDYEND": "1"}, "fail"),
     "couch_settle3_noguard": ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0",

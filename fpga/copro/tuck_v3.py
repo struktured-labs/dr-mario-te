@@ -133,6 +133,17 @@ FIXSLOT = os.environ.get("DRCOPRO_TUCKV3_FIXSLOT", "0") == "1"
 # more important one and costs one RTL decision per board instead of 55 games.
 NOSCAN = os.environ.get("DRCOPRO_TUCKV3_NOSCAN", "0") == "1"
 
+# SEED-NIBBLE MASK (silicon-fidelity lane, 2026-10-06; default 0 -> the shipped image stays byte-identical, 1488e158 with
+# the antibody-dist60 recipe). The cart rides its per-match tie-break SEED on S_CA/S_CB's HIGH nibbles. The base search
+# masks them (`AND #$0F` before PCA/PCB) but tuck_cell_prep below loaded the RAW bytes into LA_CA/LA_CB, and
+# land_place_at writes `LA | $40` into CUR: on silicon (seed always odd, never 0) the tuck's own two cells become
+# (nibble|4)<<4 | colour = $5x/$7x/$Dx(=VIRUS)/$Fx (half A) and $4x..$Fx (half B), not $4x. Every co-sim / python model
+# runs seed 0, so the tuck extension on silicon was never the one measured. Measured (Verilator vsim_pub2, seed 0x99, the
+# 61 lulu-10/05 pills with a seed-0 tuck final): shipped vs masked timelines differ on 38/61 (the shipped one mostly LOSES
+# the tuck: 14 with fewer publishes, 22 finals change); the masked image equals seed 0 on 52/61 (the rest = the intended
+# +0..3 jitter). Masking restores "the seed only breaks near-ties", which is all it was ever meant to do.
+SEEDMASK = os.environ.get("DRCOPRO_TUCKV3_SEEDMASK", "0") == "1"
+
 # orient (H/V/RH/RV) -> o4 (test_depth2.py's convention: 0-1 vertical, 2-3 horizontal).
 # Derivation + self-check: fpga/copro/tuck_validation/tuck_orient_map.py (qa-harness).
 O4_TABLE = [2, 1, 3, 0]      # index by H=0,V=1,RH=2,RV=3
@@ -494,12 +505,13 @@ def emit_tuck_cell_prep(a, s_ca, s_cb):
     a.ins("LDA_zp", TP_ORIENT); a.ins("AND_imm", 1)
     a.ins("CMP_zp", TP_BASE)
     a.br("BNE", "tcp_swap")
-    a.ins16("LDA_abs", s_ca); a.ins("STA_zp", LA_CA)
-    a.ins16("LDA_abs", s_cb); a.ins("STA_zp", LA_CB)
+    m = (lambda: a.ins("AND_imm", 0x0F)) if SEEDMASK else (lambda: None)   # SEEDMASK: drop the seed nibble
+    a.ins16("LDA_abs", s_ca); m(); a.ins("STA_zp", LA_CA)
+    a.ins16("LDA_abs", s_cb); m(); a.ins("STA_zp", LA_CB)
     a.jmp("tcp_done")
     a.label("tcp_swap")
-    a.ins16("LDA_abs", s_cb); a.ins("STA_zp", LA_CA)
-    a.ins16("LDA_abs", s_ca); a.ins("STA_zp", LA_CB)
+    a.ins16("LDA_abs", s_cb); m(); a.ins("STA_zp", LA_CA)
+    a.ins16("LDA_abs", s_ca); m(); a.ins("STA_zp", LA_CB)
     a.label("tcp_done")
     a.ins("RTS")
 
