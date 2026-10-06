@@ -1,0 +1,95 @@
+{
+ "stage": "e2",
+ "seeds": [
+  53701,
+  54301,
+  600
+ ],
+ "arm": "H16Arm shuffle",
+ "null_keep": [
+  1,
+  1
+ ],
+ "config": {
+  "trigger_dsh": 13,
+  "cooldown": 5,
+  "screen_forks": 2,
+  "keep": 8,
+  "confirm_forks": 6,
+  "rollout_horizon": 25,
+  "ovr": [
+   3,
+   3
+  ]
+ },
+ "runtime_manifest": {
+  "rolled": "5cc774fd7f63e25c8952e20abf168e5f4ae0726b50068b754cc6aaf84238b6eb",
+  "files": {
+   "run_h16": {
+    "path": "/home/struktured/projects/dr-mario-h16-wt/experiments/h16/run_h16.py",
+    "sha256": "c1e43ad67d42648df8d7e9c9dd0d4594983f4ab508fac46c49cebbf559e48f46"
+   },
+   "h16_arm": {
+    "path": "/home/struktured/projects/dr-mario-h16-wt/experiments/h16/h16_arm.py",
+    "sha256": "461f80c019f9e519a0462c506e361e7feb5d2f122cc31098fdefc95ea27b1eaf"
+   },
+   "h12_arm": {
+    "path": "/home/struktured/projects/dr-mario-h16-wt/experiments/eval47/stage2/oracle/h12_arm.py",
+    "sha256": "25074e6aff27cd43865e89dab5a8958cf524323aafaac4fc4e9c2f58e76ce1f5"
+   },
+   "oracle_arm": {
+    "path": "/home/struktured/projects/dr-mario-h16-wt/experiments/eval47/stage2/oracle/oracle_arm.py",
+    "sha256": "b88c0e4e41b143018932ca64841cd9aeabfc9d5c2360fac714951a50e3d14bfc"
+   },
+   "labelcore": {
+    "path": "/home/struktured/projects/dr-mario-h16-wt/experiments/labels146/labelcore.py",
+    "sha256": "e7f88733ae77e04914d5f9b7bef4b5fc8a9831235d4619043a71bc7298fb5cb5"
+   },
+   "pressure_rig": {
+    "path": "/home/struktured/projects/dr-mario-h16-wt/experiments/eval47/pressure_rig.py",
+    "sha256": "4cf861b702fc32239ede0a4f3cb631c394183dbc734546e08c2fae6f2bf6c95a"
+   },
+   "p0_ab": {
+    "path": "/home/struktured/projects/dr-mario-h16-wt/experiments/eval47/jointdig/p0_ab.py",
+    "sha256": "ae88719d818bbb7f87fc1f3aecf72f78285080138b134241899e1007b8c9abfd"
+   },
+   "bursty_model": {
+    "path": "/home/struktured/projects/dr-mario-h16-wt/experiments/eval47/bursty_model.py",
+    "sha256": "0e5c105b9bda113fd431e2448685dfffc2c1cf59c041bb8f33a39988b32e1569"
+   },
+   "fast_rtl_x": {
+    "path": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/fast_rtl_x.py",
+    "sha256": "93e22602b80868647a5e732f57c355875e4ccc1aa71a5415496a07beba709ac3"
+   },
+   "fast_sim_x": {
+    "path": "/home/struktured/projects/dr_mario_rl/tmp/combo_term/fast_sim_x.py",
+    "sha256": "d51e43a4cbdfb192b2b966aac7ac65d75d7b084bd9a78a4e244ca07dd0182464"
+   },
+   "root_search": {
+    "path": "/home/struktured/projects/dr-mario-qa-wt/experiments/tuck_v3/root_search.py",
+    "sha256": "43c997d20bed615e5b70f35e634c4b356fec2bbc36fb0788eb2aba3690fe3851"
+   },
+   "terms47": {
+    "path": "/home/struktured/projects/dr-mario-h16-wt/experiments/eval47/terms47.py",
+    "sha256": "3747754875eada71c29b10459cee0c132fe26b623fcf7876ab081dcc1d673a94"
+   },
+   "fb": {
+    "path": "/home/struktured/projects/dr_mario_rl/tmp/endgame/fb.py",
+    "sha256": "51b10f55c85594840e52c268eacdea67b855b8f66d3e1b8d71899d5684a16ddb"
+   },
+   "nes_pills": {
+    "path": "/home/struktured/projects/dr-mario-qa-wt/experiments/nes_pills.py",
+    "sha256": "9bca4013d4ea567f295db81111d463bf9ac40f401f00ce57fb411e091fde4c53"
+   },
+   "drmario.faithful_env": {
+    "path": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/faithful_env.py",
+    "sha256": "1bd9664cbe5536cb8c5c905a214948c2bbec0b2645f2e189eb9c196e1e3b21cb"
+   },
+   "drmario.faithful_game": {
+    "path": "/home/struktured/projects/dr_mario_rl/.claude/worktrees/faithful-sim/src/drmario/faithful_game.py",
+    "sha256": "9d6d8d0038c1ebc1830287b58e7f3eb1597e6e44a1988ae716b1537def118efa"
+   }
+  },
+  "python": "3.12.11"
+ }
+}

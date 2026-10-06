@@ -1,0 +1,12 @@
+winner_vs_h80: A=winner|winner|mNone|kNone vs B=winholes80|winholes80|mNone|kNone  194/300=64.7% p≈3.76e-07  how={'clear': 293, 'opp_topout': 5, 'opp_crushed': 2} sent 17.6v14.5  ws=0 rule=cells
+h80_vs_winner: A=winholes80|winholes80|mNone|kNone vs B=winner|winner|mNone|kNone  111/300=37.0% p≈6.69e-06  how={'clear': 293, 'opp_topout': 5, 'opp_crushed': 2} sent 14.8v17.9  ws=0 rule=cells
+  SEAT-BALANCED winner vs holes80: candidate 383/600=63.8% p≈1.23e-11
+h80c_vs_h80: A=winh80cross40|winh80cross40|mNone|kNone vs B=winholes80|winholes80|mNone|kNone  140/300=46.7% p≈0.248  how={'clear': 298, 'opp_crushed': 2} sent 19.4v16.4  ws=0 rule=cells
+h80_vs_h80c: A=winholes80|winholes80|mNone|kNone vs B=winh80cross40|winh80cross40|mNone|kNone  180/300=60.0% p≈0.000532  how={'clear': 297, 'opp_crushed': 2, 'opp_topout': 1} sent 16.3v19.2  ws=0 rule=cells
+  SEAT-BALANCED winh80cross40 vs holes80: candidate 260/600=43.3% p≈0.00109
+racer1_vs_h80: A=winholes80|winh80cross40|m3|kNone vs B=winholes80|winholes80|mNone|kNone  154/300=51.3% p≈0.644  how={'clear': 298, 'opp_crushed': 2} sent 15.9v15.3  ws=0 rule=cells
+h80_vs_racer1: A=winholes80|winholes80|mNone|kNone vs B=winholes80|winh80cross40|m3|kNone  165/300=55.0% p≈0.0833  how={'clear': 298, 'opp_topout': 2} sent 15.2v15.5  ws=0 rule=cells
+  SEAT-BALANCED one-change racer vs holes80: candidate 289/600=48.2% p≈0.369
+lines_winner_vs_h80: A=winner|winner|mNone|kNone vs B=winholes80|winholes80|mNone|kNone  66/100=66.0% p≈0.00137  how={'clear': 100} sent 1.9v2.3  ws=0 rule=lines
+lines_h80_vs_winner: A=winholes80|winholes80|mNone|kNone vs B=winner|winner|mNone|kNone  34/100=34.0% p≈0.00137  how={'clear': 100} sent 2.3v2.0  ws=0 rule=lines
+  SEAT-BALANCED LINES-rule winner vs holes80: candidate 132/200=66.0% p≈6.03e-06

@@ -16,5 +16,16 @@
   "claude": "2026-09-28T07:40Z",
   "grok": "offline since 2026-09-23T16:40Z; owner: claude takes over solo"
  },
- "canon_sota": "2026-09-27 ANTIBODY (owner name) = CHAIN540+REACH+TAP+HSV (rbf 6b73907c, fw 77ec742c, carts 198a95e3/33062615). dr-mario-te main a1d6c2e0 (tags sota-20260927, antibody); fork main dbae1f8 (tags sota-20260927, antibody). Launcher ANTIBODY.mgl (on bluemage; rivalmage on 'go')."
+ "canon_sota": "2026-09-27 ANTIBODY (owner name) = CHAIN540+REACH+TAP+HSV (rbf 6b73907c, fw 77ec742c, carts 198a95e3/33062615). dr-mario-te main a1d6c2e0 (tags sota-20260927, antibody); fork main dbae1f8 (tags sota-20260927, antibody). Launcher ANTIBODY.mgl (on bluemage; rivalmage on 'go').",
+ "rivalmage_log": [
+  {
+   "t": "2026-10-02T20:16Z",
+   "loaded": "ANTIBODY_DIST.mgl",
+   "rbf_md5": "318607aa",
+   "cart_md5": "c960dd49",
+   "verified_by": "20261002_201606-drmario_te_couch_distcore_c960dd49.png",
+   "displaced": "grok SNES RCR",
+   "by": "owner request"
+  }
+ ]
 }

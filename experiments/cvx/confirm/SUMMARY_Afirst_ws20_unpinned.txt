@@ -1,0 +1,3 @@
+winner_vs_h80: A=winner|winner|mNone|kNone vs B=winholes80|winholes80|mNone|kNone  377/600 = 62.8%  p≈3.236e-10  how={'clear': 598, 'opp_topout': 2}  sent 18.2v15.5  => PASS >55%
+winner_x40_vs_h80: A=winner|wincross40|mNone|kNone vs B=winholes80|winholes80|mNone|kNone  377/600 = 62.8%  p≈3.236e-10  how={'clear': 598, 'opp_topout': 2}  sent 18.2v15.5  => PASS >55%
+racer_vs_h80: A=winholes80|wincross40|m3|kNone vs B=winholes80|winholes80|mNone|kNone  323/600 = 53.8%  p≈0.06039  how={'clear': 591, 'opp_topout': 6, 'opp_crushed': 3}  sent 16.8v14.8  => POSITIVE-UNSIZED
