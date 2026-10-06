@@ -45,6 +45,90 @@ BASE_F, SOFT_F = 45.0, 2.0
 CLR_F = float(os.environ.get("VSRACE_CLR_F", "40"))
 SIZES = ((2, 0.73), (3, 0.17), (4, 0.10))
 TMAX = 1500.0
+# STEER11 race clock. None = the LEGACY clock (BASE_F + SOFT_F*fall + CLR_F*steps frames per pill, garbage drops 0 s):
+# byte-identical to every banked row. A dict = a couch-calibrated clock (steer11_clockcal.py -> steer11/clock_*.json):
+#   pill    base + fall*max(0, 15 - hmax) + step*nsteps + cfall*(gravity fall rows summed over the pill's clear steps)
+#   garbage vol + gsize*cells + gfall*(rows the row-0 tiles fall) + gclear*[the garbage set off a clear]
+#           + gstep*gsteps + gcfall*(garbage cascade fall rows), charged when a volley is RELEASED onto C's board
+#           (after the placement, ROM order) -- the time the next capsule waits while the garbage falls and resolves.
+# All in NES frames (FPS). Set by the run wrapper (steer11_run.py); rows stamp it.
+CLOCK = None
+TRACE = None             # list -> every charge is appended (("p", fall, nsteps, cfall, f) / ("g", ...)): R100 self-check only
+CLOCK_KEYS = ("name", "base", "fall", "step", "cfall", "vol", "gsize", "gfall", "gclear", "gstep", "gcfall")
+
+
+def _gravity_passes(b):
+    """FaithfulBoard._apply_gravity with a counter: the number of passes that moved something = the max rows any
+    body fell in this settle (the ROM drops falling bodies one row per tick, all together)."""
+    n = 0
+    while True:
+        bodies = b._bodies()
+        bodies.sort(key=lambda bd: max(r for r, _ in bd), reverse=True)
+        moved = False
+        for body in bodies:
+            if b._can_fall(body):
+                b._move_body_down(body)
+                moved = True
+        if not moved:
+            return n
+        n += 1
+
+
+def _cascade_falls(b):
+    """Destructive resolve of an already-placed/settled board: the gravity fall rows of each clear step."""
+    falls = []
+    while True:
+        mask = b._find_clears()
+        if not mask.any():
+            return falls
+        b._apply_clear(mask)
+        falls.append(_gravity_passes(b))
+
+
+def pill_frames(hmax, pp, env=None, action=None):
+    """Frames charged for one placement. Legacy: the exact banked expression (bit-identical). Under a CLOCK with a
+    cfall term, call it while the board is still BEFORE the placement (and inside forced_landing when steering)."""
+    if CLOCK is None:
+        return BASE_F + SOFT_F * max(0, 15 - hmax) + CLR_F * len(pp["lines"])
+    c = CLOCK
+    f = c["base"] + c["fall"] * max(0, 15 - hmax) + c["step"] * len(pp["lines"])
+    cf = 0
+    if c["cfall"] and pp["lines"]:
+        orient, col, pill = env._decode(int(action))
+        b = env.board.clone()
+        assert b.place_pill(pill, orient, col)
+        falls = _cascade_falls(b)
+        assert len(falls) == len(pp["lines"]), (falls, pp["lines"])
+        cf = sum(falls)
+        f += c["cfall"] * cf
+    if TRACE is not None:
+        TRACE.append(("p", max(0, 15 - hmax), len(pp["lines"]), cf, f))
+    return f
+
+
+def garbage_drop_timed(board, size, colours, phase):
+    """vs_harness.drop_garbage (UNCHANGED, it mutates `board`) + the frames the drop costs under CLOCK.
+    Returns (combo, frames). Legacy clock: frames = 0.0. The timing replays the same drop on a clone and asserts the
+    clone ends identical to the real board (a replication check on every release)."""
+    if CLOCK is None:
+        return drop_garbage(board, size, colours, phase), 0.0
+    from rom_attack_rule import garbage_columns
+    g = board.clone()
+    combo = drop_garbage(board, size, colours, phase)
+    cols = []
+    for i, c in enumerate(garbage_columns(size, phase)):          # same indexing as drop_garbage
+        if 0 <= c < g.cols:
+            g.color[0, c] = colours[i % len(colours)]; g.link[0, c] = 0; g.is_virus[0, c] = False
+            cols.append(c)
+    gf = _gravity_passes(g)
+    falls = _cascade_falls(g)
+    assert (g.color == board.color).all(), "garbage_drop_timed replication diverged from drop_garbage"
+    c = CLOCK
+    f = (c["vol"] + c["gsize"] * len(cols) + c["gfall"] * gf + (c["gclear"] if falls else 0.0)
+         + c["gstep"] * len(falls) + c["gcfall"] * sum(falls))
+    if TRACE is not None:
+        TRACE.append(("g", len(cols), gf, len(falls), sum(falls), f))
+    return combo, f
 
 ARMS = {
     "holes80": dict(trunk="winholes80", k_clock=0.0),
@@ -171,7 +255,7 @@ def play(seed, arm, lam, level=11, maxpills=600, steer=None):
     NesPillSource(seed=seed).attach(env); env.cur = env._rand_pill(); env.nxt = env._rand_pill()
     vq = _volleys(seed, lam); vi = 0
     store = 0; colours = [1, 2, 3, 1]
-    t = 0.0; frames = []; sent = []; recv = 0; nrel = 0
+    t = 0.0; frames = []; sent = []; recv = 0; nrel = 0; garb_f = 0.0
     how = "cap"
     ctx = {"own_vleft": 48, "opp_vleft": 48, "own_t": 0.0, "opp_t": 0.0, "opp_spawn_h": 0, "own_spawn_h": 0}
     for _ in range(maxpills):
@@ -192,12 +276,13 @@ def play(seed, arm, lam, level=11, maxpills=600, steer=None):
             hmax = max(hmax, 16 - min(filled) if filled else 0)
         if steer is None or straight:
             pp = probe_placement(env, int(a))
+            f = pill_frames(hmax, pp, env, a)              # legacy CLOCK None: the banked expression, bit-identical
             _, _, term, trunc, info = env.step(int(a))
         else:
             with SM.forced_landing(env.board, ex["cells"]):
                 pp = probe_placement(env, int(a))
+                f = pill_frames(hmax, pp, env, a)
                 _, _, term, trunc, info = env.step(int(a))
-        f = BASE_F + SOFT_F * max(0, 15 - hmax) + CLR_F * len(pp["lines"])
         frames.append(f); t += f / FPS
         if pp["attack"]:
             sent.append((round(t, 2), int(pp["atk_size"])))
@@ -209,7 +294,9 @@ def play(seed, arm, lam, level=11, maxpills=600, steer=None):
             store += vq[vi][1]; colours = vq[vi][2]; vi += 1
         if store >= ATTACK_SIZE_MIN:
             size = min(4, store); store = 0; nrel += 1; recv += size
-            combo = drop_garbage(env.board, size, colours, seed * 7919 + nrel)
+            combo, gfr = garbage_drop_timed(env.board, size, colours, seed * 7919 + nrel)
+            if gfr:                                        # legacy CLOCK None: 0.0, t untouched
+                t += gfr / FPS; garb_f += gfr
             cs = attack_size(combo)
             if cs >= ATTACK_SIZE_MIN:                  # counter-attack from the garbage cascade
                 sent.append((round(t, 2), int(cs)))
@@ -221,6 +308,8 @@ def play(seed, arm, lam, level=11, maxpills=600, steer=None):
            "pills": len(frames), "vleft": int(env.board.virus_count()), "sent": sent,
            "tiles_sent": sum(s for _, s in sent), "tiles_recv": recv,
            "mean_f": round(float(np.mean(frames)), 1) if frames else 0.0, "rev": HARNESS_REV}
+    if CLOCK is not None:                              # extra keys only under a calibrated clock (legacy rows unchanged)
+        out["clock"] = CLOCK["name"]; out["nrel"] = nrel; out["garb_s"] = round(garb_f / FPS, 2)
     if steer is not None:
         out["steer"] = dict(steer.stats)
     return out

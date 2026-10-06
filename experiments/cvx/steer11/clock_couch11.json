@@ -1,0 +1,27 @@
+{
+ "name": "couch11",
+ "base": 33.28085060893608,
+ "fall": 3.0662411560492577,
+ "step": 20.196614665709514,
+ "cfall": 15.8547355455094,
+ "vol": 17.36335490365264,
+ "gsize": 0.0,
+ "gfall": 16.874576362847506,
+ "gclear": 44.0720278537381,
+ "gstep": 0.0,
+ "gcfall": 0.0,
+ "model": "M4",
+ "feats": [
+  "one",
+  "fall",
+  "nsteps",
+  "cfall",
+  "vol",
+  "gfall",
+  "gclear"
+ ],
+ "units": "NES frames (60.0988/s)",
+ "n_intervals": 2128,
+ "n_games": 19,
+ "source": "steer11/clockcal_pills.jsonl (10/04 owner vs FAIR/FAIR2 10 games + 10/05 lulu vs FAIR 9 games)"
+}

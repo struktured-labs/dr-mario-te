@@ -1,0 +1,75 @@
+per-pill table: 2147 pills, 2128 intervals, 0 > 15.0 s excluded as pauses []
+games 19: 1004/m1g1, 1004/m1g2, 1004/m2g1, 1004/m2g2, 1004/m2g3, 1004/m3g1, 1004/m3g2, 1004/m3g3, 1004/m4g1, 1004/m4g2, 1005/m1g1, 1005/m1g2, 1005/m1g3, 1005/m1g4, 1005/m1g5, 1005/m2g1, 1005/m2g2, 1005/m2g3, 1005/m2g4
+
+DESCRIPTIVE (interval after pill i, seconds):
+  plain (no clear, no garbage)                 n=1262 mean 1.01 median 1.01 p25/p75 0.85/1.15  legacy clock mean 0.95
+    plain, fall 0-5                            n= 221 mean 0.81 median 0.78 p25/p75 0.72/0.90  legacy clock mean 0.79
+    plain, fall 6-10                           n= 614 mean 0.96 median 0.95 p25/p75 0.85/1.08  legacy clock mean 0.92
+    plain, fall 11-15                          n= 427 mean 1.19 median 1.17 p25/p75 1.08/1.28  legacy clock mean 1.06
+  1-step clear, no garbage                     n= 453 mean 1.85 median 1.78 p25/p75 1.35/2.33  legacy clock mean 1.56
+  2-step clear, no garbage                     n= 229 mean 2.62 median 2.57 p25/p75 2.10/3.05  legacy clock mean 2.23
+  3+-step clear, no garbage                    n=  17 mean 3.97 median 3.88 p25/p75 3.57/4.55  legacy clock mean 2.99
+  garbage after, no own clear                  n=  69 mean 3.88 median 3.92 p25/p75 3.13/4.87  legacy clock mean 0.94
+  garbage after, own clear                     n=  98 mean 5.60 median 5.52 p25/p75 4.31/6.65  legacy clock mean 1.85
+    garbage size 1                             n=   1 mean 1.87 median 1.87 p25/p75 1.87/1.87  legacy clock mean 1.68
+    garbage size 2                             n= 139 mean 4.89 median 4.85 p25/p75 3.91/5.89  legacy clock mean 1.50
+    garbage size 3                             n=   9 mean 5.54 median 5.25 p25/p75 4.50/5.83  legacy clock mean 1.47
+    garbage size 4                             n=  16 mean 5.06 median 4.99 p25/p75 2.06/8.50  legacy clock mean 1.27
+    garbage that set off a clear               n=  30 mean 4.48 median 5.05 p25/p75 2.57/6.50  legacy clock mean 1.34
+  day 20261004 all                             n= 881 mean 1.69 median 1.20 p25/p75 0.95/2.05  legacy clock mean 1.26
+  day 20261005 all                             n=1247 mean 1.70 median 1.18 p25/p75 0.95/2.06  legacy clock mean 1.28
+
+MODELS (OLS on dt in seconds over all intervals; game-cluster bootstrap 95% CI; frames = s x 60.0988):
+     per-pill residual mean +0.421 s, rmse 1.140 s | LOGO game totals: mean rel err +23.0%, mean |rel err| 23.0%, max |rel err| 31.7%
+  M1: plain + per-row drop + per clear step + per volley
+     one +0.583 s [+0.511, +0.669] (+35.0 f)  fall +0.046 s [+0.040, +0.053] (+2.8 f)  nsteps +0.913 s [+0.869, +0.956] (+54.9 f)  vol +3.167 s [+2.943, +3.420] (+190.3 f)
+     per-pill residual mean +0.000 s, rmse 0.571 s | LOGO game totals: mean rel err -1.7%, mean |rel err| 5.5%, max |rel err| 18.8%
+  M2: M1 + per garbage cell
+     one +0.578 s [+0.508, +0.666] (+34.7 f)  fall +0.047 s [+0.040, +0.053] (+2.8 f)  nsteps +0.918 s [+0.875, +0.956] (+55.1 f)  vol +2.178 s [+0.728, +3.391] (+130.9 f)  gsize +0.446 s [-0.107, +1.183] (+26.8 f)
+     per-pill residual mean +0.000 s, rmse 0.564 s | LOGO game totals: mean rel err -1.7%, mean |rel err| 5.4%, max |rel err| 18.4%
+  M3: M1 + cascade fall rows + garbage fall rows
+     one +0.547 s [+0.499, +0.596] (+32.9 f)  fall +0.052 s [+0.048, +0.057] (+3.1 f)  nsteps +0.335 s [+0.303, +0.377] (+20.2 f)  cfall +0.264 s [+0.253, +0.274] (+15.9 f)  vol +0.662 s [+0.226, +1.288] (+39.8 f)  gfall +0.255 s [+0.198, +0.301] (+15.3 f)
+     per-pill residual mean +0.000 s, rmse 0.332 s | LOGO game totals: mean rel err -0.1%, mean |rel err| 3.0%, max |rel err| 8.3%
+  M4: M3 + garbage-set-off clear
+     one +0.554 s [+0.511, +0.599] (+33.3 f)  fall +0.051 s [+0.047, +0.055] (+3.1 f)  nsteps +0.336 s [+0.304, +0.377] (+20.2 f)  cfall +0.264 s [+0.253, +0.275] (+15.9 f)  vol +0.289 s [-0.287, +0.860] (+17.4 f)  gfall +0.281 s [+0.224, +0.343] (+16.9 f)  gclear +0.733 s [+0.237, +1.479] (+44.1 f)
+     per-pill residual mean +0.000 s, rmse 0.323 s | LOGO game totals: mean rel err -0.1%, mean |rel err| 3.1%, max |rel err| 8.4%
+  M5: M4 + per garbage cell
+     one +0.548 s [+0.507, +0.589] (+32.9 f)  fall +0.052 s [+0.048, +0.056] (+3.1 f)  nsteps +0.338 s [+0.312, +0.370] (+20.3 f)  cfall +0.265 s [+0.256, +0.272] (+15.9 f)  vol -0.661 s [-1.564, +0.276] (-39.7 f)  gsize +0.458 s [+0.101, +0.853] (+27.5 f)  gfall +0.277 s [+0.214, +0.333] (+16.6 f)  gclear +0.562 s [+0.169, +1.213] (+33.8 f)
+     per-pill residual mean -0.000 s, rmse 0.312 s | LOGO game totals: mean rel err -0.0%, mean |rel err| 3.0%, max |rel err| 8.6%
+  M6: M5 without garbage fall rows
+     one +0.443 s [+0.397, +0.506] (+26.6 f)  fall +0.062 s [+0.056, +0.067] (+3.7 f)  nsteps +0.353 s [+0.314, +0.391] (+21.2 f)  cfall +0.274 s [+0.261, +0.287] (+16.5 f)  vol +1.923 s [+0.706, +2.945] (+115.5 f)  gsize +0.527 s [+0.028, +1.121] (+31.7 f)  gclear -0.399 s [-1.209, +0.468] (-24.0 f)
+     per-pill residual mean -0.000 s, rmse 0.415 s | LOGO game totals: mean rel err +0.1%, mean |rel err| 3.4%, max |rel err| 9.4%
+  M4d: DIAGNOSTIC: M4 + a 10/05 day shift
+     one +0.587 s [+0.532, +0.642] (+35.3 f)  fall +0.052 s [+0.048, +0.056] (+3.1 f)  nsteps +0.336 s [+0.304, +0.378] (+20.2 f)  cfall +0.264 s [+0.253, +0.274] (+15.9 f)  vol +0.291 s [-0.277, +0.855] (+17.5 f)  gfall +0.281 s [+0.225, +0.343] (+16.9 f)  gclear +0.736 s [+0.232, +1.485] (+44.3 f)  d1005 -0.072 s [-0.116, -0.026] (-4.3 f)
+     per-pill residual mean -0.000 s, rmse 0.321 s | LOGO game totals: mean rel err -0.7%, mean |rel err| 3.2%, max |rel err| 8.1%
+
+volley classification (intervals): {'none': 1961, 'direct': 137, 'explained': 24, 'unexplained': 6}; sizes {2: 139, 3: 9, 1: 1, 0: 2, 4: 16}
+
+=== M4 ===
+
+VALIDATION (hold-out: fitted on 15 games / 1647 intervals, NOT the 4 AI clear games): one +33.5 f  fall +3.0 f  nsteps +20.0 f  cfall +16.0 f  vol +24.9 f  gfall +16.2 f  gclear +41.0 f
+  m1g5: observed 184.0 s (107 silicon pills) | (A) corrected clock on the silicon pills 187.9 s (resid -3.9 s, -2.1%) | legacy clock 142.1 s (+22.7%) | (B) (brain-only 103 + 22) pills x 1.76 s/pill = 219.5 s (resid -35.5)
+  m2g1: observed 258.6 s (148 silicon pills) | (A) corrected clock on the silicon pills 258.0 s (resid +0.6 s, +0.2%) | legacy clock 190.7 s (+26.2%) | (B) (brain-only 101 + 22) pills x 1.74 s/pill = 214.5 s (resid +44.1)
+  m2g2: observed 232.3 s (133 silicon pills) | (A) corrected clock on the silicon pills 233.8 s (resid -1.5 s, -0.6%) | legacy clock 171.8 s (+26.0%) | (B) (brain-only 110 + 22) pills x 1.76 s/pill = 232.0 s (resid +0.3)
+  m2g4: observed 186.1 s (97 silicon pills) | (A) corrected clock on the silicon pills 185.3 s (resid +0.8 s, +0.4%) | legacy clock 127.6 s (+31.4%) | (B) (brain-only 76 + 22) pills x 1.91 s/pill = 187.2 s (resid -1.1)
+  MEDIAN of the 4: observed 209.2 s | (A) 210.8 s (resid -1.6 s; per-game mean |resid| 1.7 s) | legacy 157.0 s | (B) 217.0 s (resid -7.8 s)
+
+=== M3 ===
+
+VALIDATION (hold-out: fitted on 15 games / 1647 intervals, NOT the 4 AI clear games): one +33.2 f  fall +3.1 f  nsteps +20.1 f  cfall +16.0 f  vol +44.7 f  gfall +14.8 f
+  m1g5: observed 184.0 s (107 silicon pills) | (A) corrected clock on the silicon pills 187.5 s (resid -3.5 s, -1.9%) | legacy clock 142.1 s (+22.7%) | (B) (brain-only 103 + 22) pills x 1.75 s/pill = 219.0 s (resid -35.0)
+  m2g1: observed 258.6 s (148 silicon pills) | (A) corrected clock on the silicon pills 258.4 s (resid +0.2 s, +0.1%) | legacy clock 190.7 s (+26.2%) | (B) (brain-only 101 + 22) pills x 1.75 s/pill = 214.8 s (resid +43.8)
+  m2g2: observed 232.3 s (133 silicon pills) | (A) corrected clock on the silicon pills 233.6 s (resid -1.3 s, -0.5%) | legacy clock 171.8 s (+26.0%) | (B) (brain-only 110 + 22) pills x 1.76 s/pill = 231.8 s (resid +0.5)
+  m2g4: observed 186.1 s (97 silicon pills) | (A) corrected clock on the silicon pills 185.1 s (resid +1.0 s, +0.5%) | legacy clock 127.6 s (+31.4%) | (B) (brain-only 76 + 22) pills x 1.91 s/pill = 187.0 s (resid -0.9)
+  MEDIAN of the 4: observed 209.2 s | (A) 210.5 s (resid -1.3 s; per-game mean |resid| 1.5 s) | legacy 157.0 s | (B) 216.9 s (resid -7.7 s)
+
+=== M1 ===
+
+VALIDATION (hold-out: fitted on 15 games / 1647 intervals, NOT the 4 AI clear games): one +36.2 f  fall +2.7 f  nsteps +55.0 f  vol +189.4 f
+  m1g5: observed 184.0 s (107 silicon pills) | (A) corrected clock on the silicon pills 191.4 s (resid -7.4 s, -4.0%) | legacy clock 142.1 s (+22.7%) | (B) (brain-only 103 + 22) pills x 1.79 s/pill = 223.6 s (resid -39.6)
+  m2g1: observed 258.6 s (148 silicon pills) | (A) corrected clock on the silicon pills 255.3 s (resid +3.3 s, +1.3%) | legacy clock 190.7 s (+26.2%) | (B) (brain-only 101 + 22) pills x 1.72 s/pill = 212.2 s (resid +46.4)
+  m2g2: observed 232.3 s (133 silicon pills) | (A) corrected clock on the silicon pills 237.0 s (resid -4.7 s, -2.0%) | legacy clock 171.8 s (+26.0%) | (B) (brain-only 110 + 22) pills x 1.78 s/pill = 235.3 s (resid -3.0)
+  m2g4: observed 186.1 s (97 silicon pills) | (A) corrected clock on the silicon pills 180.8 s (resid +5.3 s, +2.8%) | legacy clock 127.6 s (+31.4%) | (B) (brain-only 76 + 22) pills x 1.86 s/pill = 182.7 s (resid +3.4)
+  MEDIAN of the 4: observed 209.2 s | (A) 214.2 s (resid -5.0 s; per-game mean |resid| 5.2 s) | legacy 157.0 s | (B) 217.9 s (resid -8.7 s)
+
+CHOSEN M4 (all 19 games) -> steer11/clock_couch11.json: base 33.3 f, fall 3.1 f, step 20.2 f, cfall 15.9 f, vol 17.4 f, gfall 16.9 f, gclear 44.1 f

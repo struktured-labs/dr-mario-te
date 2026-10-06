@@ -230,7 +230,7 @@ def play_race(seed, arm, lam, level=11, maxpills=600, steer=None, probe=None, ch
     NesPillSource(seed=seed).attach(env); env.cur = env._rand_pill(); env.nxt = env._rand_pill()
     vq = V._volleys(seed, lam); vi = 0
     store = 0; colours = [1, 2, 3, 1]
-    t = 0.0; frames = []; sent = []; recv = 0; nrel = 0
+    t = 0.0; frames = []; sent = []; recv = 0; nrel = 0; garb_f = 0.0
     how = "cap"
     ctx = {"own_vleft": 48, "opp_vleft": 48, "own_t": 0.0, "opp_t": 0.0, "opp_spawn_h": 0, "own_spawn_h": 0}
     for _ in range(maxpills):
@@ -253,12 +253,13 @@ def play_race(seed, arm, lam, level=11, maxpills=600, steer=None, probe=None, ch
             hmax = max(hmax, 16 - min(filled) if filled else 0)
         if steer is None or straight:
             pp = V.probe_placement(env, int(a))
+            f = V.pill_frames(hmax, pp, env, a)            # legacy V.CLOCK None: the banked expression, bit-identical
             _, _, term, trunc, info = env.step(int(a))
         else:
             with SM.forced_landing(env.board, ex["cells"]):
                 pp = V.probe_placement(env, int(a))
+                f = V.pill_frames(hmax, pp, env, a)
                 _, _, term, trunc, info = env.step(int(a))
-        f = V.BASE_F + V.SOFT_F * max(0, 15 - hmax) + V.CLR_F * len(pp["lines"])
         frames.append(f); t += f / V.FPS
         if pp["attack"]:
             sent.append((round(t, 2), int(pp["atk_size"])))
@@ -272,7 +273,9 @@ def play_race(seed, arm, lam, level=11, maxpills=600, steer=None, probe=None, ch
             store += vq[vi][1]; colours = vq[vi][2]; vi += 1
         if store >= V.ATTACK_SIZE_MIN:
             size = min(4, store); store = 0; nrel += 1; recv += size
-            combo = V.drop_garbage(env.board, size, colours, seed * 7919 + nrel)
+            combo, gfr = V.garbage_drop_timed(env.board, size, colours, seed * 7919 + nrel)
+            if gfr:                                        # legacy V.CLOCK None: 0.0, t untouched
+                t += gfr / V.FPS; garb_f += gfr
             cs = V.attack_size(combo)
             if cs >= V.ATTACK_SIZE_MIN:
                 sent.append((round(t, 2), int(cs)))
@@ -284,6 +287,8 @@ def play_race(seed, arm, lam, level=11, maxpills=600, steer=None, probe=None, ch
            "pills": len(frames), "vleft": int(env.board.virus_count()), "sent": sent,
            "tiles_sent": sum(s for _, s in sent), "tiles_recv": recv,
            "mean_f": round(float(np.mean(frames)), 1) if frames else 0.0, "rev": V.HARNESS_REV}
+    if V.CLOCK is not None:                            # extra keys only under a calibrated clock (legacy rows unchanged)
+        out["clock"] = V.CLOCK["name"]; out["nrel"] = nrel; out["garb_s"] = round(garb_f / V.FPS, 2)
     if steer is not None:
         out["steer"] = dict(steer.stats)
     if probe is not None:
