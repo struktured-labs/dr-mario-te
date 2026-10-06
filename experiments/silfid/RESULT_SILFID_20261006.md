@@ -24,7 +24,14 @@
     tuck extension;
   - the speedUps index.
 - **The seed is now fixable** with default-off flags (dr-mario-te PR #37, section 7).
-- **The 77 need ONE cheap silicon trace:** save-states on the existing cart and rbf, with no new build (section 8).
+- **Silicon trace RUN (section 9; bluemage, fair CvC cart 4dfa9c79 + rbf 318607aa, 113 save-states):**
+  - **32/32 unambiguous samples MATCH, 0 mismatches.** On identical input (the real seed $A5 included), the silicon copro
+    publishes exactly what Verilator publishes, at the same time.
+  - **But it covered the wrong regime.** All 34 usable samples are EARLY-game L20 boards (59–84 viruses), and none is
+    seed- or tuck-sensitive (0/34 timelines change at seed 0 or with the tuck mask).
+  - The couch residual lives in the ENDGAME: 56 of the 77 are at ≤20 viruses, on boards of height 14–16.
+  - **Verdict:** a general copro/bitstream divergence is rejected. An endgame / tuck-path divergence is untested.
+  - Next steps (bluemage only) are in section 9.
 
 ## 0. Method and controls
 - Lane tools: this folder. Run data (ignored): `~/projects/dr_mario_rl/tmp/silfid/`.
@@ -195,7 +202,7 @@ Details in `experiments/silfid/RESULT_SILFID.md` there.
 - it removes the tuck-colour leak on the couch at no rbf cost;
 - it costs nothing.
 
-## 8. Silicon trace needed (cheapest design; NOT run, needs the owner's OK)
+## 8. Silicon trace design (run on 2026-10-06 by the main session on the owner's OK; results in section 9)
 
 **Save-state sampling on the EXISTING cart + rbf. No new cart, no new rbf.**
 
@@ -235,6 +242,96 @@ A MiSTer NES save-state (1,327,112 B) carries everything needed for one exact si
 That is about 30–40 MiSTer-minutes, with no human at the controls for CvC. Each save flashes the OSD.
 
 **Known risk:** the CvC autonav wedge on long soaks. 20 min is short; check by screenshot timeout.
+
+## 9. The silicon trace: results (bluemage, 2026-10-06)
+
+**Capture (main session, owner's OK):**
+- bluemage loaded `FAIR_CVC.mgl` (cart 4dfa9c79 + rbf 318607aa); the screenshot
+  `20261006_213507-drmario_cvc_fair_4dfa9c79.png` confirms the cart.
+- `ring_capture.sh --host 192.168.1.156 --interval 8 --keep 400` ran for 20 min.
+- Result: **113 save-states, 0 capture errors**, each md5-verified (`ss_trace_files_20261006.txt`).
+
+**Offline:** `ss_cosim.py` on all 113, under the silfid PAUSE switch.
+
+| class | n |
+|---|---|
+| not in a match (between games; ss_decode refuses them) | 27 |
+| in a match but unusable (no search ARMED: 37; capsule locked while ARMED: 11; new-pill edge pending: 3; game-over screen: 1) | 52 |
+| **usable** (mid-search, capsule falling, an answer published) | **34** |
+| ↳ MATCH | **32** |
+| ↳ AMBIGUOUS | 2: 173643 shows the 1st publish 0.06 f after the co-sim's 2nd; 174902 is at t = 0.5 f, before the 1st publish, so it holds the previous pill's last read |
+| ↳ **MISMATCH** | **0**: no repro case to bank |
+
+**What the matches cover:**
+- **Exact input, including the REAL seed.**
+  - Every readable state carries SEED2 = **$A5**: jitter class "1", tuck-leak nibbles $5x / $Ex.
+  - It is the SAME value in every match of the 20 min. Under autonav, NAV_T at the first play frame is deterministic, so
+    the CvC seed is effectively a constant.
+  - The co-sim ran with $A5, i.e. the jitter and the leak were both modelled.
+- **Timing.**
+  - Silicon's live value equals the co-sim publish valid at hooks/2 frames in every match.
+  - That includes 8 samples where silicon already shows a LATER running best (pub 2 of 2 ×7, 4 of 4 ×1).
+  - Gaps to the nearest publish change run 0.0–24 f, with 8 samples within 1.4 f. So silicon's publish times agree with
+    Verilator to within a hook.
+- **Statistical reach.** A copro divergence affecting a random ~10% of searches would give P(0/32) ≈ 0.03. **A general
+  copro / bitstream / timing divergence is rejected.**
+
+**What the matches do NOT cover:**
+- **The game phase.** All 34 boards are early-game L20: 59–84 viruses, height 13–16 made of virus stacks. 20/34 searches
+  have a single publish.
+- **The seed and the tuck.** `ss_seedcheck.py` re-ran each sample with the seed nibbles at 0 and on the masked tuck fw
+  4c005042. **0/34 timelines change** (`ss_trace_seedcheck_20261006.*`). None of these searches touched a near-tie or a
+  tuck.
+- **Where the couch residual sits:** 56 of the 77 are at ≤20 viruses (all 842 pills: 530/842), 55 on boards of height
+  14–16. That is the regime with sparse tall stacks, tucks and late running bests.
+- **Prestart and garbage.** CvC carts have DRPRESTART=0, so no prestart / garbage-window search was sampled.
+- ⇒ **Clustering of mismatches:** none to cluster (0). The coverage table above IS the result. Every dimension the
+  coordinator asked about is either uncovered (prestart / garbage, tuck boards, the seed leak) or covered only in the
+  early-game regime (board height, LeafEval paths).
+
+**Verdict:**
+- **(a) "silicon copro ≠ Verilator on identical input" is REJECTED for the regime sampled.** On dense early-game boards,
+  silicon publishes the same answers at the same times, with the real seed.
+- It is **NOT tested** for the endgame / tuck regime where the couch residual lives.
+- So this is neither a clean (a) nor a clean (b):
+  - a regime-specific copro divergence (tuck extension, late LeafEval paths) remains possible;
+  - so does a live-input difference (the couch seed, prestart projections).
+
+**Next steps (bluemage only; rivalmage is off-limits). Cheapest first:**
+1. **Zero hardware: finish the seed sweep.**
+   - Silicon behaviour depends on seed bits {0,1,3,4,5,7} (jitter + both leak nibbles): 32 classes, 12 tested.
+   - The couch seed is the one live input the tracker cannot see. On the couch (human START), NAV_T at the first play
+     frame is not deterministic.
+   - Co-sim the 129 disagreeing 10/05 pills for the remaining 20 classes and score per game: about 4–5 h CPU under the
+     PAUSE switch.
+   - If a single class explains most of a game's residual, the couch residual IS the seed, and DRSEEDZERO fixes it.
+2. **Endgame coverage, same method, about 40 MiSTer-min.**
+   - A fair CvC cart at **L11**: the couch level, longer games that reach the endgame. It is a cart-only build of the fair
+     CvC flags + DRLEVEL=11, with negative controls.
+   - Sample it 30–40 min with `ring_capture.sh`, then `ss_cosim.py` + `ss_seedcheck.py`; post-filter to ≤20-virus states.
+   - Owner OK needed for the second session.
+3. **Strongest instrument: a PRG-RAM publish-ring debug cart.** It is cart-only, needs no rbf, and fits in the free
+   $6600-$7FFF.
+   - At every GO it tees the 132 upload bytes. Every hook it logs live-read CHANGES with the hook count, plus DONE.
+   - That is about 48 pills of history. Save-states every ~60 s then give an exact silicon-vs-Verilator comparison of
+     EVERY pill, endgame and tucks included, instead of one sample per state.
+   - Use it on the L11 CvC flags; add DRPRESTART on a couch-flag CvC variant (P1 native AI sends the garbage), so the
+     garbage-window prestart searches are covered too.
+   - Needs the NMI census: the upload tee is about 600 cycles at the GO hook.
+   - It would also close (b) without HDMI: if every pill matches, the copro is cleared in every regime.
+4. **Live input proper (needs the couch cart on bluemage):**
+   - The FAIR couch cart without DRSTUDYEND (a5107dca) on bluemage, with P1 driven through the proven keyboard-class game
+     driver (`input raw`; never `dpad` / `button`).
+   - Save-states + MiSTer screenshots at the same instants. The board reader runs on the native-resolution screenshot
+     against the RAM board and seed, which tests the tracker's board / link reconstruction directly.
+   - Needs a P1 that sends garbage (scripted) to reach the couch's garbage windows.
+   - Recommended only after 1–3.
+
+**Files:**
+- `ss_trace_cosim_20261006.{json,log}`: every state, its status, upload bytes and co-sim timeline.
+- `ss_trace_seedcheck_20261006.{json,log}`.
+- `ss_trace_files_20261006.txt`: the .ss paths, under `~/projects/dr_mario_rl/tmp/silfid/ss_20261006/`.
+- `tools/ss_seedcheck.py`.
 
 ## Files (this folder)
 - **Analysis:**

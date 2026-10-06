@@ -1,0 +1,3570 @@
+[
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173521.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 1,
+  "pre": 0,
+  "na": 0,
+  "o4": 2,
+  "col": 4,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   4,
+   0
+  ],
+  "y": 15,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173538.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 3,
+  "col": 2,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   2,
+   2
+  ],
+  "y": 12,
+  "x": 2,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173549.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 1,
+  "col": 2,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   2,
+   1
+  ],
+  "y": 14,
+  "x": 2,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173600.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173611.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173621.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 0,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   0,
+   3
+  ],
+  "y": 12,
+  "x": 0,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173632.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 2,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   2,
+   3
+  ],
+  "y": 12,
+  "x": 2,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173643.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 2,
+  "hooks": 5,
+  "seed": 165,
+  "tgt": [
+   2,
+   3
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "82 161 24 130 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 40 ff ff 82 ff ff 62 72 52 d1 ff d0 ff ff d1 d1 d2 d0 ff d1 ff ff d0 ff ff d0 ff d1 ff 80 d0 d0 d1 d2 ff ff ff d0 ff d1 d2 d2 d1 d0 d0 d2 d2 d1 d0 d1 d2 d2 d0 d1 d2 ff ff ff d2 ff d1 ff ff d0 d2 d2 d0 d1 d2 d2 d0 d0 d0 d2 d1 d1 d2 d0 d0 d1 d0 d1 d2 d0 d1 d1 d2 d2 d2 d1 d0 d0 d1 d2 d2 d0 d2 d2 d1 d1 d2 d0 d1 d1",
+  "status": "AMBIGUOUS",
+  "t_frames": 2.5,
+  "cosim_pubs": [
+   [
+    1.24,
+    2,
+    0
+   ],
+   [
+    2.44,
+    1,
+    3
+   ]
+  ],
+  "cosim_done": [
+   44.5,
+   1,
+   3
+  ],
+  "seed0_status": "AMBIGUOUS",
+  "seed0_pubs": [
+   [
+    1.24,
+    2,
+    0
+   ],
+   [
+    2.44,
+    1,
+    3
+   ]
+  ],
+  "seed0_done": [
+   44.5,
+   1,
+   3
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "AMBIGUOUS",
+  "fw2_pubs": [
+   [
+    1.24,
+    2,
+    0
+   ],
+   [
+    2.44,
+    1,
+    3
+   ]
+  ],
+  "fw2_done": [
+   44.5,
+   1,
+   3
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173654.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 6,
+  "hooks": 44,
+  "seed": 165,
+  "tgt": [
+   6,
+   3
+  ],
+  "y": 12,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173705.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173716.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 1,
+  "col": 5,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   5,
+   1
+  ],
+  "y": 7,
+  "x": 5,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173728.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173738.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 2,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   2,
+   3
+  ],
+  "y": 14,
+  "x": 2,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173749.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173800.ss",
+  "invariant": false,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 3,
+  "col": 6,
+  "hooks": 62,
+  "seed": 165,
+  "tgt": [
+   6,
+   2
+  ],
+  "y": 11,
+  "x": 6,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173811.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 5,
+  "hooks": 53,
+  "seed": 165,
+  "tgt": [
+   5,
+   0
+  ],
+  "y": 14,
+  "x": 5,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173822.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 3,
+  "hooks": 51,
+  "seed": 165,
+  "tgt": [
+   3,
+   3
+  ],
+  "y": 10,
+  "x": 3,
+  "upload": "81 160 40 130 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 82 ff ff ff ff ff ff ff d2 ff ff ff ff ff 80 ff ff ff ff 62 70 ff 82 d1 d0 80 ff d2 ff ff d1 d0 ff d1 ff ff ff ff ff ff d1 d2 80 ff ff ff ff d2 d1 d0 d0 ff d2 d1 d1 d0 d2 d1 d0 d0 d2 d1 d0 d0 d0 d2 d2 d1 d1 d0 d0 ff d0 d2 d1 d1 d0 d2 d2 ff d2 d1 d1 ff ff d1 ff d1 d2 ff d0 ff d2 d1 d1 d2 d0 d0 d2 d2 d1 ff ff ff ff ff d2 ff d1 d0 d2",
+  "status": "MATCH",
+  "t_frames": 25.5,
+  "cosim_pubs": [
+   [
+    1.21,
+    3,
+    0
+   ]
+  ],
+  "cosim_done": [
+   49.77,
+   3,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.21,
+    3,
+    0
+   ]
+  ],
+  "seed0_done": [
+   49.77,
+   3,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.21,
+    3,
+    0
+   ]
+  ],
+  "fw2_done": [
+   49.77,
+   3,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173833.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 2,
+  "col": 4,
+  "hooks": 8,
+  "seed": 165,
+  "tgt": [
+   4,
+   0
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "82 162 8 130 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 61 70 ff ff ff 62 70 d2 d1 ff d2 ff ff 82 d2 ff d1 d0 ff d1 ff d2 d1 ff d2 d1 d1 d2 ff ff d0 d2 ff d1 d0 d2 d1 d0 d2 d0 d1 d2 d2 d1 d0 d0 d1 ff d2 d0 ff d1 d2 d2 ff d2 d2 d0 d0 d2 d2 d1 d0 d0 d0 d1 d1 d0 ff ff d2 d1 ff d2 d1 ff d0 d0 d2 d1 d1 d0 d2 d2 d0 d1 d1 d2 d0 d0 d2 d1 d1 d2 d0 d2 d0 d1 d1 ff d2 d0 ff ff d2 d1 ff d2 d2 d1 ff",
+  "status": "MATCH",
+  "t_frames": 4.0,
+  "cosim_pubs": [
+   [
+    1.62,
+    4,
+    2
+   ]
+  ],
+  "cosim_done": [
+   50.31,
+   4,
+   2
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.62,
+    4,
+    2
+   ]
+  ],
+  "seed0_done": [
+   50.31,
+   4,
+   2
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.62,
+    4,
+    2
+   ]
+  ],
+  "fw2_done": [
+   50.31,
+   4,
+   2
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173844.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173855.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 2,
+  "col": 5,
+  "hooks": 29,
+  "seed": 165,
+  "tgt": [
+   5,
+   0
+  ],
+  "y": 15,
+  "x": 5,
+  "upload": "80 161 10 129 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 62 71 82 ff 61 70 ff ff d2 d2 d0 ff d1 d0 d0 d1 d2 d2 d1 ff d2 d0 d1 d1 ff d1 ff ff ff ff d2 ff ff d0 d0 80 d1 d2 d0 d0 d2 d2 d0 d1 d1 ff d0 d0 d0 d2 d2 d1 d0 d0 d2 d1 d0 d1 d1 d0 d0 d2 d2 ff d1 ff ff ff d2 ff d1 d2 d2 ff ff ff d2 d1 d1 d2 d2 d2 d0 d0 d1 ff d2 d1 d1 d0 ff d1 d0 d0 d2 d1 d1 d1 d2 ff d0 d2 d1 d0 d0 d2 d2 d0 d1 d2 d0 d0",
+  "status": "MATCH",
+  "t_frames": 14.5,
+  "cosim_pubs": [
+   [
+    1.43,
+    5,
+    2
+   ]
+  ],
+  "cosim_done": [
+   27.43,
+   5,
+   2
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.43,
+    5,
+    2
+   ]
+  ],
+  "seed0_done": [
+   27.43,
+   5,
+   2
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.43,
+    5,
+    2
+   ]
+  ],
+  "fw2_done": [
+   27.43,
+   5,
+   2
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173905.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 0,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   0,
+   3
+  ],
+  "y": 13,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173916.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 0,
+  "hooks": 11,
+  "seed": 165,
+  "tgt": [
+   0,
+   3
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "80 160 9 129 ff ff ff ff ff ff ff ff ff ff ff ff ff ff 82 ff 61 72 ff ff 82 ff 82 ff d1 d2 d2 d1 d1 ff d2 ff ff ff ff d2 d0 ff d1 ff d0 d0 d1 d2 d2 ff d0 d0 d0 d2 d1 d1 d2 d2 d0 ff d2 d1 ff ff d0 d0 d1 d2 d1 ff d2 d0 d1 d1 d2 d0 d1 d2 d2 d0 d1 d1 d0 d0 d0 d1 d1 d2 d2 d0 d0 d2 d2 d1 d0 ff ff d0 d2 d2 d1 d2 d0 d1 ff ff d1 d1 d0 d2 ff d0 d2 d2 d0 d1 ff d1 d1 ff d2 d2 ff d0 ff ff d1 d2 d0 d0 d1 ff",
+  "status": "MATCH",
+  "t_frames": 5.5,
+  "cosim_pubs": [
+   [
+    1.31,
+    2,
+    0
+   ],
+   [
+    3.67,
+    0,
+    0
+   ]
+  ],
+  "cosim_done": [
+   26.04,
+   0,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.31,
+    2,
+    0
+   ],
+   [
+    3.67,
+    0,
+    0
+   ]
+  ],
+  "seed0_done": [
+   26.04,
+   0,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.31,
+    2,
+    0
+   ],
+   [
+    3.67,
+    0,
+    0
+   ]
+  ],
+  "fw2_done": [
+   26.04,
+   0,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173927.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 3,
+  "col": 5,
+  "hooks": 5,
+  "seed": 165,
+  "tgt": [
+   5,
+   2
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "80 162 8 129 ff ff ff ff ff ff ff ff ff 60 71 ff ff ff ff ff ff 60 71 81 ff 62 71 ff d2 d0 d1 d1 ff d2 d1 d1 d1 d1 ff d0 d2 ff ff ff ff ff d0 ff d2 ff ff d2 d0 d0 d2 d1 d1 d0 d0 d2 d0 d2 d2 d1 d1 d0 d0 d1 d1 d2 d0 d0 d2 d2 ff ff d1 d0 d0 ff d2 d1 d1 d2 d0 d1 d2 d2 d1 ff ff d2 d2 d1 ff d2 d0 ff d2 d0 d1 d2 d0 d1 d2 d0 d1 d1 d0 d0 d2 d1 d1 d0 d0 d2 d2 d0 d1 d2 d0 d1 d2 d0 d2 d1 d1 ff d0 ff ff ff",
+  "status": "MATCH",
+  "t_frames": 2.5,
+  "cosim_pubs": [
+   [
+    1.34,
+    5,
+    3
+   ]
+  ],
+  "cosim_done": [
+   22.51,
+   5,
+   3
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.34,
+    5,
+    3
+   ]
+  ],
+  "seed0_done": [
+   22.51,
+   5,
+   3
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.34,
+    5,
+    3
+   ]
+  ],
+  "fw2_done": [
+   22.51,
+   5,
+   3
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173938.ss",
+  "invariant": false,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 6,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   6,
+   0
+  ],
+  "y": 14,
+  "x": 6,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173948.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 1,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   1,
+   0
+  ],
+  "y": 13,
+  "x": 1,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-173959.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 1,
+  "col": 3,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   3,
+   1
+  ],
+  "y": 13,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174009.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174020.ss",
+  "invariant": false,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 3,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   3,
+   0
+  ],
+  "y": 15,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174030.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 2,
+  "col": 2,
+  "hooks": 35,
+  "seed": 165,
+  "tgt": [
+   2,
+   0
+  ],
+  "y": 15,
+  "x": 2,
+  "upload": "82 160 10 129 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff d0 ff ff ff ff d1 d2 d0 ff 80 ff ff 80 d0 d1 d1 d2 d1 80 d0 d1 d2 ff d1 d0 d1 d1 d0 ff d2 d2 d0 ff d2 d0 ff ff d1 d0 d0 d1 ff d2 d2 d0 d0 d1 d1 d1 d1 ff d0 d2 ff d1 d2 d2 d0 d0 d1 d1 d2 d0 d0 d2 d0 d1 d2 d0 d0 d2 d1 d0 d2 d1 d0 d0 ff d1 d1 d0 ff d2 d1 d1 d2 d0 d0 d1 d0 d2 d1 d1 d0 d0 d2 d2 d2 d0 d0 d2 d1 ff d2",
+  "status": "MATCH",
+  "t_frames": 17.5,
+  "cosim_pubs": [
+   [
+    1.39,
+    2,
+    2
+   ]
+  ],
+  "cosim_done": [
+   34.11,
+   2,
+   2
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.39,
+    2,
+    2
+   ]
+  ],
+  "seed0_done": [
+   34.11,
+   2,
+   2
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.39,
+    2,
+    2
+   ]
+  ],
+  "fw2_done": [
+   34.11,
+   2,
+   2
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174041.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 6,
+  "hooks": 7,
+  "seed": 165,
+  "tgt": [
+   6,
+   3
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "82 161 26 128 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff d0 42 81 ff 82 81 ff d0 ff 51 82 ff 80 d0 d1 d1 d2 d1 80 40 d1 d2 ff d1 d0 d1 d1 52 ff d2 d2 d0 ff d2 d0 82 ff d1 d0 d0 d1 ff d2 d2 d0 d0 d1 d1 d1 d1 ff d0 d2 ff d1 d2 d2 d0 d0 d1 d1 d2 d0 d0 d2 d0 d1 d2 d0 d0 d2 d1 d0 d2 d1 d0 d0 ff d1 d1 d0 ff d2 d1 d1 d2 d0 d0 d1 d0 d2 d1 d1 d0 d0 d2 d2 d2 d0 d0 d2 d1 ff d2",
+  "status": "MATCH",
+  "t_frames": 3.5,
+  "cosim_pubs": [
+   [
+    1.13,
+    6,
+    0
+   ],
+   [
+    5.32,
+    1,
+    2
+   ]
+  ],
+  "cosim_done": [
+   32.17,
+   1,
+   2
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.13,
+    6,
+    0
+   ],
+   [
+    5.32,
+    1,
+    2
+   ]
+  ],
+  "seed0_done": [
+   32.17,
+   1,
+   2
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.13,
+    6,
+    0
+   ],
+   [
+    5.32,
+    1,
+    2
+   ]
+  ],
+  "fw2_done": [
+   32.17,
+   1,
+   2
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174052.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174103.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 3,
+  "col": 3,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   6,
+   1
+  ],
+  "y": 14,
+  "x": 6,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174114.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 3,
+  "col": 1,
+  "hooks": 63,
+  "seed": 165,
+  "tgt": [
+   1,
+   2
+  ],
+  "y": 12,
+  "x": 1,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174125.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 1,
+  "col": 3,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   3,
+   1
+  ],
+  "y": 13,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174136.ss",
+  "invariant": false,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 3,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   3,
+   3
+  ],
+  "y": 9,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174146.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 3,
+  "hooks": 72,
+  "seed": 165,
+  "tgt": [
+   3,
+   3
+  ],
+  "y": 9,
+  "x": 3,
+  "upload": "82 162 25 128 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 80 ff ff ff ff ff 81 d2 d1 ff ff ff ff ff d0 d2 d0 ff ff ff ff 80 d1 d1 d2 ff ff ff ff d1 d2 ff ff ff ff ff ff ff d0 ff ff 80 62 71 80 d0 d1 d0 d2 d2 ff d1 d1 d2 d2 d0 d1 d2 d2 d1 d0 d2 ff d2 d1 d1 d0 d2 d2 d0 d1 d1 ff d0 ff ff d1 d1 d2 d1 d2 d0 d1 ff ff d1 d0 d0 d0 d1 d1 d2 d2 d0 d0 d0 d0 d2 d2 d0 d0 d2 d2 d2 d2 d0 d0 ff d1 d1 d2",
+  "status": "MATCH",
+  "t_frames": 36.0,
+  "cosim_pubs": [
+   [
+    1.43,
+    0,
+    0
+   ],
+   [
+    9.2,
+    3,
+    0
+   ]
+  ],
+  "cosim_done": [
+   52.78,
+   3,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.43,
+    0,
+    0
+   ],
+   [
+    9.2,
+    3,
+    0
+   ]
+  ],
+  "seed0_done": [
+   52.78,
+   3,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.43,
+    0,
+    0
+   ],
+   [
+    9.2,
+    3,
+    0
+   ]
+  ],
+  "fw2_done": [
+   52.78,
+   3,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174157.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174207.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 5,
+  "o4": 3,
+  "col": 6,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   6,
+   2
+  ],
+  "y": 13,
+  "x": 6,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174218.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174228.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 2,
+  "col": 5,
+  "hooks": 37,
+  "seed": 165,
+  "tgt": [
+   5,
+   0
+  ],
+  "y": 14,
+  "x": 5,
+  "upload": "82 160 25 128 ff ff ff ff ff ff ff 40 ff 41 41 ff ff ff ff 50 ff 51 51 ff ff ff ff 40 d2 d1 d1 ff ff 81 80 51 ff d0 d2 d1 d0 81 d2 d2 d1 d0 d2 d1 d0 d2 d1 d0 d0 d1 ff d2 d2 d1 d1 d0 ff d2 ff d0 ff d1 d2 d2 d2 d2 d1 d1 d0 d0 d2 d2 d0 ff d1 d2 d0 d0 d1 ff d1 d0 d2 d2 ff ff d1 d1 d1 d0 d0 d1 d1 ff ff d0 ff d2 d0 d1 ff d0 ff d2 d0 d1 d1 d0 d2 d2 d1 d1 d0 d0 ff ff d2 d2 d1 d0 d2 d0 d0 d2 d1 ff ff ff",
+  "status": "MATCH",
+  "t_frames": 18.5,
+  "cosim_pubs": [
+   [
+    1.49,
+    3,
+    2
+   ],
+   [
+    6.37,
+    5,
+    2
+   ]
+  ],
+  "cosim_done": [
+   18.48,
+   5,
+   2
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.49,
+    3,
+    2
+   ],
+   [
+    6.37,
+    5,
+    2
+   ]
+  ],
+  "seed0_done": [
+   18.48,
+   5,
+   2
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.49,
+    3,
+    2
+   ],
+   [
+    6.37,
+    5,
+    2
+   ]
+  ],
+  "fw2_done": [
+   18.48,
+   5,
+   2
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174239.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 3,
+  "hooks": 33,
+  "seed": 165,
+  "tgt": [
+   3,
+   3
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "81 161 41 129 ff ff ff ff ff ff ff 40 ff ff ff ff ff ff ff 50 ff ff ff ff ff 82 40 40 d2 ff ff ff 80 81 52 51 ff d0 d2 ff 40 81 d2 d2 d1 d0 d2 ff 52 d2 d1 d0 d0 d1 ff d2 d2 d1 d1 d0 ff d2 ff d0 ff d1 d2 d2 d2 d2 d1 d1 d0 d0 d2 d2 d0 ff d1 d2 d0 d0 d1 ff d1 d0 d2 d2 ff ff d1 d1 d1 d0 d0 d1 d1 ff ff d0 ff d2 d0 d1 ff d0 ff d2 d0 d1 d1 d0 d2 d2 d1 d1 d0 d0 ff ff d2 d2 d1 d0 d2 d0 d0 d2 d1 ff ff ff",
+  "status": "MATCH",
+  "t_frames": 16.5,
+  "cosim_pubs": [
+   [
+    1.09,
+    3,
+    0
+   ]
+  ],
+  "cosim_done": [
+   28.23,
+   3,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.09,
+    3,
+    0
+   ]
+  ],
+  "seed0_done": [
+   28.23,
+   3,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.09,
+    3,
+    0
+   ]
+  ],
+  "fw2_done": [
+   28.23,
+   3,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174249.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 5,
+  "hooks": 45,
+  "seed": 165,
+  "tgt": [
+   5,
+   0
+  ],
+  "y": 15,
+  "x": 5,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174259.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 2,
+  "col": 2,
+  "hooks": 35,
+  "seed": 165,
+  "tgt": [
+   2,
+   0
+  ],
+  "y": 15,
+  "x": 2,
+  "upload": "80 160 24 130 ff ff ff ff ff ff ff ff 40 40 ff ff ff ff ff ff 51 51 81 ff ff 81 82 ff d2 d2 d0 42 ff d2 82 ff ff d1 ff 52 42 ff 81 ff d0 ff d2 d1 50 ff d2 ff d2 d0 d0 ff d1 ff ff d1 d2 d1 d1 d0 d0 d2 d1 d1 d1 d2 d2 d0 ff ff d1 d0 d1 ff d2 d2 ff d0 d0 d2 d2 d0 d0 d1 d1 d2 d0 ff d0 d0 ff ff d1 d1 d2 d0 d0 d2 d1 d0 d0 d1 d1 d0 d1 d1 d0 d0 d2 ff d0 d2 d2 d0 d0 d1 d1 d2 d2 d1 d2 d0 d1 d1 d0 d2 d2 d1",
+  "status": "MATCH",
+  "t_frames": 17.5,
+  "cosim_pubs": [
+   [
+    1.48,
+    2,
+    2
+   ]
+  ],
+  "cosim_done": [
+   21.87,
+   2,
+   2
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.48,
+    2,
+    2
+   ]
+  ],
+  "seed0_done": [
+   21.87,
+   2,
+   2
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.48,
+    2,
+    2
+   ]
+  ],
+  "fw2_done": [
+   21.87,
+   2,
+   2
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174310.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174320.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174330.ss",
+  "invariant": false,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 4,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   4,
+   0
+  ],
+  "y": 15,
+  "x": 4,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174341.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174352.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 1,
+  "col": 5,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   5,
+   1
+  ],
+  "y": 12,
+  "x": 5,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174402.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 3,
+  "col": 5,
+  "hooks": 9,
+  "seed": 165,
+  "tgt": [
+   5,
+   2
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "82 160 25 129 ff ff ff ff ff ff ff ff ff ff ff ff ff ff 62 70 ff 80 ff ff ff ff 82 ff d0 d0 ff ff ff ff d2 d0 d1 d2 ff ff ff ff ff d0 ff ff ff ff d2 80 d1 ff ff d0 d1 d1 ff 80 d2 d1 d2 d2 d1 ff ff 80 ff ff ff d1 d0 d0 d1 d1 d0 d2 d1 d0 ff ff d2 ff d0 d0 d1 d0 d2 d2 ff ff d1 ff d2 d1 d1 d2 ff d0 d2 d1 d0 d2 ff d1 d1 d0 d2 d1 d1 d2 d2 d0 d0 d1 d1 d0 d2 d0 d1 d2 d2 d1 d0 d0 d0 d0 d1 d1 d2 d0 d0 d2",
+  "status": "MATCH",
+  "t_frames": 4.5,
+  "cosim_pubs": [
+   [
+    1.63,
+    5,
+    3
+   ]
+  ],
+  "cosim_done": [
+   36.79,
+   5,
+   3
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.63,
+    5,
+    3
+   ]
+  ],
+  "seed0_done": [
+   36.78,
+   5,
+   3
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.63,
+    5,
+    3
+   ]
+  ],
+  "fw2_done": [
+   36.79,
+   5,
+   3
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174413.ss",
+  "invariant": true,
+  "mode": 5,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 4,
+  "o4": 1,
+  "col": 3,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   3,
+   1
+  ],
+  "y": 12,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174423.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 3,
+  "hooks": 21,
+  "seed": 165,
+  "tgt": [
+   3,
+   3
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "82 161 8 128 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 82 d2 d2 d1 d0 d0 ff ff d1 d0 d0 d2 d1 d2 d0 40 d1 d0 d0 ff ff ff d2 50 ff d1 d2 d0 ff ff ff d0 d0 d2 d2 d1 d2 d2 d1 d1 d0 d2 d1 d1 d2 d2 d0 ff d1 d1 d0 d2 d1 d1 d0 d2 d1 d1 d0 d2 d0 d1 d2 d0 d0 d2 d1 d1 d0 d2 d1 d1 d0 d2 d1 d1 d2 d0 d0 d1 d2 ff d0 d0 d1 d0 d0 ff d2 d0 d0 d2 d0 ff d1 ff ff ff d2 d2",
+  "status": "MATCH",
+  "t_frames": 10.5,
+  "cosim_pubs": [
+   [
+    1.44,
+    3,
+    0
+   ]
+  ],
+  "cosim_done": [
+   44.24,
+   3,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.44,
+    3,
+    0
+   ]
+  ],
+  "seed0_done": [
+   44.24,
+   3,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.44,
+    3,
+    0
+   ]
+  ],
+  "fw2_done": [
+   44.24,
+   3,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174434.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 4,
+  "hooks": 73,
+  "seed": 165,
+  "tgt": [
+   4,
+   0
+  ],
+  "y": 10,
+  "x": 4,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174445.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 3,
+  "hooks": 155,
+  "seed": 165,
+  "tgt": [
+   3,
+   3
+  ],
+  "y": 13,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174456.ss",
+  "invariant": false,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 3,
+  "hooks": 54,
+  "seed": 165,
+  "tgt": [
+   3,
+   3
+  ],
+  "y": 14,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174507.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 5,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   5,
+   3
+  ],
+  "y": 13,
+  "x": 5,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174518.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 2,
+  "col": 5,
+  "hooks": 9,
+  "seed": 165,
+  "tgt": [
+   5,
+   0
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "82 162 42 130 ff ff ff ff ff ff ff ff ff 62 71 ff ff ff ff ff 82 ff 81 ff ff ff ff 81 82 ff d1 ff ff ff ff d1 d2 ff d0 ff 82 60 71 d1 d1 ff ff ff 81 40 82 d0 d0 d2 d2 ff d1 50 82 ff d0 ff d1 ff d0 81 d1 d2 d2 d0 d0 ff d2 d1 d1 d2 d2 d0 d0 81 d1 d1 d2 ff d1 d2 d2 d0 d1 ff d2 d0 d0 d1 d1 d0 d2 d2 d1 d0 d2 d0 d1 d1 d0 d2 d1 ff d1 d0 d0 d1 ff d0 d2 d2 ff ff ff ff d1 d0 d2 d1 d2 d2 d1 d0 ff ff d0 d1",
+  "status": "MATCH",
+  "t_frames": 4.5,
+  "cosim_pubs": [
+   [
+    1.79,
+    5,
+    2
+   ],
+   [
+    5.22,
+    3,
+    0
+   ],
+   [
+    21.64,
+    4,
+    0
+   ]
+  ],
+  "cosim_done": [
+   28.56,
+   4,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.79,
+    5,
+    2
+   ],
+   [
+    5.22,
+    3,
+    0
+   ],
+   [
+    21.64,
+    4,
+    0
+   ]
+  ],
+  "seed0_done": [
+   28.56,
+   4,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.79,
+    5,
+    2
+   ],
+   [
+    5.22,
+    3,
+    0
+   ],
+   [
+    21.64,
+    4,
+    0
+   ]
+  ],
+  "fw2_done": [
+   28.56,
+   4,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174529.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 3,
+  "col": 2,
+  "hooks": 57,
+  "seed": 165,
+  "tgt": [
+   2,
+   2
+  ],
+  "y": 13,
+  "x": 2,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174540.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 2,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   2,
+   3
+  ],
+  "y": 13,
+  "x": 2,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174551.ss",
+  "invariant": false,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 0,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   0,
+   0
+  ],
+  "y": 15,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174602.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 0,
+  "hooks": 47,
+  "seed": 165,
+  "tgt": [
+   0,
+   0
+  ],
+  "y": 14,
+  "x": 0,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174613.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 4,
+  "hooks": 13,
+  "seed": 165,
+  "tgt": [
+   4,
+   3
+  ],
+  "y": 15,
+  "x": 4,
+  "upload": "81 160 26 130 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 40 80 ff d2 d1 ff ff d2 50 80 ff ff ff ff d1 d1 d0 40 ff d1 d0 81 ff ff d1 51 d2 d0 ff d1 ff d2 d1 d1 ff ff d2 d1 d0 d0 d2 d1 d1 d2 d0 d2 d2 d0 d0 ff d2 d0 d1 d0 d1 d2 d0 d0 d2 d1 d1 d1 d0 d2 d2 d0 d0 d1 d2 d1 ff d0 d2 d1 d1 ff d2 d0 d1 ff d0 d1 d1 d0 d0 d0 d0 d2 d1 d0 d0 d2 d1 ff ff ff ff d0 d0 d2 ff",
+  "status": "MATCH",
+  "t_frames": 6.5,
+  "cosim_pubs": [
+   [
+    1.71,
+    4,
+    0
+   ]
+  ],
+  "cosim_done": [
+   55.74,
+   4,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.71,
+    4,
+    0
+   ]
+  ],
+  "seed0_done": [
+   55.74,
+   4,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.71,
+    4,
+    0
+   ]
+  ],
+  "fw2_done": [
+   55.74,
+   4,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174623.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174634.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174644.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 2,
+  "hooks": 11,
+  "seed": 165,
+  "tgt": [
+   2,
+   3
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "82 162 26 129 ff ff ff ff ff ff ff ff ff ff ff ff ff 82 ff ff ff 41 ff ff ff 82 ff ff ff 51 ff 80 ff d2 ff d1 d0 d0 d2 81 81 d1 ff d0 d1 d2 d0 d1 d2 d0 d1 d2 d2 d1 d1 d0 d0 d2 d2 d1 d2 d0 d1 ff ff d1 d0 ff ff ff d2 d2 d1 d1 d0 d2 d0 d2 d2 ff ff d2 d1 d0 d2 d2 d0 d1 d2 ff d1 d0 d1 d1 d0 d2 d2 d0 d0 d2 d1 d1 ff d0 d0 d2 d2 d1 d0 d2 d1 d0 ff d1 d1 d0 d0 d0 d2 d2 d1 d1 ff ff ff ff d2 ff d0 d2 d2 ff",
+  "status": "MATCH",
+  "t_frames": 5.5,
+  "cosim_pubs": [
+   [
+    1.31,
+    4,
+    2
+   ],
+   [
+    4.07,
+    2,
+    0
+   ]
+  ],
+  "cosim_done": [
+   26.02,
+   2,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.31,
+    4,
+    2
+   ],
+   [
+    4.07,
+    2,
+    0
+   ]
+  ],
+  "seed0_done": [
+   26.02,
+   2,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.31,
+    4,
+    2
+   ],
+   [
+    4.07,
+    2,
+    0
+   ]
+  ],
+  "fw2_done": [
+   26.02,
+   2,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174655.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174706.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 5,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   5,
+   0
+  ],
+  "y": 13,
+  "x": 5,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174717.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174728.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 1,
+  "col": 7,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   7,
+   1
+  ],
+  "y": 14,
+  "x": 7,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174738.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 2,
+  "hooks": 67,
+  "seed": 165,
+  "tgt": [
+   2,
+   3
+  ],
+  "y": 14,
+  "x": 2,
+  "upload": "80 160 10 129 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff d2 d1 ff d0 d0 d1 d1 d2 d0 d0 ff d1 d1 d2 d0 d1 d1 d0 d0 d1 d2 d2 ff ff ff d1 d2 d2 ff d0 d2 ff ff ff ff ff d1 d0 d0 d2 d2 d2 d0 d0 d1 d1 d0 d2 d1 d0 d2 d2 d0 d1 d2 ff d0 d1 d2 d2 d0 d0 d2 ff d0 d1 ff d0 d1 d2 d0 d0 d2 d2 d1 d1 d2 d2 d1 d1 d1 d2 d0 d1 d2 ff ff d1 ff ff d0 d2 d1 d1 d2 d0 ff d0 d1 d2 ff d1 d0 d2",
+  "status": "MATCH",
+  "t_frames": 33.5,
+  "cosim_pubs": [
+   [
+    1.37,
+    2,
+    0
+   ]
+  ],
+  "cosim_done": [
+   34.36,
+   2,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.37,
+    2,
+    0
+   ]
+  ],
+  "seed0_done": [
+   34.36,
+   2,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.37,
+    2,
+    0
+   ]
+  ],
+  "fw2_done": [
+   34.36,
+   2,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174749.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174800.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 2,
+  "col": 1,
+  "hooks": 46,
+  "seed": 165,
+  "tgt": [
+   3,
+   3
+  ],
+  "y": 11,
+  "x": 3,
+  "upload": "80 161 10 129 ff ff ff ff ff ff ff ff ff 60 72 ff ff ff ff ff 61 70 ff ff ff 82 ff ff d1 d0 d0 ff ff d1 d2 ff d2 ff ff ff 82 d0 ff d1 d0 d1 d1 ff d2 d0 d0 d1 d0 d2 d1 d1 d0 ff d2 d2 d2 d2 d0 d1 d1 d2 d2 d0 ff d1 d0 d2 d2 d0 d1 ff d1 d0 ff ff d2 d1 d1 d2 d0 ff d1 d0 d0 d2 d2 d1 d0 d1 d1 d0 d0 d2 d2 d0 d2 d2 d0 d1 d2 ff d1 d0 d1 d0 d2 d2 ff d0 ff d2 d1 ff ff d0 d0 d1 ff ff d2 ff ff d1 d1 d2 d0 d1",
+  "status": "MATCH",
+  "t_frames": 23.0,
+  "cosim_pubs": [
+   [
+    1.16,
+    3,
+    0
+   ],
+   [
+    21.77,
+    1,
+    2
+   ]
+  ],
+  "cosim_done": [
+   27.58,
+   1,
+   2
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.16,
+    3,
+    0
+   ],
+   [
+    21.77,
+    1,
+    2
+   ]
+  ],
+  "seed0_done": [
+   27.58,
+   1,
+   2
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.16,
+    3,
+    0
+   ],
+   [
+    21.77,
+    1,
+    2
+   ]
+  ],
+  "fw2_done": [
+   27.58,
+   1,
+   2
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174811.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174821.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 4,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   4,
+   0
+  ],
+  "y": 14,
+  "x": 4,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174831.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 7,
+  "hooks": 31,
+  "seed": 165,
+  "tgt": [
+   7,
+   3
+  ],
+  "y": 15,
+  "x": 7,
+  "upload": "80 161 9 129 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff d1 ff ff 80 d0 d0 ff d0 d1 ff ff 82 d0 d1 ff d0 d0 ff ff d1 d2 ff d1 d2 d0 d1 ff d2 d2 d0 d0 d1 d1 d2 d2 ff d1 d2 d0 d0 d2 d2 ff d1 d0 d2 d1 d0 d0 d1 d1 d0 d0 d1 d2 d2 d0 d1 d2 d2 d1 d0 d0 d1 d1 ff d2 d2 d1 d0 d0 d1 d2 d0 d1 ff d0 d1 d1 d2 ff d0 d0 d1 ff d2 d1 d2 d0 d1 d2 d2 d1 d0 ff ff d1 d2 d2 d0 d1 d1 ff",
+  "status": "MATCH",
+  "t_frames": 15.5,
+  "cosim_pubs": [
+   [
+    1.49,
+    7,
+    0
+   ]
+  ],
+  "cosim_done": [
+   49.99,
+   7,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.49,
+    7,
+    0
+   ]
+  ],
+  "seed0_done": [
+   49.99,
+   7,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.49,
+    7,
+    0
+   ]
+  ],
+  "fw2_done": [
+   49.99,
+   7,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174841.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 2,
+  "col": 0,
+  "hooks": 11,
+  "seed": 165,
+  "tgt": [
+   0,
+   0
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "80 161 25 128 ff ff ff ff ff ff ff ff ff ff ff ff ff 42 ff ff ff ff ff ff ff 52 ff ff ff ff ff 60 71 60 72 ff d0 ff ff ff 82 d0 d1 ff ff ff ff ff d1 d2 ff ff d2 d0 ff 82 d2 d2 d0 d0 d1 d1 d2 d2 ff d1 d2 d0 d0 d2 d2 ff d1 d0 d2 d1 d0 d0 d1 d1 d0 d0 d1 d2 d2 d0 d1 d2 d2 d1 d0 d0 d1 d1 ff d2 d2 d1 d0 d0 d1 d2 d0 d1 ff d0 d1 d1 d2 ff d0 d0 d1 ff d2 d1 d2 d0 d1 d2 d2 d1 d0 ff ff d1 d2 d2 d0 d1 d1 ff",
+  "status": "MATCH",
+  "t_frames": 5.5,
+  "cosim_pubs": [
+   [
+    1.14,
+    0,
+    2
+   ],
+   [
+    28.33,
+    3,
+    0
+   ]
+  ],
+  "cosim_done": [
+   30.62,
+   3,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.14,
+    0,
+    2
+   ],
+   [
+    28.33,
+    3,
+    0
+   ]
+  ],
+  "seed0_done": [
+   30.62,
+   3,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.14,
+    0,
+    2
+   ],
+   [
+    28.33,
+    3,
+    0
+   ]
+  ],
+  "fw2_done": [
+   30.62,
+   3,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174852.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 2,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   2,
+   3
+  ],
+  "y": 14,
+  "x": 2,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174902.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 1,
+  "hooks": 1,
+  "seed": 165,
+  "tgt": [
+   1,
+   3
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "82 160 25 128 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 80 61 70 ff 81 ff ff d1 d2 ff d0 d1 d0 80 ff ff ff d1 d0 d0 d1 d1 ff d0 d1 d1 d2 d0 d1 d2 81 d1 ff ff d1 d1 d2 ff d1 d2 d2 d0 ff d2 d2 d1 d0 d0 d1 d2 d2 d0 d0 d1 d2 d0 d0 d2 d1 d0 d1 d0 d2 d1 d0 d0 ff d2 ff d0 d1 d2 ff ff d2 d1 d2 d2 d0 d0 d1 d1 d0 d0 d1 ff ff d1 d0 d2 d1 d0 d0 d0 d1 d1 d2 d2 d1 d1 d0 ff d1 ff d2 d1 ff ff",
+  "status": "AMBIGUOUS",
+  "t_frames": 0.5,
+  "cosim_pubs": [
+   [
+    1.48,
+    2,
+    1
+   ],
+   [
+    29.16,
+    3,
+    3
+   ]
+  ],
+  "cosim_done": [
+   31.83,
+   3,
+   3
+  ],
+  "seed0_status": "AMBIGUOUS",
+  "seed0_pubs": [
+   [
+    1.48,
+    2,
+    1
+   ],
+   [
+    29.15,
+    3,
+    3
+   ]
+  ],
+  "seed0_done": [
+   31.82,
+   3,
+   3
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "AMBIGUOUS",
+  "fw2_pubs": [
+   [
+    1.48,
+    2,
+    1
+   ],
+   [
+    29.15,
+    3,
+    3
+   ]
+  ],
+  "fw2_done": [
+   31.82,
+   3,
+   3
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174913.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 6,
+  "hooks": 9,
+  "seed": 165,
+  "tgt": [
+   6,
+   3
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "81 161 9 128 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff d0 ff d1 d2 d2 d1 ff ff d1 d0 d2 d1 d0 d0 ff ff d1 ff ff d0 d1 d2 d2 d2 ff ff d0 d2 d2 ff d0 ff ff d0 d2 d1 ff d0 d0 d0 d2 d1 d1 d0 d0 d1 d2 d0 d2 d1 ff d2 d0 ff d2 ff ff d0 d0 ff d2 d2 d0 d2 d1 d0 d2 d1 d1 d0 d0 d2 d0 d1 d2 d2 d0 d0 d1 d0 d0 d1 d1 d0 d0 d2 d1 d1 d2 ff ff d1 d1 d2 d2 ff d2 d0 d0 d1 d2 ff ff",
+  "status": "MATCH",
+  "t_frames": 4.5,
+  "cosim_pubs": [
+   [
+    1.39,
+    6,
+    0
+   ],
+   [
+    15.74,
+    3,
+    0
+   ]
+  ],
+  "cosim_done": [
+   36.98,
+   3,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.39,
+    6,
+    0
+   ],
+   [
+    15.74,
+    3,
+    0
+   ]
+  ],
+  "seed0_done": [
+   36.98,
+   3,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.39,
+    6,
+    0
+   ],
+   [
+    15.74,
+    3,
+    0
+   ]
+  ],
+  "fw2_done": [
+   36.98,
+   3,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174924.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 1,
+  "pre": 0,
+  "na": 0,
+  "o4": 3,
+  "col": 3,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   3,
+   2
+  ],
+  "y": 15,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174935.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174945.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 1,
+  "col": 1,
+  "hooks": 47,
+  "seed": 165,
+  "tgt": [
+   1,
+   1
+  ],
+  "y": 12,
+  "x": 1,
+  "upload": "81 160 9 129 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 80 ff ff ff ff ff ff ff d0 ff d1 d1 61 72 ff d2 d1 d0 d0 d1 ff d2 d2 d1 d2 d0 d0 d2 ff d0 ff ff ff ff d1 ff ff d0 d1 ff d1 d2 ff ff ff d2 d1 d0 ff d1 d2 ff d1 d2 d2 d0 d0 d1 d1 d2 ff d1 d0 d2 d0 d0 d1 d1 d2 d0 d0 d2 d1 d2 d2 d0 d0 ff d2 d0 d2 d1 d0 ff d1 ff d2 d1 d0 d0 d1 d1 d2 d2 d1 d1 ff d2 d2 d0 ff d2 d0 d0 ff d2 d0 d0 d1 d1 d2 d2",
+  "status": "MATCH",
+  "t_frames": 23.5,
+  "cosim_pubs": [
+   [
+    1.52,
+    1,
+    1
+   ]
+  ],
+  "cosim_done": [
+   40.27,
+   1,
+   1
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.52,
+    1,
+    1
+   ]
+  ],
+  "seed0_done": [
+   40.27,
+   1,
+   1
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.52,
+    1,
+    1
+   ]
+  ],
+  "fw2_done": [
+   40.27,
+   1,
+   1
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-174956.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 2,
+  "o4": 3,
+  "col": 4,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   4,
+   2
+  ],
+  "y": 9,
+  "x": 4,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175006.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175017.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 7,
+  "hooks": 27,
+  "seed": 165,
+  "tgt": [
+   7,
+   3
+  ],
+  "y": 15,
+  "x": 7,
+  "upload": "81 161 25 128 ff ff ff ff ff ff ff ff ff 60 71 ff ff ff ff ff 62 70 ff ff 80 ff 42 ff d2 d0 d1 d2 d0 ff 52 ff d1 d1 ff ff d1 d0 82 ff ff d1 d0 d0 ff ff d0 d0 d0 d2 d1 d0 d2 d1 d0 d0 d0 ff d2 ff ff ff d2 d2 d2 d1 d0 ff ff d2 d2 d1 d1 d2 d0 d0 d2 d2 d1 d0 ff d2 d1 d1 d2 d0 ff ff ff ff d2 d2 d1 d1 ff ff d0 d0 d2 d2 d0 d1 d1 d2 d2 d0 d0 d1 ff d0 d2 d2 d1 d2 d0 d1 d1 d0 d2 d1 d0 d1 d1 d0 d0 d2 d1 d1",
+  "status": "MATCH",
+  "t_frames": 13.5,
+  "cosim_pubs": [
+   [
+    1.35,
+    7,
+    0
+   ]
+  ],
+  "cosim_done": [
+   20.87,
+   7,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.35,
+    7,
+    0
+   ]
+  ],
+  "seed0_done": [
+   20.87,
+   7,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.35,
+    7,
+    0
+   ]
+  ],
+  "fw2_done": [
+   20.87,
+   7,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175028.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 1,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 6,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   6,
+   3
+  ],
+  "y": 15,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175039.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 2,
+  "col": 1,
+  "hooks": 13,
+  "seed": 165,
+  "tgt": [
+   1,
+   0
+  ],
+  "y": 15,
+  "x": 2,
+  "upload": "80 162 24 128 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 81 ff ff 81 81 ff ff d2 d1 ff 81 d2 d0 ff ff d1 d0 d2 81 d1 d1 ff ff d1 d2 d0 d1 ff d2 ff ff ff d1 ff d0 d0 ff 61 72 ff ff d2 d2 d1 d1 40 d2 d0 ff d1 d2 d2 d1 50 ff d0 d2 d1 d0 d2 d2 d1 d1 ff d0 d2 ff d0 d2 d0 d0 d1 d1 d0 d2 d1 d1 d2 d0 d1 d2 d0 d1 d1 d1 d2 d2 ff d0 d1 d1 d2 d0 d1 d2 d0 d1 d2 d0 d0 d2 ff d0 d0 d1 d2 d2 d1",
+  "status": "MATCH",
+  "t_frames": 6.5,
+  "cosim_pubs": [
+   [
+    1.59,
+    1,
+    2
+   ]
+  ],
+  "cosim_done": [
+   29.69,
+   1,
+   2
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.59,
+    1,
+    2
+   ]
+  ],
+  "seed0_done": [
+   29.69,
+   1,
+   2
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.59,
+    1,
+    2
+   ]
+  ],
+  "fw2_done": [
+   29.69,
+   1,
+   2
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175049.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175100.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175111.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 0,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   0,
+   0
+  ],
+  "y": 14,
+  "x": 0,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175122.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 4,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   4,
+   0
+  ],
+  "y": 15,
+  "x": 4,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175133.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 1,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   1,
+   3
+  ],
+  "y": 12,
+  "x": 1,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175143.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 1,
+  "col": 5,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   5,
+   1
+  ],
+  "y": 10,
+  "x": 5,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175153.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 2,
+  "col": 3,
+  "hooks": 35,
+  "seed": 165,
+  "tgt": [
+   3,
+   0
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "80 161 10 128 ff ff ff ff ff ff ff ff ff ff ff ff 61 70 ff ff ff ff ff ff 61 70 ff ff ff ff d2 d1 d1 d2 d2 d1 d2 d2 d1 d0 d0 d1 d1 d2 d2 d2 d0 d0 d2 d1 d0 ff d0 d0 ff ff ff d2 d2 d0 ff ff d1 ff ff d2 d2 d1 d1 d2 d2 d1 d0 d0 d1 d2 d0 d2 d2 ff d0 d0 d1 d2 d2 d0 d0 d2 d1 d1 d0 d0 d2 d0 d1 d1 ff ff ff d1 d1 d2 d2 d1 d0 d0 d1 d1 d1 d1 ff d2 d1 d0 d2 ff ff ff d0 d0 d2 d2 d0 d0 d0 d0 d1 d1 ff ff d1 d0",
+  "status": "MATCH",
+  "t_frames": 17.5,
+  "cosim_pubs": [
+   [
+    1.16,
+    3,
+    2
+   ]
+  ],
+  "cosim_done": [
+   19.29,
+   3,
+   2
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.16,
+    3,
+    2
+   ]
+  ],
+  "seed0_done": [
+   19.29,
+   3,
+   2
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.16,
+    3,
+    2
+   ]
+  ],
+  "fw2_done": [
+   19.29,
+   3,
+   2
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175205.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175215.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 4,
+  "hooks": 51,
+  "seed": 165,
+  "tgt": [
+   4,
+   3
+  ],
+  "y": 12,
+  "x": 4,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175225.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 3,
+  "col": 5,
+  "hooks": 12,
+  "seed": 165,
+  "tgt": [
+   5,
+   2
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "82 161 25 128 ff ff ff ff ff ff ff ff ff ff ff ff ff ff 82 ff ff ff 40 ff ff ff 62 70 d1 d0 50 60 71 ff d2 d0 ff d1 d0 ff 80 41 ff d0 ff d2 ff ff 82 52 d0 d2 d1 d0 ff d1 81 d2 ff d1 d2 d1 d0 d0 d1 d2 d2 d1 ff d1 d2 d2 d0 d1 d2 d0 d1 d0 d2 d2 ff d1 d0 d0 d0 d2 d1 d1 d2 d2 d0 d1 d0 ff d1 ff d0 ff d2 d2 d2 d1 d0 d0 d1 d1 d2 d0 ff d2 ff d0 d2 d1 d1 d0 ff d0 d2 d2 d0 d0 d1 d2 d0 d0 ff d1 ff d0 d2 ff",
+  "status": "MATCH",
+  "t_frames": 6.0,
+  "cosim_pubs": [
+   [
+    1.51,
+    5,
+    3
+   ]
+  ],
+  "cosim_done": [
+   31.14,
+   5,
+   3
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.51,
+    5,
+    3
+   ]
+  ],
+  "seed0_done": [
+   31.14,
+   5,
+   3
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.51,
+    5,
+    3
+   ]
+  ],
+  "fw2_done": [
+   31.14,
+   5,
+   3
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175236.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 5,
+  "hooks": 7,
+  "seed": 165,
+  "tgt": [
+   5,
+   3
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "80 161 41 128 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 61 70 ff ff ff ff ff ff d1 d0 ff ff ff ff 61 70 ff d1 ff 60 71 ff 81 ff ff d2 ff ff 80 ff d0 d2 d1 d0 ff ff 82 ff ff d1 d2 d1 d0 d0 d1 80 d2 d1 ff d1 d2 d2 d0 d1 d2 d0 d1 d0 d2 d2 ff d1 d0 d0 d0 d2 d1 d1 d2 d2 d0 d1 d0 ff d1 ff d0 ff d2 d2 d2 d1 d0 d0 d1 d1 d2 d0 ff d2 ff d0 d2 d1 d1 d0 ff d0 d2 d2 d0 d0 d1 d2 d0 d0 ff d1 ff d0 d2 ff",
+  "status": "MATCH",
+  "t_frames": 3.5,
+  "cosim_pubs": [
+   [
+    1.25,
+    5,
+    0
+   ],
+   [
+    7.68,
+    1,
+    2
+   ],
+   [
+    12.25,
+    6,
+    3
+   ],
+   [
+    24.29,
+    5,
+    2
+   ]
+  ],
+  "cosim_done": [
+   41.0,
+   5,
+   2
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.25,
+    5,
+    0
+   ],
+   [
+    7.68,
+    1,
+    2
+   ],
+   [
+    12.25,
+    6,
+    3
+   ],
+   [
+    24.29,
+    5,
+    2
+   ]
+  ],
+  "seed0_done": [
+   41.0,
+   5,
+   2
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.25,
+    5,
+    0
+   ],
+   [
+    7.68,
+    1,
+    2
+   ],
+   [
+    12.25,
+    6,
+    3
+   ],
+   [
+    24.29,
+    5,
+    2
+   ]
+  ],
+  "fw2_done": [
+   41.0,
+   5,
+   2
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175247.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175257.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 0,
+  "hooks": 39,
+  "seed": 165,
+  "tgt": [
+   0,
+   3
+  ],
+  "y": 14,
+  "x": 0,
+  "upload": "81 161 9 128 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 61 72 81 ff ff ff d1 ff d0 d2 d2 ff d0 d2 d2 ff d1 d2 d0 d1 d2 d0 d2 d2 d1 ff ff ff ff d0 d1 d2 d0 d0 d1 d2 d0 ff ff ff ff d1 d0 d0 d2 d2 d2 ff d1 d1 d2 d0 d1 ff d0 d1 d1 d2 d2 d1 d0 d0 d0 d1 d2 d2 ff d1 d0 d2 d2 d0 d0 d1 ff d0 d2 d2 d1 ff ff d1 d1 d0 d2 d1 d0 ff ff ff d1 d2 d0 d1 d2 d2 d0 d0 d2 ff d1 d0 d1 d0 ff d1 d0 ff d2 d2",
+  "status": "MATCH",
+  "t_frames": 19.5,
+  "cosim_pubs": [
+   [
+    1.5,
+    0,
+    0
+   ]
+  ],
+  "cosim_done": [
+   24.13,
+   0,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.5,
+    0,
+    0
+   ]
+  ],
+  "seed0_done": [
+   24.13,
+   0,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.5,
+    0,
+    0
+   ]
+  ],
+  "fw2_done": [
+   24.13,
+   0,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175308.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 1,
+  "col": 7,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   7,
+   1
+  ],
+  "y": 12,
+  "x": 7,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175318.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 5,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   5,
+   3
+  ],
+  "y": 14,
+  "x": 5,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175328.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 0,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   0,
+   0
+  ],
+  "y": 14,
+  "x": 3,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175339.ss",
+  "invariant": false,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 5,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   5,
+   3
+  ],
+  "y": 14,
+  "x": 5,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175350.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 3,
+  "hooks": 23,
+  "seed": 165,
+  "tgt": [
+   3,
+   3
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "80 160 10 129 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff d1 d2 82 40 d2 d1 d1 d0 d0 d2 d2 50 d1 d2 d0 ff d2 d1 d1 d0 d0 ff d2 ff d1 d0 ff ff ff ff ff ff d0 d2 d2 ff ff ff d1 d2 d2 d2 d0 d1 d1 d2 d0 d1 d2 d1 d0 d0 d2 d2 d0 d0 d0 d0 d2 d2 d0 d0 d2 ff d0 d2 d2 d1 d0 ff d2 d1 ff d1 d1 d0 d2 d2 d0 d0 d2 d1 d1 d2 d2 d0 d1 d2 d2 d0 d0 d2 d1 d1 d2 d2 d1 d2 d2 ff d0 d2 ff ff",
+  "status": "MATCH",
+  "t_frames": 11.5,
+  "cosim_pubs": [
+   [
+    1.28,
+    3,
+    0
+   ]
+  ],
+  "cosim_done": [
+   38.93,
+   3,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.28,
+    3,
+    0
+   ]
+  ],
+  "seed0_done": [
+   38.93,
+   3,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.28,
+    3,
+    0
+   ]
+  ],
+  "fw2_done": [
+   38.93,
+   3,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175400.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 6,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   6,
+   0
+  ],
+  "y": 15,
+  "x": 6,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175411.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 0,
+  "col": 3,
+  "hooks": 15,
+  "seed": 165,
+  "tgt": [
+   3,
+   3
+  ],
+  "y": 15,
+  "x": 3,
+  "upload": "80 160 9 130 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 62 70 ff ff ff ff ff ff d1 d0 ff ff d1 d2 d1 d0 d2 d1 d0 d0 d2 d2 d1 d2 d2 d1 d1 ff d0 d0 ff ff ff d2 ff ff d1 d0 ff ff d1 ff d0 d2 d2 d1 d1 d2 d0 d0 d2 d1 d0 d2 d2 d1 d0 d2 d2 d0 d0 ff d0 d1 d2 d2 d1 d0 d2 ff ff d2 d1 d1 d0 ff d2 d2 d1 d0 ff d1 ff d2 d0 d1 d0 d1 d2 d2 d1 d1 d0 d0 d2 d1 d0 d2 d2 d0 d1 d2 d2 d2 d1 d1 ff d2 d2 d1",
+  "status": "MATCH",
+  "t_frames": 7.5,
+  "cosim_pubs": [
+   [
+    1.43,
+    3,
+    0
+   ]
+  ],
+  "cosim_done": [
+   34.17,
+   3,
+   0
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.43,
+    3,
+    0
+   ]
+  ],
+  "seed0_done": [
+   34.17,
+   3,
+   0
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.43,
+    3,
+    0
+   ]
+  ],
+  "fw2_done": [
+   34.17,
+   3,
+   0
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175422.ss",
+  "invariant": false,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 4,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   4,
+   3
+  ],
+  "y": 10,
+  "x": 4,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175433.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 3,
+  "col": 4,
+  "hooks": 39,
+  "seed": 165,
+  "tgt": [
+   4,
+   2
+  ],
+  "y": 14,
+  "x": 4,
+  "upload": "81 160 41 129 ff ff ff ff ff ff ff ff ff ff ff ff ff ff 81 ff ff ff 82 ff ff ff 81 ff 61 70 d1 ff ff ff d1 ff d1 d0 d2 ff ff ff d2 ff d1 ff ff ff ff ff d0 d0 ff ff ff ff ff ff d1 d0 ff ff d1 82 ff ff ff d1 d1 d2 d0 d0 ff d1 d0 d2 d2 d1 d0 d2 80 d0 d0 ff d0 d1 d2 d2 d1 d0 d2 ff ff d2 d1 d1 d0 ff d2 d2 d1 d0 ff d1 ff d2 d0 d1 d0 d1 d2 d2 d1 d1 d0 d0 d2 d1 d0 d2 d2 d0 d1 d2 d2 d2 d1 d1 ff d2 d2 d1",
+  "status": "MATCH",
+  "t_frames": 19.5,
+  "cosim_pubs": [
+   [
+    1.74,
+    0,
+    2
+   ],
+   [
+    4.69,
+    4,
+    3
+   ]
+  ],
+  "cosim_done": [
+   55.77,
+   4,
+   3
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.74,
+    0,
+    2
+   ],
+   [
+    4.69,
+    4,
+    3
+   ]
+  ],
+  "seed0_done": [
+   55.77,
+   4,
+   3
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.74,
+    0,
+    2
+   ],
+   [
+    4.69,
+    4,
+    3
+   ]
+  ],
+  "fw2_done": [
+   55.77,
+   4,
+   3
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175443.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175454.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 2,
+  "col": 5,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   5,
+   0
+  ],
+  "y": 12,
+  "x": 5,
+  "status": "UNUSABLE"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175505.ss",
+  "status": "UNREADABLE",
+  "why": "driver located at WRAM 0x103308 (anchors [NAV_MAGIC $6149==$A5; TURN $6160 in 0..2; f_6143 $6143 in 0..1; ARMED2 $6161 in 0..1; f_614E $614E in 0..1; ROT_DONE2 $616E in 0..1] all hold), but MATCH_ACTI"
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175516.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 1,
+  "pend": 0,
+  "pre": 0,
+  "na": 0,
+  "o4": 2,
+  "col": 4,
+  "hooks": 27,
+  "seed": 165,
+  "tgt": [
+   4,
+   0
+  ],
+  "y": 15,
+  "x": 4,
+  "upload": "81 162 8 129 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 81 ff ff ff ff ff ff d1 d2 ff ff ff ff 80 ff d2 d1 82 d0 d1 ff 62 71 d0 ff d2 d1 d0 40 d2 d1 d0 d0 d1 d1 ff 51 ff ff d2 d0 d0 d2 d2 d1 d1 d0 d1 d1 d2 d2 d0 d0 d2 d2 d0 ff d2 d1 d0 d0 ff ff d0 d2 d1 d0 ff d1 d0 d0 d1 d1 d0 d0 d2 d1 d1 d0 d2 d1 d0 ff d2 d0 d1 d1 d2 d0 ff ff d1 d2 d0 d1 d0 d0 d1 d2 d0 d1 d2 d2 d1 d2 d0 d1 d2 d0 d1 d2",
+  "status": "MATCH",
+  "t_frames": 13.5,
+  "cosim_pubs": [
+   [
+    1.18,
+    7,
+    1
+   ],
+   [
+    2.33,
+    2,
+    0
+   ],
+   [
+    4.69,
+    2,
+    3
+   ],
+   [
+    7.03,
+    4,
+    2
+   ]
+  ],
+  "cosim_done": [
+   34.35,
+   4,
+   2
+  ],
+  "seed0_status": "MATCH",
+  "seed0_pubs": [
+   [
+    1.18,
+    7,
+    1
+   ],
+   [
+    2.33,
+    2,
+    0
+   ],
+   [
+    4.69,
+    2,
+    3
+   ],
+   [
+    7.03,
+    4,
+    2
+   ]
+  ],
+  "seed0_done": [
+   34.35,
+   4,
+   2
+  ],
+  "seed0_same_timeline": true,
+  "fw2_status": "MATCH",
+  "fw2_pubs": [
+   [
+    1.18,
+    7,
+    1
+   ],
+   [
+    2.33,
+    2,
+    0
+   ],
+   [
+    4.69,
+    2,
+    3
+   ],
+   [
+    7.03,
+    4,
+    2
+   ]
+  ],
+  "fw2_done": [
+   34.35,
+   4,
+   2
+  ],
+  "fw2_same_timeline": true
+ },
+ {
+  "file": "drmario_cvc_fair_4dfa9c79_20261006-175527.ss",
+  "invariant": true,
+  "mode": 4,
+  "armed": 0,
+  "pend": 0,
+  "pre": 0,
+  "na": 1,
+  "o4": 0,
+  "col": 4,
+  "hooks": 0,
+  "seed": 165,
+  "tgt": [
+   4,
+   3
+  ],
+  "y": 13,
+  "x": 4,
+  "status": "UNUSABLE"
+ }
+]
