@@ -1,0 +1,2 @@
+pilot n=1200: d_old +1.354 pp (sd 23.28), d_new -1.229 pp (sd 24.21) -> r 0.500, design delta 0.675 pp, n85 11547 -> n = 4000 seeds per instrument per arm; power at delta 0.422, at 0.7 x delta 0.234; underpowered by design: True
+{"r": 0.5, "delta": 0.675, "n85": 11546.66647998945, "n": 4000, "power": 0.4221641427004912, "power_curse": 0.23409067064877526, "underpowered": true}

@@ -36,7 +36,7 @@ def rule(d_new, d_old, sd_new):
     n85 = ((Z975 + Z85) * sd_new / delta) ** 2
     n = int(min(N_MAX, max(N_MIN, 50 * math.ceil(n85 / 50))))
     return dict(r=r, delta=delta, n85=n85, n=n, power=power(delta, sd_new, n), power_curse=power(0.7 * delta, sd_new, n),
-                underpowered=n85 > N_MAX)
+                underpowered=bool(n85 > N_MAX))
 
 
 def selftest():

@@ -169,3 +169,56 @@ Any deviation is reported in the result next to the number it affects. That incl
 - a crashed job re-run with the same seeds;
 - a PAUSE window;
 - a code change after stage B. A code change voids the run unless it is identity-gated against stage-B rows.
+
+## STAGE B (2026-10-06, after the pilot, before any confirmation game)
+**Rule output** (`steer11_sizing.py` → `steer11/sizing.txt`, the stage-A rule unchanged except a JSON-serialisation
+fix of its output line):
+
+| quantity | value |
+|---|---|
+| d_old (legacy clock, STEER10 block) | +1.354 pp |
+| d_new (couch11, same seeds) | **−1.229 pp** |
+| sd_new | 24.21 pp |
+| r (floored) | 0.5 |
+| design delta | 0.675 pp |
+| n85 | 11,547 |
+| **n** | **4,000** seeds per instrument per arm (24,000 games) |
+| power at delta | 0.42 |
+| power at 0.7 × delta | 0.23 |
+
+- The run is **UNDERPOWERED BY DESIGN**.
+- **Block:** `steer11_jobs.CONFIRM = {"lo": 41100, "n": 4000}`, i.e. even seeds 41100–49098, 4,000 distinct streams.
+  - Disjoint from every STEER10 seed (stream keys 20550–24549 vs 16500–16799 / 19567–20466).
+  - REUSE notes were added to the registry's "champ145 reserve" and "gwprice" entries.
+- **Rows at this commit:** steer11/confirm holds 0 rows; steer11/pilot holds 3,600 (audit OK).
+
+**Pilot, FAIR absolute levels** (STEER10 blocks; `steer11/pilot.txt`):
+
+| | legacy clock | couch11 |
+|---|---|---|
+| LULU pace-prior win | 87.00% | **40.46%** |
+| loss, slow / kill | | 55.56 / 3.98 |
+| win at M 80 / 100 / 120 / 140 | | 13.3 / 32.4 / 51.1 / 65.0% |
+| time to clear (median) | 147.4 s | **208.4 s** (couch 209) |
+| s/pill | | 1.81 (couch 1.74) |
+| owner race M 177 | 93.50% | **83.83%** |
+
+**DISCLOSED: the pilot's A16 − FAIR contrast was computed and seen before this commit.** Stage A allows this: the pilot
+is the sizing input.
+
+| | value |
+|---|---|
+| A16 − FAIR, couch11, same 1,200 seeds | −1.23 [−2.58, +0.19] |
+| at M 80 | −3.00 |
+| at M 140 | +0.83 |
+| stall-pills from ≤ 16 viruses | −5.7 |
+| LULU tap-out | −2.75 |
+
+It changes NOTHING in sections 1–9: primary, guards, verdict and seeds are as committed at stage A (5afb7816).
+
+**DISCLOSED VALIDITY NOTE, not acted on here.** The pace prior M ∈ {80..140} was set in STEER10 to make races
+"couch-shaped" on the too-fast legacy clock.
+- On couch11, FAIR wins 13% at M 80 but 65% at M 140. The couch result was 6/9 (67%).
+- So on the corrected clock the fast end of the prior describes an opponent much faster than the couch dr. lulu.
+- Re-deriving M belongs to a FUTURE prereg, and from FAIR-only levels: never from an arm contrast, which has now been
+  seen at every M. The pre-registered primary stays as committed. Per-M results are pre-registered secondaries.

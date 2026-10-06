@@ -1,0 +1,42 @@
+STEER11 step 1 -- FAIR on the couch11 race clock (STEER10 blocks, declared reuse; legacy rows = banked STEER10/8)
+clock: {'name': 'couch11', 'base': 33.28085060893608, 'fall': 3.0662411560492577, 'step': 20.196614665709514, 'cfall': 15.8547355455094, 'vol': 17.36335490365264, 'gsize': 0.0, 'gfall': 16.874576362847506, 'gclear': 44.0720278537381, 'gstep': 0.0, 'gcfall': 0.0}
+
+[s10_base] LULU race (lam 2.84, lulu_fit_202610b sizes, delta 2.65)
+  legacy clock  (n=1200): pace-prior win 87.00% (loss 13.00%: slow 8.17 / kill 4.83); M80 win 78.00%, M100 win 87.83%, M120 win 90.58%, M140 win 91.58%
+      clears 1104/1200, time to clear p25/50/75 128.5/147.4/174.7 s, pills 111, s/pill 1.33, tiles recv 14.5, tap-out (how==topout) 8.00%
+  couch11 clock (n=1200): pace-prior win 40.46% (loss 59.54%: slow 55.56 / kill 3.98); M80 win 13.33%, M100 win 32.42%, M120 win 51.08%, M140 win 65.00%
+      clears 1048/1200, time to clear p25/50/75 176.3/208.4/258.0 s, pills 115, s/pill 1.81, tiles recv 20.0, tap-out (how==topout) 12.67%, garbage time 31.6 s/clear game
+[s10_base] owner race (lam 2.36, Hartford sizes, M177)
+  legacy clock  (n=600): win 93.50%, tap-out 6.33%, time to clear median 148.1 s
+  couch11 clock (n=600): win 83.83%, tap-out 10.50%, time to clear median 203.4 s
+
+[s10_A16] LULU race (lam 2.84, lulu_fit_202610b sizes, delta 2.65)
+  legacy clock  (n=1200): pace-prior win 88.35% (loss 11.65%: slow 7.12 / kill 4.52); M80 win 78.58%, M100 win 89.42%, M120 win 92.08%, M140 win 93.33%
+      clears 1126/1200, time to clear p25/50/75 127.0/144.9/174.0 s, pills 110, s/pill 1.33, tiles recv 15.0, tap-out (how==topout) 6.17%
+  couch11 clock (n=1200): pace-prior win 39.23% (loss 60.77%: slow 56.58 / kill 4.19); M80 win 10.33%, M100 win 30.58%, M120 win 50.17%, M140 win 65.83%
+      clears 1081/1200, time to clear p25/50/75 178.5/209.6/257.9 s, pills 117, s/pill 1.80, tiles recv 20.0, tap-out (how==topout) 9.92%, garbage time 31.7 s/clear game
+[s10_A16] owner race (lam 2.36, Hartford sizes, M177)
+  legacy clock  (n=600): win 92.17%, tap-out 7.67%, time to clear median 143.8 s
+  couch11 clock (n=600): win 85.33%, tap-out 9.33%, time to clear median 200.3 s
+
+A16 - FAIR on the SAME seeds (n=1200; the STEER10 hypothesis block: NOT confirmatory)
+  legacy clock  LULU pace-prior win: 87.00% -> 88.35%  d +1.35 [+0.02, +2.71]
+    M80: 78.00% -> 78.58% d +0.58 [-1.67, +2.67] churn fixed 87 / new 80
+    M100: 87.83% -> 89.42% d +1.58 [-0.08, +3.25] churn fixed 60 / new 41
+    M120: 90.58% -> 92.08% d +1.50 [+0.00, +2.92] churn fixed 48 / new 30
+    M140: 91.58% -> 93.33% d +1.75 [+0.42, +3.08] churn fixed 44 / new 23
+  couch11 clock LULU pace-prior win: 40.46% -> 39.23%  d -1.23 [-2.58, +0.19]
+    M80: 13.33% -> 10.33% d -3.00 [-4.67, -1.42] churn fixed 32 / new 68
+    M100: 32.42% -> 30.58% d -1.83 [-4.00, +0.42] churn fixed 77 / new 99
+    M120: 51.08% -> 50.17% d -0.92 [-3.25, +1.42] churn fixed 102 / new 113
+    M140: 65.00% -> 65.83% d +0.83 [-1.50, +3.25] churn fixed 114 / new 104
+  per-seed SD of the pace-prior win difference: legacy 23.28 pp, couch11 24.21 pp; share of seeds with any difference: legacy 0.190, couch11 0.446
+  clock ratio (couch11 / legacy point estimate) -0.91
+  couch11 LULU stalls per game: stall-pills act>=10 from <=16 v 31.0 -> 25.4 d -5.66 [-9.01, -2.56]; from <=4 v 14.7 -> 14.9 d +0.15 [-2.02, +2.21]; longest stall (pills) 21.9 -> 18.5 d -3.35 [-6.02, -0.84]; longest stall (s) 39.4 -> 33.0 d -6.39 [-11.45, -1.71]; edge-virus str-stuck decisions 725.8 -> 682.1 d -43.73 [-59.31, -29.26]; games with a stall >= 36 s 28.0% -> 25.4%
+  couch11 LULU race tap-out: 12.67% -> 9.92% d -2.75 [-4.42, -1.08] churn fixed 67 / new 34
+  loss type (couch11; FAIR -> A16, games summed over the four M):
+    M80: slow 1011 -> 1046, kill 29 -> 30
+    M100: slow 770 -> 791, kill 41 -> 42
+    M120: slow 532 -> 540, kill 55 -> 58
+    M140: slow 354 -> 339, kill 66 -> 71
+  couch11 clock owner race M177: 83.83% -> 85.33%  d +1.50 [-1.00, +4.17]  churn fixed 35 / new 26

@@ -9,7 +9,7 @@ STEER10_LULU = [39134 + 100 * i for i in range(12)] + [40334 + 100 * i for i in 
 STEER10_RC = [39134 + 100 * i for i in range(12)]
 ARMS = ("s10_base", "s10_A16")
 # PRE-REGISTERED confirmation block (PREREG_STEER11.md sec. 4): even seeds step 2 from LO, N seeds per instrument
-CONFIRM = None
+CONFIRM = {"lo": 41100, "n": 4000}          # PREREG_STEER11 stage B: steer11_sizing.py rule output (steer11/sizing.txt)
 
 
 def lines(phase):
