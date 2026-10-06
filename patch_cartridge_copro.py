@@ -603,6 +603,63 @@ FELL2 = 0x61D5                        # DRSPAWNEDGE: 1 = a P2 capsule has been f
 # on every frame and forces held := 0 -- a fresh edge every frame, i.e. faster than any physical pad.
 TAPP_MUT = _os.environ.get("DRTAPP_MUT", "none") if TAPP else "none"
 assert TAPP_MUT in ("none", "everyframe"), TAPP_MUT
+# DRLATEGUARD=1 (default OFF -> byte-identical cart): FEASIBILITY-GATED LATE RETARGET (couch 2026-10-03 G2 late flips).
+# ROOT CAUSE (measured: Verilator co-sim of the shipped copro RTL + fw on the couch boards, then this cart in Mesen with
+# that publish timeline, tools/lateflip/ + experiments/lateflip/RESULT_LATEFLIP.md): the copro live-publishes a RUNNING
+# BEST that keeps changing until DONE (~20-55 f after GO). The driver commits at GO + 6 f to whatever is published
+# then; on the G2 late flips that was never the final answer (0/11). The later answer is either the main search's own
+# argmax (found after the Pass-0 top) or a TUCK-extension commit, which runs after every root, is not reach-masked and is
+# live-published WITHOUT its descriptor (the cart reads $5x87/88 only at DONE). The live-publish path (act, ARMED2)
+# adopts every change -- the column always, the orientation through DRRELATCH while $0386 >= CROSS_LOWY, which is
+# FLOOR-relative, so on a tall board (stack >= 8) the orient latch never closes -- and DISTGATE then clamps the lateral
+# move it cannot finish: a HYBRID landing (the new orientation at the old column). G2 p99 capped the col-3 well so.
+# FIX: once the capsule has COMMITTED (p2_commit latched ROT_DONE2 at least once this pill), a published target that
+# differs from the current one is adopted only if it can be finished in the fall that is certainly left:
+#     need  = (|col' - X| + rotations(orient -> orient')) * P + LATEGUARD_M     frames (P = DRTAPP; a press per slot,
+#              the first slot possibly a full cooldown away)
+#     avail = (thr - $0392) + (thr + 1) * (K - [col' != X])                       frames
+#     K = fully empty rows below the capsule across the span [min(X,col') .. max(X, col' + H')] (H' = 1 if the new
+#     pose is horizontal: the pre-phase rotates in place, then the capsule sweeps), at most LATEGUARD_ROWCAP;
+#     thr = the ROM gravity threshold speedCounterTable[base[$038B] + $038A];
+#     $0392 = the P2 gravity counter (0..thr; the tick lands before lateral input in its frame). A LATERAL move must
+#     finish before the capsule sinks to the row where DISTGATE's span scan finds no empty row below it (budget 0 ->
+#     steering clamped to the current column): that is the K-th tick, hence the "- 1" row when col' != X. The
+#     capsule's OWN row must be clear across the span, else the move is impossible at any speed.
+# need > avail -> the target is FROZEN for the rest of the pill (LG_LOCK2): later live publishes AND the DONE answer
+# (handle() would otherwise adopt it and DRRECOMMIT re-open the orient) are ignored, and the capsule finishes the
+# target it already has. Pre-commit retargets are untouched (no lateral move has happened yet), so a cart that always
+# gets its final answer before committing behaves exactly as today. No answer latency is added: the gate only ever
+# REFUSES a change, it never waits for one.
+LATEGUARD = _os.environ.get("DRLATEGUARD", "0") == "1"
+LATEGUARD_M = int(_os.environ.get("DRLATEGUARD_M", "0"))          # frames of margin on top of the press schedule
+LATEGUARD_ROWCAP = int(_os.environ.get("DRLATEGUARD_ROWCAP", "2"))  # empty rows below credited at most (bounds the NMI
+                                                                    # cost; tools/nmi126/census.py certifies lg_row <= 2)
+# TEST-ONLY mutants (never ship): "always" = every committed change is refused (the gate's other failure direction:
+# a frozen first answer); "never" = the gate is emitted but every change is accepted (must reproduce the defect).
+LATEGUARD_MUT = _os.environ.get("DRLATEGUARD_MUT", "none") if LATEGUARD else "none"
+assert LATEGUARD_MUT in ("none", "always", "never"), LATEGUARD_MUT
+if LATEGUARD:
+    assert ROTFIX and NO_FREEZE, "DRLATEGUARD needs the anytime live-publish driver (DRROTFIX=1, DRNOFREEZE=1)"
+    assert TAPP >= 2, "DRLATEGUARD prices a move at the DRTAPP press rate; build it with DRTAPP=P (2..15)"
+    assert 0 <= LATEGUARD_M <= 60 and 1 <= LATEGUARD_ROWCAP <= 2, "the NMI census certifies <= 2 credited rows"
+LG_LOCK2 = 0x61D6     # DRLATEGUARD: 1 = target frozen for this pill (a committed target refused a late change)
+LG_CMT2 = 0x61D7      # DRLATEGUARD: 1 = this pill has committed (p2_commit ran at least once)
+LG_C, LG_O = 0x61D8, 0x61D9       # candidate column / GAME orient under test (scratch)
+LG_NEED, LG_AV = 0x61DA, 0x61DB   # frames needed / frames available (scratch, saturating)
+LG_OFF, LG_CS = 0x61DC, 0x61DD    # scan: current row offset / span width
+LG_LO, LG_N = 0x61DE, 0x61DF      # scan: span low column / rows left to scan
+LG_T1 = 0x61E0                    # scan: thr + 1 (frames per row)
+# ROM gravity tables (Nostaljipi disassembly; fpga/copro/reach_6502.py carries the same copy for the copro's reach
+# mask): speedCounterTable (NTSC, 81 B) and baseSpeedSettingValue LOW/MED/HI.
+LG_SPEED_TABLE = bytes([
+    0x45, 0x43, 0x41, 0x3F, 0x3D, 0x3B, 0x39, 0x37, 0x35, 0x33, 0x31, 0x2F, 0x2D, 0x2B, 0x29, 0x27,
+    0x25, 0x23, 0x21, 0x1F, 0x1D, 0x1B, 0x19, 0x17, 0x15, 0x13, 0x12, 0x11, 0x10, 0x0F, 0x0E, 0x0D,
+    0x0C, 0x0B, 0x0A, 0x09, 0x09, 0x08, 0x08, 0x07, 0x07, 0x06, 0x06, 0x05, 0x05, 0x05, 0x05, 0x05,
+    0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x04, 0x04, 0x04, 0x04, 0x04, 0x03, 0x03, 0x03, 0x03,
+    0x03, 0x02, 0x02, 0x02, 0x02, 0x02, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+    0x00])
+LG_SPEED_BASE = bytes([0x0F, 0x19, 0x1F])
+assert len(LG_SPEED_TABLE) == 81
 # DRUNPAUSE (#133): a P1-driven cart is UNPAUSABLE -- the P1 executor rewrites $F5 (the raw P1
 # latch at hook time; the ROM derives pressed/held from it AFTER the hook) every hook from a
 # vocabulary {none,right,left,down,A} with no START, and it runs before the stock edge-detect,
@@ -1600,6 +1657,25 @@ def apply_study_pause(rom, evac=False):
     return written
 
 
+def _emit_act_prologue(a, sfx):
+    """act's frame-start work: the DRTAPP bookkeeping, then the gravity pin. Emitted once at `act` (sfx "") and, on a
+    DRLATEGUARD build, once more at `act_dn` (sfx "_dn"); the "" emission is byte-identical to the historical inline."""
+    if TAPP:
+        # DRTAPP frame-start bookkeeping (see the flag block). Only the FIRST hook pass of a game frame ($43 changed)
+        # captures the ROM's held byte and advances the cooldown, so both passes compute the same verdict.
+        a.ins("LDA_zp", 0x43); a.ins16("CMP_abs", TAP_LF); a.br("BEQ", "tap_same" + sfx)
+        a.ins16("STA_abs", TAP_LF)
+        a.ins("LDA_zp", 0xF8); a.ins16("STA_abs", TAP_H)          # TRUE previous-frame P2 pad (no driver write yet)
+        a.ins16("LDA_abs", TAP_USED); a.br("BEQ", "tap_dec" + sfx)
+        a.ins("LDA_imm", TAPP - 1); a.ins16("STA_abs", TAP_CD)     # pressed last frame -> P-1 release frames follow
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", TAP_USED); a.jmp("tap_same" + sfx)
+        a.label("tap_dec" + sfx)
+        a.ins16("LDA_abs", TAP_CD); a.br("BEQ", "tap_same" + sfx)
+        a.ins16("DEC_abs", TAP_CD)
+        a.label("tap_same" + sfx)
+    a.jsr("freeze_pending")
+
+
 def build_main(level=11, speed=1):
     def _seat_latch(tag):
         """Latch both seats' throat occupancy + BCD virus counts. RAM only, no PPU."""
@@ -2551,6 +2627,8 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", ROT_DONE2)                       # A==0 here: new P2 pill -> re-enter pre-phase
     if SPAWNEDGE:
         a.ins16("STA_abs", FELL2)                           # A==0: a new edge re-arms the "has fallen" latch
+    if LATEGUARD:
+        a.ins16("STA_abs", LG_LOCK2); a.ins16("STA_abs", LG_CMT2)   # A==0: new pill -> not committed, not frozen
     if SLAM:
         a.ins16("STA_abs", STABLE_CT2)                      # A==0: new pill -> argmax must re-prove stability
     if MATURE:
@@ -2618,7 +2696,9 @@ def build_main(level=11, speed=1):
         else:
             a.br("BEQ", f"{L}_start")
         a.ins16("LDA_abs", wdone)
-        if TUCK and idx == 2:
+        if (TUCK or LATEGUARD) and idx == 2:
+            # (DRLATEGUARD's DONE-path gate call also lengthens this span: same far-branch form, gated so a cart with
+            #  both flags off keeps the short branch.)
             # far branch: TUCK's D1/D2 fix bytes (both gated behind `if TUCK and idx==2`,
             # elsewhere in this function) push {L}_search out of the +-127 relative-branch
             # range. Invert-and-JMP, same idiom as the nf2_untorn site above ("rel too far").
@@ -2644,6 +2724,16 @@ def build_main(level=11, speed=1):
         a.ins("CMP_imm", 8); a.br("BCC", f"{L}_colok")
         a.jmp(f"{L}_badcol")            # via JMP: the span to the teardown exceeds branch range
         a.label(f"{L}_colok")
+        if idx == 2 and LATEGUARD:
+            # DRLATEGUARD at DONE: the final answer goes through the same gate as a live publish; a frozen pill (or an
+            # unfinishable final) keeps its target, skips the tuck latch and RECOMMIT, and only tears the search down.
+            # `lg_done`: NMI-census cut point, same proof as `lg_live` (this DONE path needs ARMED2 != 0).
+            a.label("lg_done")
+            a.ins16("STA_abs", LG_C)
+            a.ins16("LDA_abs", wor); a.jsr("lg_map"); a.ins16("STA_abs", LG_O)
+            a.jsr("lg_gate"); a.br("BCS", "lg_dn_ok"); a.jmp("lg_dn_skip")
+            a.label("lg_dn_ok")
+            a.ins16("LDA_abs", LG_C)
         a.ins16("STA_abs", tgt_c)
         if TUCK and idx == 2:
             # latch the tuck descriptor alongside the column, from the SAME published result
@@ -2722,6 +2812,8 @@ def build_main(level=11, speed=1):
             a.ins16("LDA_abs", tgt_o); a.ins16("CMP_abs", 0x03A5); a.br("BEQ", f"{L}_rcdone")     # already ok
             a.ins("LDA_imm", 0); a.ins16("STA_abs", ROT_DONE2)           # re-open -> act_p2 re-rotates
             a.label(f"{L}_rcdone")
+        if idx == 2 and LATEGUARD:
+            a.label("lg_dn_skip")
         if MATURE and idx == 2:
             # MATURITY GATE: capture this search's latency (WDOGH2 high byte) BEFORE it is zeroed below,
             # and arm the slam iff the search was FAST (< FAST_HI*256 hooks) -- a fast DONE means its
@@ -2733,7 +2825,13 @@ def build_main(level=11, speed=1):
             a.label("mat_done")
         a.label(f"{L}_badcol")   # rejected column lands here: teardown WITHOUT adopting the result
         a.ins("LDA_imm", 0); a.ins16("STA_abs", armed); a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
-        a.jmp(f"{L}_done")
+        if idx == 2 and LATEGUARD:
+            # ARMED2 is 0 from here on, so act's live-mailbox path cannot run this hook: go straight to the steering
+            # through act_dn (same frame bookkeeping, no live path). Makes the two lg_gate call sites (DONE here, the
+            # live publish in act) exclusive in the code graph, so the NMI census charges the gate once per hook.
+            a.jmp("act_dn")
+        else:
+            a.jmp(f"{L}_done")
         a.label(f"{L}_search")           # 16-bit watchdog: d3 searches take seconds; abandon ~30s, re-queue once
         a.ins16("INC_abs", wdog); a.br("BNE", f"{L}_wl"); a.ins16("INC_abs", wdogh)
         a.label(f"{L}_wl")
@@ -2803,6 +2901,12 @@ def build_main(level=11, speed=1):
         handle(1, 0x5000, 0x0400, [0x0301, 0x0302, 0x031A, 0x031B], ARMED, WDOG, WRETRY, PEND1, DELAY1, TGT_C1, TGT_O1, WDOGH1, SEED1)
     handle(2, W2_BASE, 0x0500, [0x0381, 0x0382, 0x039A, 0x039B], ARMED2, WDOG2, WRETRY2, PEND2, DELAY2, TGT_C2, TGT_O2, WDOGH2, SEED2)
     a.jmp("act")
+    if LATEGUARD:
+        # act_dn: act's frame-start prologue for a hook whose P2 search just DONE'd (ARMED2 == 0), then the steering.
+        # Identical work to act -> LDA ARMED2 / BEQ act_p2; see the handle() teardown above for why it is separate.
+        a.label("act_dn")
+        _emit_act_prologue(a, "_dn")
+        a.jmp("act_p2")
 
     # freeze QUEUED players too: a pill whose search hasn't run yet must not fall unguided
     # (time-sharing wait was letting pills drop 2-4 rows before their target arrived ->
@@ -2827,6 +2931,119 @@ def build_main(level=11, speed=1):
     a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
     a.label("fp_done")
     a.ins("RTS")
+
+    if LATEGUARD:
+        # ---- DRLATEGUARD (JSR-only territory; see the flag block) -------------------------------------------------
+        # Data first, so the absolute-indexed reads below get concrete addresses (ins16 takes no label fixups).
+        a.label("lg_omap"); a.raw(3, 1, 0, 2)                  # copro orient4 -> game orient (same map as handle())
+        a.label("lg_base"); a.raw(*LG_SPEED_BASE)
+        a.label("lg_spd"); a.raw(*LG_SPEED_TABLE)
+        LG_OMAP = UNIT1_CPU + a.labels["lg_omap"]
+        LG_BASE = UNIT1_CPU + a.labels["lg_base"]
+        LG_SPD = UNIT1_CPU + a.labels["lg_spd"]
+        # lg_map: A = copro orient4 ($FF = no result -> 3, as handle() maps it) -> A = game orient. Clobbers X.
+        a.label("lg_map")
+        a.ins("CMP_imm", 0xFF); a.br("BNE", "lgm_v"); a.ins("LDA_imm", 3); a.ins("RTS")
+        a.label("lgm_v"); a.ins("AND_imm", 0x03); a.ins("TAX"); a.ins16("LDA_absX", LG_OMAP); a.ins("RTS")
+        # lg_gate: in LG_C (column 0..7), LG_O (game orient). out: carry SET = adopt it, CLEAR = keep the current
+        # target (and the pill is frozen). Clobbers A/X/Y.
+        a.label("lg_gate")
+        a.ins16("LDA_abs", LG_CMT2); a.br("BNE", "lg_g1")
+        a.ins("SEC"); a.ins("RTS")                                  # not committed yet: retarget freely (today)
+        a.label("lg_g1")
+        a.ins16("LDA_abs", LG_LOCK2); a.br("BEQ", "lg_g2")
+        a.ins("CLC"); a.ins("RTS")                                  # already frozen this pill
+        a.label("lg_g2")
+        a.ins16("LDA_abs", LG_C); a.ins16("CMP_abs", TGT_C2); a.br("BNE", "lg_chg")
+        a.ins16("LDA_abs", LG_O); a.ins16("CMP_abs", TGT_O2); a.br("BNE", "lg_chg")
+        a.ins("SEC"); a.ins("RTS")                                  # unchanged: nothing to gate
+        a.label("lg_chg")
+        if LATEGUARD_MUT == "always":
+            a.jmp("lg_frz")                                         # MUTANT: refuse every committed change
+        elif LATEGUARD_MUT == "never":
+            a.jmp("lg_yes")                                         # MUTANT: accept every change (today's driver)
+        # presses = |col' - X| + rotations(orient -> orient')   (DRROTDIR: delta 1|3 -> 1 press, 2 -> 2)
+        a.ins16("LDA_abs", LG_C); a.ins("SEC"); a.ins16("SBC_abs", 0x0385); a.br("BCS", "lg_dpos")
+        a.ins("EOR_imm", 0xFF); a.ins("CLC"); a.ins("ADC_imm", 1)
+        a.label("lg_dpos"); a.ins16("STA_abs", LG_NEED)
+        a.ins16("LDA_abs", LG_O); a.ins("SEC"); a.ins16("SBC_abs", 0x03A5); a.ins("AND_imm", 0x03)
+        a.br("BEQ", "lg_r0")
+        a.ins("CMP_imm", 2); a.br("BNE", "lg_r1")
+        a.ins16("INC_abs", LG_NEED)
+        a.label("lg_r1"); a.ins16("INC_abs", LG_NEED)
+        a.label("lg_r0")
+        # need = presses * P + M frames  (<= 9*15 + 60 = 195: no overflow). P is a build constant, so the multiply is
+        # an unrolled shift-and-add over P's set bits (no loop): LG_AV walks presses << k.
+        a.ins16("LDA_abs", LG_NEED); a.ins16("STA_abs", LG_AV)
+        a.ins("LDA_imm", LATEGUARD_M); a.ins16("STA_abs", LG_NEED)
+        for _k in range(4):
+            if TAPP & (1 << _k):
+                a.ins16("LDA_abs", LG_NEED); a.ins("CLC"); a.ins16("ADC_abs", LG_AV); a.ins16("STA_abs", LG_NEED)
+            if (TAPP >> (_k + 1)) == 0:
+                break
+            a.ins16("LDA_abs", LG_AV); a.ins("ASL_A"); a.ins16("STA_abs", LG_AV)
+        # frames per row = speedCounterTable[base[speed] + speedUps] + 1   (P2: speed $038B, speedUps $038A)
+        a.ins16("LDX_abs", 0x038B); a.ins("CPX_imm", 3); a.br("BCC", "lg_sok"); a.ins("LDX_imm", 1)
+        a.label("lg_sok")
+        a.ins16("LDA_absX", LG_BASE); a.ins("CLC"); a.ins16("ADC_abs", 0x038A)
+        a.ins("CMP_imm", 81); a.br("BCC", "lg_tok"); a.ins("LDA_imm", 80)
+        a.label("lg_tok"); a.ins("TAX"); a.ins16("LDA_absX", LG_SPD); a.ins("CLC"); a.ins("ADC_imm", 1)
+        a.ins16("STA_abs", LG_T1)
+        # span [lo .. hi] = [min(X, col') .. max(X, col' + H')], H' = 1 if the NEW pose is horizontal (game orient
+        # even): the pre-phase rotates in place first (a blocked V->H rotation kicks left, the ROM's wall kick), then
+        # the capsule sweeps in the new orientation.
+        a.ins16("LDA_abs", LG_C); a.ins16("CMP_abs", 0x0385); a.br("BCC", "lg_clo")
+        a.ins16("LDA_abs", 0x0385)
+        a.label("lg_clo"); a.ins16("STA_abs", LG_LO)
+        a.ins16("LDA_abs", LG_O); a.ins("AND_imm", 0x01); a.ins("EOR_imm", 0x01)
+        a.ins("CLC"); a.ins16("ADC_abs", LG_C)                     # col' + H' (<= 8)
+        a.ins("CMP_imm", 8); a.br("BCC", "lg_hk"); a.ins("LDA_imm", 7)
+        a.label("lg_hk"); a.ins16("CMP_abs", 0x0385); a.br("BCS", "lg_hi"); a.ins16("LDA_abs", 0x0385)
+        a.label("lg_hi"); a.ins("SEC"); a.ins16("SBC_abs", LG_LO); a.ins("CLC"); a.ins("ADC_imm", 1)
+        a.ins16("STA_abs", LG_CS)                                   # LG_CS = span width 1..8
+        # avail = the frames left at the CURRENT row before the next gravity tick (thr - $0392: the ROM's P2 gravity
+        # counter runs 0..thr and the tick lands before lateral input in the frame it fires), + (thr+1) for each of up
+        # to LATEGUARD_ROWCAP fully empty rows below the capsule across the span. The CURRENT row must be clear across
+        # the span (a falling capsule is not in the field RAM, measured) -- else the move is impossible at any speed.
+        a.ins16("LDA_abs", LG_T1); a.ins("SEC"); a.ins("SBC_imm", 1)    # thr
+        a.ins("SEC"); a.ins16("SBC_abs", 0x0392); a.br("BCS", "lg_avk"); a.ins("LDA_imm", 0)
+        a.label("lg_avk"); a.ins16("STA_abs", LG_AV)
+        a.ins16("LDA_abs", 0x0386); a.ins("CMP_imm", 16); a.br("BCC", "lg_yk"); a.ins("LDA_imm", 15)
+        a.label("lg_yk"); a.ins("TAY")                              # Y = rows below the capsule (row = 15 - $0386)
+        a.ins("CMP_imm", LATEGUARD_ROWCAP); a.br("BCC", "lg_nk"); a.ins("LDA_imm", LATEGUARD_ROWCAP)
+        a.label("lg_nk"); a.ins16("STA_abs", LG_N)                   # rows below to credit (0 on the floor)
+        a.ins("TYA"); a.ins16("STA_abs", LG_OFF)
+        a.ins("LDA_imm", 15); a.ins("SEC"); a.ins16("SBC_abs", LG_OFF)   # the capsule's own row
+        a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("CLC"); a.ins16("ADC_abs", LG_LO)
+        a.ins16("STA_abs", LG_OFF)                                  # <= 15*8 + 7 = 127
+        a.ins("TAX"); a.ins16("LDY_abs", LG_CS)
+        a.label("lg_clr")                                           # current row: must be clear across the span
+        a.ins16("LDA_absX", 0x0500); a.br("BEQ", "lg_cc")
+        a.ins("CMP_imm", 0xFF); a.br("BNE", "lg_frz")               # blocked at the capsule's own row: impossible
+        a.label("lg_cc"); a.ins("INX"); a.ins("DEY"); a.br("BNE", "lg_clr")
+        a.ins16("LDA_abs", LG_N); a.br("BEQ", "lg_end")
+        a.label("lg_row")
+        a.ins16("LDA_abs", LG_OFF); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins16("STA_abs", LG_OFF)
+        a.ins("TAX"); a.ins16("LDY_abs", LG_CS)
+        a.label("lg_cell")
+        a.ins16("LDA_absX", 0x0500); a.br("BEQ", "lg_ce")          # $00 = empty (tile encoding)
+        a.ins("CMP_imm", 0xFF); a.br("BNE", "lg_end")               # occupied: no more free fall
+        a.label("lg_ce"); a.ins("INX"); a.ins("DEY"); a.br("BNE", "lg_cell")
+        a.ins16("LDA_abs", LG_AV); a.ins("CLC"); a.ins16("ADC_abs", LG_T1); a.br("BCC", "lg_ns"); a.ins("LDA_imm", 0xFF)
+        a.label("lg_ns"); a.ins16("STA_abs", LG_AV)
+        a.ins16("DEC_abs", LG_N); a.br("BNE", "lg_row")
+        a.label("lg_end")
+        a.ins16("LDA_abs", LG_C); a.ins16("CMP_abs", 0x0385); a.br("BEQ", "lg_cmp")    # rotation only: all K rows count
+        a.ins16("LDA_abs", LG_AV); a.ins("SEC"); a.ins16("SBC_abs", LG_T1); a.br("BCC", "lg_frz")   # lateral: K-1 rows
+        a.ins16("STA_abs", LG_AV)
+        a.label("lg_cmp")
+        a.ins16("LDA_abs", LG_AV); a.ins16("CMP_abs", LG_NEED); a.br("BCS", "lg_yes")
+        a.label("lg_frz")
+        a.ins("LDA_imm", 1); a.ins16("STA_abs", LG_LOCK2)          # refuse: freeze the target for this pill
+        a.label("lg_no")
+        a.ins("CLC"); a.ins("RTS")
+        a.label("lg_yes")
+        a.ins("SEC"); a.ins("RTS")
 
     if PROPH:
         # ---- proph_trigger (DRPROPH; JSR-only territory; see the flag block) --------------
@@ -3378,20 +3595,7 @@ def build_main(level=11, speed=1):
 
     # ---- act: steer BOTH players toward their published targets ----
     a.label("act")
-    if TAPP:
-        # DRTAPP frame-start bookkeeping (see the flag block). Only the FIRST hook pass of a game frame ($43 changed)
-        # captures the ROM's held byte and advances the cooldown, so both passes compute the same verdict.
-        a.ins("LDA_zp", 0x43); a.ins16("CMP_abs", TAP_LF); a.br("BEQ", "tap_same")
-        a.ins16("STA_abs", TAP_LF)
-        a.ins("LDA_zp", 0xF8); a.ins16("STA_abs", TAP_H)          # TRUE previous-frame P2 pad (no driver write yet)
-        a.ins16("LDA_abs", TAP_USED); a.br("BEQ", "tap_dec")
-        a.ins("LDA_imm", TAPP - 1); a.ins16("STA_abs", TAP_CD)     # pressed last frame -> P-1 release frames follow
-        a.ins("LDA_imm", 0); a.ins16("STA_abs", TAP_USED); a.jmp("tap_same")
-        a.label("tap_dec")
-        a.ins16("LDA_abs", TAP_CD); a.br("BEQ", "tap_same")
-        a.ins16("DEC_abs", TAP_CD)
-        a.label("tap_same")
-    a.jsr("freeze_pending")
+    _emit_act_prologue(a, "")
     # P2 first (only if we're not currently freezing it)
     a.ins16("LDA_abs", ARMED2)
     if RELATCH:
@@ -3429,6 +3633,17 @@ def build_main(level=11, speed=1):
         a.ins("CMP_imm", 8); a.br("BCC", "nf2_colok")
         a.jmp("nf2_hold")
         a.label("nf2_colok")
+        if LATEGUARD:
+            # DRLATEGUARD: a committed pill adopts a CHANGED live publish only if the move can still be finished.
+            # Refused -> keep TGT_C2/TGT_O2 (the target the capsule is already executing) and steer it.
+            # `lg_live`: NMI-census cut point (tools/nmi126/census.py prespipe_scenarios): unreachable on a hook that
+            # runs a non-committing DRPRESPIPE phase, because a phase only runs with ARMED2 == 0.
+            a.label("lg_live")
+            a.ins16("STA_abs", LG_C)
+            a.ins16("LDA_abs", 0x616C); a.jsr("lg_map"); a.ins16("STA_abs", LG_O)
+            a.jsr("lg_gate"); a.br("BCS", "lg_nf2_ok"); a.jmp("act_p2")
+            a.label("lg_nf2_ok")
+            a.ins16("LDA_abs", LG_C)
         a.ins16("STA_abs", TGT_C2)                               # column: always refine (anytime)
         if ROTFIX:
             # FEASIBILITY-GATED retarget: refine the ORIENT only while pre-phase (orient not yet
@@ -3597,6 +3812,8 @@ def build_main(level=11, speed=1):
         a.jmp("act_p1")                                              # but NO pin -- capsule falls
         a.label("p2_commit")
         a.ins("LDA_imm", 1); a.ins16("STA_abs", ROT_DONE2)           # orient LOCKED -> begin descent
+        if LATEGUARD:
+            a.ins16("STA_abs", LG_CMT2)                              # A==1: committed at least once this pill
     else:
         a.ins16("LDA_abs", 0x03A5); a.ins16("CMP_abs", TGT_O2); a.br("BEQ", "mv_p2")
         a.ins("LDA_imm", 0); a.ins16("STA_abs", GRAV_P2)
