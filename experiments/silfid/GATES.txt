@@ -1,0 +1,131 @@
+# silfid gates (2026-10-06T11:14Z, 112bc4d2 + working tree)
+
+## 1. negative controls + candidates (tools/silfid/build_carts.sh)
+IDENTITY ctl_D.nes == dbbb5007: PASS
+IDENTITY ctl_D_explicit.nes == dbbb5007: PASS
+IDENTITY ctl_A.nes == b1b57638: PASS
+IDENTITY ctl_DP.nes == 5b3d8183: PASS
+IDENTITY ctl_DP_explicit.nes == 5b3d8183: PASS
+IDENTITY ctl_AP.nes == 5a1695da: PASS
+IDENTITY ctl_AP_explicit.nes == 5a1695da: PASS
+IDENTITY ctl_cvc_A.nes == 821cafdb: PASS
+IDENTITY ctl_cvc_A_explicit.nes == 821cafdb: PASS
+BUILT 90b442c7f39d7d7cc1ff7b9f8e17a109  couch_D_sz.nes
+BUILT 607e819cdd8d49707edacd5abaa76bb2  couch_DP_sz.nes
+BUILT f954774d40b8dea900bae0ac7b0e8d70  couch_AP_sz.nes
+NEGATIVE CONTROLS: ALL PASS
+
+## 2. tools/gate/run_cart_gates.sh (gravity-fidelity runs every ARMS entry incl. the new _sz arms; + test_seedzero)
+cart hazard gates  py=/home/struktured/projects/dr-mario-mods/.venv/bin/python  base=7d307c3051ebc0f8a10e259e3c270acb
+----------------------------------------------------------------------
+test_rtivec              PASS   test_rtivec: ALL PASS (defect reproduced, fix holds, 4/4 mutants killed)
+test_mmc1rst             PASS   test_mmc1rst: ALL PASS (defect reproduced, fix holds, 3/3 mutants killed)
+test_rtivec_aclobber     PASS   PASS: defect reproduced on the shipped cart AND absent on v6e (both directions)
+test_prg_ram_map         PASS   ALL PASS: the deriver fails on injected faults and passes on the real tree
+test_combo_cart          PASS   test_combo_cart: ALL PASS
+test_lateguard_census_cut PASS   GATE_LGCUT PASS
+test_gravity_fidelity    PASS   GRAVITY-FIDELITY GATE: ALL PASS
+test_seedzero            PASS   SEEDZERO GATE: ALL PASS
+----------------------------------------------------------------------
+cart hazard gates: ALL PASS
+
+## 3. tests/test_gravity_fidelity.py, the _sz arms + their base arms, seeds 5/11/23, 6000 frames
+seed 5
+couch_fair_D_lgp_row2    expect=pass        PASS                               pills=156 uploads_ok=57 rounds=13 garbage=17 stale_edges=20 goes=64 dead_pill_uploads=2 no_settle_upload=95 stores_changing_world={}
+couch_fair_A_lgp_row2    expect=pass        PASS                               pills=156 uploads_ok=141 rounds=15 garbage=13 stale_edges=48 goes=148 dead_pill_uploads=0 no_settle_upload=6 stores_changing_world={}
+couch_fair_D_lgp_row2_sz expect=pass        PASS                               pills=156 uploads_ok=57 rounds=13 garbage=17 stale_edges=20 goes=64 dead_pill_uploads=2 no_settle_upload=95 stores_changing_world={}
+couch_fair_A_lgp_row2_sz expect=pass        PASS                               pills=156 uploads_ok=141 rounds=15 garbage=13 stale_edges=48 goes=148 dead_pill_uploads=0 no_settle_upload=6 stores_changing_world={}
+couch_464a4b75           expect=fail        KILLED (pin detected)              pills=118 uploads_ok=59 rounds=10 garbage=17 stale_edges=25 goes=65 dead_pill_uploads=1 no_settle_upload=53 stores_changing_world={'SPEED COUNTER $0392': 525} | 
+GRAVITY-FIDELITY GATE: ALL PASS
+seed 11
+couch_fair_D_lgp_row2    expect=pass        PASS                               pills=100 uploads_ok=63 rounds=10 garbage=13 stale_edges=16 goes=68 dead_pill_uploads=1 no_settle_upload=31 stores_changing_world={}
+couch_fair_A_lgp_row2    expect=pass        PASS                               pills=146 uploads_ok=134 rounds=11 garbage=14 stale_edges=40 goes=144 dead_pill_uploads=0 no_settle_upload=9 stores_changing_world={}
+couch_fair_D_lgp_row2_sz expect=pass        PASS                               pills=100 uploads_ok=63 rounds=10 garbage=13 stale_edges=16 goes=68 dead_pill_uploads=1 no_settle_upload=31 stores_changing_world={}
+couch_fair_A_lgp_row2_sz expect=pass        PASS                               pills=146 uploads_ok=134 rounds=11 garbage=14 stale_edges=40 goes=144 dead_pill_uploads=0 no_settle_upload=9 stores_changing_world={}
+couch_464a4b75           expect=fail        KILLED (pin detected)              pills=121 uploads_ok=65 rounds=12 garbage=13 stale_edges=17 goes=69 dead_pill_uploads=0 no_settle_upload=48 stores_changing_world={'SPEED COUNTER $0392': 530} | 
+GRAVITY-FIDELITY GATE: ALL PASS
+seed 23
+couch_fair_D_lgp_row2    expect=pass        PASS                               pills=146 uploads_ok=77 rounds=13 garbage=14 stale_edges=23 goes=89 dead_pill_uploads=4 no_settle_upload=60 stores_changing_world={}
+couch_fair_A_lgp_row2    expect=pass        PASS                               pills=142 uploads_ok=129 rounds=13 garbage=18 stale_edges=43 goes=138 dead_pill_uploads=0 no_settle_upload=7 stores_changing_world={}
+couch_fair_D_lgp_row2_sz expect=pass        PASS                               pills=146 uploads_ok=77 rounds=13 garbage=14 stale_edges=23 goes=89 dead_pill_uploads=4 no_settle_upload=60 stores_changing_world={}
+couch_fair_A_lgp_row2_sz expect=pass        PASS                               pills=142 uploads_ok=129 rounds=13 garbage=18 stale_edges=43 goes=138 dead_pill_uploads=0 no_settle_upload=7 stores_changing_world={}
+couch_464a4b75           expect=fail        KILLED (pin detected)              pills=126 uploads_ok=58 rounds=10 garbage=17 stale_edges=21 goes=67 dead_pill_uploads=1 no_settle_upload=64 stores_changing_world={'SPEED COUNTER $0392': 553} | 
+GRAVITY-FIDELITY GATE: ALL PASS
+
+## 4. tests/test_seedzero.py (DEFECT gate, two-sided), counts summed over seeds 5/11/23, 3000 frames each
+fair_D             expect=defect DEFECT REPRODUCED (93/93 GOs upload a seed)  seeds 5,11,23 x 3000 f: GOs 93 seeded 93 pills 233 | e.g. {'cA': '90', 'cB': 'F2', 'seed2': 'F9'}
+fairplus_DP        expect=defect DEFECT REPRODUCED (90/90 GOs upload a seed)  seeds 5,11,23 x 3000 f: GOs 90 seeded 90 pills 206 | e.g. {'cA': '90', 'cB': 'F2', 'seed2': 'F9'}
+fair2plus_AP       expect=defect DEFECT REPRODUCED (222/222 GOs upload a seed) seeds 5,11,23 x 3000 f: GOs 222 seeded 222 pills 228 | e.g. {'cA': '90', 'cB': 'F2', 'seed2': 'F9'}
+fair_D_seed0       expect=defect DEFECT REPRODUCED (93/93 GOs upload a seed)  seeds 5,11,23 x 3000 f: GOs 93 seeded 93 pills 233 | e.g. {'cA': '30', 'cB': '12', 'seed2': '13'}
+fair_D_sz          expect=pass   PASS                                         seeds 5,11,23 x 3000 f: GOs 93 seeded 0 pills 233
+fairplus_DP_sz     expect=pass   PASS                                         seeds 5,11,23 x 3000 f: GOs 90 seeded 0 pills 206
+fair2plus_AP_sz    expect=pass   PASS                                         seeds 5,11,23 x 3000 f: GOs 222 seeded 0 pills 228
+fair_D_seed0_sz    expect=pass   PASS                                         seeds 5,11,23 x 3000 f: GOs 93 seeded 0 pills 233
+SEEDZERO GATE: ALL PASS
+
+## 5. tests/test_lateguard_census_cut.py LGCUT_OVERLAY=DRLATEGUARD=1,DRSTUDYEND=1,DRSETTLE=3,DRSETTLEPIN=0,DRPROPHFIRST=1,DRABORTSTALE=1,DRLGPRESTART=1,DRDISTROW=2,DRSEEDZERO=1
+  [PASS] PC: lg_gate witness alive (aborted/idle hooks): lg_gate entered in 1376 hooks, 1080 of them aborted phase hooks
+  [PASS] PC: spawn-upload witness alive: h2_cp in 1624 hooks
+  [PASS] PC: committing phase reaches lg_gate (why census keeps it): pp_m4 hooks with lg_gate: 36
+  [PASS] measured py65 cycles <= census bound of the hook's class: 0 over []
+  [PASS] aborted-hook bound dominated by every phase scenario: pp_abort 10531 vs phase bounds {'pp_ph1': 12599, 'pp_ph2': 12575, 'pp_ph3': 12580, 'pp_ph4': 13069}
+  [PASS] lg_row bound covers the IR's ROWCAP: IR ROWCAP CMP#2 LDA#2 vs LOOP_BOUNDS lg_row 2
+== mutants (each must be KILLED)
+  [PASS] M_armed KILLED (pp_disp ARMED2 abort dead): pp_ph1 hook executed census-cut label lg_live @ {'pp': 1, 'armed': 1, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+  [PASS] M_pend KILLED (pp_disp PEND2 abort dead): pp_ph1 hook executed census-cut label h2_cp @ {'pp': 1, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 1, 'done': 0, 'orient': 255}
+  [PASS] M_write KILLED (non-committing phase 1 writes ARMED2 := 1): pp_ph1 hook executed census-cut label lg_live @ {'pp': 1, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+  [PASS] M_early KILLED (non-last match phase commits (GO, ARMED2 := 1)): pp_m3 hook executed census-cut label lg_live @ {'pp': 3, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+== mutant M_rowcap: python -O strips the emitter's ROWCAP assert
+  [PASS] M_rowcap KILLED (IR ROWCAP > census lg_row): IR ROWCAP 3/3 vs lg_row 2
+GATE_LGCUT PASS
+
+## 5. tests/test_lateguard_census_cut.py LGCUT_OVERLAY=DRLATEGUARD=1,DRSTUDYEND=1,DRSETTLE=3,DRSETTLEPIN=0,DRPROPHFIRST=1,DRLGPRESTART=1,DRDISTROW=2,DRSEEDZERO=1
+  [PASS] PC: lg_gate witness alive (aborted/idle hooks): lg_gate entered in 1556 hooks, 1224 of them aborted phase hooks
+  [PASS] PC: spawn-upload witness alive: h2_cp in 1624 hooks
+  [PASS] PC: committing phase reaches lg_gate (why census keeps it): pp_m4 hooks with lg_gate: 36
+  [PASS] measured py65 cycles <= census bound of the hook's class: 0 over []
+  [PASS] aborted-hook bound dominated by every phase scenario: pp_abort 10503 vs phase bounds {'pp_ph1': 12563, 'pp_ph2': 12539, 'pp_ph3': 12544, 'pp_ph4': 13041}
+  [PASS] lg_row bound covers the IR's ROWCAP: IR ROWCAP CMP#2 LDA#2 vs LOOP_BOUNDS lg_row 2
+== mutants (each must be KILLED)
+  [PASS] M_armed KILLED (pp_disp ARMED2 abort dead): pp_ph1 hook executed census-cut label lg_live @ {'pp': 1, 'armed': 1, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+  [PASS] M_pend KILLED (pp_disp PEND2 abort dead): pp_ph1 hook executed census-cut label h2_cp @ {'pp': 1, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 1, 'done': 0, 'orient': 255}
+  [PASS] M_write KILLED (non-committing phase 1 writes ARMED2 := 1): pp_ph1 hook executed census-cut label lg_live @ {'pp': 1, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+  [PASS] M_early KILLED (non-last match phase commits (GO, ARMED2 := 1)): pp_m3 hook executed census-cut label lg_live @ {'pp': 3, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+== mutant M_rowcap: python -O strips the emitter's ROWCAP assert
+  [PASS] M_rowcap KILLED (IR ROWCAP > census lg_row): IR ROWCAP 3/3 vs lg_row 2
+GATE_LGCUT PASS
+
+## 6. static NMI census (tools/nmi126/census.py on capture_ir.py IR); budget 29780
+-- couch_DP
+  ALL_PATHS        hook worst =  16609 cyc
+  WORST ADMISSIBLE FRAME = 27929 of 29780 (93.8%), margin 1851 cyc [pp_ph3 + pp_ph4]
+  routines (ALL_PATHS):
+-- couch_AP
+  ALL_PATHS        hook worst =  16645 cyc
+  WORST ADMISSIBLE FRAME = 28001 of 29780 (94.0%), margin 1779 cyc [pp_ph3 + pp_ph4]
+  routines (ALL_PATHS):
+-- couch_DP_sz
+  ALL_PATHS        hook worst =  16611 cyc
+  WORST ADMISSIBLE FRAME = 27925 of 29780 (93.8%), margin 1855 cyc [pp_ph3 + pp_ph4]
+  routines (ALL_PATHS):
+-- couch_AP_sz
+  ALL_PATHS        hook worst =  16639 cyc
+  WORST ADMISSIBLE FRAME = 27989 of 29780 (94.0%), margin 1791 cyc [pp_ph3 + pp_ph4]
+  routines (ALL_PATHS):
+
+## 7. TAP interface gate (experiments/reach/gate_tap_interface.py, P=2, 40000 frames, seed 3)
+== couch DRLATEGUARD=1 DRSTUDYEND=1 DRSETTLE=3 DRSETTLEPIN=0 DRPROPHFIRST=1 DRABORTSTALE=1 DRLGPRESTART=1 DRDISTROW=2 DRSEEDZERO=1
+GATE_TAP_INTERFACE couch P=2 PASS
+== couch DRLATEGUARD=1 DRSTUDYEND=1 DRSETTLE=3 DRSETTLEPIN=0 DRPROPHFIRST=1 DRLGPRESTART=1 DRDISTROW=2 DRSEEDZERO=1
+GATE_TAP_INTERFACE couch P=2 PASS
+
+## 9. firmware: DRCOPRO_TUCKV3_SEEDMASK (fpga/copro/tuck_v3.py) -- negative control + build, then the defect gate
+DRCHAIN=540 -> tmp/silfid_fw_unset.hex md5=1488e1583ab7ad8b2011d4c136926faf search=2857B builder=/home/struktured/projects/dr-mario-silfid-wt/fpga/copro/build_copro_d3.py
+DRCHAIN=540 -> tmp/silfid_fw_0.hex md5=1488e1583ab7ad8b2011d4c136926faf search=2857B builder=/home/struktured/projects/dr-mario-silfid-wt/fpga/copro/build_copro_d3.py
+DRCHAIN=540 -> tmp/silfid_fw_1.hex md5=4c005042928ad9474ddaa52961659660 search=2857B builder=/home/struktured/projects/dr-mario-silfid-wt/fpga/copro/build_copro_d3.py
+(want: unset and 0 -> md5 1488e1583ab7ad8b2011d4c136926faf = the shipped antibody-dist60 fw; 1 -> 4c005042928ad9474ddaa52961659660)
+SEEDMASK=0 (shipped)   DEFECT REPRODUCED (40/40 seeded cells dirty) seed-0 dirty 0 | e.g. {'seed': '13', 'orient': 0, 'cells': ['72', '51']}
+SEEDMASK=1             PASS                                         seed-0 dirty 0
+TUCK SEEDMASK GATE: ALL PASS
+
+GATES_FINAL DONE

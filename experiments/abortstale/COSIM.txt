@@ -1,0 +1,77 @@
+# Chained-pipeline co-sim results (experiments/abortstale, 2026-10-04T05:01Z)
+# RTL NES_MiSTer-dist 3b164c7 (-DDRHSV -DDRLEV_SQREG -DDRLEV_WRREG -DDRLEV_VNPF -DDRDIST), fw 1488e158 / a1ef31c8 (md5-verified),
+# sim_pubchain.cpp (= tools/lateflip/sim_pubtrace.cpp's bus + poll, one process per chain). Board bytes 18 NES cycles apart
+# (the cart's ~19-cycle upload loop) in every chained run, so a preempted search keeps running during the upload.
+# Classes (chain_cosim.py classify): exact = same valid publishes, clocks, DONE clock, final, tuck; mesen-same = same values
+# and every event served on the same lateflip_probe frame; timing = same values, some event on another frame; DECISION =
+# a different publish sequence / final / tuck.
+
+## 1. fresh references (one process per decision = the banked method) vs the banked timelines
+G2_1488e158.jsonl: 116/116 reproduce the banked timeline
+G2_a1ef31c8.jsonl: 116/116 reproduce the banked timeline
+G3_1488e158.jsonl: 86/86 reproduce the banked timeline
+G3_a1ef31c8.jsonl: 86/86 reproduce the banked timeline
+G4_1488e158.jsonl: 133/133 reproduce the banked timeline
+G4_a1ef31c8.jsonl: 133/133 reproduce the banked timeline
+
+## 2. WAIT mode = today's driver (cart D): whole game in ONE copro process, GO on the D-cart Mesen schedule, the upload
+##    waits for the previous DONE. Tests the banked timelines' idle-copro assumption for the D arms.
+G2_1488e158_wait.jsonl: n=116 DONE 116 ABORT 0 | exact 116 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+G2_a1ef31c8_wait.jsonl: n=116 DONE 116 ABORT 0 | exact 116 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+G3_1488e158_wait.jsonl: n=86 DONE 86 ABORT 0 | exact 86 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+G3_a1ef31c8_wait.jsonl: n=86 DONE 86 ABORT 0 | exact 86 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+G4_1488e158_wait.jsonl: n=133 DONE 133 ABORT 0 | exact 133 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+G4_a1ef31c8_wait.jsonl: n=133 DONE 133 ABORT 0 | exact 133 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+
+## 3. ABORT mode (D + DRABORTSTALE), Mesen GO schedule of the abort-cart runs
+### 3a. whole game, one process: G2 a1ef31c8 (18 aborts)
+G2_a1ef31c8_abort.jsonl: n=116 DONE 100 ABORT 16 | exact 115 mesen-same 1 timing 0 DECISION 0 | max |dclk| 16320 (0.0114 f)
+  mesen-same: [82]
+### 3b. windows: every aborted-into pill, from the pill before through 2 pills after (chain_cosim.py window), all games
+window: 6 aborted-into pills, 4 windows, 20 records -> /home/struktured/projects/dr_mario_rl/tmp/abort_stale/cosim/win/G2_1488e158.jsonl
+G2_1488e158.jsonl: n=20 DONE 17 ABORT 3 | exact 19 mesen-same 0 timing 1 DECISION 0 | max |dclk| 1406784 (0.9841 f)
+  timing: [68]
+window: 18 aborted-into pills, 8 windows, 55 records -> /home/struktured/projects/dr_mario_rl/tmp/abort_stale/cosim/win/G2_a1ef31c8.jsonl
+G2_a1ef31c8.jsonl: n=55 DONE 39 ABORT 16 | exact 54 mesen-same 1 timing 0 DECISION 0 | max |dclk| 16320 (0.0114 f)
+  mesen-same: [82]
+window: 6 aborted-into pills, 5 windows, 22 records -> /home/struktured/projects/dr_mario_rl/tmp/abort_stale/cosim/win/G3_1488e158.jsonl
+G3_1488e158.jsonl: n=22 DONE 18 ABORT 4 | exact 20 mesen-same 2 timing 0 DECISION 0 | max |dclk| 3264 (0.0023 f)
+  mesen-same: [9, 18]
+window: 9 aborted-into pills, 6 windows, 31 records -> /home/struktured/projects/dr_mario_rl/tmp/abort_stale/cosim/win/G3_a1ef31c8.jsonl
+G3_a1ef31c8.jsonl: n=31 DONE 24 ABORT 7 | exact 30 mesen-same 1 timing 0 DECISION 0 | max |dclk| 3264 (0.0023 f)
+  mesen-same: [31]
+window: 5 aborted-into pills, 3 windows, 17 records -> /home/struktured/projects/dr_mario_rl/tmp/abort_stale/cosim/win/G4_1488e158.jsonl
+G4_1488e158.jsonl: n=17 DONE 14 ABORT 3 | exact 16 mesen-same 1 timing 0 DECISION 0 | max |dclk| 3264 (0.0023 f)
+  mesen-same: [14]
+window: 7 aborted-into pills, 2 windows, 21 records -> /home/struktured/projects/dr_mario_rl/tmp/abort_stale/cosim/win/G4_a1ef31c8.jsonl
+G4_a1ef31c8.jsonl: n=21 DONE 17 ABORT 4 | exact 21 mesen-same 0 timing 0 DECISION 0 | max |dclk| 0 (0.0000 f)
+### 3c. window vs whole-game run (G2 a1ef31c8): all valid publishes, DONE clocks, finals, tucks identical on the 55
+###     windowed records; 5 lead pills differ only in the pre-$FF stale mailbox entry (the previous search's column).
+
+## 4. closed loop: case files rebuilt from the abort-mode chained timelines (regen_cases.py), Mesen re-run where needed
+G3 A1488, G3 AV1, G4 A1488, G4 AV1: rebuilt case files byte-identical to the banked ones -> fixed point.
+G2 AV1: rebuilt case file differs below lateflip_probe's frame resolution (p82 +16k clocks) -> Mesen re-run identical.
+G2 A1488: p68 (aborted-into) serves its 2nd publish 1 frame later (+1,406,784 clocks) -> Mesen re-run (G2_A1488_it1).
+SUMMARY tag=G2_A1488_it1 frames=10415 goes=120 dones=114 cases=116
+SUMMARY tag=G2_AV1_it1 frames=9823 goes=119 dones=101 cases=116
+Mesen it1 vs it0: 0/116 landings or landing frames differ, 0 GO-schedule differences, both fw -> fixed point.
+
+## 5. adversarial pairs: every consecutive (A, B) in G2, A preempted at 50% of its DONE, B to DONE, vs B fresh
+## (the 3 DECISION pairs on 1488: B's FINAL answer and tuck are unchanged; its intermediate live publishes differ --
+##  p28 5 publishes vs 2, DONE -13,056 clocks; p52 one extra early publish; p63 one extra publish. V1: 0 of 115.)
+G2_1488e158.jsonl: n=115 DONE 115 ABORT 0 | exact 104 mesen-same 8 timing 0 DECISION 3 | max |dclk| 3264 (0.0023 f)
+  DECISION: [(27, 28, 0.5), (51, 52, 0.5), (62, 63, 0.5)]
+  mesen-same: [(3, 4, 0.5), (19, 20, 0.5), (20, 21, 0.5), (23, 24, 0.5), (49, 50, 0.5), (68, 69, 0.5), (81, 82, 0.5), (102, 103, 0.5)]
+pairs: 115 -> /home/struktured/projects/dr_mario_rl/tmp/abort_stale/cosim/pairs/G2_a1ef31c8.jsonl
+G2_a1ef31c8.jsonl: n=115 DONE 115 ABORT 0 | exact 103 mesen-same 12 timing 0 DECISION 0 | max |dclk| 6528 (0.0046 f)
+  mesen-same: [(15, 16, 0.5), (26, 27, 0.5), (28, 29, 0.5), (35, 36, 0.5), (36, 37, 0.5), (41, 42, 0.5), (47, 48, 0.5), (53, 54, 0.5), (67, 68, 0.5), (71, 72, 0.5), (88, 89, 0.5), (95, 96, 0.5)]
+
+## 6. why (sim_ramdiag.cpp + dump_lev.inc, --public-flat-rw): G2 1488 p27 preempted at 50% -> p28
+- the upload area ($0500-$057F, $6124-$6127) is intact at GO; the firmware has no absolute store into it (byte scan).
+- p28's first LeafEval CMD 2 (slot 1 -> CUR) is identical; at its first CMD 6 (BASE) CUR cells+links and slots 0/1 are
+  IDENTICAL to the fresh run, yet the BASE takes 241 clocks instead of 1,590 and latches base_holes 0x17 instead of 0x16
+  (= the stale holes_p of the preempted search); its virus walk ends at vo=0x3e instead of 0x7f. The copro reset clears
+  LeafEval's st/done/modes only; ~110 other LeafEval registers (pipeline *_p, vn_hit, vo, v_r/v_c/v_col, run/span, ...)
+  carry over. After a COMPLETED search they are left in a state the next BASE tolerates (wait mode: 670/670 exact);
+  after a reset in the middle of a LeafEval command they are not. Same signature on a1ef31c8 (p88 -> p89: BASE 449 vs
+  1,018 clocks; publishes 1 poll early, final and DONE unchanged).
