@@ -163,3 +163,54 @@ FAIR sim brain is fw 1488 without ROOTORD). We therefore report a **BRACKET**:
 ## 7. Null-outcome audit
 There is no PASS/FAIL. Under the null (an arm ≡ FAIR), "HELPS" or "HURTS" fires with probability ≤ 5% / 8 per arm. A
 null-predicted outcome (a CI straddling 0) is reported as n.s., never as evidence of absence.
+
+## ADDENDUM A (2026-10-06, the coordinator's request; committed while the main farm runs, BEFORE any main row is read)
+**STALL CALIBRATION, sim vs couch.** A DECLARED, DESCRIPTIVE secondary (S10). It is NOT part of any bar. At this
+commit `analyze_steer12.py` has never run on main rows; only row COUNTS were read (farm progress).
+
+**Question:** does the sim under-produce the AI's endgame stalls?
+- All 3 of dr. lulu's 10/05 wins coincided with AI endgame stalls (201 s at 7 viruses, 59 s at 16, 36 s at 13).
+- If the sim under-produces stalls, every tempo-vs-stall trade-off measured so far (A16, edge-reach) is biased toward
+  tempo.
+
+**Stall definition, IDENTICAL on couch and sim** (`stuck_probe.StuckProbe` board-level "act" stall):
+- A maximal run of ≥ 10 consecutive AI decisions on which NO remaining virus can be cleared by any legal placement of
+  the ACTUAL current pill (`stuck_probe.cleared_by(board, cur)` is empty).
+- **v0** = viruses on the board at the run's first decision.
+- **Duration** = time from the first stalled decision to the decision that ends the run. Couch: real seconds via spawn
+  times. Sim: the couch11 clock.
+- A run still open at the game end is counted with its observed length (censored).
+
+**Per-game metrics:**
+- for each v ∈ {16, 12, 8}: stall-pills of runs with v0 ≤ v, and the longest such run in seconds;
+- whether the game has any stall ≥ 30 s (any v0).
+
+**COUCH** (`steer12_stallcal.py`): every tracked AI game.
+- Sets:
+  - 10/05: 9 games vs dr. lulu;
+  - 10/04: 10 games vs the owner, FAIR and FAIR2.
+- Boards come from the forensics' own loaders (S_k + the current capsule per AI pill).
+- The 10/04 boards are rebuilt from the scans; their pills are checked against `cases_fair_20261004_ai_pills`.
+- Game-bootstrap CIs.
+
+**SIM comparators** (couch11):
+
+| couch set | sim comparator |
+|---|---|
+| 10/05 | FAIR's LULU-race rows (steer11 pilot, 1,200), truncated at dr. lulu's finish time T_L at her measured M 167.5 (`vs_race.evaluate`) |
+| 10/04 | FAIR's owner-race rows (pilot rc, 600), truncated at the owner's T_L at M 239.5 |
+
+- Truncation applies because a couch game ENDS when the human wins, so stalls after that are unobservable.
+- A run straddling T_L is cut pro rata (len × (T_L − t0)/dur); runs starting after T_L are dropped.
+- Untruncated values are printed beside the truncated ones.
+
+**EXECUTION SPLIT:** the same metrics on `ex_perfect`, FAIR, `ex_q02`, `ex_q03` and `ex_q05` LULU rows, truncated
+the same way. Do random misses bring the sim's stall rates up to the couch's?
+
+**ATTRIBUTION** (descriptive, no test):
+1. **Execution misses:** the q-arm curve above.
+2. **Garbage-built walls:** garbage received per minute, couch vs sim; the sim's stall metrics in the top vs bottom
+   tercile of received garbage.
+3. **What remains:** whatever is unexplained by (1)–(2) is attributed to unmodelled behaviour, and NAMED as such. The
+   prior evidence on the couch boards (STEER10 mechanism check: own placements built 3 of 4 walls) is quoted, not
+   re-derived.
