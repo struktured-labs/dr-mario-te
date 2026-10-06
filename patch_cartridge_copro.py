@@ -710,7 +710,14 @@ LEDGECOMMIT = _os.environ.get("DRLEDGECOMMIT", "0") == "1"
 # in the CURRENT row before the next gravity tick, which is when a ledge capsule locks. Credit them: with no empty row
 # below, budget = min(7, (thr - $0392) / P) columns (thr = speedCounterTable[base[$038B] + $038A]; checkYMove runs
 # before checkXMove, so a press must land strictly before the tick frame: thr - counter frames, one press per P).
-DISTROW = _os.environ.get("DRDISTROW", "0") == "1"
+DISTROW = _os.environ.get("DRDISTROW", "0") in ("1", "2")
+# DRDISTROW=2 (execfid lane, 2026-10-04): ALL-OR-NOTHING row credit. The DRDISTROW=1 budget lets a capsule start a
+# PARTIAL move toward a target it cannot finish before the tick (10/03 G2 p101 on the fair D cart: a late tuck answer 5
+# columns away, 1 press of frames left -> lands one column over, a hybrid; plain DISTGATE parks it on the earlier
+# answer's column). With =2 the current-row credit applies only if it covers the WHOLE distance |target - X|; otherwise the
+# budget stays DIST_TABLE[0] = 0 exactly as without the flag. The p107-type ledge drop (answer reachable in the frames
+# left, slammed at the clamped column) is fixed the same way as =1. =1 stays byte-identical to the settle lane's B.
+DISTROW_FULL = _os.environ.get("DRDISTROW", "0") == "2"
 # DRPROPHFIRST=1 (default 0 -> byte-identical; needs DRPROPH + DRROTFIX): on a PROPH-armed pill that is still on its
 # spawn row ($0386 == $0F), PROPH's lateral escape pulse takes priority over the rotation pre-phase until the commit
 # window opens (WDOG2 >= MIN_THINK, DONE, or > 256 hooks). This is the ORDER the shipped carts had -- PROPH's presses
@@ -1374,6 +1381,20 @@ HOLD_BUF1, HOLD_BUF2 = 0x6300, 0x6400      # 256B mirrors of $0400 (P1) / $0500 
 #   but it would double the emitted routine for a side no cart searches with.
 PRESTART = _os.environ.get("DRPRESTART", "0") == "1"
 PRE_ATK2 = 0x0318                       # P2's INCOMING volley = p1_attackSize (see the derivation above)
+# DRLGPRESTART=1 (default 0 -> byte-identical; needs DRLATEGUARD + DRPRESTART): DRLATEGUARD's gate never applies to a
+# garbage-window PRESTART search (PRE_ACT2 != 0). Defect (execution-fidelity lane, 2026-10-04 couch, both fair builds):
+# LG_CMT2/LG_LOCK2 are per-pill and are reset only at the NEXT spawn edge, but a prestart searches the NEXT capsule
+# during the garbage window, i.e. while those latches still describe the capsule that just LOCKED. lg_gate then prices
+# the prestart's answer against the locked capsule (its own cells now fill the "current row"), finds it unfinishable,
+# FREEZES (LG_LOCK2) and drops the answer at DONE; the spawn edge is prestart-owned (no PEND2, no new search), so the
+# new capsule executes the PREVIOUS pill's target with DONE semantics (lateral at ~f4, slam at ~f5). Silicon 10/04: 28
+# of 72 pills that followed a garbage window (FAIR 17/40, FAIR2 11/32) vs 0/19 on 10/03's LATEGUARD-less cart;
+# reproduced in Mesen (chained replay with the volley delivered through the ROM's own $0318/$0329 path). Fix: a prestart
+# answer is for a capsule that has not committed anything, so it is adopted as before DRLATEGUARD existed (the 10/03
+# behaviour). Pure decision change: no pad, timing or gravity effect.
+LGPRESTART = _os.environ.get("DRLGPRESTART", "0") == "1"
+if LGPRESTART:
+    assert LATEGUARD and PRESTART, "DRLGPRESTART exempts DRPRESTART searches from DRLATEGUARD's gate: needs both"
 # PRG-RAM: $6199-$61AF is free (past DRHOLDBOARD's HOLD_CNT hi at $6198, below the
 # DRTRACE/DRPROBE ring at $6200); PRE_BUF sits at $6500, clear of HOLD_BUF1/2 ($6300/$6400).
 PRE_LAST2 = 0x6199                      # last-seen $0318, latched every play hook (release edge detect)
@@ -3038,6 +3059,11 @@ def build_main(level=11, speed=1):
         # lg_gate: in LG_C (column 0..7), LG_O (game orient). out: carry SET = adopt it, CLEAR = keep the current
         # target (and the pill is frozen). Clobbers A/X/Y.
         a.label("lg_gate")
+        if LGPRESTART:
+            # DRLGPRESTART: a garbage-window prestart owns the NEXT capsule; the latches still describe the locked one.
+            a.ins16("LDA_abs", PRE_ACT2); a.br("BEQ", "lg_g0")
+            a.ins("SEC"); a.ins("RTS")                              # prestart answer: adopt (pre-DRLATEGUARD behaviour)
+            a.label("lg_g0")
         a.ins16("LDA_abs", LG_CMT2); a.br("BNE", "lg_g1")
         a.ins("SEC"); a.ins("RTS")                                  # not committed yet: retarget freely (today)
         a.label("lg_g1")
@@ -4022,6 +4048,15 @@ def build_main(level=11, speed=1):
                 a.ins("LSR_A")                                               # / P (P = 2)
                 a.ins("CMP_imm", 8); a.br("BCC", "dgr_cap"); a.ins("LDA_imm", 7)
                 a.label("dgr_cap")
+                if DISTROW_FULL:
+                    # DRDISTROW=2: credit the row only if it covers the whole distance (DG_N is dead after the scan)
+                    a.ins16("STA_abs", DG_N)                                 # DG_N = row budget (columns)
+                    a.ins16("LDA_abs", _EC); a.ins("SEC"); a.ins16("SBC_abs", 0x0385); a.br("BCS", "dgr_dpos")
+                    a.ins("EOR_imm", 0xFF); a.ins("CLC"); a.ins("ADC_imm", 1)   # A = |target - X|
+                    a.label("dgr_dpos")
+                    a.ins16("CMP_abs", DG_N); a.br("BEQ", "dgr_full"); a.br("BCS", "dgr_done")  # short -> keep 0
+                    a.label("dgr_full")
+                    a.ins16("LDA_abs", DG_N)
                 a.ins16("STA_abs", DG_BUDGET)
                 a.label("dgr_done")
         #   direction: _EC (target) vs PX2 -- unsigned CMP is safe, both are 0..7
@@ -4338,6 +4373,8 @@ _GATED_FLAGS = (
     ("DRLEDGECOMMIT", "DRPROPH",   "0", "0", "LEDGECOMMIT keys on PROPH_DIR (asserted at import too)"),
     ("DRDISTROW",     "DRDISTGATE", "0", "0", "DISTROW extends the DISTGATE budget (asserted at import too)"),
     ("DRPROPHFIRST",  "DRPROPH",   "0", "0", "PROPHFIRST keys on PROPH_DIR (asserted at import too)"),
+    ("DRLGPRESTART",  "DRLATEGUARD", "0", "0", "LGPRESTART edits lg_gate (asserted at import too)"),
+    ("DRLGPRESTART",  "DRPRESTART",  "0", "0", "LGPRESTART keys on PRE_ACT2 (asserted at import too)"),
 )
 def _on(env, default):
     v = _os.environ.get(env)
