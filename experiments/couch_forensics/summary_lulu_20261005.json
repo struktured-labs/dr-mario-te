@@ -1,0 +1,8570 @@
+{
+ "results": [
+  {
+   "game": "m1g1",
+   "match": 1,
+   "g": 1,
+   "quick_read": "lulu topped out 06/04",
+   "t_round": 15.95,
+   "t0_first_spawn": 18.25,
+   "t_end": 364.75,
+   "dur_s": 346.5,
+   "hud_final_lulu_ai": [
+    6,
+    4
+   ],
+   "board_final_lulu_ai": [
+    6,
+    4
+   ],
+   "winner": "AI",
+   "how": "lulu topped out",
+   "plug_lulu": [
+    [
+     0,
+     3
+    ],
+    [
+     0,
+     4
+    ]
+   ],
+   "plug_ai": [],
+   "pills_lulu": 151,
+   "pills_ai": 212
+  },
+  {
+   "game": "m1g2",
+   "match": 1,
+   "g": 2,
+   "quick_read": "lulu cleared 00/07",
+   "t_round": 367.6667,
+   "t0_first_spawn": 369.95,
+   "t_end": 759.3167,
+   "dur_s": 389.4,
+   "hud_final_lulu_ai": [
+    0,
+    7
+   ],
+   "board_final_lulu_ai": [
+    2,
+    7
+   ],
+   "winner": "lulu",
+   "how": "cleared",
+   "plug_lulu": [],
+   "plug_ai": [],
+   "pills_lulu": 160,
+   "pills_ai": 217
+  },
+  {
+   "game": "m1g3",
+   "match": 1,
+   "g": 3,
+   "quick_read": "lulu topped out 25/07",
+   "t_round": 769.2333,
+   "t0_first_spawn": 771.5833,
+   "t_end": 878.0,
+   "dur_s": 106.4,
+   "hud_final_lulu_ai": [
+    25,
+    7
+   ],
+   "board_final_lulu_ai": [
+    25,
+    7
+   ],
+   "winner": "AI",
+   "how": "lulu topped out",
+   "plug_lulu": [
+    [
+     0,
+     4
+    ]
+   ],
+   "plug_ai": [],
+   "pills_lulu": 43,
+   "pills_ai": 62
+  },
+  {
+   "game": "m1g4",
+   "match": 1,
+   "g": 4,
+   "quick_read": "AI tapped out 03/16",
+   "t_round": 880.8833,
+   "t0_first_spawn": 883.1833,
+   "t_end": 1104.8167,
+   "dur_s": 221.6,
+   "hud_final_lulu_ai": [
+    3,
+    16
+   ],
+   "board_final_lulu_ai": [
+    5,
+    16
+   ],
+   "winner": "lulu",
+   "how": "AI topped out",
+   "plug_lulu": [],
+   "plug_ai": [
+    [
+     0,
+     3
+    ]
+   ],
+   "pills_lulu": 100,
+   "pills_ai": 146
+  },
+  {
+   "game": "m1g5",
+   "match": 1,
+   "g": 5,
+   "quick_read": "AI cleared 26/00",
+   "t_round": 1110.5833,
+   "t0_first_spawn": 1112.8833,
+   "t_end": 1296.8333,
+   "dur_s": 184.0,
+   "hud_final_lulu_ai": [
+    26,
+    0
+   ],
+   "board_final_lulu_ai": [
+    26,
+    1
+   ],
+   "winner": "AI",
+   "how": "cleared",
+   "plug_lulu": [],
+   "plug_ai": [],
+   "pills_lulu": 87,
+   "pills_ai": 107
+  },
+  {
+   "game": "m2g1",
+   "match": 2,
+   "g": 1,
+   "quick_read": "lulu topped out 14/01",
+   "t_round": 1302.3167,
+   "t0_first_spawn": 1304.5833,
+   "t_end": 1563.1833,
+   "dur_s": 258.6,
+   "hud_final_lulu_ai": [
+    14,
+    0
+   ],
+   "board_final_lulu_ai": [
+    14,
+    1
+   ],
+   "winner": "AI",
+   "how": "cleared",
+   "plug_lulu": [],
+   "plug_ai": [],
+   "pills_lulu": 113,
+   "pills_ai": 148
+  },
+  {
+   "game": "m2g2",
+   "match": 2,
+   "g": 2,
+   "quick_read": "lulu topped out 06/01",
+   "t_round": 1566.05,
+   "t0_first_spawn": 1568.3333,
+   "t_end": 1800.65,
+   "dur_s": 232.3,
+   "hud_final_lulu_ai": [
+    6,
+    0
+   ],
+   "board_final_lulu_ai": [
+    6,
+    1
+   ],
+   "winner": "AI",
+   "how": "cleared",
+   "plug_lulu": [],
+   "plug_ai": [],
+   "pills_lulu": 91,
+   "pills_ai": 133
+  },
+  {
+   "game": "m2g3",
+   "match": 2,
+   "g": 3,
+   "quick_read": "lulu cleared 00/11",
+   "t_round": 1802.85,
+   "t0_first_spawn": 1805.15,
+   "t_end": 2013.5833,
+   "dur_s": 208.4,
+   "hud_final_lulu_ai": [
+    0,
+    11
+   ],
+   "board_final_lulu_ai": [
+    1,
+    10
+   ],
+   "winner": "lulu",
+   "how": "cleared",
+   "plug_lulu": [],
+   "plug_ai": [],
+   "pills_lulu": 91,
+   "pills_ai": 134
+  },
+  {
+   "game": "m2g4",
+   "match": 2,
+   "g": 4,
+   "quick_read": "AI cleared 14/00",
+   "t_round": 2019.6833,
+   "t0_first_spawn": 2021.9833,
+   "t_end": 2208.05,
+   "dur_s": 186.1,
+   "hud_final_lulu_ai": [
+    14,
+    0
+   ],
+   "board_final_lulu_ai": [
+    14,
+    1
+   ],
+   "winner": "AI",
+   "how": "cleared",
+   "plug_lulu": [],
+   "plug_ai": [],
+   "pills_lulu": 85,
+   "pills_ai": 97
+  }
+ ],
+ "games": [
+  {
+   "game": "m1g1",
+   "match": 1,
+   "g": 1,
+   "winner": "AI",
+   "how": "lulu topped out",
+   "t0": 18.25,
+   "t_end": 364.75,
+   "dur_s": 346.5,
+   "final_lulu_ai": [
+    6,
+    4
+   ],
+   "pills": {
+    "lulu": 151,
+    "ai": 212
+   },
+   "hidden_spawns": {
+    "lulu": 17,
+    "ai": 22
+   },
+   "gate": {
+    "lulu": {
+     "steps": 150,
+     "exact": 120,
+     "garbage": 29,
+     "unexplained": 1,
+     "unexplained_t": [
+      334.15
+     ]
+    },
+    "ai": {
+     "steps": 211,
+     "exact": 197,
+     "garbage": 14,
+     "unexplained": 0,
+     "unexplained_t": []
+    }
+   },
+   "repairs": {
+    "lulu": {
+     "unexplained_kept": 1
+    },
+    "ai": {
+     "float_removed": 10,
+     "landing_rederived:exact": 8,
+     "landing_rederived:garbage": 1,
+     "unexplained_kept": 2
+    }
+   },
+   "pace": {
+    "lulu": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 32,
+      "pills_per_min": 32.0,
+      "viruses": 15,
+      "viruses_per_min": 15.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 21,
+      "pills_per_min": 21.0,
+      "viruses": 8,
+      "viruses_per_min": 8.0
+     },
+     ">=120s": {
+      "seconds": 226.5,
+      "pills": 98,
+      "pills_per_min": 26.0,
+      "viruses": 19,
+      "viruses_per_min": 5.03
+     },
+     "all": {
+      "seconds": 346.5,
+      "pills": 151,
+      "pills_per_min": 26.1,
+      "viruses": 42,
+      "viruses_per_min": 7.27
+     },
+     ">30 left": {
+      "seconds": 72.5,
+      "pills": 36,
+      "pills_per_min": 29.8,
+      "viruses": 19,
+      "viruses_per_min": 15.72
+     },
+     "13-30 left": {
+      "seconds": 148.8,
+      "pills": 56,
+      "pills_per_min": 22.6,
+      "viruses": 17,
+      "viruses_per_min": 6.85
+     },
+     "<=12 left": {
+      "seconds": 125.2,
+      "pills": 59,
+      "pills_per_min": 28.3,
+      "viruses": 6,
+      "viruses_per_min": 2.88
+     }
+    },
+    "ai": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 38,
+      "pills_per_min": 38.0,
+      "viruses": 24,
+      "viruses_per_min": 24.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 40,
+      "pills_per_min": 40.0,
+      "viruses": 13,
+      "viruses_per_min": 13.0
+     },
+     ">=120s": {
+      "seconds": 226.5,
+      "pills": 134,
+      "pills_per_min": 35.5,
+      "viruses": 7,
+      "viruses_per_min": 1.85
+     },
+     "all": {
+      "seconds": 346.5,
+      "pills": 212,
+      "pills_per_min": 36.7,
+      "viruses": 44,
+      "viruses_per_min": 7.62
+     },
+     ">30 left": {
+      "seconds": 42.4,
+      "pills": 24,
+      "pills_per_min": 33.9,
+      "viruses": 19,
+      "viruses_per_min": 26.87
+     },
+     "13-30 left": {
+      "seconds": 61.0,
+      "pills": 42,
+      "pills_per_min": 41.3,
+      "viruses": 17,
+      "viruses_per_min": 16.74
+     },
+     "<=12 left": {
+      "seconds": 243.1,
+      "pills": 146,
+      "pills_per_min": 36.0,
+      "viruses": 8,
+      "viruses_per_min": 1.97
+     }
+    }
+   },
+   "lulu_sends": {
+    "sender_side_attacks": 11,
+    "sender_side_sizes": {
+     "2": 10,
+     "3": 1
+    },
+    "recv_by_ai_volleys": 14,
+    "recv_by_ai_cells": 33,
+    "recv_by_ai_sizes": {
+     "2": 11,
+     "4": 2,
+     "3": 1
+    },
+    "recv_unexplained": 0,
+    "recv_unexplained_with_new_cells": 0,
+    "ai_track_minutes": 5.76,
+    "volleys_per_min": 2.43,
+    "cells_per_min": 5.73,
+    "rom_column_rule": {
+     "conform": 12,
+     "violate": 1
+    },
+    "first_send_s": 7.767,
+    "attacks_assigned_to_a_volley": 10,
+    "attacks_in_flight_at_end": 1,
+    "recv_size_eq_min_sum4": 10,
+    "recv_with_merged_sends": 0,
+    "recv_unmatched": 4
+   },
+   "ai_sends": {
+    "sender_side_attacks": 33,
+    "sender_side_sizes": {
+     "2": 28,
+     "3": 3,
+     "4": 2
+    },
+    "recv_by_lulu_volleys": 30,
+    "recv_by_lulu_cells": 73,
+    "recv_by_lulu_sizes": {
+     "2": 23,
+     "4": 3,
+     "3": 3,
+     "6": 1
+    },
+    "lulu_track_minutes": 5.77,
+    "volleys_per_min": 5.2,
+    "cells_per_min": 12.65,
+    "rom_column_rule": {
+     "conform": 25,
+     "violate": 0
+    },
+    "first_send_s": 12.2,
+    "attacks_assigned_to_a_volley": 28,
+    "attacks_in_flight_at_end": 5,
+    "recv_size_eq_min_sum4": 25,
+    "recv_unmatched": 4
+   },
+   "death": {
+    "lulu": {
+     "t_last_throw": 364.7,
+     "t_last_placement": 364.5,
+     "last_landing": [
+      "H",
+      0,
+      3,
+      [
+       2,
+       3
+      ]
+     ],
+     "heights_at_death": [
+      13,
+      13,
+      7,
+      16,
+      16,
+      8,
+      16,
+      15
+     ],
+     "max_h": 16,
+     "h34": [
+      16,
+      16
+     ],
+     "virus_final": 6,
+     "cells": 86,
+     "plug": [
+      [
+       0,
+       3
+      ],
+      [
+       0,
+       4
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [
+      [
+       0,
+       3,
+       "linked"
+      ],
+      [
+       0,
+       4,
+       "linked"
+      ]
+     ],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 11,
+     "garbage_cells_into_cols34_all_game": 11
+    },
+    "ai": {
+     "t_last_throw": 364.7,
+     "t_last_placement": 363.8167,
+     "last_landing": [
+      "V",
+      6,
+      5,
+      [
+       2,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      6,
+      13,
+      8,
+      8,
+      8,
+      10,
+      6,
+      7
+     ],
+     "max_h": 13,
+     "h34": [
+      8,
+      8
+     ],
+     "virus_final": 4,
+     "cells": 61,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       6,
+       5,
+       2
+      ],
+      [
+       7,
+       5,
+       2
+      ],
+      [
+       8,
+       5,
+       2
+      ],
+      [
+       9,
+       5,
+       2
+      ],
+      [
+       10,
+       5,
+       2
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 8,
+     "garbage_cells_into_cols34_all_game": 8
+    }
+   },
+   "lane_at_death": {
+    "seat": "lulu",
+    "lane": {
+     "3": {
+      "height": 16,
+      "cells_above_top_virus": 14,
+      "by_provenance": {
+       "P": 12,
+       "G": 2
+      },
+      "top_cells": [
+       [
+        0,
+        "P150"
+       ],
+       [
+        1,
+        "P149"
+       ],
+       [
+        2,
+        "P148"
+       ],
+       [
+        3,
+        "P147"
+       ]
+      ]
+     },
+     "4": {
+      "height": 16,
+      "cells_above_top_virus": 12,
+      "by_provenance": {
+       "P": 12
+      },
+      "top_cells": [
+       [
+        0,
+        "P150"
+       ],
+       [
+        1,
+        "P149"
+       ],
+       [
+        2,
+        "P148"
+       ],
+       [
+        3,
+        "P147"
+       ]
+      ]
+     }
+    },
+    "board_cells_by_provenance": {
+     "P": 61,
+     "G": 19,
+     "V": 6
+    }
+   },
+   "fit_row": {
+    "opp": "lulu",
+    "pop": "1005",
+    "session": "10/05 lulu",
+    "level": 11,
+    "game": "m1g1",
+    "tracker": "new",
+    "n_placements": 212,
+    "dur_s": 345.6,
+    "volleys": [
+     {
+      "t": 30.45,
+      "tb": 12.2,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 12.2
+     },
+     {
+      "t": 50.2333,
+      "tb": 31.98,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 31.983
+     },
+     {
+      "t": 55.8833,
+      "tb": 37.63,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 37.633
+     },
+     {
+      "t": 87.9333,
+      "tb": 69.68,
+      "size": 4,
+      "how": "explained",
+      "cols": [
+       2,
+       3
+      ],
+      "n_cols": 2,
+      "linked_pair": true,
+      "same_col_pair": false,
+      "t_rel": 69.683
+     },
+     {
+      "t": 114.05,
+      "tb": 95.8,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 95.8
+     },
+     {
+      "t": 154.0833,
+      "tb": 135.83,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 135.833
+     },
+     {
+      "t": 175.5667,
+      "tb": 157.32,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 157.317
+     },
+     {
+      "t": 201.6833,
+      "tb": 183.43,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 183.433
+     },
+     {
+      "t": 211.9167,
+      "tb": 193.67,
+      "size": 3,
+      "how": "direct",
+      "cols": [
+       3,
+       5,
+       7
+      ],
+      "n_cols": 3,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 193.667
+     },
+     {
+      "t": 252.1333,
+      "tb": 233.88,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 233.883
+     },
+     {
+      "t": 257.9333,
+      "tb": 239.68,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 239.683
+     },
+     {
+      "t": 267.1167,
+      "tb": 248.87,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 248.867
+     },
+     {
+      "t": 278.9333,
+      "tb": 260.68,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 260.683
+     },
+     {
+      "t": 287.7667,
+      "tb": 269.52,
+      "size": 4,
+      "how": "direct",
+      "cols": [
+       1,
+       2,
+       3,
+       5
+      ],
+      "n_cols": 4,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 269.517
+     }
+    ],
+    "hidden_spawns": 22,
+    "lulu_viruses": [
+     48,
+     6
+    ],
+    "game_s": 346.5,
+    "lulu_vcount_at": [
+     [
+      0.0,
+      48
+     ],
+     [
+      1.65,
+      46
+     ],
+     [
+      2.62,
+      46
+     ],
+     [
+      4.12,
+      46
+     ],
+     [
+      5.45,
+      46
+     ],
+     [
+      6.52,
+      46
+     ],
+     [
+      7.77,
+      44
+     ],
+     [
+      10.88,
+      42
+     ],
+     [
+      12.08,
+      42
+     ],
+     [
+      13.03,
+      42
+     ],
+     [
+      14.2,
+      42
+     ],
+     [
+      17.12,
+      42
+     ],
+     [
+      19.63,
+      42
+     ],
+     [
+      21.72,
+      41
+     ],
+     [
+      22.72,
+      41
+     ],
+     [
+      23.83,
+      41
+     ],
+     [
+      31.05,
+      38
+     ],
+     [
+      32.25,
+      38
+     ],
+     [
+      33.17,
+      38
+     ],
+     [
+      35.63,
+      36
+     ],
+     [
+      36.78,
+      36
+     ],
+     [
+      38.07,
+      36
+     ],
+     [
+      40.4,
+      36
+     ],
+     [
+      42.93,
+      36
+     ],
+     [
+      44.27,
+      36
+     ],
+     [
+      45.87,
+      36
+     ],
+     [
+      47.07,
+      36
+     ],
+     [
+      48.75,
+      34
+     ],
+     [
+      49.97,
+      34
+     ],
+     [
+      52.72,
+      34
+     ],
+     [
+      53.77,
+      34
+     ],
+     [
+      58.73,
+      33
+     ],
+     [
+      62.2,
+      33
+     ],
+     [
+      64.65,
+      32
+     ],
+     [
+      66.1,
+      32
+     ],
+     [
+      67.48,
+      31
+     ],
+     [
+      72.53,
+      29
+     ],
+     [
+      73.73,
+      29
+     ],
+     [
+      79.13,
+      29
+     ],
+     [
+      82.37,
+      29
+     ],
+     [
+      83.2,
+      29
+     ],
+     [
+      83.92,
+      29
+     ],
+     [
+      90.45,
+      28
+     ],
+     [
+      94.62,
+      27
+     ],
+     [
+      95.37,
+      27
+     ],
+     [
+      99.08,
+      27
+     ],
+     [
+      99.87,
+      27
+     ],
+     [
+      101.38,
+      27
+     ],
+     [
+      102.53,
+      27
+     ],
+     [
+      103.32,
+      27
+     ],
+     [
+      106.68,
+      27
+     ],
+     [
+      113.63,
+      25
+     ],
+     [
+      117.55,
+      25
+     ],
+     [
+      122.62,
+      25
+     ],
+     [
+      123.62,
+      25
+     ],
+     [
+      126.6,
+      25
+     ],
+     [
+      135.6,
+      25
+     ],
+     [
+      137.02,
+      25
+     ],
+     [
+      138.03,
+      25
+     ],
+     [
+      140.58,
+      25
+     ],
+     [
+      141.52,
+      25
+     ],
+     [
+      145.7,
+      25
+     ],
+     [
+      147.97,
+      24
+     ],
+     [
+      149.07,
+      24
+     ],
+     [
+      150.6,
+      24
+     ],
+     [
+      152.08,
+      24
+     ],
+     [
+      153.02,
+      24
+     ],
+     [
+      154.75,
+      22
+     ],
+     [
+      158.43,
+      22
+     ],
+     [
+      161.15,
+      22
+     ],
+     [
+      165.85,
+      21
+     ],
+     [
+      167.42,
+      21
+     ],
+     [
+      168.3,
+      21
+     ],
+     [
+      170.13,
+      21
+     ],
+     [
+      171.85,
+      21
+     ],
+     [
+      175.9,
+      20
+     ],
+     [
+      176.92,
+      20
+     ],
+     [
+      182.48,
+      20
+     ],
+     [
+      183.92,
+      20
+     ],
+     [
+      185.42,
+      20
+     ],
+     [
+      186.67,
+      20
+     ],
+     [
+      190.93,
+      15
+     ],
+     [
+      192.97,
+      14
+     ],
+     [
+      195.65,
+      14
+     ],
+     [
+      197.2,
+      14
+     ],
+     [
+      198.45,
+      14
+     ],
+     [
+      203.93,
+      13
+     ],
+     [
+      205.62,
+      13
+     ],
+     [
+      206.77,
+      13
+     ],
+     [
+      210.93,
+      13
+     ],
+     [
+      212.28,
+      13
+     ],
+     [
+      217.3,
+      13
+     ],
+     [
+      221.35,
+      12
+     ],
+     [
+      222.4,
+      12
+     ],
+     [
+      223.45,
+      12
+     ],
+     [
+      224.48,
+      12
+     ],
+     [
+      225.87,
+      12
+     ],
+     [
+      226.97,
+      12
+     ],
+     [
+      229.37,
+      11
+     ],
+     [
+      235.8,
+      11
+     ],
+     [
+      236.9,
+      11
+     ],
+     [
+      238.3,
+      11
+     ],
+     [
+      239.63,
+      11
+     ],
+     [
+      240.85,
+      11
+     ],
+     [
+      242.48,
+      11
+     ],
+     [
+      248.77,
+      11
+     ],
+     [
+      250.45,
+      10
+     ],
+     [
+      251.63,
+      10
+     ],
+     [
+      252.78,
+      10
+     ],
+     [
+      255.97,
+      10
+     ],
+     [
+      262.05,
+      10
+     ],
+     [
+      263.13,
+      10
+     ],
+     [
+      264.32,
+      10
+     ],
+     [
+      270.92,
+      10
+     ],
+     [
+      272.32,
+      10
+     ],
+     [
+      273.78,
+      10
+     ],
+     [
+      277.37,
+      10
+     ],
+     [
+      280.55,
+      10
+     ],
+     [
+      286.1,
+      10
+     ],
+     [
+      287.17,
+      10
+     ],
+     [
+      292.8,
+      9
+     ],
+     [
+      294.05,
+      9
+     ],
+     [
+      296.07,
+      9
+     ],
+     [
+      299.45,
+      7
+     ],
+     [
+      300.45,
+      7
+     ],
+     [
+      301.55,
+      7
+     ],
+     [
+      302.53,
+      7
+     ],
+     [
+      305.45,
+      7
+     ],
+     [
+      306.43,
+      7
+     ],
+     [
+      308.75,
+      6
+     ],
+     [
+      313.65,
+      6
+     ],
+     [
+      314.87,
+      6
+     ],
+     [
+      315.9,
+      6
+     ],
+     [
+      326.43,
+      6
+     ],
+     [
+      327.7,
+      6
+     ],
+     [
+      328.52,
+      6
+     ],
+     [
+      330.85,
+      6
+     ],
+     [
+      332.25,
+      6
+     ],
+     [
+      332.92,
+      6
+     ],
+     [
+      335.03,
+      6
+     ],
+     [
+      336.12,
+      6
+     ],
+     [
+      337.67,
+      6
+     ],
+     [
+      338.15,
+      6
+     ],
+     [
+      342.67,
+      6
+     ],
+     [
+      344.02,
+      6
+     ],
+     [
+      344.5,
+      6
+     ],
+     [
+      344.95,
+      6
+     ],
+     [
+      345.33,
+      6
+     ],
+     [
+      345.68,
+      6
+     ],
+     [
+      345.98,
+      6
+     ],
+     [
+      346.25,
+      6
+     ]
+    ]
+   }
+  },
+  {
+   "game": "m1g2",
+   "match": 1,
+   "g": 2,
+   "winner": "lulu",
+   "how": "cleared",
+   "t0": 369.95,
+   "t_end": 759.3167,
+   "dur_s": 389.4,
+   "final_lulu_ai": [
+    0,
+    7
+   ],
+   "pills": {
+    "lulu": 160,
+    "ai": 217
+   },
+   "hidden_spawns": {
+    "lulu": 20,
+    "ai": 26
+   },
+   "gate": {
+    "lulu": {
+     "steps": 159,
+     "exact": 130,
+     "garbage": 29,
+     "unexplained": 0,
+     "unexplained_t": []
+    },
+    "ai": {
+     "steps": 216,
+     "exact": 198,
+     "garbage": 16,
+     "unexplained": 2,
+     "unexplained_t": [
+      738.28,
+      743.82
+     ]
+    }
+   },
+   "repairs": {
+    "lulu": {},
+    "ai": {
+     "float_removed": 1,
+     "unexplained_kept": 4,
+     "landing_rederived:exact": 1
+    }
+   },
+   "pace": {
+    "lulu": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 34,
+      "pills_per_min": 34.0,
+      "viruses": 14,
+      "viruses_per_min": 14.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 27,
+      "pills_per_min": 27.0,
+      "viruses": 13,
+      "viruses_per_min": 13.0
+     },
+     ">=120s": {
+      "seconds": 269.4,
+      "pills": 99,
+      "pills_per_min": 22.1,
+      "viruses": 21,
+      "viruses_per_min": 4.68
+     },
+     "all": {
+      "seconds": 389.4,
+      "pills": 160,
+      "pills_per_min": 24.7,
+      "viruses": 48,
+      "viruses_per_min": 7.4
+     },
+     ">30 left": {
+      "seconds": 87.2,
+      "pills": 46,
+      "pills_per_min": 31.7,
+      "viruses": 18,
+      "viruses_per_min": 12.39
+     },
+     "13-30 left": {
+      "seconds": 125.5,
+      "pills": 46,
+      "pills_per_min": 22.0,
+      "viruses": 18,
+      "viruses_per_min": 8.61
+     },
+     "<=12 left": {
+      "seconds": 176.8,
+      "pills": 68,
+      "pills_per_min": 23.1,
+      "viruses": 12,
+      "viruses_per_min": 4.07
+     }
+    },
+    "ai": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 35,
+      "pills_per_min": 35.0,
+      "viruses": 24,
+      "viruses_per_min": 24.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 28,
+      "pills_per_min": 28.0,
+      "viruses": 14,
+      "viruses_per_min": 14.0
+     },
+     ">=120s": {
+      "seconds": 269.4,
+      "pills": 154,
+      "pills_per_min": 34.3,
+      "viruses": 3,
+      "viruses_per_min": 0.67
+     },
+     "all": {
+      "seconds": 389.4,
+      "pills": 217,
+      "pills_per_min": 33.4,
+      "viruses": 41,
+      "viruses_per_min": 6.32
+     },
+     ">30 left": {
+      "seconds": 45.5,
+      "pills": 26,
+      "pills_per_min": 34.3,
+      "viruses": 19,
+      "viruses_per_min": 25.06
+     },
+     "13-30 left": {
+      "seconds": 64.5,
+      "pills": 33,
+      "pills_per_min": 30.7,
+      "viruses": 17,
+      "viruses_per_min": 15.82
+     },
+     "<=12 left": {
+      "seconds": 279.4,
+      "pills": 158,
+      "pills_per_min": 33.9,
+      "viruses": 5,
+      "viruses_per_min": 1.07
+     }
+    }
+   },
+   "lulu_sends": {
+    "sender_side_attacks": 17,
+    "sender_side_sizes": {
+     "2": 15,
+     "3": 2
+    },
+    "recv_by_ai_volleys": 16,
+    "recv_by_ai_cells": 33,
+    "recv_by_ai_sizes": {
+     "2": 15,
+     "3": 1
+    },
+    "recv_unexplained": 2,
+    "recv_unexplained_with_new_cells": 2,
+    "ai_track_minutes": 6.46,
+    "volleys_per_min": 2.48,
+    "cells_per_min": 5.11,
+    "rom_column_rule": {
+     "conform": 13,
+     "violate": 0
+    },
+    "first_send_s": 14.717,
+    "attacks_assigned_to_a_volley": 14,
+    "attacks_in_flight_at_end": 3,
+    "recv_size_eq_min_sum4": 14,
+    "recv_with_merged_sends": 0,
+    "recv_unmatched": 2
+   },
+   "ai_sends": {
+    "sender_side_attacks": 32,
+    "sender_side_sizes": {
+     "2": 27,
+     "3": 5
+    },
+    "recv_by_lulu_volleys": 29,
+    "recv_by_lulu_cells": 69,
+    "recv_by_lulu_sizes": {
+     "2": 21,
+     "3": 5,
+     "4": 3
+    },
+    "lulu_track_minutes": 6.45,
+    "volleys_per_min": 4.5,
+    "cells_per_min": 10.7,
+    "rom_column_rule": {
+     "conform": 21,
+     "violate": 0
+    },
+    "first_send_s": 3.75,
+    "attacks_assigned_to_a_volley": 29,
+    "attacks_in_flight_at_end": 3,
+    "recv_size_eq_min_sum4": 26,
+    "recv_unmatched": 1
+   },
+   "death": {
+    "lulu": {
+     "t_last_throw": 759.2667,
+     "t_last_placement": 756.7167,
+     "last_landing": [
+      "V",
+      14,
+      1,
+      [
+       2,
+       3
+      ]
+     ],
+     "heights_at_death": [
+      1,
+      2,
+      1,
+      4,
+      3,
+      2,
+      13,
+      13
+     ],
+     "max_h": 13,
+     "h34": [
+      4,
+      3
+     ],
+     "virus_final": 2,
+     "cells": 36,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       12,
+       3,
+       3
+      ],
+      [
+       13,
+       4,
+       2
+      ],
+      [
+       14,
+       1,
+       2
+      ],
+      [
+       15,
+       0,
+       3
+      ],
+      [
+       15,
+       2,
+       3
+      ],
+      [
+       15,
+       3,
+       3
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 18,
+     "garbage_cells_into_cols34_all_game": 18
+    },
+    "ai": {
+     "t_last_throw": 759.2667,
+     "t_last_placement": 757.7667,
+     "last_landing": [
+      "V",
+      3,
+      6,
+      [
+       3,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      11,
+      16,
+      0,
+      1,
+      5,
+      5,
+      3,
+      6
+     ],
+     "max_h": 16,
+     "h34": [
+      1,
+      5
+     ],
+     "virus_final": 7,
+     "cells": 32,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 5,
+     "garbage_cells_into_cols34_all_game": 5
+    }
+   },
+   "fit_row": {
+    "opp": "lulu",
+    "pop": "1005",
+    "session": "10/05 lulu",
+    "level": 11,
+    "game": "m1g2",
+    "tracker": "new",
+    "n_placements": 217,
+    "dur_s": 387.8,
+    "volleys": [
+     {
+      "t": 387.4167,
+      "tb": 17.47,
+      "size": 2,
+      "how": "explained",
+      "cols": [
+       2
+      ],
+      "n_cols": 1,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 17.467
+     },
+     {
+      "t": 395.05,
+      "tb": 25.1,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 25.1
+     },
+     {
+      "t": 403.7833,
+      "tb": 33.83,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 33.833
+     },
+     {
+      "t": 409.4167,
+      "tb": 39.47,
+      "size": 2,
+      "how": "explained",
+      "cols": [],
+      "n_cols": 0,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 39.467
+     },
+     {
+      "t": 439.9167,
+      "tb": 69.97,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 69.967
+     },
+     {
+      "t": 467.0667,
+      "tb": 97.12,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 97.117
+     },
+     {
+      "t": 474.85,
+      "tb": 104.9,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 104.9
+     },
+     {
+      "t": 483.7333,
+      "tb": 113.78,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 113.783
+     },
+     {
+      "t": 490.2667,
+      "tb": 120.32,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 120.317
+     },
+     {
+      "t": 527.5167,
+      "tb": 157.57,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 157.567
+     },
+     {
+      "t": 535.7667,
+      "tb": 165.82,
+      "size": 3,
+      "how": "direct",
+      "cols": [
+       2,
+       4,
+       6
+      ],
+      "n_cols": 3,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 165.817
+     },
+     {
+      "t": 583.95,
+      "tb": 214.0,
+      "size": 2,
+      "how": "explained",
+      "cols": [
+       6
+      ],
+      "n_cols": 1,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 214.0
+     },
+     {
+      "t": 590.4,
+      "tb": 220.45,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 220.45
+     },
+     {
+      "t": 628.4,
+      "tb": 258.45,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 258.45
+     },
+     {
+      "t": 633.5667,
+      "tb": 263.62,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 263.617
+     },
+     {
+      "t": 702.7167,
+      "tb": 332.77,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 332.767
+     },
+     {
+      "t": 743.8167,
+      "tb": 373.87,
+      "size": null,
+      "how": "unexplained",
+      "cols": [
+       3,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 373.867
+     },
+     {
+      "t": 752.3,
+      "tb": 382.35,
+      "size": null,
+      "how": "unexplained",
+      "cols": [
+       3,
+       5,
+       7
+      ],
+      "n_cols": 3,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 382.35
+     }
+    ],
+    "hidden_spawns": 26,
+    "lulu_viruses": [
+     48,
+     0
+    ],
+    "game_s": 389.4,
+    "lulu_vcount_at": [
+     [
+      0.0,
+      48
+     ],
+     [
+      1.03,
+      48
+     ],
+     [
+      2.2,
+      48
+     ],
+     [
+      3.4,
+      48
+     ],
+     [
+      6.67,
+      47
+     ],
+     [
+      7.77,
+      47
+     ],
+     [
+      8.85,
+      47
+     ],
+     [
+      10.02,
+      47
+     ],
+     [
+      11.23,
+      47
+     ],
+     [
+      12.4,
+      47
+     ],
+     [
+      14.72,
+      46
+     ],
+     [
+      15.97,
+      46
+     ],
+     [
+      17.65,
+      46
+     ],
+     [
+      20.17,
+      45
+     ],
+     [
+      21.57,
+      44
+     ],
+     [
+      23.22,
+      43
+     ],
+     [
+      25.35,
+      43
+     ],
+     [
+      26.85,
+      42
+     ],
+     [
+      28.47,
+      41
+     ],
+     [
+      29.63,
+      41
+     ],
+     [
+      34.37,
+      39
+     ],
+     [
+      35.47,
+      39
+     ],
+     [
+      37.65,
+      39
+     ],
+     [
+      39.2,
+      39
+     ],
+     [
+      42.32,
+      39
+     ],
+     [
+      43.32,
+      39
+     ],
+     [
+      44.8,
+      39
+     ],
+     [
+      46.77,
+      38
+     ],
+     [
+      47.65,
+      38
+     ],
+     [
+      50.63,
+      36
+     ],
+     [
+      52.35,
+      36
+     ],
+     [
+      54.25,
+      36
+     ],
+     [
+      57.7,
+      36
+     ],
+     [
+      59.52,
+      35
+     ],
+     [
+      61.38,
+      34
+     ],
+     [
+      62.73,
+      34
+     ],
+     [
+      63.93,
+      34
+     ],
+     [
+      68.48,
+      34
+     ],
+     [
+      70.08,
+      33
+     ],
+     [
+      71.32,
+      33
+     ],
+     [
+      73.73,
+      32
+     ],
+     [
+      74.77,
+      32
+     ],
+     [
+      75.98,
+      32
+     ],
+     [
+      80.33,
+      31
+     ],
+     [
+      83.18,
+      31
+     ],
+     [
+      84.08,
+      31
+     ],
+     [
+      87.15,
+      30
+     ],
+     [
+      90.15,
+      28
+     ],
+     [
+      96.82,
+      27
+     ],
+     [
+      97.55,
+      27
+     ],
+     [
+      100.1,
+      26
+     ],
+     [
+      101.7,
+      26
+     ],
+     [
+      103.1,
+      26
+     ],
+     [
+      104.42,
+      26
+     ],
+     [
+      106.2,
+      26
+     ],
+     [
+      108.75,
+      25
+     ],
+     [
+      110.98,
+      23
+     ],
+     [
+      112.8,
+      23
+     ],
+     [
+      115.1,
+      22
+     ],
+     [
+      117.48,
+      21
+     ],
+     [
+      119.48,
+      21
+     ],
+     [
+      121.23,
+      21
+     ],
+     [
+      122.38,
+      21
+     ],
+     [
+      128.15,
+      20
+     ],
+     [
+      129.25,
+      20
+     ],
+     [
+      131.47,
+      20
+     ],
+     [
+      136.22,
+      20
+     ],
+     [
+      138.25,
+      19
+     ],
+     [
+      140.0,
+      18
+     ],
+     [
+      145.15,
+      18
+     ],
+     [
+      146.32,
+      18
+     ],
+     [
+      147.07,
+      18
+     ],
+     [
+      151.18,
+      18
+     ],
+     [
+      156.98,
+      18
+     ],
+     [
+      158.65,
+      18
+     ],
+     [
+      159.65,
+      18
+     ],
+     [
+      162.93,
+      17
+     ],
+     [
+      165.42,
+      17
+     ],
+     [
+      166.45,
+      17
+     ],
+     [
+      167.6,
+      17
+     ],
+     [
+      169.75,
+      17
+     ],
+     [
+      179.35,
+      17
+     ],
+     [
+      183.33,
+      17
+     ],
+     [
+      193.2,
+      17
+     ],
+     [
+      194.42,
+      17
+     ],
+     [
+      195.43,
+      17
+     ],
+     [
+      197.65,
+      16
+     ],
+     [
+      204.4,
+      16
+     ],
+     [
+      205.53,
+      16
+     ],
+     [
+      206.88,
+      16
+     ],
+     [
+      209.6,
+      14
+     ],
+     [
+      210.9,
+      14
+     ],
+     [
+      212.62,
+      12
+     ],
+     [
+      215.63,
+      11
+     ],
+     [
+      217.07,
+      11
+     ],
+     [
+      220.15,
+      11
+     ],
+     [
+      222.87,
+      11
+     ],
+     [
+      225.23,
+      11
+     ],
+     [
+      230.67,
+      11
+     ],
+     [
+      232.87,
+      10
+     ],
+     [
+      235.23,
+      10
+     ],
+     [
+      235.8,
+      10
+     ],
+     [
+      238.05,
+      10
+     ],
+     [
+      238.72,
+      10
+     ],
+     [
+      239.95,
+      10
+     ],
+     [
+      241.73,
+      10
+     ],
+     [
+      244.65,
+      10
+     ],
+     [
+      249.62,
+      10
+     ],
+     [
+      250.38,
+      10
+     ],
+     [
+      252.4,
+      10
+     ],
+     [
+      253.65,
+      10
+     ],
+     [
+      254.43,
+      10
+     ],
+     [
+      259.9,
+      10
+     ],
+     [
+      261.43,
+      10
+     ],
+     [
+      264.88,
+      10
+     ],
+     [
+      265.88,
+      10
+     ],
+     [
+      272.15,
+      8
+     ],
+     [
+      273.28,
+      8
+     ],
+     [
+      274.73,
+      8
+     ],
+     [
+      277.1,
+      8
+     ],
+     [
+      278.43,
+      8
+     ],
+     [
+      279.92,
+      7
+     ],
+     [
+      281.7,
+      7
+     ],
+     [
+      283.25,
+      7
+     ],
+     [
+      286.02,
+      7
+     ],
+     [
+      287.4,
+      7
+     ],
+     [
+      289.38,
+      7
+     ],
+     [
+      291.05,
+      7
+     ],
+     [
+      296.4,
+      7
+     ],
+     [
+      298.0,
+      7
+     ],
+     [
+      303.53,
+      7
+     ],
+     [
+      308.25,
+      7
+     ],
+     [
+      309.53,
+      7
+     ],
+     [
+      314.98,
+      7
+     ],
+     [
+      317.5,
+      7
+     ],
+     [
+      320.32,
+      7
+     ],
+     [
+      325.77,
+      7
+     ],
+     [
+      327.92,
+      7
+     ],
+     [
+      332.7,
+      6
+     ],
+     [
+      334.32,
+      6
+     ],
+     [
+      335.25,
+      6
+     ],
+     [
+      338.48,
+      6
+     ],
+     [
+      339.27,
+      6
+     ],
+     [
+      344.22,
+      6
+     ],
+     [
+      345.68,
+      6
+     ],
+     [
+      347.4,
+      6
+     ],
+     [
+      348.45,
+      6
+     ],
+     [
+      349.87,
+      6
+     ],
+     [
+      359.83,
+      6
+     ],
+     [
+      364.18,
+      6
+     ],
+     [
+      365.45,
+      6
+     ],
+     [
+      369.0,
+      5
+     ],
+     [
+      370.5,
+      5
+     ],
+     [
+      371.98,
+      5
+     ],
+     [
+      373.12,
+      5
+     ],
+     [
+      375.63,
+      5
+     ],
+     [
+      377.98,
+      3
+     ],
+     [
+      382.88,
+      3
+     ],
+     [
+      384.95,
+      2
+     ],
+     [
+      386.77,
+      2
+     ]
+    ]
+   }
+  },
+  {
+   "game": "m1g3",
+   "match": 1,
+   "g": 3,
+   "winner": "AI",
+   "how": "lulu topped out",
+   "t0": 771.5833,
+   "t_end": 878.0,
+   "dur_s": 106.4,
+   "final_lulu_ai": [
+    25,
+    7
+   ],
+   "pills": {
+    "lulu": 43,
+    "ai": 62
+   },
+   "hidden_spawns": {
+    "lulu": 4,
+    "ai": 9
+   },
+   "gate": {
+    "lulu": {
+     "steps": 42,
+     "exact": 34,
+     "garbage": 8,
+     "unexplained": 0,
+     "unexplained_t": []
+    },
+    "ai": {
+     "steps": 61,
+     "exact": 55,
+     "garbage": 5,
+     "unexplained": 1,
+     "unexplained_t": [
+      774.33
+     ]
+    }
+   },
+   "repairs": {
+    "lulu": {
+     "float_removed": 1,
+     "landing_rederived:exact": 2
+    },
+    "ai": {
+     "float_removed": 3,
+     "unexplained_kept": 1,
+     "landing_rederived:exact": 3
+    }
+   },
+   "pace": {
+    "lulu": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 26,
+      "pills_per_min": 26.0,
+      "viruses": 13,
+      "viruses_per_min": 13.0
+     },
+     "60-120s": {
+      "seconds": 46.4,
+      "pills": 17,
+      "pills_per_min": 22.0,
+      "viruses": 10,
+      "viruses_per_min": 12.93
+     },
+     "all": {
+      "seconds": 106.4,
+      "pills": 43,
+      "pills_per_min": 24.2,
+      "viruses": 23,
+      "viruses_per_min": 12.97
+     },
+     ">30 left": {
+      "seconds": 84.1,
+      "pills": 36,
+      "pills_per_min": 25.7,
+      "viruses": 18,
+      "viruses_per_min": 12.84
+     },
+     "13-30 left": {
+      "seconds": 22.3,
+      "pills": 7,
+      "pills_per_min": 18.8,
+      "viruses": 5,
+      "viruses_per_min": 13.46
+     }
+    },
+    "ai": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 37,
+      "pills_per_min": 37.0,
+      "viruses": 30,
+      "viruses_per_min": 30.0
+     },
+     "60-120s": {
+      "seconds": 46.4,
+      "pills": 25,
+      "pills_per_min": 32.3,
+      "viruses": 11,
+      "viruses_per_min": 14.22
+     },
+     "all": {
+      "seconds": 106.4,
+      "pills": 62,
+      "pills_per_min": 35.0,
+      "viruses": 41,
+      "viruses_per_min": 23.12
+     },
+     ">30 left": {
+      "seconds": 30.0,
+      "pills": 22,
+      "pills_per_min": 44.0,
+      "viruses": 18,
+      "viruses_per_min": 36.02
+     },
+     "13-30 left": {
+      "seconds": 58.5,
+      "pills": 31,
+      "pills_per_min": 31.8,
+      "viruses": 18,
+      "viruses_per_min": 18.46
+     },
+     "<=12 left": {
+      "seconds": 17.9,
+      "pills": 9,
+      "pills_per_min": 30.1,
+      "viruses": 5,
+      "viruses_per_min": 16.74
+     }
+    }
+   },
+   "lulu_sends": {
+    "sender_side_attacks": 5,
+    "sender_side_sizes": {
+     "2": 5
+    },
+    "recv_by_ai_volleys": 5,
+    "recv_by_ai_cells": 10,
+    "recv_by_ai_sizes": {
+     "2": 5
+    },
+    "recv_unexplained": 1,
+    "recv_unexplained_with_new_cells": 0,
+    "ai_track_minutes": 1.77,
+    "volleys_per_min": 2.83,
+    "cells_per_min": 5.66,
+    "rom_column_rule": {
+     "conform": 4,
+     "violate": 0
+    },
+    "first_send_s": 24.433,
+    "attacks_assigned_to_a_volley": 4,
+    "attacks_in_flight_at_end": 1,
+    "recv_size_eq_min_sum4": 4,
+    "recv_with_merged_sends": 0,
+    "recv_unmatched": 1
+   },
+   "ai_sends": {
+    "sender_side_attacks": 10,
+    "sender_side_sizes": {
+     "2": 8,
+     "4": 1,
+     "3": 1
+    },
+    "recv_by_lulu_volleys": 8,
+    "recv_by_lulu_cells": 23,
+    "recv_by_lulu_sizes": {
+     "4": 3,
+     "2": 4,
+     "3": 1
+    },
+    "lulu_track_minutes": 1.7,
+    "volleys_per_min": 4.72,
+    "cells_per_min": 13.57,
+    "rom_column_rule": {
+     "conform": 6,
+     "violate": 0
+    },
+    "first_send_s": 7.6,
+    "attacks_assigned_to_a_volley": 9,
+    "attacks_in_flight_at_end": 1,
+    "recv_size_eq_min_sum4": 7,
+    "recv_unmatched": 0
+   },
+   "death": {
+    "lulu": {
+     "t_last_throw": 877.95,
+     "t_last_placement": 873.3,
+     "last_landing": [
+      "V",
+      5,
+      1,
+      [
+       3,
+       3
+      ]
+     ],
+     "heights_at_death": [
+      5,
+      6,
+      5,
+      5,
+      16,
+      9,
+      9,
+      7
+     ],
+     "max_h": 16,
+     "h34": [
+      5,
+      16
+     ],
+     "virus_final": 25,
+     "cells": 47,
+     "plug": [
+      [
+       0,
+       4
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [
+      [
+       0,
+       4
+      ]
+     ],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       0,
+       4,
+       3
+      ],
+      [
+       11,
+       0,
+       2
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 6,
+     "garbage_cells_into_cols34_all_game": 6
+    },
+    "ai": {
+     "t_last_throw": 877.95,
+     "t_last_placement": 877.6667,
+     "last_landing": [
+      "V",
+      4,
+      6,
+      [
+       2,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      3,
+      4,
+      5,
+      0,
+      9,
+      8,
+      13,
+      0
+     ],
+     "max_h": 13,
+     "h34": [
+      0,
+      9
+     ],
+     "virus_final": 7,
+     "cells": 26,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       3,
+       6,
+       2
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 1,
+     "garbage_cells_into_cols34_all_game": 1
+    }
+   },
+   "lane_at_death": {
+    "seat": "lulu",
+    "lane": {
+     "3": {
+      "height": 5,
+      "cells_above_top_virus": 1,
+      "by_provenance": {
+       "G": 1
+      },
+      "top_cells": [
+       [
+        11,
+        "G37"
+       ],
+       [
+        12,
+        "V"
+       ],
+       [
+        14,
+        "V"
+       ],
+       [
+        15,
+        "V"
+       ]
+      ]
+     },
+     "4": {
+      "height": 16,
+      "cells_above_top_virus": 9,
+      "by_provenance": {
+       "G": 5,
+       "P": 4
+      },
+      "top_cells": [
+       [
+        0,
+        "Gend"
+       ],
+       [
+        1,
+        "G40"
+       ],
+       [
+        2,
+        "G28"
+       ],
+       [
+        3,
+        "G28"
+       ]
+      ]
+     }
+    },
+    "board_cells_by_provenance": {
+     "G": 11,
+     "P": 11,
+     "V": 25
+    }
+   },
+   "fit_row": {
+    "opp": "lulu",
+    "pop": "1005",
+    "session": "10/05 lulu",
+    "level": 11,
+    "game": "m1g3",
+    "tracker": "new",
+    "n_placements": 62,
+    "dur_s": 106.1,
+    "volleys": [
+     {
+      "t": 776.8833,
+      "tb": 5.3,
+      "size": null,
+      "how": "unexplained",
+      "cols": [],
+      "n_cols": 0,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 5.3
+     },
+     {
+      "t": 794.8667,
+      "tb": 23.28,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 23.283
+     },
+     {
+      "t": 807.0167,
+      "tb": 35.43,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 35.433
+     },
+     {
+      "t": 819.3,
+      "tb": 47.72,
+      "size": 2,
+      "how": "explained",
+      "cols": [
+       6
+      ],
+      "n_cols": 1,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 47.717
+     },
+     {
+      "t": 853.2667,
+      "tb": 81.68,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 81.683
+     },
+     {
+      "t": 877.6667,
+      "tb": 106.08,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 106.083
+     }
+    ],
+    "hidden_spawns": 9,
+    "lulu_viruses": [
+     48,
+     25
+    ],
+    "game_s": 106.4,
+    "lulu_vcount_at": [
+     [
+      0.0,
+      48
+     ],
+     [
+      1.57,
+      48
+     ],
+     [
+      2.48,
+      48
+     ],
+     [
+      3.65,
+      48
+     ],
+     [
+      10.6,
+      47
+     ],
+     [
+      11.63,
+      47
+     ],
+     [
+      12.3,
+      50
+     ],
+     [
+      14.22,
+      47
+     ],
+     [
+      17.53,
+      46
+     ],
+     [
+      24.43,
+      42
+     ],
+     [
+      25.27,
+      42
+     ],
+     [
+      26.12,
+      42
+     ],
+     [
+      28.28,
+      42
+     ],
+     [
+      29.48,
+      42
+     ],
+     [
+      34.13,
+      40
+     ],
+     [
+      36.55,
+      40
+     ],
+     [
+      37.7,
+      40
+     ],
+     [
+      38.53,
+      40
+     ],
+     [
+      39.52,
+      40
+     ],
+     [
+      44.0,
+      39
+     ],
+     [
+      47.02,
+      39
+     ],
+     [
+      47.95,
+      39
+     ],
+     [
+      49.98,
+      38
+     ],
+     [
+      52.58,
+      37
+     ],
+     [
+      54.18,
+      37
+     ],
+     [
+      56.72,
+      35
+     ],
+     [
+      60.58,
+      35
+     ],
+     [
+      62.25,
+      35
+     ],
+     [
+      63.1,
+      35
+     ],
+     [
+      70.73,
+      35
+     ],
+     [
+      72.23,
+      35
+     ],
+     [
+      73.98,
+      35
+     ],
+     [
+      77.02,
+      31
+     ],
+     [
+      78.62,
+      31
+     ],
+     [
+      81.28,
+      31
+     ],
+     [
+      82.68,
+      31
+     ],
+     [
+      84.13,
+      30
+     ],
+     [
+      87.38,
+      29
+     ],
+     [
+      92.32,
+      27
+     ],
+     [
+      93.48,
+      27
+     ],
+     [
+      94.52,
+      27
+     ],
+     [
+      97.55,
+      27
+     ],
+     [
+      101.72,
+      25
+     ]
+    ]
+   }
+  },
+  {
+   "game": "m1g4",
+   "match": 1,
+   "g": 4,
+   "winner": "lulu",
+   "how": "AI topped out",
+   "t0": 883.1833,
+   "t_end": 1104.8167,
+   "dur_s": 221.6,
+   "final_lulu_ai": [
+    3,
+    16
+   ],
+   "pills": {
+    "lulu": 100,
+    "ai": 146
+   },
+   "hidden_spawns": {
+    "lulu": 32,
+    "ai": 46
+   },
+   "gate": {
+    "lulu": {
+     "steps": 99,
+     "exact": 87,
+     "garbage": 12,
+     "unexplained": 0,
+     "unexplained_t": []
+    },
+    "ai": {
+     "steps": 145,
+     "exact": 132,
+     "garbage": 13,
+     "unexplained": 0,
+     "unexplained_t": []
+    }
+   },
+   "repairs": {
+    "lulu": {},
+    "ai": {
+     "float_removed": 6,
+     "landing_rederived:exact": 5
+    }
+   },
+   "pace": {
+    "lulu": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 33,
+      "pills_per_min": 33.0,
+      "viruses": 18,
+      "viruses_per_min": 18.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 28,
+      "pills_per_min": 28.0,
+      "viruses": 12,
+      "viruses_per_min": 12.0
+     },
+     ">=120s": {
+      "seconds": 101.6,
+      "pills": 39,
+      "pills_per_min": 23.0,
+      "viruses": 15,
+      "viruses_per_min": 8.86
+     },
+     "all": {
+      "seconds": 221.6,
+      "pills": 100,
+      "pills_per_min": 27.1,
+      "viruses": 45,
+      "viruses_per_min": 12.18
+     },
+     ">30 left": {
+      "seconds": 59.3,
+      "pills": 32,
+      "pills_per_min": 32.4,
+      "viruses": 18,
+      "viruses_per_min": 18.21
+     },
+     "13-30 left": {
+      "seconds": 112.2,
+      "pills": 48,
+      "pills_per_min": 25.7,
+      "viruses": 19,
+      "viruses_per_min": 10.16
+     },
+     "<=12 left": {
+      "seconds": 50.1,
+      "pills": 20,
+      "pills_per_min": 24.0,
+      "viruses": 8,
+      "viruses_per_min": 9.59
+     }
+    },
+    "ai": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 38,
+      "pills_per_min": 38.0,
+      "viruses": 18,
+      "viruses_per_min": 18.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 36,
+      "pills_per_min": 36.0,
+      "viruses": 7,
+      "viruses_per_min": 7.0
+     },
+     ">=120s": {
+      "seconds": 101.6,
+      "pills": 72,
+      "pills_per_min": 42.5,
+      "viruses": 7,
+      "viruses_per_min": 4.13
+     },
+     "all": {
+      "seconds": 221.6,
+      "pills": 146,
+      "pills_per_min": 39.5,
+      "viruses": 32,
+      "viruses_per_min": 8.66
+     },
+     ">30 left": {
+      "seconds": 54.8,
+      "pills": 34,
+      "pills_per_min": 37.3,
+      "viruses": 18,
+      "viruses_per_min": 19.73
+     },
+     "13-30 left": {
+      "seconds": 166.9,
+      "pills": 112,
+      "pills_per_min": 40.3,
+      "viruses": 14,
+      "viruses_per_min": 5.03
+     }
+    }
+   },
+   "lulu_sends": {
+    "sender_side_attacks": 12,
+    "sender_side_sizes": {
+     "2": 12
+    },
+    "recv_by_ai_volleys": 13,
+    "recv_by_ai_cells": 28,
+    "recv_by_ai_sizes": {
+     "2": 12,
+     "4": 1
+    },
+    "recv_unexplained": 0,
+    "recv_unexplained_with_new_cells": 0,
+    "ai_track_minutes": 3.68,
+    "volleys_per_min": 3.53,
+    "cells_per_min": 7.6,
+    "rom_column_rule": {
+     "conform": 12,
+     "violate": 0
+    },
+    "first_send_s": 4.65,
+    "attacks_assigned_to_a_volley": 9,
+    "attacks_in_flight_at_end": 3,
+    "recv_size_eq_min_sum4": 9,
+    "recv_with_merged_sends": 0,
+    "recv_unmatched": 4
+   },
+   "ai_sends": {
+    "sender_side_attacks": 12,
+    "sender_side_sizes": {
+     "2": 11,
+     "3": 1
+    },
+    "recv_by_lulu_volleys": 12,
+    "recv_by_lulu_cells": 25,
+    "recv_by_lulu_sizes": {
+     "2": 11,
+     "3": 1
+    },
+    "lulu_track_minutes": 3.66,
+    "volleys_per_min": 3.28,
+    "cells_per_min": 6.83,
+    "rom_column_rule": {
+     "conform": 12,
+     "violate": 0
+    },
+    "first_send_s": 7.917,
+    "attacks_assigned_to_a_volley": 12,
+    "attacks_in_flight_at_end": 0,
+    "recv_size_eq_min_sum4": 12,
+    "recv_unmatched": 0
+   },
+   "death": {
+    "lulu": {
+     "t_last_throw": 1104.7667,
+     "t_last_placement": 1102.9,
+     "last_landing": [
+      "V",
+      11,
+      6,
+      [
+       2,
+       3
+      ]
+     ],
+     "heights_at_death": [
+      3,
+      1,
+      1,
+      2,
+      3,
+      3,
+      5,
+      1
+     ],
+     "max_h": 5,
+     "h34": [
+      2,
+      3
+     ],
+     "virus_final": 5,
+     "cells": 18,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       11,
+       6,
+       2
+      ],
+      [
+       12,
+       6,
+       3
+      ],
+      [
+       13,
+       6,
+       3
+      ],
+      [
+       14,
+       6,
+       3
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 5,
+     "garbage_cells_into_cols34_all_game": 5
+    },
+    "ai": {
+     "t_last_throw": 1104.7667,
+     "t_last_placement": 1104.1333,
+     "last_landing": [
+      "H",
+      1,
+      0,
+      [
+       2,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      15,
+      15,
+      16,
+      16,
+      12,
+      15,
+      13,
+      5
+     ],
+     "max_h": 16,
+     "h34": [
+      16,
+      12
+     ],
+     "virus_final": 16,
+     "cells": 90,
+     "plug": [
+      [
+       0,
+       3
+      ]
+     ],
+     "plug_by_garbage_after_last_placement": [
+      [
+       0,
+       3
+      ]
+     ],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       0,
+       2,
+       2
+      ],
+      [
+       0,
+       3,
+       1
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 6,
+     "garbage_cells_into_cols34_all_game": 6
+    }
+   },
+   "lane_at_death": {
+    "seat": "ai",
+    "lane": {
+     "3": {
+      "height": 16,
+      "cells_above_top_virus": 16,
+      "by_provenance": {
+       "G": 1,
+       "P": 15
+      },
+      "top_cells": [
+       [
+        0,
+        "Gend"
+       ],
+       [
+        1,
+        "P144"
+       ],
+       [
+        2,
+        "P144"
+       ],
+       [
+        3,
+        "P138"
+       ]
+      ]
+     },
+     "4": {
+      "height": 12,
+      "cells_above_top_virus": 9,
+      "by_provenance": {
+       "P": 9
+      },
+      "top_cells": [
+       [
+        4,
+        "P137"
+       ],
+       [
+        5,
+        "P137"
+       ],
+       [
+        6,
+        "P132"
+       ],
+       [
+        7,
+        "P125"
+       ]
+      ]
+     }
+    },
+    "board_cells_by_provenance": {
+     "G": 6,
+     "P": 68,
+     "V": 16
+    }
+   },
+   "fit_row": {
+    "opp": "lulu",
+    "pop": "1005",
+    "session": "10/05 lulu",
+    "level": 11,
+    "game": "m1g4",
+    "tracker": "new",
+    "n_placements": 146,
+    "dur_s": 220.9,
+    "volleys": [
+     {
+      "t": 891.1,
+      "tb": 7.92,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 7.917
+     },
+     {
+      "t": 899.85,
+      "tb": 16.67,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 16.667
+     },
+     {
+      "t": 906.8167,
+      "tb": 23.63,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 23.633
+     },
+     {
+      "t": 917.0333,
+      "tb": 33.85,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 33.85
+     },
+     {
+      "t": 934.0333,
+      "tb": 50.85,
+      "size": 4,
+      "how": "explained",
+      "cols": [],
+      "n_cols": 0,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 50.85
+     },
+     {
+      "t": 973.2333,
+      "tb": 90.05,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 90.05
+     },
+     {
+      "t": 982.0333,
+      "tb": 98.85,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 98.85
+     },
+     {
+      "t": 987.2667,
+      "tb": 104.08,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 104.083
+     },
+     {
+      "t": 1005.05,
+      "tb": 121.87,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 121.867
+     },
+     {
+      "t": 1015.3333,
+      "tb": 132.15,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 132.15
+     },
+     {
+      "t": 1038.9833,
+      "tb": 155.8,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 155.8
+     },
+     {
+      "t": 1050.25,
+      "tb": 167.07,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 167.067
+     },
+     {
+      "t": 1084.75,
+      "tb": 201.57,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 201.567
+     }
+    ],
+    "hidden_spawns": 46,
+    "lulu_viruses": [
+     48,
+     3
+    ],
+    "game_s": 221.6,
+    "lulu_vcount_at": [
+     [
+      0.0,
+      48
+     ],
+     [
+      1.33,
+      48
+     ],
+     [
+      2.57,
+      48
+     ],
+     [
+      3.48,
+      48
+     ],
+     [
+      4.65,
+      46
+     ],
+     [
+      8.65,
+      46
+     ],
+     [
+      9.75,
+      46
+     ],
+     [
+      10.73,
+      46
+     ],
+     [
+      12.6,
+      45
+     ],
+     [
+      13.8,
+      43
+     ],
+     [
+      16.17,
+      42
+     ],
+     [
+      17.33,
+      42
+     ],
+     [
+      18.45,
+      42
+     ],
+     [
+      19.9,
+      40
+     ],
+     [
+      21.18,
+      40
+     ],
+     [
+      22.4,
+      39
+     ],
+     [
+      25.58,
+      37
+     ],
+     [
+      26.7,
+      37
+     ],
+     [
+      31.62,
+      33
+     ],
+     [
+      32.55,
+      33
+     ],
+     [
+      33.43,
+      33
+     ],
+     [
+      35.3,
+      33
+     ],
+     [
+      36.52,
+      31
+     ],
+     [
+      37.42,
+      31
+     ],
+     [
+      40.83,
+      31
+     ],
+     [
+      41.87,
+      31
+     ],
+     [
+      47.82,
+      31
+     ],
+     [
+      49.0,
+      31
+     ],
+     [
+      50.32,
+      31
+     ],
+     [
+      53.25,
+      31
+     ],
+     [
+      55.17,
+      31
+     ],
+     [
+      57.75,
+      31
+     ],
+     [
+      59.32,
+      30
+     ],
+     [
+      60.68,
+      30
+     ],
+     [
+      61.97,
+      30
+     ],
+     [
+      64.42,
+      29
+     ],
+     [
+      67.33,
+      29
+     ],
+     [
+      68.83,
+      29
+     ],
+     [
+      70.18,
+      29
+     ],
+     [
+      71.3,
+      29
+     ],
+     [
+      72.93,
+      29
+     ],
+     [
+      74.63,
+      28
+     ],
+     [
+      76.37,
+      27
+     ],
+     [
+      78.42,
+      24
+     ],
+     [
+      79.9,
+      24
+     ],
+     [
+      81.22,
+      24
+     ],
+     [
+      84.28,
+      24
+     ],
+     [
+      86.45,
+      23
+     ],
+     [
+      87.8,
+      23
+     ],
+     [
+      92.37,
+      23
+     ],
+     [
+      93.63,
+      23
+     ],
+     [
+      95.83,
+      23
+     ],
+     [
+      96.9,
+      23
+     ],
+     [
+      99.82,
+      22
+     ],
+     [
+      100.88,
+      22
+     ],
+     [
+      102.43,
+      22
+     ],
+     [
+      104.37,
+      20
+     ],
+     [
+      106.88,
+      20
+     ],
+     [
+      108.7,
+      20
+     ],
+     [
+      114.55,
+      20
+     ],
+     [
+      115.97,
+      20
+     ],
+     [
+      122.62,
+      18
+     ],
+     [
+      124.17,
+      18
+     ],
+     [
+      125.25,
+      18
+     ],
+     [
+      126.95,
+      18
+     ],
+     [
+      132.88,
+      18
+     ],
+     [
+      135.88,
+      16
+     ],
+     [
+      136.95,
+      16
+     ],
+     [
+      138.03,
+      16
+     ],
+     [
+      144.45,
+      16
+     ],
+     [
+      146.45,
+      16
+     ],
+     [
+      148.67,
+      15
+     ],
+     [
+      150.03,
+      15
+     ],
+     [
+      152.35,
+      15
+     ],
+     [
+      155.15,
+      15
+     ],
+     [
+      156.92,
+      15
+     ],
+     [
+      158.23,
+      15
+     ],
+     [
+      160.63,
+      14
+     ],
+     [
+      167.33,
+      13
+     ],
+     [
+      169.22,
+      13
+     ],
+     [
+      171.57,
+      11
+     ],
+     [
+      173.87,
+      11
+     ],
+     [
+      175.43,
+      11
+     ],
+     [
+      177.27,
+      10
+     ],
+     [
+      179.1,
+      9
+     ],
+     [
+      186.25,
+      9
+     ],
+     [
+      188.0,
+      9
+     ],
+     [
+      189.43,
+      9
+     ],
+     [
+      191.55,
+      8
+     ],
+     [
+      194.25,
+      8
+     ],
+     [
+      195.45,
+      8
+     ],
+     [
+      197.68,
+      8
+     ],
+     [
+      199.53,
+      8
+     ],
+     [
+      202.1,
+      8
+     ],
+     [
+      204.72,
+      8
+     ],
+     [
+      207.35,
+      8
+     ],
+     [
+      209.82,
+      6
+     ],
+     [
+      211.42,
+      6
+     ],
+     [
+      218.0,
+      5
+     ],
+     [
+      219.72,
+      5
+     ]
+    ]
+   }
+  },
+  {
+   "game": "m1g5",
+   "match": 1,
+   "g": 5,
+   "winner": "AI",
+   "how": "cleared",
+   "t0": 1112.8833,
+   "t_end": 1296.8333,
+   "dur_s": 184.0,
+   "final_lulu_ai": [
+    26,
+    0
+   ],
+   "pills": {
+    "lulu": 87,
+    "ai": 107
+   },
+   "hidden_spawns": {
+    "lulu": 16,
+    "ai": 24
+   },
+   "gate": {
+    "lulu": {
+     "steps": 86,
+     "exact": 73,
+     "garbage": 12,
+     "unexplained": 1,
+     "unexplained_t": [
+      1148.68
+     ]
+    },
+    "ai": {
+     "steps": 106,
+     "exact": 97,
+     "garbage": 9,
+     "unexplained": 0,
+     "unexplained_t": []
+    }
+   },
+   "repairs": {
+    "lulu": {
+     "float_removed": 2,
+     "landing_rederived:exact": 3,
+     "unexplained_kept": 1
+    },
+    "ai": {
+     "float_removed": 6,
+     "landing_rederived:exact": 6
+    }
+   },
+   "pace": {
+    "lulu": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 30,
+      "pills_per_min": 30.0,
+      "viruses": 10,
+      "viruses_per_min": 10.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 24,
+      "pills_per_min": 24.0,
+      "viruses": 8,
+      "viruses_per_min": 8.0
+     },
+     ">=120s": {
+      "seconds": 64.0,
+      "pills": 33,
+      "pills_per_min": 31.0,
+      "viruses": 4,
+      "viruses_per_min": 3.75
+     },
+     "all": {
+      "seconds": 184.0,
+      "pills": 87,
+      "pills_per_min": 28.4,
+      "viruses": 22,
+      "viruses_per_min": 7.18
+     },
+     ">30 left": {
+      "seconds": 107.8,
+      "pills": 48,
+      "pills_per_min": 26.7,
+      "viruses": 18,
+      "viruses_per_min": 10.02
+     },
+     "13-30 left": {
+      "seconds": 76.2,
+      "pills": 39,
+      "pills_per_min": 30.7,
+      "viruses": 4,
+      "viruses_per_min": 3.15
+     }
+    },
+    "ai": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 46,
+      "pills_per_min": 46.0,
+      "viruses": 25,
+      "viruses_per_min": 25.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 35,
+      "pills_per_min": 35.0,
+      "viruses": 13,
+      "viruses_per_min": 13.0
+     },
+     ">=120s": {
+      "seconds": 64.0,
+      "pills": 26,
+      "pills_per_min": 24.4,
+      "viruses": 10,
+      "viruses_per_min": 9.38
+     },
+     "all": {
+      "seconds": 184.0,
+      "pills": 107,
+      "pills_per_min": 34.9,
+      "viruses": 48,
+      "viruses_per_min": 15.66
+     },
+     ">30 left": {
+      "seconds": 39.2,
+      "pills": 28,
+      "pills_per_min": 42.8,
+      "viruses": 19,
+      "viruses_per_min": 29.04
+     },
+     "13-30 left": {
+      "seconds": 65.9,
+      "pills": 43,
+      "pills_per_min": 39.2,
+      "viruses": 17,
+      "viruses_per_min": 15.49
+     },
+     "<=12 left": {
+      "seconds": 78.8,
+      "pills": 36,
+      "pills_per_min": 27.4,
+      "viruses": 12,
+      "viruses_per_min": 9.13
+     }
+    }
+   },
+   "lulu_sends": {
+    "sender_side_attacks": 9,
+    "sender_side_sizes": {
+     "2": 9
+    },
+    "recv_by_ai_volleys": 9,
+    "recv_by_ai_cells": 18,
+    "recv_by_ai_sizes": {
+     "2": 9
+    },
+    "recv_unexplained": 0,
+    "recv_unexplained_with_new_cells": 0,
+    "ai_track_minutes": 3.05,
+    "volleys_per_min": 2.95,
+    "cells_per_min": 5.91,
+    "rom_column_rule": {
+     "conform": 7,
+     "violate": 0
+    },
+    "first_send_s": 31.917,
+    "attacks_assigned_to_a_volley": 9,
+    "attacks_in_flight_at_end": 0,
+    "recv_size_eq_min_sum4": 9,
+    "recv_with_merged_sends": 0,
+    "recv_unmatched": 0
+   },
+   "ai_sends": {
+    "sender_side_attacks": 16,
+    "sender_side_sizes": {
+     "2": 15,
+     "3": 1
+    },
+    "recv_by_lulu_volleys": 13,
+    "recv_by_lulu_cells": 31,
+    "recv_by_lulu_sizes": {
+     "2": 11,
+     "6": 1,
+     "3": 1
+    },
+    "lulu_track_minutes": 3.02,
+    "volleys_per_min": 4.31,
+    "cells_per_min": 10.27,
+    "rom_column_rule": {
+     "conform": 12,
+     "violate": 0
+    },
+    "first_send_s": 4.35,
+    "attacks_assigned_to_a_volley": 14,
+    "attacks_in_flight_at_end": 2,
+    "recv_size_eq_min_sum4": 11,
+    "recv_unmatched": 1
+   },
+   "death": {
+    "lulu": {
+     "t_last_throw": 1296.8333,
+     "t_last_placement": 1293.9833,
+     "last_landing": [
+      "H",
+      5,
+      0,
+      [
+       1,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      7,
+      16,
+      7,
+      10,
+      9,
+      16,
+      6,
+      8
+     ],
+     "max_h": 16,
+     "h34": [
+      10,
+      9
+     ],
+     "virus_final": 26,
+     "cells": 48,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       0,
+       1,
+       2
+      ],
+      [
+       0,
+       5,
+       3
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 8,
+     "garbage_cells_into_cols34_all_game": 8
+    },
+    "ai": {
+     "t_last_throw": 1296.8333,
+     "t_last_placement": 1295.6667,
+     "last_landing": [
+      "V",
+      11,
+      6,
+      [
+       3,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      0,
+      0,
+      1,
+      1,
+      2,
+      5,
+      5,
+      8
+     ],
+     "max_h": 8,
+     "h34": [
+      1,
+      2
+     ],
+     "virus_final": 1,
+     "cells": 22,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       11,
+       6,
+       3
+      ],
+      [
+       12,
+       6,
+       1
+      ],
+      [
+       13,
+       6,
+       1
+      ],
+      [
+       14,
+       6,
+       1
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 6,
+     "garbage_cells_into_cols34_all_game": 6
+    }
+   },
+   "fit_row": {
+    "opp": "lulu",
+    "pop": "1005",
+    "session": "10/05 lulu",
+    "level": 11,
+    "game": "m1g5",
+    "tracker": "new",
+    "n_placements": 107,
+    "dur_s": 182.8,
+    "volleys": [
+     {
+      "t": 1147.5667,
+      "tb": 34.68,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 34.683
+     },
+     {
+      "t": 1179.1667,
+      "tb": 66.28,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 66.283
+     },
+     {
+      "t": 1190.95,
+      "tb": 78.07,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 78.067
+     },
+     {
+      "t": 1198.2667,
+      "tb": 85.38,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 85.383
+     },
+     {
+      "t": 1231.5333,
+      "tb": 118.65,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 118.65
+     },
+     {
+      "t": 1248.8167,
+      "tb": 135.93,
+      "size": 2,
+      "how": "explained",
+      "cols": [
+       6
+      ],
+      "n_cols": 1,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 135.933
+     },
+     {
+      "t": 1267.4167,
+      "tb": 154.53,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 154.533
+     },
+     {
+      "t": 1282.1167,
+      "tb": 169.23,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 169.233
+     },
+     {
+      "t": 1291.2,
+      "tb": 178.32,
+      "size": 2,
+      "how": "explained",
+      "cols": [
+       5
+      ],
+      "n_cols": 1,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 178.317
+     }
+    ],
+    "hidden_spawns": 24,
+    "lulu_viruses": [
+     48,
+     26
+    ],
+    "game_s": 184.0,
+    "lulu_vcount_at": [
+     [
+      0.0,
+      48
+     ],
+     [
+      1.33,
+      48
+     ],
+     [
+      2.87,
+      47
+     ],
+     [
+      3.95,
+      47
+     ],
+     [
+      7.48,
+      46
+     ],
+     [
+      8.22,
+      46
+     ],
+     [
+      9.45,
+      45
+     ],
+     [
+      10.63,
+      45
+     ],
+     [
+      12.05,
+      44
+     ],
+     [
+      13.1,
+      44
+     ],
+     [
+      14.48,
+      44
+     ],
+     [
+      16.3,
+      44
+     ],
+     [
+      17.58,
+      43
+     ],
+     [
+      19.08,
+      43
+     ],
+     [
+      23.23,
+      43
+     ],
+     [
+      24.38,
+      43
+     ],
+     [
+      27.43,
+      42
+     ],
+     [
+      28.62,
+      42
+     ],
+     [
+      31.92,
+      41
+     ],
+     [
+      33.13,
+      41
+     ],
+     [
+      34.63,
+      41
+     ],
+     [
+      35.8,
+      41
+     ],
+     [
+      45.2,
+      40
+     ],
+     [
+      46.33,
+      40
+     ],
+     [
+      48.3,
+      39
+     ],
+     [
+      50.55,
+      39
+     ],
+     [
+      54.3,
+      39
+     ],
+     [
+      56.12,
+      39
+     ],
+     [
+      57.12,
+      39
+     ],
+     [
+      59.02,
+      38
+     ],
+     [
+      61.53,
+      38
+     ],
+     [
+      63.0,
+      38
+     ],
+     [
+      65.15,
+      38
+     ],
+     [
+      66.85,
+      38
+     ],
+     [
+      70.55,
+      36
+     ],
+     [
+      71.48,
+      36
+     ],
+     [
+      72.33,
+      36
+     ],
+     [
+      77.45,
+      36
+     ],
+     [
+      78.6,
+      36
+     ],
+     [
+      81.33,
+      34
+     ],
+     [
+      85.5,
+      34
+     ],
+     [
+      88.62,
+      33
+     ],
+     [
+      89.55,
+      33
+     ],
+     [
+      90.53,
+      33
+     ],
+     [
+      94.5,
+      32
+     ],
+     [
+      96.82,
+      31
+     ],
+     [
+      98.82,
+      31
+     ],
+     [
+      103.43,
+      31
+     ],
+     [
+      107.78,
+      30
+     ],
+     [
+      109.13,
+      30
+     ],
+     [
+      112.58,
+      30
+     ],
+     [
+      113.63,
+      30
+     ],
+     [
+      117.92,
+      30
+     ],
+     [
+      119.58,
+      30
+     ],
+     [
+      121.27,
+      30
+     ],
+     [
+      122.92,
+      30
+     ],
+     [
+      124.05,
+      30
+     ],
+     [
+      125.93,
+      30
+     ],
+     [
+      127.23,
+      30
+     ],
+     [
+      128.7,
+      30
+     ],
+     [
+      129.77,
+      30
+     ],
+     [
+      131.7,
+      30
+     ],
+     [
+      134.58,
+      30
+     ],
+     [
+      135.5,
+      30
+     ],
+     [
+      136.93,
+      30
+     ],
+     [
+      138.65,
+      30
+     ],
+     [
+      144.37,
+      30
+     ],
+     [
+      145.23,
+      30
+     ],
+     [
+      147.78,
+      30
+     ],
+     [
+      148.5,
+      30
+     ],
+     [
+      150.95,
+      29
+     ],
+     [
+      154.6,
+      29
+     ],
+     [
+      156.23,
+      29
+     ],
+     [
+      157.42,
+      29
+     ],
+     [
+      159.52,
+      29
+     ],
+     [
+      160.73,
+      29
+     ],
+     [
+      161.55,
+      29
+     ],
+     [
+      162.78,
+      29
+     ],
+     [
+      164.9,
+      29
+     ],
+     [
+      168.88,
+      29
+     ],
+     [
+      170.43,
+      27
+     ],
+     [
+      172.6,
+      27
+     ],
+     [
+      175.67,
+      27
+     ],
+     [
+      176.83,
+      27
+     ],
+     [
+      178.07,
+      27
+     ],
+     [
+      179.37,
+      27
+     ],
+     [
+      181.1,
+      27
+     ]
+    ]
+   }
+  },
+  {
+   "game": "m2g1",
+   "match": 2,
+   "g": 1,
+   "winner": "AI",
+   "how": "cleared",
+   "t0": 1304.5833,
+   "t_end": 1563.1833,
+   "dur_s": 258.6,
+   "final_lulu_ai": [
+    14,
+    0
+   ],
+   "pills": {
+    "lulu": 113,
+    "ai": 148
+   },
+   "hidden_spawns": {
+    "lulu": 21,
+    "ai": 27
+   },
+   "gate": {
+    "lulu": {
+     "steps": 112,
+     "exact": 87,
+     "garbage": 18,
+     "unexplained": 7,
+     "unexplained_t": [
+      1490.9,
+      1492.88,
+      1496.92,
+      1509.52,
+      1519.6,
+      1524.47,
+      1542.42
+     ]
+    },
+    "ai": {
+     "steps": 147,
+     "exact": 135,
+     "garbage": 12,
+     "unexplained": 0,
+     "unexplained_t": []
+    }
+   },
+   "repairs": {
+    "lulu": {
+     "float_removed": 2,
+     "landing_rederived:exact": 2,
+     "unexplained_kept": 8,
+     "landing_rederived:garbage": 1
+    },
+    "ai": {
+     "float_removed": 4,
+     "landing_rederived:exact": 4
+    }
+   },
+   "pace": {
+    "lulu": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 29,
+      "pills_per_min": 29.0,
+      "viruses": 11,
+      "viruses_per_min": 11.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 27,
+      "pills_per_min": 27.0,
+      "viruses": 5,
+      "viruses_per_min": 5.0
+     },
+     ">=120s": {
+      "seconds": 138.6,
+      "pills": 57,
+      "pills_per_min": 24.7,
+      "viruses": 18,
+      "viruses_per_min": 7.79
+     },
+     "all": {
+      "seconds": 258.6,
+      "pills": 113,
+      "pills_per_min": 26.2,
+      "viruses": 34,
+      "viruses_per_min": 7.89
+     },
+     ">30 left": {
+      "seconds": 149.3,
+      "pills": 68,
+      "pills_per_min": 27.3,
+      "viruses": 18,
+      "viruses_per_min": 7.23
+     },
+     "13-30 left": {
+      "seconds": 109.3,
+      "pills": 45,
+      "pills_per_min": 24.7,
+      "viruses": 16,
+      "viruses_per_min": 8.78
+     }
+    },
+    "ai": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 41,
+      "pills_per_min": 41.0,
+      "viruses": 24,
+      "viruses_per_min": 24.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 36,
+      "pills_per_min": 36.0,
+      "viruses": 14,
+      "viruses_per_min": 14.0
+     },
+     ">=120s": {
+      "seconds": 138.6,
+      "pills": 71,
+      "pills_per_min": 30.7,
+      "viruses": 10,
+      "viruses_per_min": 4.33
+     },
+     "all": {
+      "seconds": 258.6,
+      "pills": 148,
+      "pills_per_min": 34.3,
+      "viruses": 48,
+      "viruses_per_min": 11.14
+     },
+     ">30 left": {
+      "seconds": 49.8,
+      "pills": 31,
+      "pills_per_min": 37.4,
+      "viruses": 21,
+      "viruses_per_min": 25.32
+     },
+     "13-30 left": {
+      "seconds": 58.5,
+      "pills": 38,
+      "pills_per_min": 39.0,
+      "viruses": 16,
+      "viruses_per_min": 16.4
+     },
+     "<=12 left": {
+      "seconds": 150.3,
+      "pills": 79,
+      "pills_per_min": 31.5,
+      "viruses": 11,
+      "viruses_per_min": 4.39
+     }
+    }
+   },
+   "lulu_sends": {
+    "sender_side_attacks": 12,
+    "sender_side_sizes": {
+     "2": 12
+    },
+    "recv_by_ai_volleys": 12,
+    "recv_by_ai_cells": 24,
+    "recv_by_ai_sizes": {
+     "2": 12
+    },
+    "recv_unexplained": 0,
+    "recv_unexplained_with_new_cells": 0,
+    "ai_track_minutes": 4.28,
+    "volleys_per_min": 2.81,
+    "cells_per_min": 5.61,
+    "rom_column_rule": {
+     "conform": 11,
+     "violate": 0
+    },
+    "first_send_s": 12.333,
+    "attacks_assigned_to_a_volley": 12,
+    "attacks_in_flight_at_end": 0,
+    "recv_size_eq_min_sum4": 12,
+    "recv_with_merged_sends": 0,
+    "recv_unmatched": 0
+   },
+   "ai_sends": {
+    "sender_side_attacks": 22,
+    "sender_side_sizes": {
+     "2": 20,
+     "4": 1,
+     "3": 1
+    },
+    "recv_by_lulu_volleys": 18,
+    "recv_by_lulu_cells": 38,
+    "recv_by_lulu_sizes": {
+     "2": 17,
+     "4": 1
+    },
+    "lulu_track_minutes": 4.29,
+    "volleys_per_min": 4.19,
+    "cells_per_min": 8.86,
+    "rom_column_rule": {
+     "conform": 16,
+     "violate": 0
+    },
+    "first_send_s": 17.5,
+    "attacks_assigned_to_a_volley": 16,
+    "attacks_in_flight_at_end": 6,
+    "recv_size_eq_min_sum4": 16,
+    "recv_unmatched": 2
+   },
+   "death": {
+    "lulu": {
+     "t_last_throw": 1563.1333,
+     "t_last_placement": 1562.0333,
+     "last_landing": [
+      "H",
+      0,
+      4,
+      [
+       3,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      8,
+      16,
+      6,
+      12,
+      12,
+      11,
+      16,
+      16
+     ],
+     "max_h": 16,
+     "h34": [
+      12,
+      12
+     ],
+     "virus_final": 14,
+     "cells": 71,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 5,
+     "garbage_cells_into_cols34_all_game": 5
+    },
+    "ai": {
+     "t_last_throw": 1563.1333,
+     "t_last_placement": 1561.0833,
+     "last_landing": [
+      "V",
+      9,
+      7,
+      [
+       3,
+       3
+      ]
+     ],
+     "heights_at_death": [
+      6,
+      6,
+      4,
+      6,
+      1,
+      3,
+      6,
+      7
+     ],
+     "max_h": 7,
+     "h34": [
+      6,
+      1
+     ],
+     "virus_final": 1,
+     "cells": 37,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       9,
+       7,
+       3
+      ],
+      [
+       10,
+       7,
+       3
+      ],
+      [
+       11,
+       7,
+       3
+      ],
+      [
+       12,
+       7,
+       3
+      ],
+      [
+       13,
+       7,
+       3
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 4,
+     "garbage_cells_into_cols34_all_game": 4
+    }
+   },
+   "fit_row": {
+    "opp": "lulu",
+    "pop": "1005",
+    "session": "10/05 lulu",
+    "level": 11,
+    "game": "m2g1",
+    "tracker": "new",
+    "n_placements": 148,
+    "dur_s": 256.5,
+    "volleys": [
+     {
+      "t": 1322.0833,
+      "tb": 17.5,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 17.5
+     },
+     {
+      "t": 1329.7167,
+      "tb": 25.13,
+      "size": 2,
+      "how": "explained",
+      "cols": [
+       0
+      ],
+      "n_cols": 1,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 25.133
+     },
+     {
+      "t": 1348.8,
+      "tb": 44.22,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 44.217
+     },
+     {
+      "t": 1384.9667,
+      "tb": 80.38,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 80.383
+     },
+     {
+      "t": 1388.1833,
+      "tb": 83.6,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 83.6
+     },
+     {
+      "t": 1451.5167,
+      "tb": 146.93,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 146.933
+     },
+     {
+      "t": 1457.8667,
+      "tb": 153.28,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 153.283
+     },
+     {
+      "t": 1462.0667,
+      "tb": 157.48,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 157.483
+     },
+     {
+      "t": 1474.2,
+      "tb": 169.62,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 169.617
+     },
+     {
+      "t": 1495.9333,
+      "tb": 191.35,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 191.35
+     },
+     {
+      "t": 1535.1167,
+      "tb": 230.53,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 230.533
+     },
+     {
+      "t": 1547.2333,
+      "tb": 242.65,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 242.65
+     }
+    ],
+    "hidden_spawns": 27,
+    "lulu_viruses": [
+     48,
+     14
+    ],
+    "game_s": 258.6,
+    "lulu_vcount_at": [
+     [
+      0.0,
+      48
+     ],
+     [
+      1.28,
+      48
+     ],
+     [
+      2.25,
+      48
+     ],
+     [
+      3.37,
+      48
+     ],
+     [
+      4.58,
+      48
+     ],
+     [
+      6.07,
+      47
+     ],
+     [
+      8.65,
+      46
+     ],
+     [
+      9.77,
+      46
+     ],
+     [
+      12.33,
+      43
+     ],
+     [
+      13.58,
+      43
+     ],
+     [
+      17.2,
+      43
+     ],
+     [
+      18.32,
+      43
+     ],
+     [
+      20.25,
+      41
+     ],
+     [
+      21.87,
+      41
+     ],
+     [
+      24.28,
+      41
+     ],
+     [
+      26.15,
+      40
+     ],
+     [
+      29.87,
+      39
+     ],
+     [
+      33.47,
+      39
+     ],
+     [
+      34.45,
+      39
+     ],
+     [
+      35.13,
+      39
+     ],
+     [
+      36.25,
+      39
+     ],
+     [
+      38.9,
+      39
+     ],
+     [
+      39.88,
+      42
+     ],
+     [
+      43.78,
+      38
+     ],
+     [
+      48.32,
+      38
+     ],
+     [
+      49.72,
+      38
+     ],
+     [
+      54.32,
+      37
+     ],
+     [
+      55.2,
+      37
+     ],
+     [
+      57.87,
+      37
+     ],
+     [
+      60.7,
+      37
+     ],
+     [
+      61.52,
+      37
+     ],
+     [
+      63.62,
+      37
+     ],
+     [
+      66.15,
+      37
+     ],
+     [
+      68.07,
+      37
+     ],
+     [
+      69.83,
+      37
+     ],
+     [
+      72.82,
+      37
+     ],
+     [
+      73.72,
+      37
+     ],
+     [
+      75.63,
+      36
+     ],
+     [
+      76.72,
+      36
+     ],
+     [
+      77.87,
+      36
+     ],
+     [
+      80.82,
+      34
+     ],
+     [
+      81.95,
+      34
+     ],
+     [
+      83.52,
+      34
+     ],
+     [
+      85.77,
+      34
+     ],
+     [
+      86.87,
+      34
+     ],
+     [
+      88.13,
+      33
+     ],
+     [
+      91.58,
+      33
+     ],
+     [
+      93.43,
+      33
+     ],
+     [
+      94.33,
+      33
+     ],
+     [
+      98.67,
+      33
+     ],
+     [
+      99.72,
+      33
+     ],
+     [
+      101.08,
+      33
+     ],
+     [
+      107.28,
+      32
+     ],
+     [
+      110.68,
+      32
+     ],
+     [
+      115.33,
+      32
+     ],
+     [
+      117.22,
+      32
+     ],
+     [
+      122.0,
+      32
+     ],
+     [
+      124.2,
+      32
+     ],
+     [
+      125.93,
+      32
+     ],
+     [
+      127.08,
+      32
+     ],
+     [
+      132.08,
+      32
+     ],
+     [
+      133.2,
+      32
+     ],
+     [
+      135.77,
+      32
+     ],
+     [
+      137.45,
+      32
+     ],
+     [
+      138.63,
+      32
+     ],
+     [
+      139.38,
+      32
+     ],
+     [
+      142.15,
+      31
+     ],
+     [
+      147.12,
+      31
+     ],
+     [
+      149.32,
+      30
+     ],
+     [
+      150.38,
+      30
+     ],
+     [
+      151.32,
+      30
+     ],
+     [
+      154.03,
+      28
+     ],
+     [
+      157.95,
+      26
+     ],
+     [
+      159.47,
+      25
+     ],
+     [
+      161.42,
+      25
+     ],
+     [
+      163.07,
+      25
+     ],
+     [
+      165.78,
+      24
+     ],
+     [
+      168.43,
+      24
+     ],
+     [
+      170.78,
+      23
+     ],
+     [
+      172.15,
+      23
+     ],
+     [
+      174.43,
+      21
+     ],
+     [
+      176.12,
+      21
+     ],
+     [
+      177.53,
+      21
+     ],
+     [
+      183.9,
+      21
+     ],
+     [
+      186.32,
+      18
+     ],
+     [
+      188.3,
+      18
+     ],
+     [
+      190.17,
+      18
+     ],
+     [
+      192.33,
+      18
+     ],
+     [
+      200.33,
+      16
+     ],
+     [
+      201.72,
+      16
+     ],
+     [
+      202.75,
+      16
+     ],
+     [
+      204.93,
+      16
+     ],
+     [
+      213.07,
+      16
+     ],
+     [
+      215.02,
+      16
+     ],
+     [
+      218.3,
+      16
+     ],
+     [
+      219.88,
+      16
+     ],
+     [
+      221.52,
+      16
+     ],
+     [
+      225.77,
+      15
+     ],
+     [
+      228.97,
+      14
+     ],
+     [
+      230.4,
+      14
+     ],
+     [
+      232.22,
+      14
+     ],
+     [
+      233.17,
+      14
+     ],
+     [
+      236.45,
+      14
+     ],
+     [
+      237.83,
+      14
+     ],
+     [
+      242.93,
+      14
+     ],
+     [
+      245.2,
+      14
+     ],
+     [
+      246.92,
+      14
+     ],
+     [
+      248.9,
+      14
+     ],
+     [
+      250.15,
+      14
+     ],
+     [
+      252.33,
+      14
+     ],
+     [
+      254.22,
+      14
+     ],
+     [
+      256.38,
+      14
+     ],
+     [
+      257.45,
+      14
+     ]
+    ]
+   }
+  },
+  {
+   "game": "m2g2",
+   "match": 2,
+   "g": 2,
+   "winner": "AI",
+   "how": "cleared",
+   "t0": 1568.3333,
+   "t_end": 1800.65,
+   "dur_s": 232.3,
+   "final_lulu_ai": [
+    6,
+    0
+   ],
+   "pills": {
+    "lulu": 91,
+    "ai": 133
+   },
+   "hidden_spawns": {
+    "lulu": 9,
+    "ai": 15
+   },
+   "gate": {
+    "lulu": {
+     "steps": 90,
+     "exact": 73,
+     "garbage": 17,
+     "unexplained": 0,
+     "unexplained_t": []
+    },
+    "ai": {
+     "steps": 132,
+     "exact": 119,
+     "garbage": 13,
+     "unexplained": 0,
+     "unexplained_t": []
+    }
+   },
+   "repairs": {
+    "lulu": {
+     "float_removed": 1,
+     "landing_rederived:exact": 1
+    },
+    "ai": {
+     "float_removed": 14,
+     "landing_rederived:exact": 12
+    }
+   },
+   "pace": {
+    "lulu": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 31,
+      "pills_per_min": 31.0,
+      "viruses": 21,
+      "viruses_per_min": 21.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 27,
+      "pills_per_min": 27.0,
+      "viruses": 11,
+      "viruses_per_min": 11.0
+     },
+     ">=120s": {
+      "seconds": 112.3,
+      "pills": 33,
+      "pills_per_min": 17.6,
+      "viruses": 10,
+      "viruses_per_min": 5.34
+     },
+     "all": {
+      "seconds": 232.3,
+      "pills": 91,
+      "pills_per_min": 23.5,
+      "viruses": 42,
+      "viruses_per_min": 10.85
+     },
+     ">30 left": {
+      "seconds": 58.7,
+      "pills": 30,
+      "pills_per_min": 30.7,
+      "viruses": 19,
+      "viruses_per_min": 19.43
+     },
+     "13-30 left": {
+      "seconds": 97.5,
+      "pills": 36,
+      "pills_per_min": 22.2,
+      "viruses": 19,
+      "viruses_per_min": 11.7
+     },
+     "<=12 left": {
+      "seconds": 76.2,
+      "pills": 25,
+      "pills_per_min": 19.7,
+      "viruses": 4,
+      "viruses_per_min": 3.15
+     }
+    },
+    "ai": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 39,
+      "pills_per_min": 39.0,
+      "viruses": 19,
+      "viruses_per_min": 19.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 34,
+      "pills_per_min": 34.0,
+      "viruses": 9,
+      "viruses_per_min": 9.0
+     },
+     ">=120s": {
+      "seconds": 112.3,
+      "pills": 60,
+      "pills_per_min": 32.1,
+      "viruses": 20,
+      "viruses_per_min": 10.68
+     },
+     "all": {
+      "seconds": 232.3,
+      "pills": 133,
+      "pills_per_min": 34.3,
+      "viruses": 48,
+      "viruses_per_min": 12.4
+     },
+     ">30 left": {
+      "seconds": 35.4,
+      "pills": 23,
+      "pills_per_min": 39.0,
+      "viruses": 18,
+      "viruses_per_min": 30.52
+     },
+     "13-30 left": {
+      "seconds": 116.2,
+      "pills": 68,
+      "pills_per_min": 35.1,
+      "viruses": 18,
+      "viruses_per_min": 9.29
+     },
+     "<=12 left": {
+      "seconds": 80.7,
+      "pills": 42,
+      "pills_per_min": 31.2,
+      "viruses": 12,
+      "viruses_per_min": 8.92
+     }
+    }
+   },
+   "lulu_sends": {
+    "sender_side_attacks": 12,
+    "sender_side_sizes": {
+     "2": 11,
+     "3": 1
+    },
+    "recv_by_ai_volleys": 13,
+    "recv_by_ai_cells": 33,
+    "recv_by_ai_sizes": {
+     "4": 3,
+     "2": 9,
+     "3": 1
+    },
+    "recv_unexplained": 0,
+    "recv_unexplained_with_new_cells": 0,
+    "ai_track_minutes": 3.8,
+    "volleys_per_min": 3.42,
+    "cells_per_min": 8.67,
+    "rom_column_rule": {
+     "conform": 10,
+     "violate": 0
+    },
+    "first_send_s": 11.583,
+    "attacks_assigned_to_a_volley": 11,
+    "attacks_in_flight_at_end": 1,
+    "recv_size_eq_min_sum4": 10,
+    "recv_with_merged_sends": 1,
+    "recv_unmatched": 3
+   },
+   "ai_sends": {
+    "sender_side_attacks": 19,
+    "sender_side_sizes": {
+     "2": 18,
+     "4": 1
+    },
+    "recv_by_lulu_volleys": 17,
+    "recv_by_lulu_cells": 41,
+    "recv_by_lulu_sizes": {
+     "2": 13,
+     "3": 1,
+     "4": 3
+    },
+    "lulu_track_minutes": 3.84,
+    "volleys_per_min": 4.43,
+    "cells_per_min": 10.69,
+    "rom_column_rule": {
+     "conform": 14,
+     "violate": 0
+    },
+    "first_send_s": 20.483,
+    "attacks_assigned_to_a_volley": 17,
+    "attacks_in_flight_at_end": 2,
+    "recv_size_eq_min_sum4": 15,
+    "recv_unmatched": 1
+   },
+   "death": {
+    "lulu": {
+     "t_last_throw": 1800.6,
+     "t_last_placement": 1798.5167,
+     "last_landing": [
+      "V",
+      7,
+      6,
+      [
+       1,
+       1
+      ]
+     ],
+     "heights_at_death": [
+      13,
+      10,
+      7,
+      8,
+      8,
+      3,
+      9,
+      5
+     ],
+     "max_h": 13,
+     "h34": [
+      8,
+      8
+     ],
+     "virus_final": 6,
+     "cells": 50,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 11,
+     "garbage_cells_into_cols34_all_game": 11
+    },
+    "ai": {
+     "t_last_throw": 1800.6,
+     "t_last_placement": 1796.6333,
+     "last_landing": [
+      "H",
+      9,
+      4,
+      [
+       2,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      2,
+      1,
+      1,
+      1,
+      2,
+      6,
+      4,
+      7
+     ],
+     "max_h": 7,
+     "h34": [
+      1,
+      2
+     ],
+     "virus_final": 1,
+     "cells": 24,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       12,
+       6,
+       1
+      ],
+      [
+       13,
+       6,
+       1
+      ],
+      [
+       14,
+       6,
+       1
+      ],
+      [
+       15,
+       6,
+       1
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 7,
+     "garbage_cells_into_cols34_all_game": 7
+    }
+   },
+   "fit_row": {
+    "opp": "lulu",
+    "pop": "1005",
+    "session": "10/05 lulu",
+    "level": 11,
+    "game": "m2g2",
+    "tracker": "new",
+    "n_placements": 133,
+    "dur_s": 228.3,
+    "volleys": [
+     {
+      "t": 1585.7,
+      "tb": 17.37,
+      "size": 4,
+      "how": "explained",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 17.367
+     },
+     {
+      "t": 1603.7167,
+      "tb": 35.38,
+      "size": 4,
+      "how": "explained",
+      "cols": [
+       5
+      ],
+      "n_cols": 1,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 35.383
+     },
+     {
+      "t": 1611.3167,
+      "tb": 42.98,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 42.983
+     },
+     {
+      "t": 1616.85,
+      "tb": 48.52,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 48.517
+     },
+     {
+      "t": 1617.5,
+      "tb": 49.17,
+      "size": 4,
+      "how": "explained",
+      "cols": [
+       2,
+       3
+      ],
+      "n_cols": 2,
+      "linked_pair": true,
+      "same_col_pair": false,
+      "t_rel": 49.167
+     },
+     {
+      "t": 1623.0667,
+      "tb": 54.73,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 54.733
+     },
+     {
+      "t": 1630.4833,
+      "tb": 62.15,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 62.15
+     },
+     {
+      "t": 1673.8,
+      "tb": 105.47,
+      "size": 3,
+      "how": "direct",
+      "cols": [
+       3,
+       5,
+       7
+      ],
+      "n_cols": 3,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 105.467
+     },
+     {
+      "t": 1682.4167,
+      "tb": 114.08,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 114.083
+     },
+     {
+      "t": 1690.2,
+      "tb": 121.87,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 121.867
+     },
+     {
+      "t": 1710.65,
+      "tb": 142.32,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 142.317
+     },
+     {
+      "t": 1724.1167,
+      "tb": 155.78,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 155.783
+     },
+     {
+      "t": 1791.2333,
+      "tb": 222.9,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 222.9
+     }
+    ],
+    "hidden_spawns": 15,
+    "lulu_viruses": [
+     48,
+     6
+    ],
+    "game_s": 232.3,
+    "lulu_vcount_at": [
+     [
+      0.0,
+      48
+     ],
+     [
+      1.48,
+      48
+     ],
+     [
+      2.42,
+      48
+     ],
+     [
+      3.63,
+      48
+     ],
+     [
+      4.63,
+      48
+     ],
+     [
+      5.83,
+      47
+     ],
+     [
+      7.12,
+      46
+     ],
+     [
+      8.5,
+      46
+     ],
+     [
+      9.38,
+      46
+     ],
+     [
+      10.07,
+      46
+     ],
+     [
+      11.58,
+      45
+     ],
+     [
+      13.23,
+      43
+     ],
+     [
+      14.95,
+      43
+     ],
+     [
+      17.02,
+      41
+     ],
+     [
+      18.62,
+      40
+     ],
+     [
+      24.07,
+      38
+     ],
+     [
+      25.83,
+      38
+     ],
+     [
+      29.87,
+      38
+     ],
+     [
+      31.6,
+      38
+     ],
+     [
+      32.88,
+      38
+     ],
+     [
+      34.32,
+      38
+     ],
+     [
+      40.05,
+      35
+     ],
+     [
+      41.2,
+      35
+     ],
+     [
+      42.65,
+      34
+     ],
+     [
+      45.88,
+      33
+     ],
+     [
+      48.02,
+      33
+     ],
+     [
+      49.3,
+      33
+     ],
+     [
+      52.4,
+      32
+     ],
+     [
+      54.47,
+      32
+     ],
+     [
+      55.67,
+      32
+     ],
+     [
+      58.68,
+      29
+     ],
+     [
+      63.45,
+      27
+     ],
+     [
+      68.87,
+      25
+     ],
+     [
+      69.92,
+      25
+     ],
+     [
+      71.3,
+      24
+     ],
+     [
+      77.88,
+      24
+     ],
+     [
+      79.67,
+      23
+     ],
+     [
+      80.78,
+      23
+     ],
+     [
+      82.88,
+      23
+     ],
+     [
+      85.52,
+      23
+     ],
+     [
+      87.37,
+      23
+     ],
+     [
+      90.05,
+      22
+     ],
+     [
+      91.53,
+      22
+     ],
+     [
+      92.83,
+      22
+     ],
+     [
+      94.18,
+      22
+     ],
+     [
+      95.65,
+      22
+     ],
+     [
+      97.07,
+      22
+     ],
+     [
+      101.1,
+      21
+     ],
+     [
+      102.87,
+      21
+     ],
+     [
+      104.25,
+      21
+     ],
+     [
+      106.0,
+      20
+     ],
+     [
+      107.17,
+      20
+     ],
+     [
+      110.05,
+      18
+     ],
+     [
+      111.7,
+      18
+     ],
+     [
+      113.07,
+      18
+     ],
+     [
+      114.38,
+      18
+     ],
+     [
+      117.5,
+      16
+     ],
+     [
+      119.68,
+      16
+     ],
+     [
+      121.42,
+      16
+     ],
+     [
+      124.17,
+      15
+     ],
+     [
+      130.82,
+      15
+     ],
+     [
+      132.58,
+      15
+     ],
+     [
+      137.07,
+      15
+     ],
+     [
+      139.47,
+      13
+     ],
+     [
+      146.28,
+      13
+     ],
+     [
+      147.63,
+      13
+     ],
+     [
+      156.13,
+      10
+     ],
+     [
+      160.2,
+      9
+     ],
+     [
+      161.38,
+      9
+     ],
+     [
+      165.48,
+      9
+     ],
+     [
+      166.9,
+      9
+     ],
+     [
+      169.0,
+      9
+     ],
+     [
+      173.87,
+      9
+     ],
+     [
+      174.98,
+      9
+     ],
+     [
+      181.23,
+      8
+     ],
+     [
+      187.03,
+      8
+     ],
+     [
+      188.48,
+      8
+     ],
+     [
+      197.6,
+      8
+     ],
+     [
+      199.17,
+      8
+     ],
+     [
+      200.37,
+      8
+     ],
+     [
+      206.7,
+      6
+     ],
+     [
+      212.15,
+      6
+     ],
+     [
+      214.12,
+      6
+     ],
+     [
+      215.13,
+      6
+     ],
+     [
+      217.43,
+      6
+     ],
+     [
+      222.9,
+      6
+     ],
+     [
+      223.98,
+      6
+     ],
+     [
+      225.45,
+      6
+     ],
+     [
+      228.12,
+      6
+     ],
+     [
+      229.13,
+      6
+     ],
+     [
+      230.18,
+      6
+     ]
+    ]
+   }
+  },
+  {
+   "game": "m2g3",
+   "match": 2,
+   "g": 3,
+   "winner": "lulu",
+   "how": "cleared",
+   "t0": 1805.15,
+   "t_end": 2013.5833,
+   "dur_s": 208.4,
+   "final_lulu_ai": [
+    0,
+    11
+   ],
+   "pills": {
+    "lulu": 91,
+    "ai": 134
+   },
+   "hidden_spawns": {
+    "lulu": 23,
+    "ai": 25
+   },
+   "gate": {
+    "lulu": {
+     "steps": 90,
+     "exact": 81,
+     "garbage": 7,
+     "unexplained": 2,
+     "unexplained_t": [
+      1887.87,
+      1954.87
+     ]
+    },
+    "ai": {
+     "steps": 133,
+     "exact": 122,
+     "garbage": 10,
+     "unexplained": 1,
+     "unexplained_t": [
+      2006.43
+     ]
+    }
+   },
+   "repairs": {
+    "lulu": {
+     "unexplained_kept": 2
+    },
+    "ai": {
+     "float_removed": 34,
+     "landing_rederived:exact": 31,
+     "landing_rederived:garbage": 2,
+     "unexplained_kept": 1
+    }
+   },
+   "pace": {
+    "lulu": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 36,
+      "pills_per_min": 36.0,
+      "viruses": 17,
+      "viruses_per_min": 17.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 29,
+      "pills_per_min": 29.0,
+      "viruses": 19,
+      "viruses_per_min": 19.0
+     },
+     ">=120s": {
+      "seconds": 88.4,
+      "pills": 26,
+      "pills_per_min": 17.6,
+      "viruses": 12,
+      "viruses_per_min": 8.14
+     },
+     "all": {
+      "seconds": 208.4,
+      "pills": 91,
+      "pills_per_min": 26.2,
+      "viruses": 48,
+      "viruses_per_min": 13.82
+     },
+     ">30 left": {
+      "seconds": 62.8,
+      "pills": 37,
+      "pills_per_min": 35.3,
+      "viruses": 18,
+      "viruses_per_min": 17.18
+     },
+     "13-30 left": {
+      "seconds": 56.7,
+      "pills": 27,
+      "pills_per_min": 28.6,
+      "viruses": 18,
+      "viruses_per_min": 19.06
+     },
+     "<=12 left": {
+      "seconds": 88.9,
+      "pills": 27,
+      "pills_per_min": 18.2,
+      "viruses": 12,
+      "viruses_per_min": 8.1
+     }
+    },
+    "ai": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 47,
+      "pills_per_min": 47.0,
+      "viruses": 20,
+      "viruses_per_min": 20.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 31,
+      "pills_per_min": 31.0,
+      "viruses": 12,
+      "viruses_per_min": 12.0
+     },
+     ">=120s": {
+      "seconds": 88.4,
+      "pills": 56,
+      "pills_per_min": 38.0,
+      "viruses": 5,
+      "viruses_per_min": 3.39
+     },
+     "all": {
+      "seconds": 208.4,
+      "pills": 134,
+      "pills_per_min": 38.6,
+      "viruses": 37,
+      "viruses_per_min": 10.65
+     },
+     ">30 left": {
+      "seconds": 59.3,
+      "pills": 46,
+      "pills_per_min": 46.5,
+      "viruses": 19,
+      "viruses_per_min": 19.21
+     },
+     "13-30 left": {
+      "seconds": 124.5,
+      "pills": 72,
+      "pills_per_min": 34.7,
+      "viruses": 17,
+      "viruses_per_min": 8.19
+     },
+     "<=12 left": {
+      "seconds": 24.6,
+      "pills": 16,
+      "pills_per_min": 39.0,
+      "viruses": 1,
+      "viruses_per_min": 2.44
+     }
+    }
+   },
+   "lulu_sends": {
+    "sender_side_attacks": 10,
+    "sender_side_sizes": {
+     "2": 9,
+     "3": 1
+    },
+    "recv_by_ai_volleys": 11,
+    "recv_by_ai_cells": 29,
+    "recv_by_ai_sizes": {
+     "2": 7,
+     "4": 3,
+     "3": 1
+    },
+    "recv_unexplained": 0,
+    "recv_unexplained_with_new_cells": 0,
+    "ai_track_minutes": 3.41,
+    "volleys_per_min": 3.22,
+    "cells_per_min": 8.5,
+    "rom_column_rule": {
+     "conform": 6,
+     "violate": 0
+    },
+    "first_send_s": 5.7,
+    "attacks_assigned_to_a_volley": 7,
+    "attacks_in_flight_at_end": 3,
+    "recv_size_eq_min_sum4": 6,
+    "recv_with_merged_sends": 0,
+    "recv_unmatched": 4
+   },
+   "ai_sends": {
+    "sender_side_attacks": 13,
+    "sender_side_sizes": {
+     "2": 13
+    },
+    "recv_by_lulu_volleys": 8,
+    "recv_by_lulu_cells": 21,
+    "recv_by_lulu_sizes": {
+     "2": 6,
+     "5": 1,
+     "4": 1
+    },
+    "lulu_track_minutes": 3.32,
+    "volleys_per_min": 2.41,
+    "cells_per_min": 6.32,
+    "rom_column_rule": {
+     "conform": 4,
+     "violate": 0
+    },
+    "first_send_s": 32.283,
+    "attacks_assigned_to_a_volley": 7,
+    "attacks_in_flight_at_end": 6,
+    "recv_size_eq_min_sum4": 6,
+    "recv_unmatched": 1
+   },
+   "death": {
+    "lulu": {
+     "t_last_throw": 2013.5333,
+     "t_last_placement": 2011.5167,
+     "last_landing": [
+      "V",
+      11,
+      3,
+      [
+       3,
+       3
+      ]
+     ],
+     "heights_at_death": [
+      0,
+      1,
+      4,
+      5,
+      3,
+      5,
+      4,
+      1
+     ],
+     "max_h": 5,
+     "h34": [
+      5,
+      3
+     ],
+     "virus_final": 1,
+     "cells": 22,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       11,
+       3,
+       3
+      ],
+      [
+       12,
+       3,
+       3
+      ],
+      [
+       13,
+       3,
+       3
+      ],
+      [
+       13,
+       4,
+       2
+      ],
+      [
+       14,
+       3,
+       3
+      ],
+      [
+       15,
+       3,
+       3
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 4,
+     "garbage_cells_into_cols34_all_game": 4
+    },
+    "ai": {
+     "t_last_throw": 2013.5333,
+     "t_last_placement": 2009.9333,
+     "last_landing": [
+      "V",
+      4,
+      6,
+      [
+       2,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      15,
+      12,
+      4,
+      7,
+      10,
+      11,
+      7,
+      10
+     ],
+     "max_h": 15,
+     "h34": [
+      7,
+      10
+     ],
+     "virus_final": 10,
+     "cells": 53,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       4,
+       1,
+       2
+      ],
+      [
+       5,
+       5,
+       2
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 7,
+     "garbage_cells_into_cols34_all_game": 7
+    }
+   },
+   "fit_row": {
+    "opp": "lulu",
+    "pop": "1005",
+    "session": "10/05 lulu",
+    "level": 11,
+    "game": "m2g3",
+    "tracker": "new",
+    "n_placements": 134,
+    "dur_s": 204.8,
+    "volleys": [
+     {
+      "t": 1813.6,
+      "tb": 8.45,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 8.45
+     },
+     {
+      "t": 1828.65,
+      "tb": 23.5,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 23.5
+     },
+     {
+      "t": 1887.9,
+      "tb": 82.75,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 82.75
+     },
+     {
+      "t": 1900.5167,
+      "tb": 95.37,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 95.367
+     },
+     {
+      "t": 1916.55,
+      "tb": 111.4,
+      "size": 4,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 111.4
+     },
+     {
+      "t": 1929.0667,
+      "tb": 123.92,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 123.917
+     },
+     {
+      "t": 1935.0833,
+      "tb": 129.93,
+      "size": 4,
+      "how": "explained",
+      "cols": [
+       3
+      ],
+      "n_cols": 1,
+      "linked_pair": true,
+      "same_col_pair": true,
+      "t_rel": 129.933
+     },
+     {
+      "t": 1952.55,
+      "tb": 147.4,
+      "size": 4,
+      "how": "explained",
+      "cols": [
+       2,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 147.4
+     },
+     {
+      "t": 2003.6667,
+      "tb": 198.52,
+      "size": 3,
+      "how": "direct",
+      "cols": [
+       3,
+       5,
+       7
+      ],
+      "n_cols": 3,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 198.517
+     },
+     {
+      "t": 2007.6,
+      "tb": 202.45,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       4
+      ],
+      "n_cols": 1,
+      "linked_pair": false,
+      "same_col_pair": true,
+      "t_rel": 202.45
+     },
+     {
+      "t": 2008.3833,
+      "tb": 203.23,
+      "size": 2,
+      "how": "explained",
+      "cols": [],
+      "n_cols": 0,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 203.233
+     }
+    ],
+    "hidden_spawns": 25,
+    "lulu_viruses": [
+     48,
+     0
+    ],
+    "game_s": 208.4,
+    "lulu_vcount_at": [
+     [
+      0.0,
+      48
+     ],
+     [
+      1.38,
+      48
+     ],
+     [
+      2.23,
+      48
+     ],
+     [
+      3.43,
+      48
+     ],
+     [
+      4.42,
+      48
+     ],
+     [
+      5.7,
+      46
+     ],
+     [
+      7.18,
+      45
+     ],
+     [
+      9.0,
+      44
+     ],
+     [
+      10.47,
+      44
+     ],
+     [
+      11.72,
+      44
+     ],
+     [
+      12.93,
+      44
+     ],
+     [
+      14.67,
+      43
+     ],
+     [
+      15.83,
+      43
+     ],
+     [
+      18.1,
+      42
+     ],
+     [
+      19.15,
+      42
+     ],
+     [
+      21.13,
+      41
+     ],
+     [
+      22.38,
+      41
+     ],
+     [
+      23.53,
+      41
+     ],
+     [
+      26.22,
+      40
+     ],
+     [
+      27.52,
+      40
+     ],
+     [
+      29.63,
+      39
+     ],
+     [
+      31.85,
+      38
+     ],
+     [
+      34.78,
+      37
+     ],
+     [
+      36.8,
+      35
+     ],
+     [
+      38.18,
+      33
+     ],
+     [
+      39.77,
+      31
+     ],
+     [
+      41.73,
+      31
+     ],
+     [
+      43.57,
+      31
+     ],
+     [
+      45.47,
+      31
+     ],
+     [
+      46.38,
+      31
+     ],
+     [
+      48.02,
+      31
+     ],
+     [
+      49.17,
+      31
+     ],
+     [
+      51.02,
+      31
+     ],
+     [
+      51.82,
+      31
+     ],
+     [
+      57.8,
+      31
+     ],
+     [
+      59.02,
+      31
+     ],
+     [
+      60.42,
+      31
+     ],
+     [
+      62.85,
+      30
+     ],
+     [
+      64.72,
+      28
+     ],
+     [
+      65.9,
+      28
+     ],
+     [
+      69.37,
+      27
+     ],
+     [
+      70.55,
+      27
+     ],
+     [
+      71.63,
+      27
+     ],
+     [
+      74.72,
+      27
+     ],
+     [
+      77.9,
+      27
+     ],
+     [
+      79.35,
+      27
+     ],
+     [
+      81.07,
+      27
+     ],
+     [
+      82.72,
+      27
+     ],
+     [
+      84.8,
+      27
+     ],
+     [
+      86.15,
+      27
+     ],
+     [
+      87.72,
+      25
+     ],
+     [
+      88.9,
+      25
+     ],
+     [
+      90.23,
+      25
+     ],
+     [
+      96.02,
+      24
+     ],
+     [
+      97.4,
+      24
+     ],
+     [
+      98.55,
+      24
+     ],
+     [
+      103.18,
+      23
+     ],
+     [
+      105.75,
+      19
+     ],
+     [
+      107.3,
+      19
+     ],
+     [
+      109.72,
+      17
+     ],
+     [
+      112.27,
+      16
+     ],
+     [
+      113.45,
+      16
+     ],
+     [
+      115.73,
+      16
+     ],
+     [
+      117.38,
+      16
+     ],
+     [
+      119.52,
+      12
+     ],
+     [
+      121.2,
+      12
+     ],
+     [
+      123.38,
+      11
+     ],
+     [
+      125.72,
+      10
+     ],
+     [
+      126.92,
+      10
+     ],
+     [
+      132.63,
+      9
+     ],
+     [
+      135.13,
+      7
+     ],
+     [
+      136.55,
+      7
+     ],
+     [
+      139.13,
+      7
+     ],
+     [
+      141.62,
+      7
+     ],
+     [
+      144.25,
+      5
+     ],
+     [
+      146.3,
+      5
+     ],
+     [
+      147.95,
+      5
+     ],
+     [
+      149.72,
+      5
+     ],
+     [
+      171.85,
+      4
+     ],
+     [
+      183.15,
+      3
+     ],
+     [
+      187.85,
+      3
+     ],
+     [
+      189.28,
+      3
+     ],
+     [
+      190.47,
+      3
+     ],
+     [
+      193.12,
+      1
+     ],
+     [
+      194.9,
+      1
+     ],
+     [
+      196.92,
+      1
+     ],
+     [
+      199.22,
+      1
+     ],
+     [
+      201.02,
+      1
+     ],
+     [
+      202.65,
+      1
+     ],
+     [
+      205.37,
+      1
+     ],
+     [
+      206.37,
+      1
+     ]
+    ]
+   }
+  },
+  {
+   "game": "m2g4",
+   "match": 2,
+   "g": 4,
+   "winner": "AI",
+   "how": "cleared",
+   "t0": 2021.9833,
+   "t_end": 2208.05,
+   "dur_s": 186.1,
+   "final_lulu_ai": [
+    14,
+    0
+   ],
+   "pills": {
+    "lulu": 85,
+    "ai": 97
+   },
+   "hidden_spawns": {
+    "lulu": 10,
+    "ai": 11
+   },
+   "gate": {
+    "lulu": {
+     "steps": 84,
+     "exact": 71,
+     "garbage": 12,
+     "unexplained": 1,
+     "unexplained_t": [
+      2179.23
+     ]
+    },
+    "ai": {
+     "steps": 96,
+     "exact": 85,
+     "garbage": 11,
+     "unexplained": 0,
+     "unexplained_t": []
+    }
+   },
+   "repairs": {
+    "lulu": {
+     "unexplained_kept": 1
+    },
+    "ai": {
+     "float_removed": 3,
+     "landing_rederived:exact": 2
+    }
+   },
+   "pace": {
+    "lulu": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 32,
+      "pills_per_min": 32.0,
+      "viruses": 18,
+      "viruses_per_min": 18.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 26,
+      "pills_per_min": 26.0,
+      "viruses": 11,
+      "viruses_per_min": 11.0
+     },
+     ">=120s": {
+      "seconds": 66.1,
+      "pills": 27,
+      "pills_per_min": 24.5,
+      "viruses": 5,
+      "viruses_per_min": 4.54
+     },
+     "all": {
+      "seconds": 186.1,
+      "pills": 85,
+      "pills_per_min": 27.4,
+      "viruses": 34,
+      "viruses_per_min": 10.96
+     },
+     ">30 left": {
+      "seconds": 60.9,
+      "pills": 32,
+      "pills_per_min": 31.5,
+      "viruses": 18,
+      "viruses_per_min": 17.74
+     },
+     "13-30 left": {
+      "seconds": 125.2,
+      "pills": 53,
+      "pills_per_min": 25.4,
+      "viruses": 16,
+      "viruses_per_min": 7.67
+     }
+    },
+    "ai": {
+     "0-60s": {
+      "seconds": 60.0,
+      "pills": 37,
+      "pills_per_min": 37.0,
+      "viruses": 26,
+      "viruses_per_min": 26.0
+     },
+     "60-120s": {
+      "seconds": 60.0,
+      "pills": 29,
+      "pills_per_min": 29.0,
+      "viruses": 13,
+      "viruses_per_min": 13.0
+     },
+     ">=120s": {
+      "seconds": 66.1,
+      "pills": 31,
+      "pills_per_min": 28.2,
+      "viruses": 9,
+      "viruses_per_min": 8.17
+     },
+     "all": {
+      "seconds": 186.1,
+      "pills": 97,
+      "pills_per_min": 31.3,
+      "viruses": 48,
+      "viruses_per_min": 15.48
+     },
+     ">30 left": {
+      "seconds": 39.5,
+      "pills": 26,
+      "pills_per_min": 39.5,
+      "viruses": 18,
+      "viruses_per_min": 27.33
+     },
+     "13-30 left": {
+      "seconds": 58.0,
+      "pills": 29,
+      "pills_per_min": 30.0,
+      "viruses": 18,
+      "viruses_per_min": 18.63
+     },
+     "<=12 left": {
+      "seconds": 88.6,
+      "pills": 42,
+      "pills_per_min": 28.5,
+      "viruses": 12,
+      "viruses_per_min": 8.13
+     }
+    }
+   },
+   "lulu_sends": {
+    "sender_side_attacks": 11,
+    "sender_side_sizes": {
+     "2": 10,
+     "3": 1
+    },
+    "recv_by_ai_volleys": 11,
+    "recv_by_ai_cells": 27,
+    "recv_by_ai_sizes": {
+     "4": 2,
+     "2": 8,
+     "3": 1
+    },
+    "recv_unexplained": 0,
+    "recv_unexplained_with_new_cells": 0,
+    "ai_track_minutes": 3.06,
+    "volleys_per_min": 3.59,
+    "cells_per_min": 8.82,
+    "rom_column_rule": {
+     "conform": 8,
+     "violate": 0
+    },
+    "first_send_s": 17.967,
+    "attacks_assigned_to_a_volley": 11,
+    "attacks_in_flight_at_end": 0,
+    "recv_size_eq_min_sum4": 10,
+    "recv_with_merged_sends": 1,
+    "recv_unmatched": 1
+   },
+   "ai_sends": {
+    "sender_side_attacks": 15,
+    "sender_side_sizes": {
+     "2": 11,
+     "3": 4
+    },
+    "recv_by_lulu_volleys": 13,
+    "recv_by_lulu_cells": 32,
+    "recv_by_lulu_sizes": {
+     "2": 9,
+     "3": 3,
+     "5": 1
+    },
+    "lulu_track_minutes": 3.09,
+    "volleys_per_min": 4.2,
+    "cells_per_min": 10.35,
+    "rom_column_rule": {
+     "conform": 10,
+     "violate": 0
+    },
+    "first_send_s": 24.633,
+    "attacks_assigned_to_a_volley": 14,
+    "attacks_in_flight_at_end": 1,
+    "recv_size_eq_min_sum4": 8,
+    "recv_unmatched": 2
+   },
+   "death": {
+    "lulu": {
+     "t_last_throw": 2208.05,
+     "t_last_placement": 2207.5,
+     "last_landing": [
+      "V",
+      1,
+      4,
+      [
+       3,
+       3
+      ]
+     ],
+     "heights_at_death": [
+      2,
+      8,
+      8,
+      9,
+      1,
+      5,
+      3,
+      5
+     ],
+     "max_h": 9,
+     "h34": [
+      9,
+      1
+     ],
+     "virus_final": 14,
+     "cells": 29,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [],
+     "garbage_volleys_with_a_cell_in_cols34": 12,
+     "garbage_cells_into_cols34_all_game": 12
+    },
+    "ai": {
+     "t_last_throw": 2208.05,
+     "t_last_placement": 2205.6,
+     "last_landing": [
+      "V",
+      8,
+      0,
+      [
+       3,
+       2
+      ]
+     ],
+     "heights_at_death": [
+      4,
+      2,
+      0,
+      2,
+      5,
+      1,
+      1,
+      7
+     ],
+     "max_h": 7,
+     "h34": [
+      2,
+      5
+     ],
+     "virus_final": 1,
+     "cells": 22,
+     "plug": [],
+     "plug_by_garbage_after_last_placement": [],
+     "plug_by_untracked_last_pill": [],
+     "plug_present_before": [],
+     "cells_arrived_after_last_placement": [
+      [
+       12,
+       0,
+       3
+      ],
+      [
+       13,
+       0,
+       3
+      ],
+      [
+       14,
+       0,
+       3
+      ],
+      [
+       15,
+       0,
+       3
+      ]
+     ],
+     "garbage_volleys_with_a_cell_in_cols34": 6,
+     "garbage_cells_into_cols34_all_game": 6
+    }
+   },
+   "fit_row": {
+    "opp": "lulu",
+    "pop": "1005",
+    "session": "10/05 lulu",
+    "level": 11,
+    "game": "m2g4",
+    "tracker": "new",
+    "n_placements": 97,
+    "dur_s": 183.6,
+    "volleys": [
+     {
+      "t": 2038.8667,
+      "tb": 16.88,
+      "size": 4,
+      "how": "explained",
+      "cols": [
+       2
+      ],
+      "n_cols": 1,
+      "linked_pair": false,
+      "same_col_pair": true,
+      "t_rel": 16.883
+     },
+     {
+      "t": 2046.6167,
+      "tb": 24.63,
+      "size": 4,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 24.633
+     },
+     {
+      "t": 2075.3667,
+      "tb": 53.38,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 53.383
+     },
+     {
+      "t": 2085.7833,
+      "tb": 63.8,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 63.8
+     },
+     {
+      "t": 2103.8333,
+      "tb": 81.85,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 81.85
+     },
+     {
+      "t": 2115.7833,
+      "tb": 93.8,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       2,
+       6
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 93.8
+     },
+     {
+      "t": 2128.7833,
+      "tb": 106.8,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       3,
+       7
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 106.8
+     },
+     {
+      "t": 2136.7167,
+      "tb": 114.73,
+      "size": 2,
+      "how": "explained",
+      "cols": [
+       4
+      ],
+      "n_cols": 1,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 114.733
+     },
+     {
+      "t": 2145.4,
+      "tb": 123.42,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       1,
+       5
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 123.417
+     },
+     {
+      "t": 2169.7833,
+      "tb": 147.8,
+      "size": 3,
+      "how": "direct",
+      "cols": [
+       3,
+       5,
+       7
+      ],
+      "n_cols": 3,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 147.8
+     },
+     {
+      "t": 2203.55,
+      "tb": 181.57,
+      "size": 2,
+      "how": "direct",
+      "cols": [
+       0,
+       4
+      ],
+      "n_cols": 2,
+      "linked_pair": false,
+      "same_col_pair": false,
+      "t_rel": 181.567
+     }
+    ],
+    "hidden_spawns": 11,
+    "lulu_viruses": [
+     48,
+     14
+    ],
+    "game_s": 186.1,
+    "lulu_vcount_at": [
+     [
+      0.0,
+      48
+     ],
+     [
+      1.12,
+      48
+     ],
+     [
+      2.1,
+      48
+     ],
+     [
+      3.2,
+      46
+     ],
+     [
+      4.83,
+      44
+     ],
+     [
+      5.68,
+      44
+     ],
+     [
+      7.07,
+      44
+     ],
+     [
+      8.28,
+      44
+     ],
+     [
+      10.23,
+      43
+     ],
+     [
+      11.17,
+      43
+     ],
+     [
+      12.2,
+      43
+     ],
+     [
+      13.42,
+      43
+     ],
+     [
+      14.63,
+      43
+     ],
+     [
+      15.78,
+      41
+     ],
+     [
+      17.97,
+      39
+     ],
+     [
+      22.3,
+      37
+     ],
+     [
+      24.68,
+      37
+     ],
+     [
+      27.35,
+      36
+     ],
+     [
+      30.87,
+      36
+     ],
+     [
+      34.6,
+      35
+     ],
+     [
+      37.78,
+      35
+     ],
+     [
+      41.98,
+      35
+     ],
+     [
+      43.32,
+      35
+     ],
+     [
+      45.62,
+      34
+     ],
+     [
+      46.65,
+      34
+     ],
+     [
+      49.23,
+      33
+     ],
+     [
+      50.07,
+      33
+     ],
+     [
+      52.6,
+      33
+     ],
+     [
+      54.05,
+      32
+     ],
+     [
+      56.83,
+      32
+     ],
+     [
+      58.27,
+      32
+     ],
+     [
+      59.45,
+      32
+     ],
+     [
+      60.87,
+      30
+     ],
+     [
+      62.68,
+      28
+     ],
+     [
+      64.15,
+      28
+     ],
+     [
+      65.62,
+      28
+     ],
+     [
+      70.17,
+      26
+     ],
+     [
+      71.53,
+      26
+     ],
+     [
+      74.22,
+      26
+     ],
+     [
+      76.9,
+      24
+     ],
+     [
+      78.1,
+      24
+     ],
+     [
+      84.92,
+      24
+     ],
+     [
+      85.98,
+      24
+     ],
+     [
+      87.77,
+      24
+     ],
+     [
+      93.03,
+      23
+     ],
+     [
+      94.02,
+      23
+     ],
+     [
+      97.27,
+      22
+     ],
+     [
+      98.58,
+      21
+     ],
+     [
+      100.72,
+      21
+     ],
+     [
+      103.52,
+      19
+     ],
+     [
+      104.52,
+      19
+     ],
+     [
+      105.57,
+      19
+     ],
+     [
+      106.93,
+      19
+     ],
+     [
+      108.28,
+      19
+     ],
+     [
+      110.9,
+      19
+     ],
+     [
+      115.3,
+      19
+     ],
+     [
+      118.28,
+      19
+     ],
+     [
+      119.63,
+      19
+     ],
+     [
+      122.15,
+      19
+     ],
+     [
+      123.93,
+      19
+     ],
+     [
+      125.7,
+      18
+     ],
+     [
+      127.62,
+      18
+     ],
+     [
+      129.37,
+      18
+     ],
+     [
+      131.35,
+      18
+     ],
+     [
+      133.58,
+      18
+     ],
+     [
+      138.15,
+      17
+     ],
+     [
+      139.53,
+      17
+     ],
+     [
+      146.83,
+      16
+     ],
+     [
+      148.37,
+      16
+     ],
+     [
+      149.28,
+      16
+     ],
+     [
+      152.7,
+      16
+     ],
+     [
+      153.85,
+      16
+     ],
+     [
+      156.12,
+      15
+     ],
+     [
+      157.25,
+      15
+     ],
+     [
+      165.57,
+      15
+     ],
+     [
+      167.0,
+      15
+     ],
+     [
+      167.83,
+      15
+     ],
+     [
+      169.03,
+      15
+     ],
+     [
+      171.93,
+      15
+     ],
+     [
+      172.55,
+      15
+     ],
+     [
+      178.68,
+      14
+     ],
+     [
+      179.88,
+      14
+     ],
+     [
+      180.6,
+      14
+     ],
+     [
+      184.12,
+      14
+     ],
+     [
+      185.52,
+      14
+     ]
+    ]
+   }
+  }
+ ]
+}

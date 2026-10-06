@@ -1,0 +1,20 @@
+{
+ "capture": "2026-10-05 20-09-41.mkv (rivalmage, OBS 1080p60, NES box x 255-1666, same path as 10/03-10/04)",
+ "fit": "geomfit_fair_20261004.py on 12 frames of this recording (100-2250 s): P2 x0 1129.5 (= 10/03, 10/04; 4 viol / 490 cells / 118 linked); P1 x0 424.1 (9 viol / 523 cells / 81 linked; 424.6 = 9 viol / 77 linked); y0 341.2 kept (340.2 ties). Board virus counts == HUD on t=1000 (20/25), by eye.",
+ "SX": 5.55,
+ "SY": 4.825,
+ "CW": 44.4,
+ "CH": 38.6,
+ "P1_X0": 424.1,
+ "P2_X0": 1129.5,
+ "P2_Y0": 341.2,
+ "PREV_Y0": 219.2,
+ "VIRUS_MIXED": false,
+ "HUD_X": {
+  "p1t": 859.5,
+  "p1o": 904.0,
+  "p2t": 971.0,
+  "p2o": 1015.5
+ },
+ "HUD_Y": 881.5
+}

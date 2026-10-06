@@ -1,0 +1,276 @@
+{
+ "games": [
+  {
+   "game": "m1g1",
+   "pills": 212,
+   "silicon_eq_brain": 170,
+   "pct": 80.2,
+   "labels": {
+    "MATCH": 170,
+    "PREV-TARGET": 9,
+    "EARLIER-PUB": 7,
+    "TUCK": 4,
+    "HYBRID": 11,
+    "SHORT-LANDING": 5,
+    "LATE-FLIP": 6
+   },
+   "cosim": {
+    "FINAL": 157,
+    "HYBRID": 21,
+    "AT-GATE": 17,
+    "TUCK": 4,
+    "OTHER-PUB": 13
+   },
+   "copro_final_eq_brain": 184,
+   "with_cosim": 212,
+   "after_garbage_pills": 12,
+   "prev_target": 9,
+   "prev_target_mesen_fair_reproduces": 8,
+   "prev_target_fairplus_lands_final": 8,
+   "clamp_slams_fair_mesen": 1,
+   "replay_fair": {
+    "n": 212,
+    "eq_silicon": 184,
+    "eq_final": 173,
+    "hybrid": 8
+   },
+   "replay_fairplus": {
+    "n": 212,
+    "eq_silicon": 176,
+    "eq_final": 182,
+    "hybrid": 0
+   },
+   "stalls": [
+    {
+     "p_from": 87,
+     "p_to": 109,
+     "pills": 23,
+     "viruses": 7,
+     "t_from": 140.2,
+     "seconds": 43.2,
+     "silicon_eq_brain": 17,
+     "ends_game": false
+    },
+    {
+     "p_from": 110,
+     "p_to": 139,
+     "pills": 30,
+     "viruses": 6,
+     "t_from": 183.433,
+     "seconds": 50.5,
+     "silicon_eq_brain": 22,
+     "ends_game": false
+    },
+    {
+     "p_from": 140,
+     "p_to": 183,
+     "pills": 43,
+     "viruses": 5,
+     "t_from": 233.883,
+     "seconds": 70.9,
+     "silicon_eq_brain": 26,
+     "ends_game": false
+    },
+    {
+     "p_from": 184,
+     "p_to": 212,
+     "pills": 29,
+     "viruses": 4,
+     "t_from": 304.75,
+     "seconds": 40.8,
+     "silicon_eq_brain": 28,
+     "ends_game": true
+    }
+   ],
+   "misses": 42,
+   "silicon_only_misses": 20,
+   "silicon_only_by_label": {
+    "HYBRID": 11,
+    "EARLIER-PUB": 2,
+    "LATE-FLIP": 3,
+    "SHORT-LANDING": 3,
+    "PREV-TARGET": 1
+   },
+   "mesen_reproduced_misses": 18
+  },
+  {
+   "game": "m1g2",
+   "pills": 217,
+   "silicon_eq_brain": 178,
+   "pct": 82.0,
+   "labels": {
+    "MATCH": 178,
+    "PREV-TARGET": 8,
+    "HYBRID": 10,
+    "SHORT-LANDING": 3,
+    "EARLIER-PUB": 16,
+    "LATE-FLIP": 1,
+    "TUCK": 1
+   },
+   "cosim": {
+    "FINAL": 174,
+    "HYBRID": 21,
+    "OTHER-PUB": 8,
+    "AT-GATE": 13,
+    "TUCK": 1
+   },
+   "copro_final_eq_brain": 212,
+   "with_cosim": 217,
+   "after_garbage_pills": 15,
+   "prev_target": 8,
+   "prev_target_mesen_fair_reproduces": 4,
+   "prev_target_fairplus_lands_final": 8,
+   "clamp_slams_fair_mesen": 0,
+   "replay_fair": {
+    "n": 217,
+    "eq_silicon": 182,
+    "eq_final": 201,
+    "hybrid": 9
+   },
+   "replay_fairplus": {
+    "n": 217,
+    "eq_silicon": 180,
+    "eq_final": 210,
+    "hybrid": 0
+   },
+   "stalls": [
+    {
+     "p_from": 62,
+     "p_to": 106,
+     "pills": 45,
+     "viruses": 10,
+     "t_from": 115.183,
+     "seconds": 71.3,
+     "silicon_eq_brain": 37,
+     "ends_game": false
+    },
+    {
+     "p_from": 108,
+     "p_to": 217,
+     "pills": 110,
+     "viruses": 7,
+     "t_from": 188.467,
+     "seconds": 199.3,
+     "silicon_eq_brain": 87,
+     "ends_game": true
+    }
+   ],
+   "misses": 39,
+   "silicon_only_misses": 32,
+   "silicon_only_by_label": {
+    "HYBRID": 10,
+    "SHORT-LANDING": 3,
+    "PREV-TARGET": 4,
+    "EARLIER-PUB": 14,
+    "LATE-FLIP": 1
+   },
+   "mesen_reproduced_misses": 6
+  },
+  {
+   "game": "m1g4",
+   "pills": 146,
+   "silicon_eq_brain": 118,
+   "pct": 80.8,
+   "labels": {
+    "MATCH": 118,
+    "PREV-TARGET": 6,
+    "HYBRID": 6,
+    "TUCK": 1,
+    "EARLIER-PUB": 12,
+    "LATE-FLIP": 3
+   },
+   "cosim": {
+    "FINAL": 104,
+    "HYBRID": 15,
+    "OTHER-PUB": 11,
+    "TUCK": 1,
+    "AT-GATE": 15
+   },
+   "copro_final_eq_brain": 128,
+   "with_cosim": 146,
+   "after_garbage_pills": 12,
+   "prev_target": 6,
+   "prev_target_mesen_fair_reproduces": 4,
+   "prev_target_fairplus_lands_final": 5,
+   "clamp_slams_fair_mesen": 1,
+   "replay_fair": {
+    "n": 146,
+    "eq_silicon": 122,
+    "eq_final": 116,
+    "hybrid": 5
+   },
+   "replay_fairplus": {
+    "n": 146,
+    "eq_silicon": 119,
+    "eq_final": 124,
+    "hybrid": 0
+   },
+   "stalls": [
+    {
+     "p_from": 34,
+     "p_to": 46,
+     "pills": 13,
+     "viruses": 30,
+     "t_from": 54.75,
+     "seconds": 19.4,
+     "silicon_eq_brain": 11,
+     "ends_game": false
+    },
+    {
+     "p_from": 72,
+     "p_to": 82,
+     "pills": 11,
+     "viruses": 23,
+     "t_from": 117.717,
+     "seconds": 21.5,
+     "silicon_eq_brain": 10,
+     "ends_game": false
+    },
+    {
+     "p_from": 97,
+     "p_to": 145,
+     "pills": 49,
+     "viruses": 16,
+     "t_from": 162.45,
+     "seconds": 58.5,
+     "silicon_eq_brain": 34,
+     "ends_game": true
+    }
+   ],
+   "misses": 28,
+   "silicon_only_misses": 20,
+   "silicon_only_by_label": {
+    "HYBRID": 6,
+    "EARLIER-PUB": 9,
+    "LATE-FLIP": 3,
+    "PREV-TARGET": 2
+   },
+   "mesen_reproduced_misses": 7
+  }
+ ],
+ "total": {
+  "pills": 575,
+  "silicon_eq_brain": 466,
+  "after_garbage_pills": 39,
+  "prev_target": 23,
+  "clamp_slams_fair_mesen": 2,
+  "misses": 109,
+  "silicon_only_misses": 72,
+  "mesen_reproduced_misses": 31,
+  "replay_fair_n": 575,
+  "replay_fair_eq_silicon": 488,
+  "replay_fair_eq_final": 490,
+  "replay_fair_hybrid": 22,
+  "replay_fairplus_n": 575,
+  "replay_fairplus_eq_silicon": 475,
+  "replay_fairplus_eq_final": 516,
+  "replay_fairplus_hybrid": 0,
+  "label_MATCH": 466,
+  "label_PREV-TARGET": 23,
+  "label_EARLIER-PUB": 35,
+  "label_TUCK": 6,
+  "label_HYBRID": 27,
+  "label_SHORT-LANDING": 8,
+  "label_LATE-FLIP": 10
+ }
+}

@@ -1,0 +1,1165 @@
+{
+ "games": [
+  {
+   "game": "m1g1",
+   "winner": "AI",
+   "how": "lulu topped out",
+   "final_lulu_ai": [
+    6,
+    4
+   ],
+   "dur_s": 346.5,
+   "race_lulu_ai": {
+    "30": [
+     41,
+     35
+    ],
+    "60": [
+     33,
+     24
+    ],
+    "90": [
+     29,
+     17
+    ],
+    "120": [
+     25,
+     11
+    ],
+    "150": [
+     24,
+     7
+    ],
+    "180": [
+     20,
+     7
+    ],
+    "210": [
+     13,
+     6
+    ],
+    "240": [
+     11,
+     5
+    ]
+   },
+   "first_reached": {
+    "lulu": {
+     "24": 148.0,
+     "12": 221.3,
+     "6": 308.8,
+     "0": null
+    },
+    "ai": {
+     "24": 59.9,
+     "12": 103.4,
+     "6": 183.4,
+     "0": null
+    }
+   },
+   "lulu_vpm": {
+    "0-60s": 15.0,
+    "60-120s": 8.0,
+    ">=120s": 5.03,
+    "all": 7.27
+   },
+   "ai_vpm": {
+    "0-60s": 24.0,
+    "60-120s": 13.0,
+    ">=120s": 1.85,
+    "all": 7.62
+   },
+   "lulu_ppm": 26.1,
+   "ai_ppm": 36.7,
+   "ai_longest_stall": {
+    "seconds": 70.9,
+    "viruses": 5,
+    "pills": 43,
+    "from_s": 233.9
+   },
+   "lulu_longest_stall": {
+    "seconds": 42.4,
+    "viruses": 10,
+    "pills": 14,
+    "from_s": 250.4
+   },
+   "garbage_cells_to_lulu": 73,
+   "garbage_cells_to_ai": 33,
+   "garbage_to_lulu_per_min": 12.65,
+   "garbage_to_ai_per_min": 5.73,
+   "finishing_deficit": {
+    "loser": "lulu",
+    "viruses_left": 6,
+    "her_rate_last60_per_min": 4.0,
+    "seconds_still_needed_at_that_rate": 90.0
+   },
+   "lane_at_death": {
+    "seat": "lulu",
+    "lane": {
+     "3": {
+      "height": 16,
+      "cells_above_top_virus": 14,
+      "by_provenance": {
+       "P": 12,
+       "G": 2
+      },
+      "top_cells": [
+       [
+        0,
+        "P150"
+       ],
+       [
+        1,
+        "P149"
+       ],
+       [
+        2,
+        "P148"
+       ],
+       [
+        3,
+        "P147"
+       ]
+      ]
+     },
+     "4": {
+      "height": 16,
+      "cells_above_top_virus": 12,
+      "by_provenance": {
+       "P": 12
+      },
+      "top_cells": [
+       [
+        0,
+        "P150"
+       ],
+       [
+        1,
+        "P149"
+       ],
+       [
+        2,
+        "P148"
+       ],
+       [
+        3,
+        "P147"
+       ]
+      ]
+     }
+    },
+    "board_cells_by_provenance": {
+     "P": 61,
+     "G": 19,
+     "V": 6
+    }
+   },
+   "ai_silicon_eq_brain_pct": 80.2
+  },
+  {
+   "game": "m1g2",
+   "winner": "lulu",
+   "how": "cleared",
+   "final_lulu_ai": [
+    0,
+    7
+   ],
+   "dur_s": 389.4,
+   "race_lulu_ai": {
+    "30": [
+     41,
+     37
+    ],
+    "60": [
+     35,
+     24
+    ],
+    "90": [
+     30,
+     17
+    ],
+    "120": [
+     21,
+     10
+    ],
+    "150": [
+     18,
+     10
+    ],
+    "180": [
+     17,
+     10
+    ],
+    "210": [
+     14,
+     7
+    ],
+    "240": [
+     10,
+     7
+    ]
+   },
+   "first_reached": {
+    "lulu": {
+     "24": 111.0,
+     "12": 212.6,
+     "6": 332.7,
+     "0": 389.4
+    },
+    "ai": {
+     "24": 58.4,
+     "12": 110.0,
+     "6": null,
+     "0": null
+    }
+   },
+   "lulu_vpm": {
+    "0-60s": 14.0,
+    "60-120s": 13.0,
+    ">=120s": 4.68,
+    "all": 7.4
+   },
+   "ai_vpm": {
+    "0-60s": 24.0,
+    "60-120s": 14.0,
+    ">=120s": 0.67,
+    "all": 6.32
+   },
+   "lulu_ppm": 24.7,
+   "ai_ppm": 33.4,
+   "ai_longest_stall": {
+    "seconds": 200.9,
+    "viruses": 7,
+    "pills": 110,
+    "from_s": 188.5
+   },
+   "lulu_longest_stall": {
+    "seconds": 52.8,
+    "viruses": 7,
+    "pills": 17,
+    "from_s": 279.9
+   },
+   "garbage_cells_to_lulu": 69,
+   "garbage_cells_to_ai": 33,
+   "garbage_to_lulu_per_min": 10.7,
+   "garbage_to_ai_per_min": 5.11,
+   "finishing_deficit": {
+    "loser": "ai",
+    "viruses_left": 7,
+    "ai_rate_last60_per_min": 0.0,
+    "seconds_still_needed_at_that_rate": null
+   },
+   "lane_at_death": null,
+   "ai_silicon_eq_brain_pct": 82.0
+  },
+  {
+   "game": "m1g3",
+   "winner": "AI",
+   "how": "lulu topped out",
+   "final_lulu_ai": [
+    25,
+    7
+   ],
+   "dur_s": 106.4,
+   "race_lulu_ai": {
+    "30": [
+     42,
+     30
+    ],
+    "60": [
+     35,
+     18
+    ],
+    "90": [
+     29,
+     12
+    ]
+   },
+   "first_reached": {
+    "lulu": {
+     "24": null,
+     "12": null,
+     "6": null,
+     "0": null
+    },
+    "ai": {
+     "24": 47.7,
+     "12": 88.5,
+     "6": null,
+     "0": null
+    }
+   },
+   "lulu_vpm": {
+    "0-60s": 13.0,
+    "60-120s": 12.93,
+    "all": 12.97
+   },
+   "ai_vpm": {
+    "0-60s": 30.0,
+    "60-120s": 14.22,
+    "all": 23.12
+   },
+   "lulu_ppm": 24.2,
+   "ai_ppm": 35.0,
+   "ai_longest_stall": {
+    "seconds": 11.4,
+    "viruses": 30,
+    "pills": 6,
+    "from_s": 30.0
+   },
+   "lulu_longest_stall": {
+    "seconds": 20.3,
+    "viruses": 35,
+    "pills": 7,
+    "from_s": 56.7
+   },
+   "garbage_cells_to_lulu": 23,
+   "garbage_cells_to_ai": 10,
+   "garbage_to_lulu_per_min": 13.57,
+   "garbage_to_ai_per_min": 5.66,
+   "finishing_deficit": {
+    "loser": "lulu",
+    "viruses_left": 25,
+    "her_rate_last60_per_min": 14.0,
+    "seconds_still_needed_at_that_rate": 107.1
+   },
+   "lane_at_death": {
+    "seat": "lulu",
+    "lane": {
+     "3": {
+      "height": 5,
+      "cells_above_top_virus": 1,
+      "by_provenance": {
+       "G": 1
+      },
+      "top_cells": [
+       [
+        11,
+        "G37"
+       ],
+       [
+        12,
+        "V"
+       ],
+       [
+        14,
+        "V"
+       ],
+       [
+        15,
+        "V"
+       ]
+      ]
+     },
+     "4": {
+      "height": 16,
+      "cells_above_top_virus": 9,
+      "by_provenance": {
+       "G": 5,
+       "P": 4
+      },
+      "top_cells": [
+       [
+        0,
+        "Gend"
+       ],
+       [
+        1,
+        "G40"
+       ],
+       [
+        2,
+        "G28"
+       ],
+       [
+        3,
+        "G28"
+       ]
+      ]
+     }
+    },
+    "board_cells_by_provenance": {
+     "G": 11,
+     "P": 11,
+     "V": 25
+    }
+   },
+   "ai_silicon_eq_brain_pct": 80.6
+  },
+  {
+   "game": "m1g4",
+   "winner": "lulu",
+   "how": "AI topped out",
+   "final_lulu_ai": [
+    3,
+    16
+   ],
+   "dur_s": 221.6,
+   "race_lulu_ai": {
+    "30": [
+     37,
+     37
+    ],
+    "60": [
+     30,
+     30
+    ],
+    "90": [
+     23,
+     28
+    ],
+    "120": [
+     20,
+     23
+    ],
+    "150": [
+     15,
+     19
+    ],
+    "180": [
+     9,
+     16
+    ],
+    "210": [
+     6,
+     16
+    ]
+   },
+   "first_reached": {
+    "lulu": {
+     "24": 78.4,
+     "12": 171.6,
+     "6": 209.8,
+     "0": null
+    },
+    "ai": {
+     "24": 117.7,
+     "12": null,
+     "6": null,
+     "0": null
+    }
+   },
+   "lulu_vpm": {
+    "0-60s": 18.0,
+    "60-120s": 12.0,
+    ">=120s": 8.86,
+    "all": 12.18
+   },
+   "ai_vpm": {
+    "0-60s": 18.0,
+    "60-120s": 7.0,
+    ">=120s": 4.13,
+    "all": 8.66
+   },
+   "lulu_ppm": 27.1,
+   "ai_ppm": 39.5,
+   "ai_longest_stall": {
+    "seconds": 59.2,
+    "viruses": 16,
+    "pills": 49,
+    "from_s": 162.4
+   },
+   "lulu_longest_stall": {
+    "seconds": 22.8,
+    "viruses": 31,
+    "pills": 10,
+    "from_s": 36.5
+   },
+   "garbage_cells_to_lulu": 25,
+   "garbage_cells_to_ai": 28,
+   "garbage_to_lulu_per_min": 6.83,
+   "garbage_to_ai_per_min": 7.6,
+   "finishing_deficit": {
+    "loser": "ai",
+    "viruses_left": 16,
+    "ai_rate_last60_per_min": 1.0,
+    "seconds_still_needed_at_that_rate": 960.0
+   },
+   "lane_at_death": {
+    "seat": "ai",
+    "lane": {
+     "3": {
+      "height": 16,
+      "cells_above_top_virus": 16,
+      "by_provenance": {
+       "G": 1,
+       "P": 15
+      },
+      "top_cells": [
+       [
+        0,
+        "Gend"
+       ],
+       [
+        1,
+        "P144"
+       ],
+       [
+        2,
+        "P144"
+       ],
+       [
+        3,
+        "P138"
+       ]
+      ]
+     },
+     "4": {
+      "height": 12,
+      "cells_above_top_virus": 9,
+      "by_provenance": {
+       "P": 9
+      },
+      "top_cells": [
+       [
+        4,
+        "P137"
+       ],
+       [
+        5,
+        "P137"
+       ],
+       [
+        6,
+        "P132"
+       ],
+       [
+        7,
+        "P125"
+       ]
+      ]
+     }
+    },
+    "board_cells_by_provenance": {
+     "G": 6,
+     "P": 68,
+     "V": 16
+    }
+   },
+   "ai_silicon_eq_brain_pct": 80.8
+  },
+  {
+   "game": "m1g5",
+   "winner": "AI",
+   "how": "cleared",
+   "final_lulu_ai": [
+    26,
+    0
+   ],
+   "dur_s": 184.0,
+   "race_lulu_ai": {
+    "30": [
+     42,
+     34
+    ],
+    "60": [
+     38,
+     23
+    ],
+    "90": [
+     33,
+     17
+    ],
+    "120": [
+     30,
+     10
+    ],
+    "150": [
+     30,
+     3
+    ],
+    "180": [
+     27,
+     1
+    ]
+   },
+   "first_reached": {
+    "lulu": {
+     "24": null,
+     "12": null,
+     "6": null,
+     "0": null
+    },
+    "ai": {
+     "24": 52.4,
+     "12": 105.1,
+     "6": 135.9,
+     "0": 184.0
+    }
+   },
+   "lulu_vpm": {
+    "0-60s": 10.0,
+    "60-120s": 8.0,
+    ">=120s": 3.75,
+    "all": 7.18
+   },
+   "ai_vpm": {
+    "0-60s": 25.0,
+    "60-120s": 13.0,
+    ">=120s": 9.38,
+    "all": 15.66
+   },
+   "lulu_ppm": 28.4,
+   "ai_ppm": 34.9,
+   "ai_longest_stall": {
+    "seconds": 14.7,
+    "viruses": 1,
+    "pills": 6,
+    "from_s": 169.2
+   },
+   "lulu_longest_stall": {
+    "seconds": 43.2,
+    "viruses": 30,
+    "pills": 22,
+    "from_s": 107.8
+   },
+   "garbage_cells_to_lulu": 31,
+   "garbage_cells_to_ai": 18,
+   "garbage_to_lulu_per_min": 10.27,
+   "garbage_to_ai_per_min": 5.91,
+   "finishing_deficit": {
+    "loser": "lulu",
+    "viruses_left": 26,
+    "her_rate_last60_per_min": 4.0,
+    "seconds_still_needed_at_that_rate": 390.0
+   },
+   "lane_at_death": null,
+   "ai_silicon_eq_brain_pct": 82.2
+  },
+  {
+   "game": "m2g1",
+   "winner": "AI",
+   "how": "cleared",
+   "final_lulu_ai": [
+    14,
+    0
+   ],
+   "dur_s": 258.6,
+   "race_lulu_ai": {
+    "30": [
+     39,
+     37
+    ],
+    "60": [
+     37,
+     25
+    ],
+    "90": [
+     33,
+     16
+    ],
+    "120": [
+     32,
+     10
+    ],
+    "150": [
+     30,
+     5
+    ],
+    "180": [
+     21,
+     3
+    ],
+    "210": [
+     16,
+     1
+    ],
+    "240": [
+     14,
+     1
+    ]
+   },
+   "first_reached": {
+    "lulu": {
+     "24": 165.8,
+     "12": null,
+     "6": null,
+     "0": null
+    },
+    "ai": {
+     "24": 60.7,
+     "12": 108.3,
+     "6": 146.9,
+     "0": 258.6
+    }
+   },
+   "lulu_vpm": {
+    "0-60s": 11.0,
+    "60-120s": 5.0,
+    ">=120s": 7.79,
+    "all": 7.89
+   },
+   "ai_vpm": {
+    "0-60s": 24.0,
+    "60-120s": 14.0,
+    ">=120s": 4.33,
+    "all": 11.14
+   },
+   "lulu_ppm": 26.2,
+   "ai_ppm": 34.3,
+   "ai_longest_stall": {
+    "seconds": 52.5,
+    "viruses": 1,
+    "pills": 28,
+    "from_s": 206.1
+   },
+   "lulu_longest_stall": {
+    "seconds": 34.9,
+    "viruses": 32,
+    "pills": 14,
+    "from_s": 107.3
+   },
+   "garbage_cells_to_lulu": 38,
+   "garbage_cells_to_ai": 24,
+   "garbage_to_lulu_per_min": 8.86,
+   "garbage_to_ai_per_min": 5.61,
+   "finishing_deficit": {
+    "loser": "lulu",
+    "viruses_left": 14,
+    "her_rate_last60_per_min": 4.0,
+    "seconds_still_needed_at_that_rate": 210.0
+   },
+   "lane_at_death": null,
+   "ai_silicon_eq_brain_pct": 83.1
+  },
+  {
+   "game": "m2g2",
+   "winner": "AI",
+   "how": "cleared",
+   "final_lulu_ai": [
+    6,
+    0
+   ],
+   "dur_s": 232.3,
+   "race_lulu_ai": {
+    "30": [
+     38,
+     35
+    ],
+    "60": [
+     29,
+     29
+    ],
+    "90": [
+     23,
+     23
+    ],
+    "120": [
+     16,
+     21
+    ],
+    "150": [
+     13,
+     14
+    ],
+    "180": [
+     9,
+     10
+    ],
+    "210": [
+     6,
+     4
+    ]
+   },
+   "first_reached": {
+    "lulu": {
+     "24": 71.3,
+     "12": 156.1,
+     "6": 206.7,
+     "0": null
+    },
+    "ai": {
+     "24": 84.6,
+     "12": 151.6,
+     "6": 203.1,
+     "0": 232.3
+    }
+   },
+   "lulu_vpm": {
+    "0-60s": 21.0,
+    "60-120s": 11.0,
+    ">=120s": 5.34,
+    "all": 10.85
+   },
+   "ai_vpm": {
+    "0-60s": 19.0,
+    "60-120s": 9.0,
+    ">=120s": 10.68,
+    "all": 12.4
+   },
+   "lulu_ppm": 23.5,
+   "ai_ppm": 34.3,
+   "ai_longest_stall": {
+    "seconds": 28.9,
+    "viruses": 21,
+    "pills": 15,
+    "from_s": 93.0
+   },
+   "lulu_longest_stall": {
+    "seconds": 25.6,
+    "viruses": 6,
+    "pills": 11,
+    "from_s": 206.7
+   },
+   "garbage_cells_to_lulu": 41,
+   "garbage_cells_to_ai": 33,
+   "garbage_to_lulu_per_min": 10.69,
+   "garbage_to_ai_per_min": 8.67,
+   "finishing_deficit": {
+    "loser": "lulu",
+    "viruses_left": 6,
+    "her_rate_last60_per_min": 3.0,
+    "seconds_still_needed_at_that_rate": 120.0
+   },
+   "lane_at_death": null,
+   "ai_silicon_eq_brain_pct": 82.0
+  },
+  {
+   "game": "m2g3",
+   "winner": "lulu",
+   "how": "cleared",
+   "final_lulu_ai": [
+    0,
+    11
+   ],
+   "dur_s": 208.4,
+   "race_lulu_ai": {
+    "30": [
+     39,
+     39
+    ],
+    "60": [
+     31,
+     29
+    ],
+    "90": [
+     25,
+     22
+    ],
+    "120": [
+     12,
+     16
+    ],
+    "150": [
+     5,
+     13
+    ],
+    "180": [
+     4,
+     13
+    ]
+   },
+   "first_reached": {
+    "lulu": {
+     "24": 96.0,
+     "12": 119.5,
+     "6": 144.2,
+     "0": 208.4
+    },
+    "ai": {
+     "24": 72.7,
+     "12": 183.8,
+     "6": null,
+     "0": null
+    }
+   },
+   "lulu_vpm": {
+    "0-60s": 17.0,
+    "60-120s": 19.0,
+    ">=120s": 8.14,
+    "all": 13.82
+   },
+   "ai_vpm": {
+    "0-60s": 20.0,
+    "60-120s": 12.0,
+    ">=120s": 3.39,
+    "all": 10.65
+   },
+   "lulu_ppm": 26.2,
+   "ai_ppm": 38.6,
+   "ai_longest_stall": {
+    "seconds": 36.4,
+    "viruses": 13,
+    "pills": 22,
+    "from_s": 147.4
+   },
+   "lulu_longest_stall": {
+    "seconds": 27.6,
+    "viruses": 5,
+    "pills": 4,
+    "from_s": 144.2
+   },
+   "garbage_cells_to_lulu": 21,
+   "garbage_cells_to_ai": 29,
+   "garbage_to_lulu_per_min": 6.32,
+   "garbage_to_ai_per_min": 8.5,
+   "finishing_deficit": {
+    "loser": "ai",
+    "viruses_left": 11,
+    "ai_rate_last60_per_min": 2.0,
+    "seconds_still_needed_at_that_rate": 330.0
+   },
+   "lane_at_death": null,
+   "ai_silicon_eq_brain_pct": 81.3
+  },
+  {
+   "game": "m2g4",
+   "winner": "AI",
+   "how": "cleared",
+   "final_lulu_ai": [
+    14,
+    0
+   ],
+   "dur_s": 186.1,
+   "race_lulu_ai": {
+    "30": [
+     36,
+     34
+    ],
+    "60": [
+     32,
+     23
+    ],
+    "90": [
+     24,
+     17
+    ],
+    "120": [
+     19,
+     9
+    ],
+    "150": [
+     16,
+     5
+    ],
+    "180": [
+     14,
+     2
+    ]
+   },
+   "first_reached": {
+    "lulu": {
+     "24": 76.9,
+     "12": null,
+     "6": null,
+     "0": null
+    },
+    "ai": {
+     "24": 55.6,
+     "12": 97.5,
+     "6": 142.3,
+     "0": 186.1
+    }
+   },
+   "lulu_vpm": {
+    "0-60s": 18.0,
+    "60-120s": 11.0,
+    ">=120s": 4.54,
+    "all": 10.96
+   },
+   "ai_vpm": {
+    "0-60s": 26.0,
+    "60-120s": 13.0,
+    ">=120s": 8.17,
+    "all": 15.48
+   },
+   "lulu_ppm": 27.4,
+   "ai_ppm": 31.3,
+   "ai_longest_stall": {
+    "seconds": 19.7,
+    "viruses": 9,
+    "pills": 8,
+    "from_s": 114.7
+   },
+   "lulu_longest_stall": {
+    "seconds": 22.6,
+    "viruses": 15,
+    "pills": 8,
+    "from_s": 156.1
+   },
+   "garbage_cells_to_lulu": 32,
+   "garbage_cells_to_ai": 27,
+   "garbage_to_lulu_per_min": 10.35,
+   "garbage_to_ai_per_min": 8.82,
+   "finishing_deficit": {
+    "loser": "lulu",
+    "viruses_left": 14,
+    "her_rate_last60_per_min": 4.0,
+    "seconds_still_needed_at_that_rate": 210.0
+   },
+   "lane_at_death": null,
+   "ai_silicon_eq_brain_pct": 82.5
+  }
+ ],
+ "her_wins_vs_losses": {
+  "ai_longest_stall_s": {
+   "her_wins": [
+    200.9,
+    59.2,
+    36.4
+   ],
+   "her_losses": [
+    70.9,
+    11.4,
+    14.7,
+    52.5,
+    28.9,
+    19.7
+   ],
+   "mean_wins": 98.83,
+   "mean_losses": 33.02
+  },
+  "lead_at_60s_ai_minus_lulu_viruses": {
+   "her_wins": [
+    11,
+    0,
+    2
+   ],
+   "her_losses": [
+    9,
+    17,
+    15,
+    12,
+    0,
+    9
+   ],
+   "mean_wins": 4.33,
+   "mean_losses": 10.33
+  },
+  "lead_at_120s_ai_minus_lulu_viruses": {
+   "her_wins": [
+    11,
+    -3,
+    -4
+   ],
+   "her_losses": [
+    14,
+    20,
+    22,
+    -5,
+    10
+   ],
+   "mean_wins": 1.33,
+   "mean_losses": 12.2
+  },
+  "lulu_vpm_0_60": {
+   "her_wins": [
+    14.0,
+    18.0,
+    17.0
+   ],
+   "her_losses": [
+    15.0,
+    13.0,
+    10.0,
+    11.0,
+    21.0,
+    18.0
+   ],
+   "mean_wins": 16.33,
+   "mean_losses": 14.67
+  },
+  "ai_vpm_0_60": {
+   "her_wins": [
+    24.0,
+    18.0,
+    20.0
+   ],
+   "her_losses": [
+    24.0,
+    30.0,
+    25.0,
+    24.0,
+    19.0,
+    26.0
+   ],
+   "mean_wins": 20.67,
+   "mean_losses": 24.67
+  },
+  "lulu_vpm_all": {
+   "her_wins": [
+    7.4,
+    12.18,
+    13.82
+   ],
+   "her_losses": [
+    7.27,
+    12.97,
+    7.18,
+    7.89,
+    10.85,
+    10.96
+   ],
+   "mean_wins": 11.13,
+   "mean_losses": 9.52
+  },
+  "ai_vpm_all": {
+   "her_wins": [
+    6.32,
+    8.66,
+    10.65
+   ],
+   "her_losses": [
+    7.62,
+    23.12,
+    15.66,
+    11.14,
+    12.4,
+    15.48
+   ],
+   "mean_wins": 8.54,
+   "mean_losses": 14.24
+  },
+  "garbage_to_lulu_per_min": {
+   "her_wins": [
+    10.7,
+    6.83,
+    6.32
+   ],
+   "her_losses": [
+    12.65,
+    13.57,
+    10.27,
+    8.86,
+    10.69,
+    10.35
+   ],
+   "mean_wins": 7.95,
+   "mean_losses": 11.06
+  },
+  "garbage_to_ai_per_min": {
+   "her_wins": [
+    5.11,
+    7.6,
+    8.5
+   ],
+   "her_losses": [
+    5.73,
+    5.66,
+    5.91,
+    5.61,
+    8.67,
+    8.82
+   ],
+   "mean_wins": 7.07,
+   "mean_losses": 6.73
+  },
+  "ai_silicon_eq_brain_pct": {
+   "her_wins": [
+    82.0,
+    80.8,
+    81.3
+   ],
+   "her_losses": [
+    80.2,
+    80.6,
+    82.2,
+    83.1,
+    82.0,
+    82.5
+   ],
+   "mean_wins": 81.37,
+   "mean_losses": 81.77
+  }
+ }
+}

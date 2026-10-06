@@ -1,0 +1,339 @@
+{
+ "name": "lulu_fit_202610b",
+ "supersedes": "lulu_fit_202610 (kept unchanged; n=2 games): adds the 9 games of 10/05 (1080p clean HDMI, fixed tracker)",
+ "source": "lulu_20261005.py fit: dr. lulu (P1) sends as RECEIVED by ANTIBODY_DIST_FAIR (P2), 10/05 9 games (summary_lulu_20261005.json fit_row, refit_sends_202610.volleys verbatim on the hidden-spawn tracker) + the 9/27 2 (refit_sends_202610_cases.jsonl, tracker=new)",
+ "population": {
+  "games": 11,
+  "minutes": 48.18,
+  "note": "n=11 games over 2 sessions (9/27 vs ANTIBODY, 10/05 vs ANTIBODY_DIST_FAIR); 10/05 she was frustrated by the end (owner report); per-session rates below"
+ },
+ "model": "independent renewal process of volleys (same form as owner_fit_202610)",
+ "clear_pace_viruses_per_min": {
+  "m1g1": 7.27,
+  "m1g2": 7.4,
+  "m1g3": 12.97,
+  "m1g4": 12.18,
+  "m1g5": 7.17,
+  "m2g1": 7.89,
+  "m2g2": 10.85,
+  "m2g3": 13.82,
+  "m2g4": 10.96,
+  "9/27 G1": 5.63,
+  "9/27 G2": 10.13
+ },
+ "rate_volleys_per_min": 2.84,
+ "rate_ci95_game_bootstrap": [
+  2.63,
+  3.13
+ ],
+ "cells_per_min": 6.52,
+ "size_hist": {
+  "1": 1,
+  "2": 112,
+  "3": 9,
+  "4": 14,
+  "6": 1
+ },
+ "size_pmf": {
+  "2": 0.83,
+  "3": 0.067,
+  "4": 0.104
+ },
+ "size_pmf_note": "renormalised over sizes 2-4 (1-cell and >4-cell readings excluded, as in 202609/202610)",
+ "p_merged_double": 0.007,
+ "inter_volley_gap_s": {
+  "quantiles": {
+   "p10": 5.65,
+   "p25": 8.25,
+   "p50": 12.93,
+   "p75": 28.75,
+   "p90": 40.16
+  },
+  "mean": 19.84,
+  "cv": 0.78,
+  "p_gap_le_3s": 0.024,
+  "samples": [
+   19.78,
+   5.65,
+   32.05,
+   26.12,
+   40.03,
+   21.49,
+   26.11,
+   10.24,
+   40.21,
+   5.8,
+   9.19,
+   11.81,
+   8.84,
+   7.63,
+   8.73,
+   5.64,
+   30.5,
+   27.15,
+   7.78,
+   8.88,
+   6.54,
+   37.25,
+   8.25,
+   48.18,
+   6.45,
+   38.0,
+   5.17,
+   69.15,
+   12.15,
+   12.29,
+   33.96,
+   24.4,
+   8.75,
+   6.96,
+   10.22,
+   17.0,
+   39.2,
+   8.8,
+   5.23,
+   17.79,
+   10.28,
+   23.65,
+   11.27,
+   34.5,
+   31.6,
+   11.79,
+   7.31,
+   33.27,
+   17.28,
+   18.6,
+   14.7,
+   9.09,
+   7.63,
+   19.09,
+   36.16,
+   3.22,
+   63.33,
+   6.35,
+   4.2,
+   12.14,
+   21.73,
+   39.18,
+   12.12,
+   18.01,
+   7.6,
+   5.54,
+   0.65,
+   5.56,
+   7.42,
+   43.32,
+   8.61,
+   7.79,
+   20.45,
+   13.46,
+   67.12,
+   15.05,
+   59.25,
+   12.62,
+   16.03,
+   12.52,
+   6.01,
+   17.47,
+   51.12,
+   3.93,
+   0.78,
+   7.75,
+   28.75,
+   10.42,
+   18.05,
+   11.95,
+   13.0,
+   7.93,
+   8.69,
+   24.38,
+   33.77,
+   24.69,
+   11.28,
+   58.83,
+   8.95,
+   2.65,
+   34.59,
+   43.56,
+   13.87,
+   25.57,
+   40.16,
+   7.3,
+   7.49,
+   58.96,
+   16.3,
+   26.25,
+   11.82,
+   4.9,
+   8.97,
+   20.48,
+   31.87,
+   10.9,
+   31.1,
+   14.35,
+   12.79,
+   46.46,
+   6.6,
+   29.99,
+   12.93,
+   51.38,
+   10.6,
+   31.09
+  ]
+ },
+ "unexplained_volleys": 40,
+ "unexplained_with_new_cells": 33,
+ "unexplained_rom_plausible_multi_column": 3,
+ "rate_upper_bound_volleys_per_min": 3.53,
+ "rate_plausible_upper_bound_volleys_per_min": 2.91,
+ "upper_bound_note": "unexplained steps that add cells: 1080p 10/05 + soft 720p 9/27 reader errors (mostly one cell in one column)",
+ "rom_column_rule": {
+  "conform": 107,
+  "violate": 1
+ },
+ "per_session_rate": {
+  "10/05 lulu": 2.95,
+  "9/27 lulu": 2.56
+ },
+ "phase": {
+  "note": "10/05 games only (her remaining viruses from her own fixed-tracker track; the 9/27 tracks are P2-only)",
+  "time": {
+   "open <30s": {
+    "minutes": 4.85,
+    "volleys": 14,
+    "volleys_per_min": 2.89,
+    "cells_per_min": 7.01
+   },
+   "30-90s": {
+    "minutes": 8.83,
+    "volleys": 28,
+    "volleys_per_min": 3.17,
+    "cells_per_min": 7.25
+   },
+   ">=90s": {
+    "minutes": 21.76,
+    "volleys": 62,
+    "volleys_per_min": 2.85,
+    "cells_per_min": 6.3
+   }
+  },
+  "lulu": {
+   ">30": {
+    "minutes": 12.38,
+    "volleys": 39,
+    "volleys_per_min": 3.15,
+    "cells_per_min": 7.43
+   },
+   "21-30": {
+    "minutes": 7.63,
+    "volleys": 26,
+    "volleys_per_min": 3.41,
+    "cells_per_min": 6.95
+   },
+   "9-20": {
+    "minutes": 10.24,
+    "volleys": 32,
+    "volleys_per_min": 3.13,
+    "cells_per_min": 7.13
+   },
+   "<=8": {
+    "minutes": 5.19,
+    "volleys": 7,
+    "volleys_per_min": 1.35,
+    "cells_per_min": 3.27
+   }
+  }
+ },
+ "sessions": {
+  "10/05 only (9 games)": {
+   "games": 9,
+   "minutes": 35.27,
+   "volleys": 104,
+   "rate_volleys_per_min": 2.95,
+   "rate_ci95_game_bootstrap": [
+    2.67,
+    3.27
+   ],
+   "cells_per_min": 6.66,
+   "mean_size": 2.26,
+   "size_hist": {
+    "2": 88,
+    "3": 5,
+    "4": 11
+   },
+   "size_pmf_le4": {
+    "1": 0.0,
+    "2": 0.846,
+    "3": 0.048,
+    "4": 0.106
+   },
+   "p_merged_double": 0.0,
+   "unexplained": 3,
+   "unexplained_with_new_cells": 2,
+   "rom_column_rule": {
+    "conform": 83,
+    "violate": 1
+   },
+   "gap_s": {
+    "p10": 5.64,
+    "p50": 12.29,
+    "p90": 39.18,
+    "cv": 0.81
+   }
+  },
+  "9/27 only (2 games) = lulu_fit_202610": {
+   "games": 2,
+   "minutes": 12.91,
+   "volleys": 33,
+   "rate_volleys_per_min": 2.56,
+   "rate_ci95_game_bootstrap": [
+    2.53,
+    2.57
+   ],
+   "cells_per_min": 6.12,
+   "mean_size": 2.39,
+   "size_hist": {
+    "1": 1,
+    "2": 24,
+    "3": 4,
+    "4": 3,
+    "6": 1
+   },
+   "size_pmf_le4": {
+    "1": 0.031,
+    "2": 0.75,
+    "3": 0.125,
+    "4": 0.094
+   },
+   "p_merged_double": 0.03,
+   "unexplained": 37,
+   "unexplained_with_new_cells": 31,
+   "rom_column_rule": {
+    "conform": 24,
+    "violate": 0
+   },
+   "gap_s": {
+    "p10": 7.3,
+    "p50": 16.3,
+    "p90": 46.46,
+    "cv": 0.69
+   }
+  }
+ },
+ "compare": {
+  "lulu_fit_202610": {
+   "rate_volleys_per_min": 2.56,
+   "cells_per_min": 6.12,
+   "size_pmf": {
+    "2": 0.774,
+    "3": 0.129,
+    "4": 0.097
+   },
+   "rate_upper_bound_volleys_per_min": 4.96
+  },
+  "lulu_fit_202610_reproduced": {
+   "rate": 2.56,
+   "cells_per_min": 6.12
+  }
+ }
+}
