@@ -7,7 +7,9 @@
 - the SAME-INPUT repeat test: identical uploads the cart re-issued (stall watchdog) while the game sat paused;
 - the freeze at +49.5 min (decoded from the states);
 - every DIVERGED / NO_DONE / EARLY pill banked with its exact upload."""
-import sys, os, json, glob, re, collections, datetime
+import sys, os, json, glob, re, collections, datetime, math
+TAG = os.environ.get("TAG", "publog2")                     # publog3 = capture #3 (V11 rbf; run with FWDIR=fw_c51d2e21)
+GATE_H = 12                                                # the commit gate: WDOG2 >= MINTHINK (12 hooks = 6 f)
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, "/home/struktured/projects/dr-mario-publog2-wt/tools/silfid")
 import publog as PL
@@ -48,7 +50,7 @@ frozen = states[k:] if len(states) - k >= 3 else []
 t0, t1 = states[0]["t"], states[-1]["t"]
 live_end = frozen[0]["t"] if frozen else t1
 seq_freeze = frozen[0]["seq"] if frozen else 1 << 30
-P(f"# PUBLOG capture #2 (cart d84436ff, rbf 318607aa): {len(SS)} save-states, {(t1 - t0).total_seconds() / 60:.1f} min")
+P(f"# {TAG}: {len(SS)} save-states, {(t1 - t0).total_seconds() / 60:.1f} min (fw dir {os.environ.get('FWDIR', 'fw_1488e158 default')})")
 if frozen:
     f0 = frozen[0]
     P(f"FREEZE: from {f0['t']:%H:%M:%S} (+{(f0['t'] - t0).total_seconds() / 60:.1f} min) to the end ({len(frozen)} states): P2 board "
@@ -167,21 +169,47 @@ def landings(recs):
         else:
             c["lands neither the final nor its own target (execution)"] += 1
     return c
+def wilson(k, n, z=1.96):
+    if n == 0: return (0.0, 1.0)
+    p = k / n; d = 1 + z * z / n; c = p + z * z / (2 * n); h = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n))
+    return ((c - h) / d, (c + h) / d)
 for name, recs in (("CELL", [r for r in RL if cell(r["viruses"], r["maxh"])]), ("all replayed live pills", RL)):
     c = landings(recs); n = sum(c.values())
-    P(f"\n## LANDINGS on silicon ({name}, {n} pills with a lock)")
+    miss = n - c["lands the copro final"]; lo, hi = wilson(miss, n)
+    P(f"\n## LANDINGS on silicon ({name}, {n} pills with a lock): landing != copro final {miss} = {100.0 * miss / max(n, 1):.1f}% "
+      f"(95% CI {100 * lo:.1f}-{100 * hi:.1f}%)")
     for k2, v in c.most_common():
         P(f"  {k2:62s} {v:4d} ({100.0 * v / max(n, 1):4.1f}%)")
+# ---- the anytime-commit split on silicon: the logged answer at the gate (last live read <= 12 hooks) vs the final
+gs = collections.Counter()
+for r in RL:
+    if not cell(r["viruses"], r["maxh"]) or "done" not in r:
+        continue
+    lk = [e for e in r["events"] if e["type"] == "lock"]
+    if not lk:
+        continue
+    g = None
+    for e in r["events"]:
+        if e["type"] == "live" and e["hooks"] <= GATE_H:
+            g = (e["a"], e["b"])
+    fin = (r["cosim_done"][1], r["cosim_done"][2])
+    one = landings([r]); ok = one["lands the copro final"] == 1
+    gs[(g == fin, ok)] += 1
+ng = gs[(True, True)] + gs[(True, False)]; nb = gs[(False, True)] + gs[(False, False)]; nt = ng + nb
+P(f"\n## ANYTIME-COMMIT split (CELL, silicon): at-gate answer == final on {ng}/{nt} = {100.0 * ng / max(nt, 1):.1f}% "
+  f"(95% CI {100 * wilson(ng, nt)[0]:.1f}-{100 * wilson(ng, nt)[1]:.1f}%)")
+P(f"  at-gate == final -> landing != final {gs[(True, False)]}/{ng} = {100.0 * gs[(True, False)] / max(ng, 1):.1f}%")
+P(f"  at-gate != final -> landing != final {gs[(False, False)]}/{nb} = {100.0 * gs[(False, False)] / max(nb, 1):.1f}%")
 
 # ---- bank
 bank = [r for r in RL if r["verdict"] in ("DIVERGED", "NO_DONE")] + [r for r in E if r["verdict"] not in ("DIVERGED", "NO_DONE")]
-with open(os.path.join(HERE, "publog2_diverged_20261007.jsonl"), "w") as f:
+with open(os.path.join(HERE, f"{TAG}_diverged_20261007.jsonl"), "w") as f:
     for r in bank:
         f.write(json.dumps(dict(r, repro_class=r["verdict"] if r["verdict"] in ("DIVERGED", "NO_DONE") else "EARLY_DONE")) + "\n")
-P(f"\n## DIVERGED / NO_DONE ({sum(r['verdict'] in ('DIVERGED', 'NO_DONE') for r in RL)}) + EARLY ({len(E)}) banked in publog2_diverged_20261007.jsonl")
+P(f"\n## DIVERGED / NO_DONE ({sum(r['verdict'] in ('DIVERGED', 'NO_DONE') for r in RL)}) + EARLY ({len(E)}) banked in {TAG}_diverged_20261007.jsonl")
 for r in RL:
     if r["verdict"] in ("DIVERGED", "NO_DONE"):
         P(f"  seq {r['seq']} vir {r['viruses']} h {r['maxh']} kind {r['kind']} {r['verdict']}: reads "
           f"{[(x['t'], x['col'], x['o4'], x['status'][:6]) for x in r['reads']]} done {r.get('done')} | cosim {r['cosim_pubs']} "
           f"final {r['cosim_done']} tuck {r['cosim_tuck']}")
-open(os.path.join(HERE, "publog2_report_20261007.txt"), "w").write("\n".join(out) + "\n")
+open(os.path.join(HERE, f"{TAG}_report_20261007.txt"), "w").write("\n".join(out) + "\n")

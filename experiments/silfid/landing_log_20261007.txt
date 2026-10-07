@@ -1,0 +1,29 @@
+# landing_log.py: cart landing vs the copro final, straight from the PUBLOG logs (copro final = silicon's own DONE answer)
+
+== capture #2 (bluemage 10/07, rbf 318607aa fw 1488e158, FAIR P2 driver, cart d84436ff), live part (seq < 1597):
+CELL pills judged: 404 (skipped: {'no lock logged': 4})
+  landing != copro final: 97/404 = 24.0%  (95% CI 20.1-28.4%)
+    lands the copro final                                       307 (76.0%)
+    lands the cart's OWN target != final                         46 (11.4%)
+    lands the cart's OWN target != final (locked before DONE)    25 ( 6.2%)
+    lands != final, no target change logged                      23 ( 5.7%)
+    lands neither the final nor its own target                    3 ( 0.7%)
+  at-gate answer == final: 222/404 = 55.0%  (95% CI 50.1-59.7%)
+    gate == final -> landing != final 15/222 = 6.8%
+    gate != final -> landing != final 82/182 = 45.1%
+
+== capture #3 (bluemage 10/07, rbf V11 43aa62d5 fw c51d2e21, FAIR2PLUS P2 driver, cart 437cd6aa):
+CELL pills judged: 332 (skipped: {'no DONE (search torn down: aborted / prestart second volley)': 1, 'no lock logged': 3})
+  landing != copro final: 11/332 = 3.3%  (95% CI 1.9-5.8%)
+    lands the copro final                                       321 (96.7%)
+    lands the cart's OWN target != final                          9 ( 2.7%)
+    lands != final, no target change logged                       2 ( 0.6%)
+  at-gate answer == final: 282/332 = 84.9%  (95% CI 80.7-88.4%)
+    gate == final -> landing != final 0/282 = 0.0%
+    gate != final -> landing != final 11/50 = 22.0%
+
+== decomposition (rates in the CELL): landing!=final = P(gate!=final) x m_bad + P(gate==final) x m_good
+  1488 + FAIR (capture #2, measured)           24.0%
+  V11  + FAIR (= the pre-capture prediction)    12.6%   [firmware alone]
+  1488 + FAIR2PLUS (counterfactual)              9.9%   [driver alone]
+  V11  + FAIR2PLUS (capture #3, measured)        3.3%
