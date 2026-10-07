@@ -13,11 +13,13 @@ tucklive = sys.argv[8] if len(sys.argv) > 8 else "0"        # DRTUCKLIVE (tuck e
 tlat = sys.argv[9] if len(sys.argv) > 9 else "19"           # DRREACH_TLAT: reach-mask answer latency (19 pinned cart, 13 fair)
 g0 = sys.argv[10] if len(sys.argv) > 10 else "8"             # DRREACH_G0: reach-mask first gravity frame (8 pinned cart, 3 fair)
 leflush = sys.argv[11] if len(sys.argv) > 11 else "0"        # DRLEFLUSH: the stub flushes LeafEval's stale CMD 7 phase (abort-stale)
+dist_vk = sys.argv[12] if len(sys.argv) > 12 else "4"        # DRDIST_VK: DRDIST's endgame gate (a target with <= vk viruses); 16 = A16
 os.environ.update({"DRSTRAND": "20", "DRCHAIN": chain, "DRCOPRO_ARM": "1", "DRFIX": "1",
                    "DRCOPRO_TUCKBFS": "1", "DRCOPRO_TUCKBFS_TIER3": "1", "DRCOPRO_TUCKV3_THETA": "400",
                    "DRDBLCANON": "1", "DRCOPRO_TUCKV3_FIXSLOT": "1", "DRVETO": "1", "DRREACH": reach, "DRREACHTAP": reachtap,
                    "DRDIST": dist, "DRTUCKREACH": tuckreach, "DRROOTORD": rootord, "DRTUCKLIVE": tucklive,
-                   "DRREACH_TLAT": tlat, "DRREACH_G0": g0, "DRLEFLUSH": leflush})
+                   "DRREACH_TLAT": tlat, "DRREACH_G0": g0, "DRLEFLUSH": leflush,
+                   "DRDIST_VK": dist_vk})
 for m in ("test_search_d3", "tuck_v3", "build_copro_d3"):
     sys.modules.pop(m, None)
 sys.path.insert(0, COPRO)
@@ -36,6 +38,9 @@ D3.DEBUG_VAL1 = False; D3.USE_DELTA = True; D3.DELTA_P0 = D3.DELTA_P2 = D3.DELTA
 B = pin("build_copro_d3", os.path.join(COPRO, "build_copro_d3.py"))
 img, clen, slen = B.build_image([0xFF] * 128, 0, 0, 0, 0)
 assert B.D3 is D3 and D3.DRVETO == 1 and B.__file__.startswith(COPRO), (B.__file__, D3.DRVETO)
+if D3.DRDIST:   # the dist routine is imported lazily inside build_image: it must be THIS tree's, at the asked gate
+    DT = sys.modules["dist_6502"]
+    assert DT.__file__.startswith(COPRO) and DT.VK == int(dist_vk), (DT.__file__, DT.VK, dist_vk)
 for i in range(128): img[0x0500 + i] = 0xFF
 txt = "\n".join("%02x" % x for x in img[0x8000:0xC000]) + "\n"
 open(out, "w").write(txt)

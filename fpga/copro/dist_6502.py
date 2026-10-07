@@ -1,8 +1,8 @@
 """DRDIST -- the endgame TARGET for the LeafEval clearing-distance term (STEER6b dist_target60, 2026-09-28).
 
 Once per search, from the untouched ROOT board at LIVE ($0500), before any engine evaluation:
-  * count the viruses; if there are none or more than VK (4): write $70F5 = 0 (no target -> the RTL term is exactly 0,
-    so the search is ANTIBODY's before the endgame);
+  * count the viruses; if there are none or more than VK (4; env DRDIST_VK): write $70F5 = 0 (no target -> the RTL
+    term is exactly 0, so the search is ANTIBODY's before the endgame);
   * else compute every virus's clearing distance D (cascade_leaf6_x._vdist, cap 16, kdig 0) and write
     $70F5 = $80 | index of the SMALLEST D (ties: lowest index r*8+c) -- Leaf6Decider mode "dist_target".
 The RTL (LeafEval `DRDIST`) then scores every leaf of the search with -60 * D(target) on the LEAF board.
@@ -11,8 +11,9 @@ still to build -- same colour 0; horizontal empty cell reachable from above: 1 +
 vertical empty cell ABOVE the virus and above the column top: 1; anything else makes the window infeasible.
 Self-contained routine at DIST_ROM, JSR'd by the search (test_search_d3, env DRDIST). Absolute RAM only:
 $0AE0-$0AF3, clear of reach_6502 ($0A80-$0ADC), TK1 ($0A00-$0A7F) and WORK2 ($0B00). Cost: one 128-cell count
-every search (~1.3k cycles); the D scan only with <= 4 viruses (~2-6k cycles). Once per decision, not per leaf.
+every search (~1.3k cycles); the D scan only with <= VK viruses (~2-6k cycles per virus). Once per decision, not per leaf.
 """
+import os as _os
 import sys as _sys
 for _p in ("/home/struktured/projects/dr-mario-mods/tests", "/home/struktured/projects/dr-mario-mods"):
     if _p not in _sys.path:
@@ -25,7 +26,12 @@ for _k, _v in (("ORA_abs", 0x0D), ("INC_abs", 0xEE), ("SBC_abs", 0xED), ("ADC_ab
 DIST_ROM = 0xA400                 # free window: tuck_bfs ends ~$9DED, reach_6502 starts $A800
 LIVE = 0x0500
 LEV_TGT = 0x70F5                  # CoproDrMario `DRDIST`: target register, cleared by every GO's copro reset
-VK, CAP = 4, 16
+# DRDIST_VK (2026-10-07, STEER10/13 arm A16): the endgame gate -- a target is chosen with 1..VK viruses on the root.
+# Default 4 = byte-identical firmware (1488e158 / c51d2e21). A16 = 16: only the CMP immediate in emit_dist moves, and
+# the D scan then also runs on 5..VK-virus boards (its cost grows with the count; gate_dist_fw.py reports it).
+VK = int(_os.environ.get("DRDIST_VK", "4"))
+assert 1 <= VK <= 127, f"DRDIST_VK={VK}: the gate is CMP #VK+1 on a one-byte virus count"
+CAP = 16
 DTOP = 0x0AE0                     # 8 B: first occupied row per column (16 = empty)
 (D_NV, D_I, D_BEST, D_BIDX, D_VR, D_VC, D_VCOL, D_CUR, D_S, D_COST, D_K, D_T) = range(0x0AE8, 0x0AF4)
 DIST_RAM_END = 0x0AF4
