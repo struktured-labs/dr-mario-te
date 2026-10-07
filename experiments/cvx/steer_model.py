@@ -211,9 +211,35 @@ class Steer:
             return max(tcol, max(0, x - b))
         return min(tcol, min(7, x + b))
 
-    def execute(self, color, target_action, k, t_act=None, phase=None):
+    def _lateguard_ok(self, color, x, row, rot, spd, thr, a2):
+        """DRLATEGUARD (lateflip RESULT_LATEFLIP.md, the cart rule): a published target that differs from the current
+        one, after the commit, is adopted only if  need = (|col'-X| + rotations) * P  <=  avail = (thr - speedCounter)
+        + (thr + 1) * (K - [col' != X]), K = fully empty rows below the capsule across [min(X, col') .. max(X, col'+H')]
+        (capped at 2), and the capsule's own row is clear across that span."""
+        tv, tc = a2 // 8, a2 % 8
+        tr = ROT_OF_VAR[tv]
+        d = (tr - rot) & 3
+        nrot = 0 if d == 0 else (2 if d == 2 else 1)
+        P = self.tap_period or 2
+        need = (abs(tc - x) + nrot) * P
+        lo, hi = min(x, tc), min(COLS - 1, max(x, tc + (1 if tr % 2 == 0 else 0)))
+        if 0 <= row < ROWS and any(color[row][c] != 0 for c in range(lo, hi + 1)):
+            return False
+        K = 0
+        for rr in (row + 1, row + 2):
+            if rr < ROWS and all(color[rr][c] == 0 for c in range(lo, hi + 1)):
+                K += 1
+            else:
+                break
+        avail = (thr - spd) + (thr + 1) * (K - (1 if tc != x else 0))
+        return need <= avail
+
+    def execute(self, color, target_action, k, t_act=None, phase=None, sched=None):
         """Simulate one pill. color: 16x8 nested list/array of the settled board (0 = empty).
         target_action: the brain's action (var*8 + col). k: pills already placed this game (speed).
+        sched (STEER13, None = unchanged): the copro's live-publish schedule [(frame, action)] in time order, last = the
+        final. The driver commits at the answer frame to the mailbox (waits if nothing is published yet); every later
+        differing publish is adopted under DRLATEGUARD, and the first refusal FREEZES the pill.
         Returns dict(var, col, row_cells, info). row_cells = ((r0,c0),(r1,c1)) in sim convention
         (H: left,right; V: top,bottom)."""
         tvar, tcol = target_action // 8, target_action % 8
@@ -254,6 +280,11 @@ class Steer:
                                                       # 0 whenever g0 >= F0 (every pre-STEER8 use: G0 7|8) -> unchanged
         prev_held = (RIGHT if pre == "R" else LEFT) if pre else 0   # held since the lock: no edge at spawn
         clamped_ever = False
+        tvar0, tcol0 = tvar, tcol
+        if sched is not None:
+            committed = frozen = False
+            si = 0; cur_a = None
+            lg = {"commit_f": None, "commit_a": None, "late": 0, "adopt": 0, "refuse": 0}
         lock_f = None
         last_tap = None
         tr = [] if self.trace else None
@@ -261,6 +292,29 @@ class Steer:
             # ---------------- driver decision (from last frame's state) ----------------
             if d_first and f < t_ans and row > 0:                           # fix D: leaving the spawn row ends the window
                 t_ans = f
+            if sched is not None:                                           # STEER13 anytime commit + DRLATEGUARD
+                if not committed:
+                    if f >= t_ans:
+                        m = None; j = 0
+                        while j < len(sched) and sched[j][0] <= f:
+                            m = sched[j][1]; j += 1
+                        if m is None:
+                            t_ans = f + 1                                   # nothing published yet: keep waiting
+                        else:
+                            committed = True; si = j; cur_a = m
+                            tvar, tcol = m // 8, m % 8; trot = ROT_OF_VAR[tvar]
+                            lg["commit_f"] = f; lg["commit_a"] = m
+                elif not frozen:
+                    while si < len(sched) and sched[si][0] <= f:
+                        a2 = sched[si][1]; si += 1
+                        if a2 == cur_a:
+                            continue
+                        lg["late"] += 1
+                        if self._lateguard_ok(color, x, row, rot, spd, thr, a2):
+                            cur_a = a2; tvar, tcol = a2 // 8, a2 % 8; trot = ROT_OF_VAR[tvar]; lg["adopt"] += 1
+                        else:
+                            frozen = True; lg["refuse"] += 1
+                            break
             raw, clear = 0, False
             if self.tap_unified:
                 want = None
@@ -380,15 +434,18 @@ class Steer:
         st = self.stats
         st["pills"] += 1
         st["frames"] += (lock_f or 0)
-        exact = (var == tvar and x == tcol)
+        exact = (var == tvar0 and x == tcol0) if sched is not None else (var == tvar and x == tcol)
         st["exact"] += int(exact)
         st["proph_fired"] += int(pd is not None)
         if not exact:
             st["moved_off_target"] += 1
             if clamped_ever and pd is None:
                 st["clamp_short"] += 1
-        return {"var": var, "col": x, "cells": cs, "lock_f": lock_f, "t_act": ta, "proph": pd, "armed": armed,
-                "clamped": clamped_ever, "exact": exact, "trace": tr}
+        out = {"var": var, "col": x, "cells": cs, "lock_f": lock_f, "t_act": ta, "proph": pd, "armed": armed,
+               "clamped": clamped_ever, "exact": exact, "trace": tr}
+        if sched is not None:
+            out["lg"] = lg
+        return out
 
 
 def straight_cells(color, var, col):

@@ -1,0 +1,16 @@
+ID  _choose_fw_meta == Leaf6FwDecider (final + all 32 root values): 335/335
+SEQ 1488: boards 335, tuck commits 9; non-tuck: co-sim final == model final 326/326; publish SEQUENCE exactly equal 326/326
+SEQ v11: boards 335, tuck commits 4; non-tuck: co-sim final == model final 331/331; publish SEQUENCE exactly equal 331/331
+TIME M1 on 1488 publishes (n=663): T0 +0.000 f, 1645 clocks/leaf, per-root +0.000 f; residual sd 0.95 f, |res| p50/p90 0.20/1.32
+TIME M2 on 1488 publishes (n=663): T0 +0.085 f, 1848 clocks/leaf, per-root -0.149 f; residual sd 0.95 f, |res| p50/p90 0.18/1.35
+CHOSEN M1 (M2 unless it fits a negative intercept / per-root cost) -> anytime13 coef {'T0': 0.0, 'a': 0.0011507366239200244, 'b': 0.0011507366239200244, 'c': 0.0011507366239200244, 'd': 0.0011507366239200244, 'e': 0.0011507366239200244, 'model': 'M1'}
+
+[1488] publish-time prediction (IN-sample, n=663): bias +0.05 f, sd 0.95 f
+   GATE P(final at GO+g) all non-tuck boards (n=326): g2: co-sim 45.1% model 45.1%; g4: co-sim 57.4% model 59.5%; g6: co-sim 65.6% model 67.8%; g8: co-sim 72.7% model 71.2%
+   GATE P(final at GO+g) endgame vc<=16 (n=190): g2: co-sim 41.6% model 41.6%; g4: co-sim 55.8% model 55.3%; g6: co-sim 61.6% model 62.6%; g8: co-sim 68.4% model 65.3%
+   time the final is first published (f after GO) p25/50/75/90: co-sim 1.3/2.8/8.7/20.6; model 1.2/2.8/8.9/21.9
+
+[v11] publish-time prediction (OUT-of-sample, n=417): bias +0.51 f, sd 0.61 f
+   GATE P(final at GO+g) all non-tuck boards (n=331): g2: co-sim 4.5% model 5.7%; g4: co-sim 85.2% model 86.4%; g6: co-sim 90.9% model 91.5%; g8: co-sim 92.4% model 93.1%
+   GATE P(final at GO+g) endgame vc<=16 (n=195): g2: co-sim 7.2% model 9.2%; g4: co-sim 82.1% model 83.1%; g6: co-sim 89.7% model 90.3%; g8: co-sim 92.3% model 92.3%
+   time the final is first published (f after GO) p25/50/75/90: co-sim 2.6/2.9/3.4/5.5; model 2.3/2.3/2.3/4.6

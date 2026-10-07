@@ -1,0 +1,8 @@
+A_fair_q04   n 400 both-clear 277: overhead +16.65 pills [+9.59, +23.59]; landed on the brain's final 95.4% of pills; misses 3.91%
+B_14886_q00  n 400 both-clear 330: overhead +27.56 pills [+19.56, +35.19]; landed on the brain's final 90.2% of pills; misses 0.00%; non-final commits 33.1%, late publishes 0.395/pill, adopted 0.333, refused 0.062, tempo +0.00 f/pill
+B_14886_q02  n 400 both-clear 274: overhead +36.82 pills [+28.58, +45.15]; landed on the brain's final 87.2% of pills; misses 2.03%; non-final commits 33.5%, late publishes 0.399/pill, adopted 0.332, refused 0.067, tempo +0.00 f/pill
+B_14886_q03  n 400 both-clear 245: overhead +39.03 pills [+29.73, +47.69]; landed on the brain's final 85.7% of pills; misses 2.95%; non-final commits 33.9%, late publishes 0.400/pill, adopted 0.331, refused 0.069, tempo +0.00 f/pill
+B_14886_q04  n 400 both-clear 229: overhead +45.31 pills [+33.72, +57.06]; landed on the brain's final 85.2% of pills; misses 3.91%; non-final commits 33.0%, late publishes 0.388/pill, adopted 0.322, refused 0.067, tempo +0.00 f/pill
+target overhead (A_fair_q04) +16.65; anytime-1488 overhead by q {0.0: 27.56, 2.0: 36.82, 3.0: 39.03, 4.0: 45.31} -> q_B = 0.00% -> rounded 0.0%
+couch reference: 10/05 AI pills landing on the brain's choice = 1025/1256 = 81.6%
+{"QB": 0.0}
