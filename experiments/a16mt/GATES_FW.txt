@@ -1,0 +1,100 @@
+# a16mt firmware gates: A16 = V11 c51d2e21 + DRDIST_VK=16 -> b545d74055e4a2b64037e1a3d2c0a150 (2026-10-07T20:01Z)
+
+## 1. identity / recipe (experiments/reach/build_fw.py 540 OUT <args>; tree 4f94dd77)
+  build_fw.py 540 OUT 1 1 1 1 1 1 19 8 1 -> c51d2e21  want c51d2e21 (V11, vk unset): PASS
+  build_fw.py 540 OUT 1 1 1 1 1 1 19 8 1 4 -> c51d2e21  want c51d2e21 (V11, vk 4 explicit): PASS
+  build_fw.py 540 OUT 1 1 1 -> 1488e158  want 1488e158 (DIST60): PASS
+  build_fw.py 540 OUT 1 1 1 1 1 1 -> a1ef31c8  want a1ef31c8 (V1): PASS
+  build_fw.py 540 OUT 1 1 1 1 1 1 19 8 1 16 -> b545d740  want b545d740 (A16): PASS
+  byte diff V11 -> A16: 1 byte(s) [('0xa422', '05', '11')] (dist_6502 CMP #VK+1 immediate at DIST_ROM+$22): PASS
+
+## 2. gate_dist_fw.py (py65, the emitted target routine vs the Leaf6Decider rule)
+### vk 4 (control: == experiments/dist/GATE_DIST.txt gate_dist_fw line)
+game  : 1412/1412 target == Leaf6Decider rule (154 with a target, i.e. 1..4 viruses)
+couch : 1234/1234 target == Leaf6Decider rule (283 with a target, i.e. 1..4 viruses)
+synth : 20000/20000 target == Leaf6Decider rule (13505 with a target, i.e. 1..4 viruses)
+cycles (off): median 2438  max 2811  (once per decision; 85.9 MHz -> max 0.033 ms)
+cycles (on): median 11152  max 16297  (once per decision; 85.9 MHz -> max 0.190 ms)
+mutant vk5    : KILLED (190 boards differ)
+mutant tie_le : KILLED (4180 boards differ)
+mutant hwin   : KILLED (311 boards differ)
+mutant gap    : KILLED (370 boards differ)
+mutant cavity : KILLED (1057 boards differ)
+mutant vbelow : KILLED (2784 boards differ)
+mutant cap15  : KILLED (24 boards differ)
+boards 22646, target mismatches 0, write-count violations 0
+GATE_DIST_FW PASS
+### vk 16 (DRDIST_VK=16)
+game  : 1412/1412 target == Leaf6Decider rule (652 with a target, i.e. 1..16 viruses)
+couch : 1234/1234 target == Leaf6Decider rule (659 with a target, i.e. 1..16 viruses)
+synth : 20000/20000 target == Leaf6Decider rule (18912 with a target, i.e. 1..16 viruses)
+cycles (off): median 2522  max 2811  (once per decision; 85.9 MHz -> max 0.033 ms)
+cycles (on): median 17187  max 28250  (once per decision; 85.9 MHz -> max 0.329 ms)
+mutant vk5    : KILLED (73 boards differ)
+mutant tie_le : KILLED (10169 boards differ)
+mutant hwin   : KILLED (892 boards differ)
+mutant gap    : KILLED (1998 boards differ)
+mutant cavity : KILLED (5366 boards differ)
+mutant vbelow : KILLED (7778 boards differ)
+mutant cap15  : KILLED (12 boards differ)
+boards 22646, target mismatches 0, write-count violations 0
+GATE_DIST_FW PASS
+
+## 3. gate_dist_golden.py (py65 WHOLE search, engine leaf = golden + HSV + D(firmware-written target)), legacy tree
+##    dist-target 1f430974 + the leflush lane's gate patch (e251e95a) + this branch's dist_6502/gate_dist_*; V11 flags
+##    (on main the gate stops at its own assert 'golden module shadowed': module split #127)
+tree 1f430974 + patches:  7 files changed, 296 insertions(+), 39 deletions(-)
+### vk 4 (control: must equal dr-mario-leflush-gate-wt/tmp/gates/dist_golden_V1_leflush.log)
+game : firmware(+DIST engine) == golden mirror(+DIST) 154/154; target written == rule 154/154; active 154; the term moved the decision on 41
+couch: firmware(+DIST engine) == golden mirror(+DIST) 283/283; target written == rule 283/283; active 283; the term moved the decision on 82
+synth: firmware(+DIST engine) == golden mirror(+DIST) 60/60; target written == rule 60/60; active 60; the term moved the decision on 11
+big  : firmware(+DIST engine) == golden mirror(+DIST) 20/20; target written == rule 20/20; active 0; the term moved the decision on 0
+GATE_DIST_GOLDEN PASS
+  control == banked leflush record: IDENTICAL
+### vk 16
+game : firmware(+DIST engine) == golden mirror(+DIST) 652/652; target written == rule 652/652; active 652; the term moved the decision on 133
+couch: firmware(+DIST engine) == golden mirror(+DIST) 659/659; target written == rule 659/659; active 659; the term moved the decision on 190
+synth: firmware(+DIST engine) == golden mirror(+DIST) 60/60; target written == rule 60/60; active 60; the term moved the decision on 7
+big  : firmware(+DIST engine) == golden mirror(+DIST) 20/20; target written == rule 20/20; active 0; the term moved the decision on 0
+GATE_DIST_GOLDEN PASS
+
+## 4. Quartus (experiments/a16mt/build_rbf.sh: RTL 3b164c7, qsf a7a0ce8b + SEED, clean compile, fork tree restored)
+### seed 3
+Fitter status : Successful - Wed Oct  7 12:04:15 2026
+ALMs          : 37687 / 41910  (4223 free)   PASS
+copro slack   : 0.591 ns (bar +0.10)   PASS
+pll_hdmi      : -0.596 ns (baseline -0.012)   FAIL
+
+VERDICT: BRAM CONVERSION (#27) BECOMES THE PLAN -- a criterion failed above.
+a16mt/rbf/fw540_reachtap_dist_tuckreach_leflush_vk16_b545d740.hex :
+  blocks with >=1 slice match: 16/16 ; slices covered by bijection: 16/16 ; unmatched blocks: 0
+  VERDICT: PERFECT BIJECTION -- image ROM content == a16mt/rbf/fw540_reachtap_dist_tuckreach_leflush_vk16_b545d740.hex
+rtl_chain/ship/antibody-dist60-v11/fw540_reachtap_dist_tuckreach_leflush_c51d2e21.hex :
+  blocks with >=1 slice match: 14/16 ; slices covered by bijection: 14/16 ; unmatched blocks: 2
+  VERDICT: MISMATCH -- uncovered slices (lane,half): [(2, 1), (4, 1)]
+rtl_chain/ship/antibody-dist60/fw540_reachtap_dist_1488e158.hex :
+  blocks with >=1 slice match: 0/16 ; slices covered by bijection: 0/16 ; unmatched blocks: 16
+  VERDICT: MISMATCH -- uncovered slices (lane,half): [(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (2, 1), (3, 0), (3, 1), (4, 0), (4, 1), (5, 0), (5, 1), (6, 0), (6, 1), (7, 0), (7, 1)]
+netlist check: matched60[14] refs=45 vn_hit refs=28 h_waddr refs=323 dt_pen refs=95 dbest refs=211 lev_a_tgt refs=638
+rbf md5 ebfb15baf1a16e4f4b667179199a5a1e
+### seed 21
+Fitter status : Successful - Wed Oct  7 12:40:03 2026
+ALMs          : 37711 / 41910  (4199 free)   PASS
+copro slack   : 0.418 ns (bar +0.10)   PASS
+pll_hdmi      : 0.052 ns (baseline -0.012)   PASS
+
+VERDICT: SHIP AS-IS -- all three criteria met; BRAM conversion (#27) not needed.
+a16mt/rbf/fw540_reachtap_dist_tuckreach_leflush_vk16_b545d740.hex :
+  blocks with >=1 slice match: 16/16 ; slices covered by bijection: 16/16 ; unmatched blocks: 0
+  VERDICT: PERFECT BIJECTION -- image ROM content == a16mt/rbf/fw540_reachtap_dist_tuckreach_leflush_vk16_b545d740.hex
+rtl_chain/ship/antibody-dist60-v11/fw540_reachtap_dist_tuckreach_leflush_c51d2e21.hex :
+  blocks with >=1 slice match: 14/16 ; slices covered by bijection: 14/16 ; unmatched blocks: 2
+  VERDICT: MISMATCH -- uncovered slices (lane,half): [(2, 1), (4, 1)]
+rtl_chain/ship/antibody-dist60/fw540_reachtap_dist_1488e158.hex :
+  blocks with >=1 slice match: 0/16 ; slices covered by bijection: 0/16 ; unmatched blocks: 16
+  VERDICT: MISMATCH -- uncovered slices (lane,half): [(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (2, 1), (3, 0), (3, 1), (4, 0), (4, 1), (5, 0), (5, 1), (6, 0), (6, 1), (7, 0), (7, 1)]
+netlist check: matched60[14] refs=42 vn_hit refs=28 h_waddr refs=321 dt_pen refs=95 dbest refs=224 lev_a_tgt refs=643
+rbf md5 e00a764e236d8d9fda0446f1c7273a96
+/home/struktured/projects/dr_mario_rl/tmp/a16mt/logs/rbf_seed21.log:RESTORED fork: HEAD 18cf064 hex f78f1e93 qsf 701f6962 rtl-clean=yes
+/home/struktured/projects/dr_mario_rl/tmp/a16mt/logs/rbf_seed3.log:RESTORED fork: HEAD 18cf064 hex f78f1e93 qsf 701f6962 rtl-clean=yes
+staged: tmp/rtl_chain/ship/antibody-dist60-v11-a16/ (stage_rbf.sh 21): e00a764e236d8d9fda0446f1c7273a96  ./NES_antibody_dist60_v11_a16_seed21_20261007.rbf

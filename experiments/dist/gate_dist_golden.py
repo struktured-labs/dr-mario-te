@@ -8,7 +8,9 @@ negative leaf range, shows up as firmware != mirror. Non-vacuity: the term moves
 Boards: every real gate-(b) game board with 1..4 viruses (L11 + L15, their own pills and gravity), the couch endgame
 boards (9/27 lulu G1 stall, 9/27 match-1 G3, 9/26 control; 1..4 viruses), synthetic endgame boards, and a sample of
 > 4-virus boards (term off: must equal the plain HSV mirror).
-Usage: gate_dist_golden.py [--synth N] [--big N] [--workers W]"""
+The endgame bound is dist_6502.VK (env DRDIST_VK, default 4): DRDIST_VK=16 (A16) selects the 1..16-virus boards as the
+term-on set and > 16 as "big" (vk 4 selects exactly the boards and seeds it always did).
+Usage: [DRDIST_VK=16] gate_dist_golden.py [--synth N] [--big N] [--workers W]"""
 import argparse, json, os, random, sys, multiprocessing as mp
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(ROOT, "experiments", "reach")); sys.path.insert(0, HERE)
@@ -95,7 +97,7 @@ def synth(n, rng):
                 b[r * 8 + c] = rng.choice([0x40, 0x50, 0x60, 0x70, 0x80]) | rng.randrange(3)
         for c in (3, 4):
             b[c] = b[8 + c] = 0xFF
-        for _k in range(rng.randint(1, 4)):
+        for _k in range(rng.randint(1, FW.DT.VK)):
             r = rng.randrange(5, 16); c = rng.randrange(8)
             b[r * 8 + c] = 0xD0 | rng.randrange(3)
         out.append(("synth", b, tuple(rng.randrange(3) for _ in range(4)), (rng.randrange(3), rng.randrange(40))))
@@ -121,11 +123,11 @@ def main():
             for l in open(os.path.join(ROOT, "experiments", "reach", "corpus", f))]
     nvir = lambda nes: sum(1 for x in nes if x != 0xFF and (x & 0xF0) == 0xD0)
     tasks = [("game", d["nes"], tuple(x - 1 for x in d["pills"]), (d["speed"], d["speedups"]))
-             for d in rows if 1 <= nvir(d["nes"]) <= 4]
-    big = [d for d in rows if nvir(d["nes"]) > 4]
+             for d in rows if 1 <= nvir(d["nes"]) <= FW.DT.VK]
+    big = [d for d in rows if nvir(d["nes"]) > FW.DT.VK]
     random.Random(5).shuffle(big)
     tasks += [("big", d["nes"], tuple(x - 1 for x in d["pills"]), (d["speed"], d["speedups"])) for d in big[:a.big]]
-    couch = [(k, b) for k, b in FW.boards_real() if k.startswith("couch") and 1 <= nvir(b) <= 4]
+    couch = [(k, b) for k, b in FW.boards_real() if k.startswith("couch") and 1 <= nvir(b) <= FW.DT.VK]
     rng = random.Random(20260928)
     tasks += [("couch", b, tuple(rng.randrange(3) for _ in range(4)), (1, rng.randrange(20))) for _k, b in couch]
     tasks += synth(a.synth, rng)

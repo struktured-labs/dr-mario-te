@@ -5,7 +5,9 @@ target register $70F5 EXACTLY what the sim's rule chooses (cascade_leaf6_x.Leaf6
 $80 | the smallest-D virus (ties: lowest index). Boards: every real gate-(b) game board (L11 + L15) and the couch
 regression boards (9/27 lulu G1 stall, 9/27 match-1 G3, whole games), plus synthetic endgame boards (1..6 viruses,
 cavities, floating viruses, walls). Each TEST-ONLY mutant must be KILLED. Also reports the routine's cycle cost.
-Usage: gate_dist_fw.py [--synth N]"""
+vk = dist_6502.VK (env DRDIST_VK, default 4): the synthetic boards carry 1..vk+2 viruses and the mutant sample 1..vk, so
+DRDIST_VK=16 (A16) gates the wider gate with the same boards and seeds plus its own boundary (vk 4 is unchanged).
+Usage: [DRDIST_VK=16] gate_dist_fw.py [--synth N]"""
 import argparse, json, os, random, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(ROOT, "fpga", "copro")); sys.path.insert(0, os.path.join(HERE, "gate"))
@@ -87,7 +89,7 @@ def synth(n, rng):
                 for r in range(16):
                     if rng.random() < 0.25:
                         b[r * 8 + c] = 0xFF
-        for _k in range(rng.randint(1, 6)):
+        for _k in range(rng.randint(1, DT.VK + 2)):
             b[rng.randrange(128)] = 0xD0 | rng.randrange(3)
         out.append(("synth", b))
     return out
@@ -116,7 +118,7 @@ def main():
         else:
             cyc["off"].append(c)
     for k, (n, ok, act) in kinds.items():
-        print(f"{k:6s}: {ok}/{n} target == Leaf6Decider rule ({act} with a target, i.e. 1..4 viruses)")
+        print(f"{k:6s}: {ok}/{n} target == Leaf6Decider rule ({act} with a target, i.e. 1..{DT.VK} viruses)")
     for t in ("off", "on"):
         v = sorted(cyc[t])
         if v:
@@ -124,7 +126,7 @@ def main():
                   f"{v[-1] / 85.9e3:.3f} ms)")
     ok = bad == 0 and nwrite_bad == 0 and active > 0
     # mutants
-    sample = [b for _, b in boards if 0 < sum(1 for x in b if x != 0xFF and (x & 0xF0) == 0xD0) <= 4]
+    sample = [b for _, b in boards if 0 < sum(1 for x in b if x != 0xFF and (x & 0xF0) == 0xD0) <= DT.VK]
     for m in ("vk5", "tie_le", "hwin", "gap", "cavity", "vbelow", "cap15"):
         Rm = Runner(m)
         diff = sum(Rm.run(b)[0] != expected(b) for _, b in boards[:3000]) + \

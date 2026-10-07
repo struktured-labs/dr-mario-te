@@ -99,6 +99,11 @@ ARMS = {   # name: (flags json, overlays, expectation)
     "couch_fair_A_lgp_row2": ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
                         "DRABORTSTALE": "1", "DRLGPRESTART": "1", "DRDISTROW": "2"}, "pass"),
+    # a16mt lane (2026-10-07): FAIR2PLUS with MIN_THINK cut 12 -> 4 hooks (commit at GO + 2 f). Only the commit gate's
+    # immediates move; the gate must still see the unmodified game under the recorded pads.
+    "couch_fair_A_lgp_row2_mt2": ("experiments/lateflip/couch_c960dd49_flags.json",
+                       {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
+                        "DRABORTSTALE": "1", "DRLGPRESTART": "1", "DRDISTROW": "2", "DRMINTHINK": "4"}, "pass"),
     "couch_464a4b75": ("experiments/lateflip/couch_c960dd49_flags.json", {"DRLATEGUARD": "1", "DRSTUDYEND": "1"}, "fail"),
     "couch_settle3_noguard": ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0",
