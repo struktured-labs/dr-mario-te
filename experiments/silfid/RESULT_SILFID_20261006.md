@@ -512,8 +512,8 @@ from its exact upload.
   (dr-mario-te PR #42);
 - 60 min, 278 states, 0 capture errors.
 
-**Replay:** on Verilator with the V11 firmware (same vsim_pub2, FWDIR = fw_c51d2e21). The first 1488 seconds are not
-involved: no early-DONE or mismatched-read artefact comes from a firmware mismatch, since every co-sim read MATCHes.
+**Replay:** on Verilator with the V11 firmware (same vsim_pub2, FWDIR = fw_c51d2e21). Every co-sim live read MATCHes
+silicon, so the firmware replayed is the one silicon ran.
 - **Tools:** `landing_log.py` (log-only landing analysis) and `publog2_report.py` with TAG=publog3.
 - **Outputs:**
   - `landing_log_20261007.txt`, `publog3_report_20261007.txt`;
