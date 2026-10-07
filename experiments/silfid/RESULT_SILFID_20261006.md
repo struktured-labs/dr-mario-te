@@ -533,13 +533,13 @@ silicon, so the firmware replayed is the one silicon ran.
 | — own committed target ≠ final | 17.6% (6.2% locked before DONE) | | 2.7% (none before DONE) |
 | — no target change logged | 5.7% | | 0.6% |
 | — neither final nor own target | 0.7% | | 0% |
-| at-gate answer == final (silicon) | 55.0% (50.1–59.7) | 79.4% (Verilator V11 on capture #2's boards) | **84.9% (80.7–88.4)** |
+| at-gate answer == final (silicon) | 55.0% (50.1–59.7) | 79.2% (Verilator V11 on capture #2's boards) | **84.9% (80.7–88.4)** |
 | landing ≠ final when gate == final | 6.8% (15/222) | (6.8%, carried over) | **0.0% (0/282)** |
 | landing ≠ final when gate ≠ final | 45.1% (82/182) | (45.1%, carried over) | **22.0% (11/50)** |
 
 - **The firmware half of the prediction held.**
   - Measured at-gate == final: 84.9% on capture #3's own boards.
-  - Predicted: 79.4% from V11 on capture #2's boards (the provisional subset said ~85%).
+  - Predicted: 79.2% from V11 on capture #2's boards (the provisional subset said ~85%).
   - The boards differ: V11 + FAIR2PLUS plays different games.
 - **The driver half was pessimistic.** I flagged it as an upper-side estimate. FAIR2PLUS follows a late change far better:
   - 0 misses at all when the gate answer is final;
