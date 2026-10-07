@@ -106,6 +106,9 @@ ARMS = {   # name: (flags json, overlays, expectation)
     "couch_fair_A_lgp_row2_sz": ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
                         "DRABORTSTALE": "1", "DRLGPRESTART": "1", "DRDISTROW": "2", "DRSEEDZERO": "1"}, "pass"),
+    # silfid lane (2026-10-06): the DRPUBLOG debug-log cart (couch P2 driver on the sliced-native-P1 CvC seat config).
+    "cvcp2_base":     ("experiments/silfid/cvcp2_flags.json", {}, "pass"),
+    "cvcp2_publog":   ("experiments/silfid/cvcp2_flags.json", {"DRPUBLOG": "1"}, "pass"),
     "couch_464a4b75": ("experiments/lateflip/couch_c960dd49_flags.json", {"DRLATEGUARD": "1", "DRSTUDYEND": "1"}, "fail"),
     "couch_settle3_noguard": ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0",

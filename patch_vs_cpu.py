@@ -543,6 +543,7 @@ OPS = {
     "ADC_imm": 0x69, "ADC_zp": 0x65, "ADC_abs": 0x6D,
     "SBC_imm": 0xE9, "SBC_zp": 0xE5, "SBC_abs": 0xED,
     "STA_zp": 0x85, "STA_abs": 0x8D, "STA_absX": 0x9D, "STA_absY": 0x99,
+    "STA_indY": 0x91,  # STA (zp),Y -- DRPUBLOG ring writes only
     "STX_zp": 0x86, "STY_zp": 0x84,
     "LDY_imm": 0xA0, "LDX_imm": 0xA2, "LDA_imm": 0xA9,
     "LDA_zp": 0xA5, "LDX_zp": 0xA6, "LDY_zp": 0xA4,

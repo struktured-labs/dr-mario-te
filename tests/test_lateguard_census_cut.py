@@ -210,6 +210,12 @@ def census_bounds(img):
     B = {name: worst(c) for name, c in cuts.items()}
     abort = ([("into", "ppd_skip")] + [("into", e) for e in img.phases]
              + [("into", "h1_start"), ("into", "do_init"), ("fallof", "p1n_nosearch")])
+    if "p1s_ppguard" in have:
+        # COMBINED image (DRPRESPIPE + DRP1SLICE): an aborted hook entered pp_disp, and pre_tick sets PP_RAN before
+        # jumping there, so the P1 slice dispatch takes p1s_idle on it -- the same #140 interlock cut the census gives
+        # every pipeline-work class (census.prespipe_scenarios). Without it this model charges a slice tick the guard
+        # excludes. No-op on the couch image (no slice).
+        abort.append(("fallof", "p1s_idle"))
     B["pp_abort"] = worst(abort)                        # aborted hook: no phase, NO h2_cp/lg cut (both reachable)
     return B, cuts
 
