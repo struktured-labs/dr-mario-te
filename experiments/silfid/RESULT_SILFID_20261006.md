@@ -466,11 +466,16 @@ from its exact upload.
 2. **The silicon copro's nondeterminism is real but small, and changes WHEN, rarely WHAT:**
    - early DONE in 4–7 % of long searches;
    - a different path in ≤ 1/32.
-   - The early-DONE model predicts ~9 earlier-answer landings across the 5 games (`tieback_20261007.txt`).
-   - The couch's own DONE proxy agrees in direction: slam onset is early (≤ −3 f) on 24.6 % of residual pills vs 5.7 %
-     of agreeing ones, and on 13 of 27 measurable residual EARLIER-PUB pills.
-   - So it accounts for a minority, at most about a third of EARLIER-PUB, at bluemage's rate.
-   - rivalmage, the couch unit, may differ per chip: untested.
+   - **The early-DONE model** (`tieback_20261007.txt`):
+     - It predicts ~11 earlier-answer landings across all 528 couch pills with ≥ 2 publications.
+     - Summed over the 30 residual EARLIER-PUB pills themselves, it explains only **~0.5**: their improvements mostly
+       arrive before silicon's early DONEs, which come at 4–48 f.
+     - So at bluemage's rate, early DONE is NOT the residual's mechanism.
+   - **The couch's slam-onset proxy is still asymmetric:** early (≤ −3 f) on 24.6 % of residual pills vs 5.7 % of
+     agreeing ones, and on 13 of 27 measurable residual EARLIER-PUB pills.
+     - The copro cannot produce that at this rate.
+     - It points to the cart's own commit/slam path or to the couch's reconstructed timelines.
+   - rivalmage, the couch unit, may have a higher per-chip rate: untested.
 3. **Where the rest lives is the cart's DECISION/EXECUTION layer, not the copro.**
    - On bluemage the cart lands the copro final on only 76 % of CELL pills (404 with a lock):
      - **17.6 % land the cart's OWN committed target ≠ final** (6.2 % locked before DONE: LATEGUARD / commit gate);
