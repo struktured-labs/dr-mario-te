@@ -1,0 +1,5 @@
+steer14_run.py guard (jit_guard on 150 fixed boards), 2026-10-07, three runs:
+  nb_desk_guard1 FRESH cache (cold compile): {"boards": 150, "mid_n": 90, "mid_diff": 20, "out_diff": 0, "meta_bad": 0, "sha": "064752972d064a89"}
+  nb_desk_guard1 warm cache (second run):    {"boards": 150, "mid_n": 90, "mid_diff": 20, "out_diff": 0, "meta_bad": 0, "sha": "064752972d064a89"}
+  nb_desk_guard2 FRESH cache (cold compile): {"boards": 150, "mid_n": 90, "mid_diff": 20, "out_diff": 0, "meta_bad": 0, "sha": "064752972d064a89"}
+-> GUARD_SHA = 064752972d064a89 (steer14_run.py). Killed mutants: guard_mutants.txt.

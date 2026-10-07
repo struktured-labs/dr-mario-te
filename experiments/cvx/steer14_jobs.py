@@ -1,34 +1,36 @@
 """STEER14 job lists (`TAG SCRIPT ARGS... OUT`, OUT last).
-  cal    KOPEN-cut calibration (EXECUTION METRICS ONLY, before the prereg; steer14_cal_read.py): LULU race, 400 seeds of
-         the STEER10/12/13 calibration block (39134-39932, step 2), DIST4 at KOPEN 32/24/16/8/4 + the MIN_THINK 2 f
-         model check.
+  cal    STAGE-1 SCREEN of the slam-gate cut (EXECUTION METRICS ONLY, before the prereg; steer14_cal_read.py): LULU
+         race, 400 seeds of the STEER10/12/13 calibration block (39134-39932, step 2), DIST4 at every steer14_run.GATES
+         configuration + the MIN_THINK 2 f model check.
   main   PREREG_STEER14.md sec. 4, in this order (R23: the number the owner relies on first):
            (1) RE-DERIVATION of STEER13's V11-vs-1488 under the slam gate on STEER13's own seeds (41100.., declared reuse)
            (2) the 2x2 + the q 2 % sensitivity pair on the new block (44300.., declared reuse), arms interleaved per block
-           (3) the KOPEN dose-response (DIST4, LULU only) on the first N_DOSE seeds of the new block
+           (3) the gate dose-response (DIST4, LULU only: every screened configuration but k32 and G*) on the first
+               N_DOSE seeds of the new block
 """
 import sys
 JOB = 50
 CAL = [39134 + 100 * i for i in range(8)]
-CAL_ARMS = ("S14_d4_k32", "S14_d4_k24", "S14_d4_k16", "S14_d4_k8", "S14_d4_k4", "CAL_d4_k32_mt2")
+GATE_NAMES = ("k32", "k24", "k16", "k8", "k4", "e32", "e16", "v4", "u16", "u8")       # == steer14_run.GATES
+CAL_ARMS = tuple(f"S14_d4_{g}" for g in GATE_NAMES) + ("CAL_d4_k32_mt2",)
 LO, LO13 = 44300, 41100
-N_LULU, N_GUARD, N_SENS, N_DOSE = 5100, 1000, 2000, 1000      # PREREG_STEER14 sec. 4 (steer14/sizing.txt)
+N_LULU, N_GUARD, N_SENS, N_DOSE = 5100, 1000, 2000, 600       # PREREG_STEER14 sec. 4 (steer14/sizing.txt)
 N13_LULU, N13_GUARD = 1600, 600                                # == STEER13's cells
-KC = None                                                       # the KOPEN cut, from steer14/cal/kopen_cut.txt (prereg)
+GS = None                                                       # the gate cut G*, from steer14/cal/gate_cut.txt (prereg)
 REDERIVE = ("C13_14886", "C13_v116")
 
 
 def main_arms():
-    assert KC is not None, "set KC from steer14/cal/kopen_cut.txt before the main phase"
-    return ("S14_d4_k32", "S14_d16_k32", f"S14_d4_k{KC}", f"S14_d16_k{KC}")
+    assert GS is not None, "set GS from steer14/cal/gate_cut.txt before the main phase"
+    return ("S14_d4_k32", "S14_d16_k32", f"S14_d4_{GS}", f"S14_d16_{GS}")
 
 
 def sens_arms():
-    return ("S14_d4_k32_q02", f"S14_d16_k{KC}_q02")
+    return ("S14_d4_k32_q02", f"S14_d16_{GS}_q02")
 
 
 def dose_arms():
-    return tuple(f"S14_d4_k{k}" for k in (24, 16, 8, 4) if k != KC)
+    return tuple(f"S14_d4_{g}" for g in GATE_NAMES if g not in ("k32", GS))
 
 
 def blocks(n, lo=LO):

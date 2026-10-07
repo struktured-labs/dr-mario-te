@@ -3,9 +3,12 @@ STEER13's anytime-commit model started the soft drop the moment the capsule was 
 not: its DRSLAM gate (patch_cartridge_copro.py dn_p2, FAIR / FAIR2PLUS flags KOPEN 32, KEND 255, KCROSS 8, LOWY 8,
 VCEND 10, MATURE 2) holds DOWN until the search is DONE or the published answer has been stable for K hooks
 (steer_model.execute(slam=...); validated on the a16-mt-build lane's chained Mesen replays, steer14_slamcal.py).
-So MIN_THINK is dropped and the factor is the slam gate's KOPEN:
-  2x2 = {DIST gate vk 4 (today), 16 (A16)} x {KOPEN 32 (today), KOPEN cut}, fw V11, MIN_THINK 6 f, + a q 2 % sensitivity
-  pair for the combined contrast, a KOPEN dose-response (DIST4), and STEER13's V11-vs-1488 re-derived (C13_* arms).
+So MIN_THINK is dropped and the factor is the slam gate itself (GATES = (KOPEN, KEND, VCEND) configurations: today k32,
+KOPEN cuts, ENDGAME cuts that release DOWN under the K rule below 10 viruses, uniform cuts):
+  2x2 = {DIST gate vk 4 (today), 16 (A16)} x {today's gate k32, the gate cut G* from a stage-1 screen}, fw V11,
+  MIN_THINK 6 f, + a q 2 % sensitivity pair for the combined contrast, a gate dose-response (DIST4), and STEER13's
+  V11-vs-1488 re-derived (C13_* arms). Every row counts GO -> lock per pill and per ENDGAME pill (< 10 viruses) for the
+  arm and for today's cart on the same pill, the disarmed pills, and DOWN via DONE / stability / none.
 
   python steer14_run.py race ARM LAM SIZES LO CNT STEP OUT     (race clock couch11)
   python steer14_run.py gb   ARM OPPONENT LO CNT STEP OUT       (gate b, pill-keyed opponent)
@@ -46,21 +49,25 @@ GUARD_LEVELS = (0, 1, 2, 3, 5)   # 4 / 8 / 12 / 16 / 24 viruses
 GUARD_SEEDS = tuple(range(9000, 9060, 2))      # boards only (no game is played or scored on them)
 KOPEN_TODAY, KEND, KCROSS, LOWY, VCEND = 32, 255, 8, 8, 10     # FAIR / FAIR2PLUS cart flags (cart build logs)
 GAP_BASE, GAP_FLOOR = 24, 12                                    # lock -> next edge, no clear: max(12, 24 - ROM Y)
-KOPENS = (32, 24, 16, 8, 4)
+# slam-gate configurations (KOPEN, KEND, VCEND): today, KOPEN cuts, ENDGAME cuts (below VCEND viruses the cart is
+# DONE-only today: KEND 255), and uniform cuts. ROM Y < LOWY always uses KCROSS 8 (unchanged).
+GATES = {"k32": (32, 255, 10), "k24": (24, 255, 10), "k16": (16, 255, 10), "k8": (8, 255, 10), "k4": (4, 255, 10),
+         "e32": (32, 32, 10), "e16": (32, 16, 10), "v4": (32, 255, 4), "u16": (16, 16, 10), "u8": (8, 8, 10)}
 
 
 def _arms():
     A = {"S14_id_v116": dict(part="B", rule="s10_base", fw="v11", mt=6, q=0.0, ref="1488", slam=False, kopen=None)}
     for d, rule in ((4, "s10_base"), (16, "s10_A16")):
-        for k in KOPENS:
+        for g, (ko, ke, ve) in GATES.items():
             for q in (0, 2):
-                A[f"S14_d{d}_k{k}" + ("" if q == 0 else f"_q{q:02d}")] = dict(
-                    part="B", rule=rule, fw="v11", mt=6, q=q / 100, ref="1488", slam=True, kopen=k)
-    A["CAL_d4_k32_mt2"] = dict(part="B", rule="s10_base", fw="v11", mt=2, q=0.0, ref="1488", slam=True, kopen=32)
+                A[f"S14_d{d}_{g}" + ("" if q == 0 else f"_q{q:02d}")] = dict(
+                    part="B", rule=rule, fw="v11", mt=6, q=q / 100, ref="1488", slam=True, kopen=ko, kend=ke, vcend=ve)
+    A["CAL_d4_k32_mt2"] = dict(part="B", rule="s10_base", fw="v11", mt=2, q=0.0, ref="1488", slam=True, kopen=32, kend=255,
+                               vcend=10)
     #   ^ calibration only (steer14_cal_read.py): the model's MIN_THINK 2 f lock-frame change must be ~0, as on the cart
     for fw in ("1488", "v11"):                                  # STEER13's V11-vs-1488 under the slam gate
         A[f"C13_{'14886' if fw == '1488' else 'v116'}"] = dict(part="B", rule="s10_base", fw=fw, mt=6, q=0.0, ref="1488",
-                                                               slam=True, kopen=KOPEN_TODAY)
+                                                               slam=True, kopen=KOPEN_TODAY, kend=KEND, vcend=VCEND)
     return A
 
 
@@ -138,6 +145,8 @@ class Knob14(S13.Knob13):
         super().reset(seed)
         if self.slam_on:
             self.kstats.update({"disarmed": 0, "ref_disarmed": 0, "down_done": 0, "down_stab": 0, "no_down": 0,
+                                "golock_f": 0, "ref_golock_f": 0, "end_pills": 0, "end_golock_f": 0, "end_ref_golock_f": 0,
+                                "end_landed_final": 0, "end_tempo_f": 0, "end_down_stab": 0,
                                 "garb_events": 0})
         self.prev = None          # (arm: done_m, lock_m, Y) of the previous pill
         self.prev_ref = None
@@ -196,9 +205,10 @@ class Knob14(S13.Knob13):
         done_m, lock_m, Y = prev
         return not (done_m > lock_m + max(GAP_FLOOR, GAP_BASE - Y) + clr)
 
-    def _slam(self, done_frame, armed, vc, kopen):
-        return {"done": done_frame, "armed": armed, "vc": vc, "kopen": kopen, "kend": KEND, "kcross": KCROSS,
-                "lowy": LOWY, "vcend": VCEND}
+    @staticmethod
+    def _slam(done_frame, armed, vc, kopen, kend, vcend):
+        return {"done": done_frame, "armed": armed, "vc": vc, "kopen": kopen, "kend": kend, "kcross": KCROSS,
+                "lowy": LOWY, "vcend": vcend}
 
     @staticmethod
     def _Y(ex):
@@ -229,10 +239,10 @@ class Knob14(S13.Knob13):
         sv = (s.v, s.v_at_lock, dict(s.stats), s.lat, s.proph_first_end)
         s.lat, s.proph_first_end = self.lat_fair, S13.P_FIRST
         ref = s.execute(color, target_action if alt is None else alt, k, sched=sched_ref,
-                        slam=self._slam(dn_ref, armed_ref, cur["vc"], KOPEN_TODAY))
+                        slam=self._slam(dn_ref, armed_ref, cur["vc"], KOPEN_TODAY, KEND, VCEND))
         s.v, s.v_at_lock, s.stats, s.lat, s.proph_first_end = sv[0], sv[1], sv[2], sv[3], sv[4]
         ex = s.execute(color, target_action if alt is None else alt, k, t_act, phase, sched=sched,
-                       slam=self._slam(dn, armed, cur["vc"], self.spec["kopen"]))
+                       slam=self._slam(dn, armed, cur["vc"], self.spec["kopen"], self.spec["kend"], self.spec["vcend"]))
         lg = ex["lg"]
         if alt is None:
             ks["nonfinal_commit"] += int(lg["commit_a"] != target_action)
@@ -245,6 +255,12 @@ class Knob14(S13.Knob13):
             ks["down_done"] += int(df >= dn); ks["down_stab"] += int(df < dn)
         ks["landed_final"] += int(ex["var"] * 8 + ex["col"] == target_action)
         d = (ex["lock_f"] or 0) - (ref["lock_f"] or 0)
+        gl, glr = (ex["lock_f"] or 0) - GO, (ref["lock_f"] or 0) - GO          # GO -> lock, arm / today's cart
+        ks["golock_f"] += gl; ks["ref_golock_f"] += glr
+        if cur["vc"] < VCEND:                                                     # the endgame (< 10 viruses)
+            ks["end_pills"] += 1; ks["end_golock_f"] += gl; ks["end_ref_golock_f"] += glr; ks["end_tempo_f"] += d
+            ks["end_landed_final"] += int(ex["var"] * 8 + ex["col"] == target_action)
+            ks["end_down_stab"] += int(df is not None and df < dn)
         ks["tempo_f"] += d
         if self.base0 is not None:
             self.V.CLOCK["base"] = self.base0 + d

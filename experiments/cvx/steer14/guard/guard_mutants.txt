@@ -1,0 +1,9 @@
+STEER14 JIT GUARD FAIL {'boards': 150, 'mid_n': 90, 'mid_diff': 20, 'out_diff': 0, 'meta_bad': 0, 'sha': '064752972d064a89', 'expect': '0000000000000000'} []
+STEER14 JIT GUARD FAIL {'boards': 150, 'mid_n': 90, 'mid_diff': 0, 'out_diff': 0, 'meta_bad': 0, 'sha': 'ba6b3161d962c6ab', 'expect': None} []
+STEER14 JIT GUARD FAIL {'boards': 150, 'mid_n': 90, 'mid_diff': 20, 'out_diff': 0, 'meta_bad': 150, 'sha': 'eb92740477a268e9', 'expect': None} [('meta', 0, 9000, 3, 4, 3, 4), ('meta', 0, 9002, 3, 4, 3, 4), ('meta', 0, 9004, 0, 1, 0, 1)]
+control (sha 064752972d064a89): rc 0 {'boards': 150, 'mid_n': 90, 'mid_diff': 20, 'out_diff': 0, 'meta_bad': 0, 'sha': '064752972d064a89', 'expect': '064752972d064a89'}
+m_sha: rc 5 -> KILLED
+m_vk: rc 5 -> KILLED
+m_meta: rc 5 -> KILLED
+STEER14 GUARD MUTANTS PASS
+rc=0

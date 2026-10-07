@@ -5,7 +5,8 @@
   DETERMINISM  S14_d4_k32 run twice on the same seeds: identical rows (rule 30).
   POSITIVE     S14_d16_k32 rows differ from S14_d4_k32 rows on >= 1 seed (prints a COUNT only, no outcome).
   SMOKES       every slam arm active: DOWN via DONE > 0 and via stability > 0 (summed over the file's rows), anytime
-               (non-final commits or late publishes) > 0; q 2 % arms: misses > 0; A16 arms: target on > 0. Every row:
+               (non-final commits or late publishes) > 0; q 2 % arms: misses > 0; A16 arms: target on > 0; endgame cuts:
+               stability slams below 10 viruses > 0; race rows: the garbage-drop wrap fired (> 0). Every row:
                LULU rows carry the probe with ndec in {dec, dec + 1} (R100); a passing jit guard with the pre-registered sha.
 Exit 0 = PASS. Writes steer14/gate/identity.txt.
 """
@@ -80,10 +81,15 @@ for f in sorted(glob.glob("steer14/gate/*.jsonl")):
         acts["miss"] = k["miss"] > 0
     if spec["rule"] == "s10_A16":
         acts["A16 tgt_on"] = sum(r["rule"]["tgt_on"] for r in rows) > 0
+    if spec["kend"] < 255 or spec["vcend"] < 10:              # an ENDGAME cut: stability slams below 10 viruses
+        acts["endgame stability slams"] = k["end_down_stab"] > 0
+    if f.endswith("_rc_S14_d16_e16.jsonl") or "_lulu_" in f:
+        acts["garbage wrap live"] = k["garb_events"] > 0
     act = all(acts.values())
     ok &= act
     out(f"SMOKE {os.path.basename(f)} ({len(rows)} rows): disarmed {k['disarmed']} (ref {k['ref_disarmed']}), DOWN via DONE "
-        f"{k['down_done']} / stability {k['down_stab']} / none {k['no_down']}, checks {acts} -> {'active' if act else 'FAIL'}")
+        f"{k['down_done']} / stability {k['down_stab']} / none {k['no_down']}, endgame pills {k['end_pills']} (stability slams "
+        f"{k['end_down_stab']}), garbage events {k['garb_events']}, checks {acts} -> {'active' if act else 'FAIL'}")
 out(f"guard sha in every gate row == GUARD_SHA {R.GUARD_SHA}")
 out("STEER14 IDENTITY GATE " + ("PASS" if ok else "FAIL"))
 open("steer14/gate/identity.txt", "w").write("\n".join(lines) + "\n")

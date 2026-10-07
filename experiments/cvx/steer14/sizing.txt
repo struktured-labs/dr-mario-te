@@ -1,0 +1,22 @@
+STEER14 SIZING from STEER13's observed per-seed variance (LULU race win at M 167.5; seeds 41100-44298, n = 1,600)
+  piece 1 (A16 - FAIR, part A q 4 %):  mean +2.94 pp, sd 0.4358, discordance 0.191
+  piece 2 proxy (V11 MT 2 - MT 6):     mean +4.75 pp, sd 0.4614, discordance 0.215
+  cov(piece 1, piece 2) +0.00298 (corr +0.015)
+  => sigma(iii) = sd(piece 1 + piece 2) = 0.6393
+  Rule 47: z(1 - 0.05 / 8) = 2.4977 (Bonferroni K = 4, two-sided), z(0.8) = 0.8416
+  n for power 0.8 at +3 pp = ((2.498 + 0.842) x 0.6393 / 0.03)^2 = 5064  -> rounded UP to the 50-game job: N_LULU = 5100
+  alternative proxies (NOT used for N):
+    A16 - base at q 0 (STEER11 pilot, n 1200): sd 0.3794 -> with piece 2 independent: sigma(iii) ~ 0.5974
+    two-change v112 - 14886 (STEER13): sd 0.5503
+
+  AT N_LULU = 5100 (Bonferroni K = 4):
+    (iii) combined: power at +3 pp 0.803; 80 % MDE 2.99 pp
+    (i)/(ii) A16 alone, q 4 % proxy (sd 0.436): power at +3 pp 0.992; 80 % MDE 2.04 pp
+    (i)/(ii) A16 alone, q 0 proxy (sd 0.379): power at +3 pp 0.999; 80 % MDE 1.77 pp
+    (iv) interaction, 2 x var(A16) q 4 % proxy (sd 0.616): 80 % MDE 2.88 pp
+    (iv) interaction, 2 x var(A16) q 0 proxy (sd 0.537): 80 % MDE 2.51 pp
+    guard gate-b tap-out (STEER13 n 600, v116 level 5.67 %, paired sd 0.2342): at N_GUARD = 1000, Bonferroni-6 80 % MDE 2.58 pp
+    guard owner race loss (STEER13 n 600, v116 level 11.33 %, paired sd 0.3524): at N_GUARD = 1000, Bonferroni-6 80 % MDE 3.88 pp
+    sensitivity q 2 % (iii) at N_SENS = 2000: sigma proxy 0.639 -> 95 % (unadjusted) 80 % MDE 4.00 pp  (part-A A16 - FAIR at q 2 %: sd 0.422, n 800)
+
+  GAMES: part R 2 x (1600 + 2 x 600) = 5,600; part M 4 x 5100 LULU + 2 x 2000 sensitivity + 4 x 2 x 1000 guards = 32,400; part D 8 x 600 = 4,800; total 42,800 (856 jobs of 50)

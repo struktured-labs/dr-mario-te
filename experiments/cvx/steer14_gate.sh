@@ -25,12 +25,14 @@ run dt2   race S14_d4_k32  2.84 lulu202610b 41100 10 2 steer14/gate/det2_lulu_S1
 # POSITIVE CONTROL: the A16 arm must differ from the DIST4 rows on the same seeds
 run pc    race S14_d16_k32 2.84 lulu202610b 41100 10 2 steer14/gate/pc_lulu_S14_d16_k32.jsonl &
 wait
-# SMOKES (every arm family / cell active)
+# SMOKES (every gate family / cell active)
 run sm_k8  race S14_d16_k8      2.84 lulu202610b 36734 2 2 steer14/gate/smoke_lulu_S14_d16_k8.jsonl &
+run sm_e32 race S14_d4_e32      2.84 lulu202610b 36734 2 2 steer14/gate/smoke_lulu_S14_d4_e32.jsonl &
+run sm_v4  race S14_d4_v4       2.84 lulu202610b 36734 2 2 steer14/gate/smoke_lulu_S14_d4_v4.jsonl &
 run sm_q4  race S14_d4_k32_q02  2.84 lulu202610b 36734 2 2 steer14/gate/smoke_lulu_S14_d4_k32_q02.jsonl &
-run sm_q16 race S14_d16_k16_q02 2.84 lulu202610b 36734 2 2 steer14/gate/smoke_lulu_S14_d16_k16_q02.jsonl &
-run sm_g   gb   S14_d16_k16     owner202610      36734 2 2 steer14/gate/smoke_gb_S14_d16_k16.jsonl &
-run sm_r   race S14_d16_k16     2.36 hartford    36734 2 2 steer14/gate/smoke_rc_S14_d16_k16.jsonl &
+run sm_q16 race S14_d16_u16_q02 2.84 lulu202610b 36734 2 2 steer14/gate/smoke_lulu_S14_d16_u16_q02.jsonl &
+run sm_g   gb   S14_d16_u16     owner202610      36734 2 2 steer14/gate/smoke_gb_S14_d16_u16.jsonl &
+run sm_r   race S14_d16_e16     2.36 hartford    36734 2 2 steer14/gate/smoke_rc_S14_d16_e16.jsonl &
 run sm_v   race C13_v116        2.84 lulu202610b 36734 2 2 steer14/gate/smoke_lulu_C13_v116.jsonl &
 wait
 echo "gate done"
