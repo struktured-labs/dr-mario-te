@@ -67,9 +67,10 @@ local function p2maxh()
   return h
 end
 
-local st = { play_f = 0, rounds = 0, p2_clear = 0, p2_top = 0, deliv = 0, deliv_cells = 0, rel = 0, hold_viol = 0,
+local st = { p2atk_max = 0, p2atk_nz = 0, esc_inj_live = 0, play_f = 0, rounds = 0, p2_clear = 0, p2_top = 0, deliv = 0, deliv_cells = 0, rel = 0, hold_viol = 0,
              spawns = 0, cell = 0, le20 = 0, maxh_hist = {} }
 local last_mode, last_atk, p1 = -1, 0, nil
+local last_inj, last_live = nil, false
 local in_round_f = 0
 logf(string.format("gpump probe %s maxf=%d pub_f=%d done_f=%d", TAG, MAXF, PUB_F, DONE_F))
 emu.addEventCallback(function()
@@ -87,6 +88,10 @@ emu.addEventCallback(function()
       end
     end
     p1 = cur
+    -- DRP1DRAIN: P2's outgoing attack $0398; DRNAVESC_NOPLAY: no escape START ($614B count) inside a live round
+    local pa = rd(0x0398)
+    if pa > st.p2atk_max then st.p2atk_max = pa end
+    if pa ~= 0 then st.p2atk_nz = st.p2atk_nz + 1 end
     -- the pump: deliveries into an empty slot, releases by P2's checkReleaseAttack
     local atk = rd(0x0318)
     if atk ~= 0 and last_atk == 0 then
@@ -98,6 +103,14 @@ emu.addEventCallback(function()
     end
     last_atk = atk
   end
+  -- DRNAVESC_NOPLAY: the inject counter $614B (shared with the menu autonav) must not move between two consecutive
+  -- LIVE-round frames (mode 4, $04 != 0, P2 viruses != 0); menu / round-end presses happen outside such pairs
+  local inj, live_now = rd(0x614B), (mode == 4 and rd(0x04) ~= 0 and rd(0x03A4) ~= 0)
+  if live_now and last_live and last_inj ~= nil and inj ~= last_inj then
+    st.esc_inj_live = st.esc_inj_live + 1
+    logf(string.format("INJECT_IN_LIVE_ROUND f=%d count %d->%d", fcount, last_inj, inj))
+  end
+  last_inj, last_live = inj, live_now
   if last_mode == 4 and mode ~= 4 then
     local v = bcd(rd(0x03A4))
     st.rounds = st.rounds + 1
@@ -118,9 +131,9 @@ emu.addEventCallback(function()
     fh:write(table.concat(t)); fh:close()
     local gn, gc = rd(0x6633) + 256 * rd(0x6634), rd(0x6635) + 256 * rd(0x6636)
     local rate = st.play_f > 0 and st.deliv / (st.play_f / 60.0988 / 60) or 0
-    logf(string.format("SUMMARY tag=%s frames=%d play_f=%d rounds=%d p2_clear=%d p2_topout=%d deliveries=%d cells=%d releases=%d GP_N=%d GP_C=%d rate_per_play_min=%.2f hold_violations=%d goes=%d dones=%d",
+    logf(string.format("SUMMARY tag=%s frames=%d play_f=%d rounds=%d p2_clear=%d p2_topout=%d deliveries=%d cells=%d releases=%d GP_N=%d GP_C=%d rate_per_play_min=%.2f hold_violations=%d goes=%d dones=%d p2atk_max=%d p2atk_nonzero_frames=%d esc_inject_live=%d",
       TAG, fcount, st.play_f, st.rounds, st.p2_clear, st.p2_top, st.deliv, st.deliv_cells, st.rel, gn, gc, rate,
-      st.hold_viol, sh.goes, sh.dones))
+      st.hold_viol, sh.goes, sh.dones, st.p2atk_max, st.p2atk_nz, st.esc_inj_live))
     logf("DONE"); lf:close(); pcall(function() emu.stop(0) end)
   end
 end, emu.eventType.endFrame)

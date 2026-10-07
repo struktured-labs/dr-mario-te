@@ -115,6 +115,12 @@ ARMS = {   # name: (flags json, overlays, expectation)
     "cvcp2_hold":     ("experiments/silfid/cvcp2_flags.json", {"DRPUBLOG": "1", "DRP1HOLD": "1"}, "pass"),
     "cvcp2_pump":     ("experiments/silfid/cvcp2_flags.json", {"DRPUBLOG": "1", "DRP1HOLD": "1", "DRGPUMP": "1",
                                                               "DRPUBLOG_PDW": "1"}, "pass"),
+    # PUBLOG capture #3 (2026-10-07): the FAIR2PLUS P2 driver (DRABORTSTALE + DRLGPRESTART + DRDISTROW=2) + hold-first,
+    # drain, escape guard, pump, PDW. Abort arm: also must upload no dead pill.
+    "cvcp2_c3":       ("experiments/silfid/cvcp2_flags.json",
+                       {"DRABORTSTALE": "1", "DRLGPRESTART": "1", "DRDISTROW": "2", "DRPUBLOG": "1", "DRPUBLOG_PDW": "1",
+                        "DRP1HOLD": "1", "DRGPUMP": "1", "DRP1DRAIN": "1", "DRNAVESC_NOPLAY": "1", "DRP1HOLDFIRST": "1"},
+                       "pass"),
     "cvcp2_pump_t255": ("experiments/silfid/cvcp2_flags.json",
                        {"DRPUBLOG": "1", "DRP1HOLD": "1", "DRGPUMP": "1", "DRGPUMP_T": "255"}, "pass"),
     "couch_464a4b75": ("experiments/lateflip/couch_c960dd49_flags.json", {"DRLATEGUARD": "1", "DRSTUDYEND": "1"}, "fail"),

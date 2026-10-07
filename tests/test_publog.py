@@ -37,7 +37,11 @@ def flagfile(extra):
     snap = subprocess.run([sys.executable, os.path.join(ROOT, "tools/silfid/publog_flags.py"), "cvcp2",
                            "DRP1AIHI=1"] + extra, capture_output=True, text=True, check=True).stdout.split()
     d = os.path.join(ROOT, "tmp", "publog_gate"); os.makedirs(d, exist_ok=True)
-    path = os.path.join("tmp", "publog_gate", "flags_" + "_".join(x.replace("=", "") for x in extra) + ".json")
+    tag = "_".join(x.replace("=", "") for x in extra)
+    if len(tag) > 120:                                     # long flag sets: a stable short name
+        import hashlib
+        tag = hashlib.md5(tag.encode()).hexdigest()[:16]
+    path = os.path.join("tmp", "publog_gate", "flags_" + tag + ".json")
     json.dump({"flag_snapshot": dict(kv.split("=", 1) for kv in snap)}, open(os.path.join(ROOT, path), "w"))
     return path
 
