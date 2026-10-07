@@ -25,6 +25,7 @@ KIL_SITES = [
     (0xBC26, 18, "study part3c -- TITLE print table: the published-v6 KIL freeze"),
     (0xBE56, 13, "study part3b -- SETTINGS print table: level-select garble"),
     (0x9FF8, 34, "study part2 -- read by LDA $9FF8,X"),
+    (0xA01A, 62, "rest of the $9FF8 cutscene table (X = speed*32 + level; FREE_SPACE_MAP's $A02E/$A049 'free' runs)"),
     (0xA371, 27, "study part3a -- print table $A346"),
     (0xC0A9, 23, "v8 footer routine -- SETTINGS print table row 23"),
     (0xC0EF, 17, "v8 footer metasprite -- SETTINGS print table row 25"),

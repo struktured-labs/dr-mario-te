@@ -101,6 +101,9 @@ against the September tree.
   (DRSTUDYEND) + title stamp fix** is the next upload candidate, IPS + BPS built by
   `build_te_v10.py`, Mesen-QA'd full games (`release/RELEASE_NOTES_V10.md`,
   `release/V10_QA_EVIDENCE.md`). Owner uploads.
+  **v11 = v10 + the 1P game-over study screen** (`te_studyend.apply_studyend_1p`, 6 B) +
+  stamp V11.00 SL, built by `build_te_v11.py` (`release/RELEASE_NOTES_V11.md`,
+  `release/V11_QA_EVIDENCE.md`). Owner uploads after v10.
 - **Driver rev 2**: confidence-gated slam (commit when the search's answer is
   stable, not when it's exhaustively confirmed) + speed-aware gates — closes the
   human tempo gap on obvious placements and the late-game search-vs-gravity
