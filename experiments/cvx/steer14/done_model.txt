@@ -1,0 +1,6 @@
+DONE model: BETA 0.0015162 f/leaf (the publish fit: 0.0011507); 1488 IN-sample n 326: bias +0.06, sd 7.97; residual pools by vcount band: (0, 9) n 92, (10, 16) n 98, (17, 30) n 60, (31, 99) n 76
+V11 OUT-of-sample n 331: mean bias (BETA x leaves - co-sim) +0.96 f; DONE quantiles p10/50/90 co-sim [34.6, 45.0, 55.4] vs model+eps [35.1, 45.4, 57.3]
+   vc 0-9: n 92, co-sim p50 40.1, model+eps p50 40.9
+   vc 10-16: n 103, co-sim p50 45.4, model+eps p50 45.9
+   vc 17-30: n 60, co-sim p50 49.2, model+eps p50 48.6
+   vc 31-99: n 76, co-sim p50 46.7, model+eps p50 45.4

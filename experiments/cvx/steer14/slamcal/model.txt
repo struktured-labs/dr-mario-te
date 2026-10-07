@@ -1,0 +1,15 @@
+STEER MODEL vs CART on the replayed pills (prestart pills excluded): 1181 pill-runs
+  old = STEER13 model (DOWN as soon as aligned); new = + the DRSLAM gate (DONE frame = ceil(GO + done_f)); new5 = DONE + 0.5 f (hook order)
+  old  f2p: DOWN start model - cart mean -16.26 f, exact 0.2 %, |d|<=1 1.0 % (n 575); LOCK model - cart mean -14.11 f, exact 1.2 %, |d|<=1 1.4 %, |d|<=3 5.4 % (n 590); landing == cart 98.3 %
+  old  mt2: DOWN start model - cart mean -18.68 f, exact 0.2 %, |d|<=1 1.0 % (n 577); LOCK model - cart mean -16.16 f, exact 1.4 %, |d|<=1 1.5 %, |d|<=3 3.0 % (n 591); landing == cart 97.5 %
+  new  f2p: DOWN start model - cart mean +0.01 f, exact 98.2 %, |d|<=1 98.8 % (n 571); LOCK model - cart mean -0.55 f, exact 93.9 %, |d|<=1 98.1 %, |d|<=3 99.0 % (n 590); landing == cart 99.3 %
+  new  mt2: DOWN start model - cart mean +0.01 f, exact 98.3 %, |d|<=1 98.8 % (n 573); LOCK model - cart mean -0.55 f, exact 94.1 %, |d|<=1 98.3 %, |d|<=3 99.0 % (n 591); landing == cart 99.5 %
+  new5 f2p: DOWN start model - cart mean +0.17 f, exact 83.1 %, |d|<=1 98.9 % (n 569); LOCK model - cart mean -0.39 f, exact 85.8 %, |d|<=1 90.0 %, |d|<=3 99.0 % (n 590); landing == cart 99.3 %
+  new5 mt2: DOWN start model - cart mean +0.17 f, exact 83.0 %, |d|<=1 98.9 % (n 571); LOCK model - cart mean -0.38 f, exact 85.8 %, |d|<=1 90.0 %, |d|<=3 99.0 % (n 591); landing == cart 99.5 %
+  MIN_THINK 6 f -> 2 f, lock-frame change on the SAME pills (mt2 - f2p), cart vs model:
+    cart  -0.00 f (n 588, share changed 0.3 %)
+    old   -2.06 f (n 581, share changed 87.1 %)
+    new   +0.00 f (n 587, share changed 0.2 %)
+    new5  +0.00 f (n 587, share changed 0.2 %)
+  example ('m2g2', 'f2p', 60): cart commit f8 laterals-done f12 DOWN f21 lock f37 | new model commit f8 DOWN f21 lock f37 | old model DOWN f15 lock f33
+  example ('m2g2', 'mt2', 60): cart commit f6 laterals-done f11 DOWN f21 lock f37 | new model commit f5 DOWN f21 lock f37 | old model DOWN f12 lock f31

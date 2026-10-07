@@ -234,12 +234,17 @@ class Steer:
         avail = (thr - spd) + (thr + 1) * (K - (1 if tc != x else 0))
         return need <= avail
 
-    def execute(self, color, target_action, k, t_act=None, phase=None, sched=None):
+    def execute(self, color, target_action, k, t_act=None, phase=None, sched=None, slam=None):
         """Simulate one pill. color: 16x8 nested list/array of the settled board (0 = empty).
         target_action: the brain's action (var*8 + col). k: pills already placed this game (speed).
         sched (STEER13, None = unchanged): the copro's live-publish schedule [(frame, action)] in time order, last = the
         final. The driver commits at the answer frame to the mailbox (waits if nothing is published yet); every later
         differing publish is adopted under DRLATEGUARD, and the first refusal FREEZES the pill.
+        slam (STEER14, None = unchanged; needs sched): the cart's DRSLAM gate (patch_cartridge_copro.py dn_p2). Once
+        aligned and committed, DOWN is held only while  frame >= slam["done"] (the search is DONE)  or  slam["armed"]
+        (SLAM_ARM) and 2 hooks/frame x (frames since the driver's target last changed) >= K, K = kcross if ROM Y
+        (15 - row) < lowy, else kend if slam["vc"] < vcend, else kopen; K >= 255 = DONE only. Otherwise no button
+        (natural gravity). The target changes at every pre-commit mailbox change and every adopted late publish.
         Returns dict(var, col, row_cells, info). row_cells = ((r0,c0),(r1,c1)) in sim convention
         (H: left,right; V: top,bottom)."""
         tvar, tcol = target_action // 8, target_action % 8
@@ -285,6 +290,12 @@ class Steer:
             committed = frozen = False
             si = 0; cur_a = None
             lg = {"commit_f": None, "commit_a": None, "late": 0, "adopt": 0, "refuse": 0}
+        assert slam is None or (sched is not None and self.tap_unified), "the slam gate needs sched + the DRTAPP driver"
+        if slam is not None:
+            mb_j = 0; mb_prev = None; last_chg = None; down_f = None
+            s_done, s_arm, s_vc = slam["done"], bool(slam["armed"]), slam["vc"]
+            s_ko, s_ke, s_kc = slam.get("kopen", 32), slam.get("kend", 255), slam.get("kcross", 8)
+            s_ly, s_ve = slam.get("lowy", 8), slam.get("vcend", 10)
         lock_f = None
         last_tap = None
         tr = [] if self.trace else None
@@ -292,6 +303,11 @@ class Steer:
             # ---------------- driver decision (from last frame's state) ----------------
             if d_first and f < t_ans and row > 0:                           # fix D: leaving the spawn row ends the window
                 t_ans = f
+            if slam is not None and not committed:                          # STEER14: pre-commit, the driver's target
+                while mb_j < len(sched) and sched[mb_j][0] <= f:            # follows the mailbox (STABLE_CT2 resets)
+                    if sched[mb_j][1] != mb_prev:
+                        mb_prev = sched[mb_j][1]; last_chg = f
+                    mb_j += 1
             if sched is not None:                                           # STEER13 anytime commit + DRLATEGUARD
                 if not committed:
                     if f >= t_ans:
@@ -312,6 +328,8 @@ class Steer:
                         lg["late"] += 1
                         if self._lateguard_ok(color, x, row, rot, spd, thr, a2):
                             cur_a = a2; tvar, tcol = a2 // 8, a2 % 8; trot = ROT_OF_VAR[tvar]; lg["adopt"] += 1
+                            if slam is not None:
+                                last_chg = f
                         else:
                             frozen = True; lg["refuse"] += 1
                             break
@@ -328,7 +346,14 @@ class Steer:
                     if eff != tcol:
                         clamped_ever = True
                     if x == eff:
-                        raw = DOWN
+                        if slam is None:
+                            raw = DOWN
+                        else:                                               # STEER14: the DRSLAM gate (dn_p2)
+                            K = s_kc if (ROWS - 1 - row) < s_ly else (s_ke if s_vc < s_ve else s_ko)
+                            if f >= s_done or (s_arm and K < 255 and 2 * (f - last_chg) >= K):
+                                raw = DOWN
+                                if down_f is None:
+                                    down_f = f
                     else:
                         want = RIGHT if x < eff else LEFT
                 if want is not None:
@@ -445,6 +470,8 @@ class Steer:
                "clamped": clamped_ever, "exact": exact, "trace": tr}
         if sched is not None:
             out["lg"] = lg
+        if slam is not None:
+            out["slam"] = {"down_f": down_f, "row": row, "last_chg": last_chg}
         return out
 
 

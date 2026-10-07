@@ -1,0 +1,6 @@
+CART SLAM RULE (dn_p2) vs the traced DOWN input, frame by frame, every replayed pill (G2, m2g1, m2g2, m2g3, m4g1, m4g2)
+  frames 50570: rule == traced DOWN on 49956 (98.79 %); frames with SLAM_ARM 0: 7782
+  pills 1248: FIRST DOWN frame predicted exactly on 1150/1229 (93.6 %)
+  f2p: first-DOWN trigger done 228, none 10, open 386
+  mt2: first-DOWN trigger done 228, none 9, open 387
+  MIN_THINK 6 f -> 2 f on the cart (mt2 - f2p, same-landing pills 622, different landing 2): commit -1.69 f (n 622); lat_done -0.62 f (n 622); down +0.00 f (n 613); lock +0.00 f (n 622)

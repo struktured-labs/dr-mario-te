@@ -1,0 +1,3 @@
+  gap no clear: n 351, observed p50 17, model - cart mean -6.04 sd 31.30, |e|<=1 95.7 %
+  gap clears: n 227, observed p50 98, model - cart mean -19.31 sd 56.87, |e|<=1 86.8 %
+  refit on the clearing pills: 24.38 f/step, 19.72 f/cascade row (couch11: 20.20, 15.85)
