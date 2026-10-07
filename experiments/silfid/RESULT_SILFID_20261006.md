@@ -527,17 +527,20 @@ silicon, so the firmware replayed is the one silicon ran.
 
 **THE number.** Tall-endgame CELL, cart landing ≠ copro final, with the copro final being silicon's own DONE answer:
 
-| | capture #2: 1488 + FAIR | prediction for V11 | **capture #3: V11 + FAIR2PLUS** |
+| | capture #2: 1488 + FAIR | prediction for V11 (final, all 408 boards) | **capture #3: V11 + FAIR2PLUS** |
 |---|---|---|---|
-| landing ≠ final | 24.0% (97/404, 95% CI 20.1–28.4) | 12.5% (band 9.7–16.2) | **3.3% (11/332, 95% CI 1.9–5.8)** |
+| landing ≠ final | 24.0% (97/404, 95% CI 20.1–28.4) | 14.7% (band 11.7–18.6); provisional 12.5% on 46 boards | **3.3% (11/332, 95% CI 1.9–5.8)** |
 | — own committed target ≠ final | 17.6% (6.2% locked before DONE) | | 2.7% (none before DONE) |
 | — no target change logged | 5.7% | | 0.6% |
 | — neither final nor own target | 0.7% | | 0% |
-| at-gate answer == final (silicon) | 55.0% (50.1–59.7) | ~85% | **84.9% (80.7–88.4)** |
+| at-gate answer == final (silicon) | 55.0% (50.1–59.7) | 79.4% (Verilator V11 on capture #2's boards) | **84.9% (80.7–88.4)** |
 | landing ≠ final when gate == final | 6.8% (15/222) | (6.8%, carried over) | **0.0% (0/282)** |
 | landing ≠ final when gate ≠ final | 45.1% (82/182) | (45.1%, carried over) | **22.0% (11/50)** |
 
-- **The firmware half of the prediction was exact:** at-gate == final 84.9% vs ~85% predicted.
+- **The firmware half of the prediction held.**
+  - Measured at-gate == final: 84.9% on capture #3's own boards.
+  - Predicted: 79.4% from V11 on capture #2's boards (the provisional subset said ~85%).
+  - The boards differ: V11 + FAIR2PLUS plays different games.
 - **The driver half was pessimistic.** I flagged it as an upper-side estimate. FAIR2PLUS follows a late change far better:
   - 0 misses at all when the gate answer is final;
   - half the misses when it is not.
