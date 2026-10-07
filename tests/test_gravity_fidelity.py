@@ -109,6 +109,14 @@ ARMS = {   # name: (flags json, overlays, expectation)
     # silfid lane (2026-10-06): the DRPUBLOG debug-log cart (couch P2 driver on the sliced-native-P1 CvC seat config).
     "cvcp2_base":     ("experiments/silfid/cvcp2_flags.json", {}, "pass"),
     "cvcp2_publog":   ("experiments/silfid/cvcp2_flags.json", {"DRPUBLOG": "1"}, "pass"),
+    # silfid lane (2026-10-07): PUBLOG capture #2 -- P1 held at spawn (DRP1HOLD) + the synthetic P1 attack (DRGPUMP).
+    # The pump's stores into P1's attack slot $0318 are OPPONENT actions: run B replays them (see run_arm), so the gate
+    # still asks only whether P2's own gravity / lock / position timing equals the unmodified game's.
+    "cvcp2_hold":     ("experiments/silfid/cvcp2_flags.json", {"DRPUBLOG": "1", "DRP1HOLD": "1"}, "pass"),
+    "cvcp2_pump":     ("experiments/silfid/cvcp2_flags.json", {"DRPUBLOG": "1", "DRP1HOLD": "1", "DRGPUMP": "1",
+                                                              "DRPUBLOG_PDW": "1"}, "pass"),
+    "cvcp2_pump_t255": ("experiments/silfid/cvcp2_flags.json",
+                       {"DRPUBLOG": "1", "DRP1HOLD": "1", "DRGPUMP": "1", "DRGPUMP_T": "255"}, "pass"),
     "couch_464a4b75": ("experiments/lateflip/couch_c960dd49_flags.json", {"DRLATEGUARD": "1", "DRSTUDYEND": "1"}, "fail"),
     "couch_settle3_noguard": ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0",
@@ -428,9 +436,13 @@ def run_arm(name, frames, seed):
     stores = []                                            # driver stores into world RAM (attribution)
     in_hook = [False]; cur_f = [0]
 
+    opp = collections.defaultdict(list)                    # driver stores into P1's attack slot (DRGPUMP), by frame
+
     def on_world_write(addr, value):
         if in_hook[0]:
             stores.append((cur_f[0], addr, value, base[addr]))
+            if addr == ATK1:
+                opp[cur_f[0]].append(value)
     mem.subscribe_to_write(WORLD_RAM, on_world_write)
     mpu = MPU(memory=mem)
     entry = ir["units"]["main"]["base"] + ir["units"]["main"]["labels"]["main"]
@@ -507,6 +519,7 @@ def run_arm(name, frames, seed):
         act["dead_pill_uploads"] += sum(1 for g in coll if g[0] not in prestart_go_frames)
         act["prestart_gos_colour_collision"] += sum(1 for g in coll if g[0] in prestart_go_frames)
     act["pills"] = world.pills; act["goes"] = copro.goes; act["stale_searches"] = copro.stale
+    act["pump_volleys"] = sum(1 for f in opp for v in opp[f] if v)
     # ---------------- run B: the unmodified game, same world seed, the recorded pads replayed, no driver
     baseB = fresh_mem(seed)
     worldB = World(random.Random(seed), baseB)
@@ -515,6 +528,8 @@ def run_arm(name, frames, seed):
         baseB[0x43] = f & 0xFF
         pressed, R = pads[f]
         baseB[0xF6] = pressed; baseB[0xF8] = R
+        for v in opp.get(f, ()):                           # opponent actions (DRGPUMP's attack-slot stores) replayed
+            baseB[ATK1] = v
         worldB.step(f, pressed, R)
         sB = worldB.state()
         if sB != statesA[f]:
@@ -545,6 +560,8 @@ def main():
         need = ["round_starts", "garbage", "stale_armed_edges", "pills"]
         if name.startswith("couch"):
             need.append("goes")
+        if ARMS[name][1].get("DRGPUMP") == "1":
+            need.append("pump_volleys")                    # the synthetic attack must actually have fired
         missing = [k for k in need if act.get(k, 0) == 0]
         nbad = res["upload_mismatches"]
         dead = act.get("dead_pill_uploads", 0)
@@ -568,7 +585,7 @@ def main():
             print(json.dumps(res))
         d = res["first_divergence"]
         print(f"{name:24s} expect={res['expect']:11s} {verdict:34s} pills={act.get('pills', 0)} uploads_ok={act.get('uploads_checked', 0) - nbad} rounds={act.get('round_starts', 0)} "
-              f"garbage={act.get('garbage', 0)} stale_edges={act.get('stale_armed_edges', 0)} goes={act.get('goes', 0)} "
+              f"garbage={act.get('garbage', 0)} pump={act.get('pump_volleys', 0)} stale_edges={act.get('stale_armed_edges', 0)} goes={act.get('goes', 0)} "
               f"dead_pill_uploads={dead} no_settle_upload={act.get('pills_without_settle_upload', 0)} "
               f"stores_changing_world={res['driver_stores_changing_world_ram']}"
               + (f" | first divergence f={d['frame']} {d['diff'][:3]} driver stores {d['driver_stores_near']}" if d else ""))

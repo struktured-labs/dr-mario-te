@@ -17,7 +17,11 @@ harness itself, never by reading the logger's own scratch:
   GUARD  (DRSLICEGUARD2 premise of the census pp_spawn cut) no hook both performs a handle(2) spawn upload (pc reaches
          h2_cq) and ticks the P1 slice (pc reaches p1s_tick); slice ticks do happen (non-vacuous). MUTANT: the same
          image with DRSLICEGUARD2=0 must show such a hook (the check can see the defect it guards).
-  test_publog.py [--frames N] [--seeds 5,11]
+  PDW    (--pdw: + DRPUBLOG_PDW=1, the post-DONE watch) the copro model is given FALSE DONEs: on ~30% of searches $5284
+         reads 1 for ONE frame mid-search, then 0 again until the real DONE. Every false DONE the cart consumed must
+         produce a type-6 event in that search's slot (DONE read back as 0), and no search whose DONE was genuine may
+         log one (non-vacuous both ways: false DONEs and genuine DONEs must each occur).
+  test_publog.py [--frames N] [--seeds 5,11] [--extra 'K=V ...'] [--pdw]
 """
 import argparse, collections, json, os, random, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
@@ -38,7 +42,29 @@ def flagfile(extra):
     return path
 
 
-def run(extra, frames, seed, check_log=True):
+class FalseDoneCopro(G.Copro):
+    """G.Copro + FALSE DONEs: on ~30% of searches DONE reads 1 before the real DONE, either for ONE READ (a single-read
+    glitch, caught by the immediate re-read) or for a whole frame (caught by the post-DONE watch)."""
+    def on_go(self, addr, value):
+        r = G.Copro.on_go(self, addr, value)
+        self.t_false = None
+        if self.t_done - self.frame >= 6 and self.rng.random() < 0.3:
+            self.t_false = self.rng.randint(self.frame + 2, self.t_done - 3)
+            self.single = self.rng.random() < 0.5; self.fired = False
+        return r
+
+    def read(self, addr):
+        v = G.Copro.read(self, addr)
+        if addr - self.w == 0x84 and self.state == "search" and self.t_false is not None and self.frame == self.t_false:
+            if self.single:
+                if self.fired:
+                    return v
+                self.fired = True
+            return 1
+        return v
+
+
+def run(extra, frames, seed, check_log=True, pdw=False):
     ir, snap = G.capture(flagfile(extra), {}, "publog")
     base = G.fresh_mem(seed)
     for u in ir["units"].values():
@@ -46,8 +72,10 @@ def run(extra, frames, seed, check_log=True):
     main = ir["units"]["main"]
     lab = {k: main["base"] + v for k, v in main["labels"].items()}
     mem = G.ObservableMemory(subject=base)
-    copro = G.Copro(random.Random(seed * 7919 + 1))
+    copro = (FalseDoneCopro if pdw else G.Copro)(random.Random(seed * 7919 + 1))
     upbuf = [0] * 132
+    false_done = {}                # go index -> hook that consumed a FALSE DONE (the search was still running)
+    playhook = []                  # per hook index: was it a play hook
     gos = []                       # (hook index, upload bytes, prestart?)
     pubs = collections.defaultdict(list)   # go index -> [(hook, (col, o4))] published while armed
     dones = []                     # (go index, (col, o4)) consumed
@@ -62,6 +90,9 @@ def run(extra, frames, seed, check_log=True):
 
     def on_read(addr):
         v = copro.read(addr)
+        if pdw and addr == 0x5284 and v == 1 and copro.state == "search" and gos and base[ARMED2]:
+            st["false_read"] = "single" if copro.single else "frame"                            # a FALSE DONE read in an armed search (consumed iff
+                                                               # the hook ends with the search torn down, below)
         if addr == 0x5284 and v == 1 and copro.state == "idle" and not st["consumed"] and gos:
             if not dones or dones[-1][0] != len(gos) - 1:
                 dones.append((len(gos) - 1, (copro.col, copro.o4)))
@@ -100,10 +131,15 @@ def run(extra, frames, seed, check_log=True):
             base[0xF6] = 0; base[0xF5] = 0
             zp = (base[0xCA], base[0xCB])
             pre0 = base[PRE_ACT2]; ngo = len(gos)
-            if gos and base[ARMED2] and copro.o4 != 0xFF:
+            play = base[G.MODE] == 4 and base[G.Z04] != 0       # pl_hook runs only on play hooks (dispatch)
+            playhook.append(play)
+            if gos and base[ARMED2] and copro.o4 != 0xFF and play:
                 pubs[len(gos) - 1].append((st["hook"], (copro.col, copro.o4)))
+            armed0 = base[ARMED2]; st["false_read"] = False
             hook()
             st["hook"] += 1
+            if pdw and armed0 and not base[ARMED2] and st["false_read"] and len(gos) == ngo:
+                false_done[len(gos) - 1] = (st["hook"] - 1, st["false_read"])   # consumed the false DONE (teardown)
             if (base[0xCA], base[0xCB]) != zp:
                 act["zp_clobbered"] += 1
             if "p1s_tick" in hit:
@@ -150,9 +186,34 @@ def run(extra, frames, seed, check_log=True):
         s0 = RING + 0x100 * slot
         n = base[s0 + 11]
         evs = [base[s0 + EV0 + EVSZ * i:s0 + EV0 + EVSZ * (i + 1)] for i in range(min(n, 18))]
-        live = [(e[3], e[4]) for e in evs if e[0] & 0x7F == 1]
-        done = [(e[3], e[4]) for e in evs if e[0] & 0x7F == 2]
-        lock = [(e[3], e[4]) for e in evs if e[0] & 0x7F == 5]
+        live = [(e[3], e[4]) for e in evs if e[0] & 0x3F == 1]
+        done = [(e[3], e[4]) for e in evs if e[0] & 0x3F == 2]
+        lock = [(e[3], e[4]) for e in evs if e[0] & 0x3F == 5]
+        pdone = [(e[3], e[4], e[5]) for e in evs if e[0] & 0x3F == 6]
+        rr0 = any(e[0] & 0x3F == 2 and e[0] & 0x40 for e in evs)          # DONE event flagged: re-read was 0
+        if pdw and back > 0:                                   # (the newest search may not have reached its watch yet)
+            if gi in false_done:
+                # the watch's opportunity: play hooks after the consuming hook and before the next GO. The first few
+                # carry the higher-priority DONE / target / lock events (one event per hook), so only a false DONE
+                # followed by >= 6 play hooks is REQUIRED to be caught; shorter windows are counted, not judged.
+                (h_c, kind), h_g = false_done[gi], gos[gi + 1][0]
+                opp = sum(playhook[h_c + 1:h_g])
+                caught = any(d[0] == 0 for d in pdone) or rr0
+                if kind == "single":                           # the immediate re-read must flag it, window or not
+                    act["pdw_single"] += 1
+                    act["pdw_single_flagged" if rr0 else "pdw_missed"] += 1
+                    if not rr0 and len(fails) < 6:
+                        fails.append(dict(pdw_single_missed=gi, events=[list(e) for e in evs]))
+                elif opp >= 6:
+                    act["pdw_false_dones"] += 1
+                    act["pdw_detected" if caught else "pdw_missed"] += 1
+                    if not caught and len(fails) < 6:
+                        fails.append(dict(pdw_missed=gi, window_play_hooks=opp, events=[list(e) for e in evs]))
+                else:
+                    act["pdw_short_window"] += 1; act["pdw_short_caught"] += caught
+            elif done:
+                act["pdw_genuine_dones"] += 1
+                act["pdw_spurious"] += len(pdone) + int(rr0)
         published = {v for _, v in pubs.get(gi, [])}
         act["live_events"] += len(live)
         bad = [v for v in live if v not in published]
@@ -170,6 +231,9 @@ def run(extra, frames, seed, check_log=True):
                 act["long_pubs"] += 1
                 if v not in live:
                     act["long_pub_missing"] += 1
+                    if len(fails) < 6:
+                        fails.append(dict(long_pub_missing=v, go=gi, hooks=(h0, h1), go_hook=gos[gi][0],
+                                          false_done=gi in false_done, events=[list(e) for e in evs]))
         for g2, v in dones:
             if g2 == gi:
                 act["dones"] += 1
@@ -178,6 +242,14 @@ def run(extra, frames, seed, check_log=True):
         for g2, v in locks:
             if g2 == gi:
                 act["locks"] += 1
+                if v not in lock and back > 0:
+                    # pl_hook runs after handle(2) in the hook: a lock first observed in the hook that GOes the next
+                    # search is logged as that NEXT slot's first event (hooks 0). Accepted, and counted.
+                    s1 = RING + 0x100 * ((base[PL_SLOT] - back + 1) % NSLOT)
+                    first = base[s1 + EV0:s1 + EV0 + EVSZ] if base[s1 + 11] else None
+                    if first is not None and first[0] & 0x3F == 5 and first[1] == 0 and (first[3], first[4]) == v:
+                        act["locks_in_next_slot"] += 1
+                        continue
                 if v not in lock:
                     act["lock_missing"] += 1
                     if len(fails) < 6:
@@ -194,11 +266,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--frames", type=int, default=4000)
     ap.add_argument("--seeds", default="5,11")
+    ap.add_argument("--pdw", action="store_true", help="+ DRPUBLOG_PDW=1 with false-DONE injection (PDW check)")
+    ap.add_argument("--extra", default="", help="extra K=V flags, e.g. 'DRP1HOLD=1 DRGPUMP=1' (PUBLOG capture #2); "
+                    "the slice-guard checks then only require 0 violations and the DRSLICEGUARD2 mutant is skipped "
+                    "(DRP1HOLD leaves almost no slice ticks to collide with -- the guard is proven on the base flags)")
     a = ap.parse_args()
+    extra = a.extra.split() + (["DRPUBLOG_PDW=1"] if a.pdw else [])
     ok = True
     tot = collections.Counter(); fails = []
     for sd in (int(x) for x in a.seeds.split(",")):
-        act, fl = run(["DRSLICEGUARD2=1", "DRPUBLOG=1"], a.frames, sd)
+        act, fl = run(["DRSLICEGUARD2=1", "DRPUBLOG=1"] + extra, a.frames, sd, pdw=a.pdw)
         tot.update(act); fails += fl
     checks = [
         ("RING", tot["ring_BAD"] == 0 and tot["ring_ok"] > 0 and tot["prestart_gos"] > 0,
@@ -207,16 +284,28 @@ def main():
          f"{tot['live_events']} live events, {tot['live_not_published']} never published, "
          f"{tot['long_pub_missing']}/{tot['long_pubs']} long-lived publications missing"),
         ("DONE", tot["done_missing"] == 0 and tot["dones"] > 0, f"{tot['dones']} DONEs, {tot['done_missing']} missing"),
-        ("LOCK", tot["lock_missing"] == 0 and tot["locks"] > 0, f"{tot['locks']} locks, {tot['lock_missing']} missing"),
+        ("LOCK", tot["lock_missing"] == 0 and tot["locks"] > 0, f"{tot['locks']} locks, {tot['lock_missing']} missing "
+         f"({tot['locks_in_next_slot']} observed in the next search's GO hook, logged there)"),
         ("ZP", tot["zp_clobbered"] == 0, f"$CA/$CB changed across {tot['zp_clobbered']} hooks"),
-        ("GUARD", tot["upload_and_slice_same_hook"] == 0 and tot["slice_ticks"] > 0,
+        ("GUARD", tot["upload_and_slice_same_hook"] == 0 and (tot["slice_ticks"] > 0 or bool(extra)),
          f"{tot['slice_ticks']} slice ticks, {tot['upload_and_slice_same_hook']} hooks with upload + slice"),
     ]
+    if a.pdw:
+        checks.append(("PDW", tot["pdw_missed"] == 0 and tot["pdw_spurious"] == 0 and tot["pdw_false_dones"] > 0
+                       and tot["pdw_single"] > 0 and tot["pdw_genuine_dones"] > 0,
+                       f"{tot['pdw_single_flagged']}/{tot['pdw_single']} single-read false DONEs flagged by the "
+                       f"immediate re-read; {tot['pdw_detected']}/{tot['pdw_false_dones']} frame-long false DONEs logged as type 6 "
+                       f"(+{tot['pdw_short_caught']}/{tot['pdw_short_window']} with < 6 play hooks before the next GO), "
+                       f"{tot['pdw_spurious']} type-6 events on {tot['pdw_genuine_dones']} genuine DONEs"))
     for name, good, msg in checks:
         ok &= good
         print(f"{name:6s} {'PASS' if good else 'FAIL'}  {msg}")
     if fails:
         print("  failures:", fails[:6])
+    if extra:
+        print(f"(extra flags {extra}: DRSLICEGUARD2 mutant skipped; world: {tot['gos']} GOs, garbage {tot['garbage']})")
+        print("PUBLOG GATE: " + ("ALL PASS" if ok else "FAILED"))
+        sys.exit(0 if ok else 1)
     mt = collections.Counter()
     for sd in (int(x) for x in a.seeds.split(",")):
         act, _ = run(["DRSLICEGUARD2=0", "DRPUBLOG=1"], a.frames, sd, check_log=False)
