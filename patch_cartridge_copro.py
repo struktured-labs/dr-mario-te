@@ -198,6 +198,12 @@ _os.environ.get = _tracked_environ_get
 # HUMAN_P1 carts -- a human's pause would read as "stuck" and the escape would unpause them.
 NAVESC = _os.environ.get("DRNAVESC", "0") == "1"
 ESC_N = int(_os.environ.get("DRNAVESC_N", "1200"))   # hooks unchanged before escape (~10 s at 2 hooks/frame)
+# DRNAVESC_NOPLAY=1 (silicon-fidelity lane 2026-10-07, default 0 -> byte-identical; read only with DRNAVESC): never fire
+# in a LIVE round (mode $0046 == 4 with P2's virus count != 0): there START only PAUSES the game. The "cannot fire
+# mid-game" premise above is false under heavy garbage: PUBLOG capture #2 saw the counter reach 617-1197 of 1200 hooks
+# inside live play (long pillPlaced / garbage-fall windows), and at +49 min it fired and paused the game for good. The
+# round-end waits it exists for stay covered: they sit in mode 3 (P2 cleared), 7 (P2 lost) or 8, never in a live mode 4.
+NAVESC_NOPLAY = NAVESC and _os.environ.get("DRNAVESC_NOPLAY", "0") == "1"
 ESC_S0, ESC_S1, ESC_S2 = 0x6180, 0x6181, 0x6182      # snapshot: $0046 / $F8 / $0386
 ESC_CTL, ESC_CTH = 0x6183, 0x6184                    # 16-bit stuck-hook counter
 # DRSTALLWD: play-mode P2 stall watchdog (task #40 follow-up; see experiments/freeze_20260801/
@@ -511,6 +517,18 @@ SLICEGUARD2 = _os.environ.get("DRSLICEGUARD2", "0") == "1"
 # CvC cart, 10/06) the native P1 won all 45 rounds with P2 still at 3-31 viruses, which cut P2's endgame short. P2's
 # driver, gravity and inputs are untouched (tests/test_gravity_fidelity.py checks P2 only).
 P1HOLD = _os.environ.get("DRP1HOLD", "0") == "1"
+# DRP1DRAIN=1 (silicon-fidelity lane 2026-10-07, default 0 -> byte-identical; needs DRP1HOLD): inside the hold, zero P2's
+# OUTGOING attack $0398 every hook -- P1 never locks, so P1's checkReleaseAttack never consumes it. Capture #2 (d84436ff)
+# let it grow to 87 within a round (the real game's maximum is 4: a release follows every P1 lock), and its freeze began
+# with P2 parked >= 20 s in pillPlaced at $0398 = 41. Zero is the ROM's own post-release value, so P2's sending path only
+# ever sees reachable states.
+P1DRAIN = _os.environ.get("DRP1DRAIN", "0") == "1"
+# DRP1HOLDFIRST=1 (same lane, default 0 -> byte-identical; needs DRP1HOLD): emit the hold (and the pump) at the TOP of
+# the native-P1 branch, BEFORE the spectator search's slice arm / tick, so the P1 AI never runs (P1 is held anyway, its
+# answer was never used). The static census then drops the ~6k-cycle slice tick from every frame class: needed once the
+# FAIR2PLUS P2 driver (DRABORTSTALE + DRLGPRESTART + DRDISTROW=2) is added, which made pp_ph4 + pp_idle OVER by 226.
+# The slice code stays in the image, unreached.
+P1HOLDFIRST = _os.environ.get("DRP1HOLDFIRST", "0") == "1"
 # DRGPUMP=1 (same lane, default 0 -> byte-identical; needs DRP1HOLD): a SYNTHETIC OPPONENT. ROM-native garbage volleys
 # into P2 through P1's own attack slot: p1_attackColors $0329-$032C, then p1_attackSize $0318. That is exactly the state
 # a P1 multi-colour clear leaves. P2's checkReleaseAttack drops it after P2's next lock and zeroes $0318, so the
@@ -1540,6 +1558,8 @@ assert not SLICEGUARD2 or (P1SLICE and PRESPIPE), "DRSLICEGUARD2 extends the DRP
 assert not PUBLOG or TUCK or LATEGUARD, "DRPUBLOG logs DONE at handle(2)'s {L}_wdone_ok, emitted only with DRTUCK or DRLATEGUARD"
 assert not P1HOLD or (P1NATIVE and not HUMAN_P1), "DRP1HOLD holds the native spectator P1 (DRP1NATIVE) at its spawn row"
 assert not GPUMP or P1HOLD, "DRGPUMP is P1's synthetic attack: it is emitted in DRP1HOLD's act_p1 branch"
+assert not P1DRAIN or P1HOLD, "DRP1DRAIN drains P2's attack inside DRP1HOLD's act_p1 branch"
+assert not P1HOLDFIRST or P1HOLD, "DRP1HOLDFIRST moves DRP1HOLD's branch ahead of the spectator search"
 assert not GPUMP or 1 <= GPUMP_T <= 255, "DRGPUMP_T is an 8-bit per-hook threshold (1..255)"
 PP_NM = -(-8 // PRESPIPE_Q)             # match phases needed to cover 8 records (ceil)
 PP_PH = 0x61C2                          # pipeline phase: 0 idle, 1 orphan+settle, 2 match 0-3, 3 match 4-7+commit
@@ -2138,6 +2158,11 @@ def build_main(level=11, speed=1):
         # both covered. Fires only after ESC_N hooks (~10 s) with ($0046,$F8,$0386) frozen --
         # $0386 changes every frame of real play, so live matches structurally cannot trip it.
         a.ins16("LDA_abs", 0x0046); a.ins("CMP_imm", 0x08); a.br("BEQ", "esc_rst")   # intro: hands off
+        if NAVESC_NOPLAY:
+            a.ins("CMP_imm", 0x04); a.br("BNE", "esc_np")                              # DRNAVESC_NOPLAY: a LIVE
+            a.ins16("LDA_abs", VCOUNT_P2); a.br("BNE", "esc_rst")                      # round never escapes
+            a.ins16("LDA_abs", 0x0046)
+            a.label("esc_np")
         a.ins16("CMP_abs", ESC_S0); a.br("BNE", "esc_new")
         a.ins("LDA_zp", 0xF8); a.ins16("CMP_abs", ESC_S1); a.br("BNE", "esc_new")
         a.ins16("LDA_abs", 0x0386); a.ins16("CMP_abs", ESC_S2); a.br("BNE", "esc_new")
@@ -4355,6 +4380,8 @@ def build_main(level=11, speed=1):
         # RISEN above the last Y we saw, i.e. a new capsule spawned. Hook 1 of a frame does the
         # search and then stores the key; hook 2 finds the key equal, skips, and reuses the same
         # P1AI_C/P1AI_O -- so both passes write an IDENTICAL $F5 and survive the AND.
+        if P1HOLD and P1HOLDFIRST:
+            _emit_p1hold(a)                                 # DRP1HOLDFIRST: the spectator search below is never reached
         if P1SLICE:
             # spawn edge ARMS the sliced search instead of running it; the tick below then
             # advances it two column-steps per hook until the swap step publishes.
@@ -4395,18 +4422,8 @@ def build_main(level=11, speed=1):
             a.ins("LDA_zp", 0xDA); a.ins16("STA_abs", P1AI_O)   # CTRL_exp1, rewritten every read)
             a.label("p1n_nosearch")
             a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", P1AI_Y)
-        if P1HOLD:
-            # ---- DRP1HOLD (see the flag block): after the spectator search's bookkeeping above, P1 is HELD at its spawn
-            # row with an empty pad -- the round ends only on P2's clear or top-out. DRGPUMP's synthetic attack is P1's
-            # whole "turn". Never reaches the ORIENT/COLUMN phases below.
-            if GPUMP:
-                _emit_gpump(a)
-            a.label("p1h_hold")
-            a.ins("LDA_imm", 0)
-            if GPUMP_MUT != "nohold":
-                a.ins16("STA_abs", GRAV_P1)
-            a.ins("STA_zp", 0xF5); a.ins("STA_zp", 0xF7)
-            a.jmp("act_done")
+        if P1HOLD and not P1HOLDFIRST:
+            _emit_p1hold(a)
         # ORIENT phase: press A until the capsule matches the searched orientation. $F7 is
         # cleared first so each hook reads as a FRESH press edge -- without that, held==raw
         # from the previous hook makes pressed==0 and rotation stops after one step. (This is
@@ -4733,6 +4750,22 @@ def _emit_publog(a):
 GP_SIZES = (2, 2, 3, 2, 2, 4, 2, 4, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2, 2)
 GP_COLS = (0, 0, 2, 1, 1, 2, 2, 2, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 2, 0, 1, 0, 2, 1, 0, 1, 2, 0, 0, 2, 1, 0,
            2, 1, 2, 2, 1, 0, 0, 2, 2, 1, 2, 0, 0, 2, 2, 2, 1, 0, 1, 1, 1, 1, 2, 0, 1, 1, 1, 2, 0, 1, 1, 0)
+
+
+def _emit_p1hold(a):
+    """DRP1HOLD (see the flag block): P1 is HELD at its spawn row with an empty pad -- the round ends only on P2's clear
+    or top-out. DRGPUMP's synthetic attack is P1's whole "turn"; DRP1DRAIN absorbs P2's outgoing attack. Ends in
+    JMP act_done (never reaches the native AI's ORIENT/COLUMN phases)."""
+    if GPUMP:
+        _emit_gpump(a)
+    a.label("p1h_hold")
+    a.ins("LDA_imm", 0)
+    if GPUMP_MUT != "nohold":
+        a.ins16("STA_abs", GRAV_P1)
+    if P1DRAIN:
+        a.ins16("STA_abs", 0x0398)                         # A == 0: P2's outgoing attack absorbed (DRP1DRAIN)
+    a.ins("STA_zp", 0xF5); a.ins("STA_zp", 0xF7)
+    a.jmp("act_done")
 
 
 def _emit_gpump(a):

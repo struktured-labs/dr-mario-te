@@ -13,7 +13,13 @@ at P2's checkAttack). Checks, per arm:
          Round over (P2 virus count 0) -> no volley fires and nothing is delivered.
          `gp_pump` runs on BOTH hooks of every play frame (the rate formula assumes 2 per frame).
   RATE   fired volleys within 4 sigma of (T-1)/65535 per pump hook.
-Arms: hold (DRP1HOLD alone: 0 pump stores), pump (T 27, the default), pump_t255 (fast, for statistics).
+  DRAIN  (DRP1DRAIN arms) P2's outgoing attack $0398 is seeded non-zero before every hook and must read 0 after every
+         play hook.
+  NOPLAY (DRNAVESC_NOPLAY arms) the stuck-screen escape is primed to fire on the next hook: in a LIVE round (mode 4,
+         P2 viruses != 0) the hook must NOT inject START; with P2's virus count 0 (a round-end wait) it MUST (positive
+         control: the check can see an injection).
+Arms: hold (DRP1HOLD alone: 0 pump stores), pump (T 27, the default), pump_t255 (fast, for statistics), c3 (PUBLOG
+capture #3: the FAIR2PLUS P2 driver + hold-first + drain + escape guard + pump + PDW). Mutants M_* must be KILLED.
   test_gpump.py [--frames N] [--seed S] [--arm NAME]"""
 import argparse, collections, math, os, random, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
@@ -29,6 +35,13 @@ ARMS = {"hold": ({"DRPUBLOG": "1", "DRP1HOLD": "1"}, 0),
         # MUTANTS (must be KILLED): delivery into a pending slot; the hold without its gravity pin
         "M_overwrite": ({"DRPUBLOG": "1", "DRP1HOLD": "1", "DRGPUMP": "1", "DRGPUMP_T": "255", "DRGPUMP_MUT": "overwrite"}, 255),
         "M_nohold": ({"DRPUBLOG": "1", "DRP1HOLD": "1", "DRGPUMP": "1", "DRGPUMP_MUT": "nohold"}, 27)}
+C3 = {"DRABORTSTALE": "1", "DRLGPRESTART": "1", "DRDISTROW": "2", "DRPUBLOG": "1", "DRPUBLOG_PDW": "1", "DRP1HOLD": "1",
+      "DRGPUMP": "1", "DRP1DRAIN": "1", "DRNAVESC_NOPLAY": "1", "DRP1HOLDFIRST": "1"}
+ARMS["c3"] = (C3, 27)
+ARMS["M_nodrain"] = ({k: v for k, v in C3.items() if k != "DRP1DRAIN"}, 27)
+ARMS["M_escplay"] = ({k: v for k, v in C3.items() if k != "DRNAVESC_NOPLAY"}, 27)
+CHECKS = {"c3": {"drain", "noplay"}, "M_nodrain": {"drain"}, "M_escplay": {"noplay"}}
+P2ATK, ESC_S0, ESC_CTL, INJ = 0x0398, 0x6180, 0x6183, 0x614B
 
 
 def xs(lo, hi):
@@ -131,6 +144,7 @@ def run_arm(name, frames, seed):
         for hk in (1, 2):
             base[0xF6] = 0; base[0xF5] = 0
             base[GRAV_P1] = 0x20                           # the ROM counts P1's gravity every frame: the pin must undo it
+            base[P2ATK] = 7                                # P2's outgoing attack, never consumed by a held P1
             del hook_stores[:]
             in_hook[0] = True
             pumps, exp = hook()
@@ -141,6 +155,8 @@ def run_arm(name, frames, seed):
                 cnt["pump_hooks"] += pumps
                 if base[GRAV_P1] != 0 or base[0xF5] != 0:
                     hold_bad += 1
+                if "drain" in CHECKS.get(name, ()) and base[P2ATK] != 0:
+                    cnt["drain_violations"] += 1
             got = [(a, v) for a, v, old in hook_stores]
             want = [s for e in exp for s in e[0]]
             if got != want:
@@ -163,6 +179,16 @@ def run_arm(name, frames, seed):
         base[0xF6] = pressed; base[0xF8] = R
         world.step(f, pressed, R)
     n_cart = base[GP_N] | (base[GP_N + 1] << 8); c_cart = base[GP_C] | (base[GP_C + 1] << 8)
+    if "noplay" in CHECKS.get(name, ()):
+        # prime the escape to fire on the next hook (counter at N-1, snapshot == the live tuple), in a live round and in a
+        # round-end wait; ESC_N is the patcher's default 1200
+        for vc, key in ((20, "esc_live"), (0, "esc_roundend")):
+            base[G.MODE] = 4; base[VC] = vc
+            base[ESC_S0], base[ESC_S0 + 1], base[ESC_S0 + 2] = base[0x46], base[0xF8], base[0x0386]
+            base[ESC_CTL], base[ESC_CTL + 1] = 1199 & 0xFF, 1199 >> 8
+            inj0 = base[INJ]; base[0xF5] = 0
+            hook()
+            cnt[key] = int(base[INJ] != inj0 or base[0xF5] == 0x10)
     res = dict(arm=name, T=T, frames=frames, seed=seed, mismatches=len(bad), first=bad[:3], hold_violations=hold_bad,
                fires_ref=ref.fires, fires_cart=n_cart, cells_ref=ref.cells, cells_cart=c_cart, **cnt)
     return res
@@ -198,6 +224,13 @@ def main():
                 why.append("no volley delivered (vacuous)")
             if r.get("delivered_while_round_over", 0):
                 why.append("delivered while P2's virus count was 0")
+        if "drain" in CHECKS.get(name, ()) and r.get("drain_violations", 0):
+            why.append(f"P2's attack $0398 not drained on {r['drain_violations']} play hooks")
+        if "noplay" in CHECKS.get(name, ()):
+            if r.get("esc_live", 0):
+                why.append("the escape injected START in a LIVE round")
+            if not r.get("esc_roundend", 0):
+                why.append("positive control failed: no START injected in a round-end wait")
         good = not why
         if name.startswith("M_"):
             good = not good                                # a mutant must FAIL the gate

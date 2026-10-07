@@ -1,0 +1,63 @@
+# Mesen mechanics run of the PUBLOG capture #3 cart (tools/silfid/gpump_probe.lua via execfid run_probe.sh), 2026-10-07T06:29Z
+# free-running CvC autonav, stand-in copro brain (lowest column, vertical; publish f2, DONE f24) -- the cart's mechanics, not the copro
+[gpump_c3] cart md5 437cd6aa0af3baecefd6b0cecd000c7f  mmc1 2735aef24974f614db4961587d10343e  cases f0849714d8b0e64ca9586a3a5612e718 probe 28400347
+DELIVER f=377 size=2 colours=0,0,2,1 p2vir=48
+DELIVER f=967 size=2 colours=2,1,1,2 p2vir=47
+DELIVER f=1056 size=3 colours=1,2,2,2 p2vir=47
+ROUND_END n=1 f=1532 p2vir=47 round_frames=1311
+ROUND_END n=2 f=2868 p2vir=48 round_frames=1043
+DELIVER f=3213 size=2 colours=2,0,0,2 p2vir=48
+DELIVER f=4019 size=2 colours=0,2,0,0 p2vir=48
+ROUND_END n=3 f=4490 p2vir=48 round_frames=1333
+STAT f=6000 play_f=4795 rounds=3 deliveries=5 releases=5 GP_N=5 GP_C=11 hold_viol=0 goes=100
+ROUND_END n=4 f=6162 p2vir=45 round_frames=1269
+ROUND_END n=5 f=7502 p2vir=48 round_frames=1053
+ROUND_END n=6 f=9074 p2vir=48 round_frames=1292
+DELIVER f=9584 size=4 colours=0,0,2,0 p2vir=48
+DELIVER f=10592 size=2 colours=0,0,0,2 p2vir=47
+DELIVER f=10653 size=4 colours=0,2,0,1 p2vir=47
+ROUND_END n=7 f=11266 p2vir=47 round_frames=1797
+STAT f=12000 play_f=9546 rounds=7 deliveries=8 releases=8 GP_N=8 GP_C=21 hold_viol=0 goes=203
+DELIVER f=12045 size=3 colours=0,2,1,0 p2vir=48
+ROUND_END n=8 f=12618 p2vir=48 round_frames=1065
+DELIVER f=13108 size=2 colours=0,1,2,0 p2vir=48
+ROUND_END n=9 f=14176 p2vir=48 round_frames=1275
+ROUND_END n=10 f=16002 p2vir=44 round_frames=1430
+DELIVER f=16834 size=2 colours=2,0,0,2 p2vir=48
+ROUND_END n=11 f=17658 p2vir=48 round_frames=1370
+STAT f=18000 play_f=14299 rounds=11 deliveries=11 releases=11 GP_N=11 GP_C=28 hold_viol=0 goes=307
+DELIVER f=18569 size=2 colours=0,2,1,0 p2vir=46
+DELIVER f=18855 size=2 colours=1,0,2,1 p2vir=46
+ROUND_END n=12 f=18908 p2vir=46 round_frames=968
+DELIVER f=19695 size=2 colours=2,1,2,2 p2vir=48
+ROUND_END n=13 f=20354 p2vir=48 round_frames=1047
+DELIVER f=21254 size=2 colours=2,2,1,0 p2vir=48
+ROUND_END n=14 f=22160 p2vir=46 round_frames=1521
+ROUND_END n=15 f=23598 p2vir=47 round_frames=1147
+STAT f=24000 play_f=18928 rounds=15 deliveries=15 releases=15 GP_N=15 GP_C=36 hold_viol=0 goes=410
+DELIVER f=24519 size=2 colours=1,0,0,2 p2vir=48
+DELIVER f=25261 size=2 colours=0,2,2,1 p2vir=48
+DELIVER f=25326 size=2 colours=2,1,2,0 p2vir=48
+ROUND_END n=16 f=25614 p2vir=48 round_frames=1620
+DELIVER f=26397 size=2 colours=2,0,0,2 p2vir=46
+DELIVER f=27012 size=2 colours=0,2,2,2 p2vir=46
+ROUND_END n=17 f=27256 p2vir=46 round_frames=1353
+ROUND_END n=18 f=28500 p2vir=48 round_frames=961
+DELIVER f=29514 size=2 colours=2,2,1,0 p2vir=45
+STAT f=30000 play_f=23950 rounds=18 deliveries=21 releases=21 GP_N=21 GP_C=48 hold_viol=0 goes=512
+ROUND_END n=19 f=30558 p2vir=45 round_frames=1652
+DELIVER f=30978 size=2 colours=1,0,1,1 p2vir=48
+ROUND_END n=20 f=31874 p2vir=48 round_frames=1028
+DELIVER f=32779 size=2 colours=1,1,1,1 p2vir=48
+DELIVER f=32904 size=2 colours=1,1,2,0 p2vir=48
+DELIVER f=33562 size=2 colours=2,0,1,1 p2vir=48
+ROUND_END n=21 f=33630 p2vir=48 round_frames=1468
+ROUND_END n=22 f=35226 p2vir=48 round_frames=1201
+STAT f=36000 play_f=28681 rounds=22 deliveries=25 releases=25 GP_N=25 GP_C=56 hold_viol=0 goes=617
+SUMMARY tag=gpump_c3 frames=36000 play_f=28681 rounds=22 p2_clear=0 p2_topout=22 deliveries=25 cells=56 releases=25 GP_N=25 GP_C=56 rate_per_play_min=3.14 hold_violations=0 goes=617 dones=617 p2atk_max=2 p2atk_nonzero_frames=2 esc_inject_live=0
+
+(a first run with a probe bug -- the inject counter was only sampled in live frames, so each round's menu presses showed as one 'live' jump -- read esc_inject_live=22 = rounds; the corrected probe above samples every frame)
+
+## PUBLOG ring at the end (PRG-RAM dump, tools/silfid/publog.py)
+ring: header seq 617 | slots 25 seq 593 - 617 gaps []
+events {'live': 25, 'tgt': 22, 'done': 25, 'lock': 25} | DONE re-read 0 flags 0
