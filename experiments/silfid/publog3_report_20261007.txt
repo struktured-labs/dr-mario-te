@@ -1,0 +1,70 @@
+# publog3: 278 save-states, 59.8 min (fw dir /home/struktured/projects/dr-mario-lateflip-wt/tmp/pubtrace/fw_c51d2e21)
+
+PUMP (GP_N $6633 / GP_C $6635, live part 59.8 min): 157 volleys fired = 2.63/min (design 2.86/play-min), 353 cells delivered (2.25/volley; merged stores are capped at 4)
+  P1's slot at the states: {(0, 0): 259, (4, 0): 2, (2, 0): 17} (($0318, pending store))
+  P2's own attack $0398 (P1 never receives it under DRP1HOLD) reached 0 within a round (the ROM's max in a real game is 4; it resets at each round start)
+
+COVERAGE (live part, 1857 final pills): CELL (<=20 viruses, height 14-16) = 336 [prediction ~700/h, >= ~360/h; capture #1: 0 of 2250]
+   <=20 / 12-13: 164
+   <=20 / 14-16: 336
+   <=20 /  9-11: 409
+   <=20 /   <=8: 305
+    >20 / 12-13: 198
+    >20 / 14-16: 5
+    >20 /  9-11: 407
+    >20 /   <=8: 33
+  prestart (garbage-window) searches: 110 (capture #1: 3)
+
+REPLAYED so far: 341 of 1857 live final pills; overall {'EXACT': 332, 'AMBIGUOUS': 8, 'NO_DONE': 1}
+
+## by CELL
+              CELL EXACT  327 AMBIGUOUS    8 DIVERGED    0 NO_DONE    1  n  336  EARLY-DONE 12
+             other EXACT    5 AMBIGUOUS    0 DIVERGED    0 NO_DONE    0  n    5  EARLY-DONE 0
+
+## by viruses x height
+        <=20/14-16 EXACT  327 AMBIGUOUS    8 DIVERGED    0 NO_DONE    1  n  336  EARLY-DONE 12
+          <=20/<=8 EXACT    2 AMBIGUOUS    0 DIVERGED    0 NO_DONE    0  n    2  EARLY-DONE 0
+         >20/12-13 EXACT    2 AMBIGUOUS    0 DIVERGED    0 NO_DONE    0  n    2  EARLY-DONE 0
+          >20/9-11 EXACT    1 AMBIGUOUS    0 DIVERGED    0 NO_DONE    0  n    1  EARLY-DONE 0
+
+## by kind
+            normal EXACT  311 AMBIGUOUS    4 DIVERGED    0 NO_DONE    1  n  316  EARLY-DONE 9
+          prestart EXACT   21 AMBIGUOUS    4 DIVERGED    0 NO_DONE    0  n   25  EARLY-DONE 3
+
+## by tuck
+           no tuck EXACT  332 AMBIGUOUS    8 DIVERGED    0 NO_DONE    1  n  341  EARLY-DONE 12
+
+live reads: {'MATCH': 527, 'AMBIGUOUS': 8}
+
+## EARLY DONE: 12 of 340 replayed pills with a DONE (3.5%); post-DONE watch over ALL 1857 live pills: type-6 events 0, DONE re-read-0 flags 0
+  seq   863 vir 12 h 15 | silicon DONE   7.50 f, Verilator  24.37 f, dt  -16.87 | watch window 107 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   873 vir 12 h 15 | silicon DONE   8.50 f, Verilator  21.70 f, dt  -13.20 | watch window 63 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   907 vir 10 h 15 | silicon DONE  16.50 f, Verilator  24.96 f, dt   -8.46 | watch window 47 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1705 vir  5 h 16 | silicon DONE  14.00 f, Verilator  21.78 f, dt   -7.78 | watch window 206 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1711 vir  5 h 16 | silicon DONE   3.00 f, Verilator  23.22 f, dt  -20.22 | watch window 662 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1746 vir  5 h 16 | silicon DONE   2.50 f, Verilator  22.99 f, dt  -20.49 | watch window 337 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1757 vir  5 h 16 | silicon DONE  13.00 f, Verilator  20.63 f, dt   -7.63 | watch window 580 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1798 vir  5 h 16 | silicon DONE  13.50 f, Verilator  24.81 f, dt  -11.31 | watch window 83 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1817 vir  5 h 16 | silicon DONE   7.50 f, Verilator  20.76 f, dt  -13.26 | watch window 85 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1826 vir  5 h 16 | silicon DONE   9.00 f, Verilator  17.33 f, dt   -8.33 | watch window 580 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1839 vir  5 h 16 | silicon DONE   8.50 f, Verilator  22.28 f, dt  -13.78 | watch window 209 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1848 vir  5 h 16 | silicon DONE   6.50 f, Verilator  19.69 f, dt  -13.19 | watch window 171 hooks, type-6 0, re-read-0 0 | EXACT
+
+## SAME-INPUT REPEATS (identical upload re-issued by the cart; the copro searched the same input N times)
+
+## LANDINGS on silicon (CELL, 332 pills with a lock): landing != copro final 11 = 3.3% (95% CI 1.9-5.8%)
+  lands the copro final                                           321 (96.7%)
+  lands the cart's OWN target != final                              9 ( 2.7%)
+  lands != final, no target change logged                           2 ( 0.6%)
+
+## LANDINGS on silicon (all replayed live pills, 336 pills with a lock): landing != copro final 11 = 3.3% (95% CI 1.8-5.8%)
+  lands the copro final                                           325 (96.7%)
+  lands the cart's OWN target != final                              9 ( 2.7%)
+  lands != final, no target change logged                           2 ( 0.6%)
+
+## ANYTIME-COMMIT split (CELL, silicon): at-gate answer == final on 282/332 = 84.9% (95% CI 80.7-88.4%)
+  at-gate == final -> landing != final 0/282 = 0.0%
+  at-gate != final -> landing != final 11/50 = 22.0%
+
+## DIVERGED / NO_DONE (1) + EARLY (12) banked in publog3_diverged_20261007.jsonl
+  seq 917 vir 10 h 15 kind 0 NO_DONE: reads [(4.0, 1, 0, 'MATCH')] done None | cosim [[3.14, 1, 0]] final [38.95, 1, 0] tuck [255, 255]

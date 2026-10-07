@@ -5,6 +5,11 @@
 - **The misses:** 102 of the 158 AI misses in the 5 replayed games are SILICON-ONLY. The Mesen replay of the same cart,
   fed Verilator co-sim timelines and her garbage, lands elsewhere (forensics RESULT_LULU_20261005 section 7).
 
+**UPDATE 2026-10-07 (section 12): CAPTURE #3 ON SILICON — V11 fw + the FAIR2PLUS driver cut tall-endgame misplacements
+24.0% → 3.3% (95% CI 1.9–5.8%), a 7× cut.**
+- At-gate answer == final rose 55% → 84.9%, as predicted.
+- 0 DIVERGED / 336 CELL pills on V11.
+
 **UPDATE 2026-10-07 (section 11): PUBLOG captures #1 + #2 replayed the residual's own regime exactly.**
 - **The copro gives the SAME ANSWERS as Verilator in the tall endgame:** 0 DIVERGED / 0 mismatched reads on all 408 CELL
   pills (≤ 20 viruses, height 14–16, tuck and prestart included).
@@ -498,6 +503,66 @@ from its exact upload.
    - nothing to ship for the residual from the copro side;
    - DRSEEDZERO / DRLGPRESTART stand for the seed / PREV-TARGET classes;
    - the nondeterminism needs the bench result before any RTL change.
+
+## 12. PUBLOG capture #3: the anytime-commit fix measured on silicon (2026-10-07)
+
+**Setup:**
+- bluemage, rbf **V11 seed 3** (43aa62d5, fw c51d2e21 = 1488 + TUCKREACH + TUCKLIVE + ROOTORD + LEFLUSH, RTL 3b164c7);
+- cart **437cd6aa**: the **FAIR2PLUS** P2 driver on capture #2's seat, plus DRP1DRAIN / DRNAVESC_NOPLAY / DRP1HOLDFIRST
+  (dr-mario-te PR #42);
+- 60 min, 278 states, 0 capture errors.
+
+**Replay:** on Verilator with the V11 firmware (same vsim_pub2, FWDIR = fw_c51d2e21). The first 1488 seconds are not
+involved: no early-DONE or mismatched-read artefact comes from a firmware mismatch, since every co-sim read MATCHes.
+- **Tools:** `landing_log.py` (log-only landing analysis) and `publog2_report.py` with TAG=publog3.
+- **Outputs:**
+  - `landing_log_20261007.txt`, `publog3_report_20261007.txt`;
+  - `publog3_diverged_20261007.jsonl` (repros);
+  - `predict_v11_20261007.txt` (the prediction, committed BEFORE the capture's replay).
+
+**The capture ran clean:**
+- 1,857 pills, of which **336 CELL pills** (≤ 20 viruses, height 14–16), and 110 garbage-window prestarts.
+- No freeze or pause: `$0398` was 0 in all 278 states.
+- Pump: **2.63 volleys/min**, 2.25 cells/volley (GP_N/GP_C).
+
+**THE number.** Tall-endgame CELL, cart landing ≠ copro final, with the copro final being silicon's own DONE answer:
+
+| | capture #2: 1488 + FAIR | prediction for V11 | **capture #3: V11 + FAIR2PLUS** |
+|---|---|---|---|
+| landing ≠ final | 24.0% (97/404, 95% CI 20.1–28.4) | 12.5% (band 9.7–16.2) | **3.3% (11/332, 95% CI 1.9–5.8)** |
+| — own committed target ≠ final | 17.6% (6.2% locked before DONE) | | 2.7% (none before DONE) |
+| — no target change logged | 5.7% | | 0.6% |
+| — neither final nor own target | 0.7% | | 0% |
+| at-gate answer == final (silicon) | 55.0% (50.1–59.7) | ~85% | **84.9% (80.7–88.4)** |
+| landing ≠ final when gate == final | 6.8% (15/222) | (6.8%, carried over) | **0.0% (0/282)** |
+| landing ≠ final when gate ≠ final | 45.1% (82/182) | (45.1%, carried over) | **22.0% (11/50)** |
+
+- **The firmware half of the prediction was exact:** at-gate == final 84.9% vs ~85% predicted.
+- **The driver half was pessimistic.** I flagged it as an upper-side estimate. FAIR2PLUS follows a late change far better:
+  - 0 misses at all when the gate answer is final;
+  - half the misses when it is not.
+- **The gains compound** (`landing_log_20261007.txt`):
+  - V11 alone with FAIR's follow-through would give 12.6%;
+  - FAIR2PLUS alone on 1488's gate rate would give 9.9%;
+  - together they give 3.3%: **a 7× cut**.
+
+**Verdicts in the CELL (all 336 replayed on V11):**
+- **EXACT 327, AMBIGUOUS 8, DIVERGED 0, NO_DONE 1.**
+- Live reads: 527 MATCH, 8 AMBIGUOUS, 0 mismatch.
+- The NO_DONE is seq 917: an aborted search with a single read that matches. That is the ABORTSTALE cart behaviour, not a
+  copro difference.
+
+**EARLY DONE on V11:**
+- **12 / 340 = 3.5%** of replayed pills (dt −7.6 … −20.5 f), all EXACT otherwise.
+- The post-DONE watch logged 0 events and 0 re-read flags across all 1,857 pills.
+- So the silicon copro's genuine early finish persists on V11 at a similar rate (capture #2 on 1488: 4.7%).
+- It is still harmless here: no final ever differed.
+
+**Verdict for the program:**
+- The silicon-only tall-endgame misplacements are cut **7×** on silicon by **V11 + FAIR2PLUS**, the
+  ANTIBODY_DIST_FAIR2PLUS candidate.
+- The copro is again proven equal to Verilator, on V11 and in the CELL.
+- The remaining 3.3% are all at-gate ≠ final commits.
 
 ## Files (this folder)
 - **Analysis:**
