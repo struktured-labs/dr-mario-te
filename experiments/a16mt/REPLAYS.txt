@@ -1,0 +1,126 @@
+# a16mt replays (2026-10-07T21:55Z): Mesen, real carts, chained, silicon garbage delivered (tools/execfid/execfid_probe.lua)
+# carts: f2p = FAIR2PLUS 5a1695da | mt2 = FAIR2PLUS + DRMINTHINK=4 170f179d
+# a landing is HYBRID when it is neither the copro final nor any published candidate of that pill's timeline
+
+## A. V11 (c51d2e21) timelines: the FAIR2 games of 10/04 (banked V11 case files) + 10/03 G2 (banked V1 a1ef31c8 case file;
+##    V11 == V1 on G2, LEFLUSH.txt section 3) -- CONTROL: f2p must reproduce the execfid lane's banked A_lgp_row2 runs
+# replays fw=v11 arms=['f2p', 'mt2'] (base = f2p)
+game   arm           n  ==sil  ==final  hybrid  frozen lockf med cmtf med  summary
+m2g1   f2p          47     41       40       0       1      34.0      8.0  tag=m2g1_f2p_v11_chain_garb frames=4886 goes=50 dones=36 cases=47
+m2g1   mt2          47     41       40       0       1      34.0      7.0  tag=m2g1_mt2_v11_chain_garb frames=4886 goes=50 dones=36 cases=47
+m2g1   CONTROL f2p vs banked lateflip_m2g1_A_lgp_row2_chain_garb.log: 0 pills differ in landing or lock frame (harness reproduces)
+m2g2   f2p         119     93      119       0       0      44.0      8.0  tag=m2g2_f2p_v11_chain_garb frames=12780 goes=122 dones=112 cases=119
+m2g2   mt2         119     93      119       0       0      44.0      6.0  tag=m2g2_mt2_v11_chain_garb frames=12780 goes=122 dones=112 cases=119
+m2g2   CONTROL f2p vs banked lateflip_m2g2_A_lgp_row2_chain_garb.log: 0 pills differ in landing or lock frame (harness reproduces)
+m2g3   f2p          99     88       97       0       0      36.0      8.0  tag=m2g3_f2p_v11_chain_garb frames=10499 goes=102 dones=92 cases=99
+m2g3   mt2          99     88       97       0       0      36.0      6.0  tag=m2g3_mt2_v11_chain_garb frames=10499 goes=102 dones=92 cases=99
+m2g3   CONTROL f2p vs banked lateflip_m2g3_A_lgp_row2_chain_garb.log: 0 pills differ in landing or lock frame (harness reproduces)
+m4g1   f2p         134    111      128       0       3      39.0      8.0  tag=m4g1_f2p_v11_chain_garb frames=60000 goes=137 dones=126 cases_done=134 TIMEOUT
+m4g1   mt2         134    112      127       0       4      39.0      6.0  tag=m4g1_mt2_v11_chain_garb frames=60000 goes=137 dones=126 cases_done=134 TIMEOUT
+m4g1   CONTROL f2p vs banked lateflip_m4g1_A_lgp_row2_chain_garb.log: 0 pills differ in landing or lock frame (harness reproduces)
+m4g2   f2p         109     93       98       0       0      32.0      8.0  tag=m4g2_f2p_v11_chain_garb frames=10255 goes=113 dones=102 cases=109
+m4g2   mt2         109     92       97       0       1      32.0      6.0  tag=m4g2_mt2_v11_chain_garb frames=10259 goes=113 dones=102 cases=109
+m4g2   CONTROL f2p vs banked lateflip_M4G2_A_lgp_row2_chain_garb.log: 0 pills differ in landing or lock frame (harness reproduces)
+G2     f2p         116     92      114       0       0      34.0      8.0  tag=G2_f2p_v11_chain_garb frames=11023 goes=120 dones=104 cases=116
+G2     mt2         116     92      114       0       0      34.0      6.0  tag=G2_mt2_v11_chain_garb frames=11039 goes=120 dones=104 cases=116
+G2     CONTROL f2p vs banked lateflip_G2_1003_A_lgp_row2_v1_chain_garb.log: 0 pills differ in landing or lock frame (harness reproduces)
+TOTAL
+  f2p        n=624 ==silicon 518 ==final 596 hybrid 0 frozen 4
+  mt2        n=624 ==silicon 518 ==final 594 hybrid 0 frozen 6
+  tempo mt2 - f2p on same-landing pills: n=622 mean +0.00 f median +0.0 f (earlier lock < 0); faster 1 slower 2
+  commit mt2 - f2p on pills both committed: n=624 mean -1.70 f median -2.0 f; earlier 471 later 1
+landing differences between arms (2):
+  m4g1 p130: vc 3 silicon a16 final a22 pubs [16, 22] | f2p: a22 (final) f=60 | mt2: a16 (pub) f=60
+  m4g2 p100: vc 16 silicon a5 final a5 pubs [2, 5] | f2p: a5 (final) f=21 | mt2: a2 (pub) f=24
+
+## A2. the FAIR-owner games of 10/04 on NEW V11 timelines (co-sim this lane; their banked timelines are 1488e158)
+# replays fw=v11 arms=['f2p', 'mt2'] (base = f2p)
+game   arm           n  ==sil  ==final  hybrid  frozen lockf med cmtf med  summary
+m1g1   f2p         184    150      171       0       8      47.5      8.0  tag=m1g1_f2p_v11_chain_garb frames=60000 goes=187 dones=181 cases_done=184 TIMEOUT
+m1g1   mt2         184    150      171       0       8      47.5      6.0  tag=m1g1_mt2_v11_chain_garb frames=60000 goes=187 dones=181 cases_done=184 TIMEOUT
+m1g2   f2p         132    108      132       0       0      45.0      8.0  tag=m1g2_f2p_v11_chain_garb frames=14330 goes=135 dones=122 cases=132
+m1g2   mt2         132    108      132       0       0      45.0      6.0  tag=m1g2_mt2_v11_chain_garb frames=14330 goes=135 dones=122 cases=132
+m3g1   f2p          26     22       25       0       1      36.0      8.0  tag=m3g1_f2p_v11_chain_garb frames=2622 goes=29 dones=25 cases=26
+m3g1   mt2          26     22       25       0       1      36.0      7.0  tag=m3g1_mt2_v11_chain_garb frames=2622 goes=29 dones=25 cases=26
+m3g2   f2p          22     14       21       0       0      32.5      8.0  tag=m3g2_f2p_v11_chain_garb frames=2166 goes=25 dones=20 cases=22
+m3g2   mt2          22     14       21       0       0      32.5      6.5  tag=m3g2_mt2_v11_chain_garb frames=2166 goes=25 dones=20 cases=22
+m3g3   f2p          19     17       19       0       0      32.0      8.0  tag=m3g3_f2p_v11_chain_garb frames=2233 goes=22 dones=19 cases=19
+m3g3   mt2          19     17       19       0       0      32.0      6.0  tag=m3g3_mt2_v11_chain_garb frames=2233 goes=22 dones=19 cases=19
+m5g2   f2p         190    150      181       0       4      41.0      8.0  tag=m5g2_f2p_v11_chain_garb frames=19982 goes=193 dones=188 cases=190
+m5g2   mt2         190    151      180       0       5      41.0      5.0  tag=m5g2_mt2_v11_chain_garb frames=20000 goes=193 dones=188 cases=190
+TOTAL
+  f2p        n=573 ==silicon 461 ==final 549 hybrid 0 frozen 13
+  mt2        n=573 ==silicon 462 ==final 548 hybrid 0 frozen 14
+  tempo mt2 - f2p on same-landing pills: n=572 mean +0.00 f median +0.0 f (earlier lock < 0); faster 0 slower 0
+  commit mt2 - f2p on pills both committed: n=573 mean -1.81 f median -2.0 f; earlier 449 later 0
+landing differences between arms (1):
+  m5g2 p157: vc 7 silicon a16 final a28 pubs [18, 16, 28] | f2p: a28 (final) f=35 | mt2: a16 (pub) f=47
+
+## C. V11 + A16 (b545d740) timelines, every game (A16 co-sim for <= 16 viruses, V11 records for > 16: merge logs below)
+merge m2g1: identity <= 4 viruses: 0/0 exact; > 16 viruses (sample): 8/8 exact MERGE OK
+merge m2g2: identity <= 4 viruses: 30/30 exact; > 16 viruses (sample): 8/8 exact 5..16 viruses: 43 pills, final changed on 6 [48, 55, 71, 76, 82, 83]; first publish A16 - V11: median +0.01 f, max +0.33, min -0.14; DONE A16 - V11: median +0.01 f, p10 -0.08, p90 +0.25 MERGE OK
+merge m2g3: identity <= 4 viruses: 4/4 exact; > 16 viruses (sample): 0/0 exact 5..16 viruses: 31 pills, final changed on 3 [78, 85, 93]; first publish A16 - V11: median +0.01 f, max +0.17, min -0.01; DONE A16 - V11: median +0.01 f, p10 -0.04, p90 +0.05 MERGE OK
+merge m4g1: identity <= 4 viruses: 17/17 exact; > 16 viruses (sample): 12/12 exact 5..16 viruses: 57 pills, final changed on 7 [79, 85, 87, 93, 94, 108, 112]; first publish A16 - V11: median +0.01 f, max +0.13, min -0.26; DONE A16 - V11: median +0.01 f, p10 -0.14, p90 +0.06 MERGE OK
+merge m4g2: identity <= 4 viruses: 0/0 exact; > 16 viruses (sample): 37/37 exact 5..16 viruses: 19 pills, final changed on 1 [94]; first publish A16 - V11: median +0.01 f, max +0.02, min -0.02; DONE A16 - V11: median +0.01 f, p10 +0.01, p90 +0.02 MERGE OK
+merge G2: identity <= 4 viruses: 0/0 exact; > 16 viruses (sample): 10/10 exact 5..16 viruses: 58 pills, final changed on 2 [65, 79]; first publish A16 - V11: median +0.01 f, max +0.11, min +0.01; DONE A16 - V11: median +0.07 f, p10 +0.01, p90 +0.71 MERGE OK
+merge m1g1: identity <= 4 viruses: 52/52 exact; > 16 viruses (sample): 8/8 exact 5..16 viruses: 85 pills, final changed on 10 [66, 76, 85, 86, 88, 104, 110, 114, 123, 127]; first publish A16 - V11: median +0.01 f, max +0.19, min -0.21; DONE A16 - V11: median +0.01 f, p10 +0.00, p90 +0.05 MERGE OK
+merge m1g2: identity <= 4 viruses: 0/0 exact; > 16 viruses (sample): 14/14 exact 5..16 viruses: 81 pills, final changed on 13 [54, 58, 59, 73, 77, 80, 88, 89, 91, 94, 96, 106, 107]; first publish A16 - V11: median +0.01 f, max +0.13, min -0.27; DONE A16 - V11: median +0.01 f, p10 +0.00, p90 +0.25 MERGE OK
+merge m3g1: identity <= 4 viruses: 0/0 exact; > 16 viruses (sample): 0/0 exact MERGE OK
+merge m3g2: identity <= 4 viruses: 0/0 exact; > 16 viruses (sample): 0/0 exact MERGE OK
+merge m3g3: identity <= 4 viruses: 0/0 exact; > 16 viruses (sample): 0/0 exact MERGE OK
+merge m5g2: identity <= 4 viruses: 0/0 exact; > 16 viruses (sample): 12/12 exact 5..16 viruses: 138 pills, final changed on 33 [103, 107, 126, 139, 147, 148, 149, 150, 151, 152, 157, 158, 159, 160, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 177, 178, 180, 183, 184, 185, 186, 187]; first publish A16 - V11: median +0.01 f, max +0.26, min -0.11; DONE A16 - V11: median +0.01 f, p10 +0.00, p90 +0.61 MERGE OK
+# replays fw=a16 arms=['f2p', 'mt2'] (base = f2p)
+game   arm           n  ==sil  ==final  hybrid  frozen lockf med cmtf med  summary
+m2g1   f2p          47     41       40       0       1      34.0      8.0  tag=m2g1_f2p_a16_chain_garb frames=4886 goes=50 dones=36 cases=47
+m2g1   mt2          47     41       40       0       1      34.0      7.0  tag=m2g1_mt2_a16_chain_garb frames=4886 goes=50 dones=36 cases=47
+m2g2   f2p         119     90      119       0       0      44.0      8.0  tag=m2g2_f2p_a16_chain_garb frames=12726 goes=122 dones=112 cases=119
+m2g2   mt2         119     90      119       0       0      44.0      6.0  tag=m2g2_mt2_a16_chain_garb frames=12726 goes=122 dones=112 cases=119
+m2g3   f2p          99     85       97       0       0      36.0      8.0  tag=m2g3_f2p_a16_chain_garb frames=10575 goes=102 dones=92 cases=99
+m2g3   mt2          99     85       97       0       0      36.0      6.0  tag=m2g3_mt2_a16_chain_garb frames=10575 goes=102 dones=92 cases=99
+m4g1   f2p         134    111      128       0       3      39.0      8.0  tag=m4g1_f2p_a16_chain_garb frames=60000 goes=137 dones=126 cases_done=134 TIMEOUT
+m4g1   mt2         134    112      127       0       4      39.0      6.0  tag=m4g1_mt2_a16_chain_garb frames=60000 goes=137 dones=126 cases_done=134 TIMEOUT
+m4g2   f2p         109     92       98       0       0      32.0      8.0  tag=m4g2_f2p_a16_chain_garb frames=10227 goes=113 dones=102 cases=109
+m4g2   mt2         109     91       97       0       1      32.0      6.0  tag=m4g2_mt2_a16_chain_garb frames=10231 goes=113 dones=102 cases=109
+G2     f2p         116     90      114       0       0      34.0      8.0  tag=G2_f2p_a16_chain_garb frames=11243 goes=120 dones=105 cases=116
+G2     mt2         116     90      114       0       0      34.0      6.0  tag=G2_mt2_a16_chain_garb frames=11223 goes=120 dones=105 cases=116
+m1g1   f2p         184    147      168       0      11      48.0      8.0  tag=m1g1_f2p_a16_chain_garb frames=60000 goes=187 dones=181 cases_done=184 TIMEOUT
+m1g1   mt2         184    147      168       0      11      48.0      6.0  tag=m1g1_mt2_a16_chain_garb frames=60000 goes=187 dones=181 cases_done=184 TIMEOUT
+m1g2   f2p         132     99      131       0       1      45.0      8.0  tag=m1g2_f2p_a16_chain_garb frames=14392 goes=135 dones=124 cases=132
+m1g2   mt2         132     99      131       0       1      45.0      6.0  tag=m1g2_mt2_a16_chain_garb frames=14392 goes=135 dones=124 cases=132
+m3g1   f2p          26     22       25       0       1      36.0      8.0  tag=m3g1_f2p_a16_chain_garb frames=2622 goes=29 dones=25 cases=26
+m3g1   mt2          26     22       25       0       1      36.0      7.0  tag=m3g1_mt2_a16_chain_garb frames=2622 goes=29 dones=25 cases=26
+m3g2   f2p          22     14       21       0       0      32.5      8.0  tag=m3g2_f2p_a16_chain_garb frames=2166 goes=25 dones=20 cases=22
+m3g2   mt2          22     14       21       0       0      32.5      6.5  tag=m3g2_mt2_a16_chain_garb frames=2166 goes=25 dones=20 cases=22
+m3g3   f2p          19     17       19       0       0      32.0      8.0  tag=m3g3_f2p_a16_chain_garb frames=2233 goes=22 dones=19 cases=19
+m3g3   mt2          19     17       19       0       0      32.0      6.0  tag=m3g3_mt2_a16_chain_garb frames=2233 goes=22 dones=19 cases=19
+m5g2   f2p         190    129      181       0       4      40.0      8.0  tag=m5g2_f2p_a16_chain_garb frames=19420 goes=193 dones=188 cases=190
+m5g2   mt2         190    129      181       0       4      40.0      6.0  tag=m5g2_mt2_a16_chain_garb frames=19420 goes=193 dones=188 cases=190
+TOTAL
+  f2p        n=1197 ==silicon 937 ==final 1141 hybrid 0 frozen 21
+  mt2        n=1197 ==silicon 937 ==final 1139 hybrid 0 frozen 23
+  tempo mt2 - f2p on same-landing pills: n=1195 mean -0.00 f median +0.0 f (earlier lock < 0); faster 2 slower 1
+  commit mt2 - f2p on pills both committed: n=1197 mean -1.75 f median -2.0 f; earlier 919 later 0
+landing differences between arms (2):
+  m4g1 p130: vc 3 silicon a16 final a22 pubs [16, 22] | f2p: a22 (final) f=60 | mt2: a16 (pub) f=60
+  m4g2 p100: vc 16 silicon a5 final a5 pubs [2, 5] | f2p: a5 (final) f=21 | mt2: a2 (pub) f=24
+
+## C2. firmware effect at a fixed cart: the same carts, V11 vs V11 + A16 timelines (landing == copro final of ITS timeline)
+  f2p on v11: n=1197 ==final 1145 hybrid 0
+  f2p on a16: n=1197 ==final 1141 hybrid 0
+  mt2 on v11: n=1197 ==final 1142 hybrid 0
+  mt2 on a16: n=1197 ==final 1139 hybrid 0
+
+## C3. are A16's changed answers executed? (tools/a16mt/fw_effect.py)
+f2p: pills whose A16 final != V11 final: 75; the cart landed on the A16 final 71, on the V11 final 4, elsewhere 0; A16 final first visible: median 3.5 f, <= 6 f on 55
+f2p: landing-on-final status differs V11 replay vs A16 replay on 4 pills:
+  m1g1 p85: vc 9 | V11 final a21 landed a21 | A16 final a14 landed a21 (frozen) | A16 publishes a21@2.57 a14@46.85
+  m1g1 p86: vc 9 | V11 final a29 landed a29 | A16 final a6 landed a29 (frozen) | A16 publishes a29@2.33 a6@47.03
+  m1g1 p88: vc 9 | V11 final a21 landed a21 | A16 final a14 landed a21 (frozen) | A16 publishes a21@2.32 a14@46.31
+  m1g2 p107: vc 6 | V11 final a23 landed a23 | A16 final a10 landed a23 (frozen) | A16 publishes a23@2.27 a10@32.98
+mt2: pills whose A16 final != V11 final: 75; the cart landed on the A16 final 71, on the V11 final 4, elsewhere 0; A16 final first visible: median 3.5 f, <= 6 f on 55
+mt2: landing-on-final status differs V11 replay vs A16 replay on 5 pills:
+  m1g1 p85: vc 9 | V11 final a21 landed a21 | A16 final a14 landed a21 (frozen) | A16 publishes a21@2.57 a14@46.85
+  m1g1 p86: vc 9 | V11 final a29 landed a29 | A16 final a6 landed a29 (frozen) | A16 publishes a29@2.33 a6@47.03
+  m1g1 p88: vc 9 | V11 final a21 landed a21 | A16 final a14 landed a21 (frozen) | A16 publishes a21@2.32 a14@46.31
+  m1g2 p107: vc 6 | V11 final a23 landed a23 | A16 final a10 landed a23 (frozen) | A16 publishes a23@2.27 a10@32.98
+  m5g2 p157: vc 7 | V11 final a28 landed a16 (frozen) | A16 final a3 landed a3 | A16 publishes a4@1.83 a27@3.66 a3@4.52
