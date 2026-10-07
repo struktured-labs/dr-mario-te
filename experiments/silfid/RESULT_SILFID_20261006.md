@@ -333,6 +333,37 @@ That is about 30–40 MiSTer-minutes, with no human at the controls for CvC. Eac
 - `ss_trace_files_20261006.txt`: the .ss paths, under `~/projects/dr_mario_rl/tmp/silfid/ss_20261006/`.
 - `tools/ss_seedcheck.py`.
 
+## 10. Follow-ups (2026-10-06 evening)
+
+### 10a. Seed sweep completed to all 32 behaviour classes (RUNNING)
+- **Why 32 classes.** Silicon behaviour depends on seed bits {0, 1, 3, 4, 5, 7}: the jitter plus both tuck-leak nibbles.
+  Bit 0 is always 1, so there are 32 classes. 12 were tested before; the other 20 are running (`seed20` sweep: co-sim of
+  the 129 disagreeing pills + Mesen replays, under the PAUSE switch).
+- **Status at hand-off:** 14/32 classes complete. The two new ones are s161 (= the class of $A5, the seed the CvC cart
+  derived on silicon in every match) and s33.
+- **Per game, so far (`seed32.py`):**
+  - The best class reproduces M1 G1 2, M1 G2 8, M1 G4 1, M2 G2 1, M2 G3 2 of the silicon-only misses.
+  - **0** of them are in the 77-pill residual.
+  - So far no class comes close to explaining most of any game's residual (13–20 pills per game).
+- **When it finishes:** the unit `silfid-seed32final` writes `seed32_20261006.{txt,json}` here automatically (ETA ~4–5 h
+  of unpaused CPU).
+
+### 10b. DRPUBLOG debug-log cart (dr-mario-te PR #40, stacked on #37)
+- **What.** It logs EVERY P2 search to PRG-RAM, so each save-state yields up to 25 complete pills instead of one sample.
+  Each pill has the exact upload, every untorn live read with hooks/frames since GO, DONE + tuck, the cart's target
+  changes, and the lock pose.
+- **Base.** The FAIR couch P2 driver (incl. the garbage-window PRESTART) on the CvC seat config (sliced native P1 so
+  garbage arrives, autonav), at L11.
+- **Gates:**
+  - negative controls;
+  - census worst frame 29,217 / 29,780 (+563);
+  - run_cart_gates, gravity fidelity, lgcut;
+  - py65 ring / truth / guard gate (mutant killed);
+  - Mesen 148/148 pills == the GO uploads; end to end 134/134 case GOs EXACT or AMBIGUOUS.
+- **Kit:** `dr_mario_rl/tmp/couch_kit/publog_20261006/` (cart 8355ddc7 + `PUBLOG_CVC.mgl` on rbf 318607aa; BUILD.md has
+  the capture: `ring_capture.sh --interval 10`, 60 min, keep all).
+- **Offline after the capture:** `ss_cosim.py --publog`.
+
 ## Files (this folder)
 - **Analysis:**
   - `load.py` (silicon trajectories + Mesen T-traces), `score.py`, `summary.py`, `diverge.py`, `firstact.py`, `slam.py`;

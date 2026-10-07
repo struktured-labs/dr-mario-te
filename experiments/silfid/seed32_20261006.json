@@ -1,0 +1,499 @@
+{
+ "classes_done": [
+  1,
+  25,
+  11,
+  9,
+  3,
+  17,
+  19,
+  27,
+  153,
+  145,
+  155,
+  147,
+  161,
+  33
+ ],
+ "per_game": {
+  "m1g1": {
+   "silicon_only": 20,
+   "residual77_in_game": 17,
+   "best": {
+    "seed": 25,
+    "reproduced": 2,
+    "of_residual": 0,
+    "eq_sil": 187
+   },
+   "classes": [
+    {
+     "seed": 25,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 187
+    },
+    {
+     "seed": 9,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 187
+    },
+    {
+     "seed": 153,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 186
+    },
+    {
+     "seed": 155,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 187
+    },
+    {
+     "seed": 1,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 11,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 3,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 17,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 19,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 27,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 145,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 186
+    },
+    {
+     "seed": 147,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 186
+    },
+    {
+     "seed": 161,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 33,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 186
+    }
+   ],
+   "union": 3
+  },
+  "m1g2": {
+   "silicon_only": 32,
+   "residual77_in_game": 20,
+   "best": {
+    "seed": 1,
+    "reproduced": 8,
+    "of_residual": 0,
+    "eq_sil": 190
+   },
+   "classes": [
+    {
+     "seed": 1,
+     "reproduced": 8,
+     "of_residual": 0,
+     "eq_sil": 190
+    },
+    {
+     "seed": 19,
+     "reproduced": 8,
+     "of_residual": 0,
+     "eq_sil": 190
+    },
+    {
+     "seed": 147,
+     "reproduced": 8,
+     "of_residual": 0,
+     "eq_sil": 190
+    },
+    {
+     "seed": 161,
+     "reproduced": 8,
+     "of_residual": 0,
+     "eq_sil": 190
+    },
+    {
+     "seed": 33,
+     "reproduced": 8,
+     "of_residual": 0,
+     "eq_sil": 190
+    },
+    {
+     "seed": 9,
+     "reproduced": 4,
+     "of_residual": 2,
+     "eq_sil": 186
+    },
+    {
+     "seed": 27,
+     "reproduced": 4,
+     "of_residual": 2,
+     "eq_sil": 186
+    },
+    {
+     "seed": 155,
+     "reproduced": 4,
+     "of_residual": 2,
+     "eq_sil": 186
+    },
+    {
+     "seed": 3,
+     "reproduced": 3,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 17,
+     "reproduced": 3,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 145,
+     "reproduced": 3,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 25,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 182
+    },
+    {
+     "seed": 11,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 182
+    },
+    {
+     "seed": 153,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 182
+    }
+   ],
+   "union": 11
+  },
+  "m1g4": {
+   "silicon_only": 20,
+   "residual77_in_game": 15,
+   "best": {
+    "seed": 9,
+    "reproduced": 1,
+    "of_residual": 0,
+    "eq_sil": 123
+   },
+   "classes": [
+    {
+     "seed": 9,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 123
+    },
+    {
+     "seed": 27,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 123
+    },
+    {
+     "seed": 155,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 123
+    },
+    {
+     "seed": 1,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 25,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 11,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 3,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 17,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 19,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 153,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 145,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 147,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 161,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 33,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    }
+   ],
+   "union": 1
+  },
+  "m2g2": {
+   "silicon_only": 16,
+   "residual77_in_game": 13,
+   "best": {
+    "seed": 25,
+    "reproduced": 1,
+    "of_residual": 0,
+    "eq_sil": 111
+   },
+   "classes": [
+    {
+     "seed": 25,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 111
+    },
+    {
+     "seed": 9,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 111
+    },
+    {
+     "seed": 153,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 111
+    },
+    {
+     "seed": 145,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 111
+    },
+    {
+     "seed": 155,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 111
+    },
+    {
+     "seed": 147,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 111
+    },
+    {
+     "seed": 1,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 11,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 3,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 17,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 19,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 27,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 161,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 33,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    }
+   ],
+   "union": 1
+  },
+  "m2g3": {
+   "silicon_only": 14,
+   "residual77_in_game": 12,
+   "best": {
+    "seed": 1,
+    "reproduced": 2,
+    "of_residual": 0,
+    "eq_sil": 117
+   },
+   "classes": [
+    {
+     "seed": 1,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 117
+    },
+    {
+     "seed": 25,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 117
+    },
+    {
+     "seed": 11,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 117
+    },
+    {
+     "seed": 9,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 116
+    },
+    {
+     "seed": 3,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 118
+    },
+    {
+     "seed": 17,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 118
+    },
+    {
+     "seed": 19,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 117
+    },
+    {
+     "seed": 27,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 116
+    },
+    {
+     "seed": 161,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 117
+    },
+    {
+     "seed": 153,
+     "reproduced": 1,
+     "of_residual": 1,
+     "eq_sil": 116
+    },
+    {
+     "seed": 145,
+     "reproduced": 1,
+     "of_residual": 1,
+     "eq_sil": 116
+    },
+    {
+     "seed": 155,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 115
+    },
+    {
+     "seed": 147,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 115
+    }
+   ],
+   "union": 3
+  }
+ }
+}
