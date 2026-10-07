@@ -1,0 +1,51 @@
+STALL CALIBRATION (PREREG_STEER12 addendum A): couch games 19; act stall >= 10 pills; pills / longest s at v0 <= 16 / 12 / 8; ge30 = share of games with any stall >= 30 s
+
+COUCH per game (v0, pills, start s, duration s):
+  1004 m1g1: 184 decisions, t_end 323 s, runs [(10, 34, 116, 61.35), (1, 39, 247, 73.6)]
+  1004 m1g2: 132 decisions, t_end 236 s, runs [(8, 14, 139, 29.55), (6, 16, 185, 37.13)]
+  1004 m2g1: 47 decisions, t_end 72 s, runs []
+  1004 m2g2: 119 decisions, t_end 200 s, runs [(3, 13, 153, 21.88)]
+  1004 m2g3: 99 decisions, t_end 168 s, runs []
+  1004 m3g1: 26 decisions, t_end 37 s, runs []
+  1004 m3g2: 22 decisions, t_end 27 s, runs []
+  1004 m3g3: 19 decisions, t_end 30 s, runs []
+  1004 m4g1: 134 decisions, t_end 241 s, runs []
+  1004 m4g2: 109 decisions, t_end 164 s, runs [(17, 12, 107, 15.27), (16, 19, 146, 17.08)]
+  1005 m1g1: 212 decisions, t_end 346 s, runs [(6, 29, 183, 43.5), (5, 42, 234, 68.2), (4, 29, 305, 41.75)]
+  1005 m1g2: 217 decisions, t_end 389 s, runs [(10, 13, 115, 20.1), (10, 18, 148, 29.88), (7, 50, 188, 95.15), (7, 26, 287, 47.52), (7, 14, 336, 20.28), (7, 15, 358, 31.68)]
+  1005 m1g3: 62 decisions, t_end 106 s, runs []
+  1005 m1g4: 146 decisions, t_end 222 s, runs [(30, 12, 55, 16.97), (16, 23, 171, 31.15)]
+  1005 m1g5: 107 decisions, t_end 184 s, runs []
+  1005 m2g1: 148 decisions, t_end 259 s, runs [(1, 27, 206, 50.4)]
+  1005 m2g2: 133 decisions, t_end 232 s, runs [(21, 10, 96, 19.97), (11, 11, 157, 16.57)]
+  1005 m2g3: 134 decisions, t_end 208 s, runs [(38, 13, 32, 14.07), (16, 14, 111, 20.48), (13, 10, 147, 15.62)]
+  1005 m2g4: 97 decisions, t_end 186 s, runs []
+
+COUCH summary (game bootstrap):
+  10/05 vs dr. lulu (n=9): pills16 35.7 [10.2, 69.0]; pills12 30.4 [3.0, 67.7]; pills8 25.8 [3.0, 52.1]; long16 31.3 [12.2, 53.9]; long12 25.6 [5.6, 49.5]; long8 23.8 [0.0, 47.5]; ge30 44.4% [11, 78]
+  10/04 vs owner (n=10): pills16 13.5 [2.6, 28.8]; pills12 11.6 [0.0, 27.9]; pills8 8.2 [0.0, 17.3]; long16 15.0 [2.2, 31.4]; long12 13.3 [0.0, 29.5]; long8 13.3 [2.2, 29.5]; ge30 20.0% [0, 50]
+  both days (n=19): pills16 24.0 [9.4, 43.1]; pills12 20.5 [5.7, 39.8]; pills8 16.5 [4.2, 32.3]; long16 22.7 [11.4, 36.0]; long12 19.1 [6.8, 33.1]; long8 18.2 [5.8, 32.8]; ge30 31.6% [11, 53]
+
+SIM (couch11), truncated at the human's finish T_L | untruncated:
+  FAIR LULU race (pilot) @M167.5 TRUNCATED (n=1200): pills16 20.1 [18.5, 21.7]; pills12 18.6 [17.0, 20.1]; pills8 15.6 [14.2, 17.0]; long16 25.6 [23.6, 27.6]; long12 24.3 [22.3, 26.4]; long8 21.6 [19.8, 23.6]; ge30 32.5% [30, 35]
+  FAIR LULU race (pilot) untruncated (n=1200): pills16 31.0; pills12 29.0; pills8 25.4; long16 38.7; long12 37.1; long8 34.6; ge30 34.9%
+  FAIR owner race (pilot) @M239.5 TRUNCATED (n=600): pills16 23.4 [20.1, 26.7]; pills12 21.3 [18.3, 24.6]; pills8 18.4 [15.5, 21.4]; long16 28.7 [24.4, 33.4]; long12 26.8 [22.8, 31.1]; long8 24.3 [20.5, 28.4]; ge30 27.5% [24, 31]
+  FAIR owner race (pilot) untruncated (n=600): pills16 26.6; pills12 24.2; pills8 21.0; long16 32.4; long12 30.2; long8 27.6; ge30 27.7%
+  ex_perfect LULU race @M167.5 TRUNCATED (n=1200): pills16 19.5 [18.0, 21.1]; pills12 18.2 [16.7, 19.7]; pills8 15.7 [14.3, 17.1]; long16 24.7 [22.8, 26.7]; long12 23.6 [21.7, 25.6]; long8 21.5 [19.7, 23.5]; ge30 30.7% [28, 33]
+  ex_perfect LULU race untruncated (n=1200): pills16 33.0; pills12 30.9; pills8 27.7; long16 41.8; long12 40.0; long8 37.7; ge30 33.1%
+  ex_q02 LULU race @M167.5 TRUNCATED (n=1200): pills16 25.9 [24.2, 27.6]; pills12 24.0 [22.3, 25.7]; pills8 19.7 [18.2, 21.3]; long16 31.4 [29.2, 33.6]; long12 30.0 [27.8, 32.2]; long8 25.8 [23.7, 28.1]; ge30 39.8% [37, 43]
+  ex_q02 LULU race untruncated (n=1200): pills16 40.9; pills12 38.6; pills8 33.0; long16 50.1; long12 48.4; long8 43.5; ge30 42.7%
+  ex_q03 LULU race @M167.5 TRUNCATED (n=1200): pills16 27.6 [25.7, 29.4]; pills12 25.6 [23.9, 27.3]; pills8 20.7 [19.1, 22.3]; long16 32.2 [30.0, 34.3]; long12 30.9 [28.7, 33.1]; long8 26.7 [24.7, 28.9]; ge30 42.5% [40, 45]
+  ex_q03 LULU race untruncated (n=1200): pills16 43.3; pills12 41.3; pills8 35.1; long16 51.6; long12 50.4; long8 45.8; ge30 44.8%
+  ex_q05 LULU race @M167.5 TRUNCATED (n=1200): pills16 30.3 [28.4, 32.4]; pills12 27.2 [25.5, 29.1]; pills8 22.2 [20.5, 23.9]; long16 33.6 [31.4, 35.9]; long12 31.4 [29.1, 33.5]; long8 27.3 [25.2, 29.5]; ge30 47.2% [44, 50]
+  ex_q05 LULU race untruncated (n=1200): pills16 48.0; pills12 44.6; pills8 38.7; long16 55.5; long12 53.5; long8 48.8; ge30 50.1%
+
+GARBAGE (cells received per minute):
+  couch 1005: median 5.9, per game [5.7, 5.9, 5.6, 7.6, 5.9, 5.6, 8.5, 8.3, 8.7]
+  couch 1004: median 5.1, per game [4.8, 5.6, 1.7, 3.6, 5.3, 3.3, 4.4, 7.9, 5.5, 8.4]
+  sim FAIR LULU race (pilot): median 5.9
+      bottom tercile of received garbage (n=400): pills16 12.1; pills12 11.5; pills8 10.2; long16 15.6; long12 14.9; long8 13.7; ge30 16.0%
+      top tercile of received garbage (n=400): pills16 24.1; pills12 22.3; pills8 18.7; long16 31.6; long12 30.2; long8 27.0; ge30 46.0%
+  sim FAIR owner race (pilot): median 5.4
+      bottom tercile of received garbage (n=200): pills16 13.8; pills12 13.4; pills8 11.6; long16 16.3; long12 16.1; long8 14.4; ge30 13.0%
+      top tercile of received garbage (n=200): pills16 29.6; pills12 27.9; pills8 23.8; long16 36.4; long12 35.3; long8 31.7; ge30 37.5%
