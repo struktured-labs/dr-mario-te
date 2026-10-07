@@ -1,0 +1,11 @@
+non-final-commit penalty of MT6->MT4 under V11 = (v114-v116)-(orc4-orc6) = +0.06 pp [-2.56, +2.56]
+V11 MT6 vs oracle MT6 (residual non-final-commit cost under V11) = -1.94 pp [-3.75, -0.19]
+B_14886_qb   clears 1385/1600: pills to clear p25/50/75 114/140/183; time to clear median 252.1 s; how topout 13.4%
+B_v116_qb    clears 1432/1600: pills to clear p25/50/75 100/120/146; time to clear median 215.2 s; how topout 10.5%
+B_v114_qb    clears 1454/1600: pills to clear p25/50/75 99/118/143; time to clear median 209.7 s; how topout 9.0%
+B_v112_qb    clears 1478/1600: pills to clear p25/50/75 100/117/142; time to clear median 207.0 s; how topout 7.4%
+B_orc6_qb    clears 1431/1600: pills to clear p25/50/75 99/118/142; time to clear median 212.0 s; how topout 10.6%
+B_orc4_qb    clears 1451/1600: pills to clear p25/50/75 99/117/140; time to clear median 206.1 s; how topout 9.2%
+A_fair_q04   clears 1131/1600: pills to clear p25/50/75 110/133/162; time to clear median 237.1 s; how topout 29.3%
+A_a16_q04    clears 1181/1600: pills to clear p25/50/75 111/132/160; time to clear median 237.0 s; how topout 26.2%
+A_r60_q04    clears 1173/1600: pills to clear p25/50/75 113/136/165; time to clear median 244.2 s; how topout 26.7%
