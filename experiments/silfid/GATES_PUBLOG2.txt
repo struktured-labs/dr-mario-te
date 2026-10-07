@@ -1,0 +1,121 @@
+# silfid PUBLOG capture #2 gates (2026-10-07T03:18Z, c2d94d2e + working tree)
+
+## 1. negative controls + the carts (tools/silfid/build_publog2.sh)
+IDENTITY ctl_D.nes == dbbb5007: PASS
+IDENTITY ctl_A.nes == b1b57638: PASS
+IDENTITY ctl_DP.nes == 5b3d8183: PASS
+IDENTITY ctl_AP.nes == 5a1695da: PASS
+IDENTITY ctl_Dsz.nes == 90b442c7: PASS
+IDENTITY ctl_cvc_A.nes == 821cafdb: PASS
+IDENTITY ctl_cvc_fair.nes == 4dfa9c79: PASS
+IDENTITY publog_cvcp2_ctl.nes == 8355ddc7: PASS
+IDENTITY pump_cvcp2_t27.nes == d84436ff: PASS
+BUILT 8355ddc7a802a2181a2f2f3f1360662c  publog_cvcp2_ctl.nes
+BUILT f9bb652003f85bf40b0cbe3bdd3941aa  hold_cvcp2.nes
+BUILT 35ef421a6eb3817a5e69b8a33e9f94ae  pump_nopdw_cvcp2.nes
+BUILT d84436ff0ec889b79422883c244194b3  pump_cvcp2.nes
+BUILT 9841ba1447ddfdb5923da98b48f442f1  pump2x_cvcp2.nes
+NEGATIVE CONTROLS: ALL PASS
+
+## 2. static NMI census, worst admissible frame / 29780 (tools/silfid/census_of.sh)
+-- cvcp2 DRP1AIHI=1 DRSLICEGUARD2=1 DRPUBLOG=1
+  WORST ADMISSIBLE FRAME = 29217 of 29780 (98.1%), margin 563 cyc [pp_ph4 + pp_idle]
+-- cvcp2 DRP1AIHI=1 DRSLICEGUARD2=1 DRPUBLOG=1 DRP1HOLD=1
+  WORST ADMISSIBLE FRAME = 29175 of 29780 (98.0%), margin 605 cyc [pp_ph4 + pp_idle]
+-- cvcp2 DRP1AIHI=1 DRSLICEGUARD2=1 DRPUBLOG=1 DRP1HOLD=1 DRGPUMP=1
+  WORST ADMISSIBLE FRAME = 29622 of 29780 (99.5%), margin 158 cyc [pp_ph4 + pp_idle]
+-- cvcp2 DRP1AIHI=1 DRSLICEGUARD2=1 DRPUBLOG=1 DRP1HOLD=1 DRGPUMP=1 DRPUBLOG_PDW=1
+  WORST ADMISSIBLE FRAME = 29672 of 29780 (99.6%), margin 108 cyc [pp_ph4 + pp_idle]
+-- cvcp2 DRP1AIHI=1 DRSLICEGUARD2=1 DRPUBLOG=1 DRP1HOLD=1 DRGPUMP=1 DRPUBLOG_PDW=1 DRGPUMP_T=53
+  WORST ADMISSIBLE FRAME = 29672 of 29780 (99.6%), margin 108 cyc [pp_ph4 + pp_idle]
+
+## 3. tools/gate/run_cart_gates.sh
+cart hazard gates  py=/home/struktured/projects/dr-mario-mods/.venv/bin/python  base=7d307c3051ebc0f8a10e259e3c270acb
+----------------------------------------------------------------------
+test_rtivec              PASS   test_rtivec: ALL PASS (defect reproduced, fix holds, 4/4 mutants killed)
+test_mmc1rst             PASS   test_mmc1rst: ALL PASS (defect reproduced, fix holds, 3/3 mutants killed)
+test_rtivec_aclobber     PASS   PASS: defect reproduced on the shipped cart AND absent on v6e (both directions)
+test_prg_ram_map         PASS   ALL PASS: the deriver fails on injected faults and passes on the real tree
+test_combo_cart          PASS   test_combo_cart: ALL PASS
+test_lateguard_census_cut PASS   GATE_LGCUT PASS
+test_gravity_fidelity    PASS   GRAVITY-FIDELITY GATE: ALL PASS
+test_seedzero            PASS   SEEDZERO GATE: ALL PASS
+----------------------------------------------------------------------
+cart hazard gates: ALL PASS
+
+## 4. tests/test_gravity_fidelity.py, the cvcp2 arms (P2 only; the pump's $0318 stores replayed as opponent actions), seeds 5/11/23 x 3000 frames
+seed 5
+cvcp2_publog             expect=pass        PASS                               pills=76 uploads_ok=20 rounds=7 garbage=11 pump=0 stale_edges=9 goes=24 dead_pill_uploads=1 no_settle_upload=54 stores_changing_world={}
+cvcp2_hold               expect=pass        PASS                               pills=76 uploads_ok=20 rounds=7 garbage=11 pump=0 stale_edges=9 goes=24 dead_pill_uploads=1 no_settle_upload=54 stores_changing_world={}
+cvcp2_pump               expect=pass        PASS                               pills=46 uploads_ok=17 rounds=4 garbage=13 pump=4 stale_edges=6 goes=22 dead_pill_uploads=0 no_settle_upload=27 stores_changing_world={'p1 attackSize $0318': 4}
+cvcp2_pump_t255          expect=pass        PASS                               pills=51 uploads_ok=25 rounds=6 garbage=30 pump=29 stale_edges=8 goes=28 dead_pill_uploads=1 no_settle_upload=21 stores_changing_world={'p1 attackSize $0318': 29}
+couch_464a4b75           expect=fail        KILLED (pin detected)              pills=43 uploads_ok=21 rounds=4 garbage=11 pump=0 stale_edges=6 goes=24 dead_pill_uploads=0 no_settle_upload=20 stores_changing_world={'SPEED COUNTER $0392': 184} | first divergence
+GRAVITY-FIDELITY GATE: ALL PASS
+seed 11
+cvcp2_publog             expect=pass        PASS                               pills=73 uploads_ok=31 rounds=6 garbage=5 pump=0 stale_edges=8 goes=34 dead_pill_uploads=0 no_settle_upload=41 stores_changing_world={}
+cvcp2_hold               expect=pass        PASS                               pills=73 uploads_ok=31 rounds=6 garbage=5 pump=0 stale_edges=8 goes=34 dead_pill_uploads=0 no_settle_upload=41 stores_changing_world={}
+cvcp2_pump               expect=pass        PASS                               pills=66 uploads_ok=31 rounds=5 garbage=7 pump=4 stale_edges=7 goes=34 dead_pill_uploads=0 no_settle_upload=33 stores_changing_world={'p1 attackSize $0318': 4}
+cvcp2_pump_t255          expect=pass        PASS                               pills=57 uploads_ok=26 rounds=5 garbage=31 pump=31 stale_edges=7 goes=34 dead_pill_uploads=0 no_settle_upload=27 stores_changing_world={'p1 attackSize $0318': 31}
+couch_464a4b75           expect=fail        KILLED (pin detected)              pills=66 uploads_ok=34 rounds=7 garbage=7 pump=0 stale_edges=10 goes=35 dead_pill_uploads=0 no_settle_upload=29 stores_changing_world={'SPEED COUNTER $0392': 295} | first divergence
+GRAVITY-FIDELITY GATE: ALL PASS
+seed 23
+cvcp2_publog             expect=pass        PASS                               pills=84 uploads_ok=30 rounds=8 garbage=7 pump=0 stale_edges=8 goes=35 dead_pill_uploads=1 no_settle_upload=47 stores_changing_world={}
+cvcp2_hold               expect=pass        PASS                               pills=84 uploads_ok=30 rounds=8 garbage=7 pump=0 stale_edges=8 goes=35 dead_pill_uploads=1 no_settle_upload=47 stores_changing_world={}
+cvcp2_pump               expect=pass        PASS                               pills=64 uploads_ok=18 rounds=6 garbage=14 pump=4 stale_edges=9 goes=26 dead_pill_uploads=2 no_settle_upload=43 stores_changing_world={'p1 attackSize $0318': 4}
+cvcp2_pump_t255          expect=pass        PASS                               pills=38 uploads_ok=12 rounds=6 garbage=35 pump=26 stale_edges=6 goes=24 dead_pill_uploads=1 no_settle_upload=21 stores_changing_world={'p1 attackSize $0318': 26}
+couch_464a4b75           expect=fail        KILLED (pin detected)              pills=55 uploads_ok=21 rounds=5 garbage=8 pump=0 stale_edges=8 goes=24 dead_pill_uploads=0 no_settle_upload=31 stores_changing_world={'SPEED COUNTER $0392': 235} | first divergence 
+GRAVITY-FIDELITY GATE: ALL PASS
+
+## 5. tests/test_lateguard_census_cut.py on the capture #2 cart (couch snapshot + the cvcp2 overlays)
+LGCUT_OVERLAY=DRBUILDID_TAG=TCVC,DRGPUMP=1,DRHUMAN=0,DRLATEGUARD=1,DRNAVDWELL=0,DRP1AIHI=1,DRP1HOLD=1,DRP1NATIVE=1,DRP1SLICE=1,DRPROPHFIRST=1,DRPUBLOG=1,DRPUBLOG_PDW=1,DRSETTLE=3,DRSETTLEPIN=0,DRSLICEGUARD2=1,DRSTUDY=0,DRSTUDYCOUNTS=0,DRSTUDY_Y=0x08
+  [PASS] PC: lg_gate witness alive (aborted/idle hooks): lg_gate entered in 1556 hooks, 1224 of them aborted phase hooks
+  [PASS] PC: spawn-upload witness alive: h2_cp in 1624 hooks
+  [PASS] PC: committing phase reaches lg_gate (why census keeps it): pp_m4 hooks with lg_gate: 36
+  [PASS] measured py65 cycles <= census bound of the hook's class: 0 over []
+  [PASS] aborted-hook bound dominated by every phase scenario: pp_abort 11383 vs phase bounds {'pp_ph1': 12303, 'pp_ph2': 12287, 'pp_ph3': 12292, 'pp_ph4': 13921}
+  [PASS] lg_row bound covers the IR's ROWCAP: IR ROWCAP CMP#2 LDA#2 vs LOOP_BOUNDS lg_row 2
+== mutants (each must be KILLED)
+  [PASS] M_armed KILLED (pp_disp ARMED2 abort dead): pp_ph1 hook executed census-cut label lg_live @ {'pp': 1, 'armed': 1, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+  [PASS] M_pend KILLED (pp_disp PEND2 abort dead): pp_ph1 hook executed census-cut label h2_cp @ {'pp': 1, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 1, 'done': 0, 'orient': 255}
+  [PASS] M_write KILLED (non-committing phase 1 writes ARMED2 := 1): pp_ph1 hook executed census-cut label lg_live @ {'pp': 1, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+  [PASS] M_early KILLED (non-last match phase commits (GO, ARMED2 := 1)): pp_m3 hook executed census-cut label lg_live @ {'pp': 3, 'armed': 0, 'pend': 0, 'delay': 0, 'edge': 0, 'preact': 0, 'atk': (0, 0), 'swd': 0, 'done': 0, 'orient': 1}
+== mutant M_rowcap: python -O strips the emitter's ROWCAP assert
+  [PASS] M_rowcap KILLED (IR ROWCAP > census lg_row): IR ROWCAP 3/3 vs lg_row 2
+GATE_LGCUT PASS
+
+## 6. tests/test_publog.py (ring vs truth) and tests/test_gpump.py (hold + pump reference model), seeds 5/11
+RING   PASS  49 GOs logged exactly (6 prestart), 0 bad
+LIVE   PASS  50 live events, 0 never published, 0/50 long-lived publications missing
+DONE   PASS  38 DONEs, 0 missing
+LOCK   PASS  116 locks, 0 missing (0 observed in the next search's GO hook, logged there)
+ZP     PASS  $CA/$CB changed across 0 hooks
+GUARD  PASS  3222 slice ticks, 0 hooks with upload + slice
+MUTANT DRSLICEGUARD2=0: KILLED (26 hooks with upload + slice, 3222 slice ticks)
+(world: 49 GOs, garbage 15)
+PUBLOG GATE: ALL PASS
+-- the same ring test on the capture #2 flags (+ DRP1HOLD=1 DRGPUMP=1 DRPUBLOG_PDW=1, false-DONE injection)
+RING   PASS  47 GOs logged exactly (5 prestart), 0 bad
+LIVE   PASS  48 live events, 0 never published, 0/48 long-lived publications missing
+DONE   PASS  23 DONEs, 0 missing
+LOCK   PASS  90 locks, 0 missing (1 observed in the next search's GO hook, logged there)
+ZP     PASS  $CA/$CB changed across 0 hooks
+GUARD  PASS  3198 slice ticks, 0 hooks with upload + slice
+PDW    PASS  8/8 single-read false DONEs flagged by the immediate re-read; 5/5 frame-long false DONEs logged as type 6 (+0/2 with < 6 play hooks before the next GO), 0 type-6 events on 23 genuine DONEs
+(extra flags ['DRP1HOLD=1', 'DRGPUMP=1', 'DRPUBLOG_PDW=1']: DRSLICEGUARD2 mutant skipped; world: 47 GOs, garbage 20)
+PUBLOG GATE: ALL PASS
+[test_gpump.py re-run after the record: its HOLD check now seeds GRAV_P1 = $20 before every hook (the world does not
+ model P1, so the first record's check could not see M_nohold, which SURVIVED there); same command]
+hold        T=  0 PASS  play_hooks=6696 pump_hooks=0 fires=0 (cart GP_N 0) deliveries=0 cells=0 (cart GP_C 0) hold_violations=0
+pump        T= 27 PASS  play_hooks=6782 pump_hooks=6782 fires=5 (cart GP_N 5) deliveries=5 cells=11 (cart GP_C 11) hold_violations=0
+pump_t255   T=255 PASS  play_hooks=6750 pump_hooks=6750 fires=39 (cart GP_N 39) deliveries=34 cells=85 (cart GP_C 85) hold_violations=0
+M_overwrite T=255 KILLED  play_hooks=6548 pump_hooks=6548 fires=38 (cart GP_N 38) deliveries=38 cells=67 (cart GP_C 87) hold_violations=0  <- 30 reference mismatches e.g. [{'frame': 374, 'hook': 1, 'got': [(809, 0), (810, 2), (811, 0), (812, 0), (792, 2)], 'want': []}, {'frame': 374, 'overwrite_or_size': (2, 2)}, {'frame': 374, 'hook': 1, 'state': (121, 0, 0), 'want': (121, 0, 2)}]; telemetry GP_N/GP_C 38/87 != ref 38/67
+M_nohold    T= 27 KILLED  play_hooks=6782 pump_hooks=6782 fires=5 (cart GP_N 5) deliveries=5 cells=11 (cart GP_C 11) hold_violations=6782  <- P1 not held on 6782 play hooks
+GPUMP GATE: ALL PASS
+hold        T=  0 PASS  play_hooks=6654 pump_hooks=0 fires=0 (cart GP_N 0) deliveries=0 cells=0 (cart GP_C 0) hold_violations=0
+pump        T= 27 PASS  play_hooks=6750 pump_hooks=6750 fires=5 (cart GP_N 5) deliveries=5 cells=11 (cart GP_C 11) hold_violations=0
+pump_t255   T=255 PASS  play_hooks=6736 pump_hooks=6736 fires=39 (cart GP_N 39) deliveries=37 cells=89 (cart GP_C 89) hold_violations=0
+M_overwrite T=255 KILLED  play_hooks=6666 pump_hooks=6666 fires=39 (cart GP_N 39) deliveries=39 cells=69 (cart GP_C 89) hold_violations=0  <- 27 reference mismatches e.g. [{'frame': 866, 'hook': 2, 'got': [(809, 0), (810, 1), (811, 2), (812, 0), (792, 2)], 'want': []}, {'frame': 866, 'overwrite_or_size': (3, 2)}, {'frame': 866, 'hook': 2, 'state': (24, 0, 0), 'want': (24, 0, 2)}]; telemetry GP_N/GP_C 39/89 != ref 39/69
+M_nohold    T= 27 KILLED  play_hooks=6750 pump_hooks=6750 fires=5 (cart GP_N 5) deliveries=5 cells=11 (cart GP_C 11) hold_violations=6750  <- P1 not held on 6750 play hooks
+GPUMP GATE: ALL PASS
+
+GATES_PUBLOG2 DONE

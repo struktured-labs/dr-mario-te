@@ -13,7 +13,7 @@ import json, os, sys
 SS_SIZE, RAM_HINT, WRAM_DELTA = 1327112, 0x102B08, 0x800
 NAV_MAGIC = 0x6149
 HDR, RING, NSLOT, EV0, EVSZ, EVMAX = 0x6600, 0x6700, 25, 0x90, 6, 18
-EVTYPE = {1: "live", 2: "done", 3: "tgt", 5: "lock"}
+EVTYPE = {1: "live", 2: "done", 3: "tgt", 5: "lock", 6: "pdone"}   # 6: DRPUBLOG_PDW post-DONE watch (a=$5284, b=col, c=o4)
 
 
 def load_prg(path):
@@ -51,9 +51,12 @@ def decode(path):
         evs = []
         for i in range(min(n, EVMAX)):
             e = sl[EV0 + EVSZ * i:EV0 + EVSZ * (i + 1)]
-            t = e[0] & 0x7F
-            evs.append(dict(type=EVTYPE.get(t, str(t)), hooks=e[1] + (256 if e[0] & 0x80 else 0), frames=e[2],
-                            a=e[3], b=e[4], c=e[5]))
+            t = e[0] & 0x3F                # $80: hooks >= 256; $40: DONE whose immediate re-read was 0 (DRPUBLOG_PDW)
+            ev = dict(type=EVTYPE.get(t, str(t)), hooks=e[1] + (256 if e[0] & 0x80 else 0), frames=e[2],
+                      a=e[3], b=e[4], c=e[5])
+            if e[0] & 0x40:
+                ev["reread0"] = True
+            evs.append(ev)
         pills.append(dict(slot=k, seq=sl[1] | (sl[2] << 8), hookctr=sl[3] | (sl[4] << 8), kind=sl[5],
                           upload4=list(sl[6:10]), frame0=sl[10], nev=n, viruses_bcd=sl[12], y=sl[13], x=sl[14],
                           na=sl[15], board=bytes(sl[16:144]).hex(), events=evs, src=os.path.basename(path)))

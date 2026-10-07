@@ -23,6 +23,7 @@ sys.path.insert(0, "tests")
 from patch_vs_cpu import Asm6502
 import patch_vs_cpu as _pv
 _pv.OPS.setdefault("ORA_abs", 0x0D)
+_pv.OPS.setdefault("EOR_abs", 0x4D)   # DRGPUMP xorshift
 for _mn, _op in (("LDX_abs", 0xAE), ("STA_absX", 0x9D), ("CLC", 0x18), ("ADC_imm", 0x69)):
     _pv.OPS.setdefault(_mn, _op)   # for the DRTRACE ring writer (STA $5000,X etc.)
 from expand_prg import expand
@@ -485,11 +486,52 @@ SEEDZERO = _os.environ.get("DRSEEDZERO", "0") == "1"
 # The two pointer bytes are BORROWED from zero page ($CA/$CB, v18 per-tick scratch) and restored before the hook
 # returns. Free run $6600-$7FFF per PRG_RAM_MAP.md. ss_cosim.py --publog replays every logged pill from a save-state.
 PUBLOG = _os.environ.get("DRPUBLOG", "0") == "1"
+# DRPUBLOG_PDW=1 (silicon-fidelity lane 2026-10-07, default 0 -> byte-identical; read only with DRPUBLOG): the POST-DONE
+# WATCH. Capture #1 found silicon reading DONE 4-33 f BEFORE Verilator finishes the same upload (13/157 long endgame
+# searches; same publications, same final; fresh AND chained co-sims agree with each other to 0.01 f). Two mechanisms
+# fit: the copro really finished early, or the cart read a FALSE DONE ($5284 nonzero while the search still ran). After
+# the cart consumes DONE it tears the search down and never reads the mailbox again, so the log cannot tell them apart.
+# With this flag pl_hook keeps reading $5284/$5285/$5286 on every hook after DONE until the next GO, and logs ONE type-6
+# event (a = $5284, b = $5285 col, c = $5286 orient4; hooks 0, frames since GO as usual) the first time DONE reads 0 or
+# the answer differs from the one taken at DONE. A false DONE logs it (the copro is still searching: DONE reads 0); a
+# genuine early finish never does. Lowest priority in pl_hook's one-event-per-hook chain. And at the DONE read itself
+# the cart re-reads $5284 a few cycles later: if that reads 0 (a single-read glitch) the DONE event's type byte carries
+# $40 (type $42; decoders mask $3F) -- this catches a false DONE even when the next GO leaves the watch no hook.
+PUBLOG_PDW = PUBLOG and _os.environ.get("DRPUBLOG_PDW", "0") == "1"
+PL_PW, PL_RR = 0x6629, 0x662A                     # post-DONE watch armed; $5284 RE-READ right after DONE (DRPUBLOG_PDW)
 # DRSLICEGUARD2=1 (default 0 -> byte-identical; needs DRP1SLICE + DRPRESPIPE): extend the #140 PP_RAN phase/slice
 # interlock to the P2 SPAWN-UPLOAD hook. Without it the couch P2 driver on a sliced-native-P1 image certifies OVER by 944
 # cycles (pp_spawn + pp_idle: a 128-byte upload and a ~6k slice tick in the same hook); with it the upload hook skips
 # the spectator-side slice tick (one hook of P1 search latency per P2 pill) and the census cut is sound by guard.
 SLICEGUARD2 = _os.environ.get("DRSLICEGUARD2", "0") == "1"
+# DRP1HOLD=1 (silicon-fidelity lane 2026-10-07, default 0 -> byte-identical; needs DRP1NATIVE): DEBUG/INSTRUMENT seat
+# config for PUBLOG capture #2. P1's capsule is HELD at its spawn row for the whole round: every act_p1 hook, after the
+# spectator search's own slice bookkeeping, writes GRAV_P1 <- 0 and an empty P1 pad, so P1 never falls, never locks,
+# never clears and never tops out. A round then ends only when P2 clears or tops out. Why: on capture #1 (the DRPUBLOG
+# CvC cart, 10/06) the native P1 won all 45 rounds with P2 still at 3-31 viruses, which cut P2's endgame short. P2's
+# driver, gravity and inputs are untouched (tests/test_gravity_fidelity.py checks P2 only).
+P1HOLD = _os.environ.get("DRP1HOLD", "0") == "1"
+# DRGPUMP=1 (same lane, default 0 -> byte-identical; needs DRP1HOLD): a SYNTHETIC OPPONENT. ROM-native garbage volleys
+# into P2 through P1's own attack slot: p1_attackColors $0329-$032C, then p1_attackSize $0318. That is exactly the state
+# a P1 multi-colour clear leaves. P2's checkReleaseAttack drops it after P2's next lock and zeroes $0318, so the
+# DRPRESTART garbage window and every P2 receive path run as on the couch.
+#   Rate: volleys are a Poisson process in play time. Every act_p1 hook (2 per frame) steps a 16-bit xorshift (7,9,8)
+#     (period 65,535 hooks = 9.1 min of play) and fires on the states 1..T-1, so the per-hook probability is
+#     (T-1)/65535 and lam (volleys/min) = (T-1)/65535 x 2 x 60.0988 x 60, i.e. T ~= 9.09 x lam + 1.
+#     Default T = 27 (2.86/min) = dr. lulu's measured 10/05 couch rate (2.84/min, the STEER11/12 `lulu11` race).
+#   Size: GP_SIZES[volley count mod 32], a fixed shuffle of 27 x 2, 2 x 3, 3 x 4 (84 / 6 / 9 %; the 10/05 couch mix,
+#     steer10 SIZES lulu202610b, is 83 / 7 / 10 %).
+#   Colours: GP_COLS[cell count mod 64 ..+3], a fixed random 0..2 sequence. (Tables, not more xorshift steps: a small
+#     state's successor is small too, and the NMI census charges the pump on both hooks of a frame.)
+#   Merging: a volley due while the previous one is still pending is MERGED (size capped at 4), like vs_race's store.
+#   No volley while P2's virus count is 0 (round over).
+# Telemetry for save-state readback: GP_N = volleys fired (16-bit), GP_C = cells requested (16-bit).
+GPUMP = _os.environ.get("DRGPUMP", "0") == "1"
+GPUMP_T = int(_os.environ.get("DRGPUMP_T", "27")) if GPUMP else 27   # read only when pumping (snapshot unchanged)
+# DRGPUMP_MUT (tests/test_gpump.py mutants; read only when pumping): "overwrite" = deliver into a NON-empty $0318 too,
+# "nohold" = the DRP1HOLD branch skips its GRAV_P1 pin. Each must be KILLED by the gate.
+GPUMP_MUT = _os.environ.get("DRGPUMP_MUT", "none") if GPUMP else "none"
+GP_L, GP_H, GP_S, GP_N, GP_C = 0x6630, 0x6631, 0x6632, 0x6633, 0x6635      # xorshift state lo/hi, size, N(2), C(2)
 PL_MAG, PL_SLOT, PL_SEQ, PL_HK = 0x6600, 0x6604, 0x6605, 0x6607          # magic(4) slot seq(2) hooks(2)
 PL_LC, PL_LO, PL_TC, PL_TO, PL_N = 0x6609, 0x660A, 0x660B, 0x660C, 0x660D
 PL_OPEN, PL_PAGE, PL_Z0, PL_Z1 = 0x660E, 0x660F, 0x6610, 0x6611
@@ -1496,6 +1538,9 @@ PRESPIPE_Q = int(_os.environ.get("DRPRESPIPE_Q", "3"))
 assert 1 <= PRESPIPE_Q <= 8, "DRPRESPIPE_Q must be 1..8 (there are at most 8 settle records)"
 assert not SLICEGUARD2 or (P1SLICE and PRESPIPE), "DRSLICEGUARD2 extends the DRP1SLICE x DRPRESPIPE interlock: needs both"
 assert not PUBLOG or TUCK or LATEGUARD, "DRPUBLOG logs DONE at handle(2)'s {L}_wdone_ok, emitted only with DRTUCK or DRLATEGUARD"
+assert not P1HOLD or (P1NATIVE and not HUMAN_P1), "DRP1HOLD holds the native spectator P1 (DRP1NATIVE) at its spawn row"
+assert not GPUMP or P1HOLD, "DRGPUMP is P1's synthetic attack: it is emitted in DRP1HOLD's act_p1 branch"
+assert not GPUMP or 1 <= GPUMP_T <= 255, "DRGPUMP_T is an 8-bit per-hook threshold (1..255)"
 PP_NM = -(-8 // PRESPIPE_Q)             # match phases needed to cover 8 records (ceil)
 PP_PH = 0x61C2                          # pipeline phase: 0 idle, 1 orphan+settle, 2 match 0-3, 3 match 4-7+commit
 PP_SWAL = 0x61C3                        # !=0: swallow the NEXT release edge (post-abort teardown parity)
@@ -1947,9 +1992,17 @@ def build_main(level=11, speed=1):
             a.ins16("STA_abs", addr)
         for k in range(PL_NSLOT):
             a.ins16("STA_abs", PL_RING + 0x100 * k)
+        if PUBLOG_PDW:
+            a.ins16("STA_abs", PL_PW)                                      # A == 0: no post-DONE watch
         a.ins("LDA_imm", PL_NSLOT - 1); a.ins16("STA_abs", PL_SLOT)
         for i, ch in enumerate((0x53, 0x4C, 0x47, 0x01)):
             a.ins("LDA_imm", ch); a.ins16("STA_abs", PL_MAG + i)
+        a.ins("LDA_imm", 0)                                                # keep A == 0 for the stores below
+    if GPUMP:
+        # DRGPUMP power-on init (A == 0 here): no pending store, telemetry zeroed, xorshift state $00A5 (never zero).
+        for addr in (GP_H, GP_S, GP_N, GP_N + 1, GP_C, GP_C + 1):
+            a.ins16("STA_abs", addr)
+        a.ins("LDA_imm", 0xA5); a.ins16("STA_abs", GP_L)
         a.ins("LDA_imm", 0)                                                # keep A == 0 for the stores below
     if ROTFIX:
         a.ins16("STA_abs", ROT_DONE2)                       # A==0 here: orient-commit latch clear
@@ -2886,6 +2939,9 @@ def build_main(level=11, speed=1):
                                  (wdogh, PL_DHH)):
                     a.ins16("LDA_abs", src); a.ins16("STA_abs", dst)
                 a.ins("LDA_imm", 1); a.ins16("STA_abs", PL_DP)
+                if PUBLOG_PDW:
+                    a.ins16("STA_abs", PL_PW)                               # A == 1: post-DONE watch armed
+                    a.ins16("LDA_abs", wdone); a.ins16("STA_abs", PL_RR)     # immediate re-read of DONE
         else:
             a.br("BEQ", f"{L}_search")    # DONE==0 -> still searching
         # publish result: best_col + orient4 -> game orient map {0xFF/0:3, 1:1, 2:0, 3:2}
@@ -4339,6 +4395,18 @@ def build_main(level=11, speed=1):
             a.ins("LDA_zp", 0xDA); a.ins16("STA_abs", P1AI_O)   # CTRL_exp1, rewritten every read)
             a.label("p1n_nosearch")
             a.ins16("LDA_abs", 0x0306); a.ins16("STA_abs", P1AI_Y)
+        if P1HOLD:
+            # ---- DRP1HOLD (see the flag block): after the spectator search's bookkeeping above, P1 is HELD at its spawn
+            # row with an empty pad -- the round ends only on P2's clear or top-out. DRGPUMP's synthetic attack is P1's
+            # whole "turn". Never reaches the ORIENT/COLUMN phases below.
+            if GPUMP:
+                _emit_gpump(a)
+            a.label("p1h_hold")
+            a.ins("LDA_imm", 0)
+            if GPUMP_MUT != "nohold":
+                a.ins16("STA_abs", GRAV_P1)
+            a.ins("STA_zp", 0xF5); a.ins("STA_zp", 0xF7)
+            a.jmp("act_done")
         # ORIENT phase: press A until the capsule matches the searched orientation. $F7 is
         # cleared first so each hook reads as a FRESH press edge -- without that, held==raw
         # from the previous hook makes pressed==0 and rotation stops after one step. (This is
@@ -4550,6 +4618,8 @@ def _emit_publog(a):
     a.ins("LDY_imm", 10); a.ins("LDA_zp", 0x43); a.ins("STA_indY", Z0); a.ins16("STA_abs", PL_F0)
     a.ins("LDY_imm", 11); a.ins("LDA_imm", 0); a.ins("STA_indY", Z0); a.ins16("STA_abs", PL_N)
     a.ins16("STA_abs", PL_DP)                                                 # A == 0: no DONE pending
+    if PUBLOG_PDW:
+        a.ins16("STA_abs", PL_PW)                                             # A == 0: a new GO ends the watch
     for off, src in ((12, 0x03A4), (13, 0x0386), (14, 0x0385), (15, 0x0397)):
         a.ins("LDY_imm", off); a.ins16("LDA_abs", src); a.ins("STA_indY", Z0)
     a.ins("LDA_imm", 1); a.ins16("STA_abs", PL_OPEN)
@@ -4602,6 +4672,10 @@ def _emit_publog(a):
     a.ins16("STA_abs", PL_EC); a.ins16("LDA_abs", PL_DR); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", PL_EC)
     a.ins16("STA_abs", PL_EC)
     a.ins16("LDA_abs", PL_DHL); a.ins16("STA_abs", PL_EH); a.ins16("LDA_abs", PL_DHH); a.ins16("STA_abs", PL_EHH)
+    if PUBLOG_PDW:
+        a.ins16("LDA_abs", PL_RR); a.br("BNE", "pl_rr1")
+        a.ins("LDA_imm", 0x42); a.jmp("pl_hev")                        # DONE whose immediate re-read was 0
+        a.label("pl_rr1")
     a.ins("LDA_imm", 2); a.jmp("pl_hev")
     a.label("pl_h1")
     a.ins16("LDA_abs", PL_UC); a.ins16("CMP_abs", PL_LC); a.br("BNE", "pl_h1c")
@@ -4627,6 +4701,19 @@ def _emit_publog(a):
     a.ins("LDA_imm", 5); a.jmp("pl_hev2")
     a.label("pl_h4")
     a.ins16("LDA_abs", 0x0397); a.ins16("STA_abs", PL_LNA)
+    if PUBLOG_PDW:
+        # post-DONE watch: after a consumed DONE (search torn down: ARMED2 == 0) until the next GO
+        a.ins16("LDA_abs", PL_PW); a.br("BEQ", "pl_hx")
+        a.ins16("LDA_abs", ARMED2); a.br("BNE", "pl_hx")
+        a.ins16("LDA_abs", W2_BASE + 0x84); a.br("BEQ", "pl_pw_ev")         # DONE dropped back to 0: a false DONE
+        a.ins16("LDA_abs", W2_BASE + 0x85); a.ins16("CMP_abs", PL_DC); a.br("BNE", "pl_pw_ev")
+        a.ins16("LDA_abs", W2_BASE + 0x86); a.ins16("CMP_abs", PL_DO); a.br("BEQ", "pl_hx")
+        a.label("pl_pw_ev")
+        a.ins16("LDA_abs", W2_BASE + 0x84); a.ins16("STA_abs", PL_EA)
+        a.ins16("LDA_abs", W2_BASE + 0x85); a.ins16("STA_abs", PL_EB)
+        a.ins16("LDA_abs", W2_BASE + 0x86); a.ins16("STA_abs", PL_EC)
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", PL_PW); a.ins16("STA_abs", PL_EH); a.ins16("STA_abs", PL_EHH)
+        a.ins("LDA_imm", 6); a.jmp("pl_hev")
     a.jmp("pl_hx")
     a.label("pl_hev2")                                               # live / target / lock: hooks = WDOG2 now
     a.ins("TAX")
@@ -4638,6 +4725,74 @@ def _emit_publog(a):
     a.label("pl_hx")
     a.ins("PLA"); a.ins("TAY"); a.ins("PLA"); a.ins("TAX"); a.ins("PLA")
     a.ins("RTS")
+
+
+# DRGPUMP's tables: volley sizes cycled by the volley count (27 x 2, 2 x 3, 3 x 4 of 32 = 84 / 6 / 9 %, dr. lulu's 10/05
+# couch mix lulu202610b is 83 / 7 / 10 %), and per-cell colours 0..2 cycled by the cell count (64 + 3 wrap bytes).
+# Fixed shuffles (random.Random(20261007)); tests/test_gpump.py's reference model reads them from here.
+GP_SIZES = (2, 2, 3, 2, 2, 4, 2, 4, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2, 2)
+GP_COLS = (0, 0, 2, 1, 1, 2, 2, 2, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 2, 0, 1, 0, 2, 1, 0, 1, 2, 0, 0, 2, 1, 0,
+           2, 1, 2, 2, 1, 0, 0, 2, 2, 1, 2, 0, 0, 2, 2, 2, 1, 0, 1, 1, 1, 1, 2, 0, 1, 1, 1, 2, 0, 1, 1, 0)
+
+
+def _emit_gpump(a):
+    """DRGPUMP (see the flag block), INLINE in DRP1HOLD's act_p1 branch; falls through to `gp_out`. Clobbers A and X.
+    A volley fires with probability (GPUMP_T-1)/65535 per hook (xorshift16 state in 1..T-1); its size, GP_SIZES[GP_N mod
+    32], joins the PENDING store GP_S (cap 4). A pending store is written into P1's attack slot only when that slot is
+    EMPTY ($0318 == 0) -- so the ROM only ever sees a fresh attack in an empty slot, the state a P1 clear leaves -- with
+    colours GP_COLS[GP_C mod 64 ..+3]; back-to-back volleys merge like vs_race's store. Tables, not more xorshift
+    steps, keep the worst hook (a fire AND a delivery) cheap: the NMI census charges the pump on both hooks of a frame."""
+    def step():                                     # xorshift16 (7,9,8), J. Metcalf; state GP_L (lo) / GP_H (hi) != 0
+        a.ins16("LDA_abs", GP_H); a.ins("LSR_A")
+        a.ins16("LDA_abs", GP_L); a.ins("ROR_A")
+        a.ins16("EOR_abs", GP_H); a.ins16("STA_abs", GP_H)
+        a.ins("ROR_A")
+        a.ins16("EOR_abs", GP_L); a.ins16("STA_abs", GP_L)
+        a.ins16("EOR_abs", GP_H); a.ins16("STA_abs", GP_H)
+    assert len(GP_SIZES) == 32 and len(GP_COLS) == 64
+    a.label("gp_pump")
+    a.ins16("LDA_abs", VCOUNT_P2); a.br("BNE", "gp_live")          # P2 cleared: round over, no volleys
+    a.jmp("gp_out")
+    a.label("gp_live")
+    a.jmp("gp_code")                                                # data first (concrete addresses), jumped over
+    a.label("gp_tsz"); a.raw(*GP_SIZES)
+    a.label("gp_tcol"); a.raw(*(GP_COLS + GP_COLS[:3]))
+    t_sz, t_col = UNIT1_CPU + a.labels["gp_tsz"], UNIT1_CPU + a.labels["gp_tcol"]
+    a.label("gp_code")
+    a.ins16("LDA_abs", GP_L); a.ins16("ORA_abs", GP_H); a.br("BNE", "gp_step")
+    a.ins("LDA_imm", 0xA5); a.ins16("STA_abs", GP_L)                # an all-zero state would never move: reseed
+    a.label("gp_step")
+    step()
+    a.ins16("LDA_abs", GP_H); a.br("BNE", "gp_rel")                 # state >= 256: no volley this hook
+    a.ins16("LDA_abs", GP_L); a.ins("CMP_imm", GPUMP_T); a.br("BCS", "gp_rel")
+    a.label("gp_fire")                                              # a volley: its size joins the pending store
+    a.ins16("LDA_abs", GP_N); a.ins("AND_imm", 0x1F); a.ins("TAX"); a.ins16("LDA_absX", t_sz)
+    a.ins("CLC"); a.ins16("ADC_abs", GP_S); a.ins("CMP_imm", 5); a.br("BCC", "gp_m")
+    a.ins("LDA_imm", 4)                                             # merged store caps at 4 (the ROM's max)
+    a.label("gp_m"); a.ins16("STA_abs", GP_S)
+    a.ins16("INC_abs", GP_N); a.br("BNE", "gp_rel"); a.ins16("INC_abs", GP_N + 1)
+    a.label("gp_rel")                                               # deliver a pending store into an EMPTY slot
+    a.ins16("LDA_abs", GP_S); a.br("BNE", "gp_r1")                 # nothing pending
+    a.jmp("gp_out")
+    a.label("gp_r1")
+    a.ins("CMP_imm", 5); a.br("BCC", "gp_sok")                      # a stray store (warm PRG-RAM) is clamped to 4
+    a.ins("LDA_imm", 4); a.ins16("STA_abs", GP_S)
+    a.label("gp_sok")
+    if GPUMP_MUT != "overwrite":
+        a.ins16("LDA_abs", 0x0318); a.br("BEQ", "gp_r2")           # P1's slot still pending: wait
+        a.jmp("gp_out")
+    a.label("gp_r2")
+    a.ins16("LDA_abs", GP_C); a.ins("AND_imm", 0x3F); a.ins("TAX")
+    for k in range(4):                                              # colours $0329-$032C
+        a.ins16("LDA_absX", t_col); a.ins16("STA_abs", 0x0329 + k)
+        if k < 3:
+            a.ins("INX")
+    a.ins16("LDA_abs", GP_S); a.ins16("STA_abs", 0x0318)            # size LAST: the attack is complete when it lands
+    a.ins("CLC"); a.ins16("ADC_abs", GP_C); a.ins16("STA_abs", GP_C)
+    a.br("BCC", "gp_c_ok"); a.ins16("INC_abs", GP_C + 1)
+    a.label("gp_c_ok")
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", GP_S)
+    a.label("gp_out")
 
 
 def _emit_reachtx_nibble(a, is_na):

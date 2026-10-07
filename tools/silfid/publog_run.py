@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Incremental, prioritised driver for `ss_cosim.py --publog` on a large capture.
 
-  publog_run.py PILLS.json OUT.jsonl [-j 6]
+  publog_run.py PILLS.json OUT.jsonl [-j 6] [--cell-first]
 PILLS.json = tools/silfid/publog.py --json output (merged over all save-states). Every FINAL pill is co-simulated on the
 Verilator copro (vsim_pub2, fw 1488e158) exactly as ss_cosim.py --publog does, and its verdict record is APPENDED to
 OUT.jsonl as soon as it completes (restart-safe: pills already in OUT.jsonl are skipped). Order: prestart pills, then
@@ -72,8 +72,11 @@ def main():
     done_seqs = set()
     if os.path.exists(out):
         done_seqs = {json.loads(l)["seq"] for l in open(out) if l.strip()}
+    cell_first = "--cell-first" in sys.argv          # capture #2: the tall-endgame cell (<= 20 viruses, height 14-16) first
     def prio(p):
         v = bcd(p["viruses_bcd"]); h = maxh(p["board"])
+        if cell_first and v <= 20 and h >= 14:
+            return (-1, p["seq"])
         return (0 if p["kind"] == 1 else 1 if v <= 20 else 2 if h >= 12 else 3, p["seq"])
     todo = sorted((p for p in pills if p["seq"] not in done_seqs), key=prio)
     print(f"{len(pills)} final pills, {len(done_seqs)} already done, {len(todo)} to run", flush=True)
