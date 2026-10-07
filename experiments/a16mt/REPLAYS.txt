@@ -1,4 +1,4 @@
-# a16mt replays (2026-10-07T21:55Z): Mesen, real carts, chained, silicon garbage delivered (tools/execfid/execfid_probe.lua)
+# a16mt replays (2026-10-07T22:01Z): Mesen, real carts, chained, silicon garbage delivered (tools/execfid/execfid_probe.lua)
 # carts: f2p = FAIR2PLUS 5a1695da | mt2 = FAIR2PLUS + DRMINTHINK=4 170f179d
 # a landing is HYBRID when it is neither the copro final nor any published candidate of that pill's timeline
 
@@ -112,12 +112,162 @@ landing differences between arms (2):
 
 ## C3. are A16's changed answers executed? (tools/a16mt/fw_effect.py)
 f2p: pills whose A16 final != V11 final: 75; the cart landed on the A16 final 71, on the V11 final 4, elsewhere 0; A16 final first visible: median 3.5 f, <= 6 f on 55
+  m2g2  p48  vc 14 | V11 final a0  A16 final a24 visible   3.52 f | landed a24 = A16 final
+  m2g2  p55  vc 12 | V11 final a17 A16 final a5  visible   5.27 f | landed a5  = A16 final
+  m2g2  p71  vc  9 | V11 final a21 A16 final a22 visible   2.63 f | landed a22 = A16 final
+  m2g2  p76  vc  7 | V11 final a27 A16 final a10 visible   2.43 f | landed a10 = A16 final
+  m2g2  p82  vc  5 | V11 final a31 A16 final a4  visible   2.18 f | landed a4  = A16 final
+  m2g2  p83  vc  5 | V11 final a29 A16 final a20 visible   2.15 f | landed a20 = A16 final
+  m2g3  p78  vc 10 | V11 final a17 A16 final a13 visible   2.40 f | landed a13 = A16 final
+  m2g3  p85  vc  7 | V11 final a2  A16 final a27 visible   2.28 f | landed a27 = A16 final
+  m2g3  p93  vc  5 | V11 final a27 A16 final a18 visible   2.17 f | landed a18 = A16 final
+  m4g1  p79  vc 12 | V11 final a26 A16 final a14 visible   3.20 f | landed a14 = A16 final
+  m4g1  p85  vc 10 | V11 final a23 A16 final a6  visible   3.56 f | landed a6  = A16 final
+  m4g1  p87  vc 10 | V11 final a0  A16 final a23 visible   5.16 f | landed a23 = A16 final
+  m4g1  p93  vc  8 | V11 final a0  A16 final a16 visible   2.23 f | landed a16 = A16 final
+  m4g1  p94  vc  8 | V11 final a26 A16 final a5  visible   2.32 f | landed a5  = A16 final
+  m4g1  p108 vc  5 | V11 final a1  A16 final a16 visible   2.44 f | landed a16 = A16 final
+  m4g1  p112 vc  5 | V11 final a22 A16 final a23 visible   2.48 f | landed a23 = A16 final
+  m4g2  p94  vc 16 | V11 final a4  A16 final a18 visible   1.73 f | landed a18 = A16 final
+  G2    p65  vc 15 | V11 final a9  A16 final a4  visible   4.32 f | landed a4  = A16 final
+  G2    p79  vc 15 | V11 final a20 A16 final a23 visible  10.22 f | landed a23 = A16 final
+  m1g1  p66  vc 14 | V11 final a29 A16 final a20 visible  14.45 f | landed a20 = A16 final
+  m1g1  p76  vc 10 | V11 final a3  A16 final a20 visible   9.70 f | landed a20 = A16 final
+  m1g1  p85  vc  9 | V11 final a21 A16 final a14 visible  46.85 f | landed a21 = V11 final (frozen)
+  m1g1  p86  vc  9 | V11 final a29 A16 final a6  visible  47.03 f | landed a29 = V11 final (frozen)
+  m1g1  p88  vc  9 | V11 final a21 A16 final a14 visible  46.31 f | landed a21 = V11 final (frozen)
+  m1g1  p104 vc  9 | V11 final a25 A16 final a14 visible   2.42 f | landed a14 = A16 final
+  m1g1  p110 vc  9 | V11 final a6  A16 final a23 visible   2.85 f | landed a23 = A16 final
+  m1g1  p114 vc  8 | V11 final a19 A16 final a23 visible   2.44 f | landed a23 = A16 final
+  m1g1  p123 vc  6 | V11 final a29 A16 final a17 visible   2.33 f | landed a17 = A16 final
+  m1g1  p127 vc  6 | V11 final a23 A16 final a21 visible   6.23 f | landed a21 = A16 final
+  m1g2  p54  vc 16 | V11 final a1  A16 final a8  visible   2.44 f | landed a8  = A16 final
+  m1g2  p58  vc 14 | V11 final a0  A16 final a22 visible  25.17 f | landed a22 = A16 final
+  m1g2  p59  vc 14 | V11 final a20 A16 final a6  visible   3.71 f | landed a6  = A16 final
+  m1g2  p73  vc 11 | V11 final a14 A16 final a21 visible   2.28 f | landed a21 = A16 final
+  m1g2  p77  vc  9 | V11 final a0  A16 final a11 visible   3.50 f | landed a11 = A16 final
+  m1g2  p80  vc  9 | V11 final a1  A16 final a2  visible  12.34 f | landed a2  = A16 final
+  m1g2  p88  vc  8 | V11 final a17 A16 final a8  visible  15.43 f | landed a8  = A16 final
+  m1g2  p89  vc  8 | V11 final a17 A16 final a8  visible   4.39 f | landed a8  = A16 final
+  m1g2  p91  vc  8 | V11 final a28 A16 final a0  visible   7.22 f | landed a0  = A16 final
+  m1g2  p94  vc  8 | V11 final a2  A16 final a9  visible   2.35 f | landed a9  = A16 final
+  m1g2  p96  vc  8 | V11 final a2  A16 final a9  visible  36.49 f | landed a9  = A16 final
+  m1g2  p106 vc  6 | V11 final a10 A16 final a18 visible  34.23 f | landed a18 = A16 final
+  m1g2  p107 vc  6 | V11 final a23 A16 final a10 visible  32.98 f | landed a23 = V11 final (frozen)
+  m5g2  p103 vc 10 | V11 final a12 A16 final a20 visible   1.88 f | landed a20 = A16 final
+  m5g2  p107 vc 10 | V11 final a19 A16 final a29 visible   3.74 f | landed a29 = A16 final
+  m5g2  p126 vc  9 | V11 final a16 A16 final a19 visible   1.65 f | landed a19 = A16 final
+  m5g2  p139 vc  9 | V11 final a3  A16 final a20 visible   1.73 f | landed a20 = A16 final
+  m5g2  p147 vc  7 | V11 final a0  A16 final a2  visible   7.92 f | landed a2  = A16 final
+  m5g2  p148 vc  7 | V11 final a16 A16 final a19 visible   5.00 f | landed a19 = A16 final
+  m5g2  p149 vc  7 | V11 final a9  A16 final a28 visible   1.92 f | landed a28 = A16 final
+  m5g2  p150 vc  7 | V11 final a19 A16 final a3  visible   2.06 f | landed a3  = A16 final
+  m5g2  p151 vc  7 | V11 final a1  A16 final a11 visible   2.05 f | landed a11 = A16 final
+  m5g2  p152 vc  7 | V11 final a24 A16 final a12 visible   3.37 f | landed a12 = A16 final
+  m5g2  p157 vc  7 | V11 final a28 A16 final a3  visible   4.52 f | landed a3  = A16 final
+  m5g2  p158 vc  7 | V11 final a0  A16 final a27 visible   3.57 f | landed a27 = A16 final
+  m5g2  p159 vc  7 | V11 final a20 A16 final a3  visible   1.71 f | landed a3  = A16 final
+  m5g2  p160 vc  7 | V11 final a20 A16 final a19 visible   3.56 f | landed a19 = A16 final
+  m5g2  p163 vc  7 | V11 final a28 A16 final a3  visible   1.97 f | landed a3  = A16 final
+  m5g2  p164 vc  7 | V11 final a20 A16 final a19 visible   5.01 f | landed a19 = A16 final
+  m5g2  p165 vc  7 | V11 final a18 A16 final a4  visible   2.59 f | landed a4  = A16 final
+  m5g2  p166 vc  7 | V11 final a26 A16 final a3  visible   4.25 f | landed a3  = A16 final
+  m5g2  p167 vc  7 | V11 final a26 A16 final a3  visible   4.22 f | landed a3  = A16 final
+  m5g2  p168 vc  7 | V11 final a16 A16 final a11 visible   4.24 f | landed a11 = A16 final
+  m5g2  p169 vc  7 | V11 final a26 A16 final a11 visible   2.84 f | landed a11 = A16 final
+  m5g2  p170 vc  7 | V11 final a16 A16 final a28 visible   2.44 f | landed a28 = A16 final
+  m5g2  p171 vc  7 | V11 final a17 A16 final a20 visible   6.35 f | landed a20 = A16 final
+  m5g2  p172 vc  7 | V11 final a19 A16 final a20 visible   6.46 f | landed a20 = A16 final
+  m5g2  p173 vc  7 | V11 final a25 A16 final a20 visible   5.64 f | landed a20 = A16 final
+  m5g2  p177 vc  7 | V11 final a21 A16 final a3  visible  13.12 f | landed a3  = A16 final
+  m5g2  p178 vc  7 | V11 final a2  A16 final a20 visible   1.93 f | landed a20 = A16 final
+  m5g2  p180 vc  7 | V11 final a4  A16 final a20 visible   1.82 f | landed a20 = A16 final
+  m5g2  p183 vc  7 | V11 final a17 A16 final a3  visible   4.47 f | landed a3  = A16 final
+  m5g2  p184 vc  7 | V11 final a27 A16 final a20 visible   6.66 f | landed a20 = A16 final
+  m5g2  p185 vc  7 | V11 final a0  A16 final a19 visible   1.66 f | landed a19 = A16 final
+  m5g2  p186 vc  7 | V11 final a12 A16 final a2  visible   7.11 f | landed a2  = A16 final
+  m5g2  p187 vc  7 | V11 final a18 A16 final a19 visible   2.14 f | landed a19 = A16 final
 f2p: landing-on-final status differs V11 replay vs A16 replay on 4 pills:
   m1g1 p85: vc 9 | V11 final a21 landed a21 | A16 final a14 landed a21 (frozen) | A16 publishes a21@2.57 a14@46.85
   m1g1 p86: vc 9 | V11 final a29 landed a29 | A16 final a6 landed a29 (frozen) | A16 publishes a29@2.33 a6@47.03
   m1g1 p88: vc 9 | V11 final a21 landed a21 | A16 final a14 landed a21 (frozen) | A16 publishes a21@2.32 a14@46.31
   m1g2 p107: vc 6 | V11 final a23 landed a23 | A16 final a10 landed a23 (frozen) | A16 publishes a23@2.27 a10@32.98
 mt2: pills whose A16 final != V11 final: 75; the cart landed on the A16 final 71, on the V11 final 4, elsewhere 0; A16 final first visible: median 3.5 f, <= 6 f on 55
+  m2g2  p48  vc 14 | V11 final a0  A16 final a24 visible   3.52 f | landed a24 = A16 final
+  m2g2  p55  vc 12 | V11 final a17 A16 final a5  visible   5.27 f | landed a5  = A16 final
+  m2g2  p71  vc  9 | V11 final a21 A16 final a22 visible   2.63 f | landed a22 = A16 final
+  m2g2  p76  vc  7 | V11 final a27 A16 final a10 visible   2.43 f | landed a10 = A16 final
+  m2g2  p82  vc  5 | V11 final a31 A16 final a4  visible   2.18 f | landed a4  = A16 final
+  m2g2  p83  vc  5 | V11 final a29 A16 final a20 visible   2.15 f | landed a20 = A16 final
+  m2g3  p78  vc 10 | V11 final a17 A16 final a13 visible   2.40 f | landed a13 = A16 final
+  m2g3  p85  vc  7 | V11 final a2  A16 final a27 visible   2.28 f | landed a27 = A16 final
+  m2g3  p93  vc  5 | V11 final a27 A16 final a18 visible   2.17 f | landed a18 = A16 final
+  m4g1  p79  vc 12 | V11 final a26 A16 final a14 visible   3.20 f | landed a14 = A16 final
+  m4g1  p85  vc 10 | V11 final a23 A16 final a6  visible   3.56 f | landed a6  = A16 final
+  m4g1  p87  vc 10 | V11 final a0  A16 final a23 visible   5.16 f | landed a23 = A16 final
+  m4g1  p93  vc  8 | V11 final a0  A16 final a16 visible   2.23 f | landed a16 = A16 final
+  m4g1  p94  vc  8 | V11 final a26 A16 final a5  visible   2.32 f | landed a5  = A16 final
+  m4g1  p108 vc  5 | V11 final a1  A16 final a16 visible   2.44 f | landed a16 = A16 final
+  m4g1  p112 vc  5 | V11 final a22 A16 final a23 visible   2.48 f | landed a23 = A16 final
+  m4g2  p94  vc 16 | V11 final a4  A16 final a18 visible   1.73 f | landed a18 = A16 final
+  G2    p65  vc 15 | V11 final a9  A16 final a4  visible   4.32 f | landed a4  = A16 final
+  G2    p79  vc 15 | V11 final a20 A16 final a23 visible  10.22 f | landed a23 = A16 final
+  m1g1  p66  vc 14 | V11 final a29 A16 final a20 visible  14.45 f | landed a20 = A16 final
+  m1g1  p76  vc 10 | V11 final a3  A16 final a20 visible   9.70 f | landed a20 = A16 final
+  m1g1  p85  vc  9 | V11 final a21 A16 final a14 visible  46.85 f | landed a21 = V11 final (frozen)
+  m1g1  p86  vc  9 | V11 final a29 A16 final a6  visible  47.03 f | landed a29 = V11 final (frozen)
+  m1g1  p88  vc  9 | V11 final a21 A16 final a14 visible  46.31 f | landed a21 = V11 final (frozen)
+  m1g1  p104 vc  9 | V11 final a25 A16 final a14 visible   2.42 f | landed a14 = A16 final
+  m1g1  p110 vc  9 | V11 final a6  A16 final a23 visible   2.85 f | landed a23 = A16 final
+  m1g1  p114 vc  8 | V11 final a19 A16 final a23 visible   2.44 f | landed a23 = A16 final
+  m1g1  p123 vc  6 | V11 final a29 A16 final a17 visible   2.33 f | landed a17 = A16 final
+  m1g1  p127 vc  6 | V11 final a23 A16 final a21 visible   6.23 f | landed a21 = A16 final
+  m1g2  p54  vc 16 | V11 final a1  A16 final a8  visible   2.44 f | landed a8  = A16 final
+  m1g2  p58  vc 14 | V11 final a0  A16 final a22 visible  25.17 f | landed a22 = A16 final
+  m1g2  p59  vc 14 | V11 final a20 A16 final a6  visible   3.71 f | landed a6  = A16 final
+  m1g2  p73  vc 11 | V11 final a14 A16 final a21 visible   2.28 f | landed a21 = A16 final
+  m1g2  p77  vc  9 | V11 final a0  A16 final a11 visible   3.50 f | landed a11 = A16 final
+  m1g2  p80  vc  9 | V11 final a1  A16 final a2  visible  12.34 f | landed a2  = A16 final
+  m1g2  p88  vc  8 | V11 final a17 A16 final a8  visible  15.43 f | landed a8  = A16 final
+  m1g2  p89  vc  8 | V11 final a17 A16 final a8  visible   4.39 f | landed a8  = A16 final
+  m1g2  p91  vc  8 | V11 final a28 A16 final a0  visible   7.22 f | landed a0  = A16 final
+  m1g2  p94  vc  8 | V11 final a2  A16 final a9  visible   2.35 f | landed a9  = A16 final
+  m1g2  p96  vc  8 | V11 final a2  A16 final a9  visible  36.49 f | landed a9  = A16 final
+  m1g2  p106 vc  6 | V11 final a10 A16 final a18 visible  34.23 f | landed a18 = A16 final
+  m1g2  p107 vc  6 | V11 final a23 A16 final a10 visible  32.98 f | landed a23 = V11 final (frozen)
+  m5g2  p103 vc 10 | V11 final a12 A16 final a20 visible   1.88 f | landed a20 = A16 final
+  m5g2  p107 vc 10 | V11 final a19 A16 final a29 visible   3.74 f | landed a29 = A16 final
+  m5g2  p126 vc  9 | V11 final a16 A16 final a19 visible   1.65 f | landed a19 = A16 final
+  m5g2  p139 vc  9 | V11 final a3  A16 final a20 visible   1.73 f | landed a20 = A16 final
+  m5g2  p147 vc  7 | V11 final a0  A16 final a2  visible   7.92 f | landed a2  = A16 final
+  m5g2  p148 vc  7 | V11 final a16 A16 final a19 visible   5.00 f | landed a19 = A16 final
+  m5g2  p149 vc  7 | V11 final a9  A16 final a28 visible   1.92 f | landed a28 = A16 final
+  m5g2  p150 vc  7 | V11 final a19 A16 final a3  visible   2.06 f | landed a3  = A16 final
+  m5g2  p151 vc  7 | V11 final a1  A16 final a11 visible   2.05 f | landed a11 = A16 final
+  m5g2  p152 vc  7 | V11 final a24 A16 final a12 visible   3.37 f | landed a12 = A16 final
+  m5g2  p157 vc  7 | V11 final a28 A16 final a3  visible   4.52 f | landed a3  = A16 final
+  m5g2  p158 vc  7 | V11 final a0  A16 final a27 visible   3.57 f | landed a27 = A16 final
+  m5g2  p159 vc  7 | V11 final a20 A16 final a3  visible   1.71 f | landed a3  = A16 final
+  m5g2  p160 vc  7 | V11 final a20 A16 final a19 visible   3.56 f | landed a19 = A16 final
+  m5g2  p163 vc  7 | V11 final a28 A16 final a3  visible   1.97 f | landed a3  = A16 final
+  m5g2  p164 vc  7 | V11 final a20 A16 final a19 visible   5.01 f | landed a19 = A16 final
+  m5g2  p165 vc  7 | V11 final a18 A16 final a4  visible   2.59 f | landed a4  = A16 final
+  m5g2  p166 vc  7 | V11 final a26 A16 final a3  visible   4.25 f | landed a3  = A16 final
+  m5g2  p167 vc  7 | V11 final a26 A16 final a3  visible   4.22 f | landed a3  = A16 final
+  m5g2  p168 vc  7 | V11 final a16 A16 final a11 visible   4.24 f | landed a11 = A16 final
+  m5g2  p169 vc  7 | V11 final a26 A16 final a11 visible   2.84 f | landed a11 = A16 final
+  m5g2  p170 vc  7 | V11 final a16 A16 final a28 visible   2.44 f | landed a28 = A16 final
+  m5g2  p171 vc  7 | V11 final a17 A16 final a20 visible   6.35 f | landed a20 = A16 final
+  m5g2  p172 vc  7 | V11 final a19 A16 final a20 visible   6.46 f | landed a20 = A16 final
+  m5g2  p173 vc  7 | V11 final a25 A16 final a20 visible   5.64 f | landed a20 = A16 final
+  m5g2  p177 vc  7 | V11 final a21 A16 final a3  visible  13.12 f | landed a3  = A16 final
+  m5g2  p178 vc  7 | V11 final a2  A16 final a20 visible   1.93 f | landed a20 = A16 final
+  m5g2  p180 vc  7 | V11 final a4  A16 final a20 visible   1.82 f | landed a20 = A16 final
+  m5g2  p183 vc  7 | V11 final a17 A16 final a3  visible   4.47 f | landed a3  = A16 final
+  m5g2  p184 vc  7 | V11 final a27 A16 final a20 visible   6.66 f | landed a20 = A16 final
+  m5g2  p185 vc  7 | V11 final a0  A16 final a19 visible   1.66 f | landed a19 = A16 final
+  m5g2  p186 vc  7 | V11 final a12 A16 final a2  visible   7.11 f | landed a2  = A16 final
+  m5g2  p187 vc  7 | V11 final a18 A16 final a19 visible   2.14 f | landed a19 = A16 final
 mt2: landing-on-final status differs V11 replay vs A16 replay on 5 pills:
   m1g1 p85: vc 9 | V11 final a21 landed a21 | A16 final a14 landed a21 (frozen) | A16 publishes a21@2.57 a14@46.85
   m1g1 p86: vc 9 | V11 final a29 landed a29 | A16 final a6 landed a29 (frozen) | A16 publishes a29@2.33 a6@47.03

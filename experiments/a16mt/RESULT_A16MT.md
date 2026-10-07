@@ -30,11 +30,13 @@ Both are built here as one-variable changes reproduced from main 530f0316.
    - 0 hybrids.
    - **The A16 candidate = ANTIBODY_DIST_A16_FAIR2PLUS (cart 5a1695da + rbf e00a764e). It is ready for a silicon
      soak, then the couch.**
-3. **Combined (A16 rbf + MT2 cart):** no interaction defect. On A16 timelines, 1,197 pills:
-   - MT2: 1,139 ==final / 0 hybrids / 23 frozen, vs FAIR2PLUS 1,141 / 0 / 21.
-   - Lock-frame tempo −0.00 f.
-   - The same 2 MT2 regressions (M4G2 p100, M4G1 p130) reappear; M5G2 p157 does not.
-   - It inherits MT2's verdict: certified safe, not recommended.
+3. **Combined certificate = the couch candidate: FAIR2PLUS 5a1695da (cart unchanged) on V11 + A16.** Over 1,197
+   replayed pills:
+   - FAIR2PLUS on V11 + A16: 1,141 ==final / 0 hybrids / 21 frozen;
+   - FAIR2PLUS on V11: 1,145 / 0 / 17;
+   - the 4-pill difference is the 4 late A16 answers, which land exactly where V11 lands them.
+   - The cart gates do not depend on the firmware.
+   - MT2 on A16 was also replayed (1,139 / 0 / 23) as evidence only. It is not in the kit.
 
 ## 1. MT2: FAIR2PLUS + `DRMINTHINK=4`
 **Build** (`tools/a16mt/build_carts.sh`):
@@ -89,7 +91,24 @@ The cart descends only on DONE or on a stable answer. MIN_THINK only bounds when
 finishes long before the slam opens. The one place MIN_THINK can change a landing is where gravity binds, and there it
 added non-final landings rather than removing any.
 ⇒ The tempo lever in this cart is the slam stability window (`DRSLAM_KOPEN` / `K_END`), not MIN_THINK. It is untested
-here, and lowering it slams on unfinished answers that LATEGUARD cannot take back.
+here, and lowering it slams on unfinished answers that LATEGUARD cannot take back. It goes to the simulator first.
+
+**Where the slam window lives** (for a later lane; not varied here):
+- **Symbol:** `patch_cartridge_copro.py` `K_OPEN` (line ~1236) = env **`DRSLAM_KOPEN`**. The emitter default is 255;
+  the couch flag snapshot `experiments/lateflip/couch_c960dd49_flags.json` and every fair cart incl. FAIR2PLUS use
+  **32**.
+- **Units: HOOKS, not frames:**
+  - the slam gate compares `STABLE_CT2` ($6171, hooks the published answer has been unchanged; zeroed on a change and
+    at a new pill);
+  - the driver runs 2 hooks per frame, so 32 hooks = 16 frames.
+- **Test site:** the `dn_p2` slam gate (`LDA STABLE_CT2 / CMP #K_OPEN / BCS dn_p2_go`, ~line 4115), reached only once
+  the capsule is aligned and orient-locked and the search is not DONE.
+- **In the FAIR2PLUS cart 5a1695da the immediate is the single byte at file offset 0x90C5 ($20).** Measured by
+  rebuilding with `DRSLAM_KOPEN=31`: exactly that byte changes, to $1F.
+- **Siblings:**
+  - `K_END` (`DRSLAM_KEND` 255 = DONE only), used when the BCD virus count is < `VC_ENDGAME` (`DRSLAM_VCEND` 10);
+  - `K_CROSS` (`DRSLAM_KCROSS` 8 hooks), used when the capsule is low (Y < `CROSS_LOWY` = `DRSLAM_LOWY` 8).
+  - Precedence: low → K_CROSS, else endgame → K_END, else K_OPEN.
 
 ## 2. A16: firmware V11 + `DRDIST_VK=16`
 **Change:**
@@ -130,7 +149,7 @@ here, and lowering it slams on unfinished answers that LATEGUARD cannot take bac
 - The rbf is unique across 45 archived builds and differs from every V11 / DIST60 rbf (`stage_rbf.sh` refuses
   otherwise).
 
-## 3. Combined: FAIR2PLUS + MT2 on V11 + A16
+## 3. Combined certificate: FAIR2PLUS 5a1695da on V11 + A16 (the couch candidate). MT2 on A16 is shown as evidence
 **Firmware-independent cart gates.** Every gate in section 1 runs the real emitted driver against a model mailbox: the
 gravity, lgprestart, TAP and census gates. The firmware cannot reach them, so they hold for the combination as
 measured.
@@ -146,6 +165,19 @@ measured.
 |---|---|---|
 | FAIR2PLUS 5a1695da | 1,145 / 0 / 17 | 1,141 / 0 / 21 |
 | FAIR2PLUS + MT2 170f179d | 1,142 / 0 / 20 | **1,139 / 0 / 23** |
+
+**Does the A16 gate actually fire on these games?** Yes. Pills where A16's final differs from the DIST4 (V11) final, of
+the pills with 5..16 viruses:
+
+| m2g1 | m2g2 | m2g3 | m4g1 | M4G2 | 10/03 G2 | m1g1 | m1g2 | m3g1-3 | m5g2 | total |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0/0 | 6/43 | 3/31 | 7/57 | 1/19 | 2/58 | 10/85 | 13/81 | 0/0 | 33/138 | **75/512** |
+
+- The full per-pill list (virus count, V11 and A16 finals, when the A16 final first appears, where FAIR2PLUS landed it)
+  is `REPLAYS.txt` section C3.
+- The cart lands the A16 final on 71/75.
+- 29 of M5G2's 33 changes fall in its long 7-virus stall (p147-p187, the sealed-column game): A16 retargets most pills
+  there.
 
 - **Firmware effect at a fixed cart (A16 vs V11):** the 4 "lost" finals are the 4 late A16 answers described above,
   m1g1 p85/p86/p88 (9 viruses) and m1g2 p107 (6 viruses).
@@ -169,13 +201,14 @@ measured.
     soak;
   - first, a boot / screenshot check that the core comes up.
   - ⚠ CvC carts run DRPRESTART=0, so a CvC soak cannot exercise the couch cart's prestart path.
-- **Silicon fidelity in the newly active regime:** a PUBLOG-style capture (silfid lane, `tools/silfid/`) on e00a764e,
-  checking silicon copro == Verilator on 5..16-virus boards.
+- **Silicon fidelity in the newly active regime:** a PUBLOG-style capture (silfid lane, dr-mario-rl h16
+  `experiments/silfid/`) on e00a764e, checking silicon copro == Verilator on 5..16-virus boards.
   - This is the regime A16 newly activates; capture #3 covered ≤ 20 viruses on V11.
   - The D scan adds ≤ 28,250 6502 cycles before Pass 0, so publish timing shifts by ~0.01-0.02 f there.
 - **Couch:** ANTIBODY_DIST_A16_FAIR2PLUS vs dr. lulu and the owner, against FAIR2PLUS as the control.
-- **MT2:** no soak recommended. If tempo is still the target, the lever to price is the slam window
-  (`DRSLAM_KOPEN` 32 / `K_END` 255), with a replay of its non-final-slam cost first.
+- **MT2:** no soak recommended.
+  - The tempo lever is the slam window (`DRSLAM_KOPEN` 32 hooks / `K_END` 255; location in section 1).
+  - It goes to the simulator first, not to a cart.
 
 ## Files
 - **Cart:** `tools/a16mt/build_carts.sh`, `gates_cart.sh` → `experiments/a16mt/GATES_CART.txt`; test arms in
