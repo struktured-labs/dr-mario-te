@@ -17,25 +17,29 @@ COVERAGE (live part, 1586 final pills): CELL (<=20 viruses, height 14-16) = 408 
     >20 /   <=8: 7
   prestart (garbage-window) searches: 92 (capture #1: 3)
 
-REPLAYED so far: 248 of 1586 live final pills; overall {'EXACT': 237, 'AMBIGUOUS': 11}
+REPLAYED so far: 413 of 1586 live final pills; overall {'EXACT': 394, 'AMBIGUOUS': 19}
 
 ## by CELL
-              CELL EXACT  237 AMBIGUOUS   11 DIVERGED    0 NO_DONE    0  n  248  EARLY-DONE 11
+              CELL EXACT  390 AMBIGUOUS   18 DIVERGED    0 NO_DONE    0  n  408  EARLY-DONE 19
+             other EXACT    4 AMBIGUOUS    1 DIVERGED    0 NO_DONE    0  n    5  EARLY-DONE 0
 
 ## by viruses x height
-        <=20/14-16 EXACT  237 AMBIGUOUS   11 DIVERGED    0 NO_DONE    0  n  248  EARLY-DONE 11
+        <=20/12-13 EXACT    1 AMBIGUOUS    1 DIVERGED    0 NO_DONE    0  n    2  EARLY-DONE 0
+        <=20/14-16 EXACT  390 AMBIGUOUS   18 DIVERGED    0 NO_DONE    0  n  408  EARLY-DONE 19
+         >20/12-13 EXACT    1 AMBIGUOUS    0 DIVERGED    0 NO_DONE    0  n    1  EARLY-DONE 0
+         >20/14-16 EXACT    2 AMBIGUOUS    0 DIVERGED    0 NO_DONE    0  n    2  EARLY-DONE 0
 
 ## by kind
-            normal EXACT  227 AMBIGUOUS    8 DIVERGED    0 NO_DONE    0  n  235  EARLY-DONE 11
-          prestart EXACT   10 AMBIGUOUS    3 DIVERGED    0 NO_DONE    0  n   13  EARLY-DONE 0
+            normal EXACT  371 AMBIGUOUS   12 DIVERGED    0 NO_DONE    0  n  383  EARLY-DONE 18
+          prestart EXACT   23 AMBIGUOUS    7 DIVERGED    0 NO_DONE    0  n   30  EARLY-DONE 1
 
 ## by tuck
-           no tuck EXACT  174 AMBIGUOUS   10 DIVERGED    0 NO_DONE    0  n  184  EARLY-DONE 8
-              tuck EXACT   63 AMBIGUOUS    1 DIVERGED    0 NO_DONE    0  n   64  EARLY-DONE 3
+           no tuck EXACT  320 AMBIGUOUS   17 DIVERGED    0 NO_DONE    0  n  337  EARLY-DONE 16
+              tuck EXACT   74 AMBIGUOUS    2 DIVERGED    0 NO_DONE    0  n   76  EARLY-DONE 3
 
-live reads: {'MATCH': 592, 'AMBIGUOUS': 11}
+live reads: {'MATCH': 948, 'AMBIGUOUS': 19}
 
-## EARLY DONE: 11 of 248 replayed pills with a DONE (4.4%); post-DONE watch over ALL 1586 live pills: type-6 events 0, DONE re-read-0 flags 0
+## EARLY DONE: 19 of 413 replayed pills with a DONE (4.6%); post-DONE watch over ALL 1586 live pills: type-6 events 0, DONE re-read-0 flags 0
   seq   105 vir 12 h 14 | silicon DONE  35.50 f, Verilator  46.06 f, dt  -10.56 | watch window 51 hooks, type-6 0, re-read-0 0 | EXACT
   seq   123 vir  7 h 15 | silicon DONE   7.50 f, Verilator  36.97 f, dt  -29.47 | watch window 93 hooks, type-6 0, re-read-0 0 | EXACT
   seq   130 vir  7 h 15 | silicon DONE  23.50 f, Verilator  38.47 f, dt  -14.97 | watch window 77 hooks, type-6 0, re-read-0 0 | EXACT
@@ -47,24 +51,34 @@ live reads: {'MATCH': 592, 'AMBIGUOUS': 11}
   seq   886 vir 10 h 15 | silicon DONE  16.50 f, Verilator  28.87 f, dt  -12.37 | watch window 95 hooks, type-6 0, re-read-0 0 | EXACT
   seq   896 vir 10 h 15 | silicon DONE   4.50 f, Verilator  34.41 f, dt  -29.91 | watch window 147 hooks, type-6 0, re-read-0 0 | EXACT
   seq   985 vir 17 h 15 | silicon DONE  15.50 f, Verilator  29.01 f, dt  -13.51 | watch window 213 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1021 vir 11 h 15 | silicon DONE  37.50 f, Verilator  41.77 f, dt   -4.27 | watch window 163 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1045 vir  6 h 16 | silicon DONE  10.50 f, Verilator  33.47 f, dt  -22.97 | watch window 79 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1051 vir  5 h 16 | silicon DONE   0.50 f, Verilator  32.20 f, dt  -31.70 | watch window 325 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1357 vir 12 h 14 | silicon DONE  16.50 f, Verilator  48.08 f, dt  -31.58 | watch window 255 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1363 vir 11 h 16 | silicon DONE  25.50 f, Verilator  30.20 f, dt   -4.70 | watch window 101 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1371 vir  9 h 16 | silicon DONE  12.00 f, Verilator  27.23 f, dt  -15.23 | watch window 218 hooks, type-6 0, re-read-0 0 | AMBIGUOUS
+  seq  1400 vir  8 h 16 | silicon DONE  17.50 f, Verilator  24.21 f, dt   -6.71 | watch window 123 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1421 vir  8 h 14 | silicon DONE  24.50 f, Verilator  35.59 f, dt  -11.09 | watch window 95 hooks, type-6 0, re-read-0 0 | EXACT
 
 ## SAME-INPUT REPEATS (identical upload re-issued by the cart; the copro searched the same input N times)
   upload 81 160 185 129 ff ff f... x32 (seq 1597-1628): DONE (hooks, final) [((91, (3, 1)), 28), ((27, (3, 1)), 1), ((31, (3, 1)), 1), ((85, (3, 1)), 1), ((65, (3, 1)), 1)]
      live-read sequence x31: [(4, 5, 1), (6, 7, 1), (10, 6, 0), (16, 3, 1)]
      live-read sequence x1: [(4, 5, 1), (6, 7, 1), (8, 3, 1)]
+     Verilator: pubs [(1.19, 5, 1), (2.2, 7, 1), (4.35, 6, 0), (7.36, 3, 1)] DONE 45.72 f = 91.4 hooks, final (3,1)
+     -> silicon == Verilator (DONE hook within 1 and the same live-read sequence) on 28 of 32 identical runs
 
-## LANDINGS on silicon (CELL, 246 pills with a lock)
-  lands the copro final                                           168 (68.3%)
-  lands the cart's OWN target != final                             39 (15.9%)
-  lands the cart's OWN target != final (locked before DONE)        20 ( 8.1%)
-  lands != final, no target change logged                          16 ( 6.5%)
-  lands neither the final nor its own target (execution)            3 ( 1.2%)
+## LANDINGS on silicon (CELL, 404 pills with a lock)
+  lands the copro final                                           307 (76.0%)
+  lands the cart's OWN target != final                             46 (11.4%)
+  lands the cart's OWN target != final (locked before DONE)        25 ( 6.2%)
+  lands != final, no target change logged                          23 ( 5.7%)
+  lands neither the final nor its own target (execution)            3 ( 0.7%)
 
-## LANDINGS on silicon (all replayed live pills, 246 pills with a lock)
-  lands the copro final                                           168 (68.3%)
-  lands the cart's OWN target != final                             39 (15.9%)
-  lands the cart's OWN target != final (locked before DONE)        20 ( 8.1%)
-  lands != final, no target change logged                          16 ( 6.5%)
-  lands neither the final nor its own target (execution)            3 ( 1.2%)
+## LANDINGS on silicon (all replayed live pills, 408 pills with a lock)
+  lands the copro final                                           307 (75.2%)
+  lands the cart's OWN target != final                             47 (11.5%)
+  lands != final, no target change logged                          26 ( 6.4%)
+  lands the cart's OWN target != final (locked before DONE)        25 ( 6.1%)
+  lands neither the final nor its own target (execution)            3 ( 0.7%)
 
-## DIVERGED / NO_DONE (0) + EARLY (11) banked in publog2_diverged_20261007.jsonl
+## DIVERGED / NO_DONE (0) + EARLY (19) banked in publog2_diverged_20261007.jsonl

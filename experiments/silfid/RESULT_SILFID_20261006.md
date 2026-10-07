@@ -6,16 +6,16 @@
   fed Verilator co-sim timelines and her garbage, lands elsewhere (forensics RESULT_LULU_20261005 section 7).
 
 **UPDATE 2026-10-07 (section 11): PUBLOG captures #1 + #2 replayed the residual's own regime exactly.**
-- **The copro gives the SAME ANSWERS as Verilator in the tall endgame:** 0 DIVERGED / 0 mismatched reads on 248 of the
-  408 CELL pills (≤ 20 viruses, height 14–16, tuck and prestart included).
+- **The copro gives the SAME ANSWERS as Verilator in the tall endgame:** 0 DIVERGED / 0 mismatched reads on all 408 CELL
+  pills (≤ 20 viruses, height 14–16, tuck and prestart included).
 - **The "77 are copro-side" statement below is overturned for answers.**
 - **Silicon IS nondeterministic on identical input** (32 identical runs: 28 exact; 3 early DONE; 1 different path). The
   effect:
   - it ends 4–7 % of long searches early (a genuine latched DONE, not a false read);
   - it rarely changes the search path;
   - it changes WHEN far more than WHAT, so it explains at most a minority of the residual.
-- **The cart's own decision layer dominates:** on silicon the cart lands its own committed target instead of the copro
-  final on 24 % of CELL pills.
+- **The cart's own decision layer dominates:** on silicon the cart lands ≠ the copro final on 24 % of CELL pills (17.6 %
+  its own committed target), the couch's own rate (24.4 %), with the copro proven equal.
 - **Decider (no hardware):** a Mesen replay of capture #2 with the logged silicon timelines.
 
 **Short answer (2026-10-06).**
@@ -385,7 +385,7 @@ from its exact upload.
 - **Banked repros:** `publog*_diverged_20261007.jsonl`.
 - **Status at hand-off:**
   - capture #1: 565 / 2,250 replayed (endgame first);
-  - capture #2: 248 of its 408 tall-endgame (CELL) pills;
+  - capture #2: all 408 of its tall-endgame (CELL) pills (+ 5 others);
   - the unit `silfid-final` finishes both, writes the reports, commits them here, then runs the last 16 seed classes.
 
 ### 11a. Capture #1 (cart 8355ddc7, CvC, no garbage)
@@ -427,13 +427,13 @@ from its exact upload.
   - no NAVESC START during mode-4 play on this debug cart.
 - The paused game turned out useful: see 11d.
 
-**CELL verdicts (248 of 408 replayed):**
-- **EXACT 237, AMBIGUOUS 11, DIVERGED 0, NO_DONE 0.**
-- Live reads: 592 MATCH, 11 AMBIGUOUS, 0 mismatch.
-- That includes tuck (64) and prestart (13).
+**CELL verdicts (all 408 replayed):**
+- **EXACT 390, AMBIGUOUS 18, DIVERGED 0, NO_DONE 0.**
+- Live reads: 948 MATCH, 19 AMBIGUOUS, 0 mismatch (all 413 replayed pills).
+- That includes tuck (76) and prestart (30).
 
 ### 11c. EARLY DONE is a genuine early finish by the silicon copro, not a false DONE read
-- **Rate:** in the CELL, 11 / 248 = 4.4 % (dt −10.6 … −29.9 f), all EXACT otherwise.
+- **Rate:** in the CELL, 19 / 408 = 4.7 % (dt −4.3 … −31.7 f), all EXACT or AMBIGUOUS otherwise.
 - **The post-DONE watch** logged **0 type-6 events and 0 DONE-re-read-0 flags** over all 1,586 live pills.
   - Every early pill gave the watch 51–223 hooks before the next GO.
   - So DONE stayed latched at 1 and the answer never changed: the copro really ended its search.
@@ -459,7 +459,7 @@ from its exact upload.
 
 ### 11e. Combined verdict for the 77 residual couch misses
 1. **The copro is cleared as the source of different ANSWERS in the residual's regime.**
-   - 0 DIVERGED and 0 mismatched reads on 248 CELL pills (tuck and prestart included). The CELL is ≤ 20 viruses on
+   - 0 DIVERGED and 0 mismatched reads on all 408 CELL pills (tuck and prestart included). The CELL is ≤ 20 viruses on
      height 14–16, where 50 of the 77 sit.
    - 1 / 565 in capture #1.
    - **This overturns section 2's "the residual is copro-side"** as far as answers go.
@@ -472,11 +472,12 @@ from its exact upload.
    - So it accounts for a minority, at most about a third of EARLIER-PUB, at bluemage's rate.
    - rivalmage, the couch unit, may differ per chip: untested.
 3. **Where the rest lives is the cart's DECISION/EXECUTION layer, not the copro.**
-   - On bluemage the cart lands the copro final on only 68 % of CELL pills:
-     - **24 % land the cart's OWN committed target ≠ final**; 8 % of those locked before DONE (LATEGUARD / commit gate);
-     - 6.5 % land elsewhere with no target change logged;
-     - 1.2 % land neither the final nor its own target.
-   - On the couch, 24.4 % of CELL pills landed ≠ the copro final.
+   - On bluemage the cart lands the copro final on only 76 % of CELL pills (404 with a lock):
+     - **17.6 % land the cart's OWN committed target ≠ final** (6.2 % locked before DONE: LATEGUARD / commit gate);
+     - 5.7 % land elsewhere with no target change logged;
+     - 0.7 % land neither the final nor its own target.
+   - That is **24 % ≠ final with the copro PROVEN equal to Verilator**, the same as the couch's **24.4 %** of CELL pills
+     landing ≠ the copro final.
    - Whether the Mesen replays reproduce these outcomes given silicon's EXACT timelines is the decisive open question.
      The 10/05 "silicon-only" label used Verilator timelines and tracker-reconstructed boards.
 4. **Next (no hardware), the decider:** chained Mesen replay of capture #2's CELL pills with the logged silicon timelines
