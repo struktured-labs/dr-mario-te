@@ -4,12 +4,11 @@
   overall landing != final: 97 / 404 = 24.0%
   control: the 1488 co-sim's at-gate answer == silicon's logged at-gate answer on 396 / 404
 
-# the same 46 CELL uploads on V11 (fw c51d2e21, Verilator)
-  at-gate (6.0 f) == final: 42 (91.3%)   [1488 silicon on the SAME pills: 73.8% (n 42); on all 404: 55.0%]
-  V11 final == 1488 final on 46 / 46; V11 DONE median 34.3 f
-  PARTIAL (46/404): paired non-final ratio V11/1488 = 8.7% / 26.2% = 0.33 -> V11 non-final on the whole CELL ~ 15.0% (1488: 45.0%)
+# the same 408 CELL uploads on V11 (fw c51d2e21, Verilator)
+  at-gate (6.0 f) == final: 323 (79.2%)   [1488 silicon on the SAME pills: 55.0% (n 404); on all 404: 55.0%]
+  V11 final == 1488 final on 368 / 408; V11 DONE median 28.4 f
 
-# PREDICTION for capture #3 (V11), tall-endgame CELL landing != copro final: 12.5% (90% band 9.7-16.2%)   vs capture #2 on 1488: 24.0%
+# PREDICTION for capture #3 (V11), tall-endgame CELL landing != copro final: 14.7% (90% band 11.7-18.6%)   vs capture #2 on 1488: 24.0%
   caveats: the conditionals are FAIR's (capture #2); capture #3 runs FAIR2PLUS (DRABORTSTALE + DRLGPRESTART +
   DRDISTROW=2), which changes the gate's follow-through (DISTROW widens the lateral budget, LGPRESTART lets prestart
   answers bypass LATEGUARD), so the gate != final arm is an UPPER-side estimate; the gate == final arm is execution
