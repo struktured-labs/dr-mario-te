@@ -1,0 +1,70 @@
+# PUBLOG capture #2 (cart d84436ff, rbf 318607aa): 282 save-states, 60.0 min
+FREEZE: from 00:52:18 (+49.0 min) to the end (52 states): P2 board frozen, P2 nextAction 1 at 11 viruses, CPU PC in the idle wait loop ($[('B664', 37), ('B662', 12)]), frame counter running, the driver alive (stall-watchdog re-uploads: seq 1596 -> 1628; pump still firing GP_N 133 -> 161).
+  DRNAVESC injected START at the onset (its inject count 172 -> 174; in the last live state its stuck counter was 909 of 1200 hooks and the P2 pose had been static for 909 hooks) -> the game PAUSED; NAVESC never re-fired (its counter keeps resetting: the P2 driver's held pad changes, max 1197 in the frozen states).
+
+PUMP (GP_N $6633 / GP_C $6635, live part 49.0 min): 129 volleys fired = 2.63/min (design 2.86/play-min), 290 cells delivered (2.25/volley; merged stores are capped at 4)
+  P1's slot at the states: {(0, 0): 223, (4, 0): 3, (2, 0): 4, (3, 0): 1} (($0318, pending store))
+  P2's own attack $0398 (P1 never receives it under DRP1HOLD) reached 87 within a round (the ROM's max in a real game is 4; it resets at each round start)
+
+COVERAGE (live part, 1586 final pills): CELL (<=20 viruses, height 14-16) = 408 [prediction ~700/h, >= ~360/h; capture #1: 0 of 2250]
+   <=20 / 12-13: 160
+   <=20 / 14-16: 408
+   <=20 /  9-11: 238
+   <=20 /   <=8: 248
+    >20 / 12-13: 233
+    >20 / 14-16: 41
+    >20 /  9-11: 251
+    >20 /   <=8: 7
+  prestart (garbage-window) searches: 92 (capture #1: 3)
+
+REPLAYED so far: 248 of 1586 live final pills; overall {'EXACT': 237, 'AMBIGUOUS': 11}
+
+## by CELL
+              CELL EXACT  237 AMBIGUOUS   11 DIVERGED    0 NO_DONE    0  n  248  EARLY-DONE 11
+
+## by viruses x height
+        <=20/14-16 EXACT  237 AMBIGUOUS   11 DIVERGED    0 NO_DONE    0  n  248  EARLY-DONE 11
+
+## by kind
+            normal EXACT  227 AMBIGUOUS    8 DIVERGED    0 NO_DONE    0  n  235  EARLY-DONE 11
+          prestart EXACT   10 AMBIGUOUS    3 DIVERGED    0 NO_DONE    0  n   13  EARLY-DONE 0
+
+## by tuck
+           no tuck EXACT  174 AMBIGUOUS   10 DIVERGED    0 NO_DONE    0  n  184  EARLY-DONE 8
+              tuck EXACT   63 AMBIGUOUS    1 DIVERGED    0 NO_DONE    0  n   64  EARLY-DONE 3
+
+live reads: {'MATCH': 592, 'AMBIGUOUS': 11}
+
+## EARLY DONE: 11 of 248 replayed pills with a DONE (4.4%); post-DONE watch over ALL 1586 live pills: type-6 events 0, DONE re-read-0 flags 0
+  seq   105 vir 12 h 14 | silicon DONE  35.50 f, Verilator  46.06 f, dt  -10.56 | watch window 51 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   123 vir  7 h 15 | silicon DONE   7.50 f, Verilator  36.97 f, dt  -29.47 | watch window 93 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   130 vir  7 h 15 | silicon DONE  23.50 f, Verilator  38.47 f, dt  -14.97 | watch window 77 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   158 vir  7 h 16 | silicon DONE  25.50 f, Verilator  38.22 f, dt  -12.72 | watch window 191 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   181 vir  6 h 16 | silicon DONE   7.50 f, Verilator  37.12 f, dt  -29.62 | watch window 89 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   189 vir  6 h 16 | silicon DONE   9.50 f, Verilator  31.73 f, dt  -22.23 | watch window 113 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   853 vir 18 h 14 | silicon DONE  21.50 f, Verilator  32.95 f, dt  -11.45 | watch window 65 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   860 vir 14 h 14 | silicon DONE  27.50 f, Verilator  42.57 f, dt  -15.07 | watch window 223 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   886 vir 10 h 15 | silicon DONE  16.50 f, Verilator  28.87 f, dt  -12.37 | watch window 95 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   896 vir 10 h 15 | silicon DONE   4.50 f, Verilator  34.41 f, dt  -29.91 | watch window 147 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   985 vir 17 h 15 | silicon DONE  15.50 f, Verilator  29.01 f, dt  -13.51 | watch window 213 hooks, type-6 0, re-read-0 0 | EXACT
+
+## SAME-INPUT REPEATS (identical upload re-issued by the cart; the copro searched the same input N times)
+  upload 81 160 185 129 ff ff f... x32 (seq 1597-1628): DONE (hooks, final) [((91, (3, 1)), 28), ((27, (3, 1)), 1), ((31, (3, 1)), 1), ((85, (3, 1)), 1), ((65, (3, 1)), 1)]
+     live-read sequence x31: [(4, 5, 1), (6, 7, 1), (10, 6, 0), (16, 3, 1)]
+     live-read sequence x1: [(4, 5, 1), (6, 7, 1), (8, 3, 1)]
+
+## LANDINGS on silicon (CELL, 246 pills with a lock)
+  lands the copro final                                           168 (68.3%)
+  lands the cart's OWN target != final                             39 (15.9%)
+  lands the cart's OWN target != final (locked before DONE)        20 ( 8.1%)
+  lands != final, no target change logged                          16 ( 6.5%)
+  lands neither the final nor its own target (execution)            3 ( 1.2%)
+
+## LANDINGS on silicon (all replayed live pills, 246 pills with a lock)
+  lands the copro final                                           168 (68.3%)
+  lands the cart's OWN target != final                             39 (15.9%)
+  lands the cart's OWN target != final (locked before DONE)        20 ( 8.1%)
+  lands != final, no target change logged                          16 ( 6.5%)
+  lands neither the final nor its own target (execution)            3 ( 1.2%)
+
+## DIVERGED / NO_DONE (0) + EARLY (11) banked in publog2_diverged_20261007.jsonl

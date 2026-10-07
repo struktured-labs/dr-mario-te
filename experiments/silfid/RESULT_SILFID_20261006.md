@@ -5,7 +5,20 @@
 - **The misses:** 102 of the 158 AI misses in the 5 replayed games are SILICON-ONLY. The Mesen replay of the same cart,
   fed Verilator co-sim timelines and her garbage, lands elsewhere (forensics RESULT_LULU_20261005 section 7).
 
-**Short answer.**
+**UPDATE 2026-10-07 (section 11): PUBLOG captures #1 + #2 replayed the residual's own regime exactly.**
+- **The copro gives the SAME ANSWERS as Verilator in the tall endgame:** 0 DIVERGED / 0 mismatched reads on 248 of the
+  408 CELL pills (≤ 20 viruses, height 14–16, tuck and prestart included).
+- **The "77 are copro-side" statement below is overturned for answers.**
+- **Silicon IS nondeterministic on identical input** (32 identical runs: 28 exact; 3 early DONE; 1 different path). The
+  effect:
+  - it ends 4–7 % of long searches early (a genuine latched DONE, not a false read);
+  - it rarely changes the search path;
+  - it changes WHEN far more than WHAT, so it explains at most a minority of the residual.
+- **The cart's own decision layer dominates:** on silicon the cart lands its own committed target instead of the copro
+  final on 24 % of CELL pills.
+- **Decider (no hardware):** a Mesen replay of capture #2 with the logged silicon timelines.
+
+**Short answer (2026-10-06).**
 - **Emulation explains 25 of the 102:**
 
   | cause | pills |
@@ -363,6 +376,122 @@ That is about 30–40 MiSTer-minutes, with no human at the controls for CvC. Eac
 - **Kit:** `dr_mario_rl/tmp/couch_kit/publog_20261006/` (cart 8355ddc7 + `PUBLOG_CVC.mgl` on rbf 318607aa; BUILD.md has
   the capture: `ring_capture.sh --interval 10`, 60 min, keep all).
 - **Offline after the capture:** `ss_cosim.py --publog`.
+
+## 11. PUBLOG captures #1 and #2: the residual's regime replayed exactly (2026-10-07)
+
+Both captures ran on bluemage, rbf 318607aa, fw 1488e158. Every logged P2 search is replayed on Verilator (vsim_pub2)
+from its exact upload.
+- **Tools:** `publog_report.py` / `publog2_report.py` (→ `publog*_report_20261007.txt`) and `tieback.py`.
+- **Banked repros:** `publog*_diverged_20261007.jsonl`.
+- **Status at hand-off:**
+  - capture #1: 565 / 2,250 replayed (endgame first);
+  - capture #2: 248 of its 408 tall-endgame (CELL) pills;
+  - the unit `silfid-final` finishes both, writes the reports, commits them here, then runs the last 16 seed classes.
+
+### 11a. Capture #1 (cart 8355ddc7, CvC, no garbage)
+- **Replayed:** 565, of which 419 at ≤ 20 viruses. EXACT 531, AMBIGUOUS 22, **DIVERGED 1**, NO_DONE 11.
+  - NO_DONE: the search was torn down before a DONE.
+- **Single-sample cross-check over all 280 states:**
+  - 91 MATCH, 3 AMBIGUOUS;
+  - 1 MISMATCH, at t = 0 in the GO hook: the known stale read of the previous answer;
+  - 0 real mismatches.
+- **EARLY DONE** (silicon's DONE > 2 f before Verilator's on the same upload): **40 / 554 = 7.2 %**, flat across regimes.
+  - Publications and final are identical; 10 of the first 21 are exactly ~64 hooks early.
+- **A chained co-sim** (one copro process on silicon's GO spacing, 3 lead pills) reproduces the FRESH DONE to 0.01 f on
+  13/13 early pills. So carried-over copro state is not the cause.
+- **The one DIVERGED, seq 740** (37 viruses, height 12): silicon already showed the final (0,1) one hook after GO. Verilator
+  publishes (3,0) at 1.9 f and (0,1) only at 6.8 f. Silicon never showed (3,0), and its DONE came at 20 f vs 51.9 f.
+  The previous pill's final was (1,0), so this is not a stale read.
+
+### 11b. Capture #2 (cart d84436ff: DRP1HOLD + DRGPUMP + DRPUBLOG_PDW; dr-mario-te PR #41)
+**Coverage:**
+- **408 CELL pills** (≤ 20 viruses, height 14–16) in **49 live minutes** = ~500/h. Capture #1 had 0.
+- The prediction was ≥ 360 and most likely ~700/h; the couch ran 655/h.
+- 92 garbage-window prestart searches (capture #1: 3).
+
+**Pump read back from GP_N/GP_C:**
+- **2.63 volleys/min** over the live part (design 2.86 per play-minute; within 1 σ);
+- 2.25 cells/volley.
+
+**FREEZE at +49 min.**
+- **What preceded it:**
+  - P2 sat ≥ 20 s in nextAction 1 (pillPlaced), with a garbage volley falling slowly.
+  - P2's own outgoing attack $0398 was unconsumed: 41 at that point. It reaches up to 87 within a round under DRP1HOLD,
+    because P1 never locks; the real game's maximum is 4.
+- **The freeze itself:**
+  - DRNAVESC then injected START and the game PAUSED for the last 11 min.
+  - Evidence: PC in the idle wait loop, frame counter running, board frozen.
+  - NAVESC never re-fired: the P2 driver's held pad keeps resetting its counter.
+- **Fix for any capture #3:**
+  - drain $0398 inside the P1 hold;
+  - no NAVESC START during mode-4 play on this debug cart.
+- The paused game turned out useful: see 11d.
+
+**CELL verdicts (248 of 408 replayed):**
+- **EXACT 237, AMBIGUOUS 11, DIVERGED 0, NO_DONE 0.**
+- Live reads: 592 MATCH, 11 AMBIGUOUS, 0 mismatch.
+- That includes tuck (64) and prestart (13).
+
+### 11c. EARLY DONE is a genuine early finish by the silicon copro, not a false DONE read
+- **Rate:** in the CELL, 11 / 248 = 4.4 % (dt −10.6 … −29.9 f), all EXACT otherwise.
+- **The post-DONE watch** logged **0 type-6 events and 0 DONE-re-read-0 flags** over all 1,586 live pills.
+  - Every early pill gave the watch 51–223 hooks before the next GO.
+  - So DONE stayed latched at 1 and the answer never changed: the copro really ended its search.
+- **The watch's own validation** is py65 with injected false DONEs: single-read 8/8 flagged, frame-long 5/5 logged,
+  0 flags on 23 genuine DONEs.
+
+### 11d. Same input, 32 runs: the silicon copro is NON-DETERMINISTIC
+- **How it happened:** while the game sat paused, the stall watchdog re-issued the IDENTICAL upload 32 times (seq
+  1597–1628). Verilator is deterministic on it: pubs (5,1) 1.19 f, (7,1) 2.20, (6,0) 4.35, (3,1) 7.36; DONE 45.72 f
+  = 91.4 hooks.
+- **28 / 32** silicon runs equal Verilator exactly: DONE at hook 91 and the same 4 reads at the same hooks.
+- **4 / 32 deviate:**
+  - **3 early DONEs** (hooks 85, 65, 31) with the identical path;
+  - **1 different path** (seq 1600): (3,1) was already up at hook 8, (6,0) was never published, and DONE came at hook 27.
+- Capture #1's seq 740 is the same "different path" mode, live.
+- **Which component:** inside the copro clock domain (copro6502 + LeafEval + work RAM). Excluded:
+  - the mailbox reads (DONE latched, answer stable, reads exact on 28/32);
+  - carried state (chained co-sim);
+  - the cart (identical uploads).
+  - The two signatures (early termination, and a path that finds the final faster and skips intermediates) look like
+    corrupted search CONTROL state (a loop or pruning bound), not a wrong leaf value: no final ever differed.
+  - The specific path is not identified.
+
+### 11e. Combined verdict for the 77 residual couch misses
+1. **The copro is cleared as the source of different ANSWERS in the residual's regime.**
+   - 0 DIVERGED and 0 mismatched reads on 248 CELL pills (tuck and prestart included). The CELL is ≤ 20 viruses on
+     height 14–16, where 50 of the 77 sit.
+   - 1 / 565 in capture #1.
+   - **This overturns section 2's "the residual is copro-side"** as far as answers go.
+2. **The silicon copro's nondeterminism is real but small, and changes WHEN, rarely WHAT:**
+   - early DONE in 4–7 % of long searches;
+   - a different path in ≤ 1/32.
+   - The early-DONE model predicts ~9 earlier-answer landings across the 5 games (`tieback_20261007.txt`).
+   - The couch's own DONE proxy agrees in direction: slam onset is early (≤ −3 f) on 24.6 % of residual pills vs 5.7 %
+     of agreeing ones, and on 13 of 27 measurable residual EARLIER-PUB pills.
+   - So it accounts for a minority, at most about a third of EARLIER-PUB, at bluemage's rate.
+   - rivalmage, the couch unit, may differ per chip: untested.
+3. **Where the rest lives is the cart's DECISION/EXECUTION layer, not the copro.**
+   - On bluemage the cart lands the copro final on only 68 % of CELL pills:
+     - **24 % land the cart's OWN committed target ≠ final**; 8 % of those locked before DONE (LATEGUARD / commit gate);
+     - 6.5 % land elsewhere with no target change logged;
+     - 1.2 % land neither the final nor its own target.
+   - On the couch, 24.4 % of CELL pills landed ≠ the copro final.
+   - Whether the Mesen replays reproduce these outcomes given silicon's EXACT timelines is the decisive open question.
+     The 10/05 "silicon-only" label used Verilator timelines and tracker-reconstructed boards.
+4. **Next (no hardware), the decider:** chained Mesen replay of capture #2's CELL pills with the logged silicon timelines
+   (live reads at their hook times + silicon's own DONE) and exact boards, scored against the logged lock poses.
+   - If Mesen reproduces silicon, the couch residual is reconstruction (tracker boards / seed / garbage timing).
+   - If not, it is MiSTer-vs-Mesen execution timing.
+   - Either way the copro is out of the residual's main path.
+5. **For the nondeterminism itself:**
+   - a copro BENCH cart that re-GOes banked uploads N× (the 32-run board, the early-DONE and seq-740 boards);
+   - run it on bluemage, on a second rbf (another P&R seed, or a lower copro clock: timing vs logic), and on rivalmage
+     (owner OK) for the per-chip rate.
+6. **Fix status:**
+   - nothing to ship for the residual from the copro side;
+   - DRSEEDZERO / DRLGPRESTART stand for the seed / PREV-TARGET classes;
+   - the nondeterminism needs the bench result before any RTL change.
 
 ## Files (this folder)
 - **Analysis:**

@@ -1,0 +1,11 @@
+# tie-back: capture #1 554 replayed pills with a DONE (early 40), capture #2 248 (early 11; CELL 248, early 11)
+1. expected couch landings on an earlier answer from silicon's early DONE: 10.2 over 528 couch pills with >= 2 pubs
+   observed residual EARLIER-PUB: 30; sum of their own P(silicon DONE before the final publish) = 0.5
+   per pill (game, p, final-publish f, P): [('m1g4', 99, 32.2, 0.095), ('m1g4', 100, 31.1, 0.06), ('m1g1', 120, 24.4, 0.055), ('m1g4', 37, 41.5, 0.045), ('m1g2', 153, 21.5, 0.039), ('m1g2', 137, 17.5, 0.035), ('m1g4', 107, 13.3, 0.03), ('m1g2', 130, 9.3, 0.025), ('m2g2', 32, 21.4, 0.022), ('m2g3', 55, 21.3, 0.021), ('m1g1', 82, 19.9, 0.018), ('m2g2', 18, 9.0, 0.01), ('m1g2', 101, 6.3, 0.009), ('m1g2', 105, 2.1, 0.0), ('m1g2', 154, 7.9, 0.0), ('m1g2', 176, 13.5, 0.0), ('m1g2', 185, 13.4, 0.0), ('m1g2', 190, 9.9, 0.0), ('m1g4', 121, 14.9, 0.0), ('m1g4', 124, 11.8, 0.0), ('m2g2', 10, 14.7, 0.0), ('m2g2', 62, 3.4, 0.0), ('m2g2', 64, 3.2, 0.0), ('m2g2', 66, 13.9, 0.0), ('m2g2', 86, 5.3, 0.0), ('m2g2', 90, 5.3, 0.0), ('m2g3', 54, 3.5, 0.0), ('m2g3', 77, 8.7, 0.0), ('m2g3', 107, 29.1, 0.0), ('m2g3', 123, 12.7, 0.0)]
+2. slam onset (silicon - Mesen replay of the Verilator timeline, f; the cart slams at DONE):
+   agree  n 630: early (<= -3)  36 ( 5.7%), late (>= +3)  43 ( 6.8%), within 2 f 551
+   resid  n  69: early (<= -3)  17 (24.6%), late (>= +3)  17 (24.6%), within 2 f 35
+   residual EARLIER-PUB    {'same': 12, 'early': 13, 'late': 2}
+   residual HYBRID         {'late': 6, 'same': 13, 'early': 4}
+   residual LATE-FLIP      {'same': 4, 'late': 7}
+   residual SHORT-LANDING  {'same': 6, 'late': 2}

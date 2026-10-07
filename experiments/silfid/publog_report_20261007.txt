@@ -1,0 +1,142 @@
+# DRPUBLOG bluemage capture: 565 final pills replayed on Verilator (vsim_pub2, fw 1488e158)
+overall: {'EXACT': 531, 'AMBIGUOUS': 22, 'DIVERGED': 1, 'NO_DONE': 11}
+
+## by viruses left
+         group     EXACT AMBIGUOUS  DIVERGED   NO_DONE    n   EARLY-DONE
+          <=20       403         6         0        10   419     30 ( 7.2%)
+           >20       128        16         1         1   146     10 ( 6.8%)
+
+## by max column height
+         group     EXACT AMBIGUOUS  DIVERGED   NO_DONE    n   EARLY-DONE
+         12-13       146        16         1         2   165     12 ( 7.3%)
+         14-16         0         1         0         0     1      0 ( 0.0%)
+          9-11       202         4         0         6   212     13 ( 6.1%)
+           <=8       183         1         0         3   187     15 ( 8.0%)
+
+## by viruses x height
+         group     EXACT AMBIGUOUS  DIVERGED   NO_DONE    n   EARLY-DONE
+    <=20/12-13        19         1         0         1    21      2 ( 9.5%)
+     <=20/9-11       201         4         0         6   211     13 ( 6.2%)
+      <=20/<=8       183         1         0         3   187     15 ( 8.0%)
+     >20/12-13       127        15         1         1   144     10 ( 6.9%)
+     >20/14-16         0         1         0         0     1      0 ( 0.0%)
+      >20/9-11         1         0         0         0     1      0 ( 0.0%)
+
+## by search kind
+         group     EXACT AMBIGUOUS  DIVERGED   NO_DONE    n   EARLY-DONE
+        normal       529        21         1        11   562     40 ( 7.1%)
+      prestart         2         1         0         0     3      0 ( 0.0%)
+
+## by tuck (co-sim or silicon DONE)
+         group     EXACT AMBIGUOUS  DIVERGED   NO_DONE    n   EARLY-DONE
+       no tuck       519        19         1        11   550     39 ( 7.1%)
+          tuck        12         3         0         0    15      1 ( 6.7%)
+
+## by co-sim publications
+         group     EXACT AMBIGUOUS  DIVERGED   NO_DONE    n   EARLY-DONE
+             1       288         7         0         6   301     21 ( 7.0%)
+           2-3       219        13         1         5   238     18 ( 7.6%)
+            4+        24         2         0         0    26      1 ( 3.8%)
+
+## by co-sim DONE time (f)
+         group     EXACT AMBIGUOUS  DIVERGED   NO_DONE    n   EARLY-DONE
+         30-39        33         0         0         0    33      2 ( 6.1%)
+         40-49       247         5         0         4   256     12 ( 4.7%)
+           50+       251        17         1         7   276     26 ( 9.4%)
+
+live reads: {'MATCH': 936, 'AMBIGUOUS': 26, 'MISMATCH_IN_SEQ': 1}  total 963
+DONE read time - co-sim DONE (frames, rounded): [(-33, 1), (-32, 10), (-31, 1), (-30, 1), (-29, 2), (-27, 2), (-26, 2), (-23, 1), (-22, 2), (-19, 1), (-17, 1), (-11, 3), (-8, 2), (-7, 4), (-6, 2), (-5, 2), (-4, 2), (-2, 1), (-1, 17), (0, 460), (1, 37)]
+pills where silicon showed a LATER running best (2nd+ read MATCH): 260
+
+## EARLY DONE: 40 of 554 pills with a DONE (7.2%); late (> +2 f): 0
+  every early pill: seq vir h | silicon DONE f, Verilator DONE f, dt | co-sim pubs after silicon's DONE | lock frame vs DONE
+     41  19   9 |  26.50  57.95  -31.45 | [] | lock f 29 EXACT
+     49  17   8 |  40.50  48.78   -8.28 | [] | lock f 40 EXACT
+     72  34  13 |  60.50  71.75  -11.25 | [] | lock f 21 EXACT
+     96  19  11 |  32.00  64.56  -32.56 | [] | lock f 52 AMBIGUOUS
+    157  13   6 |  25.50  47.98  -22.48 | [] | lock f 35 EXACT
+    225  24  12 |  51.50  56.31   -4.81 | [] | lock f 47 EXACT
+    349  45  12 |  37.00  48.21  -11.21 | [] | lock f 27 AMBIGUOUS
+    391  20  11 |  45.50  51.03   -5.53 | [] | lock f 42 EXACT
+    407  34  12 |  32.50  51.44  -18.94 | [] | lock f 36 EXACT
+    447  11   8 |  17.50  49.17  -31.67 | [] | lock f 43 EXACT
+    469  40  13 |  48.00  55.48   -7.48 | [] | lock f 22 EXACT
+    580  40  12 |  41.00  64.45  -23.45 | [[41.41, 3, 2], [55.54, 2, 3]] | lock f 38 AMBIGUOUS
+    589  33  12 |  33.00  41.36   -8.36 | [[35.29, 3, 2]] | lock f 30 EXACT
+    620  17  10 |  40.50  47.36   -6.86 | [] | lock f 45 EXACT
+    627  44  12 |  49.00  53.46   -4.46 | [] | lock f 23 AMBIGUOUS
+    657  18   8 |  28.50  60.78  -32.28 | [] | lock f 38 EXACT
+    674  10   8 |  12.50  42.13  -29.63 | [] | lock f 38 EXACT
+    682  46  12 |  18.50  50.83  -32.33 | [] | lock f 25 EXACT
+    740  37  12 |  20.00  51.94  -31.94 | [] | lock f 27 DIVERGED
+    806  20  10 |  19.50  51.39  -31.89 | [] | lock f 43 EXACT
+    815  17  11 |  50.50  54.96   -4.46 | [] | lock f 37 EXACT
+   1111  18   9 |  40.50  57.52  -17.02 | [] | lock f 31 EXACT
+   1120  15   9 |  29.50  56.62  -27.12 | [] | lock f 49 EXACT
+   1185  17  11 |  55.50  62.40   -6.90 | [] | lock f 30 EXACT
+   1341  16   6 |   6.50  38.25  -31.75 | [] | lock f 37 EXACT
+   1349   9   7 |  31.50  63.53  -32.03 | [] | lock f 52 EXACT
+   1362   8   8 |  37.50  64.97  -27.47 | [] | lock f 61 EXACT
+   1368   7  10 |  36.50  68.33  -31.83 | [] | lock f 60 EXACT
+   1472  14   9 |  12.50  41.76  -29.26 | [] | lock f 34 EXACT
+   1538   9   6 |  40.50  45.89   -5.39 | [] | lock f 56 EXACT
+   1671  12  11 |  20.50  52.62  -32.12 | [] | lock f 36 EXACT
+   1833  18   8 |  46.50  53.18   -6.68 | [] | lock f 41 EXACT
+   1874  20  11 |  48.50  54.65   -6.15 | [] | lock f 39 EXACT
+   1882  15  12 |  24.50  56.17  -31.67 | [] | lock f 33 EXACT
+   1928  19  12 |  48.50  50.69   -2.19 | [] | lock f 44 EXACT
+   1939  12   7 |  13.50  40.00  -26.50 | [] | lock f 41 EXACT
+   2043  12   6 |  20.50  46.80  -26.30 | [] | lock f 49 EXACT
+   2050   9   7 |  31.50  53.19  -21.69 | [] | lock f 46 EXACT
+   2064   4   6 |  26.50  37.12  -10.62 | [] | lock f 48 EXACT
+   2144  19   8 |  12.50  41.44  -28.94 | [] | lock f 33 EXACT
+  early pills whose co-sim published an improvement AFTER silicon's DONE (=> silicon keeps the older answer): 2
+  silicon DONE time of the early pills: min 6.5 median 32.5 max 60.5
+
+## chained co-sim (one copro process, silicon's GO spacing, 3 lead pills) of the early pills
+  target 41: chained DONE  57.95  fresh  57.95  silicon 26.5  chained final [5, 2]  pubs [(1.38, 5, 2)]
+  target 49: chained DONE  48.78  fresh  48.78  silicon 40.5  chained final [6, 0]  pubs [(1.45, 6, 0)]
+  target 96: chained DONE  64.56  fresh  64.56  silicon 32.0  chained final [7, 0]  pubs [(1.61, 4, 0), (7.42, 6, 0), (10.41, 7, 0)]
+  target 157: chained DONE  47.98  fresh  47.98  silicon 25.5  chained final [5, 0]  pubs [(1.25, 5, 0)]
+  target 391: chained DONE  51.03  fresh  51.03  silicon 45.5  chained final [3, 2]  pubs [(1.22, 3, 0), (5.67, 3, 2)]
+  target 447: chained DONE  49.17  fresh  49.17  silicon 17.5  chained final [3, 0]  pubs [(1.23, 3, 0)]
+  target 620: chained DONE  47.36  fresh  47.36  silicon 40.5  chained final [4, 2]  pubs [(1.27, 6, 0), (3.48, 4, 2)]
+  target 657: chained DONE  60.78  fresh  60.78  silicon 28.5  chained final [1, 0]  pubs [(1.48, 1, 0)]
+  target 674: chained DONE  42.13  fresh  42.13  silicon 12.5  chained final [2, 0]  pubs [(1.46, 2, 0)]
+  target 806: chained DONE  51.39  fresh  51.39  silicon 19.5  chained final [3, 3]  pubs [(1.18, 0, 1), (4.45, 5, 1), (6.54, 3, 3)]
+  target 815: chained DONE  54.96  fresh  54.96  silicon 50.5  chained final [1, 3]  pubs [(1.45, 2, 2), (15.82, 1, 3)]
+  target 1111: chained DONE  57.52  fresh  57.52  silicon 40.5  chained final [1, 2]  pubs [(1.24, 1, 2)]
+  target 1120: chained DONE  56.62  fresh  56.62  silicon 29.5  chained final [2, 0]  pubs [(1.34, 0, 0), (3.77, 2, 0)]
+  chained DONE == fresh DONE (+-1 f) on 13 targets
+
+## DIVERGED / NO_DONE pills (12) + EARLY-DONE pills (40), banked in publog_diverged_20261007.jsonl
+seq 103 kind 0 vir 14 h 10 tuck False NO_DONE: reads [(2.0, 4, 0, 'MATCH'), (7.0, 1, 0, 'MATCH')] missed [] done None | cosim [[1.18, 4, 0], [6.01, 1, 0]] final [53.39, 1, 0] tuck [255, 255]  [drmario_cvcp2_publog_8355ddc7_20261006-203722.ss]
+seq 675 kind 0 vir 10 h 8 tuck False NO_DONE: reads [(2.0, 6, 1, 'MATCH'), (18.0, 4, 3, 'MATCH')] missed [] done None | cosim [[1.58, 6, 1], [17.17, 4, 3]] final [54.67, 4, 3] tuck [255, 255]  [drmario_cvcp2_publog_8355ddc7_20261006-205246.ss]
+seq 982 kind 0 vir 20 h 10 tuck False NO_DONE: reads [(2.0, 3, 2, 'MATCH'), (3.0, 4, 3, 'MATCH'), (4.0, 5, 0, 'MATCH')] missed [] done None | cosim [[1.14, 3, 2], [2.14, 4, 3], [3.29, 5, 0]] final [51.61, 5, 0] tuck [255, 255]  [drmario_cvcp2_publog_8355ddc7_20261006-210043.ss]
+seq 1067 kind 0 vir 17 h 12 tuck False NO_DONE: reads [(2.0, 4, 0, 'MATCH')] missed [] done None | cosim [[1.13, 4, 0]] final [54.8, 4, 0] tuck [255, 255]  [drmario_cvcp2_publog_8355ddc7_20261006-210250.ss]
+seq 1296 kind 0 vir 12 h 11 tuck False NO_DONE: reads [(2.0, 4, 0, 'MATCH')] missed [] done None | cosim [[1.18, 4, 0]] final [40.19, 4, 0] tuck [255, 255]  [drmario_cvcp2_publog_8355ddc7_20261006-210853.ss]
+seq 1417 kind 0 vir 19 h 7 tuck False NO_DONE: reads [(2.0, 5, 0, 'MATCH')] missed [] done None | cosim [[1.27, 5, 0]] final [49.82, 5, 0] tuck [255, 255]  [drmario_cvcp2_publog_8355ddc7_20261006-211221.ss]
+seq 1540 kind 0 vir 8 h 6 tuck False NO_DONE: reads [(2.0, 3, 0, 'MATCH'), (5.0, 4, 2, 'MATCH')] missed [] done None | cosim [[1.21, 3, 0], [4.17, 4, 2]] final [42.02, 4, 2] tuck [255, 255]  [drmario_cvcp2_publog_8355ddc7_20261006-211549.ss]
+seq 1888 kind 0 vir 12 h 10 tuck False NO_DONE: reads [(2.0, 2, 3, 'MATCH')] missed [] done None | cosim [[1.51, 2, 3]] final [67.37, 2, 3] tuck [255, 255]  [drmario_cvcp2_publog_8355ddc7_20261006-212502.ss]
+seq 2104 kind 0 vir 20 h 9 tuck False NO_DONE: reads [(2.0, 1, 2, 'MATCH'), (4.0, 0, 3, 'MATCH'), (5.0, 2, 0, 'MATCH')] missed [] done None | cosim [[1.2, 1, 2], [3.18, 0, 3], [4.42, 2, 0]] final [52.81, 2, 0] tuck [255, 255]  [drmario_cvcp2_publog_8355ddc7_20261006-213112.ss]
+seq 2152 kind 0 vir 16 h 10 tuck False NO_DONE: reads [(2.0, 5, 0, 'MATCH')] missed [] done None | cosim [[1.31, 5, 0]] final [44.28, 5, 0] tuck [255, 255]  [drmario_cvcp2_publog_8355ddc7_20261006-213216.ss]
+seq 499 kind 0 vir 21 h 12 tuck False NO_DONE: reads [(2.0, 4, 0, 'MATCH')] missed [] done None | cosim [[1.37, 4, 0]] final [50.78, 4, 0] tuck [255, 255]  [drmario_cvcp2_publog_8355ddc7_20261006-204753.ss]
+seq 740 kind 0 vir 37 h 12 tuck False DIVERGED: reads [(0.5, 0, 1, 'MISMAT')] missed [[1.9, 3, 0]] done {'t': 20.0, 'col': 0, 'o4': 1, 'tuck': 255} | cosim [[1.9, 3, 0], [6.8, 0, 1]] final [51.94, 0, 1] tuck [255, 255]  [drmario_cvcp2_publog_8355ddc7_20261006-205416.ss]
+
+## single-sample cross-check (ss_cosim.py on every state): {'UNUSABLE': 167, 'MATCH': 91, 'UNREADABLE': 18, 'MISMATCH_NEW': 1, 'AMBIGUOUS': 3}
+
+## the 77 residual couch misses, by the same regimes
+viruses <=20: 56  >20: 21
+max height: {'12-13': 14, '14-16': 55, '9-11': 8}
+residual cell -> residual misses / capture pills replayed in that cell:
+     <=20/12-13:   3 / 21
+     <=20/14-16:  50 / 0
+      <=20/9-11:   3 / 211
+      >20/12-13:  11 / 144
+      >20/14-16:   5 / 1
+       >20/9-11:   5 / 1
+after a garbage window: 4  tuck final (seed-0 co-sim): 12
+
+EARLY-DONE tie-back: over all 842 couch pills, the capture's DONE-time distribution predicts 7.5 couch landings on an EARLIER answer (pills with >=2 pubs whose final arrives after silicon's DONE).
+  observed residual EARLIER-PUB: 30; their copro-final publish times (f): [2.1, 3.2, 3.4, 3.5, 5.3, 5.3, 6.3, 7.9, 8.7, 9.0, 9.3, 9.9, 11.8, 12.7, 13.3, 13.4, 13.5, 13.9, 14.7, 14.9, 17.5, 19.9, 21.3, 21.4, 21.5, 24.4, 29.1, 31.1, 32.2, 41.5]
+  of which final published >= the earliest early DONE seen (6.5 f): 23
