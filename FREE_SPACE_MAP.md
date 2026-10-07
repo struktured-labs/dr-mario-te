@@ -35,13 +35,27 @@ Five big nametable tables:
 - `$FF30-$FFCF` — TE embedded VS-CPU AI / trampoline. `$FFFA-$FFFF` = vectors.
 - **`$FB00-$FCFF` — the COPRO DRIVER blob in the copro carts.** Free in the 32KB standalone ONLY.
 
-## SHARED-FREE (free in base AND the copro cart's unit0, outside every table, unreferenced)
+## ⚠ CORRECTION (2026-10-06, TE v11): the `$A02E` and `$A049` runs below are NOT free
+They sit inside `cutscene_objectFlying_basedOnSpeedAndLvl`, the 96-byte table `$9FF8-$A057`
+(3 speed chunks x 32 levels). Four readers do `LDA $9FF8,X` with X = speed (`$8B`, 0-2) x 32 +
+level (`$96`): `$9E62`, `$9F23`, `$B5C3` and `$B5FA`. `$9E4C` (`LDA $96 / CMP #$15`) does the
+lookup for levels 0-20, takes the cutscene path at level 21 and skips it above 21. So each chunk's
+entries 0-21 are LIVE:
+- `$A038-$A03D` = HI speed, levels 0-5 (zeros = "no cutscene"; the HI level-6 entry is `$A03E` = 2)
+- `$A049-$A04D` = HI speed, levels 17-21
+The "derive()" below checked direct references only. These bytes are reached by an index from a
+base 0x36+ bytes earlier, which it cannot see; the same trap as `$9FF8` part2. Only the per-chunk
+entries 22-31 (`$A02E-$A037`, `$A04E-$A057`) look unread, and that is not proven: it assumes
+`$9F18`/`$B5B8` are reached only via the `$9E4C` bound. **Use neither run until a read-trace says
+otherwise.** TE v11 allocates nothing there (`tests/test_te_v11_release.py` G).
+
+## SHARED-FREE (free in base AND the copro cart's unit0, outside every table, unreferenced) — SEE CORRECTION ABOVE
 Derivation = ($FF/$00 runs) ∩ (∉ any table read-set) ∩ (no abs/indexed ref) ∩ (filler in base+copro):
 | run | size | notes |
 |---|---|---|
-| `$A02E-$A03D` | 16 B | clean, 0 refs |
+| ~~`$A02E-$A03D`~~ | 16 B | **NOT FREE**: inside the `$9FF8` cutscene table; `$A038-$A03D` is live (HI, levels 0-5) |
 | `$CEEC-$CEFC` | 17 B | clean, 0 refs (trailing pad after the $CA5A table's walked content) |
-| `$A049-$A057` | 9 B | clean, but `$A058` starts a `LDA $A058,X` table — usable part is 9 B |
+| ~~`$A049-$A057`~~ | 9 B | **NOT FREE**: inside the `$9FF8` cutscene table; `$A049-$A04D` is live (HI, levels 17-21) |
 
 Total shared-free ≈ 42 B in three runs, max single run 17 B. Insufficient for the ~84 B 2P-study
 tail or the 23 B footer routine → the footer takes the **split build** (standalone → its free

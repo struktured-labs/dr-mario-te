@@ -21,8 +21,9 @@ def load(d: str):
     for line in open(f"{d.rstrip('/')}/frames.txt"):
         if line.startswith("R "):
             continue
-        f, m, h, hm = line.split()
-        rows.append((int(f), int(m), int(h), int(hm)))
+        f, m, h, hm, *rest = line.split()
+        # 5th column (newer runs): hash without the stack page, both fields, $00/$01 and the START OAM Y bytes
+        rows.append((int(f), int(m), int(h), int(hm), int(rest[0]) if rest else int(hm)))
     return rows
 
 
