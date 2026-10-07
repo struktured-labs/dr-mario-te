@@ -1,0 +1,23 @@
+# DRPUBLOG Mesen validation (2026-10-07T00:30Z): cart 8355ddc7, chained M1 G4 lulu-10/05 cases with garbage,
+# tools/silfid/publog_probe.lua (RAM dumps every 60 f), run dir tmp/silfid/mesen/runs/publog_m1g4
+
+## 1. ring vs the probe's truth (tools/silfid/publog_validate.py RUN pubtrace_m1g4_lulu_20261005.jsonl)
+{'ring_ok': 148, 'live_events': 334, 'live_checked_vs_timeline': 334, 'long_served': 277, 'locks': 134, 'dones': 51, 'pills': 148, 'seq_gaps': 0, 'gos': 149, 'prestart_pills': 10}
+PUBLOG MESEN VALIDATION: PASS
+
+## 2. end to end: tools/silfid/ss_cosim.py --publog on the same dumps (decode -> Verilator co-sim of each logged upload -> judge)
+##    expected: every case GO EXACT/AMBIGUOUS (Mesen served the co-sim of that same upload); the 3 warm-up GOs (probe FILLER
+##    schedule, no real copro) and the prestart GOs (the probe serves the NEXT case's tracker-board timeline, while the
+##    cart uploaded its own projected board with the probe's synthetic garbage colours) are DIVERGED by construction
+seq     1 kind 0 DIVERGED  reads [] missed [] done {'t': 2.5, 'col': 3, 'o4': 0, 'tuck': 240} cosim [(1.45, 4, 3)] final (43.75, 4, 3)
+seq     2 kind 0 DIVERGED  reads [] missed [] done {'t': 2.5, 'col': 3, 'o4': 0, 'tuck': 240} cosim [(1.36, 6, 0)] final (39.59, 6, 0)
+seq     3 kind 0 DIVERGED  reads [] missed [] done {'t': 2.5, 'col': 3, 'o4': 0, 'tuck': 240} cosim [(1.45, 1, 3), (2.84, 2, 1)] final (44.8, 2, 1)
+seq    15 kind 1 DIVERGED  reads [(2.5, 1, 2, 'AMBIG')] missed [(2.47, 6, 0), (21.34, 5, 2)] done {'t': 42.0, 'col': 1, 'o4': 2, 'tuck': 255} cosim [(1.23, 6, 2), (2.47, 6, 0), (7.5, 1, 2), (21.34, 5, 2)] final (52.72, 5, 2)
+seq    18 kind 1 DIVERGED  reads [(2.5, 4, 0, 'AMBIG')] missed [(1.21, 7, 0), (3.47, 2, 0)] done {'t': 47.0, 'col': 4, 'o4': 0, 'tuck': 255} cosim [(1.21, 7, 0), (3.47, 2, 0)] final (41.88, 2, 0)
+seq    23 kind 1 DIVERGED  reads [(2.5, 7, 0, 'AMBIG'), (3.5, 3, 1, 'MISMA')] missed [(2.43, 2, 0), (24.55, 6, 2)] done {'t': 44.0, 'col': 3, 'o4': 1, 'tuck': 255} cosim [(1.31, 7, 0), (2.43, 2, 0), (8.01, 3, 1), (24.55, 6, 2)] final (47.22
+seq    35 kind 1 DIVERGED  reads [(2.5, 1, 0, 'AMBIG'), (8.5, 7, 0, 'MATCH')] missed [(2.26, 5, 0), (12.23, 2, 0)] done {'t': 47.0, 'col': 7, 'o4': 0, 'tuck': 255} cosim [(1.14, 4, 0), (2.26, 5, 0), (7.46, 7, 0), (12.23, 2, 0)] final (50.42
+seq    61 kind 1 DIVERGED  reads [(2.5, 3, 1, 'MATCH'), (3.5, 3, 0, 'MISMA')] missed [] done {'t': 48.0, 'col': 3, 'o4': 0, 'tuck': 255} cosim [(1.23, 3, 1)] final (49.14, 3, 1)
+seq    78 kind 1 DIVERGED  reads [(2.5, 1, 0, 'AMBIG'), (3.5, 3, 0, 'AMBIG'), (6.5, 2, 2, 'MISMA')] missed [(3.08, 3, 3)] done {'t': 32.0, 'col': 2, 'o4': 2, 'tuck': 255} cosim [(1.08, 3, 0), (3.08, 3, 3), (7.78, 2, 2)] final (38.58, 2, 2)
+seq   102 kind 1 DIVERGED  reads [(2.5, 4, 2, 'MISMA')] missed [(1.24, 4, 1), (19.87, 7, 0)] done {'t': 43.0, 'col': 4, 'o4': 2, 'tuck': 255} cosim [(1.24, 4, 1), (19.87, 7, 0)] final (39.79, 7, 0)
+TALLY {"DIVERGED": 10, "EXACT": 131, "AMBIGUOUS": 6} pills 147
+by (kind, warm-up GO, verdict): {(0, True, 'DIVERGED'): 3, (0, False, 'EXACT'): 128, (1, False, 'EXACT'): 3, (1, False, 'DIVERGED'): 7, (0, False, 'AMBIGUOUS'): 6}

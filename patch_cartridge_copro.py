@@ -467,6 +467,39 @@ USE_SEEDS = _os.environ.get("DRSEED", "1") != "0"   # DRSEED=0 -> seeds stay 0 =
 # (NAV_MAGIC != $A5); MiSTer PRG-RAM is sticky across load_core, so a DRSEED=0 cart loaded after any seeded cart keeps
 # uploading the previous cart's last seed. The couch (P1 = human) has no mirror to desync, the seed's only purpose.
 SEEDZERO = _os.environ.get("DRSEEDZERO", "0") == "1"
+# DRPUBLOG=1 (silicon-fidelity lane 2026-10-06, default 0 -> byte-identical): DEBUG/INSTRUMENT cart. A per-pill ring in
+# PRG-RAM of everything needed to replay the P2 copro on Verilator exactly, read back from a MiSTer save-state:
+#   header page $6600 ('S','L','G',1 magic; slot index; 16-bit pill seq; 16-bit hook counter; scratch);
+#   25 slots of 256 B at $6700-$7FFF, one per P2 GO (normal spawn upload = kind 0, garbage-window PRESTART = kind 1):
+#     +0 $A7 when complete | +1/2 seq | +3/4 hook counter at GO | +5 kind | +6..9 cA cB nA nB AS UPLOADED (seed,
+#     DRREACHTX and DRTAPP nibbles included) | +10 frame counter $43 at GO | +11 event count | +12 $03A4 viruses |
+#     +13 $0386 Y | +14 $0385 X | +15 $0397 nextAction | +16..143 the 128 board bytes AS UPLOADED |
+#     +144.. 18 events x 6 B: [type | $80 if hooks >= 256, hooks since GO (lo), frames since GO, a, b, c]
+#       1 live mailbox change: a = col ($616D), b = copro orient4 ($616C) -- the cart's UNTORN read, before any gate
+#       2 DONE: a = final col, b = orient4, c = tuck descriptor (col << 4 | row; $FF.. = none); hooks = at DONE
+#       3 the cart's own target changed: a = TGT_C2, b = TGT_O2 (game orient)
+#       5 P2 lock: a = $0385 X, b = $0386 Y << 2 | $03A5 rot
+#     ONE event per hook at most (priority DONE > live > target > lock; a deferred one is re-detected next hook), so
+#     the census charges a single event per hook.
+# The board is TEED inside the existing upload loops (one extra STA (zp),Y per byte, ~6 cyc x 128) -- no second copy.
+# The two pointer bytes are BORROWED from zero page ($CA/$CB, v18 per-tick scratch) and restored before the hook
+# returns. Free run $6600-$7FFF per PRG_RAM_MAP.md. ss_cosim.py --publog replays every logged pill from a save-state.
+PUBLOG = _os.environ.get("DRPUBLOG", "0") == "1"
+# DRSLICEGUARD2=1 (default 0 -> byte-identical; needs DRP1SLICE + DRPRESPIPE): extend the #140 PP_RAN phase/slice
+# interlock to the P2 SPAWN-UPLOAD hook. Without it the couch P2 driver on a sliced-native-P1 image certifies OVER by 944
+# cycles (pp_spawn + pp_idle: a 128-byte upload and a ~6k slice tick in the same hook); with it the upload hook skips
+# the spectator-side slice tick (one hook of P1 search latency per P2 pill) and the census cut is sound by guard.
+SLICEGUARD2 = _os.environ.get("DRSLICEGUARD2", "0") == "1"
+PL_MAG, PL_SLOT, PL_SEQ, PL_HK = 0x6600, 0x6604, 0x6605, 0x6607          # magic(4) slot seq(2) hooks(2)
+PL_LC, PL_LO, PL_TC, PL_TO, PL_N = 0x6609, 0x660A, 0x660B, 0x660C, 0x660D
+PL_OPEN, PL_PAGE, PL_Z0, PL_Z1 = 0x660E, 0x660F, 0x6610, 0x6611
+PL_ET, PL_EA, PL_EB, PL_F0, PL_KIND, PL_DROP, PL_LNA = 0x6612, 0x6613, 0x6614, 0x6615, 0x6616, 0x6617, 0x6618
+PL_CB = 0x6619                                                              # $6619-$661C staged cA cB nA nB
+PL_EC, PL_EH, PL_EHH, PL_UC, PL_UO = 0x661D, 0x661E, 0x661F, 0x6620, 0x6621   # event arg 3, its hooks; untorn read
+PL_DP, PL_DC, PL_DO, PL_DT, PL_DR, PL_DHL, PL_DHH = 0x6622, 0x6623, 0x6624, 0x6625, 0x6626, 0x6627, 0x6628  # DONE stash
+_PL_HDR_LEN = 0x29                                                          # header bytes $6600-$6628
+PL_RING, PL_NSLOT, PL_EV0, PL_EVMAX, PL_EVSZ = 0x6700, 25, 0x90, 18, 6
+PL_ZP = 0xCA                                                                # borrowed zp pointer ($CA/$CB)
 # WEAVE steering: when sliding to the target column is blocked at the pill's row (stuck
 # >= WEAVE_LIM hook-cycles), release the gravity freeze for one drop so the pill descends
 # a row and can slide past the obstruction (down-and-over), instead of hovering frozen and
@@ -975,6 +1008,13 @@ assert not (P1WIGGLE and HUMAN_P1), (
 # and reuses the same target -> identical byte. P1AI_Y is that key. Any future per-pill work
 # here MUST preserve this; tests/test_p1_native.py asserts it directly.
 P1NATIVE = _os.environ.get("DRP1NATIVE", "0") == "1"
+# DRP1AIHI=1 (silicon-fidelity lane 2026-10-06, default 0 -> byte-identical): place the P1 native AI + swap_eval ABOVE
+# the DRRTIVEC probe ($A02E) at $A040/$A240 instead of $9000/$9200, so a driver body larger than 4 KB (the couch P2
+# driver -- PRESTART/PRESPIPE/PROPH/LATEGUARD/SETTLE -- is ~4.3 KB) can share the driver bank with a native P1. The
+# bank is otherwise empty above the probe (main() places only unit1, the P1 AI, its swap_eval and the probe byte), and
+# every reference goes through P1AI_CPU/P1SWAP_CPU (the census capture reads them from this module too).
+if _os.environ.get("DRP1AIHI", "0") == "1":
+    P1AI_CPU, P1SWAP_CPU = 0xA040, 0xA240
 assert not (P1NATIVE and HUMAN_P1), (
     "DRP1NATIVE=1 with DRHUMAN=1 is refused: P1 is a human on a DRHUMAN cart and the cart "
     "must never press their buttons (spec P0.4). Build the native P1 AI on a CvC cart only.")
@@ -1454,6 +1494,8 @@ assert not (PRESPIPE and not PRESTART), (
 # it only chooses which certificate you are asking for.
 PRESPIPE_Q = int(_os.environ.get("DRPRESPIPE_Q", "3"))
 assert 1 <= PRESPIPE_Q <= 8, "DRPRESPIPE_Q must be 1..8 (there are at most 8 settle records)"
+assert not SLICEGUARD2 or (P1SLICE and PRESPIPE), "DRSLICEGUARD2 extends the DRP1SLICE x DRPRESPIPE interlock: needs both"
+assert not PUBLOG or TUCK or LATEGUARD, "DRPUBLOG logs DONE at handle(2)'s {L}_wdone_ok, emitted only with DRTUCK or DRLATEGUARD"
 PP_NM = -(-8 // PRESPIPE_Q)             # match phases needed to cover 8 records (ceil)
 PP_PH = 0x61C2                          # pipeline phase: 0 idle, 1 orphan+settle, 2 match 0-3, 3 match 4-7+commit
 PP_SWAL = 0x61C3                        # !=0: swallow the NEXT release edge (post-abort teardown parity)
@@ -1898,6 +1940,17 @@ def build_main(level=11, speed=1):
     a.ins16("STA_abs", WDOGH1); a.ins16("STA_abs", WDOGH2)
     a.ins16("STA_abs", SEED1); a.ins16("STA_abs", SEED2)
     a.ins16("STA_abs", VSEEN1); a.ins16("STA_abs", VSEEN2)
+    if PUBLOG:
+        # DRPUBLOG power-on init (A == 0 here): header zeroed, every slot invalid, magic 'SLG' v1. Runs only on a cold
+        # PRG-RAM (NAV_MAGIC != $A5); a warm start keeps the ring, and pl_open's wrap clamps a stray slot index.
+        for addr in range(PL_SLOT, PL_MAG + _PL_HDR_LEN):
+            a.ins16("STA_abs", addr)
+        for k in range(PL_NSLOT):
+            a.ins16("STA_abs", PL_RING + 0x100 * k)
+        a.ins("LDA_imm", PL_NSLOT - 1); a.ins16("STA_abs", PL_SLOT)
+        for i, ch in enumerate((0x53, 0x4C, 0x47, 0x01)):
+            a.ins("LDA_imm", ch); a.ins16("STA_abs", PL_MAG + i)
+        a.ins("LDA_imm", 0)                                                # keep A == 0 for the stores below
     if ROTFIX:
         a.ins16("STA_abs", ROT_DONE2)                       # A==0 here: orient-commit latch clear
     if SLAM:
@@ -1982,6 +2035,8 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", PR_CNT + 1); a.ins16("STA_abs", RINGP + 0xC2)
         a.label("pr_done")
     a.ins16("INC_abs", NAV_T)                               # tick every hook call (autonav only ticked in menus)
+    if PUBLOG:
+        a.ins16("INC_abs", PL_HK); a.br("BNE", "pl_hk_ok"); a.ins16("INC_abs", PL_HK + 1); a.label("pl_hk_ok")
     if HOLDBOARD:
         # RESTORE + RELEASE: runs FIRST, every hook, ahead of the mode split entirely -- HOLD_ACTIVE
         # can be true while $0046 reads 4 (STAGE CLEAR's own blocking wait) OR 5/6/7 (the topout ->
@@ -2825,6 +2880,12 @@ def build_main(level=11, speed=1):
             # stays byte-identical -- this fix must not cost bytes on carts that never asked
             # for it.
             a.br("BNE", f"{L}_wdone_ok"); a.jmp(f"{L}_search"); a.label(f"{L}_wdone_ok")
+            if PUBLOG:
+                # stash the DONE read (the teardown below zeroes WDOG2 before act_p1's pl_hook can log it)
+                for src, dst in ((wcol, PL_DC), (wor, PL_DO), (W_TCOL, PL_DT), (W_TROW, PL_DR), (wdog, PL_DHL),
+                                 (wdogh, PL_DHH)):
+                    a.ins16("LDA_abs", src); a.ins16("STA_abs", dst)
+                a.ins("LDA_imm", 1); a.ins16("STA_abs", PL_DP)
         else:
             a.br("BEQ", f"{L}_search")    # DONE==0 -> still searching
         # publish result: best_col + orient4 -> game orient map {0xFF/0:3, 1:1, 2:0, 3:2}
@@ -2985,17 +3046,30 @@ def build_main(level=11, speed=1):
             # SAME test with THIS code reverted to the old placement fails "1 of 40 frames"
             # (the documented signature) -- see commit message.
             a.ins("LDA_imm", 0xFF); a.ins16("STA_abs", TUCK_C2)
-        a.ins("LDX_imm", 0)
-        # NES playfield empties are 0xFF *or* 0x00 (per tile-encoding); the copro parser only
-        # treats 0xFF as empty, so a 0x00 cell reads as a PHANTOM yellow pill -> the color-heavy
-        # depth-3 endgame eval corrupts once mid-game clears create 0x00 cells (walls at ~20;
-        # sim never sees it -- faithful_to_nes always emits 0xFF). Normalize 0x00 -> 0xFF here.
-        a.label(f"{L}_cp")
-        a.ins16("LDA_absX", board_src); a.br("BNE", f"{L}_cpnz")   # non-zero -> store as-is
-        a.ins("LDA_imm", 0xFF)                                      # 0x00 -> empty
-        a.label(f"{L}_cpnz")
-        a.ins16("STA_absX", wbase)
-        a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", f"{L}_cp")
+        if PUBLOG and idx == 2:
+            # DRPUBLOG: same upload, Y-indexed so the byte is TEED into the open log slot (STA (zp),Y) in the same
+            # pass. `h2_cp` stays the label at the upload's entry (the census cut point); the loop head is h2_cq.
+            a.label(f"{L}_cp")
+            a.ins("LDA_imm", 0); a.jsr("pl_open")
+            a.ins("LDY_imm", 0)
+            a.label(f"{L}_cq")
+            a.ins16("LDA_absY", board_src); a.br("BNE", f"{L}_cqnz")
+            a.ins("LDA_imm", 0xFF)
+            a.label(f"{L}_cqnz")
+            a.ins16("STA_absY", wbase); a.ins("STA_indY", PL_ZP)
+            a.ins("INY"); a.ins("CPY_imm", 128); a.br("BNE", f"{L}_cq")
+        else:
+            a.ins("LDX_imm", 0)
+            # NES playfield empties are 0xFF *or* 0x00 (per tile-encoding); the copro parser only
+            # treats 0xFF as empty, so a 0x00 cell reads as a PHANTOM yellow pill -> the color-heavy
+            # depth-3 endgame eval corrupts once mid-game clears create 0x00 cells (walls at ~20;
+            # sim never sees it -- faithful_to_nes always emits 0xFF). Normalize 0x00 -> 0xFF here.
+            a.label(f"{L}_cp")
+            a.ins16("LDA_absX", board_src); a.br("BNE", f"{L}_cpnz")   # non-zero -> store as-is
+            a.ins("LDA_imm", 0xFF)                                      # 0x00 -> empty
+            a.label(f"{L}_cpnz")
+            a.ins16("STA_absX", wbase)
+            a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", f"{L}_cp")
         for k, src in enumerate(colsrcs):
             if k == 0:      # cA carries seed low nibble (<<4)
                 a.ins16("LDA_abs", seedsrc)
@@ -3012,12 +3086,20 @@ def build_main(level=11, speed=1):
             else:
                 a.ins16("LDA_abs", src); a.ins("AND_imm", 0x0F)
             a.ins16("STA_abs", wbase + 0x80 + k)
+            if PUBLOG and idx == 2:
+                a.ins16("STA_abs", PL_CB + k)
         a.ins16("STA_abs", wgo)          # GO: write to +$84 pulses copro reset, clears DONE
         a.ins("LDA_imm", 1); a.ins16("STA_abs", armed)
         a.ins("LDA_imm", 0); a.ins16("STA_abs", pend)
         if not WRETRY_FIX:
             a.ins16("STA_abs", wretry)                      # FIX(A): dropping this keeps the re-queue-once latch
         a.ins16("STA_abs", wdog); a.ins16("STA_abs", wdogh)
+        if PUBLOG and idx == 2:
+            a.jsr("pl_close")
+        if SLICEGUARD2 and idx == 2:
+            # DRSLICEGUARD2: this hook uploaded + GOed P2 -> the P1 slice tick (later in this hook, act_p1) skips it.
+            a.label("h2_spguard")
+            a.ins("LDA_imm", 1); a.ins16("STA_abs", PP_RAN)
         a.label(f"{L}_done")
     if not HUMAN_P1 and not P1NATIVE:
         # (DRP1NATIVE drops P1's copro search entirely -- see the flag note: on the deployed
@@ -3031,6 +3113,9 @@ def build_main(level=11, speed=1):
         a.label("act_dn")
         _emit_act_prologue(a, "_dn")
         a.jmp("act_p2")
+
+    if PUBLOG:
+        _emit_publog(a)
 
     # freeze QUEUED players too: a pill whose search hasn't run yet must not fall unguided
     # (time-sharing wait was letting pills drop 2-4 rows before their target arrived ->
@@ -3563,10 +3648,17 @@ def build_main(level=11, speed=1):
 
         # ---- commit: upload the projection, fill the mailbox, GO ----------------------------
         a.label("pt_commit")
-        a.ins("LDX_imm", 0)
-        a.label("pt_up")
-        a.ins16("LDA_absX", PRE_BUF); a.ins16("STA_absX", W2_BASE)
-        a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "pt_up")
+        if PUBLOG:
+            a.ins("LDA_imm", 1); a.jsr("pl_open")
+            a.ins("LDY_imm", 0)
+            a.label("pt_up")
+            a.ins16("LDA_absY", PRE_BUF); a.ins16("STA_absY", W2_BASE); a.ins("STA_indY", PL_ZP)
+            a.ins("INY"); a.ins("CPY_imm", 128); a.br("BNE", "pt_up")
+        else:
+            a.ins("LDX_imm", 0)
+            a.label("pt_up")
+            a.ins16("LDA_absX", PRE_BUF); a.ins16("STA_absX", W2_BASE)
+            a.ins("INX"); a.ins("CPX_imm", 128); a.br("BNE", "pt_up")
         # cA/cB = the PREVIEW ($039A/$039B) -- the capsule that will actually spawn, since
         # generateNextPill has not run yet -- carrying the tie-break seed nibbles exactly as
         # handle()'s colour loop does.
@@ -3575,9 +3667,13 @@ def build_main(level=11, speed=1):
         a.ins16("STA_abs", TMPSEED)
         a.ins16("LDA_abs", 0x039A); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED)
         a.ins16("STA_abs", W2_BASE + 0x80)
+        if PUBLOG:
+            a.ins16("STA_abs", PL_CB)
         a.ins16("LDA_abs", SEED2); a.ins("AND_imm", 0xF0); a.ins16("STA_abs", TMPSEED)
         a.ins16("LDA_abs", 0x039B); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", TMPSEED)
         a.ins16("STA_abs", W2_BASE + 0x81)
+        if PUBLOG:
+            a.ins16("STA_abs", PL_CB + 1)
         # nA/nB = colorCombination_{left,right}[pillsReserve[p2_pillsCounter]] = (val/3, val%3).
         # The reserve is 128 bytes of plain RAM at $0780 and the counter has NOT been incremented
         # for the upcoming spawn, so this is the capsule after the one we are searching for. The
@@ -3596,15 +3692,23 @@ def build_main(level=11, speed=1):
             # DRREACHTX: same gravity nibbles as handle() (X = nA survives: the nibble code touches A only)
             _emit_reachtx_nibble(a, True)
             a.ins("TXA"); a.ins("AND_imm", 0x03 if TAPP else 0x0F); a.ins16("ORA_abs", TMPSEED); a.ins16("STA_abs", W2_BASE + 0x82)
+            if PUBLOG:
+                a.ins16("STA_abs", PL_CB + 2)
             _emit_reachtx_nibble(a, False)
             a.ins16("LDA_abs", PRE_TMP); a.ins("AND_imm", 0x03 if TAPP else 0x0F); a.ins16("ORA_abs", TMPSEED); a.ins16("STA_abs", W2_BASE + 0x83)
         else:
             a.ins("TXA"); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", W2_BASE + 0x82)
+            if PUBLOG:
+                a.ins16("STA_abs", PL_CB + 2)
             a.ins16("LDA_abs", PRE_TMP); a.ins("AND_imm", 0x0F); a.ins16("STA_abs", W2_BASE + 0x83)
+        if PUBLOG:
+            a.ins16("STA_abs", PL_CB + 3)
         a.ins16("STA_abs", W2_BASE + 0x84)      # GO: any write to +$84 pulses reset + clears DONE
         a.ins("LDA_imm", 1); a.ins16("STA_abs", ARMED2); a.ins16("STA_abs", PRE_ACT2)
         a.ins("LDA_imm", 0)
         a.ins16("STA_abs", PEND2); a.ins16("STA_abs", WDOG2); a.ins16("STA_abs", WDOGH2)
+        if PUBLOG:
+            a.jsr("pl_close")
         # WRETRY2 is deliberately left alone: it is a once-per-PILL latch and this search belongs
         # to a pill that has not spawned yet (same reasoning as WRETRY_FIX's dropped clear).
         a.label("pt_bail")
@@ -3750,6 +3854,10 @@ def build_main(level=11, speed=1):
         a.ins16("LDA_abs", W2_BASE + 0x86); a.ins16("CMP_abs", 0x616C)         # re-read: detect torn read
         if ROTFIX:
             a.br("BEQ", "nf2_untorn"); a.jmp("act_p1"); a.label("nf2_untorn")  # torn: keep old TGT (rel too far)
+            if PUBLOG:
+                # the untorn read just stored $616C/$616D: remember it for pl_hook (A is reloaded right below)
+                a.ins16("LDA_abs", 0x616C); a.ins16("STA_abs", PL_UO)
+                a.ins16("LDA_abs", 0x616D); a.ins16("STA_abs", PL_UC)
         else:
             a.br("BNE", "act_p1")                                              # torn read: keep old TGT
         # ★ SECOND SANITY GUARD, and the one that actually mattered. handle()'s guard is not
@@ -4140,6 +4248,8 @@ def build_main(level=11, speed=1):
     a.ins("LDY_imm", 0x04)
     a.label("st_p2"); a.ins("STY_zp", 0xF6)
     a.label("act_p1")
+    if PUBLOG:
+        a.jsr("pl_hook")
     if TAPP:
         # DRTAPP TAP FILTER -- every P2 path ends here. Press intents (A/B/L/R) survive only on a press frame
         # (cooldown 0) whose bits were RELEASED last frame; otherwise dropped this frame (= released). Holds pass.
@@ -4417,6 +4527,119 @@ def _check_gated_flags():
         "REFUSING TO BUILD: a requested default-off flag is suppressed by its gate and would ship "
         "silently absent. Enable the gate, drop the flag, or set DRALLOW_GATED=1 to override.")
 
+def _emit_publog(a):
+    """DRPUBLOG routines (see the flag block). JSR-only. pl_open/pl_close bracket one straight-line upload span and
+    borrow the zero-page pointer PL_ZP across it; pl_hook (every play hook, act_p1) logs at most ONE event and
+    preserves A/X/Y; pl_ev borrows the pointer and restores it. Header init lives in do_init (power-on); with sticky
+    PRG-RAM from another cart the slot index is clamped by the wrap and writes are confined to the ring pages."""
+    Z0, Z1 = PL_ZP, PL_ZP + 1
+    # ---- pl_open: A = kind. Advance the ring, write the header, point the zp pointer at the slot's board (+16).
+    a.label("pl_open")
+    a.ins16("STA_abs", PL_KIND)
+    a.ins16("INC_abs", PL_SLOT); a.ins16("LDA_abs", PL_SLOT); a.ins("CMP_imm", PL_NSLOT); a.br("BCC", "pl_s1")
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", PL_SLOT)
+    a.label("pl_s1")
+    a.ins("CLC"); a.ins("ADC_imm", PL_RING >> 8); a.ins16("STA_abs", PL_PAGE)
+    a.ins16("INC_abs", PL_SEQ); a.br("BNE", "pl_s2"); a.ins16("INC_abs", PL_SEQ + 1)
+    a.label("pl_s2")
+    a.ins("LDA_zp", Z0); a.ins16("STA_abs", PL_Z0); a.ins("LDA_zp", Z1); a.ins16("STA_abs", PL_Z1)
+    a.ins("LDA_imm", 0); a.ins("STA_zp", Z0); a.ins16("LDA_abs", PL_PAGE); a.ins("STA_zp", Z1)
+    a.ins("LDY_imm", 0); a.ins("LDA_imm", 0); a.ins("STA_indY", Z0)          # invalid until pl_close
+    for off, src in ((1, PL_SEQ), (2, PL_SEQ + 1), (3, PL_HK), (4, PL_HK + 1), (5, PL_KIND)):
+        a.ins("LDY_imm", off); a.ins16("LDA_abs", src); a.ins("STA_indY", Z0)
+    a.ins("LDY_imm", 10); a.ins("LDA_zp", 0x43); a.ins("STA_indY", Z0); a.ins16("STA_abs", PL_F0)
+    a.ins("LDY_imm", 11); a.ins("LDA_imm", 0); a.ins("STA_indY", Z0); a.ins16("STA_abs", PL_N)
+    a.ins16("STA_abs", PL_DP)                                                 # A == 0: no DONE pending
+    for off, src in ((12, 0x03A4), (13, 0x0386), (14, 0x0385), (15, 0x0397)):
+        a.ins("LDY_imm", off); a.ins16("LDA_abs", src); a.ins("STA_indY", Z0)
+    a.ins("LDA_imm", 1); a.ins16("STA_abs", PL_OPEN)
+    a.ins("LDA_imm", 0xFF)                                                    # live read: nothing seen this pill
+    for x in (PL_LC, PL_LO, PL_UC, PL_UO):
+        a.ins16("STA_abs", x)
+    a.ins("LDA_imm", 0x10); a.ins("STA_zp", Z0)                               # pointer -> board (+16)
+    a.ins("RTS")
+    # ---- pl_close: after the GO. Colour bytes, mark the slot valid, give the pointer back.
+    a.label("pl_close")
+    a.ins("LDA_imm", 0); a.ins("STA_zp", Z0)
+    for k in range(4):
+        a.ins("LDY_imm", 6 + k); a.ins16("LDA_abs", PL_CB + k); a.ins("STA_indY", Z0)
+    a.ins("LDY_imm", 0); a.ins("LDA_imm", 0xA7); a.ins("STA_indY", Z0)
+    a.ins16("LDA_abs", PL_Z0); a.ins("STA_zp", Z0); a.ins16("LDA_abs", PL_Z1); a.ins("STA_zp", Z1)
+    a.ins("RTS")
+    # ---- pl_ev: A = type; args PL_EA/EB/EC, hooks PL_EH/PL_EHH. Appends one event to the open slot. Clobbers A/Y.
+    a.label("pl_ev")
+    a.ins16("STA_abs", PL_ET)
+    a.ins16("LDA_abs", PL_OPEN); a.br("BNE", "pl_e1"); a.ins("RTS"); a.label("pl_e1")
+    a.ins16("LDA_abs", PL_PAGE); a.ins("CMP_imm", PL_RING >> 8); a.br("BCS", "pl_e2"); a.ins("RTS"); a.label("pl_e2")
+    a.ins("CMP_imm", (PL_RING >> 8) + PL_NSLOT); a.br("BCC", "pl_e3"); a.ins("RTS"); a.label("pl_e3")
+    a.ins16("LDA_abs", PL_N); a.ins("CMP_imm", PL_EVMAX); a.br("BCC", "pl_e4")
+    a.ins16("INC_abs", PL_DROP); a.ins("RTS")
+    a.label("pl_e4")
+    a.ins("ASL_A"); a.ins("CLC"); a.ins16("ADC_abs", PL_N); a.ins("ASL_A")          # 6 * N
+    a.ins("CLC"); a.ins("ADC_imm", PL_EV0); a.ins("TAY")
+    a.ins("LDA_zp", Z0); a.ins16("STA_abs", PL_Z0); a.ins("LDA_zp", Z1); a.ins16("STA_abs", PL_Z1)
+    a.ins("LDA_imm", 0); a.ins("STA_zp", Z0); a.ins16("LDA_abs", PL_PAGE); a.ins("STA_zp", Z1)
+    a.ins16("LDA_abs", PL_EHH); a.br("BEQ", "pl_e5")
+    a.ins16("LDA_abs", PL_ET); a.ins("ORA_imm", 0x80); a.jmp("pl_e6")
+    a.label("pl_e5")
+    a.ins16("LDA_abs", PL_ET)
+    a.label("pl_e6")
+    a.ins("STA_indY", Z0); a.ins("INY")
+    a.ins16("LDA_abs", PL_EH); a.ins("STA_indY", Z0); a.ins("INY")
+    a.ins("LDA_zp", 0x43); a.ins("SEC"); a.ins16("SBC_abs", PL_F0); a.ins("STA_indY", Z0); a.ins("INY")
+    for x in (PL_EA, PL_EB, PL_EC):
+        a.ins16("LDA_abs", x); a.ins("STA_indY", Z0); a.ins("INY")
+    a.ins16("INC_abs", PL_N); a.ins16("LDA_abs", PL_N); a.ins("LDY_imm", 11); a.ins("STA_indY", Z0)
+    a.ins16("LDA_abs", PL_Z0); a.ins("STA_zp", Z0); a.ins16("LDA_abs", PL_Z1); a.ins("STA_zp", Z1)
+    a.ins("RTS")
+    # ---- pl_hook: every play hook (act_p1). ONE event at most: DONE > live change > target change > lock.
+    a.label("pl_hook")
+    a.ins("PHA"); a.ins("TXA"); a.ins("PHA"); a.ins("TYA"); a.ins("PHA")
+    a.ins16("LDA_abs", PL_DP); a.br("BEQ", "pl_h1")
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", PL_DP)
+    a.ins16("LDA_abs", PL_DC); a.ins16("STA_abs", PL_EA); a.ins16("LDA_abs", PL_DO); a.ins16("STA_abs", PL_EB)
+    a.ins16("LDA_abs", PL_DT); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A"); a.ins("ASL_A")
+    a.ins16("STA_abs", PL_EC); a.ins16("LDA_abs", PL_DR); a.ins("AND_imm", 0x0F); a.ins16("ORA_abs", PL_EC)
+    a.ins16("STA_abs", PL_EC)
+    a.ins16("LDA_abs", PL_DHL); a.ins16("STA_abs", PL_EH); a.ins16("LDA_abs", PL_DHH); a.ins16("STA_abs", PL_EHH)
+    a.ins("LDA_imm", 2); a.jmp("pl_hev")
+    a.label("pl_h1")
+    a.ins16("LDA_abs", PL_UC); a.ins16("CMP_abs", PL_LC); a.br("BNE", "pl_h1c")
+    a.ins16("LDA_abs", PL_UO); a.ins16("CMP_abs", PL_LO); a.br("BEQ", "pl_h2")
+    a.label("pl_h1c")
+    a.ins16("LDA_abs", PL_UC); a.ins16("STA_abs", PL_LC); a.ins16("STA_abs", PL_EA)
+    a.ins16("LDA_abs", PL_UO); a.ins16("STA_abs", PL_LO); a.ins16("STA_abs", PL_EB)
+    a.ins("LDA_imm", 1); a.jmp("pl_hev2")
+    a.label("pl_h2")
+    a.ins16("LDA_abs", TGT_C2); a.ins16("CMP_abs", PL_TC); a.br("BNE", "pl_h2c")
+    a.ins16("LDA_abs", TGT_O2); a.ins16("CMP_abs", PL_TO); a.br("BEQ", "pl_h3")
+    a.label("pl_h2c")
+    a.ins16("LDA_abs", TGT_C2); a.ins16("STA_abs", PL_TC); a.ins16("STA_abs", PL_EA)
+    a.ins16("LDA_abs", TGT_O2); a.ins16("STA_abs", PL_TO); a.ins16("STA_abs", PL_EB)
+    a.ins("LDA_imm", 3); a.jmp("pl_hev2")
+    a.label("pl_h3")
+    a.ins16("LDA_abs", 0x0397); a.br("BEQ", "pl_h4")                 # falling / no pill: no lock
+    a.ins16("LDA_abs", PL_LNA); a.br("BNE", "pl_h4")                 # lock already logged
+    a.ins16("LDA_abs", 0x0385); a.ins16("STA_abs", PL_EA)
+    a.ins16("LDA_abs", 0x0386); a.ins("ASL_A"); a.ins("ASL_A"); a.ins16("STA_abs", PL_EB)
+    a.ins16("LDA_abs", 0x03A5); a.ins("AND_imm", 0x03); a.ins16("ORA_abs", PL_EB); a.ins16("STA_abs", PL_EB)
+    a.ins16("LDA_abs", 0x0397); a.ins16("STA_abs", PL_LNA)
+    a.ins("LDA_imm", 5); a.jmp("pl_hev2")
+    a.label("pl_h4")
+    a.ins16("LDA_abs", 0x0397); a.ins16("STA_abs", PL_LNA)
+    a.jmp("pl_hx")
+    a.label("pl_hev2")                                               # live / target / lock: hooks = WDOG2 now
+    a.ins("TAX")
+    a.ins("LDA_imm", 0); a.ins16("STA_abs", PL_EC)
+    a.ins16("LDA_abs", WDOG2); a.ins16("STA_abs", PL_EH); a.ins16("LDA_abs", WDOGH2); a.ins16("STA_abs", PL_EHH)
+    a.ins("TXA")
+    a.label("pl_hev")
+    a.jsr("pl_ev")
+    a.label("pl_hx")
+    a.ins("PLA"); a.ins("TAY"); a.ins("PLA"); a.ins("TAX"); a.ins("PLA")
+    a.ins("RTS")
+
+
 def _emit_reachtx_nibble(a, is_na):
     """DRREACHTX: TMPSEED <- the high-nibble transport byte for nA (is_na) or nB, from P2's $038A/$038B.
     Clobbers A only (X/Y untouched -- the prestart commit keeps nA in X across this)."""
@@ -4473,8 +4696,9 @@ def main():
             f"driver body reaches ${UNIT1_CPU + len(unit1):04X}, colliding with the DRRTIVEC probe "
             f"byte at ${RTIVEC_PROBE:04X}")
         if P1NATIVE:
-            assert P1SWAP_CPU + len(p1swap) <= RTIVEC_PROBE, (
-                f"P1 swap_eval reaches ${P1SWAP_CPU + len(p1swap):04X}, colliding with the DRRTIVEC "
+            # (the P1 AI + swap_eval span must not contain the probe byte: below it by default, above it under DRP1AIHI)
+            assert not (P1AI_CPU <= RTIVEC_PROBE < P1SWAP_CPU + len(p1swap)), (
+                f"P1 AI/swap_eval span ${P1AI_CPU:04X}-${P1SWAP_CPU + len(p1swap):04X} covers the DRRTIVEC "
                 f"probe byte at ${RTIVEC_PROBE:04X}")
         assert bank[_probe] == 0, (
             f"DRRTIVEC probe site ${RTIVEC_PROBE:04X} is not free in the driver bank "

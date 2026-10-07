@@ -121,5 +121,96 @@ def main():
         json.dump(rows, open(a.json, "w"), indent=1)
 
 
+def publog_main(argv):
+    """--publog FILE...: replay EVERY pill the DRPUBLOG ring logged (merged over all save-states) on the Verilator copro.
+    Per pill: the exact logged upload is co-simulated; each logged live read (type 1, at hooks/HPF frames since GO) is
+    judged against the co-sim publish valid then (MATCH / AMBIGUOUS within --tol of a change / MISMATCH_IN_SEQ /
+    MISMATCH_NEW); a co-sim publication visible >= 1.5 f before DONE that the cart never read is MISSED_PUB; the DONE
+    event must equal the co-sim final (col, orient4) and its tuck descriptor. Verdict per pill: EXACT if every live
+    read MATCHes and DONE agrees, AMBIGUOUS if only timing-edge reads, else DIVERGED (or NO_DONE for a search that was
+    torn down before DONE, e.g. a second-volley prestart abort -- reported separately, its successor may be chained)."""
+    import argparse
+    from concurrent.futures import ThreadPoolExecutor
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import publog as PL
+    ap = argparse.ArgumentParser()
+    ap.add_argument("files", nargs="+")
+    ap.add_argument("--tol", type=float, default=1.0)
+    ap.add_argument("--hpf", type=float, default=2.0)
+    ap.add_argument("-j", type=int, default=int(os.environ.get("J", "4")))
+    ap.add_argument("--json")
+    a = ap.parse_args(argv)
+    pills = [p for p in PL.merge(a.files) if p["final"]]
+    with ThreadPoolExecutor(a.j) as ex:
+        res = list(ex.map(lambda p: cosim_full(PL.upload_line(p)), pills))
+    tally = {}
+    prev_abort = False
+    for p, (pubs, done, tuck) in zip(pills, res):
+        live = [e for e in p["events"] if e["type"] == "live"]
+        dn = [e for e in p["events"] if e["type"] == "done"]
+        reads = []
+        for e in live:
+            t = e["hooks"] / a.hpf
+            reads.append(dict(t=round(t, 2), col=e["a"], o4=e["b"], status=judge(pubs, done, t, e["a"], e["b"], a.tol)))
+        seen = {(r["col"], r["o4"]) for r in reads}
+        missed = []
+        seq = list(pubs) + [(done[0], done[1], done[2])]
+        t_end = (dn[0]["hooks"] / a.hpf) if dn else 1e9
+        for i, (tt, c, o) in enumerate(pubs):
+            t_next = seq[i + 1][0]
+            if min(t_next, t_end) - tt >= 1.5 and (c, o) not in seen:
+                missed.append((round(tt, 2), c, o))
+        rec = dict(seq=p["seq"], kind=p["kind"], upload=PL.upload_line(p), reads=reads, missed=missed,
+                   cosim_pubs=[(round(tt, 2), c, o) for tt, c, o in pubs], cosim_done=(round(done[0], 2), done[1], done[2]),
+                   cosim_tuck=tuck, after_abort=prev_abort, events=p["events"], src=p["src"])
+        if not dn:
+            rec["verdict"] = "NO_DONE"
+        else:
+            d = dn[0]
+            rec["done"] = dict(t=round(d["hooks"] / a.hpf, 2), col=d["a"], o4=d["b"], tuck=d["c"])
+            final_ok = (d["a"], d["b"]) == (done[1], done[2])
+            tk = (((tuck[0] & 0x0F) << 4) | (tuck[1] & 0x0F)) if tuck else None
+            rec["done_tuck_ok"] = tk is None or d["c"] == tk
+            st = {r["status"] for r in reads}
+            if not final_ok or st & {"MISMATCH_IN_SEQ", "MISMATCH_NEW"} or missed:
+                rec["verdict"] = "DIVERGED"
+            elif "AMBIGUOUS" in st:
+                rec["verdict"] = "AMBIGUOUS"
+            else:
+                rec["verdict"] = "EXACT"
+            rec["final_ok"] = final_ok
+        prev_abort = rec["verdict"] == "NO_DONE"
+        tally[rec["verdict"]] = tally.get(rec["verdict"], 0) + 1
+        p["_rec"] = rec
+        print(f"seq {p['seq']:5d} kind {p['kind']} {rec['verdict']:9s} reads "
+              f"{[(r['t'], r['col'], r['o4'], r['status'][:5]) for r in reads]} missed {missed} "
+              f"done {rec.get('done')} cosim {rec['cosim_pubs']} final {rec['cosim_done']}", flush=True)
+    print("TALLY", json.dumps(tally), f"pills {len(pills)}")
+    if a.json:
+        json.dump([p["_rec"] for p in pills], open(a.json, "w"), indent=1)
+
+
+def cosim_full(line):
+    """cosim() + the tuck descriptor from the DONE line."""
+    out = subprocess.run(["nice", "-n", "19", VSIM, "64"], cwd=FWDIR, input=line + "\n", capture_output=True,
+                         text=True).stdout.split()
+    assert out and out[0] == "PUB", out[:5]
+    n = int(out[1]); pubs, seen = [], False
+    for k in range(n):
+        clk, c, o = int(out[2 + 3 * k]), int(out[3 + 3 * k]), int(out[4 + 3 * k])
+        if o == 0xFF:
+            seen = True; continue
+        if seen:
+            pubs.append((clk / FRAME, c, o))
+    i = 2 + 3 * n
+    tuck = [int(out[i + 5]), int(out[i + 6])] if len(out) > i + 6 and out[i + 4] == "TUCK" else None
+    if tuck and tuck[0] == 255:
+        tuck = [0xFF, tuck[1]]
+    return pubs, (int(out[i + 1]) / FRAME, int(out[i + 2]), int(out[i + 3])), tuck
+
+
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1 and sys.argv[1] == "--publog":
+        publog_main(sys.argv[2:])
+    else:
+        main()

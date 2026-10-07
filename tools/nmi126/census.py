@@ -48,6 +48,8 @@ CYC = {
     # indexed abs (reads +1 page-cross always; STA abs,X/Y is fixed 5)
     "LDA_absX": 5, "LDA_absY": 5, "CMP_absX": 5, "CMP_absY": 5,
     "STA_absX": 5, "STA_absY": 5,
+    # (zp),Y store: fixed 6 (DRPUBLOG ring writes)
+    "STA_indY": 6,
     # implied / accumulator
     "ASL_A": 2, "LSR_A": 2, "ROR_A": 2, "CLC": 2, "SEC": 2, "NOP": 2,
     "TAY": 2, "TYA": 2, "TAX": 2, "TXA": 2, "INX": 2, "DEX": 2, "INY": 2,
@@ -105,6 +107,8 @@ LOOP_BOUNDS = {
     "sc_l1": 26, "sc_l2": 26,
     # handle(2) _start board upload $0500 -> window: X 0..127 -> exactly 128.
     "h2_cp": 128,
+    # DRPUBLOG: the same upload, Y-indexed (teed into the log slot); the loop head moves to h2_cq, Y 0..127 -> 128.
+    "h2_cq": 128,
     # DRPROPH proph_trigger first-occupied scan, one loop per throat column
     # (c3/c4): X starts at the column, +8 per iteration, CPX #128 exit ->
     # <= 16 head passes each (rows 0..15).
@@ -592,11 +596,17 @@ def prespipe_scenarios(have):
     # fail. On a slice-less pipelined image "p1s_idle" is absent and the cut is
     # dropped by the caller's have-filter as before.
     interlock = [("fallof", "p1s_idle")] if "p1s_ppguard" in have else []
+    # DRSLICEGUARD2 (silfid lane): handle(2) also sets PP_RAN after a spawn upload + GO ("h2_spguard"), so on an
+    # upload hook the slice dispatch takes p1s_idle -- the pp_spawn class (the class that admits the h2_cp upload)
+    # gets the same cut. Paths of pp_spawn WITHOUT an upload are pp_idle paths, which keep the slice tick, so every
+    # pair that matters is still bounded. tests/test_publog.py verifies the premise behaviourally (no hook both
+    # uploads and ticks the slice) and kills the guard-deleted mutant.
+    spawn_guard = [("fallof", "p1s_idle")] if ("p1s_ppguard" in have and "h2_spguard" in have) else []
     out = {"pp_edge": [("into", "pp_disp")] + interlock + _PP_BASE,
            "pp_idle": [("into", "pp_disp"), ("into", "pt_edge")] + _PP_BASE,
            "pp_spawn": [("into", "pp_disp"), ("into", "pt_edge"),
                         ("into", "h1_start"), ("into", "do_init"),
-                        ("fallof", "p1n_nosearch")]}
+                        ("fallof", "p1n_nosearch")] + spawn_guard}
     # DRLATEGUARD (lg_live / lg_done, absent on images without the flag): both lg_gate call sites need ARMED2 != 0
     # -- lg_done sits on handle(2)'s DONE path (reached only past `LDA ARMED2 / BNE`), lg_live on act's live-mailbox
     # path (reached only past act's `LDA ARMED2 / BNE`). A phase runs only after pp_disp's abort checks saw ARMED2 == 0
