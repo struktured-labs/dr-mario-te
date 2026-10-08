@@ -13,7 +13,25 @@
   155,
   147,
   161,
-  33
+  33,
+  35,
+  41,
+  43,
+  49,
+  51,
+  57,
+  59,
+  129,
+  131,
+  137,
+  139,
+  163,
+  169,
+  171,
+  177,
+  179,
+  185,
+  187
  ],
  "per_game": {
   "m1g1": {
@@ -48,6 +66,36 @@
      "seed": 155,
      "reproduced": 2,
      "of_residual": 1,
+     "eq_sil": 187
+    },
+    {
+     "seed": 41,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 186
+    },
+    {
+     "seed": 57,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 187
+    },
+    {
+     "seed": 137,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 187
+    },
+    {
+     "seed": 169,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 187
+    },
+    {
+     "seed": 185,
+     "reproduced": 2,
+     "of_residual": 0,
      "eq_sil": 187
     },
     {
@@ -109,6 +157,84 @@
      "reproduced": 1,
      "of_residual": 0,
      "eq_sil": 186
+    },
+    {
+     "seed": 35,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 186
+    },
+    {
+     "seed": 43,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 186
+    },
+    {
+     "seed": 49,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 51,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 186
+    },
+    {
+     "seed": 59,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 129,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 131,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 139,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 163,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 171,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 177,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 179,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 187,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 185
     }
    ],
    "union": 3
@@ -154,6 +280,24 @@
      "eq_sil": 190
     },
     {
+     "seed": 51,
+     "reproduced": 8,
+     "of_residual": 0,
+     "eq_sil": 190
+    },
+    {
+     "seed": 129,
+     "reproduced": 8,
+     "of_residual": 0,
+     "eq_sil": 190
+    },
+    {
+     "seed": 179,
+     "reproduced": 8,
+     "of_residual": 0,
+     "eq_sil": 190
+    },
+    {
      "seed": 9,
      "reproduced": 4,
      "of_residual": 2,
@@ -167,6 +311,36 @@
     },
     {
      "seed": 155,
+     "reproduced": 4,
+     "of_residual": 2,
+     "eq_sil": 186
+    },
+    {
+     "seed": 41,
+     "reproduced": 4,
+     "of_residual": 2,
+     "eq_sil": 186
+    },
+    {
+     "seed": 59,
+     "reproduced": 4,
+     "of_residual": 2,
+     "eq_sil": 186
+    },
+    {
+     "seed": 137,
+     "reproduced": 4,
+     "of_residual": 2,
+     "eq_sil": 186
+    },
+    {
+     "seed": 169,
+     "reproduced": 4,
+     "of_residual": 2,
+     "eq_sil": 186
+    },
+    {
+     "seed": 187,
      "reproduced": 4,
      "of_residual": 2,
      "eq_sil": 186
@@ -190,6 +364,36 @@
      "eq_sil": 185
     },
     {
+     "seed": 35,
+     "reproduced": 3,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 49,
+     "reproduced": 3,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 131,
+     "reproduced": 3,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 163,
+     "reproduced": 3,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
+     "seed": 177,
+     "reproduced": 3,
+     "of_residual": 0,
+     "eq_sil": 185
+    },
+    {
      "seed": 25,
      "reproduced": 0,
      "of_residual": 0,
@@ -203,6 +407,36 @@
     },
     {
      "seed": 153,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 182
+    },
+    {
+     "seed": 43,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 182
+    },
+    {
+     "seed": 57,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 182
+    },
+    {
+     "seed": 139,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 182
+    },
+    {
+     "seed": 171,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 182
+    },
+    {
+     "seed": 185,
      "reproduced": 0,
      "of_residual": 0,
      "eq_sil": 182
@@ -234,6 +468,36 @@
     },
     {
      "seed": 155,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 123
+    },
+    {
+     "seed": 41,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 123
+    },
+    {
+     "seed": 59,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 123
+    },
+    {
+     "seed": 137,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 123
+    },
+    {
+     "seed": 169,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 123
+    },
+    {
+     "seed": 187,
      "reproduced": 1,
      "of_residual": 0,
      "eq_sil": 123
@@ -300,6 +564,84 @@
     },
     {
      "seed": 33,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 35,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 43,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 49,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 51,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 57,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 129,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 131,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 139,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 163,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 171,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 177,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 179,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 122
+    },
+    {
+     "seed": 185,
      "reproduced": 0,
      "of_residual": 0,
      "eq_sil": 122
@@ -354,6 +696,36 @@
      "eq_sil": 111
     },
     {
+     "seed": 41,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 111
+    },
+    {
+     "seed": 57,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 111
+    },
+    {
+     "seed": 137,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 111
+    },
+    {
+     "seed": 169,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 111
+    },
+    {
+     "seed": 185,
+     "reproduced": 1,
+     "of_residual": 0,
+     "eq_sil": 111
+    },
+    {
      "seed": 1,
      "reproduced": 0,
      "of_residual": 0,
@@ -397,6 +769,84 @@
     },
     {
      "seed": 33,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 35,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 43,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 49,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 51,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 59,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 129,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 131,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 139,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 163,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 171,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 177,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 179,
+     "reproduced": 0,
+     "of_residual": 0,
+     "eq_sil": 110
+    },
+    {
+     "seed": 187,
      "reproduced": 0,
      "of_residual": 0,
      "eq_sil": 110
@@ -467,6 +917,120 @@
      "reproduced": 2,
      "of_residual": 0,
      "eq_sil": 117
+    },
+    {
+     "seed": 33,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 117
+    },
+    {
+     "seed": 35,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 118
+    },
+    {
+     "seed": 41,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 116
+    },
+    {
+     "seed": 43,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 117
+    },
+    {
+     "seed": 49,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 118
+    },
+    {
+     "seed": 51,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 117
+    },
+    {
+     "seed": 57,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 117
+    },
+    {
+     "seed": 59,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 116
+    },
+    {
+     "seed": 129,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 117
+    },
+    {
+     "seed": 131,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 118
+    },
+    {
+     "seed": 137,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 116
+    },
+    {
+     "seed": 139,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 117
+    },
+    {
+     "seed": 163,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 118
+    },
+    {
+     "seed": 169,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 116
+    },
+    {
+     "seed": 171,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 117
+    },
+    {
+     "seed": 177,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 118
+    },
+    {
+     "seed": 179,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 117
+    },
+    {
+     "seed": 185,
+     "reproduced": 2,
+     "of_residual": 1,
+     "eq_sil": 117
+    },
+    {
+     "seed": 187,
+     "reproduced": 2,
+     "of_residual": 0,
+     "eq_sil": 116
     },
     {
      "seed": 153,

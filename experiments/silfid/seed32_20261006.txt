@@ -1,6 +1,6 @@
-m1g1: silicon-only 20, of which in the 77-residual 17; best class s25 reproduces 2 (0 of the residual); eq_sil 187/212; union over 14 classes 3; 2nd best 2
-m1g2: silicon-only 32, of which in the 77-residual 20; best class s1 reproduces 8 (0 of the residual); eq_sil 190/217; union over 14 classes 11; 2nd best 8
-m1g4: silicon-only 20, of which in the 77-residual 15; best class s9 reproduces 1 (0 of the residual); eq_sil 123/146; union over 14 classes 1; 2nd best 1
-m2g2: silicon-only 16, of which in the 77-residual 13; best class s25 reproduces 1 (0 of the residual); eq_sil 111/133; union over 14 classes 1; 2nd best 1
-m2g3: silicon-only 14, of which in the 77-residual 12; best class s1 reproduces 2 (0 of the residual); eq_sil 117/134; union over 13 classes 3; 2nd best 2
-classes done: 14/32
+m1g1: silicon-only 20, of which in the 77-residual 17; best class s25 reproduces 2 (0 of the residual); eq_sil 187/212; union over 32 classes 3; 2nd best 2
+m1g2: silicon-only 32, of which in the 77-residual 20; best class s1 reproduces 8 (0 of the residual); eq_sil 190/217; union over 32 classes 11; 2nd best 8
+m1g4: silicon-only 20, of which in the 77-residual 15; best class s9 reproduces 1 (0 of the residual); eq_sil 123/146; union over 32 classes 1; 2nd best 1
+m2g2: silicon-only 16, of which in the 77-residual 13; best class s25 reproduces 1 (0 of the residual); eq_sil 111/133; union over 32 classes 1; 2nd best 1
+m2g3: silicon-only 14, of which in the 77-residual 12; best class s1 reproduces 2 (0 of the residual); eq_sil 117/134; union over 32 classes 3; 2nd best 2
+classes done: 32/32
