@@ -1,4 +1,4 @@
-# PUBLOG capture #2 (cart d84436ff, rbf 318607aa): 282 save-states, 60.0 min
+# publog2: 282 save-states, 60.0 min (fw dir fw_1488e158 default)
 FREEZE: from 00:52:18 (+49.0 min) to the end (52 states): P2 board frozen, P2 nextAction 1 at 11 viruses, CPU PC in the idle wait loop ($[('B664', 37), ('B662', 12)]), frame counter running, the driver alive (stall-watchdog re-uploads: seq 1596 -> 1628; pump still firing GP_N 133 -> 161).
   DRNAVESC injected START at the onset (its inject count 172 -> 174; in the last live state its stuck counter was 909 of 1200 hooks and the P2 pose had been static for 909 hooks) -> the game PAUSED; NAVESC never re-fired (its counter keeps resetting: the P2 driver's held pad changes, max 1197 in the frozen states).
 
@@ -17,48 +17,117 @@ COVERAGE (live part, 1586 final pills): CELL (<=20 viruses, height 14-16) = 408 
     >20 /   <=8: 7
   prestart (garbage-window) searches: 92 (capture #1: 3)
 
-REPLAYED so far: 413 of 1586 live final pills; overall {'EXACT': 394, 'AMBIGUOUS': 19}
+REPLAYED so far: 1586 of 1586 live final pills; overall {'EXACT': 1497, 'AMBIGUOUS': 76, 'DIVERGED': 12, 'NO_DONE': 1}
 
 ## by CELL
               CELL EXACT  390 AMBIGUOUS   18 DIVERGED    0 NO_DONE    0  n  408  EARLY-DONE 19
-             other EXACT    4 AMBIGUOUS    1 DIVERGED    0 NO_DONE    0  n    5  EARLY-DONE 0
+             other EXACT 1107 AMBIGUOUS   58 DIVERGED   12 NO_DONE    1  n 1178  EARLY-DONE 65
 
 ## by viruses x height
-        <=20/12-13 EXACT    1 AMBIGUOUS    1 DIVERGED    0 NO_DONE    0  n    2  EARLY-DONE 0
+        <=20/12-13 EXACT  149 AMBIGUOUS   10 DIVERGED    1 NO_DONE    0  n  160  EARLY-DONE 9
         <=20/14-16 EXACT  390 AMBIGUOUS   18 DIVERGED    0 NO_DONE    0  n  408  EARLY-DONE 19
-         >20/12-13 EXACT    1 AMBIGUOUS    0 DIVERGED    0 NO_DONE    0  n    1  EARLY-DONE 0
-         >20/14-16 EXACT    2 AMBIGUOUS    0 DIVERGED    0 NO_DONE    0  n    2  EARLY-DONE 0
+         <=20/9-11 EXACT  220 AMBIGUOUS   15 DIVERGED    3 NO_DONE    0  n  238  EARLY-DONE 11
+          <=20/<=8 EXACT  231 AMBIGUOUS   15 DIVERGED    1 NO_DONE    1  n  248  EARLY-DONE 10
+         >20/12-13 EXACT  219 AMBIGUOUS   11 DIVERGED    3 NO_DONE    0  n  233  EARLY-DONE 16
+         >20/14-16 EXACT   41 AMBIGUOUS    0 DIVERGED    0 NO_DONE    0  n   41  EARLY-DONE 3
+          >20/9-11 EXACT  241 AMBIGUOUS    7 DIVERGED    3 NO_DONE    0  n  251  EARLY-DONE 15
+           >20/<=8 EXACT    6 AMBIGUOUS    0 DIVERGED    1 NO_DONE    0  n    7  EARLY-DONE 1
 
 ## by kind
-            normal EXACT  371 AMBIGUOUS   12 DIVERGED    0 NO_DONE    0  n  383  EARLY-DONE 18
-          prestart EXACT   23 AMBIGUOUS    7 DIVERGED    0 NO_DONE    0  n   30  EARLY-DONE 1
+            normal EXACT 1428 AMBIGUOUS   53 DIVERGED   12 NO_DONE    1  n 1494  EARLY-DONE 82
+          prestart EXACT   69 AMBIGUOUS   23 DIVERGED    0 NO_DONE    0  n   92  EARLY-DONE 2
 
 ## by tuck
-           no tuck EXACT  320 AMBIGUOUS   17 DIVERGED    0 NO_DONE    0  n  337  EARLY-DONE 16
-              tuck EXACT   74 AMBIGUOUS    2 DIVERGED    0 NO_DONE    0  n   76  EARLY-DONE 3
+           no tuck EXACT 1370 AMBIGUOUS   68 DIVERGED   11 NO_DONE    1  n 1450  EARLY-DONE 79
+              tuck EXACT  127 AMBIGUOUS    8 DIVERGED    1 NO_DONE    0  n  136  EARLY-DONE 5
 
-live reads: {'MATCH': 948, 'AMBIGUOUS': 19}
+live reads: {'MATCH': 3178, 'AMBIGUOUS': 89, 'MISMATCH_IN_SEQ': 7}
 
-## EARLY DONE: 19 of 413 replayed pills with a DONE (4.6%); post-DONE watch over ALL 1586 live pills: type-6 events 0, DONE re-read-0 flags 0
+## EARLY DONE: 84 of 1585 replayed pills with a DONE (5.3%); post-DONE watch over ALL 1586 live pills: type-6 events 0, DONE re-read-0 flags 0
+  seq    34 vir 31 h 14 | silicon DONE  16.50 f, Verilator  33.07 f, dt  -16.57 | watch window 73 hooks, type-6 0, re-read-0 0 | EXACT
+  seq    41 vir 29 h 14 | silicon DONE  21.50 f, Verilator  40.68 f, dt  -19.18 | watch window 85 hooks, type-6 0, re-read-0 0 | EXACT
+  seq    51 vir 26 h 15 | silicon DONE   5.50 f, Verilator  32.45 f, dt  -26.95 | watch window 333 hooks, type-6 0, re-read-0 0 | EXACT
+  seq    60 vir 25 h 12 | silicon DONE  17.50 f, Verilator  31.71 f, dt  -14.21 | watch window 63 hooks, type-6 0, re-read-0 0 | EXACT
+  seq    81 vir 22 h 12 | silicon DONE  31.50 f, Verilator  38.03 f, dt   -6.53 | watch window 49 hooks, type-6 0, re-read-0 0 | EXACT
+  seq    90 vir 19 h 12 | silicon DONE  26.50 f, Verilator  47.91 f, dt  -21.41 | watch window 237 hooks, type-6 0, re-read-0 0 | EXACT
   seq   105 vir 12 h 14 | silicon DONE  35.50 f, Verilator  46.06 f, dt  -10.56 | watch window 51 hooks, type-6 0, re-read-0 0 | EXACT
   seq   123 vir  7 h 15 | silicon DONE   7.50 f, Verilator  36.97 f, dt  -29.47 | watch window 93 hooks, type-6 0, re-read-0 0 | EXACT
   seq   130 vir  7 h 15 | silicon DONE  23.50 f, Verilator  38.47 f, dt  -14.97 | watch window 77 hooks, type-6 0, re-read-0 0 | EXACT
   seq   158 vir  7 h 16 | silicon DONE  25.50 f, Verilator  38.22 f, dt  -12.72 | watch window 191 hooks, type-6 0, re-read-0 0 | EXACT
   seq   181 vir  6 h 16 | silicon DONE   7.50 f, Verilator  37.12 f, dt  -29.62 | watch window 89 hooks, type-6 0, re-read-0 0 | EXACT
   seq   189 vir  6 h 16 | silicon DONE   9.50 f, Verilator  31.73 f, dt  -22.23 | watch window 113 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   249 vir  1 h  7 | silicon DONE   4.50 f, Verilator  34.64 f, dt  -30.14 | watch window 107 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   302 vir 24 h  9 | silicon DONE  27.50 f, Verilator  54.53 f, dt  -27.03 | watch window 83 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   309 vir 18 h  6 | silicon DONE  30.50 f, Verilator  33.25 f, dt   -2.75 | watch window 93 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   318 vir 12 h  8 | silicon DONE  27.50 f, Verilator  48.70 f, dt  -21.20 | watch window 69 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   347 vir  1 h  7 | silicon DONE  14.00 f, Verilator  41.61 f, dt  -27.61 | watch window 558 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   359 vir 45 h 12 | silicon DONE  11.00 f, Verilator  40.21 f, dt  -29.21 | watch window 101 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   367 vir 38 h 10 | silicon DONE  45.50 f, Verilator  50.07 f, dt   -4.57 | watch window 9 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   384 vir 26 h  8 | silicon DONE  14.50 f, Verilator  46.58 f, dt  -32.08 | watch window 67 hooks, type-6 0, re-read-0 0 | DIVERGED
+  seq   398 vir 18 h  7 | silicon DONE  15.50 f, Verilator  47.85 f, dt  -32.35 | watch window 79 hooks, type-6 0, re-read-0 0 | DIVERGED
+  seq   403 vir 15 h  9 | silicon DONE  16.50 f, Verilator  48.02 f, dt  -31.52 | watch window 75 hooks, type-6 0, re-read-0 0 | DIVERGED
+  seq   453 vir 43 h 11 | silicon DONE   9.50 f, Verilator  41.24 f, dt  -31.74 | watch window 61 hooks, type-6 0, re-read-0 0 | AMBIGUOUS
+  seq   465 vir 35 h 12 | silicon DONE  12.50 f, Verilator  41.19 f, dt  -28.69 | watch window 53 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   473 vir 27 h 12 | silicon DONE  12.50 f, Verilator  36.35 f, dt  -23.85 | watch window 83 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   494 vir 19 h 11 | silicon DONE  41.50 f, Verilator  49.08 f, dt   -7.58 | watch window 93 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   521 vir  8 h 11 | silicon DONE  14.50 f, Verilator  46.67 f, dt  -32.17 | watch window 81 hooks, type-6 0, re-read-0 0 | DIVERGED
+  seq   528 vir  6 h 11 | silicon DONE  11.50 f, Verilator  43.59 f, dt  -32.09 | watch window 79 hooks, type-6 0, re-read-0 0 | DIVERGED
+  seq   611 vir 44 h 12 | silicon DONE  23.00 f, Verilator  55.33 f, dt  -32.33 | watch window 137 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   631 vir 29 h 12 | silicon DONE  26.50 f, Verilator  45.27 f, dt  -18.77 | watch window 49 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   647 vir 25 h 13 | silicon DONE  18.50 f, Verilator  50.76 f, dt  -32.26 | watch window 47 hooks, type-6 0, re-read-0 0 | DIVERGED
+  seq   665 vir 19 h 12 | silicon DONE  24.00 f, Verilator  56.52 f, dt  -32.52 | watch window 225 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   675 vir 17 h 10 | silicon DONE  30.50 f, Verilator  43.51 f, dt  -13.01 | watch window 335 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   722 vir  1 h  7 | silicon DONE  26.50 f, Verilator  30.05 f, dt   -3.55 | watch window 71 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   737 vir  1 h  7 | silicon DONE   3.50 f, Verilator  35.66 f, dt  -32.16 | watch window 245 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   750 vir  1 h  5 | silicon DONE   4.50 f, Verilator  35.11 f, dt  -30.61 | watch window 365 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   770 vir  1 h  4 | silicon DONE  21.50 f, Verilator  33.46 f, dt  -11.96 | watch window 157 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   786 vir 41 h 10 | silicon DONE  10.50 f, Verilator  42.70 f, dt  -32.20 | watch window 67 hooks, type-6 0, re-read-0 0 | DIVERGED
+  seq   796 vir 32 h 10 | silicon DONE  20.50 f, Verilator  52.05 f, dt  -31.55 | watch window 65 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   810 vir 29 h 12 | silicon DONE  24.50 f, Verilator  55.95 f, dt  -31.45 | watch window 303 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   822 vir 24 h  9 | silicon DONE  12.50 f, Verilator  44.63 f, dt  -32.13 | watch window 239 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   830 vir 23 h 10 | silicon DONE  41.50 f, Verilator  52.52 f, dt  -11.02 | watch window 175 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   845 vir 18 h 11 | silicon DONE  10.50 f, Verilator  42.59 f, dt  -32.09 | watch window 79 hooks, type-6 0, re-read-0 0 | EXACT
   seq   853 vir 18 h 14 | silicon DONE  21.50 f, Verilator  32.95 f, dt  -11.45 | watch window 65 hooks, type-6 0, re-read-0 0 | EXACT
   seq   860 vir 14 h 14 | silicon DONE  27.50 f, Verilator  42.57 f, dt  -15.07 | watch window 223 hooks, type-6 0, re-read-0 0 | EXACT
   seq   886 vir 10 h 15 | silicon DONE  16.50 f, Verilator  28.87 f, dt  -12.37 | watch window 95 hooks, type-6 0, re-read-0 0 | EXACT
   seq   896 vir 10 h 15 | silicon DONE   4.50 f, Verilator  34.41 f, dt  -29.91 | watch window 147 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   920 vir 48 h 11 | silicon DONE  21.50 f, Verilator  52.97 f, dt  -31.47 | watch window 57 hooks, type-6 0, re-read-0 0 | DIVERGED
+  seq   938 vir 34 h 12 | silicon DONE  16.50 f, Verilator  48.25 f, dt  -31.75 | watch window 75 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   953 vir 26 h 12 | silicon DONE  39.50 f, Verilator  44.59 f, dt   -5.09 | watch window 47 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   967 vir 20 h 13 | silicon DONE  27.00 f, Verilator  49.60 f, dt  -22.60 | watch window 167 hooks, type-6 0, re-read-0 0 | EXACT
+  seq   974 vir 18 h 13 | silicon DONE  14.50 f, Verilator  46.70 f, dt  -32.20 | watch window 35 hooks, type-6 0, re-read-0 0 | DIVERGED
   seq   985 vir 17 h 15 | silicon DONE  15.50 f, Verilator  29.01 f, dt  -13.51 | watch window 213 hooks, type-6 0, re-read-0 0 | EXACT
   seq  1021 vir 11 h 15 | silicon DONE  37.50 f, Verilator  41.77 f, dt   -4.27 | watch window 163 hooks, type-6 0, re-read-0 0 | EXACT
   seq  1045 vir  6 h 16 | silicon DONE  10.50 f, Verilator  33.47 f, dt  -22.97 | watch window 79 hooks, type-6 0, re-read-0 0 | EXACT
   seq  1051 vir  5 h 16 | silicon DONE   0.50 f, Verilator  32.20 f, dt  -31.70 | watch window 325 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1154 vir 43 h 11 | silicon DONE  15.50 f, Verilator  38.66 f, dt  -23.16 | watch window 53 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1162 vir 41 h 11 | silicon DONE  10.50 f, Verilator  41.95 f, dt  -31.45 | watch window 57 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1177 vir 31 h 11 | silicon DONE  20.50 f, Verilator  52.64 f, dt  -32.14 | watch window 49 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1190 vir 23 h 11 | silicon DONE  28.50 f, Verilator  45.91 f, dt  -17.41 | watch window 49 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1205 vir 18 h 12 | silicon DONE  16.50 f, Verilator  47.18 f, dt  -30.68 | watch window 247 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1217 vir 16 h 13 | silicon DONE  23.50 f, Verilator  37.91 f, dt  -14.41 | watch window 61 hooks, type-6 0, re-read-0 0 | AMBIGUOUS
+  seq  1235 vir 11 h 13 | silicon DONE  11.50 f, Verilator  35.37 f, dt  -23.87 | watch window 81 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1271 vir  7 h 13 | silicon DONE  26.50 f, Verilator  41.71 f, dt  -15.21 | watch window 91 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1286 vir 46 h 12 | silicon DONE  11.50 f, Verilator  42.90 f, dt  -31.40 | watch window 61 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1295 vir 40 h 12 | silicon DONE  54.50 f, Verilator  67.06 f, dt  -12.56 | watch window 143 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1302 vir 35 h 12 | silicon DONE  53.00 f, Verilator  69.26 f, dt  -16.26 | watch window 21 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1318 vir 22 h 13 | silicon DONE  19.50 f, Verilator  50.96 f, dt  -31.46 | watch window 83 hooks, type-6 0, re-read-0 0 | DIVERGED
+  seq  1327 vir 21 h 13 | silicon DONE  13.50 f, Verilator  45.38 f, dt  -31.88 | watch window 41 hooks, type-6 0, re-read-0 0 | DIVERGED
+  seq  1335 vir 18 h 13 | silicon DONE  19.50 f, Verilator  46.43 f, dt  -26.93 | watch window 243 hooks, type-6 0, re-read-0 0 | EXACT
   seq  1357 vir 12 h 14 | silicon DONE  16.50 f, Verilator  48.08 f, dt  -31.58 | watch window 255 hooks, type-6 0, re-read-0 0 | EXACT
   seq  1363 vir 11 h 16 | silicon DONE  25.50 f, Verilator  30.20 f, dt   -4.70 | watch window 101 hooks, type-6 0, re-read-0 0 | EXACT
   seq  1371 vir  9 h 16 | silicon DONE  12.00 f, Verilator  27.23 f, dt  -15.23 | watch window 218 hooks, type-6 0, re-read-0 0 | AMBIGUOUS
   seq  1400 vir  8 h 16 | silicon DONE  17.50 f, Verilator  24.21 f, dt   -6.71 | watch window 123 hooks, type-6 0, re-read-0 0 | EXACT
   seq  1421 vir  8 h 14 | silicon DONE  24.50 f, Verilator  35.59 f, dt  -11.09 | watch window 95 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1437 vir  5 h 11 | silicon DONE  17.50 f, Verilator  38.86 f, dt  -21.36 | watch window 87 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1450 vir  3 h  8 | silicon DONE   2.50 f, Verilator  32.66 f, dt  -30.16 | watch window 97 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1485 vir 45 h 10 | silicon DONE   9.50 f, Verilator  41.20 f, dt  -31.70 | watch window 61 hooks, type-6 0, re-read-0 0 | DIVERGED
+  seq  1493 vir 37 h 10 | silicon DONE  39.50 f, Verilator  44.47 f, dt   -4.97 | watch window 19 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1514 vir 26 h 11 | silicon DONE  49.50 f, Verilator  60.95 f, dt  -11.45 | watch window 253 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1543 vir 20 h 10 | silicon DONE  13.50 f, Verilator  45.56 f, dt  -32.06 | watch window 67 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1550 vir 20 h 10 | silicon DONE  34.50 f, Verilator  36.93 f, dt   -2.43 | watch window 35 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1556 vir 18 h 10 | silicon DONE  18.50 f, Verilator  50.29 f, dt  -31.79 | watch window 353 hooks, type-6 0, re-read-0 0 | EXACT
+  seq  1564 vir 16 h 10 | silicon DONE  18.50 f, Verilator  46.14 f, dt  -27.64 | watch window 155 hooks, type-6 0, re-read-0 0 | EXACT
 
 ## SAME-INPUT REPEATS (identical upload re-issued by the cart; the copro searched the same input N times)
   upload 81 160 185 129 ff ff f... x32 (seq 1597-1628): DONE (hooks, final) [((91, (3, 1)), 28), ((27, (3, 1)), 1), ((31, (3, 1)), 1), ((85, (3, 1)), 1), ((65, (3, 1)), 1)]
@@ -67,18 +136,35 @@ live reads: {'MATCH': 948, 'AMBIGUOUS': 19}
      Verilator: pubs [(1.19, 5, 1), (2.2, 7, 1), (4.35, 6, 0), (7.36, 3, 1)] DONE 45.72 f = 91.4 hooks, final (3,1)
      -> silicon == Verilator (DONE hook within 1 and the same live-read sequence) on 28 of 32 identical runs
 
-## LANDINGS on silicon (CELL, 404 pills with a lock)
+## LANDINGS on silicon (CELL, 404 pills with a lock): landing != copro final 97 = 24.0% (95% CI 20.1-28.4%)
   lands the copro final                                           307 (76.0%)
   lands the cart's OWN target != final                             46 (11.4%)
   lands the cart's OWN target != final (locked before DONE)        25 ( 6.2%)
   lands != final, no target change logged                          23 ( 5.7%)
   lands neither the final nor its own target (execution)            3 ( 0.7%)
 
-## LANDINGS on silicon (all replayed live pills, 408 pills with a lock)
-  lands the copro final                                           307 (75.2%)
-  lands the cart's OWN target != final                             47 (11.5%)
-  lands != final, no target change logged                          26 ( 6.4%)
-  lands the cart's OWN target != final (locked before DONE)        25 ( 6.1%)
-  lands neither the final nor its own target (execution)            3 ( 0.7%)
+## LANDINGS on silicon (all replayed live pills, 1569 pills with a lock): landing != copro final 221 = 14.1% (95% CI 12.5-15.9%)
+  lands the copro final                                          1348 (85.9%)
+  lands the cart's OWN target != final                             78 ( 5.0%)
+  lands the cart's OWN target != final (locked before DONE)        73 ( 4.7%)
+  lands != final, no target change logged                          64 ( 4.1%)
+  lands neither the final nor its own target (execution)            6 ( 0.4%)
 
-## DIVERGED / NO_DONE (0) + EARLY (19) banked in publog2_diverged_20261007.jsonl
+## ANYTIME-COMMIT split (CELL, silicon): at-gate answer == final on 222/404 = 55.0% (95% CI 50.1-59.7%)
+  at-gate == final -> landing != final 15/222 = 6.8%
+  at-gate != final -> landing != final 82/182 = 45.1%
+
+## DIVERGED / NO_DONE (13) + EARLY (84) banked in publog2_diverged_20261007.jsonl
+  seq 398 vir 18 h 7 kind 0 DIVERGED: reads [(2.0, 3, 2, 'AMBIGU')] done {'t': 15.5, 'col': 3, 'o4': 2, 'tuck': 255} | cosim [[1.62, 6, 0], [9.07, 3, 2]] final [47.85, 3, 2] tuck [255, 255]
+  seq 403 vir 15 h 9 kind 0 DIVERGED: reads [(2.0, 0, 1, 'MATCH'), (3.0, 6, 0, 'MATCH'), (11.0, 4, 2, 'AMBIGU')] done {'t': 16.5, 'col': 4, 'o4': 2, 'tuck': 255} | cosim [[1.43, 0, 1], [2.77, 6, 0], [10.36, 6, 3], [23.39, 4, 2]] final [48.02, 4, 2] tuck [255, 255]
+  seq 521 vir 8 h 11 kind 0 DIVERGED: reads [(2.0, 6, 0, 'MATCH'), (6.0, 4, 2, 'AMBIGU')] done {'t': 14.5, 'col': 4, 'o4': 2, 'tuck': 255} | cosim [[1.1, 6, 0], [5.05, 5, 0], [7.3, 2, 0], [15.65, 4, 2]] final [46.67, 4, 2] tuck [255, 255]
+  seq 528 vir 6 h 11 kind 0 DIVERGED: reads [(2.0, 4, 0, 'MATCH'), (3.0, 6, 0, 'MATCH'), (6.0, 3, 2, 'MISMAT')] done {'t': 11.5, 'col': 3, 'o4': 2, 'tuck': 255} | cosim [[1.26, 4, 0], [2.28, 6, 0], [19.05, 3, 2]] final [43.59, 3, 2] tuck [255, 255]
+  seq 563 vir 2 h 7 kind 0 NO_DONE: reads [(2.0, 2, 1, 'MATCH'), (3.0, 3, 0, 'MATCH'), (4.0, 3, 1, 'MATCH'), (5.0, 4, 1, 'MATCH'), (6.0, 3, 2, 'MATCH'), (7.0, 3, 3, 'MATCH'), (9.0, 5, 0, 'MATCH'), (11.0, 0, 2, 'MATCH'), (27.5, 1, 3, 'MATCH')] done None | cosim [[1.12, 2, 1], [2.01, 3, 0], [3.85, 3, 1], [4.84, 4, 1], [5.74, 3, 2], [6.64, 3, 3], [8.59, 5, 0], [10.68, 0, 2], [26.89, 1, 3]] final [33.53, 1, 3] tuck [255, 255]
+  seq 974 vir 18 h 13 kind 0 DIVERGED: reads [(2.0, 4, 0, 'MATCH'), (7.0, 0, 0, 'MISMAT')] done {'t': 14.5, 'col': 0, 'o4': 0, 'tuck': 255} | cosim [[1.16, 4, 0], [21.33, 6, 0], [27.73, 0, 0]] final [46.7, 0, 0] tuck [255, 255]
+  seq 647 vir 25 h 13 kind 0 DIVERGED: reads [(2.0, 3, 0, 'MATCH'), (16.0, 6, 3, 'MISMAT')] done {'t': 18.5, 'col': 6, 'o4': 3, 'tuck': 255} | cosim [[1.17, 3, 0], [23.31, 6, 3]] final [50.76, 6, 3] tuck [255, 255]
+  seq 1318 vir 22 h 13 kind 0 DIVERGED: reads [(2.0, 6, 3, 'MATCH'), (3.0, 3, 2, 'AMBIGU')] done {'t': 19.5, 'col': 3, 'o4': 2, 'tuck': 255} | cosim [[1.1, 6, 3], [3.2, 2, 0], [9.12, 2, 3], [11.44, 3, 2]] final [50.96, 3, 2] tuck [255, 255]
+  seq 1327 vir 21 h 13 kind 0 DIVERGED: reads [(2.0, 6, 0, 'MATCH'), (13.0, 5, 0, 'MISMAT')] done {'t': 13.5, 'col': 5, 'o4': 0, 'tuck': 255} | cosim [[1.18, 6, 0], [19.36, 5, 0]] final [45.38, 5, 0] tuck [255, 255]
+  seq 384 vir 26 h 8 kind 0 DIVERGED: reads [(2.0, 5, 0, 'AMBIGU')] done {'t': 14.5, 'col': 5, 'o4': 0, 'tuck': 255} | cosim [[1.47, 2, 0], [27.6, 5, 0]] final [46.58, 5, 0] tuck [255, 255]
+  seq 786 vir 41 h 10 kind 0 DIVERGED: reads [(2.0, 0, 2, 'MATCH'), (5.0, 4, 3, 'MATCH'), (8.0, 6, 2, 'MISMAT')] done {'t': 10.5, 'col': 6, 'o4': 2, 'tuck': 255} | cosim [[1.36, 0, 2], [4.13, 4, 3], [9.56, 6, 2]] final [42.7, 6, 2] tuck [255, 255]
+  seq 920 vir 48 h 11 kind 0 DIVERGED: reads [(2.0, 2, 3, 'MATCH'), (18.0, 4, 3, 'MISMAT')] done {'t': 21.5, 'col': 4, 'o4': 3, 'tuck': 105} | cosim [[1.19, 2, 3], [49.26, 4, 3]] final [52.97, 4, 3] tuck [6, 9]
+  seq 1485 vir 45 h 10 kind 0 DIVERGED: reads [(2.0, 0, 3, 'MATCH'), (3.0, 2, 3, 'MISMAT')] done {'t': 9.5, 'col': 2, 'o4': 3, 'tuck': 255} | cosim [[1.66, 0, 3], [4.51, 2, 3]] final [41.2, 2, 3] tuck [255, 255]
