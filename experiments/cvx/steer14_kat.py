@@ -29,18 +29,27 @@ def rows(pat):
     return [json.loads(l) for f in sorted(glob.glob(pat)) for l in open(f)]
 
 
+def _fixed(r, win):
+    """vs_race.evaluate draws the human's finish time from the row's SEED, so a real row's outcome changes when it is
+    re-seeded: the templates are made seed-proof. WIN = a clear at t 1 s (before any human finish); LOSS = a top-out at
+    t 1 s (loss_kill whatever the seed)."""
+    r = copy.deepcopy(r)
+    r["how"] = "clear" if win else "topout"; r["t_end"] = 1.0; r["sent"] = []
+    return r
+
+
 def templates():
-    lulu = rows("steer14/gate/det1_lulu_S14_d4_k32.jsonl") + rows("steer14/gate/pc_lulu_S14_d16_k32.jsonl") + \
-        rows("steer14/gate/cons_lulu_C13_14886.jsonl")
-    wl = [r for r in lulu if evaluate(r, A.M_LULU, A.SIGMA, A.DELTA)[0] == "win_race"]
-    ll = [r for r in lulu if evaluate(r, A.M_LULU, A.SIGMA, A.DELTA)[0] != "win_race"]
-    race = lulu + rows("steer14/gate/id_rc_S14_id_v116.jsonl")
-    wo = [r for r in race if evaluate(r, A.M_OWNER, A.SIGMA, A.DELTA)[0] == "win_race"]
-    lo_ = [r for r in race if evaluate(r, A.M_OWNER, A.SIGMA, A.DELTA)[0] != "win_race"]
+    lulu = rows("steer14/gate/det1_lulu_S14_d4_k32.jsonl")
+    rc = rows("steer14/gate/id_rc_S14_id_v116.jsonl")
     g0 = [r for r in rows("steer14/gate/id_gb_S14_id_v116.jsonl") if r["topout"] == 0][0]
     g1 = copy.deepcopy(g0); g1["topout"] = 1; g1["how"] = "topout"; g1["won"] = 0
-    assert wl and ll and wo and lo_, (len(wl), len(ll), len(wo), len(lo_))
-    return {"lulu": (ll[0], wl[0]), "rc": (lo_[0], wo[0]), "gb": (g0, g1)}
+    T = {"lulu": (_fixed(lulu[0], False), _fixed(lulu[0], True)), "rc": (_fixed(rc[0], False), _fixed(rc[0], True)),
+         "gb": (g0, g1)}
+    for s in (1000, 3000, 44300, 41100):                    # the templates' outcomes are seed-independent
+        for M, (lo_, w) in ((A.M_LULU, T["lulu"]), (A.M_OWNER, T["rc"])):
+            assert evaluate({**w, "seed": s}, M, A.SIGMA, A.DELTA)[0] == "win_race"
+            assert evaluate({**lo_, "seed": s}, M, A.SIGMA, A.DELTA)[0] != "win_race"
+    return T
 
 
 def design(seed):

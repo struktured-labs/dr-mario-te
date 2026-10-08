@@ -16,7 +16,7 @@ CAL_ARMS = tuple(f"S14_d4_{g}" for g in GATE_NAMES) + ("CAL_d4_k32_mt2",)
 LO, LO13 = 44300, 41100
 N_LULU, N_GUARD, N_SENS, N_DOSE = 5100, 1000, 2000, 600       # PREREG_STEER14 sec. 4 (steer14/sizing.txt)
 N13_LULU, N13_GUARD = 1600, 600                                # == STEER13's cells
-GS = None                                                       # the gate cut G*, from steer14/cal/gate_cut.txt (prereg)
+GS = "u8"                                                       # the gate cut G*: steer14/cal/gate_cut.txt (stage-1 rule, c4a14d71)
 REDERIVE = ("C13_14886", "C13_v116")
 
 
@@ -33,11 +33,13 @@ def dose_arms():
     return tuple(f"S14_d4_{g}" for g in GATE_NAMES if g not in ("k32", GS))
 
 
-def blocks(n, lo=LO):
+def blocks(n, lo=None):
+    lo = LO if lo is None else lo                  # read LO at CALL time (a default argument would freeze it at import)
     return [lo + 2 * JOB * i for i in range(n // JOB)]
 
 
-def seeds(n, lo=LO):
+def seeds(n, lo=None):
+    lo = LO if lo is None else lo
     return [lo + 2 * i for i in range(n)]
 
 
