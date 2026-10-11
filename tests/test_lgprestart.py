@@ -39,6 +39,8 @@ ARMS = {   # name: (flags json, overlays, expect)  expect = "defect" | "pass"
     "couch_fair_A_lgp_row2":   (COUCH, dict(A, DRLGPRESTART="1", DRDISTROW="2"), "pass"),
     "couch_fair_D_lgp_row2":   (COUCH, dict(D, DRLGPRESTART="1", DRDISTROW="2"), "pass"),
     "couch_fair_A_lgp_row2_mt2": (COUCH, dict(A, DRLGPRESTART="1", DRDISTROW="2", DRMINTHINK="4"), "pass"),   # a16mt
+    "couch_fair_A_lgp_row2_u8": (COUCH, dict(A, DRLGPRESTART="1", DRDISTROW="2", DRSLAM_KOPEN="8", DRSLAM_KEND="8"),
+                                 "pass"),                                                                     # u8slam
 }
 
 
