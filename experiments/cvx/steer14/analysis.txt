@@ -1,0 +1,107 @@
+=== PART R: STEER13's V11 vs 1488 (MIN_THINK 6 f) re-derived under the cart's slam gate (STEER13's own seeds) ===
+rows (lulu / owner race / gate b): C13_14886 1600/600/600, C13_v116 1600/600/600
+provenance: steer14_run sha ['ef2396467e9e2ae2'], steer_model sha ['9f128ecaa2f01da3'], git ['a834a9db']; every row's jit guard == 064752972d064a89
+ABSOLUTE (LULU M 167.5 n=1600; owner M 239.5 and gate b n=600):
+  C13_14886          LULU loss 25.31% [23.19, 27.38] (slow 22.44 / kill 2.88) | owner loss 12.00% | gate-b tap-out 3.83% | pills to clear (median) 122, t_clear 220.6 s | miss 0.00%, non-final commits 30.3%, late 0.392/pill, adopted 0.358, refused 0.034, landed on the final 95.9%, tempo +0.00 f/pill, disarmed 5.7% (today's-cart ref 5.7%), DOWN via DONE 48.4% / stability 49.9% / none 1.7%, GO->lock 43.2 f (today's cart 43.2); ENDGAME (< 10 viruses, 45.3% of pills): GO->lock 49.4 f (today's cart on the same pills 49.4), landed on the final 95.0%, DIST target on 22.6% of decisions
+  C13_v116           LULU loss 25.25% [23.19, 27.38] (slow 18.81 / kill 6.44) | owner loss 13.33% | gate-b tap-out 5.83% | pills to clear (median) 119, t_clear 217.8 s | miss 0.00%, non-final commits 8.9%, late 0.097/pill, adopted 0.092, refused 0.005, landed on the final 99.1%, tempo +0.37 f/pill, disarmed 9.0% (today's-cart ref 5.9%), DOWN via DONE 49.9% / stability 48.2% / none 1.9%, GO->lock 42.9 f (today's cart 42.5); ENDGAME (< 10 viruses, 43.4% of pills): GO->lock 49.5 f (today's cart on the same pills 48.7), landed on the final 98.4%, DIST target on 21.5% of decisions
+  [V11 - 1488, corrected model]
+    (R) LULU race: 74.69% -> 74.75%  d +0.06 [-2.31, +2.44]  Bonferroni(K=1) +0.06 [-2.31, +2.44]  churn fixed 193 / new 192
+    (R) owner race: 88.00% -> 86.67%  d -1.33 [-4.67, +2.00]  Bonferroni(K=1) -1.33 [-4.67, +2.00]  churn fixed 48 / new 56
+    (R) gate-b tap-out: 3.83% -> 5.83%  d +2.00 [-0.33, +4.33]  Bonferroni(K=1) +2.00 [-0.33, +4.33]  churn fixed 19 / new 31
+  [the same contrast under STEER13's model, same seeds]
+    (R13) LULU race, STEER13 model: 59.88% -> 77.31%  d +17.44 [+14.69, +20.12]  Bonferroni(K=1) +17.44 [+14.69, +20.12]  churn fixed 407 / new 128
+  SURVIVAL of STEER13's +17.44 pp: corrected +0.06 pp = 0.00 of it [-0.14, 0.14] (seed bootstrap); corrected - STEER13 -17.38 [-20.56, -14.00] pp
+  tempo vs today's cart, STEER13 model: V11 -0.96 f/pill; corrected: V11 +0.37 f/pill
+
+=== PART M: {DIST4, A16} x {today's slam gate k32, the gate cut u8} (V11, MIN_THINK 6 f) ===
+rows (lulu / owner race / gate b): S14_d4_k32 5100/1000/1000, S14_d16_k32 5100/1000/1000, S14_d4_u8 5100/1000/1000, S14_d16_u8 5100/1000/1000, S14_d4_k32_q02 2000, S14_d16_u8_q02 2000, S14_d4_k24 600, S14_d4_k16 600, S14_d4_k8 600, S14_d4_k4 600, S14_d4_e32 600, S14_d4_e16 600, S14_d4_v4 600, S14_d4_u16 600
+provenance: steer14_run sha ['ef2396467e9e2ae2'], steer_model sha ['9f128ecaa2f01da3'], git ['a834a9db', 'ddc19420']; every row's jit guard == 064752972d064a89
+
+ABSOLUTE (LULU M 167.5 n=5100; owner M 239.5 and gate b n=1000):
+  S14_d4_k32         LULU loss 24.43% [23.27, 25.57] (slow 18.41 / kill 6.02) | owner loss 11.00% | gate-b tap-out 5.00% | pills to clear (median) 119, t_clear 216.3 s | miss 0.00%, non-final commits 8.9%, late 0.098/pill, adopted 0.093, refused 0.005, landed on the final 99.0%, tempo +0.37 f/pill, disarmed 9.0% (today's-cart ref 5.8%), DOWN via DONE 50.2% / stability 48.0% / none 1.8%, GO->lock 43.0 f (today's cart 42.6); ENDGAME (< 10 viruses, 43.9% of pills): GO->lock 49.5 f (today's cart on the same pills 48.7), landed on the final 98.3%, DIST target on 21.1% of decisions
+  S14_d16_k32        LULU loss 21.90% [20.76, 23.04] (slow 15.63 / kill 6.27) | owner loss 8.60% | gate-b tap-out 4.60% | pills to clear (median) 118, t_clear 215.5 s | miss 0.00%, non-final commits 8.1%, late 0.089/pill, adopted 0.085, refused 0.003, landed on the final 99.3%, tempo +0.46 f/pill, disarmed 9.5% (today's-cart ref 6.3%), DOWN via DONE 49.1% / stability 49.3% / none 1.6%, GO->lock 43.6 f (today's cart 43.1); ENDGAME (< 10 viruses, 41.7% of pills): GO->lock 51.6 f (today's cart on the same pills 50.8), landed on the final 98.8%, DIST target on 57.4% of decisions
+  S14_d4_u8          LULU loss 15.94% [14.96, 16.94] (slow 9.61 / kill 6.33) | owner loss 8.90% | gate-b tap-out 5.40% | pills to clear (median) 116, t_clear 187.9 s | miss 0.00%, non-final commits 9.0%, late 0.097/pill, adopted 0.091, refused 0.007, landed on the final 98.7%, tempo -9.39 f/pill, disarmed 17.1% (today's-cart ref 5.9%), DOWN via DONE 18.2% / stability 80.9% / none 1.0%, GO->lock 33.1 f (today's cart 42.5); ENDGAME (< 10 viruses, 43.9% of pills): GO->lock 31.6 f (today's cart on the same pills 48.5), landed on the final 97.8%, DIST target on 20.1% of decisions
+  S14_d16_u8         LULU loss 12.61% [11.73, 13.55] (slow 5.63 / kill 6.98) | owner loss 7.90% | gate-b tap-out 4.40% | pills to clear (median) 116, t_clear 186.4 s | miss 0.00%, non-final commits 8.0%, late 0.086/pill, adopted 0.081, refused 0.005, landed on the final 99.0%, tempo -9.62 f/pill, disarmed 18.6% (today's-cart ref 6.4%), DOWN via DONE 19.2% / stability 79.9% / none 0.9%, GO->lock 33.4 f (today's cart 43.0); ENDGAME (< 10 viruses, 40.7% of pills): GO->lock 32.1 f (today's cart on the same pills 50.8), landed on the final 98.2%, DIST target on 56.9% of decisions
+
+PRIMARY CONTRASTS (LULU race win at M 167.5; Bonferroni K = 4); GUARDS Bonferroni K = 6:
+
+  [(i) A16 at today's gate: S14_d16_k32 - S14_d4_k32]
+    (i) PRIMARY LULU race: 75.57% -> 78.10%  d +2.53 [+1.43, +3.63]  Bonferroni(K=4) +2.53 [+1.12, +3.92]  churn fixed 469 / new 340
+    (i) GUARD gate-b tap-out: 5.00% -> 4.60%  d -0.40 [-1.70, +0.90]  Bonferroni(K=6) -0.40 [-2.23, +1.43]  churn fixed 25 / new 21
+    (i) GUARD owner race M239.5: 89.00% -> 91.40%  d +2.40 [+0.60, +4.20]  Bonferroni(K=6) +2.40 [+0.00, +4.90]  churn fixed 56 / new 32
+    (i) LULU-race tap-out (how == topout): 11.31% -> 9.43%  d -1.88 [-2.69, -1.10]  Bonferroni(K=1) -1.88 [-2.69, -1.10]  churn fixed 265 / new 169
+    (i) gate-b tap<=100: 1.60% -> 1.40%  d -0.20 [-0.60, +0.20]  Bonferroni(K=1) -0.20 [-0.60, +0.20]  churn fixed 3 / new 1
+    LULU loss type slow: 939 -> 797 (fixed 456 / new 314)
+    LULU loss type kill: 307 -> 320 (fixed 104 / new 117)
+    primary HELPS; guard harm no; VERDICT (i): A16 ADDS VALUE
+
+  [(ii) A16 at the gate cut u8: S14_d16_u8 - S14_d4_u8]
+    (ii) PRIMARY LULU race: 84.06% -> 87.39%  d +3.33 [+2.43, +4.25]  Bonferroni(K=4) +3.33 [+2.16, +4.51]  churn fixed 363 / new 193
+    (ii) GUARD gate-b tap-out: 5.40% -> 4.40%  d -1.00 [-2.30, +0.30]  Bonferroni(K=6) -1.00 [-2.80, +0.80]  churn fixed 29 / new 19
+    (ii) GUARD owner race M239.5: 91.10% -> 92.10%  d +1.00 [-0.60, +2.60]  Bonferroni(K=6) +1.00 [-1.10, +3.13]  churn fixed 40 / new 30
+    (ii) LULU-race tap-out (how == topout): 11.35% -> 9.37%  d -1.98 [-2.78, -1.16]  Bonferroni(K=1) -1.98 [-2.78, -1.16]  churn fixed 272 / new 171
+    (ii) gate-b tap<=100: 1.70% -> 1.30%  d -0.40 [-0.90, +0.10]  Bonferroni(K=1) -0.40 [-0.90, +0.10]  churn fixed 5 / new 1
+    LULU loss type slow: 490 -> 287 (fixed 328 / new 125)
+    LULU loss type kill: 323 -> 356 (fixed 123 / new 156)
+    primary HELPS; guard harm no; VERDICT (ii): A16 ADDS VALUE
+
+  [(iii) COMBINED CANDIDATE: S14_d16_u8 - S14_d4_k32 (today's FAIR2PLUS-equivalent)]
+    (iii) PRIMARY LULU race: 75.57% -> 87.39%  d +11.82 [+10.53, +12.98]  Bonferroni(K=4) +11.82 [+10.20, +13.33]  churn fixed 856 / new 253
+    (iii) GUARD gate-b tap-out: 5.00% -> 4.40%  d -0.60 [-1.90, +0.80]  Bonferroni(K=6) -0.60 [-2.50, +1.30]  churn fixed 28 / new 22
+    (iii) GUARD owner race M239.5: 89.00% -> 92.10%  d +3.10 [+0.90, +5.30]  Bonferroni(K=6) +3.10 [+0.10, +6.10]  churn fixed 78 / new 47
+    (iii) LULU-race tap-out (how == topout): 11.31% -> 9.37%  d -1.94 [-2.92, -0.90]  Bonferroni(K=1) -1.94 [-2.92, -0.90]  churn fixed 397 / new 298
+    (iii) gate-b tap<=100: 1.60% -> 1.30%  d -0.30 [-0.80, +0.20]  Bonferroni(K=1) -0.30 [-0.80, +0.20]  churn fixed 5 / new 2
+    LULU loss type slow: 939 -> 287 (fixed 784 / new 132)
+    LULU loss type kill: 307 -> 356 (fixed 220 / new 269)
+    primary HELPS; guard harm no; VERDICT (iii): CERTIFIED
+
+  [(iv) INTERACTION = (ii) - (i) per seed]
+    interaction +0.80 [-0.59, +2.18]  Bonferroni(K=4) +0.80 [-0.96, +2.57]  per-seed values {-2: 30, -1: 494, 0: 4003, 1: 551, 2: 22}  (sd 0.496; 80 % MDE at this n 2.32 pp)
+    VERDICT (iv): no interaction established
+
+REFERENCE (not a pre-registered contrast; 95 %):
+    (ref) the gate cut alone: S14_d4_u8 - S14_d4_k32: 75.57% -> 84.06%  d +8.49 [+7.25, +9.71]  Bonferroni(K=1) +8.49 [+7.25, +9.71]  churn fixed 730 / new 297
+
+STALLS (act-stall: >= 10 decisions with no legal placement of the actual pill clearing any virus), LULU per game, truncated at her finish | untruncated:
+    S14_d4_k32   pills<=16 21.1 | 33.5; pills<=12 19.9; pills<=8 16.8; longest<=16 26.2 s | 41.8 s; stall>=30 s 33.4% | 36.2%
+    S14_d16_k32  pills<=16 18.2 | 24.9; pills<=12 17.3; pills<=8 15.2; longest<=16 23.1 s | 31.9 s; stall>=30 s 30.3% | 33.4%
+    S14_d4_u8    pills<=16 24.0 | 33.4; pills<=12 22.7; pills<=8 19.2; longest<=16 24.8 s | 36.5 s; stall>=30 s 25.2% | 26.0%
+    S14_d16_u8   pills<=16 19.1 | 23.1; pills<=12 18.3; pills<=8 16.2; longest<=16 19.4 s | 24.8 s; stall>=30 s 20.9% | 21.8%
+    (i) S14_d16_k32 - S14_d4_k32: stall-pills<=16 (truncated) -2.92 [-3.69, -2.15]; longest<=16 -3.03 s [-4.04, -2.00]; games with a stall >= 30 s -3.04 [-4.57, -1.55] pp
+    (ii) S14_d16_u8 - S14_d4_u8: stall-pills<=16 (truncated) -4.90 [-5.82, -4.00]; longest<=16 -5.41 s [-6.48, -4.35]; games with a stall >= 30 s -4.22 [-5.55, -2.88] pp
+    (iii) S14_d16_u8 - S14_d4_k32: stall-pills<=16 (truncated) -1.93 [-2.91, -0.97]; longest<=16 -6.76 s [-7.91, -5.59]; games with a stall >= 30 s -12.41 [-14.08, -10.80] pp
+
+SENSITIVITY: (iii) at q 2 % random-root misses (LULU, n=2000, 95 %):
+  S14_d4_k32_q02     LULU loss 35.45% [33.45, 37.55] (slow 23.05 / kill 12.40) | pills to clear (median) 126, t_clear 227.6 s | miss 1.98%, non-final commits 9.0%, late 0.098/pill, adopted 0.092, refused 0.006, landed on the final 96.8%, tempo +0.32 f/pill, disarmed 9.0% (today's-cart ref 6.0%), DOWN via DONE 50.5% / stability 47.2% / none 2.3%, GO->lock 41.8 f (today's cart 41.5); ENDGAME (< 10 viruses, 44.2% of pills): GO->lock 47.4 f (today's cart on the same pills 46.8), landed on the final 95.9%, DIST target on 21.5% of decisions
+  S14_d16_u8_q02     LULU loss 21.75% [20.00, 23.50] (slow 9.30 / kill 12.45) | pills to clear (median) 125, t_clear 198.4 s | miss 1.98%, non-final commits 8.2%, late 0.087/pill, adopted 0.081, refused 0.006, landed on the final 96.8%, tempo -9.25 f/pill, disarmed 18.2% (today's-cart ref 6.3%), DOWN via DONE 19.3% / stability 79.5% / none 1.2%, GO->lock 32.6 f (today's cart 41.9); ENDGAME (< 10 viruses, 42.9% of pills): GO->lock 31.2 f (today's cart on the same pills 48.1), landed on the final 95.9%, DIST target on 58.4% of decisions
+    (iii) q 2 %: S14_d16_u8_q02 - S14_d4_k32_q02: 64.55% -> 78.25%  d +13.70 [+11.45, +15.90]  Bonferroni(K=1) +13.70 [+11.45, +15.90]  churn fixed 410 / new 136
+    (iii) q 0 on the same seeds (for comparison): 75.05% -> 87.55%  d +12.50 [+10.55, +14.45]  Bonferroni(K=1) +12.50 [+10.55, +14.45]  churn fixed 343 / new 93
+    sensitivity HELPS at 95 %; same sign as the primary (iii): yes
+
+=== PART D: slam-gate dose-response (DIST4, LULU, the first 600 seeds; descriptive, 95 %) ===
+  S14_d4_k32         LULU loss 25.00% [21.50, 28.50] (slow 19.50 / kill 5.50) | pills to clear (median) 120, t_clear 219.5 s | miss 0.00%, non-final commits 9.2%, late 0.101/pill, adopted 0.096, refused 0.005, landed on the final 99.0%, tempo +0.38 f/pill, disarmed 8.8% (today's-cart ref 5.8%), DOWN via DONE 50.1% / stability 48.1% / none 1.8%, GO->lock 43.0 f (today's cart 42.6); ENDGAME (< 10 viruses, 43.9% of pills): GO->lock 49.4 f (today's cart on the same pills 48.7), landed on the final 98.4%, DIST target on 20.7% of decisions
+  S14_d4_k24         LULU loss 23.50% [20.17, 27.00] (slow 18.50 / kill 5.00) | pills to clear (median) 119, t_clear 213.6 s | miss 0.00%, non-final commits 9.0%, late 0.099/pill, adopted 0.093, refused 0.005, landed on the final 99.0%, tempo -0.56 f/pill, disarmed 11.0% (today's-cart ref 5.7%), DOWN via DONE 52.0% / stability 46.2% / none 1.8%, GO->lock 42.0 f (today's cart 42.5); ENDGAME (< 10 viruses, 44.4% of pills): GO->lock 49.2 f (today's cart on the same pills 48.5), landed on the final 98.3%, DIST target on 20.8% of decisions
+    (D) k24 - k32: 75.00% -> 76.50%  d +1.50 [-2.00, +5.00]  Bonferroni(K=1) +1.50 [-2.00, +5.00]  churn fixed 61 / new 52
+  S14_d4_k16         LULU loss 21.50% [18.17, 24.83] (slow 16.50 / kill 5.00) | pills to clear (median) 117, t_clear 209.2 s | miss 0.00%, non-final commits 8.8%, late 0.097/pill, adopted 0.093, refused 0.004, landed on the final 99.1%, tempo -1.31 f/pill, disarmed 13.4% (today's-cart ref 6.0%), DOWN via DONE 53.1% / stability 45.2% / none 1.7%, GO->lock 41.8 f (today's cart 43.1); ENDGAME (< 10 viruses, 42.8% of pills): GO->lock 51.0 f (today's cart on the same pills 50.3), landed on the final 98.6%, DIST target on 20.9% of decisions
+    (D) k16 - k32: 75.00% -> 78.50%  d +3.50 [-0.33, +7.17]  Bonferroni(K=1) +3.50 [-0.33, +7.17]  churn fixed 77 / new 56
+  S14_d4_k8          LULU loss 22.33% [19.17, 25.67] (slow 15.83 / kill 6.50) | pills to clear (median) 118, t_clear 206.8 s | miss 0.00%, non-final commits 9.0%, late 0.097/pill, adopted 0.092, refused 0.006, landed on the final 98.9%, tempo -1.59 f/pill, disarmed 13.8% (today's-cart ref 5.8%), DOWN via DONE 54.9% / stability 43.5% / none 1.6%, GO->lock 40.9 f (today's cart 42.5); ENDGAME (< 10 viruses, 44.4% of pills): GO->lock 49.2 f (today's cart on the same pills 48.5), landed on the final 98.3%, DIST target on 21.2% of decisions
+    (D) k8 - k32: 75.00% -> 77.67%  d +2.67 [-1.00, +6.17]  Bonferroni(K=1) +2.67 [-1.00, +6.17]  churn fixed 71 / new 55
+  S14_d4_k4          LULU loss 22.33% [19.00, 25.67] (slow 15.83 / kill 6.50) | pills to clear (median) 118, t_clear 207.5 s | miss 0.00%, non-final commits 9.0%, late 0.098/pill, adopted 0.092, refused 0.006, landed on the final 98.9%, tempo -1.61 f/pill, disarmed 14.1% (today's-cart ref 5.9%), DOWN via DONE 54.8% / stability 43.5% / none 1.6%, GO->lock 41.2 f (today's cart 42.8); ENDGAME (< 10 viruses, 44.3% of pills): GO->lock 49.8 f (today's cart on the same pills 49.0), landed on the final 98.3%, DIST target on 21.0% of decisions
+    (D) k4 - k32: 75.00% -> 77.67%  d +2.67 [-1.00, +6.50]  Bonferroni(K=1) +2.67 [-1.00, +6.50]  churn fixed 74 / new 58
+  S14_d4_e32         LULU loss 19.83% [16.67, 23.00] (slow 14.00 / kill 5.83) | pills to clear (median) 120, t_clear 202.0 s | miss 0.00%, non-final commits 9.1%, late 0.100/pill, adopted 0.094, refused 0.006, landed on the final 99.0%, tempo -5.16 f/pill, disarmed 10.4% (today's-cart ref 5.8%), DOWN via DONE 15.9% / stability 83.3% / none 0.9%, GO->lock 37.5 f (today's cart 42.7); ENDGAME (< 10 viruses, 43.7% of pills): GO->lock 37.0 f (today's cart on the same pills 48.9), landed on the final 98.2%, DIST target on 20.5% of decisions
+    (D) e32 - k32: 75.00% -> 80.17%  d +5.17 [+2.83, +7.67]  Bonferroni(K=1) +5.17 [+2.83, +7.67]  churn fixed 45 / new 14
+  S14_d4_e16         LULU loss 17.00% [14.00, 20.17] (slow 10.33 / kill 6.67) | pills to clear (median) 119, t_clear 193.1 s | miss 0.00%, non-final commits 8.9%, late 0.096/pill, adopted 0.091, refused 0.006, landed on the final 98.9%, tempo -7.02 f/pill, disarmed 12.1% (today's-cart ref 5.9%), DOWN via DONE 14.3% / stability 84.9% / none 0.8%, GO->lock 35.8 f (today's cart 42.8); ENDGAME (< 10 viruses, 42.3% of pills): GO->lock 32.8 f (today's cart on the same pills 49.5), landed on the final 98.0%, DIST target on 19.0% of decisions
+    (D) e16 - k32: 75.00% -> 83.00%  d +8.00 [+5.50, +10.67]  Bonferroni(K=1) +8.00 [+5.50, +10.67]  churn fixed 56 / new 8
+  S14_d4_v4          LULU loss 20.83% [17.67, 24.17] (slow 15.00 / kill 5.83) | pills to clear (median) 119, t_clear 207.4 s | miss 0.00%, non-final commits 9.1%, late 0.100/pill, adopted 0.094, refused 0.005, landed on the final 99.0%, tempo -2.97 f/pill, disarmed 9.7% (today's-cart ref 5.8%), DOWN via DONE 28.5% / stability 70.3% / none 1.2%, GO->lock 39.8 f (today's cart 42.8); ENDGAME (< 10 viruses, 43.6% of pills): GO->lock 42.2 f (today's cart on the same pills 49.2), landed on the final 98.3%, DIST target on 20.2% of decisions
+    (D) v4 - k32: 75.00% -> 79.17%  d +4.17 [+1.67, +6.67]  Bonferroni(K=1) +4.17 [+1.67, +6.67]  churn fixed 43 / new 18
+  S14_d4_u16         LULU loss 15.33% [12.50, 18.17] (slow 9.67 / kill 5.67) | pills to clear (median) 116, t_clear 189.0 s | miss 0.00%, non-final commits 9.0%, late 0.097/pill, adopted 0.091, refused 0.007, landed on the final 98.7%, tempo -8.83 f/pill, disarmed 16.2% (today's-cart ref 5.9%), DOWN via DONE 17.5% / stability 81.5% / none 1.0%, GO->lock 33.9 f (today's cart 42.8); ENDGAME (< 10 viruses, 44.0% of pills): GO->lock 32.7 f (today's cart on the same pills 49.1), landed on the final 97.8%, DIST target on 21.8% of decisions
+    (D) u16 - k32: 75.00% -> 84.67%  d +9.67 [+6.00, +13.17]  Bonferroni(K=1) +9.67 [+6.00, +13.17]  churn fixed 93 / new 35
+  S14_d4_u8          LULU loss 17.33% [14.33, 20.33] (slow 10.67 / kill 6.67) | pills to clear (median) 116, t_clear 185.0 s | miss 0.00%, non-final commits 9.0%, late 0.097/pill, adopted 0.090, refused 0.007, landed on the final 98.7%, tempo -9.36 f/pill, disarmed 17.2% (today's-cart ref 5.8%), DOWN via DONE 18.7% / stability 80.4% / none 0.9%, GO->lock 33.2 f (today's cart 42.5); ENDGAME (< 10 viruses, 44.0% of pills): GO->lock 31.6 f (today's cart on the same pills 48.5), landed on the final 97.8%, DIST target on 20.7% of decisions
+    (D) u8 - k32: 75.00% -> 82.67%  d +7.67 [+4.33, +11.17]  Bonferroni(K=1) +7.67 [+4.33, +11.17]  churn fixed 84 / new 38
+
+SUMMARY:
+  (i) A16 @ today's gate: +2.53 [+1.43, +3.63] Bonferroni +2.53 [+1.12, +3.92] -> A16 ADDS VALUE
+  (ii) A16 @ gate cut u8: +3.33 [+2.43, +4.25] Bonferroni +3.33 [+2.16, +4.51] -> A16 ADDS VALUE
+  (iii) combined: +11.82 [+10.53, +12.98] Bonferroni +11.82 [+10.20, +13.33] -> CERTIFIED
+  (iv) interaction: +0.80 [-0.59, +2.18] Bonferroni +0.80 [-0.96, +2.57] -> no interaction established
+  q 2 % sensitivity of (iii): +13.70 [+11.45, +15.90] (HELPS at 95 %)

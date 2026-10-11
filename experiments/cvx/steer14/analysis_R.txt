@@ -1,0 +1,14 @@
+=== PART R: STEER13's V11 vs 1488 (MIN_THINK 6 f) re-derived under the cart's slam gate (STEER13's own seeds) ===
+rows (lulu / owner race / gate b): C13_14886 1600/600/600, C13_v116 1600/600/600
+provenance: steer14_run sha ['ef2396467e9e2ae2'], steer_model sha ['9f128ecaa2f01da3'], git ['a834a9db']; every row's jit guard == 064752972d064a89
+ABSOLUTE (LULU M 167.5 n=1600; owner M 239.5 and gate b n=600):
+  C13_14886          LULU loss 25.31% [23.19, 27.38] (slow 22.44 / kill 2.88) | owner loss 12.00% | gate-b tap-out 3.83% | pills to clear (median) 122, t_clear 220.6 s | miss 0.00%, non-final commits 30.3%, late 0.392/pill, adopted 0.358, refused 0.034, landed on the final 95.9%, tempo +0.00 f/pill, disarmed 5.7% (today's-cart ref 5.7%), DOWN via DONE 48.4% / stability 49.9% / none 1.7%, GO->lock 43.2 f (today's cart 43.2); ENDGAME (< 10 viruses, 45.3% of pills): GO->lock 49.4 f (today's cart on the same pills 49.4), landed on the final 95.0%, DIST target on 22.6% of decisions
+  C13_v116           LULU loss 25.25% [23.19, 27.38] (slow 18.81 / kill 6.44) | owner loss 13.33% | gate-b tap-out 5.83% | pills to clear (median) 119, t_clear 217.8 s | miss 0.00%, non-final commits 8.9%, late 0.097/pill, adopted 0.092, refused 0.005, landed on the final 99.1%, tempo +0.37 f/pill, disarmed 9.0% (today's-cart ref 5.9%), DOWN via DONE 49.9% / stability 48.2% / none 1.9%, GO->lock 42.9 f (today's cart 42.5); ENDGAME (< 10 viruses, 43.4% of pills): GO->lock 49.5 f (today's cart on the same pills 48.7), landed on the final 98.4%, DIST target on 21.5% of decisions
+  [V11 - 1488, corrected model]
+    (R) LULU race: 74.69% -> 74.75%  d +0.06 [-2.31, +2.44]  Bonferroni(K=1) +0.06 [-2.31, +2.44]  churn fixed 193 / new 192
+    (R) owner race: 88.00% -> 86.67%  d -1.33 [-4.67, +2.00]  Bonferroni(K=1) -1.33 [-4.67, +2.00]  churn fixed 48 / new 56
+    (R) gate-b tap-out: 3.83% -> 5.83%  d +2.00 [-0.33, +4.33]  Bonferroni(K=1) +2.00 [-0.33, +4.33]  churn fixed 19 / new 31
+  [the same contrast under STEER13's model, same seeds]
+    (R13) LULU race, STEER13 model: 59.88% -> 77.31%  d +17.44 [+14.69, +20.12]  Bonferroni(K=1) +17.44 [+14.69, +20.12]  churn fixed 407 / new 128
+  SURVIVAL of STEER13's +17.44 pp: corrected +0.06 pp = 0.00 of it [-0.14, 0.14] (seed bootstrap); corrected - STEER13 -17.38 [-20.56, -14.00] pp
+  tempo vs today's cart, STEER13 model: V11 -0.96 f/pill; corrected: V11 +0.37 f/pill
