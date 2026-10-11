@@ -104,6 +104,13 @@ ARMS = {   # name: (flags json, overlays, expectation)
     "couch_fair_A_lgp_row2_mt2": ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
                         "DRABORTSTALE": "1", "DRLGPRESTART": "1", "DRDISTROW": "2", "DRMINTHINK": "4"}, "pass"),
+    # u8slam lane (2026-10-11): FAIR2PLUS with the slam stability window cut to 8 hooks in both phases (STEER14 "u8":
+    # KOPEN 32 -> 8, KEND 255 -> 8). Only dn_p2's two CMP immediates move: DOWN is held earlier, nothing else. The gate
+    # must still see the unmodified game under the recorded pads.
+    "couch_fair_A_lgp_row2_u8": ("experiments/lateflip/couch_c960dd49_flags.json",
+                       {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0", "DRPROPHFIRST": "1",
+                        "DRABORTSTALE": "1", "DRLGPRESTART": "1", "DRDISTROW": "2", "DRSLAM_KOPEN": "8",
+                        "DRSLAM_KEND": "8"}, "pass"),
     "couch_464a4b75": ("experiments/lateflip/couch_c960dd49_flags.json", {"DRLATEGUARD": "1", "DRSTUDYEND": "1"}, "fail"),
     "couch_settle3_noguard": ("experiments/lateflip/couch_c960dd49_flags.json",
                        {"DRLATEGUARD": "1", "DRSTUDYEND": "1", "DRSETTLE": "3", "DRSETTLEPIN": "0",
