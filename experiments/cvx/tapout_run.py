@@ -90,10 +90,15 @@ def _choose(self, board, cur, nxt, k=0):
 R10.S10Decider.choose = _choose
 
 # --------------------------------------------------------------------------------------------- arms (pre-registered)
-DANGER = {   # PREREG_TAPOUT.md sec. 3 (filled at prereg time)
+DANGER = {   # PREREG_TAPOUT.md sec. 3 (vk 16 = A16)
+    "D1": (16, dict(kind="spawn", P=60, h0=11)),
+    "D2": (16, dict(kind="spawn", P=200, h0=11)),
+    "D3": (16, dict(kind="spawn", P=200, h0=13)),
+    "D4": (16, dict(kind="spawnq", P=40, h0=10)),
+    "D5": (16, dict(kind="spawn", P=500, h0=12, trig=11)),
 }
 for name, (vk, rule) in DANGER.items():
-    S10.RULE_ARMS[name] = dict(rule, vk=vk) if vk != 4 else dict(rule)
+    S10.RULE_ARMS[name] = dict(rule, vk=vk)
     for g in ("k32", "u8"):
         ko, ke, ve = S14.GATES[g]
         S14.ARMS[f"T_{name}_{g}"] = dict(part="B", rule=name, fw="v11", mt=6, q=0.0, ref="1488", slam=True,
