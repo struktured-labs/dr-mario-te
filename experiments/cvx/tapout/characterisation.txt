@@ -1,0 +1,46 @@
+
+== A16 + u8: tap-out replays 478 (kill before her finish 356), control clears 200
+-- ALL tap-outs n=478
+  pills at death p10/50/90 [57, 147, 418]  time s [82.8, 220.7, 689.7]  viruses left [3, 9, 26]
+  viruses-left bands at death: {'10-19': 135, '20+': 84, '5-9': 171, '<=4': 88}
+  garbage tiles in last 8 pills [0, 0, 4]  whole game [8, 26, 71]
+  throat Hs (cols2-5) 8 pills before / at last decision [13, 15, 16] [15, 15, 16]
+  max col height at last decision [15, 16, 16]  cols>=12 at last [4, 7, 8]
+  pills since throat first >=12 / >=14 [52, 140, 404] [9, 52, 219]
+  last-8 pills: stab-lock (before DONE) 38.5%  disarmed 7.0%  landed!=final 18.3%  same-colour pills 33.1%
+  class: {'THROAT': 388, 'GARBAGE': 86, 'OTHER': 4}
+-- KILLS n=356
+  pills at death p10/50/90 [52, 124, 202]  time s [70.3, 182.8, 293.5]  viruses left [5, 11, 28]
+  viruses-left bands at death: {'10-19': 125, '20+': 83, '5-9': 113, '<=4': 35}
+  garbage tiles in last 8 pills [0, 0, 4]  whole game [8, 21, 37]
+  throat Hs (cols2-5) 8 pills before / at last decision [14, 15, 16] [15, 15, 16]
+  max col height at last decision [15, 16, 16]  cols>=12 at last [3, 7, 8]
+  pills since throat first >=12 / >=14 [46, 118, 197] [12, 49, 141]
+  last-8 pills: stab-lock (before DONE) 44.9%  disarmed 5.9%  landed!=final 12.5%  same-colour pills 33.4%
+  class: {'THROAT': 281, 'GARBAGE': 74, 'OTHER': 1}
+-- CONTROL clears n=200: stab-lock 79.8% disarmed 20.0% landed!=final 0.6%
+  max throat Hs reached per game [12, 13, 14]  games reaching Hs>=12 / >=14: 93% / 18%  garbage tiles/game [8, 18, 34]
+  identity vs banked rows (t_end, how, pills): 678 / 678
+
+== FAIR2PLUS-equiv (d4 k32): tap-out replays 577 (kill before her finish 307), control clears 200
+-- ALL tap-outs n=577
+  pills at death p10/50/90 [63, 176, 467]  time s [93.2, 287.2, 844.5]  viruses left [2, 7, 26]
+  viruses-left bands at death: {'10-19': 129, '20+': 98, '5-9': 208, '<=4': 142}
+  garbage tiles in last 8 pills [0, 0, 4]  whole game [10, 34, 89]
+  throat Hs (cols2-5) 8 pills before / at last decision [11, 15, 16] [15, 15, 16]
+  max col height at last decision [15, 16, 16]  cols>=12 at last [3, 6, 8]
+  pills since throat first >=12 / >=14 [51, 166, 461] [7, 55, 298]
+  last-8 pills: stab-lock (before DONE) 12.4%  disarmed 6.4%  landed!=final 23.0%  same-colour pills 31.6%
+  class: {'THROAT': 465, 'GARBAGE': 101, 'OTHER': 10, 'CUT-SHORT': 1}
+-- KILLS n=307
+  pills at death p10/50/90 [50, 112, 178]  time s [74.1, 162.7, 294.3]  viruses left [5, 14, 30]
+  viruses-left bands at death: {'10-19': 109, '20+': 98, '5-9': 74, '<=4': 26}
+  garbage tiles in last 8 pills [0, 2, 5]  whole game [7, 20, 36]
+  throat Hs (cols2-5) 8 pills before / at last decision [13, 15, 16] [15, 15, 16]
+  max col height at last decision [15, 16, 16]  cols>=12 at last [3, 6, 8]
+  pills since throat first >=12 / >=14 [43, 97, 173] [11, 43, 123]
+  last-8 pills: stab-lock (before DONE) 21.6%  disarmed 3.0%  landed!=final 11.8%  same-colour pills 29.9%
+  class: {'THROAT': 228, 'GARBAGE': 77, 'CUT-SHORT': 1, 'OTHER': 1}
+-- CONTROL clears n=200: stab-lock 48.8% disarmed 9.3% landed!=final 0.5%
+  max throat Hs reached per game [12, 13, 14]  games reaching Hs>=12 / >=14: 92% / 20%  garbage tiles/game [10, 22, 45]
+  identity vs banked rows (t_end, how, pills): 777 / 777
