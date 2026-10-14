@@ -16,11 +16,13 @@ No Quartus, no hardware, no RTL/firmware/cart builds. Every cart used here was a
    slow (race) losses; kills fall slightly. A16's advantage is wiped out on the Pocket.
 4. **A Pocket-specific slam-gate retune buys most of the tempo back on the cart** (replays, V11): u8 (KOPEN 8 / KEND 8) on
    the Pocket clock is +3.6 f/pill vs MiSTer FAIR2PLUS [+1.3, +6.5], at a cost of 33 / 1,197 different landings
-   (non-final 4.3 % -> 6.6 %). Its race-model price is in "Pending" below.
+   (non-final 4.3 % -> 6.6 %). In the race model, Pocket u8 is **-4.0 pp loss vs today's MiSTer FAIR2PLUS
+   [-7.3, -0.6]** (n 1,000), but still **+10.7 pp [+7.7, +13.7] behind MiSTer running the same u8 cart** (17.1 % -> 27.8 %).
 5. **Verdict:** a Pocket build of TODAY's MiSTer bot will play **identically in where it puts pills but clearly slower**,
-   and in the model that is a large strength loss (~+18 pp loss vs dr. lulu). Reviving the Pocket is worth it only as a
-   deliberately slower "travel" bot, or together with a Pocket-tuned slam gate (u8 class), and NOT as a like-for-like
-   copy of the MiSTer bot.
+   and in the model that is a large strength loss (~+18 pp loss vs dr. lulu). **With a u8-class slam gate the Pocket bot
+   is, in the model, at least as strong as today's MiSTer couch bot**, so reviving the Pocket is worth it IF it ships with
+   the u8 gate (one cart line, since u8 is also MiSTer's next candidate, PR #44). It will always trail a MiSTer running
+   the same cart by ~10 pp; it cannot be a like-for-like copy.
 
 ## 1. Method
 - **Clock model.** The copro is a free-running 6502 + LeafEval on its own clock, PPU-blind; the host only uploads the
@@ -76,13 +78,20 @@ No Quartus, no hardware, no RTL/firmware/cart builds. Every cart used here was a
 | e8 (KEND 8) | +6.8 {+4.3, +10.3} | 1,126 | 23 |
 | **u8 (KOPEN 8 / KEND 8)** | **+3.6 {+1.3, +6.5}** | 1,118 (1 hybrid) | 33 |
 
-u8 is the obvious Pocket gate; on MiSTer the same cart is the u8slam lane's soak candidate (PR #44), so a "u8 everywhere"
+u8 is the obvious Pocket gate (race-model price in section 5); on MiSTer the same cart is the u8slam lane's soak candidate (PR #44), so a "u8 everywhere"
 plan keeps one cart line. A16 retune replays were not run (dropped for box load; A16 tracks V11 everywhere above).
 
-## 5. Pending (running in the background when this was committed)
-- Race model of the Pocket u8 retune (S14_d4_u8 at 54.669 MHz, n 1,000) vs MiSTer S14_d4_k32: unit
-  `grok-pocketclk-sim2`, rows `dr_mario_rl/tmp/pocketclk/steer14/pk_S14_d4_u8_*.jsonl`; `tools/pocketclk/analyze_sim.py`
-  prints it.
+## 5. Race model of the Pocket u8 retune (n 1,000 paired seeds)
+
+| arm | loss vs dr. lulu | GO->lock per pill (endgame) |
+|---|---|---|
+| MiSTer FAIR2PLUS gate (S14_d4_k32, today) | 31.8 % | 42.1 f (48.0 f) |
+| MiSTer u8 (S14_d4_u8) | 17.1 % | 33.2 f (31.7 f) |
+| **Pocket u8** | **27.8 %** | 45.1 f (42.8 f) |
+
+- Pocket u8 vs MiSTer today: **-4.0 pp [-7.3, -0.6]**. Pocket u8 vs MiSTer u8: **+10.7 pp [+7.7, +13.7]** (slow 105 -> 215,
+  kill 66 -> 63; endgame landed-on-final 97.7 % -> 95.8 %).
+- Unit `grok-pocketclk-sim2`, rows `dr_mario_rl/tmp/pocketclk/steer14/pk_S14_d4_u8_*.jsonl`.
 
 ## 6. What this does not cover
 - Silicon: the R47-era Pocket freeze, fit/timing at 99 % ALM, and the $5000 cart window are all untested here.
