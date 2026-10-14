@@ -1,0 +1,9 @@
+identity control (K = 1, S14_d4_k32 seeds 44300..44398): 50/50 rows identical to the banked MiSTer rows
+S14_d4_k32: n 1000  LULU loss MiSTer 31.80% -> Pocket 49.90%  d +18.10 [+14.50, +21.80] pp  (loss types MiSTer {'slow': 220, 'kill': 98} / Pocket {'slow': 442, 'kill': 57}; losses new 280 / fixed 99)
+   GO->lock per pill MiSTer 42.1 f -> Pocket 55.9 f; endgame 48.0 -> 62.5 f; endgame landed-on-final 96.7% -> 97.2%
+S14_d16_k32: n 1000  LULU loss MiSTer 21.40% -> Pocket 50.00%  d +28.60 [+25.10, +32.10] pp  (loss types MiSTer {'slow': 143, 'kill': 71} / Pocket {'slow': 441, 'kill': 59}; losses new 341 / fixed 55)
+   ... Pocket S14_d16_k32 vs MiSTer S14_d4_k32 (today's couch config): d +18.20 [+14.60, +22.00] pp (n 1000)
+   GO->lock per pill MiSTer 43.5 f -> Pocket 57.1 f; endgame 51.5 -> 65.4 f; endgame landed-on-final 98.7% -> 97.6%
+S14_d4_u8: n 1000  LULU loss MiSTer 17.10% -> Pocket 27.80%  d +10.70 [+7.70, +13.70] pp  (loss types MiSTer {'slow': 105, 'kill': 66} / Pocket {'slow': 215, 'kill': 63}; losses new 181 / fixed 74)
+   ... Pocket S14_d4_u8 vs MiSTer S14_d4_k32 (today's couch config): d -4.00 [-7.30, -0.60] pp (n 1000)
+   GO->lock per pill MiSTer 33.2 f -> Pocket 45.1 f; endgame 31.7 -> 42.8 f; endgame landed-on-final 97.7% -> 95.8%

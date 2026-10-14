@@ -1,0 +1,155 @@
+# replays fw=v11 arms=['f2p', 'pk', 'pku8', 'pkk8', 'pke8'] (base = f2p); lock / DOWN in frames since the spawn
+game  arm     n ==final  pub hybrid frozen lock mean disarmed  summary
+m2g1  f2p    47      40    7      0      1     43.19       14  tag=m2g1_f2p_v11_chain_garb frames=4886 goes=50 dones=36 cases=47
+m2g1  pk     47      40    7      0      0     55.36       20  tag=m2g1_pk_v11_chain_garb frames=5446 goes=50 dones=30 cases=47
+m2g1  pku8   47      41    6      0      0     52.49       21  tag=m2g1_pku8_v11_chain_garb frames=5334 goes=50 dones=29 cases=47
+m2g1  pkk8   47      41    6      0      0     52.49       21  tag=m2g1_pkk8_v11_chain_garb frames=5334 goes=50 dones=29 cases=47
+m2g1  pke8   47      40    7      0      0     55.36       20  tag=m2g1_pke8_v11_chain_garb frames=5446 goes=50 dones=30 cases=47
+m2g2  f2p   119     119    0      0      0     45.50       10  tag=m2g2_f2p_v11_chain_garb frames=12780 goes=122 dones=112 cases=119
+m2g2  pk    119     116    3      0      2     60.65       24  tag=m2g2_pk_v11_chain_garb frames=14360 goes=122 dones=98 cases=119
+m2g2  pku8  119     115    4      0      3     48.87       45  tag=m2g2_pku8_v11_chain_garb frames=12924 goes=122 dones=77 cases=119
+m2g2  pkk8  119     115    4      0      3     57.82       25  tag=m2g2_pkk8_v11_chain_garb frames=14020 goes=122 dones=97 cases=119
+m2g2  pke8  119     116    3      0      2     51.71       44  tag=m2g2_pke8_v11_chain_garb frames=13360 goes=122 dones=78 cases=119
+m2g3  f2p    99      97    2      0      0     39.69       10  tag=m2g3_f2p_v11_chain_garb frames=10499 goes=102 dones=92 cases=99
+m2g3  pk     99      97    2      0      0     52.39       25  tag=m2g3_pk_v11_chain_garb frames=11741 goes=102 dones=77 cases=99
+m2g3  pku8   99      95    3      1      2     43.19       28  tag=m2g3_pku8_v11_chain_garb frames=10807 goes=102 dones=74 cases=99
+m2g3  pkk8   99      96    3      0      1     48.92       28  tag=m2g3_pkk8_v11_chain_garb frames=11371 goes=102 dones=74 cases=99
+m2g3  pke8   99      96    2      1      1     46.68       25  tag=m2g3_pke8_v11_chain_garb frames=11177 goes=102 dones=77 cases=99
+m4g1  f2p   134     128    6      0      3     42.90       11  tag=m4g1_f2p_v11_chain_garb frames=60000 goes=137 dones=126 cases_done=134 TIMEOUT
+m4g1  pk    134     127    7      0      4     58.26       35  tag=m4g1_pk_v11_chain_garb frames=60000 goes=137 dones=102 cases_done=134 TIMEOUT
+m4g1  pku8  134     122   12      0      5     47.91       50  tag=m4g1_pku8_v11_chain_garb frames=60000 goes=137 dones=87 cases_done=134 TIMEOUT
+m4g1  pkk8  134     124   10      0      5     55.97       38  tag=m4g1_pkk8_v11_chain_garb frames=60000 goes=137 dones=99 cases_done=134 TIMEOUT
+m4g1  pke8  134     125    9      0      4     50.54       47  tag=m4g1_pke8_v11_chain_garb frames=60000 goes=137 dones=90 cases_done=134 TIMEOUT
+m4g2  f2p   109      98   11      0      0     33.84       11  tag=m4g2_f2p_v11_chain_garb frames=10255 goes=113 dones=102 cases=109
+m4g2  pk    109      96   13      0      6     45.63       34  tag=m4g2_pk_v11_chain_garb frames=11587 goes=113 dones=79 cases=109
+m4g2  pku8  109      97   12      0      7     40.50       37  tag=m4g2_pku8_v11_chain_garb frames=11052 goes=115 dones=77 cases=109
+m4g2  pkk8  109      97   12      0      7     40.50       37  tag=m4g2_pkk8_v11_chain_garb frames=11052 goes=115 dones=77 cases=109
+m4g2  pke8  109      96   13      0      6     45.63       34  tag=m4g2_pke8_v11_chain_garb frames=11587 goes=113 dones=79 cases=109
+G2    f2p   116     114    2      0      0     38.37       17  tag=G2_f2p_v11_chain_garb frames=11023 goes=120 dones=104 cases=116
+G2    pk    116     111    5      0      3     52.41       42  tag=G2_pk_v11_chain_garb frames=13063 goes=120 dones=79 cases=116
+G2    pku8  116     110    6      0      4     47.73       42  tag=G2_pku8_v11_chain_garb frames=12493 goes=120 dones=79 cases=116
+G2    pkk8  116     110    6      0      4     47.73       42  tag=G2_pkk8_v11_chain_garb frames=12493 goes=120 dones=79 cases=116
+G2    pke8  116     111    5      0      3     52.41       42  tag=G2_pke8_v11_chain_garb frames=13063 goes=120 dones=79 cases=116
+m1g1  f2p   184     171   13      0      8     47.05        6  tag=m1g1_f2p_v11_chain_garb frames=60000 goes=187 dones=181 cases_done=184 TIMEOUT
+m1g1  pk    184     169   15      0      8     62.40       32  tag=m1g1_pk_v11_chain_garb frames=60000 goes=187 dones=155 cases_done=184 TIMEOUT
+m1g1  pku8  184     168   16      0      7     47.16       62  tag=m1g1_pku8_v11_chain_garb frames=60000 goes=187 dones=125 cases_done=184 TIMEOUT
+m1g1  pkk8  184     169   15      0      8     60.48       34  tag=m1g1_pkk8_v11_chain_garb frames=60000 goes=187 dones=153 cases_done=184 TIMEOUT
+m1g1  pke8  184     168   16      0      7     48.99       60  tag=m1g1_pke8_v11_chain_garb frames=60000 goes=187 dones=127 cases_done=184 TIMEOUT
+m1g2  f2p   132     132    0      0      0     45.09       13  tag=m1g2_f2p_v11_chain_garb frames=14330 goes=135 dones=122 cases=132
+m1g2  pk    132     132    0      0      0     60.83       30  tag=m1g2_pk_v11_chain_garb frames=16430 goes=135 dones=105 cases=132
+m1g2  pku8  132     131    1      0      0     47.42       42  tag=m1g2_pku8_v11_chain_garb frames=14788 goes=136 dones=93 cases=132
+m1g2  pkk8  132     132    0      0      0     58.06       30  tag=m1g2_pkk8_v11_chain_garb frames=16144 goes=135 dones=105 cases=132
+m1g2  pke8  132     131    1      0      0     50.18       42  tag=m1g2_pke8_v11_chain_garb frames=15024 goes=136 dones=93 cases=132
+m3g1  f2p    26      25    1      0      1     38.92        4  tag=m3g1_f2p_v11_chain_garb frames=2622 goes=29 dones=25 cases=26
+m3g1  pk     26      25    1      0      0     52.62        9  tag=m3g1_pk_v11_chain_garb frames=2978 goes=29 dones=20 cases=26
+m3g1  pku8   26      25    1      0      0     51.31       11  tag=m3g1_pku8_v11_chain_garb frames=2928 goes=29 dones=18 cases=26
+m3g1  pkk8   26      25    1      0      0     51.31       11  tag=m3g1_pkk8_v11_chain_garb frames=2928 goes=29 dones=18 cases=26
+m3g1  pke8   26      25    1      0      0     52.62        9  tag=m3g1_pke8_v11_chain_garb frames=2978 goes=29 dones=20 cases=26
+m3g2  f2p    22      21    1      0      0     39.18        5  tag=m3g2_f2p_v11_chain_garb frames=2166 goes=25 dones=20 cases=22
+m3g2  pk     22      20    2      0      1     57.23       10  tag=m3g2_pk_v11_chain_garb frames=2562 goes=25 dones=15 cases=22
+m3g2  pku8   22      19    3      0      2     51.86       10  tag=m3g2_pku8_v11_chain_garb frames=2348 goes=25 dones=15 cases=22
+m3g2  pkk8   22      19    3      0      2     51.86       10  tag=m3g2_pkk8_v11_chain_garb frames=2348 goes=25 dones=15 cases=22
+m3g2  pke8   22      20    2      0      1     57.23       10  tag=m3g2_pke8_v11_chain_garb frames=2562 goes=25 dones=15 cases=22
+m3g3  f2p    19      19    0      0      0     36.32        3  tag=m3g3_f2p_v11_chain_garb frames=2233 goes=22 dones=19 cases=19
+m3g3  pk     19      19    0      0      0     52.95        7  tag=m3g3_pk_v11_chain_garb frames=2548 goes=23 dones=15 cases=19
+m3g3  pku8   19      17    2      0      0     45.89        7  tag=m3g3_pku8_v11_chain_garb frames=2460 goes=23 dones=15 cases=19
+m3g3  pkk8   19      17    2      0      0     45.89        7  tag=m3g3_pkk8_v11_chain_garb frames=2460 goes=23 dones=15 cases=19
+m3g3  pke8   19      19    0      0      0     52.95        7  tag=m3g3_pke8_v11_chain_garb frames=2548 goes=23 dones=15 cases=19
+m5g2  f2p   190     181    9      0      4     39.77        5  tag=m5g2_f2p_v11_chain_garb frames=19982 goes=193 dones=188 cases=190
+m5g2  pk    190     181    9      0      3     47.35       17  tag=m5g2_pk_v11_chain_garb frames=21378 goes=193 dones=176 cases=190
+m5g2  pku8  190     178   12      0      3     37.22       21  tag=m5g2_pku8_v11_chain_garb frames=19440 goes=193 dones=172 cases=190
+m5g2  pkk8  190     180   10      0      3     44.06       21  tag=m5g2_pkk8_v11_chain_garb frames=20770 goes=193 dones=172 cases=190
+m5g2  pke8  190     179   11      0      3     40.52       17  tag=m5g2_pke8_v11_chain_garb frames=20048 goes=193 dones=176 cases=190
+
+## per arm, per stratum (counts / n landed)
+stratum              arm      n        ==final  pub hybrid frozen lock mean lock med  GO->lock DOWN mean      disarmed DOWN via done/stability(open,end,cross)/other/none
+all pills            f2p   1197   1145  95.66%   52      0     17     41.77     40.0  40.68(1126)     28.00   109   9.1%  518/662(662,0,0)/0/17
+all pills            pk    1197   1133  94.65%   64      0     27     55.14     49.0  54.80(1130)     42.78   285  23.8%  603/528(509,0,19)/0/66
+all pills            pku8  1197   1118  93.40%   78      1     33     45.35     34.0  44.29(1136)     29.84   376  31.4%  386/758(502,256,0)/0/53
+all pills            pkk8  1197   1125  93.98%   72      0     33     51.92     46.0  51.34(1131)     38.59   304  25.4%  613/520(502,0,18)/0/64
+all pills            pke8  1197   1126  94.07%   70      1     27     48.60     39.0  47.78(1134)     33.96   357  29.8%  378/763(509,254,0)/0/56
+>= 10 viruses        f2p    847    808  95.40%   39      0      6     38.69     36.0  37.31( 801)     25.17   109  12.9%  175/662(662,0,0)/0/10
+>= 10 viruses        pk     847    800  94.45%   47      0     16     52.08     42.0  51.31( 805)     39.03   282  33.3%  294/509(509,0,0)/0/44
+>= 10 viruses        pku8   847    792  93.51%   55      0     22     47.44     34.0  46.44( 804)     33.05   300  35.4%  304/502(502,0,0)/0/41
+>= 10 viruses        pkk8   847    792  93.51%   55      0     22     47.44     34.0  46.44( 804)     33.05   300  35.4%  304/502(502,0,0)/0/41
+>= 10 viruses        pke8   847    800  94.45%   47      0     16     52.08     42.0  51.31( 805)     39.03   282  33.3%  294/509(509,0,0)/0/44
+< 10 viruses         f2p    350    337  96.29%   13      0     11     49.21     50.0  49.00( 325)     34.90     0   0.0%  343/0(0,0,0)/0/7
+< 10 viruses         pk     350    333  95.14%   17      0     11     62.57     65.5  63.43( 325)     51.95     3   0.9%  309/19(0,0,19)/0/22
+< 10 viruses         pku8   350    326  93.14%   23      1     11     40.31     35.0  39.09( 332)     22.19    76  21.7%  82/256(0,256,0)/0/12
+< 10 viruses         pkk8   350    333  95.14%   17      0     11     62.78     65.5  63.38( 327)     52.26     4   1.1%  309/18(0,0,18)/0/23
+< 10 viruses         pke8   350    326  93.14%   23      1     11     40.17     34.0  39.15( 329)     21.92    75  21.4%  84/254(0,254,0)/0/12
+tuck pills           f2p     63     16  25.40%   47      0     13     40.70     38.0  41.54(  56)     28.57     7  11.1%  26/34(34,0,0)/0/3
+tuck pills           pk      63     11  17.46%   52      0     16     51.38     45.0  52.77(  57)     41.25    16  25.4%  27/28(27,0,1)/0/8
+tuck pills           pku8    63     11  17.46%   52      0     19     47.95     34.0  49.59(  56)     35.96    27  42.9%  28/29(26,3,0)/0/6
+tuck pills           pkk8    63     12  19.05%   51      0     18     49.52     42.0  51.36(  56)     37.45    18  28.6%  28/27(26,0,1)/0/8
+tuck pills           pke8    63     10  15.87%   53      0     17     49.81     42.0  51.04(  57)     39.63    25  39.7%  27/30(27,3,0)/0/6
+non-tuck pills       f2p   1134   1129  99.56%    5      0      4     41.82     40.0  40.64(1070)     27.97   102   9.0%  492/628(628,0,0)/0/14
+non-tuck pills       pk    1134   1122  98.94%   12      0     11     55.35     49.0  54.90(1073)     42.85   269  23.7%  576/500(482,0,18)/0/58
+non-tuck pills       pku8  1134   1107  97.62%   26      1     14     45.21     34.0  44.01(1080)     29.52   349  30.8%  358/729(476,253,0)/0/47
+non-tuck pills       pkk8  1134   1113  98.15%   21      0     15     52.06     47.0  51.33(1075)     38.65   286  25.2%  585/493(476,0,17)/0/56
+non-tuck pills       pke8  1134   1116  98.41%   17      1     10     48.53     39.0  47.61(1077)     33.67   332  29.3%  351/733(482,251,0)/0/50
+post-garbage pills   f2p     83     82  98.80%    1      0      0     24.99     25.0  32.00(  12)      9.24     0   0.0%  74/8(8,0,0)/0/1
+post-garbage pills   pk      83     81  97.59%    2      0      0     26.05     25.0  34.50(  16)     10.77     0   0.0%  72/11(11,0,0)/0/0
+post-garbage pills   pku8    83     82  98.80%    1      0      0     23.95     22.0  23.18(  22)      8.16     0   0.0%  62/21(11,10,0)/0/0
+post-garbage pills   pkk8    83     82  98.80%    1      0      0     25.80     22.0  32.06(  17)     10.07     0   0.0%  71/11(11,0,0)/0/1
+post-garbage pills   pke8    83     81  97.59%    2      0      0     24.93     26.0  28.10(  20)      9.39     0   0.0%  65/18(11,7,0)/0/0
+not post-garbage     f2p   1114   1063  95.42%   51      0     17     43.02     41.0  40.78(1114)     29.40   109   9.8%  444/654(654,0,0)/0/16
+not post-garbage     pk    1114   1052  94.43%   62      0     27     57.31     52.0  55.09(1114)     45.31   285  25.6%  531/517(498,0,19)/0/66
+not post-garbage     pku8  1114   1036  93.00%   77      1     33     46.95     35.0  44.71(1114)     31.53   376  33.8%  324/737(491,246,0)/0/53
+not post-garbage     pkk8  1114   1043  93.63%   71      0     33     53.87     51.0  51.63(1114)     40.82   304  27.3%  542/509(491,0,18)/0/63
+not post-garbage     pke8  1114   1045  93.81%   68      1     27     50.36     40.0  48.14(1114)     35.89   357  32.0%  313/745(498,247,0)/0/56
+
+## press cadence on the cart traces (any A/B/L/R press on two consecutive frames = faster than 1 press / 2 f)
+  f2p: 3623 press frames over 1197 pills, consecutive-frame presses 0
+  pk: 3807 press frames over 1197 pills, consecutive-frame presses 0
+  pku8: 3770 press frames over 1197 pills, consecutive-frame presses 0
+  pkk8: 3786 press frames over 1197 pills, consecutive-frame presses 0
+  pke8: 3793 press frames over 1197 pills, consecutive-frame presses 0
+
+## PAIRED pk - f2p (same case, same timeline; < 0 = pk earlier)
+stratum              n both  lock diff mean [95% t] {95% game-cluster bootstrap} median earlier/same/later | same-landing n     lock diff mean [95% t] | DOWN diff mean (n) | GO->lock base -> arm (n) | spawn-to-next-spawn diff mean [95% t] (n)
+all pills              1197  +13.38 [+12.35, +14.41] {+11.24, +15.06}             +6.0     34/184/979 |           1183  +13.40 [+12.37, +14.42] |  +15.35 (1129) |  40.70 ->  54.94 (1122) |  +13.30 [+11.97, +14.62] (1185)
+>= 10 viruses           847  +13.39 [+11.97, +14.81] {+11.32, +15.30}             +2.0     29/156/662 |            837  +13.36 [+11.94, +14.77] |  +14.38 (802) |  37.34 ->  51.49 (799) |  +13.43 [+11.73, +15.14] (841)
+< 10 viruses            350  +13.35 [+12.60, +14.11] {+10.91, +15.52}            +14.0      5/28/317 |            346  +13.49 [+12.75, +14.24] |  +17.72 (327) |  49.02 ->  63.47 (323) |  +12.96 [+11.10, +14.82] (344)
+tuck pills               63  +10.68 [ +5.65, +15.71] { +3.80, +15.42}             +2.0      5/9/49 |             56  +11.07 [ +6.52, +15.62] |  +13.95 (55) |  41.54 ->  53.32 (56) |   +7.68 [ +0.13, +15.24] (63)
+non-tuck pills         1134  +13.53 [+12.48, +14.58] {+11.28, +15.37}             +6.0     29/175/930 |           1127  +13.51 [+12.46, +14.56] |  +15.42 (1074) |  40.66 ->  55.02 (1066) |  +13.61 [+12.28, +14.94] (1122)
+post-garbage pills       83   +1.06 [ -0.74,  +2.86] { -0.42,  +2.52}             +0.0      6/58/19 |             82   +0.98 [ -0.84,  +2.79] |   +1.59 (82) |  30.00 ->  34.25 (8) |   +0.17 [ -2.36,  +2.70] (82)
+not post-garbage       1114  +14.30 [+13.22, +15.38] {+12.08, +16.01}             +8.0     28/126/960 |           1101  +14.32 [+13.25, +15.39] |  +16.43 (1047) |  40.78 ->  55.09 (1114) |  +14.27 [+12.88, +15.66] (1103)
+  landing class f2p -> pk: final->final 1132, final->pub 13, pub->final 1, pub->pub 51
+  pills whose landing action differs: 14
+
+## PAIRED pku8 - f2p (same case, same timeline; < 0 = pku8 earlier)
+stratum              n both  lock diff mean [95% t] {95% game-cluster bootstrap} median earlier/same/later | same-landing n     lock diff mean [95% t] | DOWN diff mean (n) | GO->lock base -> arm (n) | spawn-to-next-spawn diff mean [95% t] (n)
+all pills              1197   +3.59 [ +2.20,  +4.97] { +1.27,  +6.51}             -6.0    740/77/380 |           1164   +3.88 [ +2.48,  +5.27] |   +2.25 (1140) |  40.72 ->  44.52 (1123) |   +3.65 [ +2.07,  +5.23] (1185)
+>= 10 viruses           847   +8.75 [ +7.03, +10.47] { +6.42, +10.85}             -6.0    492/52/303 |            827   +8.97 [ +7.25, +10.69] |   +8.39 (804) |  37.35 ->  46.64 (798) |   +8.71 [ +6.74, +10.68] (841)
+< 10 viruses            350   -8.91 [-10.57,  -7.25] {-10.97,  -7.42}            -12.0    248/25/77 |            337   -8.62 [-10.33,  -6.91] |  -12.42 (336) |  49.00 ->  39.32 (325) |   -8.73 [-10.75,  -6.70] (344)
+tuck pills               63   +7.25 [ +1.14, +13.37] { +0.38, +12.29}             +0.0     30/6/27 |             54   +6.93 [ +1.10, +12.75] |   +8.02 (57) |  41.54 ->  49.59 (56) |   +5.57 [ -3.60, +14.74] (63)
+non-tuck pills         1134   +3.38 [ +1.96,  +4.80] { +0.99,  +6.47}             -6.0    710/71/353 |           1110   +3.73 [ +2.30,  +5.16] |   +1.95 (1083) |  40.68 ->  44.25 (1067) |   +3.54 [ +1.95,  +5.13] (1122)
+post-garbage pills       83   -1.04 [ -2.33,  +0.26] { -2.22,  +0.18}             +0.0     13/53/17 |             83   -1.04 [ -2.33,  +0.26] |   -1.12 (82) |  34.11 ->  21.56 (9) |   -1.05 [ -2.36,  +0.26] (82)
+not post-garbage       1114   +3.93 [ +2.45,  +5.41] { +1.45,  +7.04}             -7.0    727/24/363 |           1081   +4.26 [ +2.76,  +5.75] |   +2.52 (1058) |  40.78 ->  44.71 (1114) |   +4.00 [ +2.30,  +5.69] (1103)
+  landing class f2p -> pku8: final->final 1115, final->hybrid 1, final->pub 29, pub->final 3, pub->pub 49
+  pills whose landing action differs: 33
+
+## PAIRED pkk8 - f2p (same case, same timeline; < 0 = pkk8 earlier)
+stratum              n both  lock diff mean [95% t] {95% game-cluster bootstrap} median earlier/same/later | same-landing n     lock diff mean [95% t] | DOWN diff mean (n) | GO->lock base -> arm (n) | spawn-to-next-spawn diff mean [95% t] (n)
+all pills              1197  +10.16 [ +8.92, +11.40] { +7.71, +12.26}             +7.0    496/79/622 |           1173  +10.37 [ +9.13, +11.60] |  +11.15 (1130) |  40.73 ->  51.51 (1122) |  +10.25 [ +8.78, +11.73] (1185)
+>= 10 viruses           847   +8.75 [ +7.03, +10.47] { +6.42, +10.85}             -6.0    492/52/303 |            827   +8.97 [ +7.25, +10.69] |   +8.39 (804) |  37.35 ->  46.64 (798) |   +8.71 [ +6.74, +10.68] (841)
+< 10 viruses            350  +13.57 [+12.86, +14.28] {+10.92, +15.88}            +14.0      4/27/319 |            346  +13.71 [+13.00, +14.41] |  +17.96 (326) |  49.03 ->  63.49 (324) |  +14.03 [+12.46, +15.60] (344)
+tuck pills               63   +8.83 [ +2.97, +14.68] { +1.56, +13.94}             +0.0     27/6/30 |             55   +8.31 [ +2.89, +13.73] |  +10.15 (55) |  41.54 ->  51.36 (56) |   +7.65 [ -1.23, +16.53] (63)
+non-tuck pills         1134  +10.23 [ +8.97, +11.50] { +7.68, +12.44}             +8.0    469/73/592 |           1118  +10.47 [ +9.20, +11.74] |  +11.20 (1075) |  40.68 ->  51.51 (1066) |  +10.40 [ +8.92, +11.88] (1122)
+post-garbage pills       83   +0.81 [ -0.95,  +2.56] { -0.42,  +2.05}             +0.0     11/57/15 |             83   +0.81 [ -0.95,  +2.56] |   +0.86 (81) |  33.50 ->  34.25 (8) |   +0.82 [ -0.96,  +2.59] (82)
+not post-garbage       1114  +10.86 [ +9.54, +12.17] { +8.35, +12.95}            +10.0    485/22/607 |           1090  +11.10 [ +9.78, +12.41] |  +11.94 (1049) |  40.78 ->  51.63 (1114) |  +10.95 [ +9.38, +12.53] (1103)
+  landing class f2p -> pkk8: final->final 1123, final->pub 22, pub->final 2, pub->pub 50
+  pills whose landing action differs: 24
+
+## PAIRED pke8 - f2p (same case, same timeline; < 0 = pke8 earlier)
+stratum              n both  lock diff mean [95% t] {95% game-cluster bootstrap} median earlier/same/later | same-landing n     lock diff mean [95% t] | DOWN diff mean (n) | GO->lock base -> arm (n) | spawn-to-next-spawn diff mean [95% t] (n)
+all pills              1197   +6.83 [ +5.58,  +8.09] { +4.27, +10.34}             +2.0    278/181/738 |           1174   +7.01 [ +5.75,  +8.27] |   +6.44 (1137) |  40.71 ->  47.97 (1123) |   +7.12 [ +5.64,  +8.60] (1185)
+>= 10 viruses           847  +13.39 [+11.97, +14.81] {+11.32, +15.30}             +2.0     29/156/662 |            837  +13.36 [+11.94, +14.77] |  +14.38 (802) |  37.34 ->  51.49 (799) |  +13.43 [+11.73, +15.14] (841)
+< 10 viruses            350   -9.04 [-10.68,  -7.39] {-10.97,  -7.53}            -12.0    249/25/76 |            337   -8.76 [-10.46,  -7.06] |  -12.58 (335) |  49.03 ->  39.29 (324) |   -8.31 [-10.51,  -6.12] (344)
+tuck pills               63   +9.11 [ +3.74, +14.48] { +2.49, +13.80}             +2.0      8/9/46 |             55   +9.76 [ +4.73, +14.79] |  +11.68 (57) |  41.54 ->  51.55 (56) |   +5.60 [ -2.30, +13.50] (63)
+non-tuck pills         1134   +6.71 [ +5.41,  +8.00] { +4.03, +10.39}             +2.0    270/172/692 |           1119   +6.87 [ +5.58,  +8.17] |   +6.16 (1080) |  40.67 ->  47.78 (1067) |   +7.21 [ +5.71,  +8.70] (1122)
+post-garbage pills       83   -0.06 [ -1.48,  +1.36] { -1.83,  +1.69}             +0.0      7/54/22 |             82   -0.16 [ -1.58,  +1.26] |   +0.18 (82) |  32.56 ->  27.67 (9) |   -0.96 [ -3.21,  +1.29] (82)
+not post-garbage       1114   +7.35 [ +6.01,  +8.69] { +4.66, +10.99}             +2.0    271/127/716 |           1092   +7.55 [ +6.20,  +8.89] |   +6.93 (1055) |  40.78 ->  48.14 (1114) |   +7.72 [ +6.15,  +9.29] (1103)
+  landing class f2p -> pke8: final->final 1124, final->hybrid 1, final->pub 20, pub->final 2, pub->pub 50
+  pills whose landing action differs: 23
