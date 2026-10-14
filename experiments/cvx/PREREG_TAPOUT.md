@@ -46,3 +46,22 @@ the main phase runs D2 alone and the result says so.
 
 ## 5. Not decided here
 Hardware, copro RTL or cart builds; couch tests. Owner fairness rule is untouched (penalties change choices only).
+
+## Addendum A (2026-10-14, before any guard game of a danger arm): the STEER14 guards on D4 and D1
+- **Why:** RESULT_TAPOUT recommends D4 (D1 the fallback) without the two STEER14 guards.
+- **Guards:** defined exactly as STEER14 (`steer14_jobs`):
+  - owner race: `race ARM 2.36 hartford`, scored with `vs_race.evaluate` at M 239.5;
+  - gate b: `gb ARM owner202610`, scored on won / topout / stall.
+- **Arms:** T_D4_u8 and T_D1_u8 vs A16 + u8, on the full main block (5,100 seeds 44300.. step 2), paired by seed.
+  - Base rows: the banked `rc14_/gb14_S14_d16_u8` (1,000 seeds), plus `T_a16_u8` under this wrapper for the remaining
+    4,100 seeds.
+  - Wrapper identity: the race was shown 1,455/1,455 in stage 0; gate b is 2/2 on banked seeds (smoke, deleted).
+- **Today's gate (descriptive):** T_D4_k32 and T_D1_k32 on both guards, 1,000 seeds vs the banked `S14_d4_k32` guard rows.
+- **Endpoints:**
+  - owner race: kill / loss / slow;
+  - gate b: loss (1 − won) / tap-out / stall.
+  - Paired bootstrap 10,000 with Bonferroni K = 2 (the two arms).
+- **Harm rule (as STEER14):** gate-b tap-out UP (Bonferroni lower > 0) or owner-race loss UP (Bonferroni lower > 0).
+  An arm with harm is not recommended.
+- **Machines:** blackmage only. rivalmage is a 2-core / 492 MB MiSTer, not usable for this sim. No route to the
+  Hetzner box was found.

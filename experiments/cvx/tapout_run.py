@@ -3,6 +3,7 @@ dr. lulu at measured pace) + (1) a per-pill TRACE for characterising tap-outs an
 
   python tapout_run.py race ARM LAM SIZES LO CNT STEP OUT [TRACE_OUT]
   python tapout_run.py seeds ARM LAM SIZES SEEDFILE OUT TRACE_OUT      (replay listed seeds with the trace)
+  python tapout_run.py gb    ARM OPPONENT LO CNT STEP OUT            (gate b guard, == steer14_run gb mode)
 
 DANGER penalties (root-side = firmware-only, like STEER10's ereach; subtracted after DRVETO via seal_steer9's pen):
   kind "spawn": pen[a] = P * max(0, Hs(b1(a)) - h0), Hs = max column height over cols c0..c1 (default 2..5, the spawn
@@ -179,6 +180,8 @@ def main():
     mode, arm = sys.argv[1], sys.argv[2]
     spec = S14.ARMS[arm]
     guard = S14.jit_guard()
+    if mode == "gb":
+        return main_gb(arm, spec, guard)
     lam, sizes = float(sys.argv[3]), sys.argv[4]
     if mode == "race":
         lo, cnt, step, outp = int(sys.argv[5]), int(sys.argv[6]), int(sys.argv[7]), sys.argv[8]
@@ -221,6 +224,31 @@ def main():
             if tf:
                 tf.write(json.dumps({"seed": sd, "arm": arm, "how": r["how"], "t_end": r["t_end"], "trace": knob.tr,
                                      "garb": knob.garb}) + "\n"); tf.flush()
+
+
+def main_gb(arm, spec, guard):
+    """gate b vs a pill-keyed opponent: steer14_run.py's gb branch verbatim, with this wrapper's knob/decider."""
+    import stuck_probe as SP, vs_race as V, steer8_run as S8, reach_fw_tap as RFT, refit_opp as RO
+    oppname, lo, cnt, step, outp = sys.argv[3], int(sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]), sys.argv[7]
+    assert V.CLOCK is None
+    stamp = {"wrapper": "tapout_run.py", "s14_sha": S14._SHA, "git": S8._git(), "arm": arm, "knob": spec, "guard": guard,
+             "danger": S10.RULE_ARMS.get(spec["rule"]), "numba_cache": os.environ.get("NUMBA_CACHE_DIR")}
+    steer0, choose0, dec = S10.make(spec["rule"])
+    KnobT._brain = dec
+    _patch_meta()
+    zero = lambda: {k: 0 for k in dec.stats}
+    knob = KnobT(steer0, spec, race=False, base_dec=S14._meta_decider(spec["rule"]))
+    KnobT._live_knob = knob
+    assert RFT.T_LAT == 19 + (spec["mt"] - 6)
+    choose = knob.wrap_choose(choose0)
+    opp = RO.make_opponent(oppname)
+    with open(outp, "w") as fh:
+        for i in range(cnt):
+            dec.stats = zero()
+            r = SP.play_gb(lo + i * step, choose, knob, opp, probe=None)
+            r.update({"arm": f"{arm}@{oppname}", "model": oppname, "trate": 0.0, "rig": stamp, "rule": dict(dec.stats),
+                      "knob": dict(knob.kstats)})
+            fh.write(json.dumps(r) + "\n"); fh.flush()
 
 
 if __name__ == "__main__":
