@@ -200,3 +200,15 @@ banked rows through the same wrapper.
   `zcat tapout/rows_stage1_main.jsonl.gz | python3 -c 'import sys,json;[open("tapout/main/"+json.loads(l)["arm"].split("~")[0]+"_all.jsonl","a").write(l) for l in sys.stdin]'`.
   Do the same for screen into `tapout/screen/`. Then run `python analyze_tapout.py main`. The baseline rows come from
   STEER14 (`steer14/main/`).
+
+## Addendum A (2026-10-14, RUNNING): owner-race + gate-b guards on D4 / D1
+- **Design:** `PREREG_TAPOUT.md` addendum A (c295a9f8), committed before any guard game of a danger arm.
+  - Both guards as STEER14 defines them, on 5,100 paired seeds vs A16 + u8.
+  - Plus D4 / D1 at today's gate k32 on 1,000 seeds (descriptive).
+- **Unit:** `tapout-guard` (20 workers, nice 19). Analysis: `analyze_tapout_guard.py` → `tapout/guard_analysis.txt`.
+- **Recommendation status:** D4 (fallback D1) stands pending these guards.
+- **Firmware sketch for the winner:** `tapout/FIRMWARE_SKETCH_DANGER.md`.
+  - About 77 bytes of copro 6502 ROM and 1 zp byte.
+  - About 16k copro cycles per decision (≈ 0.011 f MiSTer).
+  - The cart NMI budget (28,001 / 29,780) is unchanged, because the penalty runs on the copro.
+  - No RTL.
