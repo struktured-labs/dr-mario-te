@@ -1,0 +1,71 @@
+# replays fw=a16 arms=['f2p', 'pk'] (base = f2p); lock / DOWN in frames since the spawn
+game  arm     n ==final  pub hybrid frozen lock mean disarmed  summary
+m2g1  f2p    47      40    7      0      1     43.19       14  tag=m2g1_f2p_a16_chain_garb frames=4886 goes=50 dones=36 cases=47
+m2g1  pk     47      40    7      0      0     55.36       20  tag=m2g1_pk_a16_chain_garb frames=5446 goes=50 dones=30 cases=47
+m2g2  f2p   119     119    0      0      0     45.42       10  tag=m2g2_f2p_a16_chain_garb frames=12726 goes=122 dones=112 cases=119
+m2g2  pk    119     118    1      0      0     60.76       24  tag=m2g2_pk_a16_chain_garb frames=14440 goes=122 dones=98 cases=119
+m2g3  f2p    99      97    2      0      0     39.58       10  tag=m2g3_f2p_a16_chain_garb frames=10575 goes=102 dones=92 cases=99
+m2g3  pk     99      97    2      0      0     52.31       25  tag=m2g3_pk_a16_chain_garb frames=11819 goes=102 dones=77 cases=99
+m4g1  f2p   134     128    6      0      3     42.90       11  tag=m4g1_f2p_a16_chain_garb frames=60000 goes=137 dones=126 cases_done=134 TIMEOUT
+m4g1  pk    134     127    7      0      4     58.22       35  tag=m4g1_pk_a16_chain_garb frames=60000 goes=137 dones=102 cases_done=134 TIMEOUT
+m4g2  f2p   109      98   11      0      0     33.90       11  tag=m4g2_f2p_a16_chain_garb frames=10227 goes=113 dones=102 cases=109
+m4g2  pk    109      96   13      0      6     45.70       34  tag=m4g2_pk_a16_chain_garb frames=11525 goes=113 dones=79 cases=109
+G2    f2p   116     114    2      0      0     38.37       16  tag=G2_f2p_a16_chain_garb frames=11243 goes=120 dones=105 cases=116
+G2    pk    116     111    5      0      3     52.70       42  tag=G2_pk_a16_chain_garb frames=13103 goes=120 dones=79 cases=116
+m1g1  f2p   184     168   16      0     11     46.82        6  tag=m1g1_f2p_a16_chain_garb frames=60000 goes=187 dones=181 cases_done=184 TIMEOUT
+m1g1  pk    184     167   17      0     10     62.41       31  tag=m1g1_pk_a16_chain_garb frames=60000 goes=187 dones=156 cases_done=184 TIMEOUT
+m1g2  f2p   132     131    1      0      1     45.09       11  tag=m1g2_f2p_a16_chain_garb frames=14392 goes=135 dones=124 cases=132
+m1g2  pk    132     130    2      0      2     61.03       30  tag=m1g2_pk_a16_chain_garb frames=16336 goes=135 dones=105 cases=132
+m3g1  f2p    26      25    1      0      1     38.92        4  tag=m3g1_f2p_a16_chain_garb frames=2622 goes=29 dones=25 cases=26
+m3g1  pk     26      25    1      0      0     52.62        9  tag=m3g1_pk_a16_chain_garb frames=2978 goes=29 dones=20 cases=26
+m3g2  f2p    22      21    1      0      0     39.18        5  tag=m3g2_f2p_a16_chain_garb frames=2166 goes=25 dones=20 cases=22
+m3g2  pk     22      20    2      0      1     57.23       10  tag=m3g2_pk_a16_chain_garb frames=2562 goes=25 dones=15 cases=22
+m3g3  f2p    19      19    0      0      0     36.32        3  tag=m3g3_f2p_a16_chain_garb frames=2233 goes=22 dones=19 cases=19
+m3g3  pk     19      19    0      0      0     52.95        7  tag=m3g3_pk_a16_chain_garb frames=2548 goes=23 dones=15 cases=19
+m5g2  f2p   190     181    9      0      4     39.22        5  tag=m5g2_f2p_a16_chain_garb frames=19420 goes=193 dones=188 cases=190
+m5g2  pk    190     181    9      0      3     46.72       17  tag=m5g2_pk_a16_chain_garb frames=20778 goes=193 dones=176 cases=190
+
+## per arm, per stratum (counts / n landed)
+stratum              arm      n        ==final  pub hybrid frozen lock mean lock med  GO->lock DOWN mean      disarmed DOWN via done/stability(open,end,cross)/other/none
+all pills            f2p   1197   1141  95.32%   56      0     21     41.63     40.0  40.56(1128)     27.97   106   8.9%  516/665(665,0,0)/0/16
+all pills            pk    1197   1131  94.49%   66      0     29     55.10     49.0  54.83(1128)     42.82   284  23.7%  605/526(509,0,17)/0/66
+>= 10 viruses        f2p    847    808  95.40%   39      0      6     38.63     36.0  37.27( 802)     25.07   106  12.5%  172/665(665,0,0)/0/10
+>= 10 viruses        pk     847    799  94.33%   48      0     17     52.12     42.0  51.41( 804)     39.11   282  33.3%  295/509(509,0,0)/0/43
+< 10 viruses         f2p    350    333  95.14%   17      0     15     48.89     50.0  48.67( 326)     35.05     0   0.0%  344/0(0,0,0)/0/6
+< 10 viruses         pk     350    332  94.86%   18      0     12     62.31     65.0  63.33( 324)     51.94     2   0.6%  310/17(0,0,17)/0/23
+tuck pills           f2p     66     15  22.73%   51      0     17     41.23     38.5  41.98(  59)     29.19     7  10.6%  29/34(34,0,0)/0/3
+tuck pills           pk      66     12  18.18%   54      0     18     52.97     46.0  54.35(  60)     42.81    15  22.7%  30/28(27,0,1)/0/8
+non-tuck pills       f2p   1131   1126  99.56%    5      0      4     41.65     40.0  40.48(1069)     27.91    99   8.8%  487/631(631,0,0)/0/13
+non-tuck pills       pk    1131   1119  98.94%   12      0     11     55.22     49.0  54.86(1068)     42.82   269  23.8%  575/498(482,0,16)/0/58
+post-garbage pills   f2p     83     82  98.80%    1      0      0     25.12     24.0  33.71(  14)     10.17     0   0.0%  75/8(8,0,0)/0/0
+post-garbage pills   pk      83     81  97.59%    2      0      0     25.57     24.0  35.57(  14)     10.47     0   0.0%  72/11(11,0,0)/0/0
+not post-garbage     f2p   1114   1059  95.06%   55      0     21     42.86     41.0  40.65(1114)     29.32   106   9.5%  441/657(657,0,0)/0/16
+not post-garbage     pk    1114   1050  94.25%   64      0     29     57.30     51.0  55.07(1114)     45.38   284  25.5%  533/515(498,0,17)/0/66
+
+## press cadence on the cart traces (any A/B/L/R press on two consecutive frames = faster than 1 press / 2 f)
+  f2p: 3577 press frames over 1197 pills, consecutive-frame presses 0
+  pk: 3755 press frames over 1197 pills, consecutive-frame presses 0
+
+## PAIRED pk - f2p (same case, same timeline; < 0 = pk earlier)
+stratum              n both  lock diff mean [95% t] {95% game-cluster bootstrap} median earlier/same/later | same-landing n     lock diff mean [95% t] | DOWN diff mean (n) | GO->lock base -> arm (n) | spawn-to-next-spawn diff mean [95% t] (n)
+all pills              1197  +13.47 [+12.43, +14.51] {+11.25, +15.20}             +6.0     33/177/987 |           1185  +13.47 [+12.44, +14.50] |  +15.42 (1130) |  40.58 ->  54.93 (1122) |  +13.55 [+12.27, +14.83] (1185)
+>= 10 viruses           847  +13.49 [+12.07, +14.91] {+11.39, +15.39}             +2.0     29/151/667 |            836  +13.48 [+12.06, +14.90] |  +14.58 (803) |  37.34 ->  51.57 (799) |  +13.42 [+11.74, +15.11] (841)
+< 10 viruses            350  +13.43 [+12.60, +14.25] {+10.66, +15.50}            +14.0      4/26/320 |            349  +13.44 [+12.61, +14.26] |  +17.47 (327) |  48.62 ->  63.27 (323) |  +13.86 [+12.29, +15.43] (344)
+tuck pills               66  +11.74 [ +6.94, +16.54] { +5.13, +15.98}             +2.0      3/9/54 |             61  +11.74 [ +7.52, +15.96] |  +14.76 (58) |  41.98 ->  54.90 (59) |   +9.18 [ +2.11, +16.25] (66)
+non-tuck pills         1131  +13.57 [+12.51, +14.63] {+11.29, +15.44}             +6.0     30/168/933 |           1124  +13.56 [+12.50, +14.63] |  +15.45 (1072) |  40.51 ->  54.94 (1063) |  +13.81 [+12.52, +15.09] (1119)
+post-garbage pills       83   +0.45 [ -1.77,  +2.66] { -1.26,  +2.10}             +0.0      7/56/20 |             82   +0.35 [ -1.88,  +2.59] |   +0.30 (83) |  31.62 ->  35.75 (8) |   -1.02 [ -4.09,  +2.04] (82)
+not post-garbage       1114  +14.44 [+13.36, +15.52] {+12.19, +16.20}             +8.0     26/121/967 |           1103  +14.44 [+13.37, +15.52] |  +16.61 (1047) |  40.65 ->  55.07 (1114) |  +14.63 [+13.30, +15.97] (1103)
+  landing class f2p -> pk: final->final 1130, final->pub 11, pub->final 1, pub->pub 55
+  pills whose landing action differs: 12
+    G2 p84: vc 15 final a4 pubs [16, 4] done 49.0 f | f2p: a4 (final) DOWN f31 (open) lock f32 | pk: a16 (pub, frozen) DOWN f80 (done) lock f90 sa 0
+    G2 p87: vc 15 final a21 pubs [19, 16, 21] done 53.7 f | f2p: a21 (final) DOWN f29 (open) lock f30 | pk: a16 (pub, frozen) DOWN f27 (open) lock f42 sa 1
+    G2 p95: vc 15 final a6 pubs [9, 6] done 60.3 f | f2p: a6 (final) DOWN fNone (none) lock f56 | pk: a9 (pub, frozen) DOWN fNone (none) lock f78 sa 0
+    m1g1 p169: vc 1 final a24 pubs [22, 24] done 31.5 f | f2p: a24 (final) DOWN f34 (done) lock f55 | pk: a22 (pub, frozen) DOWN f52 (done) lock f65 sa 1
+    m1g2 p58: vc 14 final a22 pubs [19, 22] done 45.7 f | f2p: a22 (final) DOWN f21 (open) lock f50 | pk: a19 (pub, frozen) DOWN f22 (open) lock f44 sa 1
+    m2g1 p8: vc 43 tuck final a4 pubs [22, 21] done 59.2 f | f2p: a21 (pub) DOWN f24 (open) lock f39 | pk: a4 (final) DOWN f120 (done) lock f121 sa 0
+    m2g1 p44: vc 28 tuck final a25 pubs [17] done 46.9 f | f2p: a25 (final) DOWN f54 (done) lock f72 | pk: a17 (pub) DOWN fNone (none) lock f65 sa 0
+    m2g2 p22: vc 29 tuck final a24 pubs [21, 18, 24] done 51.6 f | f2p: a24 (final) DOWN f59 (done) lock f78 | pk: a18 (pub) DOWN f26 (open) lock f32 sa 1
+    m3g2 p17: vc 36 tuck final a9 pubs [8, 9] done 47.4 f | f2p: a9 (final) DOWN f51 (done) lock f57 | pk: a8 (pub, frozen) DOWN f77 (done) lock f79 sa 0
+    m4g1 p90: vc 10 final a5 pubs [16, 5] done 49.7 f | f2p: a5 (final) DOWN f34 (open) lock f40 | pk: a16 (pub, frozen) DOWN f24 (open) lock f46 sa 1
+    m4g2 p55: vc 20 tuck post-garb final a8 pubs [14, 8] done 43.6 f | f2p: a8 (final) DOWN f12 (done) lock f16 | pk: a14 (pub) DOWN f22 (open) lock f24 sa 1
+    m4g2 p100: vc 16 final a5 pubs [2, 5] done 22.8 f | f2p: a5 (final) DOWN fNone (none) lock f21 | pk: a2 (pub, frozen) DOWN f21 (open) lock f24 sa 1
