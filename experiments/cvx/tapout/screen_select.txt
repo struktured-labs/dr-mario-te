@@ -1,0 +1,7 @@
+SCREEN (600 seeds 47000.., A16 + u8), n base 600
+  D1: n 600 loss 50 (base 60) kill 15 (base 27) topout 32 (base 44) changed 1269/79711 meta_pen_mismatch 0
+  D2: n 600 loss 72 (base 60) kill 23 (base 27) topout 42 (base 44) changed 2718/79339 meta_pen_mismatch 0
+  D3: n 600 loss 49 (base 60) kill 22 (base 27) topout 37 (base 44) changed 419/78407 meta_pen_mismatch 0
+  D4: n 600 loss 55 (base 60) kill 20 (base 27) topout 32 (base 44) changed 2724/79648 meta_pen_mismatch 0
+  D5: n 600 loss 63 (base 60) kill 25 (base 27) topout 46 (base 44) changed 1699/79903 meta_pen_mismatch 0
+SELECTED (rule: best total loss among arms with fewer tap-outs than base; up to 3): ['D3', 'D1', 'D4']

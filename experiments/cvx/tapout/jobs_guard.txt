@@ -1,0 +1,672 @@
+50 tapout/guard/rc_T_D4_u8_44300.jsonl race T_D4_u8 2.36 hartford 44300 50 2 tapout/guard/rc_T_D4_u8_44300.jsonl
+50 tapout/guard/gb_T_D4_u8_44300.jsonl gb T_D4_u8 owner202610 44300 50 2 tapout/guard/gb_T_D4_u8_44300.jsonl
+50 tapout/guard/rc_T_D1_u8_44300.jsonl race T_D1_u8 2.36 hartford 44300 50 2 tapout/guard/rc_T_D1_u8_44300.jsonl
+50 tapout/guard/gb_T_D1_u8_44300.jsonl gb T_D1_u8 owner202610 44300 50 2 tapout/guard/gb_T_D1_u8_44300.jsonl
+50 tapout/guard/rc_T_D4_u8_44400.jsonl race T_D4_u8 2.36 hartford 44400 50 2 tapout/guard/rc_T_D4_u8_44400.jsonl
+50 tapout/guard/gb_T_D4_u8_44400.jsonl gb T_D4_u8 owner202610 44400 50 2 tapout/guard/gb_T_D4_u8_44400.jsonl
+50 tapout/guard/rc_T_D1_u8_44400.jsonl race T_D1_u8 2.36 hartford 44400 50 2 tapout/guard/rc_T_D1_u8_44400.jsonl
+50 tapout/guard/gb_T_D1_u8_44400.jsonl gb T_D1_u8 owner202610 44400 50 2 tapout/guard/gb_T_D1_u8_44400.jsonl
+50 tapout/guard/rc_T_D4_u8_44500.jsonl race T_D4_u8 2.36 hartford 44500 50 2 tapout/guard/rc_T_D4_u8_44500.jsonl
+50 tapout/guard/gb_T_D4_u8_44500.jsonl gb T_D4_u8 owner202610 44500 50 2 tapout/guard/gb_T_D4_u8_44500.jsonl
+50 tapout/guard/rc_T_D1_u8_44500.jsonl race T_D1_u8 2.36 hartford 44500 50 2 tapout/guard/rc_T_D1_u8_44500.jsonl
+50 tapout/guard/gb_T_D1_u8_44500.jsonl gb T_D1_u8 owner202610 44500 50 2 tapout/guard/gb_T_D1_u8_44500.jsonl
+50 tapout/guard/rc_T_D4_u8_44600.jsonl race T_D4_u8 2.36 hartford 44600 50 2 tapout/guard/rc_T_D4_u8_44600.jsonl
+50 tapout/guard/gb_T_D4_u8_44600.jsonl gb T_D4_u8 owner202610 44600 50 2 tapout/guard/gb_T_D4_u8_44600.jsonl
+50 tapout/guard/rc_T_D1_u8_44600.jsonl race T_D1_u8 2.36 hartford 44600 50 2 tapout/guard/rc_T_D1_u8_44600.jsonl
+50 tapout/guard/gb_T_D1_u8_44600.jsonl gb T_D1_u8 owner202610 44600 50 2 tapout/guard/gb_T_D1_u8_44600.jsonl
+50 tapout/guard/rc_T_D4_u8_44700.jsonl race T_D4_u8 2.36 hartford 44700 50 2 tapout/guard/rc_T_D4_u8_44700.jsonl
+50 tapout/guard/gb_T_D4_u8_44700.jsonl gb T_D4_u8 owner202610 44700 50 2 tapout/guard/gb_T_D4_u8_44700.jsonl
+50 tapout/guard/rc_T_D1_u8_44700.jsonl race T_D1_u8 2.36 hartford 44700 50 2 tapout/guard/rc_T_D1_u8_44700.jsonl
+50 tapout/guard/gb_T_D1_u8_44700.jsonl gb T_D1_u8 owner202610 44700 50 2 tapout/guard/gb_T_D1_u8_44700.jsonl
+50 tapout/guard/rc_T_D4_u8_44800.jsonl race T_D4_u8 2.36 hartford 44800 50 2 tapout/guard/rc_T_D4_u8_44800.jsonl
+50 tapout/guard/gb_T_D4_u8_44800.jsonl gb T_D4_u8 owner202610 44800 50 2 tapout/guard/gb_T_D4_u8_44800.jsonl
+50 tapout/guard/rc_T_D1_u8_44800.jsonl race T_D1_u8 2.36 hartford 44800 50 2 tapout/guard/rc_T_D1_u8_44800.jsonl
+50 tapout/guard/gb_T_D1_u8_44800.jsonl gb T_D1_u8 owner202610 44800 50 2 tapout/guard/gb_T_D1_u8_44800.jsonl
+50 tapout/guard/rc_T_D4_u8_44900.jsonl race T_D4_u8 2.36 hartford 44900 50 2 tapout/guard/rc_T_D4_u8_44900.jsonl
+50 tapout/guard/gb_T_D4_u8_44900.jsonl gb T_D4_u8 owner202610 44900 50 2 tapout/guard/gb_T_D4_u8_44900.jsonl
+50 tapout/guard/rc_T_D1_u8_44900.jsonl race T_D1_u8 2.36 hartford 44900 50 2 tapout/guard/rc_T_D1_u8_44900.jsonl
+50 tapout/guard/gb_T_D1_u8_44900.jsonl gb T_D1_u8 owner202610 44900 50 2 tapout/guard/gb_T_D1_u8_44900.jsonl
+50 tapout/guard/rc_T_D4_u8_45000.jsonl race T_D4_u8 2.36 hartford 45000 50 2 tapout/guard/rc_T_D4_u8_45000.jsonl
+50 tapout/guard/gb_T_D4_u8_45000.jsonl gb T_D4_u8 owner202610 45000 50 2 tapout/guard/gb_T_D4_u8_45000.jsonl
+50 tapout/guard/rc_T_D1_u8_45000.jsonl race T_D1_u8 2.36 hartford 45000 50 2 tapout/guard/rc_T_D1_u8_45000.jsonl
+50 tapout/guard/gb_T_D1_u8_45000.jsonl gb T_D1_u8 owner202610 45000 50 2 tapout/guard/gb_T_D1_u8_45000.jsonl
+50 tapout/guard/rc_T_D4_u8_45100.jsonl race T_D4_u8 2.36 hartford 45100 50 2 tapout/guard/rc_T_D4_u8_45100.jsonl
+50 tapout/guard/gb_T_D4_u8_45100.jsonl gb T_D4_u8 owner202610 45100 50 2 tapout/guard/gb_T_D4_u8_45100.jsonl
+50 tapout/guard/rc_T_D1_u8_45100.jsonl race T_D1_u8 2.36 hartford 45100 50 2 tapout/guard/rc_T_D1_u8_45100.jsonl
+50 tapout/guard/gb_T_D1_u8_45100.jsonl gb T_D1_u8 owner202610 45100 50 2 tapout/guard/gb_T_D1_u8_45100.jsonl
+50 tapout/guard/rc_T_D4_u8_45200.jsonl race T_D4_u8 2.36 hartford 45200 50 2 tapout/guard/rc_T_D4_u8_45200.jsonl
+50 tapout/guard/gb_T_D4_u8_45200.jsonl gb T_D4_u8 owner202610 45200 50 2 tapout/guard/gb_T_D4_u8_45200.jsonl
+50 tapout/guard/rc_T_D1_u8_45200.jsonl race T_D1_u8 2.36 hartford 45200 50 2 tapout/guard/rc_T_D1_u8_45200.jsonl
+50 tapout/guard/gb_T_D1_u8_45200.jsonl gb T_D1_u8 owner202610 45200 50 2 tapout/guard/gb_T_D1_u8_45200.jsonl
+50 tapout/guard/rc_T_D4_u8_45300.jsonl race T_D4_u8 2.36 hartford 45300 50 2 tapout/guard/rc_T_D4_u8_45300.jsonl
+50 tapout/guard/gb_T_D4_u8_45300.jsonl gb T_D4_u8 owner202610 45300 50 2 tapout/guard/gb_T_D4_u8_45300.jsonl
+50 tapout/guard/rc_T_D1_u8_45300.jsonl race T_D1_u8 2.36 hartford 45300 50 2 tapout/guard/rc_T_D1_u8_45300.jsonl
+50 tapout/guard/gb_T_D1_u8_45300.jsonl gb T_D1_u8 owner202610 45300 50 2 tapout/guard/gb_T_D1_u8_45300.jsonl
+50 tapout/guard/rc_T_a16_u8_45300.jsonl race T_a16_u8 2.36 hartford 45300 50 2 tapout/guard/rc_T_a16_u8_45300.jsonl
+50 tapout/guard/gb_T_a16_u8_45300.jsonl gb T_a16_u8 owner202610 45300 50 2 tapout/guard/gb_T_a16_u8_45300.jsonl
+50 tapout/guard/rc_T_D4_u8_45400.jsonl race T_D4_u8 2.36 hartford 45400 50 2 tapout/guard/rc_T_D4_u8_45400.jsonl
+50 tapout/guard/gb_T_D4_u8_45400.jsonl gb T_D4_u8 owner202610 45400 50 2 tapout/guard/gb_T_D4_u8_45400.jsonl
+50 tapout/guard/rc_T_D1_u8_45400.jsonl race T_D1_u8 2.36 hartford 45400 50 2 tapout/guard/rc_T_D1_u8_45400.jsonl
+50 tapout/guard/gb_T_D1_u8_45400.jsonl gb T_D1_u8 owner202610 45400 50 2 tapout/guard/gb_T_D1_u8_45400.jsonl
+50 tapout/guard/rc_T_a16_u8_45400.jsonl race T_a16_u8 2.36 hartford 45400 50 2 tapout/guard/rc_T_a16_u8_45400.jsonl
+50 tapout/guard/gb_T_a16_u8_45400.jsonl gb T_a16_u8 owner202610 45400 50 2 tapout/guard/gb_T_a16_u8_45400.jsonl
+50 tapout/guard/rc_T_D4_u8_45500.jsonl race T_D4_u8 2.36 hartford 45500 50 2 tapout/guard/rc_T_D4_u8_45500.jsonl
+50 tapout/guard/gb_T_D4_u8_45500.jsonl gb T_D4_u8 owner202610 45500 50 2 tapout/guard/gb_T_D4_u8_45500.jsonl
+50 tapout/guard/rc_T_D1_u8_45500.jsonl race T_D1_u8 2.36 hartford 45500 50 2 tapout/guard/rc_T_D1_u8_45500.jsonl
+50 tapout/guard/gb_T_D1_u8_45500.jsonl gb T_D1_u8 owner202610 45500 50 2 tapout/guard/gb_T_D1_u8_45500.jsonl
+50 tapout/guard/rc_T_a16_u8_45500.jsonl race T_a16_u8 2.36 hartford 45500 50 2 tapout/guard/rc_T_a16_u8_45500.jsonl
+50 tapout/guard/gb_T_a16_u8_45500.jsonl gb T_a16_u8 owner202610 45500 50 2 tapout/guard/gb_T_a16_u8_45500.jsonl
+50 tapout/guard/rc_T_D4_u8_45600.jsonl race T_D4_u8 2.36 hartford 45600 50 2 tapout/guard/rc_T_D4_u8_45600.jsonl
+50 tapout/guard/gb_T_D4_u8_45600.jsonl gb T_D4_u8 owner202610 45600 50 2 tapout/guard/gb_T_D4_u8_45600.jsonl
+50 tapout/guard/rc_T_D1_u8_45600.jsonl race T_D1_u8 2.36 hartford 45600 50 2 tapout/guard/rc_T_D1_u8_45600.jsonl
+50 tapout/guard/gb_T_D1_u8_45600.jsonl gb T_D1_u8 owner202610 45600 50 2 tapout/guard/gb_T_D1_u8_45600.jsonl
+50 tapout/guard/rc_T_a16_u8_45600.jsonl race T_a16_u8 2.36 hartford 45600 50 2 tapout/guard/rc_T_a16_u8_45600.jsonl
+50 tapout/guard/gb_T_a16_u8_45600.jsonl gb T_a16_u8 owner202610 45600 50 2 tapout/guard/gb_T_a16_u8_45600.jsonl
+50 tapout/guard/rc_T_D4_u8_45700.jsonl race T_D4_u8 2.36 hartford 45700 50 2 tapout/guard/rc_T_D4_u8_45700.jsonl
+50 tapout/guard/gb_T_D4_u8_45700.jsonl gb T_D4_u8 owner202610 45700 50 2 tapout/guard/gb_T_D4_u8_45700.jsonl
+50 tapout/guard/rc_T_D1_u8_45700.jsonl race T_D1_u8 2.36 hartford 45700 50 2 tapout/guard/rc_T_D1_u8_45700.jsonl
+50 tapout/guard/gb_T_D1_u8_45700.jsonl gb T_D1_u8 owner202610 45700 50 2 tapout/guard/gb_T_D1_u8_45700.jsonl
+50 tapout/guard/rc_T_a16_u8_45700.jsonl race T_a16_u8 2.36 hartford 45700 50 2 tapout/guard/rc_T_a16_u8_45700.jsonl
+50 tapout/guard/gb_T_a16_u8_45700.jsonl gb T_a16_u8 owner202610 45700 50 2 tapout/guard/gb_T_a16_u8_45700.jsonl
+50 tapout/guard/rc_T_D4_u8_45800.jsonl race T_D4_u8 2.36 hartford 45800 50 2 tapout/guard/rc_T_D4_u8_45800.jsonl
+50 tapout/guard/gb_T_D4_u8_45800.jsonl gb T_D4_u8 owner202610 45800 50 2 tapout/guard/gb_T_D4_u8_45800.jsonl
+50 tapout/guard/rc_T_D1_u8_45800.jsonl race T_D1_u8 2.36 hartford 45800 50 2 tapout/guard/rc_T_D1_u8_45800.jsonl
+50 tapout/guard/gb_T_D1_u8_45800.jsonl gb T_D1_u8 owner202610 45800 50 2 tapout/guard/gb_T_D1_u8_45800.jsonl
+50 tapout/guard/rc_T_a16_u8_45800.jsonl race T_a16_u8 2.36 hartford 45800 50 2 tapout/guard/rc_T_a16_u8_45800.jsonl
+50 tapout/guard/gb_T_a16_u8_45800.jsonl gb T_a16_u8 owner202610 45800 50 2 tapout/guard/gb_T_a16_u8_45800.jsonl
+50 tapout/guard/rc_T_D4_u8_45900.jsonl race T_D4_u8 2.36 hartford 45900 50 2 tapout/guard/rc_T_D4_u8_45900.jsonl
+50 tapout/guard/gb_T_D4_u8_45900.jsonl gb T_D4_u8 owner202610 45900 50 2 tapout/guard/gb_T_D4_u8_45900.jsonl
+50 tapout/guard/rc_T_D1_u8_45900.jsonl race T_D1_u8 2.36 hartford 45900 50 2 tapout/guard/rc_T_D1_u8_45900.jsonl
+50 tapout/guard/gb_T_D1_u8_45900.jsonl gb T_D1_u8 owner202610 45900 50 2 tapout/guard/gb_T_D1_u8_45900.jsonl
+50 tapout/guard/rc_T_a16_u8_45900.jsonl race T_a16_u8 2.36 hartford 45900 50 2 tapout/guard/rc_T_a16_u8_45900.jsonl
+50 tapout/guard/gb_T_a16_u8_45900.jsonl gb T_a16_u8 owner202610 45900 50 2 tapout/guard/gb_T_a16_u8_45900.jsonl
+50 tapout/guard/rc_T_D4_u8_46000.jsonl race T_D4_u8 2.36 hartford 46000 50 2 tapout/guard/rc_T_D4_u8_46000.jsonl
+50 tapout/guard/gb_T_D4_u8_46000.jsonl gb T_D4_u8 owner202610 46000 50 2 tapout/guard/gb_T_D4_u8_46000.jsonl
+50 tapout/guard/rc_T_D1_u8_46000.jsonl race T_D1_u8 2.36 hartford 46000 50 2 tapout/guard/rc_T_D1_u8_46000.jsonl
+50 tapout/guard/gb_T_D1_u8_46000.jsonl gb T_D1_u8 owner202610 46000 50 2 tapout/guard/gb_T_D1_u8_46000.jsonl
+50 tapout/guard/rc_T_a16_u8_46000.jsonl race T_a16_u8 2.36 hartford 46000 50 2 tapout/guard/rc_T_a16_u8_46000.jsonl
+50 tapout/guard/gb_T_a16_u8_46000.jsonl gb T_a16_u8 owner202610 46000 50 2 tapout/guard/gb_T_a16_u8_46000.jsonl
+50 tapout/guard/rc_T_D4_u8_46100.jsonl race T_D4_u8 2.36 hartford 46100 50 2 tapout/guard/rc_T_D4_u8_46100.jsonl
+50 tapout/guard/gb_T_D4_u8_46100.jsonl gb T_D4_u8 owner202610 46100 50 2 tapout/guard/gb_T_D4_u8_46100.jsonl
+50 tapout/guard/rc_T_D1_u8_46100.jsonl race T_D1_u8 2.36 hartford 46100 50 2 tapout/guard/rc_T_D1_u8_46100.jsonl
+50 tapout/guard/gb_T_D1_u8_46100.jsonl gb T_D1_u8 owner202610 46100 50 2 tapout/guard/gb_T_D1_u8_46100.jsonl
+50 tapout/guard/rc_T_a16_u8_46100.jsonl race T_a16_u8 2.36 hartford 46100 50 2 tapout/guard/rc_T_a16_u8_46100.jsonl
+50 tapout/guard/gb_T_a16_u8_46100.jsonl gb T_a16_u8 owner202610 46100 50 2 tapout/guard/gb_T_a16_u8_46100.jsonl
+50 tapout/guard/rc_T_D4_u8_46200.jsonl race T_D4_u8 2.36 hartford 46200 50 2 tapout/guard/rc_T_D4_u8_46200.jsonl
+50 tapout/guard/gb_T_D4_u8_46200.jsonl gb T_D4_u8 owner202610 46200 50 2 tapout/guard/gb_T_D4_u8_46200.jsonl
+50 tapout/guard/rc_T_D1_u8_46200.jsonl race T_D1_u8 2.36 hartford 46200 50 2 tapout/guard/rc_T_D1_u8_46200.jsonl
+50 tapout/guard/gb_T_D1_u8_46200.jsonl gb T_D1_u8 owner202610 46200 50 2 tapout/guard/gb_T_D1_u8_46200.jsonl
+50 tapout/guard/rc_T_a16_u8_46200.jsonl race T_a16_u8 2.36 hartford 46200 50 2 tapout/guard/rc_T_a16_u8_46200.jsonl
+50 tapout/guard/gb_T_a16_u8_46200.jsonl gb T_a16_u8 owner202610 46200 50 2 tapout/guard/gb_T_a16_u8_46200.jsonl
+50 tapout/guard/rc_T_D4_u8_46300.jsonl race T_D4_u8 2.36 hartford 46300 50 2 tapout/guard/rc_T_D4_u8_46300.jsonl
+50 tapout/guard/gb_T_D4_u8_46300.jsonl gb T_D4_u8 owner202610 46300 50 2 tapout/guard/gb_T_D4_u8_46300.jsonl
+50 tapout/guard/rc_T_D1_u8_46300.jsonl race T_D1_u8 2.36 hartford 46300 50 2 tapout/guard/rc_T_D1_u8_46300.jsonl
+50 tapout/guard/gb_T_D1_u8_46300.jsonl gb T_D1_u8 owner202610 46300 50 2 tapout/guard/gb_T_D1_u8_46300.jsonl
+50 tapout/guard/rc_T_a16_u8_46300.jsonl race T_a16_u8 2.36 hartford 46300 50 2 tapout/guard/rc_T_a16_u8_46300.jsonl
+50 tapout/guard/gb_T_a16_u8_46300.jsonl gb T_a16_u8 owner202610 46300 50 2 tapout/guard/gb_T_a16_u8_46300.jsonl
+50 tapout/guard/rc_T_D4_u8_46400.jsonl race T_D4_u8 2.36 hartford 46400 50 2 tapout/guard/rc_T_D4_u8_46400.jsonl
+50 tapout/guard/gb_T_D4_u8_46400.jsonl gb T_D4_u8 owner202610 46400 50 2 tapout/guard/gb_T_D4_u8_46400.jsonl
+50 tapout/guard/rc_T_D1_u8_46400.jsonl race T_D1_u8 2.36 hartford 46400 50 2 tapout/guard/rc_T_D1_u8_46400.jsonl
+50 tapout/guard/gb_T_D1_u8_46400.jsonl gb T_D1_u8 owner202610 46400 50 2 tapout/guard/gb_T_D1_u8_46400.jsonl
+50 tapout/guard/rc_T_a16_u8_46400.jsonl race T_a16_u8 2.36 hartford 46400 50 2 tapout/guard/rc_T_a16_u8_46400.jsonl
+50 tapout/guard/gb_T_a16_u8_46400.jsonl gb T_a16_u8 owner202610 46400 50 2 tapout/guard/gb_T_a16_u8_46400.jsonl
+50 tapout/guard/rc_T_D4_u8_46500.jsonl race T_D4_u8 2.36 hartford 46500 50 2 tapout/guard/rc_T_D4_u8_46500.jsonl
+50 tapout/guard/gb_T_D4_u8_46500.jsonl gb T_D4_u8 owner202610 46500 50 2 tapout/guard/gb_T_D4_u8_46500.jsonl
+50 tapout/guard/rc_T_D1_u8_46500.jsonl race T_D1_u8 2.36 hartford 46500 50 2 tapout/guard/rc_T_D1_u8_46500.jsonl
+50 tapout/guard/gb_T_D1_u8_46500.jsonl gb T_D1_u8 owner202610 46500 50 2 tapout/guard/gb_T_D1_u8_46500.jsonl
+50 tapout/guard/rc_T_a16_u8_46500.jsonl race T_a16_u8 2.36 hartford 46500 50 2 tapout/guard/rc_T_a16_u8_46500.jsonl
+50 tapout/guard/gb_T_a16_u8_46500.jsonl gb T_a16_u8 owner202610 46500 50 2 tapout/guard/gb_T_a16_u8_46500.jsonl
+50 tapout/guard/rc_T_D4_u8_46600.jsonl race T_D4_u8 2.36 hartford 46600 50 2 tapout/guard/rc_T_D4_u8_46600.jsonl
+50 tapout/guard/gb_T_D4_u8_46600.jsonl gb T_D4_u8 owner202610 46600 50 2 tapout/guard/gb_T_D4_u8_46600.jsonl
+50 tapout/guard/rc_T_D1_u8_46600.jsonl race T_D1_u8 2.36 hartford 46600 50 2 tapout/guard/rc_T_D1_u8_46600.jsonl
+50 tapout/guard/gb_T_D1_u8_46600.jsonl gb T_D1_u8 owner202610 46600 50 2 tapout/guard/gb_T_D1_u8_46600.jsonl
+50 tapout/guard/rc_T_a16_u8_46600.jsonl race T_a16_u8 2.36 hartford 46600 50 2 tapout/guard/rc_T_a16_u8_46600.jsonl
+50 tapout/guard/gb_T_a16_u8_46600.jsonl gb T_a16_u8 owner202610 46600 50 2 tapout/guard/gb_T_a16_u8_46600.jsonl
+50 tapout/guard/rc_T_D4_u8_46700.jsonl race T_D4_u8 2.36 hartford 46700 50 2 tapout/guard/rc_T_D4_u8_46700.jsonl
+50 tapout/guard/gb_T_D4_u8_46700.jsonl gb T_D4_u8 owner202610 46700 50 2 tapout/guard/gb_T_D4_u8_46700.jsonl
+50 tapout/guard/rc_T_D1_u8_46700.jsonl race T_D1_u8 2.36 hartford 46700 50 2 tapout/guard/rc_T_D1_u8_46700.jsonl
+50 tapout/guard/gb_T_D1_u8_46700.jsonl gb T_D1_u8 owner202610 46700 50 2 tapout/guard/gb_T_D1_u8_46700.jsonl
+50 tapout/guard/rc_T_a16_u8_46700.jsonl race T_a16_u8 2.36 hartford 46700 50 2 tapout/guard/rc_T_a16_u8_46700.jsonl
+50 tapout/guard/gb_T_a16_u8_46700.jsonl gb T_a16_u8 owner202610 46700 50 2 tapout/guard/gb_T_a16_u8_46700.jsonl
+50 tapout/guard/rc_T_D4_u8_46800.jsonl race T_D4_u8 2.36 hartford 46800 50 2 tapout/guard/rc_T_D4_u8_46800.jsonl
+50 tapout/guard/gb_T_D4_u8_46800.jsonl gb T_D4_u8 owner202610 46800 50 2 tapout/guard/gb_T_D4_u8_46800.jsonl
+50 tapout/guard/rc_T_D1_u8_46800.jsonl race T_D1_u8 2.36 hartford 46800 50 2 tapout/guard/rc_T_D1_u8_46800.jsonl
+50 tapout/guard/gb_T_D1_u8_46800.jsonl gb T_D1_u8 owner202610 46800 50 2 tapout/guard/gb_T_D1_u8_46800.jsonl
+50 tapout/guard/rc_T_a16_u8_46800.jsonl race T_a16_u8 2.36 hartford 46800 50 2 tapout/guard/rc_T_a16_u8_46800.jsonl
+50 tapout/guard/gb_T_a16_u8_46800.jsonl gb T_a16_u8 owner202610 46800 50 2 tapout/guard/gb_T_a16_u8_46800.jsonl
+50 tapout/guard/rc_T_D4_u8_46900.jsonl race T_D4_u8 2.36 hartford 46900 50 2 tapout/guard/rc_T_D4_u8_46900.jsonl
+50 tapout/guard/gb_T_D4_u8_46900.jsonl gb T_D4_u8 owner202610 46900 50 2 tapout/guard/gb_T_D4_u8_46900.jsonl
+50 tapout/guard/rc_T_D1_u8_46900.jsonl race T_D1_u8 2.36 hartford 46900 50 2 tapout/guard/rc_T_D1_u8_46900.jsonl
+50 tapout/guard/gb_T_D1_u8_46900.jsonl gb T_D1_u8 owner202610 46900 50 2 tapout/guard/gb_T_D1_u8_46900.jsonl
+50 tapout/guard/rc_T_a16_u8_46900.jsonl race T_a16_u8 2.36 hartford 46900 50 2 tapout/guard/rc_T_a16_u8_46900.jsonl
+50 tapout/guard/gb_T_a16_u8_46900.jsonl gb T_a16_u8 owner202610 46900 50 2 tapout/guard/gb_T_a16_u8_46900.jsonl
+50 tapout/guard/rc_T_D4_u8_47000.jsonl race T_D4_u8 2.36 hartford 47000 50 2 tapout/guard/rc_T_D4_u8_47000.jsonl
+50 tapout/guard/gb_T_D4_u8_47000.jsonl gb T_D4_u8 owner202610 47000 50 2 tapout/guard/gb_T_D4_u8_47000.jsonl
+50 tapout/guard/rc_T_D1_u8_47000.jsonl race T_D1_u8 2.36 hartford 47000 50 2 tapout/guard/rc_T_D1_u8_47000.jsonl
+50 tapout/guard/gb_T_D1_u8_47000.jsonl gb T_D1_u8 owner202610 47000 50 2 tapout/guard/gb_T_D1_u8_47000.jsonl
+50 tapout/guard/rc_T_a16_u8_47000.jsonl race T_a16_u8 2.36 hartford 47000 50 2 tapout/guard/rc_T_a16_u8_47000.jsonl
+50 tapout/guard/gb_T_a16_u8_47000.jsonl gb T_a16_u8 owner202610 47000 50 2 tapout/guard/gb_T_a16_u8_47000.jsonl
+50 tapout/guard/rc_T_D4_u8_47100.jsonl race T_D4_u8 2.36 hartford 47100 50 2 tapout/guard/rc_T_D4_u8_47100.jsonl
+50 tapout/guard/gb_T_D4_u8_47100.jsonl gb T_D4_u8 owner202610 47100 50 2 tapout/guard/gb_T_D4_u8_47100.jsonl
+50 tapout/guard/rc_T_D1_u8_47100.jsonl race T_D1_u8 2.36 hartford 47100 50 2 tapout/guard/rc_T_D1_u8_47100.jsonl
+50 tapout/guard/gb_T_D1_u8_47100.jsonl gb T_D1_u8 owner202610 47100 50 2 tapout/guard/gb_T_D1_u8_47100.jsonl
+50 tapout/guard/rc_T_a16_u8_47100.jsonl race T_a16_u8 2.36 hartford 47100 50 2 tapout/guard/rc_T_a16_u8_47100.jsonl
+50 tapout/guard/gb_T_a16_u8_47100.jsonl gb T_a16_u8 owner202610 47100 50 2 tapout/guard/gb_T_a16_u8_47100.jsonl
+50 tapout/guard/rc_T_D4_u8_47200.jsonl race T_D4_u8 2.36 hartford 47200 50 2 tapout/guard/rc_T_D4_u8_47200.jsonl
+50 tapout/guard/gb_T_D4_u8_47200.jsonl gb T_D4_u8 owner202610 47200 50 2 tapout/guard/gb_T_D4_u8_47200.jsonl
+50 tapout/guard/rc_T_D1_u8_47200.jsonl race T_D1_u8 2.36 hartford 47200 50 2 tapout/guard/rc_T_D1_u8_47200.jsonl
+50 tapout/guard/gb_T_D1_u8_47200.jsonl gb T_D1_u8 owner202610 47200 50 2 tapout/guard/gb_T_D1_u8_47200.jsonl
+50 tapout/guard/rc_T_a16_u8_47200.jsonl race T_a16_u8 2.36 hartford 47200 50 2 tapout/guard/rc_T_a16_u8_47200.jsonl
+50 tapout/guard/gb_T_a16_u8_47200.jsonl gb T_a16_u8 owner202610 47200 50 2 tapout/guard/gb_T_a16_u8_47200.jsonl
+50 tapout/guard/rc_T_D4_u8_47300.jsonl race T_D4_u8 2.36 hartford 47300 50 2 tapout/guard/rc_T_D4_u8_47300.jsonl
+50 tapout/guard/gb_T_D4_u8_47300.jsonl gb T_D4_u8 owner202610 47300 50 2 tapout/guard/gb_T_D4_u8_47300.jsonl
+50 tapout/guard/rc_T_D1_u8_47300.jsonl race T_D1_u8 2.36 hartford 47300 50 2 tapout/guard/rc_T_D1_u8_47300.jsonl
+50 tapout/guard/gb_T_D1_u8_47300.jsonl gb T_D1_u8 owner202610 47300 50 2 tapout/guard/gb_T_D1_u8_47300.jsonl
+50 tapout/guard/rc_T_a16_u8_47300.jsonl race T_a16_u8 2.36 hartford 47300 50 2 tapout/guard/rc_T_a16_u8_47300.jsonl
+50 tapout/guard/gb_T_a16_u8_47300.jsonl gb T_a16_u8 owner202610 47300 50 2 tapout/guard/gb_T_a16_u8_47300.jsonl
+50 tapout/guard/rc_T_D4_u8_47400.jsonl race T_D4_u8 2.36 hartford 47400 50 2 tapout/guard/rc_T_D4_u8_47400.jsonl
+50 tapout/guard/gb_T_D4_u8_47400.jsonl gb T_D4_u8 owner202610 47400 50 2 tapout/guard/gb_T_D4_u8_47400.jsonl
+50 tapout/guard/rc_T_D1_u8_47400.jsonl race T_D1_u8 2.36 hartford 47400 50 2 tapout/guard/rc_T_D1_u8_47400.jsonl
+50 tapout/guard/gb_T_D1_u8_47400.jsonl gb T_D1_u8 owner202610 47400 50 2 tapout/guard/gb_T_D1_u8_47400.jsonl
+50 tapout/guard/rc_T_a16_u8_47400.jsonl race T_a16_u8 2.36 hartford 47400 50 2 tapout/guard/rc_T_a16_u8_47400.jsonl
+50 tapout/guard/gb_T_a16_u8_47400.jsonl gb T_a16_u8 owner202610 47400 50 2 tapout/guard/gb_T_a16_u8_47400.jsonl
+50 tapout/guard/rc_T_D4_u8_47500.jsonl race T_D4_u8 2.36 hartford 47500 50 2 tapout/guard/rc_T_D4_u8_47500.jsonl
+50 tapout/guard/gb_T_D4_u8_47500.jsonl gb T_D4_u8 owner202610 47500 50 2 tapout/guard/gb_T_D4_u8_47500.jsonl
+50 tapout/guard/rc_T_D1_u8_47500.jsonl race T_D1_u8 2.36 hartford 47500 50 2 tapout/guard/rc_T_D1_u8_47500.jsonl
+50 tapout/guard/gb_T_D1_u8_47500.jsonl gb T_D1_u8 owner202610 47500 50 2 tapout/guard/gb_T_D1_u8_47500.jsonl
+50 tapout/guard/rc_T_a16_u8_47500.jsonl race T_a16_u8 2.36 hartford 47500 50 2 tapout/guard/rc_T_a16_u8_47500.jsonl
+50 tapout/guard/gb_T_a16_u8_47500.jsonl gb T_a16_u8 owner202610 47500 50 2 tapout/guard/gb_T_a16_u8_47500.jsonl
+50 tapout/guard/rc_T_D4_u8_47600.jsonl race T_D4_u8 2.36 hartford 47600 50 2 tapout/guard/rc_T_D4_u8_47600.jsonl
+50 tapout/guard/gb_T_D4_u8_47600.jsonl gb T_D4_u8 owner202610 47600 50 2 tapout/guard/gb_T_D4_u8_47600.jsonl
+50 tapout/guard/rc_T_D1_u8_47600.jsonl race T_D1_u8 2.36 hartford 47600 50 2 tapout/guard/rc_T_D1_u8_47600.jsonl
+50 tapout/guard/gb_T_D1_u8_47600.jsonl gb T_D1_u8 owner202610 47600 50 2 tapout/guard/gb_T_D1_u8_47600.jsonl
+50 tapout/guard/rc_T_a16_u8_47600.jsonl race T_a16_u8 2.36 hartford 47600 50 2 tapout/guard/rc_T_a16_u8_47600.jsonl
+50 tapout/guard/gb_T_a16_u8_47600.jsonl gb T_a16_u8 owner202610 47600 50 2 tapout/guard/gb_T_a16_u8_47600.jsonl
+50 tapout/guard/rc_T_D4_u8_47700.jsonl race T_D4_u8 2.36 hartford 47700 50 2 tapout/guard/rc_T_D4_u8_47700.jsonl
+50 tapout/guard/gb_T_D4_u8_47700.jsonl gb T_D4_u8 owner202610 47700 50 2 tapout/guard/gb_T_D4_u8_47700.jsonl
+50 tapout/guard/rc_T_D1_u8_47700.jsonl race T_D1_u8 2.36 hartford 47700 50 2 tapout/guard/rc_T_D1_u8_47700.jsonl
+50 tapout/guard/gb_T_D1_u8_47700.jsonl gb T_D1_u8 owner202610 47700 50 2 tapout/guard/gb_T_D1_u8_47700.jsonl
+50 tapout/guard/rc_T_a16_u8_47700.jsonl race T_a16_u8 2.36 hartford 47700 50 2 tapout/guard/rc_T_a16_u8_47700.jsonl
+50 tapout/guard/gb_T_a16_u8_47700.jsonl gb T_a16_u8 owner202610 47700 50 2 tapout/guard/gb_T_a16_u8_47700.jsonl
+50 tapout/guard/rc_T_D4_u8_47800.jsonl race T_D4_u8 2.36 hartford 47800 50 2 tapout/guard/rc_T_D4_u8_47800.jsonl
+50 tapout/guard/gb_T_D4_u8_47800.jsonl gb T_D4_u8 owner202610 47800 50 2 tapout/guard/gb_T_D4_u8_47800.jsonl
+50 tapout/guard/rc_T_D1_u8_47800.jsonl race T_D1_u8 2.36 hartford 47800 50 2 tapout/guard/rc_T_D1_u8_47800.jsonl
+50 tapout/guard/gb_T_D1_u8_47800.jsonl gb T_D1_u8 owner202610 47800 50 2 tapout/guard/gb_T_D1_u8_47800.jsonl
+50 tapout/guard/rc_T_a16_u8_47800.jsonl race T_a16_u8 2.36 hartford 47800 50 2 tapout/guard/rc_T_a16_u8_47800.jsonl
+50 tapout/guard/gb_T_a16_u8_47800.jsonl gb T_a16_u8 owner202610 47800 50 2 tapout/guard/gb_T_a16_u8_47800.jsonl
+50 tapout/guard/rc_T_D4_u8_47900.jsonl race T_D4_u8 2.36 hartford 47900 50 2 tapout/guard/rc_T_D4_u8_47900.jsonl
+50 tapout/guard/gb_T_D4_u8_47900.jsonl gb T_D4_u8 owner202610 47900 50 2 tapout/guard/gb_T_D4_u8_47900.jsonl
+50 tapout/guard/rc_T_D1_u8_47900.jsonl race T_D1_u8 2.36 hartford 47900 50 2 tapout/guard/rc_T_D1_u8_47900.jsonl
+50 tapout/guard/gb_T_D1_u8_47900.jsonl gb T_D1_u8 owner202610 47900 50 2 tapout/guard/gb_T_D1_u8_47900.jsonl
+50 tapout/guard/rc_T_a16_u8_47900.jsonl race T_a16_u8 2.36 hartford 47900 50 2 tapout/guard/rc_T_a16_u8_47900.jsonl
+50 tapout/guard/gb_T_a16_u8_47900.jsonl gb T_a16_u8 owner202610 47900 50 2 tapout/guard/gb_T_a16_u8_47900.jsonl
+50 tapout/guard/rc_T_D4_u8_48000.jsonl race T_D4_u8 2.36 hartford 48000 50 2 tapout/guard/rc_T_D4_u8_48000.jsonl
+50 tapout/guard/gb_T_D4_u8_48000.jsonl gb T_D4_u8 owner202610 48000 50 2 tapout/guard/gb_T_D4_u8_48000.jsonl
+50 tapout/guard/rc_T_D1_u8_48000.jsonl race T_D1_u8 2.36 hartford 48000 50 2 tapout/guard/rc_T_D1_u8_48000.jsonl
+50 tapout/guard/gb_T_D1_u8_48000.jsonl gb T_D1_u8 owner202610 48000 50 2 tapout/guard/gb_T_D1_u8_48000.jsonl
+50 tapout/guard/rc_T_a16_u8_48000.jsonl race T_a16_u8 2.36 hartford 48000 50 2 tapout/guard/rc_T_a16_u8_48000.jsonl
+50 tapout/guard/gb_T_a16_u8_48000.jsonl gb T_a16_u8 owner202610 48000 50 2 tapout/guard/gb_T_a16_u8_48000.jsonl
+50 tapout/guard/rc_T_D4_u8_48100.jsonl race T_D4_u8 2.36 hartford 48100 50 2 tapout/guard/rc_T_D4_u8_48100.jsonl
+50 tapout/guard/gb_T_D4_u8_48100.jsonl gb T_D4_u8 owner202610 48100 50 2 tapout/guard/gb_T_D4_u8_48100.jsonl
+50 tapout/guard/rc_T_D1_u8_48100.jsonl race T_D1_u8 2.36 hartford 48100 50 2 tapout/guard/rc_T_D1_u8_48100.jsonl
+50 tapout/guard/gb_T_D1_u8_48100.jsonl gb T_D1_u8 owner202610 48100 50 2 tapout/guard/gb_T_D1_u8_48100.jsonl
+50 tapout/guard/rc_T_a16_u8_48100.jsonl race T_a16_u8 2.36 hartford 48100 50 2 tapout/guard/rc_T_a16_u8_48100.jsonl
+50 tapout/guard/gb_T_a16_u8_48100.jsonl gb T_a16_u8 owner202610 48100 50 2 tapout/guard/gb_T_a16_u8_48100.jsonl
+50 tapout/guard/rc_T_D4_u8_48200.jsonl race T_D4_u8 2.36 hartford 48200 50 2 tapout/guard/rc_T_D4_u8_48200.jsonl
+50 tapout/guard/gb_T_D4_u8_48200.jsonl gb T_D4_u8 owner202610 48200 50 2 tapout/guard/gb_T_D4_u8_48200.jsonl
+50 tapout/guard/rc_T_D1_u8_48200.jsonl race T_D1_u8 2.36 hartford 48200 50 2 tapout/guard/rc_T_D1_u8_48200.jsonl
+50 tapout/guard/gb_T_D1_u8_48200.jsonl gb T_D1_u8 owner202610 48200 50 2 tapout/guard/gb_T_D1_u8_48200.jsonl
+50 tapout/guard/rc_T_a16_u8_48200.jsonl race T_a16_u8 2.36 hartford 48200 50 2 tapout/guard/rc_T_a16_u8_48200.jsonl
+50 tapout/guard/gb_T_a16_u8_48200.jsonl gb T_a16_u8 owner202610 48200 50 2 tapout/guard/gb_T_a16_u8_48200.jsonl
+50 tapout/guard/rc_T_D4_u8_48300.jsonl race T_D4_u8 2.36 hartford 48300 50 2 tapout/guard/rc_T_D4_u8_48300.jsonl
+50 tapout/guard/gb_T_D4_u8_48300.jsonl gb T_D4_u8 owner202610 48300 50 2 tapout/guard/gb_T_D4_u8_48300.jsonl
+50 tapout/guard/rc_T_D1_u8_48300.jsonl race T_D1_u8 2.36 hartford 48300 50 2 tapout/guard/rc_T_D1_u8_48300.jsonl
+50 tapout/guard/gb_T_D1_u8_48300.jsonl gb T_D1_u8 owner202610 48300 50 2 tapout/guard/gb_T_D1_u8_48300.jsonl
+50 tapout/guard/rc_T_a16_u8_48300.jsonl race T_a16_u8 2.36 hartford 48300 50 2 tapout/guard/rc_T_a16_u8_48300.jsonl
+50 tapout/guard/gb_T_a16_u8_48300.jsonl gb T_a16_u8 owner202610 48300 50 2 tapout/guard/gb_T_a16_u8_48300.jsonl
+50 tapout/guard/rc_T_D4_u8_48400.jsonl race T_D4_u8 2.36 hartford 48400 50 2 tapout/guard/rc_T_D4_u8_48400.jsonl
+50 tapout/guard/gb_T_D4_u8_48400.jsonl gb T_D4_u8 owner202610 48400 50 2 tapout/guard/gb_T_D4_u8_48400.jsonl
+50 tapout/guard/rc_T_D1_u8_48400.jsonl race T_D1_u8 2.36 hartford 48400 50 2 tapout/guard/rc_T_D1_u8_48400.jsonl
+50 tapout/guard/gb_T_D1_u8_48400.jsonl gb T_D1_u8 owner202610 48400 50 2 tapout/guard/gb_T_D1_u8_48400.jsonl
+50 tapout/guard/rc_T_a16_u8_48400.jsonl race T_a16_u8 2.36 hartford 48400 50 2 tapout/guard/rc_T_a16_u8_48400.jsonl
+50 tapout/guard/gb_T_a16_u8_48400.jsonl gb T_a16_u8 owner202610 48400 50 2 tapout/guard/gb_T_a16_u8_48400.jsonl
+50 tapout/guard/rc_T_D4_u8_48500.jsonl race T_D4_u8 2.36 hartford 48500 50 2 tapout/guard/rc_T_D4_u8_48500.jsonl
+50 tapout/guard/gb_T_D4_u8_48500.jsonl gb T_D4_u8 owner202610 48500 50 2 tapout/guard/gb_T_D4_u8_48500.jsonl
+50 tapout/guard/rc_T_D1_u8_48500.jsonl race T_D1_u8 2.36 hartford 48500 50 2 tapout/guard/rc_T_D1_u8_48500.jsonl
+50 tapout/guard/gb_T_D1_u8_48500.jsonl gb T_D1_u8 owner202610 48500 50 2 tapout/guard/gb_T_D1_u8_48500.jsonl
+50 tapout/guard/rc_T_a16_u8_48500.jsonl race T_a16_u8 2.36 hartford 48500 50 2 tapout/guard/rc_T_a16_u8_48500.jsonl
+50 tapout/guard/gb_T_a16_u8_48500.jsonl gb T_a16_u8 owner202610 48500 50 2 tapout/guard/gb_T_a16_u8_48500.jsonl
+50 tapout/guard/rc_T_D4_u8_48600.jsonl race T_D4_u8 2.36 hartford 48600 50 2 tapout/guard/rc_T_D4_u8_48600.jsonl
+50 tapout/guard/gb_T_D4_u8_48600.jsonl gb T_D4_u8 owner202610 48600 50 2 tapout/guard/gb_T_D4_u8_48600.jsonl
+50 tapout/guard/rc_T_D1_u8_48600.jsonl race T_D1_u8 2.36 hartford 48600 50 2 tapout/guard/rc_T_D1_u8_48600.jsonl
+50 tapout/guard/gb_T_D1_u8_48600.jsonl gb T_D1_u8 owner202610 48600 50 2 tapout/guard/gb_T_D1_u8_48600.jsonl
+50 tapout/guard/rc_T_a16_u8_48600.jsonl race T_a16_u8 2.36 hartford 48600 50 2 tapout/guard/rc_T_a16_u8_48600.jsonl
+50 tapout/guard/gb_T_a16_u8_48600.jsonl gb T_a16_u8 owner202610 48600 50 2 tapout/guard/gb_T_a16_u8_48600.jsonl
+50 tapout/guard/rc_T_D4_u8_48700.jsonl race T_D4_u8 2.36 hartford 48700 50 2 tapout/guard/rc_T_D4_u8_48700.jsonl
+50 tapout/guard/gb_T_D4_u8_48700.jsonl gb T_D4_u8 owner202610 48700 50 2 tapout/guard/gb_T_D4_u8_48700.jsonl
+50 tapout/guard/rc_T_D1_u8_48700.jsonl race T_D1_u8 2.36 hartford 48700 50 2 tapout/guard/rc_T_D1_u8_48700.jsonl
+50 tapout/guard/gb_T_D1_u8_48700.jsonl gb T_D1_u8 owner202610 48700 50 2 tapout/guard/gb_T_D1_u8_48700.jsonl
+50 tapout/guard/rc_T_a16_u8_48700.jsonl race T_a16_u8 2.36 hartford 48700 50 2 tapout/guard/rc_T_a16_u8_48700.jsonl
+50 tapout/guard/gb_T_a16_u8_48700.jsonl gb T_a16_u8 owner202610 48700 50 2 tapout/guard/gb_T_a16_u8_48700.jsonl
+50 tapout/guard/rc_T_D4_u8_48800.jsonl race T_D4_u8 2.36 hartford 48800 50 2 tapout/guard/rc_T_D4_u8_48800.jsonl
+50 tapout/guard/gb_T_D4_u8_48800.jsonl gb T_D4_u8 owner202610 48800 50 2 tapout/guard/gb_T_D4_u8_48800.jsonl
+50 tapout/guard/rc_T_D1_u8_48800.jsonl race T_D1_u8 2.36 hartford 48800 50 2 tapout/guard/rc_T_D1_u8_48800.jsonl
+50 tapout/guard/gb_T_D1_u8_48800.jsonl gb T_D1_u8 owner202610 48800 50 2 tapout/guard/gb_T_D1_u8_48800.jsonl
+50 tapout/guard/rc_T_a16_u8_48800.jsonl race T_a16_u8 2.36 hartford 48800 50 2 tapout/guard/rc_T_a16_u8_48800.jsonl
+50 tapout/guard/gb_T_a16_u8_48800.jsonl gb T_a16_u8 owner202610 48800 50 2 tapout/guard/gb_T_a16_u8_48800.jsonl
+50 tapout/guard/rc_T_D4_u8_48900.jsonl race T_D4_u8 2.36 hartford 48900 50 2 tapout/guard/rc_T_D4_u8_48900.jsonl
+50 tapout/guard/gb_T_D4_u8_48900.jsonl gb T_D4_u8 owner202610 48900 50 2 tapout/guard/gb_T_D4_u8_48900.jsonl
+50 tapout/guard/rc_T_D1_u8_48900.jsonl race T_D1_u8 2.36 hartford 48900 50 2 tapout/guard/rc_T_D1_u8_48900.jsonl
+50 tapout/guard/gb_T_D1_u8_48900.jsonl gb T_D1_u8 owner202610 48900 50 2 tapout/guard/gb_T_D1_u8_48900.jsonl
+50 tapout/guard/rc_T_a16_u8_48900.jsonl race T_a16_u8 2.36 hartford 48900 50 2 tapout/guard/rc_T_a16_u8_48900.jsonl
+50 tapout/guard/gb_T_a16_u8_48900.jsonl gb T_a16_u8 owner202610 48900 50 2 tapout/guard/gb_T_a16_u8_48900.jsonl
+50 tapout/guard/rc_T_D4_u8_49000.jsonl race T_D4_u8 2.36 hartford 49000 50 2 tapout/guard/rc_T_D4_u8_49000.jsonl
+50 tapout/guard/gb_T_D4_u8_49000.jsonl gb T_D4_u8 owner202610 49000 50 2 tapout/guard/gb_T_D4_u8_49000.jsonl
+50 tapout/guard/rc_T_D1_u8_49000.jsonl race T_D1_u8 2.36 hartford 49000 50 2 tapout/guard/rc_T_D1_u8_49000.jsonl
+50 tapout/guard/gb_T_D1_u8_49000.jsonl gb T_D1_u8 owner202610 49000 50 2 tapout/guard/gb_T_D1_u8_49000.jsonl
+50 tapout/guard/rc_T_a16_u8_49000.jsonl race T_a16_u8 2.36 hartford 49000 50 2 tapout/guard/rc_T_a16_u8_49000.jsonl
+50 tapout/guard/gb_T_a16_u8_49000.jsonl gb T_a16_u8 owner202610 49000 50 2 tapout/guard/gb_T_a16_u8_49000.jsonl
+50 tapout/guard/rc_T_D4_u8_49100.jsonl race T_D4_u8 2.36 hartford 49100 50 2 tapout/guard/rc_T_D4_u8_49100.jsonl
+50 tapout/guard/gb_T_D4_u8_49100.jsonl gb T_D4_u8 owner202610 49100 50 2 tapout/guard/gb_T_D4_u8_49100.jsonl
+50 tapout/guard/rc_T_D1_u8_49100.jsonl race T_D1_u8 2.36 hartford 49100 50 2 tapout/guard/rc_T_D1_u8_49100.jsonl
+50 tapout/guard/gb_T_D1_u8_49100.jsonl gb T_D1_u8 owner202610 49100 50 2 tapout/guard/gb_T_D1_u8_49100.jsonl
+50 tapout/guard/rc_T_a16_u8_49100.jsonl race T_a16_u8 2.36 hartford 49100 50 2 tapout/guard/rc_T_a16_u8_49100.jsonl
+50 tapout/guard/gb_T_a16_u8_49100.jsonl gb T_a16_u8 owner202610 49100 50 2 tapout/guard/gb_T_a16_u8_49100.jsonl
+50 tapout/guard/rc_T_D4_u8_49200.jsonl race T_D4_u8 2.36 hartford 49200 50 2 tapout/guard/rc_T_D4_u8_49200.jsonl
+50 tapout/guard/gb_T_D4_u8_49200.jsonl gb T_D4_u8 owner202610 49200 50 2 tapout/guard/gb_T_D4_u8_49200.jsonl
+50 tapout/guard/rc_T_D1_u8_49200.jsonl race T_D1_u8 2.36 hartford 49200 50 2 tapout/guard/rc_T_D1_u8_49200.jsonl
+50 tapout/guard/gb_T_D1_u8_49200.jsonl gb T_D1_u8 owner202610 49200 50 2 tapout/guard/gb_T_D1_u8_49200.jsonl
+50 tapout/guard/rc_T_a16_u8_49200.jsonl race T_a16_u8 2.36 hartford 49200 50 2 tapout/guard/rc_T_a16_u8_49200.jsonl
+50 tapout/guard/gb_T_a16_u8_49200.jsonl gb T_a16_u8 owner202610 49200 50 2 tapout/guard/gb_T_a16_u8_49200.jsonl
+50 tapout/guard/rc_T_D4_u8_49300.jsonl race T_D4_u8 2.36 hartford 49300 50 2 tapout/guard/rc_T_D4_u8_49300.jsonl
+50 tapout/guard/gb_T_D4_u8_49300.jsonl gb T_D4_u8 owner202610 49300 50 2 tapout/guard/gb_T_D4_u8_49300.jsonl
+50 tapout/guard/rc_T_D1_u8_49300.jsonl race T_D1_u8 2.36 hartford 49300 50 2 tapout/guard/rc_T_D1_u8_49300.jsonl
+50 tapout/guard/gb_T_D1_u8_49300.jsonl gb T_D1_u8 owner202610 49300 50 2 tapout/guard/gb_T_D1_u8_49300.jsonl
+50 tapout/guard/rc_T_a16_u8_49300.jsonl race T_a16_u8 2.36 hartford 49300 50 2 tapout/guard/rc_T_a16_u8_49300.jsonl
+50 tapout/guard/gb_T_a16_u8_49300.jsonl gb T_a16_u8 owner202610 49300 50 2 tapout/guard/gb_T_a16_u8_49300.jsonl
+50 tapout/guard/rc_T_D4_u8_49400.jsonl race T_D4_u8 2.36 hartford 49400 50 2 tapout/guard/rc_T_D4_u8_49400.jsonl
+50 tapout/guard/gb_T_D4_u8_49400.jsonl gb T_D4_u8 owner202610 49400 50 2 tapout/guard/gb_T_D4_u8_49400.jsonl
+50 tapout/guard/rc_T_D1_u8_49400.jsonl race T_D1_u8 2.36 hartford 49400 50 2 tapout/guard/rc_T_D1_u8_49400.jsonl
+50 tapout/guard/gb_T_D1_u8_49400.jsonl gb T_D1_u8 owner202610 49400 50 2 tapout/guard/gb_T_D1_u8_49400.jsonl
+50 tapout/guard/rc_T_a16_u8_49400.jsonl race T_a16_u8 2.36 hartford 49400 50 2 tapout/guard/rc_T_a16_u8_49400.jsonl
+50 tapout/guard/gb_T_a16_u8_49400.jsonl gb T_a16_u8 owner202610 49400 50 2 tapout/guard/gb_T_a16_u8_49400.jsonl
+50 tapout/guard/rc_T_D4_u8_49500.jsonl race T_D4_u8 2.36 hartford 49500 50 2 tapout/guard/rc_T_D4_u8_49500.jsonl
+50 tapout/guard/gb_T_D4_u8_49500.jsonl gb T_D4_u8 owner202610 49500 50 2 tapout/guard/gb_T_D4_u8_49500.jsonl
+50 tapout/guard/rc_T_D1_u8_49500.jsonl race T_D1_u8 2.36 hartford 49500 50 2 tapout/guard/rc_T_D1_u8_49500.jsonl
+50 tapout/guard/gb_T_D1_u8_49500.jsonl gb T_D1_u8 owner202610 49500 50 2 tapout/guard/gb_T_D1_u8_49500.jsonl
+50 tapout/guard/rc_T_a16_u8_49500.jsonl race T_a16_u8 2.36 hartford 49500 50 2 tapout/guard/rc_T_a16_u8_49500.jsonl
+50 tapout/guard/gb_T_a16_u8_49500.jsonl gb T_a16_u8 owner202610 49500 50 2 tapout/guard/gb_T_a16_u8_49500.jsonl
+50 tapout/guard/rc_T_D4_u8_49600.jsonl race T_D4_u8 2.36 hartford 49600 50 2 tapout/guard/rc_T_D4_u8_49600.jsonl
+50 tapout/guard/gb_T_D4_u8_49600.jsonl gb T_D4_u8 owner202610 49600 50 2 tapout/guard/gb_T_D4_u8_49600.jsonl
+50 tapout/guard/rc_T_D1_u8_49600.jsonl race T_D1_u8 2.36 hartford 49600 50 2 tapout/guard/rc_T_D1_u8_49600.jsonl
+50 tapout/guard/gb_T_D1_u8_49600.jsonl gb T_D1_u8 owner202610 49600 50 2 tapout/guard/gb_T_D1_u8_49600.jsonl
+50 tapout/guard/rc_T_a16_u8_49600.jsonl race T_a16_u8 2.36 hartford 49600 50 2 tapout/guard/rc_T_a16_u8_49600.jsonl
+50 tapout/guard/gb_T_a16_u8_49600.jsonl gb T_a16_u8 owner202610 49600 50 2 tapout/guard/gb_T_a16_u8_49600.jsonl
+50 tapout/guard/rc_T_D4_u8_49700.jsonl race T_D4_u8 2.36 hartford 49700 50 2 tapout/guard/rc_T_D4_u8_49700.jsonl
+50 tapout/guard/gb_T_D4_u8_49700.jsonl gb T_D4_u8 owner202610 49700 50 2 tapout/guard/gb_T_D4_u8_49700.jsonl
+50 tapout/guard/rc_T_D1_u8_49700.jsonl race T_D1_u8 2.36 hartford 49700 50 2 tapout/guard/rc_T_D1_u8_49700.jsonl
+50 tapout/guard/gb_T_D1_u8_49700.jsonl gb T_D1_u8 owner202610 49700 50 2 tapout/guard/gb_T_D1_u8_49700.jsonl
+50 tapout/guard/rc_T_a16_u8_49700.jsonl race T_a16_u8 2.36 hartford 49700 50 2 tapout/guard/rc_T_a16_u8_49700.jsonl
+50 tapout/guard/gb_T_a16_u8_49700.jsonl gb T_a16_u8 owner202610 49700 50 2 tapout/guard/gb_T_a16_u8_49700.jsonl
+50 tapout/guard/rc_T_D4_u8_49800.jsonl race T_D4_u8 2.36 hartford 49800 50 2 tapout/guard/rc_T_D4_u8_49800.jsonl
+50 tapout/guard/gb_T_D4_u8_49800.jsonl gb T_D4_u8 owner202610 49800 50 2 tapout/guard/gb_T_D4_u8_49800.jsonl
+50 tapout/guard/rc_T_D1_u8_49800.jsonl race T_D1_u8 2.36 hartford 49800 50 2 tapout/guard/rc_T_D1_u8_49800.jsonl
+50 tapout/guard/gb_T_D1_u8_49800.jsonl gb T_D1_u8 owner202610 49800 50 2 tapout/guard/gb_T_D1_u8_49800.jsonl
+50 tapout/guard/rc_T_a16_u8_49800.jsonl race T_a16_u8 2.36 hartford 49800 50 2 tapout/guard/rc_T_a16_u8_49800.jsonl
+50 tapout/guard/gb_T_a16_u8_49800.jsonl gb T_a16_u8 owner202610 49800 50 2 tapout/guard/gb_T_a16_u8_49800.jsonl
+50 tapout/guard/rc_T_D4_u8_49900.jsonl race T_D4_u8 2.36 hartford 49900 50 2 tapout/guard/rc_T_D4_u8_49900.jsonl
+50 tapout/guard/gb_T_D4_u8_49900.jsonl gb T_D4_u8 owner202610 49900 50 2 tapout/guard/gb_T_D4_u8_49900.jsonl
+50 tapout/guard/rc_T_D1_u8_49900.jsonl race T_D1_u8 2.36 hartford 49900 50 2 tapout/guard/rc_T_D1_u8_49900.jsonl
+50 tapout/guard/gb_T_D1_u8_49900.jsonl gb T_D1_u8 owner202610 49900 50 2 tapout/guard/gb_T_D1_u8_49900.jsonl
+50 tapout/guard/rc_T_a16_u8_49900.jsonl race T_a16_u8 2.36 hartford 49900 50 2 tapout/guard/rc_T_a16_u8_49900.jsonl
+50 tapout/guard/gb_T_a16_u8_49900.jsonl gb T_a16_u8 owner202610 49900 50 2 tapout/guard/gb_T_a16_u8_49900.jsonl
+50 tapout/guard/rc_T_D4_u8_50000.jsonl race T_D4_u8 2.36 hartford 50000 50 2 tapout/guard/rc_T_D4_u8_50000.jsonl
+50 tapout/guard/gb_T_D4_u8_50000.jsonl gb T_D4_u8 owner202610 50000 50 2 tapout/guard/gb_T_D4_u8_50000.jsonl
+50 tapout/guard/rc_T_D1_u8_50000.jsonl race T_D1_u8 2.36 hartford 50000 50 2 tapout/guard/rc_T_D1_u8_50000.jsonl
+50 tapout/guard/gb_T_D1_u8_50000.jsonl gb T_D1_u8 owner202610 50000 50 2 tapout/guard/gb_T_D1_u8_50000.jsonl
+50 tapout/guard/rc_T_a16_u8_50000.jsonl race T_a16_u8 2.36 hartford 50000 50 2 tapout/guard/rc_T_a16_u8_50000.jsonl
+50 tapout/guard/gb_T_a16_u8_50000.jsonl gb T_a16_u8 owner202610 50000 50 2 tapout/guard/gb_T_a16_u8_50000.jsonl
+50 tapout/guard/rc_T_D4_u8_50100.jsonl race T_D4_u8 2.36 hartford 50100 50 2 tapout/guard/rc_T_D4_u8_50100.jsonl
+50 tapout/guard/gb_T_D4_u8_50100.jsonl gb T_D4_u8 owner202610 50100 50 2 tapout/guard/gb_T_D4_u8_50100.jsonl
+50 tapout/guard/rc_T_D1_u8_50100.jsonl race T_D1_u8 2.36 hartford 50100 50 2 tapout/guard/rc_T_D1_u8_50100.jsonl
+50 tapout/guard/gb_T_D1_u8_50100.jsonl gb T_D1_u8 owner202610 50100 50 2 tapout/guard/gb_T_D1_u8_50100.jsonl
+50 tapout/guard/rc_T_a16_u8_50100.jsonl race T_a16_u8 2.36 hartford 50100 50 2 tapout/guard/rc_T_a16_u8_50100.jsonl
+50 tapout/guard/gb_T_a16_u8_50100.jsonl gb T_a16_u8 owner202610 50100 50 2 tapout/guard/gb_T_a16_u8_50100.jsonl
+50 tapout/guard/rc_T_D4_u8_50200.jsonl race T_D4_u8 2.36 hartford 50200 50 2 tapout/guard/rc_T_D4_u8_50200.jsonl
+50 tapout/guard/gb_T_D4_u8_50200.jsonl gb T_D4_u8 owner202610 50200 50 2 tapout/guard/gb_T_D4_u8_50200.jsonl
+50 tapout/guard/rc_T_D1_u8_50200.jsonl race T_D1_u8 2.36 hartford 50200 50 2 tapout/guard/rc_T_D1_u8_50200.jsonl
+50 tapout/guard/gb_T_D1_u8_50200.jsonl gb T_D1_u8 owner202610 50200 50 2 tapout/guard/gb_T_D1_u8_50200.jsonl
+50 tapout/guard/rc_T_a16_u8_50200.jsonl race T_a16_u8 2.36 hartford 50200 50 2 tapout/guard/rc_T_a16_u8_50200.jsonl
+50 tapout/guard/gb_T_a16_u8_50200.jsonl gb T_a16_u8 owner202610 50200 50 2 tapout/guard/gb_T_a16_u8_50200.jsonl
+50 tapout/guard/rc_T_D4_u8_50300.jsonl race T_D4_u8 2.36 hartford 50300 50 2 tapout/guard/rc_T_D4_u8_50300.jsonl
+50 tapout/guard/gb_T_D4_u8_50300.jsonl gb T_D4_u8 owner202610 50300 50 2 tapout/guard/gb_T_D4_u8_50300.jsonl
+50 tapout/guard/rc_T_D1_u8_50300.jsonl race T_D1_u8 2.36 hartford 50300 50 2 tapout/guard/rc_T_D1_u8_50300.jsonl
+50 tapout/guard/gb_T_D1_u8_50300.jsonl gb T_D1_u8 owner202610 50300 50 2 tapout/guard/gb_T_D1_u8_50300.jsonl
+50 tapout/guard/rc_T_a16_u8_50300.jsonl race T_a16_u8 2.36 hartford 50300 50 2 tapout/guard/rc_T_a16_u8_50300.jsonl
+50 tapout/guard/gb_T_a16_u8_50300.jsonl gb T_a16_u8 owner202610 50300 50 2 tapout/guard/gb_T_a16_u8_50300.jsonl
+50 tapout/guard/rc_T_D4_u8_50400.jsonl race T_D4_u8 2.36 hartford 50400 50 2 tapout/guard/rc_T_D4_u8_50400.jsonl
+50 tapout/guard/gb_T_D4_u8_50400.jsonl gb T_D4_u8 owner202610 50400 50 2 tapout/guard/gb_T_D4_u8_50400.jsonl
+50 tapout/guard/rc_T_D1_u8_50400.jsonl race T_D1_u8 2.36 hartford 50400 50 2 tapout/guard/rc_T_D1_u8_50400.jsonl
+50 tapout/guard/gb_T_D1_u8_50400.jsonl gb T_D1_u8 owner202610 50400 50 2 tapout/guard/gb_T_D1_u8_50400.jsonl
+50 tapout/guard/rc_T_a16_u8_50400.jsonl race T_a16_u8 2.36 hartford 50400 50 2 tapout/guard/rc_T_a16_u8_50400.jsonl
+50 tapout/guard/gb_T_a16_u8_50400.jsonl gb T_a16_u8 owner202610 50400 50 2 tapout/guard/gb_T_a16_u8_50400.jsonl
+50 tapout/guard/rc_T_D4_u8_50500.jsonl race T_D4_u8 2.36 hartford 50500 50 2 tapout/guard/rc_T_D4_u8_50500.jsonl
+50 tapout/guard/gb_T_D4_u8_50500.jsonl gb T_D4_u8 owner202610 50500 50 2 tapout/guard/gb_T_D4_u8_50500.jsonl
+50 tapout/guard/rc_T_D1_u8_50500.jsonl race T_D1_u8 2.36 hartford 50500 50 2 tapout/guard/rc_T_D1_u8_50500.jsonl
+50 tapout/guard/gb_T_D1_u8_50500.jsonl gb T_D1_u8 owner202610 50500 50 2 tapout/guard/gb_T_D1_u8_50500.jsonl
+50 tapout/guard/rc_T_a16_u8_50500.jsonl race T_a16_u8 2.36 hartford 50500 50 2 tapout/guard/rc_T_a16_u8_50500.jsonl
+50 tapout/guard/gb_T_a16_u8_50500.jsonl gb T_a16_u8 owner202610 50500 50 2 tapout/guard/gb_T_a16_u8_50500.jsonl
+50 tapout/guard/rc_T_D4_u8_50600.jsonl race T_D4_u8 2.36 hartford 50600 50 2 tapout/guard/rc_T_D4_u8_50600.jsonl
+50 tapout/guard/gb_T_D4_u8_50600.jsonl gb T_D4_u8 owner202610 50600 50 2 tapout/guard/gb_T_D4_u8_50600.jsonl
+50 tapout/guard/rc_T_D1_u8_50600.jsonl race T_D1_u8 2.36 hartford 50600 50 2 tapout/guard/rc_T_D1_u8_50600.jsonl
+50 tapout/guard/gb_T_D1_u8_50600.jsonl gb T_D1_u8 owner202610 50600 50 2 tapout/guard/gb_T_D1_u8_50600.jsonl
+50 tapout/guard/rc_T_a16_u8_50600.jsonl race T_a16_u8 2.36 hartford 50600 50 2 tapout/guard/rc_T_a16_u8_50600.jsonl
+50 tapout/guard/gb_T_a16_u8_50600.jsonl gb T_a16_u8 owner202610 50600 50 2 tapout/guard/gb_T_a16_u8_50600.jsonl
+50 tapout/guard/rc_T_D4_u8_50700.jsonl race T_D4_u8 2.36 hartford 50700 50 2 tapout/guard/rc_T_D4_u8_50700.jsonl
+50 tapout/guard/gb_T_D4_u8_50700.jsonl gb T_D4_u8 owner202610 50700 50 2 tapout/guard/gb_T_D4_u8_50700.jsonl
+50 tapout/guard/rc_T_D1_u8_50700.jsonl race T_D1_u8 2.36 hartford 50700 50 2 tapout/guard/rc_T_D1_u8_50700.jsonl
+50 tapout/guard/gb_T_D1_u8_50700.jsonl gb T_D1_u8 owner202610 50700 50 2 tapout/guard/gb_T_D1_u8_50700.jsonl
+50 tapout/guard/rc_T_a16_u8_50700.jsonl race T_a16_u8 2.36 hartford 50700 50 2 tapout/guard/rc_T_a16_u8_50700.jsonl
+50 tapout/guard/gb_T_a16_u8_50700.jsonl gb T_a16_u8 owner202610 50700 50 2 tapout/guard/gb_T_a16_u8_50700.jsonl
+50 tapout/guard/rc_T_D4_u8_50800.jsonl race T_D4_u8 2.36 hartford 50800 50 2 tapout/guard/rc_T_D4_u8_50800.jsonl
+50 tapout/guard/gb_T_D4_u8_50800.jsonl gb T_D4_u8 owner202610 50800 50 2 tapout/guard/gb_T_D4_u8_50800.jsonl
+50 tapout/guard/rc_T_D1_u8_50800.jsonl race T_D1_u8 2.36 hartford 50800 50 2 tapout/guard/rc_T_D1_u8_50800.jsonl
+50 tapout/guard/gb_T_D1_u8_50800.jsonl gb T_D1_u8 owner202610 50800 50 2 tapout/guard/gb_T_D1_u8_50800.jsonl
+50 tapout/guard/rc_T_a16_u8_50800.jsonl race T_a16_u8 2.36 hartford 50800 50 2 tapout/guard/rc_T_a16_u8_50800.jsonl
+50 tapout/guard/gb_T_a16_u8_50800.jsonl gb T_a16_u8 owner202610 50800 50 2 tapout/guard/gb_T_a16_u8_50800.jsonl
+50 tapout/guard/rc_T_D4_u8_50900.jsonl race T_D4_u8 2.36 hartford 50900 50 2 tapout/guard/rc_T_D4_u8_50900.jsonl
+50 tapout/guard/gb_T_D4_u8_50900.jsonl gb T_D4_u8 owner202610 50900 50 2 tapout/guard/gb_T_D4_u8_50900.jsonl
+50 tapout/guard/rc_T_D1_u8_50900.jsonl race T_D1_u8 2.36 hartford 50900 50 2 tapout/guard/rc_T_D1_u8_50900.jsonl
+50 tapout/guard/gb_T_D1_u8_50900.jsonl gb T_D1_u8 owner202610 50900 50 2 tapout/guard/gb_T_D1_u8_50900.jsonl
+50 tapout/guard/rc_T_a16_u8_50900.jsonl race T_a16_u8 2.36 hartford 50900 50 2 tapout/guard/rc_T_a16_u8_50900.jsonl
+50 tapout/guard/gb_T_a16_u8_50900.jsonl gb T_a16_u8 owner202610 50900 50 2 tapout/guard/gb_T_a16_u8_50900.jsonl
+50 tapout/guard/rc_T_D4_u8_51000.jsonl race T_D4_u8 2.36 hartford 51000 50 2 tapout/guard/rc_T_D4_u8_51000.jsonl
+50 tapout/guard/gb_T_D4_u8_51000.jsonl gb T_D4_u8 owner202610 51000 50 2 tapout/guard/gb_T_D4_u8_51000.jsonl
+50 tapout/guard/rc_T_D1_u8_51000.jsonl race T_D1_u8 2.36 hartford 51000 50 2 tapout/guard/rc_T_D1_u8_51000.jsonl
+50 tapout/guard/gb_T_D1_u8_51000.jsonl gb T_D1_u8 owner202610 51000 50 2 tapout/guard/gb_T_D1_u8_51000.jsonl
+50 tapout/guard/rc_T_a16_u8_51000.jsonl race T_a16_u8 2.36 hartford 51000 50 2 tapout/guard/rc_T_a16_u8_51000.jsonl
+50 tapout/guard/gb_T_a16_u8_51000.jsonl gb T_a16_u8 owner202610 51000 50 2 tapout/guard/gb_T_a16_u8_51000.jsonl
+50 tapout/guard/rc_T_D4_u8_51100.jsonl race T_D4_u8 2.36 hartford 51100 50 2 tapout/guard/rc_T_D4_u8_51100.jsonl
+50 tapout/guard/gb_T_D4_u8_51100.jsonl gb T_D4_u8 owner202610 51100 50 2 tapout/guard/gb_T_D4_u8_51100.jsonl
+50 tapout/guard/rc_T_D1_u8_51100.jsonl race T_D1_u8 2.36 hartford 51100 50 2 tapout/guard/rc_T_D1_u8_51100.jsonl
+50 tapout/guard/gb_T_D1_u8_51100.jsonl gb T_D1_u8 owner202610 51100 50 2 tapout/guard/gb_T_D1_u8_51100.jsonl
+50 tapout/guard/rc_T_a16_u8_51100.jsonl race T_a16_u8 2.36 hartford 51100 50 2 tapout/guard/rc_T_a16_u8_51100.jsonl
+50 tapout/guard/gb_T_a16_u8_51100.jsonl gb T_a16_u8 owner202610 51100 50 2 tapout/guard/gb_T_a16_u8_51100.jsonl
+50 tapout/guard/rc_T_D4_u8_51200.jsonl race T_D4_u8 2.36 hartford 51200 50 2 tapout/guard/rc_T_D4_u8_51200.jsonl
+50 tapout/guard/gb_T_D4_u8_51200.jsonl gb T_D4_u8 owner202610 51200 50 2 tapout/guard/gb_T_D4_u8_51200.jsonl
+50 tapout/guard/rc_T_D1_u8_51200.jsonl race T_D1_u8 2.36 hartford 51200 50 2 tapout/guard/rc_T_D1_u8_51200.jsonl
+50 tapout/guard/gb_T_D1_u8_51200.jsonl gb T_D1_u8 owner202610 51200 50 2 tapout/guard/gb_T_D1_u8_51200.jsonl
+50 tapout/guard/rc_T_a16_u8_51200.jsonl race T_a16_u8 2.36 hartford 51200 50 2 tapout/guard/rc_T_a16_u8_51200.jsonl
+50 tapout/guard/gb_T_a16_u8_51200.jsonl gb T_a16_u8 owner202610 51200 50 2 tapout/guard/gb_T_a16_u8_51200.jsonl
+50 tapout/guard/rc_T_D4_u8_51300.jsonl race T_D4_u8 2.36 hartford 51300 50 2 tapout/guard/rc_T_D4_u8_51300.jsonl
+50 tapout/guard/gb_T_D4_u8_51300.jsonl gb T_D4_u8 owner202610 51300 50 2 tapout/guard/gb_T_D4_u8_51300.jsonl
+50 tapout/guard/rc_T_D1_u8_51300.jsonl race T_D1_u8 2.36 hartford 51300 50 2 tapout/guard/rc_T_D1_u8_51300.jsonl
+50 tapout/guard/gb_T_D1_u8_51300.jsonl gb T_D1_u8 owner202610 51300 50 2 tapout/guard/gb_T_D1_u8_51300.jsonl
+50 tapout/guard/rc_T_a16_u8_51300.jsonl race T_a16_u8 2.36 hartford 51300 50 2 tapout/guard/rc_T_a16_u8_51300.jsonl
+50 tapout/guard/gb_T_a16_u8_51300.jsonl gb T_a16_u8 owner202610 51300 50 2 tapout/guard/gb_T_a16_u8_51300.jsonl
+50 tapout/guard/rc_T_D4_u8_51400.jsonl race T_D4_u8 2.36 hartford 51400 50 2 tapout/guard/rc_T_D4_u8_51400.jsonl
+50 tapout/guard/gb_T_D4_u8_51400.jsonl gb T_D4_u8 owner202610 51400 50 2 tapout/guard/gb_T_D4_u8_51400.jsonl
+50 tapout/guard/rc_T_D1_u8_51400.jsonl race T_D1_u8 2.36 hartford 51400 50 2 tapout/guard/rc_T_D1_u8_51400.jsonl
+50 tapout/guard/gb_T_D1_u8_51400.jsonl gb T_D1_u8 owner202610 51400 50 2 tapout/guard/gb_T_D1_u8_51400.jsonl
+50 tapout/guard/rc_T_a16_u8_51400.jsonl race T_a16_u8 2.36 hartford 51400 50 2 tapout/guard/rc_T_a16_u8_51400.jsonl
+50 tapout/guard/gb_T_a16_u8_51400.jsonl gb T_a16_u8 owner202610 51400 50 2 tapout/guard/gb_T_a16_u8_51400.jsonl
+50 tapout/guard/rc_T_D4_u8_51500.jsonl race T_D4_u8 2.36 hartford 51500 50 2 tapout/guard/rc_T_D4_u8_51500.jsonl
+50 tapout/guard/gb_T_D4_u8_51500.jsonl gb T_D4_u8 owner202610 51500 50 2 tapout/guard/gb_T_D4_u8_51500.jsonl
+50 tapout/guard/rc_T_D1_u8_51500.jsonl race T_D1_u8 2.36 hartford 51500 50 2 tapout/guard/rc_T_D1_u8_51500.jsonl
+50 tapout/guard/gb_T_D1_u8_51500.jsonl gb T_D1_u8 owner202610 51500 50 2 tapout/guard/gb_T_D1_u8_51500.jsonl
+50 tapout/guard/rc_T_a16_u8_51500.jsonl race T_a16_u8 2.36 hartford 51500 50 2 tapout/guard/rc_T_a16_u8_51500.jsonl
+50 tapout/guard/gb_T_a16_u8_51500.jsonl gb T_a16_u8 owner202610 51500 50 2 tapout/guard/gb_T_a16_u8_51500.jsonl
+50 tapout/guard/rc_T_D4_u8_51600.jsonl race T_D4_u8 2.36 hartford 51600 50 2 tapout/guard/rc_T_D4_u8_51600.jsonl
+50 tapout/guard/gb_T_D4_u8_51600.jsonl gb T_D4_u8 owner202610 51600 50 2 tapout/guard/gb_T_D4_u8_51600.jsonl
+50 tapout/guard/rc_T_D1_u8_51600.jsonl race T_D1_u8 2.36 hartford 51600 50 2 tapout/guard/rc_T_D1_u8_51600.jsonl
+50 tapout/guard/gb_T_D1_u8_51600.jsonl gb T_D1_u8 owner202610 51600 50 2 tapout/guard/gb_T_D1_u8_51600.jsonl
+50 tapout/guard/rc_T_a16_u8_51600.jsonl race T_a16_u8 2.36 hartford 51600 50 2 tapout/guard/rc_T_a16_u8_51600.jsonl
+50 tapout/guard/gb_T_a16_u8_51600.jsonl gb T_a16_u8 owner202610 51600 50 2 tapout/guard/gb_T_a16_u8_51600.jsonl
+50 tapout/guard/rc_T_D4_u8_51700.jsonl race T_D4_u8 2.36 hartford 51700 50 2 tapout/guard/rc_T_D4_u8_51700.jsonl
+50 tapout/guard/gb_T_D4_u8_51700.jsonl gb T_D4_u8 owner202610 51700 50 2 tapout/guard/gb_T_D4_u8_51700.jsonl
+50 tapout/guard/rc_T_D1_u8_51700.jsonl race T_D1_u8 2.36 hartford 51700 50 2 tapout/guard/rc_T_D1_u8_51700.jsonl
+50 tapout/guard/gb_T_D1_u8_51700.jsonl gb T_D1_u8 owner202610 51700 50 2 tapout/guard/gb_T_D1_u8_51700.jsonl
+50 tapout/guard/rc_T_a16_u8_51700.jsonl race T_a16_u8 2.36 hartford 51700 50 2 tapout/guard/rc_T_a16_u8_51700.jsonl
+50 tapout/guard/gb_T_a16_u8_51700.jsonl gb T_a16_u8 owner202610 51700 50 2 tapout/guard/gb_T_a16_u8_51700.jsonl
+50 tapout/guard/rc_T_D4_u8_51800.jsonl race T_D4_u8 2.36 hartford 51800 50 2 tapout/guard/rc_T_D4_u8_51800.jsonl
+50 tapout/guard/gb_T_D4_u8_51800.jsonl gb T_D4_u8 owner202610 51800 50 2 tapout/guard/gb_T_D4_u8_51800.jsonl
+50 tapout/guard/rc_T_D1_u8_51800.jsonl race T_D1_u8 2.36 hartford 51800 50 2 tapout/guard/rc_T_D1_u8_51800.jsonl
+50 tapout/guard/gb_T_D1_u8_51800.jsonl gb T_D1_u8 owner202610 51800 50 2 tapout/guard/gb_T_D1_u8_51800.jsonl
+50 tapout/guard/rc_T_a16_u8_51800.jsonl race T_a16_u8 2.36 hartford 51800 50 2 tapout/guard/rc_T_a16_u8_51800.jsonl
+50 tapout/guard/gb_T_a16_u8_51800.jsonl gb T_a16_u8 owner202610 51800 50 2 tapout/guard/gb_T_a16_u8_51800.jsonl
+50 tapout/guard/rc_T_D4_u8_51900.jsonl race T_D4_u8 2.36 hartford 51900 50 2 tapout/guard/rc_T_D4_u8_51900.jsonl
+50 tapout/guard/gb_T_D4_u8_51900.jsonl gb T_D4_u8 owner202610 51900 50 2 tapout/guard/gb_T_D4_u8_51900.jsonl
+50 tapout/guard/rc_T_D1_u8_51900.jsonl race T_D1_u8 2.36 hartford 51900 50 2 tapout/guard/rc_T_D1_u8_51900.jsonl
+50 tapout/guard/gb_T_D1_u8_51900.jsonl gb T_D1_u8 owner202610 51900 50 2 tapout/guard/gb_T_D1_u8_51900.jsonl
+50 tapout/guard/rc_T_a16_u8_51900.jsonl race T_a16_u8 2.36 hartford 51900 50 2 tapout/guard/rc_T_a16_u8_51900.jsonl
+50 tapout/guard/gb_T_a16_u8_51900.jsonl gb T_a16_u8 owner202610 51900 50 2 tapout/guard/gb_T_a16_u8_51900.jsonl
+50 tapout/guard/rc_T_D4_u8_52000.jsonl race T_D4_u8 2.36 hartford 52000 50 2 tapout/guard/rc_T_D4_u8_52000.jsonl
+50 tapout/guard/gb_T_D4_u8_52000.jsonl gb T_D4_u8 owner202610 52000 50 2 tapout/guard/gb_T_D4_u8_52000.jsonl
+50 tapout/guard/rc_T_D1_u8_52000.jsonl race T_D1_u8 2.36 hartford 52000 50 2 tapout/guard/rc_T_D1_u8_52000.jsonl
+50 tapout/guard/gb_T_D1_u8_52000.jsonl gb T_D1_u8 owner202610 52000 50 2 tapout/guard/gb_T_D1_u8_52000.jsonl
+50 tapout/guard/rc_T_a16_u8_52000.jsonl race T_a16_u8 2.36 hartford 52000 50 2 tapout/guard/rc_T_a16_u8_52000.jsonl
+50 tapout/guard/gb_T_a16_u8_52000.jsonl gb T_a16_u8 owner202610 52000 50 2 tapout/guard/gb_T_a16_u8_52000.jsonl
+50 tapout/guard/rc_T_D4_u8_52100.jsonl race T_D4_u8 2.36 hartford 52100 50 2 tapout/guard/rc_T_D4_u8_52100.jsonl
+50 tapout/guard/gb_T_D4_u8_52100.jsonl gb T_D4_u8 owner202610 52100 50 2 tapout/guard/gb_T_D4_u8_52100.jsonl
+50 tapout/guard/rc_T_D1_u8_52100.jsonl race T_D1_u8 2.36 hartford 52100 50 2 tapout/guard/rc_T_D1_u8_52100.jsonl
+50 tapout/guard/gb_T_D1_u8_52100.jsonl gb T_D1_u8 owner202610 52100 50 2 tapout/guard/gb_T_D1_u8_52100.jsonl
+50 tapout/guard/rc_T_a16_u8_52100.jsonl race T_a16_u8 2.36 hartford 52100 50 2 tapout/guard/rc_T_a16_u8_52100.jsonl
+50 tapout/guard/gb_T_a16_u8_52100.jsonl gb T_a16_u8 owner202610 52100 50 2 tapout/guard/gb_T_a16_u8_52100.jsonl
+50 tapout/guard/rc_T_D4_u8_52200.jsonl race T_D4_u8 2.36 hartford 52200 50 2 tapout/guard/rc_T_D4_u8_52200.jsonl
+50 tapout/guard/gb_T_D4_u8_52200.jsonl gb T_D4_u8 owner202610 52200 50 2 tapout/guard/gb_T_D4_u8_52200.jsonl
+50 tapout/guard/rc_T_D1_u8_52200.jsonl race T_D1_u8 2.36 hartford 52200 50 2 tapout/guard/rc_T_D1_u8_52200.jsonl
+50 tapout/guard/gb_T_D1_u8_52200.jsonl gb T_D1_u8 owner202610 52200 50 2 tapout/guard/gb_T_D1_u8_52200.jsonl
+50 tapout/guard/rc_T_a16_u8_52200.jsonl race T_a16_u8 2.36 hartford 52200 50 2 tapout/guard/rc_T_a16_u8_52200.jsonl
+50 tapout/guard/gb_T_a16_u8_52200.jsonl gb T_a16_u8 owner202610 52200 50 2 tapout/guard/gb_T_a16_u8_52200.jsonl
+50 tapout/guard/rc_T_D4_u8_52300.jsonl race T_D4_u8 2.36 hartford 52300 50 2 tapout/guard/rc_T_D4_u8_52300.jsonl
+50 tapout/guard/gb_T_D4_u8_52300.jsonl gb T_D4_u8 owner202610 52300 50 2 tapout/guard/gb_T_D4_u8_52300.jsonl
+50 tapout/guard/rc_T_D1_u8_52300.jsonl race T_D1_u8 2.36 hartford 52300 50 2 tapout/guard/rc_T_D1_u8_52300.jsonl
+50 tapout/guard/gb_T_D1_u8_52300.jsonl gb T_D1_u8 owner202610 52300 50 2 tapout/guard/gb_T_D1_u8_52300.jsonl
+50 tapout/guard/rc_T_a16_u8_52300.jsonl race T_a16_u8 2.36 hartford 52300 50 2 tapout/guard/rc_T_a16_u8_52300.jsonl
+50 tapout/guard/gb_T_a16_u8_52300.jsonl gb T_a16_u8 owner202610 52300 50 2 tapout/guard/gb_T_a16_u8_52300.jsonl
+50 tapout/guard/rc_T_D4_u8_52400.jsonl race T_D4_u8 2.36 hartford 52400 50 2 tapout/guard/rc_T_D4_u8_52400.jsonl
+50 tapout/guard/gb_T_D4_u8_52400.jsonl gb T_D4_u8 owner202610 52400 50 2 tapout/guard/gb_T_D4_u8_52400.jsonl
+50 tapout/guard/rc_T_D1_u8_52400.jsonl race T_D1_u8 2.36 hartford 52400 50 2 tapout/guard/rc_T_D1_u8_52400.jsonl
+50 tapout/guard/gb_T_D1_u8_52400.jsonl gb T_D1_u8 owner202610 52400 50 2 tapout/guard/gb_T_D1_u8_52400.jsonl
+50 tapout/guard/rc_T_a16_u8_52400.jsonl race T_a16_u8 2.36 hartford 52400 50 2 tapout/guard/rc_T_a16_u8_52400.jsonl
+50 tapout/guard/gb_T_a16_u8_52400.jsonl gb T_a16_u8 owner202610 52400 50 2 tapout/guard/gb_T_a16_u8_52400.jsonl
+50 tapout/guard/rc_T_D4_u8_52500.jsonl race T_D4_u8 2.36 hartford 52500 50 2 tapout/guard/rc_T_D4_u8_52500.jsonl
+50 tapout/guard/gb_T_D4_u8_52500.jsonl gb T_D4_u8 owner202610 52500 50 2 tapout/guard/gb_T_D4_u8_52500.jsonl
+50 tapout/guard/rc_T_D1_u8_52500.jsonl race T_D1_u8 2.36 hartford 52500 50 2 tapout/guard/rc_T_D1_u8_52500.jsonl
+50 tapout/guard/gb_T_D1_u8_52500.jsonl gb T_D1_u8 owner202610 52500 50 2 tapout/guard/gb_T_D1_u8_52500.jsonl
+50 tapout/guard/rc_T_a16_u8_52500.jsonl race T_a16_u8 2.36 hartford 52500 50 2 tapout/guard/rc_T_a16_u8_52500.jsonl
+50 tapout/guard/gb_T_a16_u8_52500.jsonl gb T_a16_u8 owner202610 52500 50 2 tapout/guard/gb_T_a16_u8_52500.jsonl
+50 tapout/guard/rc_T_D4_u8_52600.jsonl race T_D4_u8 2.36 hartford 52600 50 2 tapout/guard/rc_T_D4_u8_52600.jsonl
+50 tapout/guard/gb_T_D4_u8_52600.jsonl gb T_D4_u8 owner202610 52600 50 2 tapout/guard/gb_T_D4_u8_52600.jsonl
+50 tapout/guard/rc_T_D1_u8_52600.jsonl race T_D1_u8 2.36 hartford 52600 50 2 tapout/guard/rc_T_D1_u8_52600.jsonl
+50 tapout/guard/gb_T_D1_u8_52600.jsonl gb T_D1_u8 owner202610 52600 50 2 tapout/guard/gb_T_D1_u8_52600.jsonl
+50 tapout/guard/rc_T_a16_u8_52600.jsonl race T_a16_u8 2.36 hartford 52600 50 2 tapout/guard/rc_T_a16_u8_52600.jsonl
+50 tapout/guard/gb_T_a16_u8_52600.jsonl gb T_a16_u8 owner202610 52600 50 2 tapout/guard/gb_T_a16_u8_52600.jsonl
+50 tapout/guard/rc_T_D4_u8_52700.jsonl race T_D4_u8 2.36 hartford 52700 50 2 tapout/guard/rc_T_D4_u8_52700.jsonl
+50 tapout/guard/gb_T_D4_u8_52700.jsonl gb T_D4_u8 owner202610 52700 50 2 tapout/guard/gb_T_D4_u8_52700.jsonl
+50 tapout/guard/rc_T_D1_u8_52700.jsonl race T_D1_u8 2.36 hartford 52700 50 2 tapout/guard/rc_T_D1_u8_52700.jsonl
+50 tapout/guard/gb_T_D1_u8_52700.jsonl gb T_D1_u8 owner202610 52700 50 2 tapout/guard/gb_T_D1_u8_52700.jsonl
+50 tapout/guard/rc_T_a16_u8_52700.jsonl race T_a16_u8 2.36 hartford 52700 50 2 tapout/guard/rc_T_a16_u8_52700.jsonl
+50 tapout/guard/gb_T_a16_u8_52700.jsonl gb T_a16_u8 owner202610 52700 50 2 tapout/guard/gb_T_a16_u8_52700.jsonl
+50 tapout/guard/rc_T_D4_u8_52800.jsonl race T_D4_u8 2.36 hartford 52800 50 2 tapout/guard/rc_T_D4_u8_52800.jsonl
+50 tapout/guard/gb_T_D4_u8_52800.jsonl gb T_D4_u8 owner202610 52800 50 2 tapout/guard/gb_T_D4_u8_52800.jsonl
+50 tapout/guard/rc_T_D1_u8_52800.jsonl race T_D1_u8 2.36 hartford 52800 50 2 tapout/guard/rc_T_D1_u8_52800.jsonl
+50 tapout/guard/gb_T_D1_u8_52800.jsonl gb T_D1_u8 owner202610 52800 50 2 tapout/guard/gb_T_D1_u8_52800.jsonl
+50 tapout/guard/rc_T_a16_u8_52800.jsonl race T_a16_u8 2.36 hartford 52800 50 2 tapout/guard/rc_T_a16_u8_52800.jsonl
+50 tapout/guard/gb_T_a16_u8_52800.jsonl gb T_a16_u8 owner202610 52800 50 2 tapout/guard/gb_T_a16_u8_52800.jsonl
+50 tapout/guard/rc_T_D4_u8_52900.jsonl race T_D4_u8 2.36 hartford 52900 50 2 tapout/guard/rc_T_D4_u8_52900.jsonl
+50 tapout/guard/gb_T_D4_u8_52900.jsonl gb T_D4_u8 owner202610 52900 50 2 tapout/guard/gb_T_D4_u8_52900.jsonl
+50 tapout/guard/rc_T_D1_u8_52900.jsonl race T_D1_u8 2.36 hartford 52900 50 2 tapout/guard/rc_T_D1_u8_52900.jsonl
+50 tapout/guard/gb_T_D1_u8_52900.jsonl gb T_D1_u8 owner202610 52900 50 2 tapout/guard/gb_T_D1_u8_52900.jsonl
+50 tapout/guard/rc_T_a16_u8_52900.jsonl race T_a16_u8 2.36 hartford 52900 50 2 tapout/guard/rc_T_a16_u8_52900.jsonl
+50 tapout/guard/gb_T_a16_u8_52900.jsonl gb T_a16_u8 owner202610 52900 50 2 tapout/guard/gb_T_a16_u8_52900.jsonl
+50 tapout/guard/rc_T_D4_u8_53000.jsonl race T_D4_u8 2.36 hartford 53000 50 2 tapout/guard/rc_T_D4_u8_53000.jsonl
+50 tapout/guard/gb_T_D4_u8_53000.jsonl gb T_D4_u8 owner202610 53000 50 2 tapout/guard/gb_T_D4_u8_53000.jsonl
+50 tapout/guard/rc_T_D1_u8_53000.jsonl race T_D1_u8 2.36 hartford 53000 50 2 tapout/guard/rc_T_D1_u8_53000.jsonl
+50 tapout/guard/gb_T_D1_u8_53000.jsonl gb T_D1_u8 owner202610 53000 50 2 tapout/guard/gb_T_D1_u8_53000.jsonl
+50 tapout/guard/rc_T_a16_u8_53000.jsonl race T_a16_u8 2.36 hartford 53000 50 2 tapout/guard/rc_T_a16_u8_53000.jsonl
+50 tapout/guard/gb_T_a16_u8_53000.jsonl gb T_a16_u8 owner202610 53000 50 2 tapout/guard/gb_T_a16_u8_53000.jsonl
+50 tapout/guard/rc_T_D4_u8_53100.jsonl race T_D4_u8 2.36 hartford 53100 50 2 tapout/guard/rc_T_D4_u8_53100.jsonl
+50 tapout/guard/gb_T_D4_u8_53100.jsonl gb T_D4_u8 owner202610 53100 50 2 tapout/guard/gb_T_D4_u8_53100.jsonl
+50 tapout/guard/rc_T_D1_u8_53100.jsonl race T_D1_u8 2.36 hartford 53100 50 2 tapout/guard/rc_T_D1_u8_53100.jsonl
+50 tapout/guard/gb_T_D1_u8_53100.jsonl gb T_D1_u8 owner202610 53100 50 2 tapout/guard/gb_T_D1_u8_53100.jsonl
+50 tapout/guard/rc_T_a16_u8_53100.jsonl race T_a16_u8 2.36 hartford 53100 50 2 tapout/guard/rc_T_a16_u8_53100.jsonl
+50 tapout/guard/gb_T_a16_u8_53100.jsonl gb T_a16_u8 owner202610 53100 50 2 tapout/guard/gb_T_a16_u8_53100.jsonl
+50 tapout/guard/rc_T_D4_u8_53200.jsonl race T_D4_u8 2.36 hartford 53200 50 2 tapout/guard/rc_T_D4_u8_53200.jsonl
+50 tapout/guard/gb_T_D4_u8_53200.jsonl gb T_D4_u8 owner202610 53200 50 2 tapout/guard/gb_T_D4_u8_53200.jsonl
+50 tapout/guard/rc_T_D1_u8_53200.jsonl race T_D1_u8 2.36 hartford 53200 50 2 tapout/guard/rc_T_D1_u8_53200.jsonl
+50 tapout/guard/gb_T_D1_u8_53200.jsonl gb T_D1_u8 owner202610 53200 50 2 tapout/guard/gb_T_D1_u8_53200.jsonl
+50 tapout/guard/rc_T_a16_u8_53200.jsonl race T_a16_u8 2.36 hartford 53200 50 2 tapout/guard/rc_T_a16_u8_53200.jsonl
+50 tapout/guard/gb_T_a16_u8_53200.jsonl gb T_a16_u8 owner202610 53200 50 2 tapout/guard/gb_T_a16_u8_53200.jsonl
+50 tapout/guard/rc_T_D4_u8_53300.jsonl race T_D4_u8 2.36 hartford 53300 50 2 tapout/guard/rc_T_D4_u8_53300.jsonl
+50 tapout/guard/gb_T_D4_u8_53300.jsonl gb T_D4_u8 owner202610 53300 50 2 tapout/guard/gb_T_D4_u8_53300.jsonl
+50 tapout/guard/rc_T_D1_u8_53300.jsonl race T_D1_u8 2.36 hartford 53300 50 2 tapout/guard/rc_T_D1_u8_53300.jsonl
+50 tapout/guard/gb_T_D1_u8_53300.jsonl gb T_D1_u8 owner202610 53300 50 2 tapout/guard/gb_T_D1_u8_53300.jsonl
+50 tapout/guard/rc_T_a16_u8_53300.jsonl race T_a16_u8 2.36 hartford 53300 50 2 tapout/guard/rc_T_a16_u8_53300.jsonl
+50 tapout/guard/gb_T_a16_u8_53300.jsonl gb T_a16_u8 owner202610 53300 50 2 tapout/guard/gb_T_a16_u8_53300.jsonl
+50 tapout/guard/rc_T_D4_u8_53400.jsonl race T_D4_u8 2.36 hartford 53400 50 2 tapout/guard/rc_T_D4_u8_53400.jsonl
+50 tapout/guard/gb_T_D4_u8_53400.jsonl gb T_D4_u8 owner202610 53400 50 2 tapout/guard/gb_T_D4_u8_53400.jsonl
+50 tapout/guard/rc_T_D1_u8_53400.jsonl race T_D1_u8 2.36 hartford 53400 50 2 tapout/guard/rc_T_D1_u8_53400.jsonl
+50 tapout/guard/gb_T_D1_u8_53400.jsonl gb T_D1_u8 owner202610 53400 50 2 tapout/guard/gb_T_D1_u8_53400.jsonl
+50 tapout/guard/rc_T_a16_u8_53400.jsonl race T_a16_u8 2.36 hartford 53400 50 2 tapout/guard/rc_T_a16_u8_53400.jsonl
+50 tapout/guard/gb_T_a16_u8_53400.jsonl gb T_a16_u8 owner202610 53400 50 2 tapout/guard/gb_T_a16_u8_53400.jsonl
+50 tapout/guard/rc_T_D4_u8_53500.jsonl race T_D4_u8 2.36 hartford 53500 50 2 tapout/guard/rc_T_D4_u8_53500.jsonl
+50 tapout/guard/gb_T_D4_u8_53500.jsonl gb T_D4_u8 owner202610 53500 50 2 tapout/guard/gb_T_D4_u8_53500.jsonl
+50 tapout/guard/rc_T_D1_u8_53500.jsonl race T_D1_u8 2.36 hartford 53500 50 2 tapout/guard/rc_T_D1_u8_53500.jsonl
+50 tapout/guard/gb_T_D1_u8_53500.jsonl gb T_D1_u8 owner202610 53500 50 2 tapout/guard/gb_T_D1_u8_53500.jsonl
+50 tapout/guard/rc_T_a16_u8_53500.jsonl race T_a16_u8 2.36 hartford 53500 50 2 tapout/guard/rc_T_a16_u8_53500.jsonl
+50 tapout/guard/gb_T_a16_u8_53500.jsonl gb T_a16_u8 owner202610 53500 50 2 tapout/guard/gb_T_a16_u8_53500.jsonl
+50 tapout/guard/rc_T_D4_u8_53600.jsonl race T_D4_u8 2.36 hartford 53600 50 2 tapout/guard/rc_T_D4_u8_53600.jsonl
+50 tapout/guard/gb_T_D4_u8_53600.jsonl gb T_D4_u8 owner202610 53600 50 2 tapout/guard/gb_T_D4_u8_53600.jsonl
+50 tapout/guard/rc_T_D1_u8_53600.jsonl race T_D1_u8 2.36 hartford 53600 50 2 tapout/guard/rc_T_D1_u8_53600.jsonl
+50 tapout/guard/gb_T_D1_u8_53600.jsonl gb T_D1_u8 owner202610 53600 50 2 tapout/guard/gb_T_D1_u8_53600.jsonl
+50 tapout/guard/rc_T_a16_u8_53600.jsonl race T_a16_u8 2.36 hartford 53600 50 2 tapout/guard/rc_T_a16_u8_53600.jsonl
+50 tapout/guard/gb_T_a16_u8_53600.jsonl gb T_a16_u8 owner202610 53600 50 2 tapout/guard/gb_T_a16_u8_53600.jsonl
+50 tapout/guard/rc_T_D4_u8_53700.jsonl race T_D4_u8 2.36 hartford 53700 50 2 tapout/guard/rc_T_D4_u8_53700.jsonl
+50 tapout/guard/gb_T_D4_u8_53700.jsonl gb T_D4_u8 owner202610 53700 50 2 tapout/guard/gb_T_D4_u8_53700.jsonl
+50 tapout/guard/rc_T_D1_u8_53700.jsonl race T_D1_u8 2.36 hartford 53700 50 2 tapout/guard/rc_T_D1_u8_53700.jsonl
+50 tapout/guard/gb_T_D1_u8_53700.jsonl gb T_D1_u8 owner202610 53700 50 2 tapout/guard/gb_T_D1_u8_53700.jsonl
+50 tapout/guard/rc_T_a16_u8_53700.jsonl race T_a16_u8 2.36 hartford 53700 50 2 tapout/guard/rc_T_a16_u8_53700.jsonl
+50 tapout/guard/gb_T_a16_u8_53700.jsonl gb T_a16_u8 owner202610 53700 50 2 tapout/guard/gb_T_a16_u8_53700.jsonl
+50 tapout/guard/rc_T_D4_u8_53800.jsonl race T_D4_u8 2.36 hartford 53800 50 2 tapout/guard/rc_T_D4_u8_53800.jsonl
+50 tapout/guard/gb_T_D4_u8_53800.jsonl gb T_D4_u8 owner202610 53800 50 2 tapout/guard/gb_T_D4_u8_53800.jsonl
+50 tapout/guard/rc_T_D1_u8_53800.jsonl race T_D1_u8 2.36 hartford 53800 50 2 tapout/guard/rc_T_D1_u8_53800.jsonl
+50 tapout/guard/gb_T_D1_u8_53800.jsonl gb T_D1_u8 owner202610 53800 50 2 tapout/guard/gb_T_D1_u8_53800.jsonl
+50 tapout/guard/rc_T_a16_u8_53800.jsonl race T_a16_u8 2.36 hartford 53800 50 2 tapout/guard/rc_T_a16_u8_53800.jsonl
+50 tapout/guard/gb_T_a16_u8_53800.jsonl gb T_a16_u8 owner202610 53800 50 2 tapout/guard/gb_T_a16_u8_53800.jsonl
+50 tapout/guard/rc_T_D4_u8_53900.jsonl race T_D4_u8 2.36 hartford 53900 50 2 tapout/guard/rc_T_D4_u8_53900.jsonl
+50 tapout/guard/gb_T_D4_u8_53900.jsonl gb T_D4_u8 owner202610 53900 50 2 tapout/guard/gb_T_D4_u8_53900.jsonl
+50 tapout/guard/rc_T_D1_u8_53900.jsonl race T_D1_u8 2.36 hartford 53900 50 2 tapout/guard/rc_T_D1_u8_53900.jsonl
+50 tapout/guard/gb_T_D1_u8_53900.jsonl gb T_D1_u8 owner202610 53900 50 2 tapout/guard/gb_T_D1_u8_53900.jsonl
+50 tapout/guard/rc_T_a16_u8_53900.jsonl race T_a16_u8 2.36 hartford 53900 50 2 tapout/guard/rc_T_a16_u8_53900.jsonl
+50 tapout/guard/gb_T_a16_u8_53900.jsonl gb T_a16_u8 owner202610 53900 50 2 tapout/guard/gb_T_a16_u8_53900.jsonl
+50 tapout/guard/rc_T_D4_u8_54000.jsonl race T_D4_u8 2.36 hartford 54000 50 2 tapout/guard/rc_T_D4_u8_54000.jsonl
+50 tapout/guard/gb_T_D4_u8_54000.jsonl gb T_D4_u8 owner202610 54000 50 2 tapout/guard/gb_T_D4_u8_54000.jsonl
+50 tapout/guard/rc_T_D1_u8_54000.jsonl race T_D1_u8 2.36 hartford 54000 50 2 tapout/guard/rc_T_D1_u8_54000.jsonl
+50 tapout/guard/gb_T_D1_u8_54000.jsonl gb T_D1_u8 owner202610 54000 50 2 tapout/guard/gb_T_D1_u8_54000.jsonl
+50 tapout/guard/rc_T_a16_u8_54000.jsonl race T_a16_u8 2.36 hartford 54000 50 2 tapout/guard/rc_T_a16_u8_54000.jsonl
+50 tapout/guard/gb_T_a16_u8_54000.jsonl gb T_a16_u8 owner202610 54000 50 2 tapout/guard/gb_T_a16_u8_54000.jsonl
+50 tapout/guard/rc_T_D4_u8_54100.jsonl race T_D4_u8 2.36 hartford 54100 50 2 tapout/guard/rc_T_D4_u8_54100.jsonl
+50 tapout/guard/gb_T_D4_u8_54100.jsonl gb T_D4_u8 owner202610 54100 50 2 tapout/guard/gb_T_D4_u8_54100.jsonl
+50 tapout/guard/rc_T_D1_u8_54100.jsonl race T_D1_u8 2.36 hartford 54100 50 2 tapout/guard/rc_T_D1_u8_54100.jsonl
+50 tapout/guard/gb_T_D1_u8_54100.jsonl gb T_D1_u8 owner202610 54100 50 2 tapout/guard/gb_T_D1_u8_54100.jsonl
+50 tapout/guard/rc_T_a16_u8_54100.jsonl race T_a16_u8 2.36 hartford 54100 50 2 tapout/guard/rc_T_a16_u8_54100.jsonl
+50 tapout/guard/gb_T_a16_u8_54100.jsonl gb T_a16_u8 owner202610 54100 50 2 tapout/guard/gb_T_a16_u8_54100.jsonl
+50 tapout/guard/rc_T_D4_u8_54200.jsonl race T_D4_u8 2.36 hartford 54200 50 2 tapout/guard/rc_T_D4_u8_54200.jsonl
+50 tapout/guard/gb_T_D4_u8_54200.jsonl gb T_D4_u8 owner202610 54200 50 2 tapout/guard/gb_T_D4_u8_54200.jsonl
+50 tapout/guard/rc_T_D1_u8_54200.jsonl race T_D1_u8 2.36 hartford 54200 50 2 tapout/guard/rc_T_D1_u8_54200.jsonl
+50 tapout/guard/gb_T_D1_u8_54200.jsonl gb T_D1_u8 owner202610 54200 50 2 tapout/guard/gb_T_D1_u8_54200.jsonl
+50 tapout/guard/rc_T_a16_u8_54200.jsonl race T_a16_u8 2.36 hartford 54200 50 2 tapout/guard/rc_T_a16_u8_54200.jsonl
+50 tapout/guard/gb_T_a16_u8_54200.jsonl gb T_a16_u8 owner202610 54200 50 2 tapout/guard/gb_T_a16_u8_54200.jsonl
+50 tapout/guard/rc_T_D4_u8_54300.jsonl race T_D4_u8 2.36 hartford 54300 50 2 tapout/guard/rc_T_D4_u8_54300.jsonl
+50 tapout/guard/gb_T_D4_u8_54300.jsonl gb T_D4_u8 owner202610 54300 50 2 tapout/guard/gb_T_D4_u8_54300.jsonl
+50 tapout/guard/rc_T_D1_u8_54300.jsonl race T_D1_u8 2.36 hartford 54300 50 2 tapout/guard/rc_T_D1_u8_54300.jsonl
+50 tapout/guard/gb_T_D1_u8_54300.jsonl gb T_D1_u8 owner202610 54300 50 2 tapout/guard/gb_T_D1_u8_54300.jsonl
+50 tapout/guard/rc_T_a16_u8_54300.jsonl race T_a16_u8 2.36 hartford 54300 50 2 tapout/guard/rc_T_a16_u8_54300.jsonl
+50 tapout/guard/gb_T_a16_u8_54300.jsonl gb T_a16_u8 owner202610 54300 50 2 tapout/guard/gb_T_a16_u8_54300.jsonl
+50 tapout/guard/rc_T_D4_u8_54400.jsonl race T_D4_u8 2.36 hartford 54400 50 2 tapout/guard/rc_T_D4_u8_54400.jsonl
+50 tapout/guard/gb_T_D4_u8_54400.jsonl gb T_D4_u8 owner202610 54400 50 2 tapout/guard/gb_T_D4_u8_54400.jsonl
+50 tapout/guard/rc_T_D1_u8_54400.jsonl race T_D1_u8 2.36 hartford 54400 50 2 tapout/guard/rc_T_D1_u8_54400.jsonl
+50 tapout/guard/gb_T_D1_u8_54400.jsonl gb T_D1_u8 owner202610 54400 50 2 tapout/guard/gb_T_D1_u8_54400.jsonl
+50 tapout/guard/rc_T_a16_u8_54400.jsonl race T_a16_u8 2.36 hartford 54400 50 2 tapout/guard/rc_T_a16_u8_54400.jsonl
+50 tapout/guard/gb_T_a16_u8_54400.jsonl gb T_a16_u8 owner202610 54400 50 2 tapout/guard/gb_T_a16_u8_54400.jsonl
+50 tapout/guard/rc_T_D4_k32_44300.jsonl race T_D4_k32 2.36 hartford 44300 50 2 tapout/guard/rc_T_D4_k32_44300.jsonl
+50 tapout/guard/gb_T_D4_k32_44300.jsonl gb T_D4_k32 owner202610 44300 50 2 tapout/guard/gb_T_D4_k32_44300.jsonl
+50 tapout/guard/rc_T_D1_k32_44300.jsonl race T_D1_k32 2.36 hartford 44300 50 2 tapout/guard/rc_T_D1_k32_44300.jsonl
+50 tapout/guard/gb_T_D1_k32_44300.jsonl gb T_D1_k32 owner202610 44300 50 2 tapout/guard/gb_T_D1_k32_44300.jsonl
+50 tapout/guard/rc_T_D4_k32_44400.jsonl race T_D4_k32 2.36 hartford 44400 50 2 tapout/guard/rc_T_D4_k32_44400.jsonl
+50 tapout/guard/gb_T_D4_k32_44400.jsonl gb T_D4_k32 owner202610 44400 50 2 tapout/guard/gb_T_D4_k32_44400.jsonl
+50 tapout/guard/rc_T_D1_k32_44400.jsonl race T_D1_k32 2.36 hartford 44400 50 2 tapout/guard/rc_T_D1_k32_44400.jsonl
+50 tapout/guard/gb_T_D1_k32_44400.jsonl gb T_D1_k32 owner202610 44400 50 2 tapout/guard/gb_T_D1_k32_44400.jsonl
+50 tapout/guard/rc_T_D4_k32_44500.jsonl race T_D4_k32 2.36 hartford 44500 50 2 tapout/guard/rc_T_D4_k32_44500.jsonl
+50 tapout/guard/gb_T_D4_k32_44500.jsonl gb T_D4_k32 owner202610 44500 50 2 tapout/guard/gb_T_D4_k32_44500.jsonl
+50 tapout/guard/rc_T_D1_k32_44500.jsonl race T_D1_k32 2.36 hartford 44500 50 2 tapout/guard/rc_T_D1_k32_44500.jsonl
+50 tapout/guard/gb_T_D1_k32_44500.jsonl gb T_D1_k32 owner202610 44500 50 2 tapout/guard/gb_T_D1_k32_44500.jsonl
+50 tapout/guard/rc_T_D4_k32_44600.jsonl race T_D4_k32 2.36 hartford 44600 50 2 tapout/guard/rc_T_D4_k32_44600.jsonl
+50 tapout/guard/gb_T_D4_k32_44600.jsonl gb T_D4_k32 owner202610 44600 50 2 tapout/guard/gb_T_D4_k32_44600.jsonl
+50 tapout/guard/rc_T_D1_k32_44600.jsonl race T_D1_k32 2.36 hartford 44600 50 2 tapout/guard/rc_T_D1_k32_44600.jsonl
+50 tapout/guard/gb_T_D1_k32_44600.jsonl gb T_D1_k32 owner202610 44600 50 2 tapout/guard/gb_T_D1_k32_44600.jsonl
+50 tapout/guard/rc_T_D4_k32_44700.jsonl race T_D4_k32 2.36 hartford 44700 50 2 tapout/guard/rc_T_D4_k32_44700.jsonl
+50 tapout/guard/gb_T_D4_k32_44700.jsonl gb T_D4_k32 owner202610 44700 50 2 tapout/guard/gb_T_D4_k32_44700.jsonl
+50 tapout/guard/rc_T_D1_k32_44700.jsonl race T_D1_k32 2.36 hartford 44700 50 2 tapout/guard/rc_T_D1_k32_44700.jsonl
+50 tapout/guard/gb_T_D1_k32_44700.jsonl gb T_D1_k32 owner202610 44700 50 2 tapout/guard/gb_T_D1_k32_44700.jsonl
+50 tapout/guard/rc_T_D4_k32_44800.jsonl race T_D4_k32 2.36 hartford 44800 50 2 tapout/guard/rc_T_D4_k32_44800.jsonl
+50 tapout/guard/gb_T_D4_k32_44800.jsonl gb T_D4_k32 owner202610 44800 50 2 tapout/guard/gb_T_D4_k32_44800.jsonl
+50 tapout/guard/rc_T_D1_k32_44800.jsonl race T_D1_k32 2.36 hartford 44800 50 2 tapout/guard/rc_T_D1_k32_44800.jsonl
+50 tapout/guard/gb_T_D1_k32_44800.jsonl gb T_D1_k32 owner202610 44800 50 2 tapout/guard/gb_T_D1_k32_44800.jsonl
+50 tapout/guard/rc_T_D4_k32_44900.jsonl race T_D4_k32 2.36 hartford 44900 50 2 tapout/guard/rc_T_D4_k32_44900.jsonl
+50 tapout/guard/gb_T_D4_k32_44900.jsonl gb T_D4_k32 owner202610 44900 50 2 tapout/guard/gb_T_D4_k32_44900.jsonl
+50 tapout/guard/rc_T_D1_k32_44900.jsonl race T_D1_k32 2.36 hartford 44900 50 2 tapout/guard/rc_T_D1_k32_44900.jsonl
+50 tapout/guard/gb_T_D1_k32_44900.jsonl gb T_D1_k32 owner202610 44900 50 2 tapout/guard/gb_T_D1_k32_44900.jsonl
+50 tapout/guard/rc_T_D4_k32_45000.jsonl race T_D4_k32 2.36 hartford 45000 50 2 tapout/guard/rc_T_D4_k32_45000.jsonl
+50 tapout/guard/gb_T_D4_k32_45000.jsonl gb T_D4_k32 owner202610 45000 50 2 tapout/guard/gb_T_D4_k32_45000.jsonl
+50 tapout/guard/rc_T_D1_k32_45000.jsonl race T_D1_k32 2.36 hartford 45000 50 2 tapout/guard/rc_T_D1_k32_45000.jsonl
+50 tapout/guard/gb_T_D1_k32_45000.jsonl gb T_D1_k32 owner202610 45000 50 2 tapout/guard/gb_T_D1_k32_45000.jsonl
+50 tapout/guard/rc_T_D4_k32_45100.jsonl race T_D4_k32 2.36 hartford 45100 50 2 tapout/guard/rc_T_D4_k32_45100.jsonl
+50 tapout/guard/gb_T_D4_k32_45100.jsonl gb T_D4_k32 owner202610 45100 50 2 tapout/guard/gb_T_D4_k32_45100.jsonl
+50 tapout/guard/rc_T_D1_k32_45100.jsonl race T_D1_k32 2.36 hartford 45100 50 2 tapout/guard/rc_T_D1_k32_45100.jsonl
+50 tapout/guard/gb_T_D1_k32_45100.jsonl gb T_D1_k32 owner202610 45100 50 2 tapout/guard/gb_T_D1_k32_45100.jsonl
+50 tapout/guard/rc_T_D4_k32_45200.jsonl race T_D4_k32 2.36 hartford 45200 50 2 tapout/guard/rc_T_D4_k32_45200.jsonl
+50 tapout/guard/gb_T_D4_k32_45200.jsonl gb T_D4_k32 owner202610 45200 50 2 tapout/guard/gb_T_D4_k32_45200.jsonl
+50 tapout/guard/rc_T_D1_k32_45200.jsonl race T_D1_k32 2.36 hartford 45200 50 2 tapout/guard/rc_T_D1_k32_45200.jsonl
+50 tapout/guard/gb_T_D1_k32_45200.jsonl gb T_D1_k32 owner202610 45200 50 2 tapout/guard/gb_T_D1_k32_45200.jsonl
+50 tapout/guard/rc_T_D4_k32_45300.jsonl race T_D4_k32 2.36 hartford 45300 50 2 tapout/guard/rc_T_D4_k32_45300.jsonl
+50 tapout/guard/gb_T_D4_k32_45300.jsonl gb T_D4_k32 owner202610 45300 50 2 tapout/guard/gb_T_D4_k32_45300.jsonl
+50 tapout/guard/rc_T_D1_k32_45300.jsonl race T_D1_k32 2.36 hartford 45300 50 2 tapout/guard/rc_T_D1_k32_45300.jsonl
+50 tapout/guard/gb_T_D1_k32_45300.jsonl gb T_D1_k32 owner202610 45300 50 2 tapout/guard/gb_T_D1_k32_45300.jsonl
+50 tapout/guard/rc_T_D4_k32_45400.jsonl race T_D4_k32 2.36 hartford 45400 50 2 tapout/guard/rc_T_D4_k32_45400.jsonl
+50 tapout/guard/gb_T_D4_k32_45400.jsonl gb T_D4_k32 owner202610 45400 50 2 tapout/guard/gb_T_D4_k32_45400.jsonl
+50 tapout/guard/rc_T_D1_k32_45400.jsonl race T_D1_k32 2.36 hartford 45400 50 2 tapout/guard/rc_T_D1_k32_45400.jsonl
+50 tapout/guard/gb_T_D1_k32_45400.jsonl gb T_D1_k32 owner202610 45400 50 2 tapout/guard/gb_T_D1_k32_45400.jsonl
+50 tapout/guard/rc_T_D4_k32_45500.jsonl race T_D4_k32 2.36 hartford 45500 50 2 tapout/guard/rc_T_D4_k32_45500.jsonl
+50 tapout/guard/gb_T_D4_k32_45500.jsonl gb T_D4_k32 owner202610 45500 50 2 tapout/guard/gb_T_D4_k32_45500.jsonl
+50 tapout/guard/rc_T_D1_k32_45500.jsonl race T_D1_k32 2.36 hartford 45500 50 2 tapout/guard/rc_T_D1_k32_45500.jsonl
+50 tapout/guard/gb_T_D1_k32_45500.jsonl gb T_D1_k32 owner202610 45500 50 2 tapout/guard/gb_T_D1_k32_45500.jsonl
+50 tapout/guard/rc_T_D4_k32_45600.jsonl race T_D4_k32 2.36 hartford 45600 50 2 tapout/guard/rc_T_D4_k32_45600.jsonl
+50 tapout/guard/gb_T_D4_k32_45600.jsonl gb T_D4_k32 owner202610 45600 50 2 tapout/guard/gb_T_D4_k32_45600.jsonl
+50 tapout/guard/rc_T_D1_k32_45600.jsonl race T_D1_k32 2.36 hartford 45600 50 2 tapout/guard/rc_T_D1_k32_45600.jsonl
+50 tapout/guard/gb_T_D1_k32_45600.jsonl gb T_D1_k32 owner202610 45600 50 2 tapout/guard/gb_T_D1_k32_45600.jsonl
+50 tapout/guard/rc_T_D4_k32_45700.jsonl race T_D4_k32 2.36 hartford 45700 50 2 tapout/guard/rc_T_D4_k32_45700.jsonl
+50 tapout/guard/gb_T_D4_k32_45700.jsonl gb T_D4_k32 owner202610 45700 50 2 tapout/guard/gb_T_D4_k32_45700.jsonl
+50 tapout/guard/rc_T_D1_k32_45700.jsonl race T_D1_k32 2.36 hartford 45700 50 2 tapout/guard/rc_T_D1_k32_45700.jsonl
+50 tapout/guard/gb_T_D1_k32_45700.jsonl gb T_D1_k32 owner202610 45700 50 2 tapout/guard/gb_T_D1_k32_45700.jsonl
+50 tapout/guard/rc_T_D4_k32_45800.jsonl race T_D4_k32 2.36 hartford 45800 50 2 tapout/guard/rc_T_D4_k32_45800.jsonl
+50 tapout/guard/gb_T_D4_k32_45800.jsonl gb T_D4_k32 owner202610 45800 50 2 tapout/guard/gb_T_D4_k32_45800.jsonl
+50 tapout/guard/rc_T_D1_k32_45800.jsonl race T_D1_k32 2.36 hartford 45800 50 2 tapout/guard/rc_T_D1_k32_45800.jsonl
+50 tapout/guard/gb_T_D1_k32_45800.jsonl gb T_D1_k32 owner202610 45800 50 2 tapout/guard/gb_T_D1_k32_45800.jsonl
+50 tapout/guard/rc_T_D4_k32_45900.jsonl race T_D4_k32 2.36 hartford 45900 50 2 tapout/guard/rc_T_D4_k32_45900.jsonl
+50 tapout/guard/gb_T_D4_k32_45900.jsonl gb T_D4_k32 owner202610 45900 50 2 tapout/guard/gb_T_D4_k32_45900.jsonl
+50 tapout/guard/rc_T_D1_k32_45900.jsonl race T_D1_k32 2.36 hartford 45900 50 2 tapout/guard/rc_T_D1_k32_45900.jsonl
+50 tapout/guard/gb_T_D1_k32_45900.jsonl gb T_D1_k32 owner202610 45900 50 2 tapout/guard/gb_T_D1_k32_45900.jsonl
+50 tapout/guard/rc_T_D4_k32_46000.jsonl race T_D4_k32 2.36 hartford 46000 50 2 tapout/guard/rc_T_D4_k32_46000.jsonl
+50 tapout/guard/gb_T_D4_k32_46000.jsonl gb T_D4_k32 owner202610 46000 50 2 tapout/guard/gb_T_D4_k32_46000.jsonl
+50 tapout/guard/rc_T_D1_k32_46000.jsonl race T_D1_k32 2.36 hartford 46000 50 2 tapout/guard/rc_T_D1_k32_46000.jsonl
+50 tapout/guard/gb_T_D1_k32_46000.jsonl gb T_D1_k32 owner202610 46000 50 2 tapout/guard/gb_T_D1_k32_46000.jsonl
+50 tapout/guard/rc_T_D4_k32_46100.jsonl race T_D4_k32 2.36 hartford 46100 50 2 tapout/guard/rc_T_D4_k32_46100.jsonl
+50 tapout/guard/gb_T_D4_k32_46100.jsonl gb T_D4_k32 owner202610 46100 50 2 tapout/guard/gb_T_D4_k32_46100.jsonl
+50 tapout/guard/rc_T_D1_k32_46100.jsonl race T_D1_k32 2.36 hartford 46100 50 2 tapout/guard/rc_T_D1_k32_46100.jsonl
+50 tapout/guard/gb_T_D1_k32_46100.jsonl gb T_D1_k32 owner202610 46100 50 2 tapout/guard/gb_T_D1_k32_46100.jsonl
+50 tapout/guard/rc_T_D4_k32_46200.jsonl race T_D4_k32 2.36 hartford 46200 50 2 tapout/guard/rc_T_D4_k32_46200.jsonl
+50 tapout/guard/gb_T_D4_k32_46200.jsonl gb T_D4_k32 owner202610 46200 50 2 tapout/guard/gb_T_D4_k32_46200.jsonl
+50 tapout/guard/rc_T_D1_k32_46200.jsonl race T_D1_k32 2.36 hartford 46200 50 2 tapout/guard/rc_T_D1_k32_46200.jsonl
+50 tapout/guard/gb_T_D1_k32_46200.jsonl gb T_D1_k32 owner202610 46200 50 2 tapout/guard/gb_T_D1_k32_46200.jsonl

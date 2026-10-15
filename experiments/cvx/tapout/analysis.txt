@@ -1,0 +1,22 @@
+MAIN (5,100 seeds 44300.., paired vs banked S14_d16_u8; Bonferroni K=3)
+  D3 {"kind": "spawn", "P": 200, "h0": 13}: n 5100
+    kill  arm  4.43% base  6.98%  diff -2.55 [-3.18, -1.92] Bonf [-3.31, -1.80]
+    loss  arm 10.61% base 12.61%  diff -2.00 [-2.61, -1.39] Bonf [-2.75, -1.25]
+    slow  arm  6.18% base  5.63%  diff +0.55 [+0.06, +1.04] Bonf [-0.06, +1.18]
+    top   arm  7.25% base  9.37%  diff -2.12 [-2.73, -1.53] Bonf [-2.86, -1.39]
+    activity: changed 5128/663264, meta_pen_mismatch 0 (0.00%), pills/game 130.1 (base 128.0)
+  D1 {"kind": "spawn", "P": 60, "h0": 11}: n 5100
+    kill  arm  3.84% base  6.98%  diff -3.14 [-3.90, -2.37] Bonf [-4.07, -2.20]
+    loss  arm 10.08% base 12.61%  diff -2.53 [-3.47, -1.57] Bonf [-3.67, -1.36]
+    slow  arm  6.24% base  5.63%  diff +0.61 [-0.14, +1.33] Bonf [-0.27, +1.49]
+    top   arm  6.53% base  9.37%  diff -2.84 [-3.71, -1.98] Bonf [-3.90, -1.78]
+    activity: changed 11392/666653, meta_pen_mismatch 0 (0.00%), pills/game 130.7 (base 128.0)
+  D4 {"kind": "spawnq", "P": 40, "h0": 10}: n 5100
+    kill  arm  3.27% base  6.98%  diff -3.71 [-4.51, -2.88] Bonf [-4.67, -2.71]
+    loss  arm 10.35% base 12.61%  diff -2.25 [-3.31, -1.20] Bonf [-3.55, -0.96]
+    slow  arm  7.08% base  5.63%  diff +1.45 [+0.63, +2.25] Bonf [+0.43, +2.45]
+    top   arm  6.31% base  9.37%  diff -3.06 [-4.02, -2.08] Bonf [-4.24, -1.88]
+    activity: changed 24295/679593, meta_pen_mismatch 0 (0.00%), pills/game 133.3 (base 128.0)
+  Q2 (descriptive) D4 at k32 vs S14_d4_k32: n 2000
+    kill  diff -1.70 [-2.95, -0.45]
+    loss  diff -2.00 [-4.15, +0.20]
