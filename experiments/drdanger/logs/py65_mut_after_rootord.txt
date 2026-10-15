@@ -1,0 +1,8 @@
+arm=D4 mut=after_rootord img8000=63409a27 tasks=60
+tall : fw == mirror(+sim DANGER) 55/60; per-root n bad 0; boards with a firing root 60; live roots fw==sim 1161/1161; D_DNG writes 2406; decision moved 5; cycles median 3723781 max 5954815
+  MISMATCH {'kind': 'tall', 'd1': (7, 0), 'e1': (1, 1), 'bad': [], 'nroot_fw': 30, 'nroot_mir': 30}
+  MISMATCH {'kind': 'tall', 'd1': (3, 2), 'e1': (1, 2), 'bad': [], 'nroot_fw': 30, 'nroot_mir': 30}
+  MISMATCH {'kind': 'tall', 'd1': (3, 0), 'e1': (3, 2), 'bad': [], 'nroot_fw': 3, 'nroot_mir': 3}
+  MISMATCH {'kind': 'tall', 'd1': (4, 0), 'e1': (5, 2), 'bad': [], 'nroot_fw': 30, 'nroot_mir': 30}
+  MISMATCH {'kind': 'tall', 'd1': (1, 2), 'e1': (5, 0), 'bad': [], 'nroot_fw': 30, 'nroot_mir': 30}
+GATE_DRDANGER D4 after_rootord FAIL

@@ -179,6 +179,12 @@ def build_image(board, cA, cB, nA, nB):
     # the b03a586e identity gate depends on that). See tests/test_search_d3.py veto_plug/
     # _e_veto_flag and experiments/drveto/gate_drveto.py for the spec + killed-mutant gate.
     D3.DRVETO = int(os.environ.get("DRVETO", "0"))
+    # Throat-danger root penalty (env DRDANGER, default 0 = byte-identical firmware; DRDANGER_ARM D4 default | D1).
+    # See tests/test_search_d3.py danger_n / _e_danger_scan and experiments/drdanger/gate_drdanger.py.
+    D3.DRDANGER = int(os.environ.get("DRDANGER", "0"))
+    D3.DANGER_ARM = os.environ.get("DRDANGER_ARM", "D4")
+    assert D3.DANGER_ARM in D3.DANGER_ARMS, D3.DANGER_ARM
+    assert not D3.DRDANGER or D3.EH_PLY1, "DRDANGER needs eh_terms (EH_PLY1): its scan reads eh_terms' CUR"
     # Reach-root pre-filter (env DRREACH, default 0 = byte-identical firmware). The mask routine is its own
     # image at reach_6502.REACH_ROM ($A800 = the v1 EMIT_TUCK window, never co-resident: asserted below).
     # PAIRING: a DRREACH firmware filters only when the cart sends the DRREACHTX gravity nibbles; with an old

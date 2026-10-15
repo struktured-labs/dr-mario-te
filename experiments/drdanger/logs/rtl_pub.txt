@@ -1,0 +1,11 @@
+OFF: RTL final == py65 fw 114/210; == mirror(+sim DANGER) 114/210; RTL final differs from OFF on 0
+D4 : RTL final == py65 fw 101/210; == mirror(+sim DANGER) 101/210; RTL final differs from OFF on 32
+D1 : RTL final == py65 fw 113/210; == mirror(+sim DANGER) 113/210; RTL final differs from OFF on 6
+D4 cost vs OFF (NES CPU cycles): DONE median +272 p90 +408 max +408 (+0.02% median, max +0.05%, = +0.014 f max); first publish median +136 max +3196; OFF DONE median 36.11 f
+D1 cost vs OFF (NES CPU cycles): DONE median +272 p90 +340 max +408 (+0.02% median, max +0.05%, = +0.014 f max); first publish median +136 max +2312; OFF DONE median 36.11 f
+mutant after_rootord: RTL final != D4 RTL on 0/60 -> survived; RTL == its own py65 build 17/60
+mutant no_clear     : RTL final != D4 RTL on 0/60 -> survived; RTL == its own py65 build 21/60
+mutant lut_off1     : RTL final != D4 RTL on 8/60 -> KILLED; RTL == its own py65 build 20/60
+mutant inert        : RTL final != D4 RTL on 16/60 -> KILLED; RTL == its own py65 build 26/60
+mutant row_off1     : RTL final != D4 RTL on 0/60 -> survived; RTL == its own py65 build 21/60
+COSIM_DRDANGER FAIL

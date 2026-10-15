@@ -1,0 +1,5 @@
+arm=OFF mut=None img8000=33303ca4 tasks=250
+game : fw == mirror(+sim DANGER) 60/60; per-root n bad 0; boards with a firing root 0; live roots fw==sim 0/0; D_DNG writes 0; decision moved 0; cycles median 5851086 max 5947390
+tall : fw == mirror(+sim DANGER) 150/150; per-root n bad 0; boards with a firing root 0; live roots fw==sim 0/0; D_DNG writes 0; decision moved 0; cycles median 5641551 max 5986612
+win  : fw == mirror(+sim DANGER) 40/40; per-root n bad 0; boards with a firing root 0; live roots fw==sim 0/0; D_DNG writes 0; decision moved 0; cycles median 3167039 max 5574813
+GATE_DRDANGER OFF - PASS

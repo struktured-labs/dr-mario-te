@@ -1,0 +1,8 @@
+arm=D4 mut=row_off1 img8000=4fede573 tasks=60
+tall : fw == mirror(+sim DANGER) 55/60; per-root n bad 5; boards with a firing root 60; live roots fw==sim 1151/1161; D_DNG writes 2406; decision moved 5; cycles median 3724870 max 5956359
+  MISMATCH {'kind': 'tall', 'd1': (0, 2), 'e1': (0, 2), 'bad': [((5, 0), [0, 5], 6), ((5, 1), [0, 5], 6)], 'nroot_fw': 30, 'nroot_mir': 30}
+  MISMATCH {'kind': 'tall', 'd1': (1, 1), 'e1': (1, 1), 'bad': [((5, 0), [0, 5], 6), ((5, 1), [0, 5], 6)], 'nroot_fw': 30, 'nroot_mir': 30}
+  MISMATCH {'kind': 'tall', 'd1': (6, 0), 'e1': (6, 0), 'bad': [((5, 0), [0, 5], 6), ((5, 1), [0, 5], 6)], 'nroot_fw': 30, 'nroot_mir': 30}
+  MISMATCH {'kind': 'tall', 'd1': (6, 2), 'e1': (6, 2), 'bad': [((5, 0), [0, 5], 6), ((5, 1), [0, 5], 6)], 'nroot_fw': 24, 'nroot_mir': 24}
+  MISMATCH {'kind': 'tall', 'd1': (4, 2), 'e1': (4, 2), 'bad': [((2, 0), [0, 5], 6), ((2, 1), [0, 5], 6)], 'nroot_fw': 30, 'nroot_mir': 30}
+GATE_DRDANGER D4 row_off1 FAIL

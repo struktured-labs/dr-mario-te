@@ -10,6 +10,8 @@ import primitives as P
 from patch_vs_cpu import Asm6502
 import patch_vs_cpu
 patch_vs_cpu.OPS.setdefault("CLD", 0xD8)
+patch_vs_cpu.OPS.setdefault("AND_absX", 0x3D)   # DRDANGER throat scan
+patch_vs_cpu.OPS.setdefault("LDX_abs", 0xAE)    # DRDANGER penalty index
 patch_vs_cpu.OPS.setdefault("SBC_absX", 0xFD)
 patch_vs_cpu.OPS.setdefault("CMP_absX", 0xDD)
 patch_vs_cpu.OPS.setdefault("ADC_absX", 0x7D)
@@ -75,6 +77,88 @@ D_VETO, D_VIRF = 0xB4, 0xB5    # DRVETO zp: per-candidate veto flag (root-replay
                                # every module in this build (D_* end $72; tuck_v3 $70-$80;
                                # tuck_bfs $81-$96; translate $97-$A8; tier3 $A9-$B3;
                                # primitives scratch $CA-$F1).
+DRDANGER = 0                   # throat-danger root penalty (TAPOUT study, grok/tapout-study RESULT_TAPOUT.md; set
+                               # by build_copro_d3 from env DRDANGER). 0 emits NOTHING -> byte-identical firmware.
+                               # Per root: n = max(0, Hs(b1) - h0), Hs = max column height of cols 2..5 on the
+                               # eh_terms soft b1 (CUR $0700); val1 -= LUT[n] (P*n^2 for D4, P*n for D1) at o_cand
+                               # right after DRVETO, 16-bit saturating -- before the DRROOTORD pre-pass store, so
+                               # pass B, pass C and the anytime mailbox all see it. Spec: danger_n / danger_val.
+DANGER_ARMS = {"D4": dict(P=40, h0=10, quad=True), "D1": dict(P=60, h0=11, quad=False)}
+DANGER_ARM = "D4"              # env DRDANGER_ARM (D4 default, D1 selectable)
+D_DNG = 0x0287                 # DRDANGER: per-root LUT index n (abs RAM: RO_BASE+0x87, after RO_LEH; the RO block
+                               # $0200-$0286 is the only claimed user of page 2; gate_drdanger --arm OFF asserts the
+                               # shipped firmware never writes $0287 on its corpus)
+_DANGER_MUT = None             # TEST-ONLY mutants for gate_drdanger (never set by any build):
+                               # "after_rootord" (penalty after the pre-pass store), "no_clear" (D_DNG not cleared
+                               # per root), "lut_off1" (LUT shifted by one), "inert" (scan emits, apply does not),
+                               # "row_off1" (scan starts one row low)
+
+
+def danger_lut(arm=None):
+    d = DANGER_ARMS[arm or DANGER_ARM]
+    nmax = 16 - d["h0"]
+    return [d["P"] * (n * n if d["quad"] else n) for n in range(nmax + 1)]
+
+
+def danger_n(b1, arm=None):
+    """Python mirror of the 6502 throat scan: b1 = 128 NES bytes ($FF empty), row 0 = top."""
+    d = DANGER_ARMS[arm or DANGER_ARM]
+    hs = 0
+    for c in range(2, 6):
+        for r in range(16):
+            if b1[r * 8 + c] != 0xFF:
+                hs = max(hs, 16 - r); break
+    return max(0, hs - d["h0"])
+
+
+def danger_val(val, n, arm=None):
+    """The o_cand penalty: 16-bit signed subtract of LUT[n], saturating at -32767 (as veto_val)."""
+    t = val - danger_lut(arm)[n]
+    return t if t >= -32768 else -32767
+
+
+def _e_danger_scan(a):
+    """After eh_terms: CUR ($0700) holds this root's soft b1. D_DNG <- n (module doc). Clobbers A, X, Y."""
+    d = DANGER_ARMS[DANGER_ARM]
+    nrows = 16 - d["h0"]                     # only rows 0..nrows-1 can give n > 0
+    r0 = 1 if _DANGER_MUT == "row_off1" else 0
+    a.ins("LDX_imm", r0 * 8 + 2)             # CUR index of (row r0, col 2)
+    a.ins("LDY_imm", nrows - r0)
+    a.label("dg_l")
+    a.ins16("LDA_absX", CUR); a.ins16("AND_absX", CUR + 1); a.ins16("AND_absX", CUR + 2); a.ins16("AND_absX", CUR + 3)
+    a.ins("CMP_imm", 0xFF); a.br("BNE", "dg_hit")       # some cell of cols 2..5 in this row is occupied
+    a.ins("TXA"); a.ins("CLC"); a.ins("ADC_imm", 8); a.ins("TAX")
+    a.ins("DEY"); a.br("BNE", "dg_l")
+    a.label("dg_hit")
+    a.ins("TYA"); a.ins16("STA_abs", D_DNG)
+
+
+def _sbc_absx_label(a, label):
+    a.code.append(patch_vs_cpu.OPS["SBC_absX"])
+    a.fixups.append((len(a.code), "abs", label))
+    a.code.append(0x00); a.code.append(0x00)
+
+
+def _e_danger_apply(a):
+    """o_cand: val1 -= LUT[D_DNG], 16-bit signed, saturating at -32767 (DRVETO's form)."""
+    lut = danger_lut()
+    if _DANGER_MUT == "lut_off1":
+        lut = lut[1:] + [lut[-1]]
+    a.ins16("LDX_abs", D_DNG); a.br("BEQ", "dg_np")
+    a.ins("SEC")
+    a.ins("LDA_zp", D_V1L); _sbc_absx_label(a, "dg_lutl"); a.ins("STA_zp", D_V1L)
+    a.ins("LDA_zp", D_V1H); _sbc_absx_label(a, "dg_luth")
+    a.br("BVC", "dg_st")
+    a.ins("LDA_imm", 0x01); a.ins("STA_zp", D_V1L); a.ins("LDA_imm", 0x80)
+    a.label("dg_st"); a.ins("STA_zp", D_V1H)
+    a.jmp("dg_np")
+    a.label("dg_lutl")
+    for v in lut: a.code.append(v & 0xFF)
+    a.label("dg_luth")
+    for v in lut: a.code.append((v >> 8) & 0xFF)
+    a.label("dg_np")
+
+
 _VETO_SUPPRESS = False         # TEST-ONLY (gate identity check): True suppresses all three
                                # DRVETO emissions even with DRVETO=1. Never set by any build.
 _VETO_AT_OCAND = False         # TEST-ONLY (gate mutant M2, the C1 trap): True moves the
@@ -723,6 +807,8 @@ def _emit_search_d3_engine(a):
         a.label("s_root")
         a.ins16("LDX_abs", RO_JC); a.ins16("LDA_absX", RO_ORD); a.ins("TAX")
     a.ins16("LDA_absX", TK1_O); a.ins("STA_zp", D_O1); a.ins16("LDA_absX", TK1_C); a.ins("STA_zp", D_C1)
+    if DRDANGER and _DANGER_MUT != "no_clear":
+        a.ins("LDA_imm", 0); a.ins16("STA_abs", D_DNG)    # DRDANGER: a root that skips eh_terms (WIN) pays nothing
     # replay ply1
     _e_copy(a, 1, True)
     _e_node(a, D_O1, D_C1, S_CA, S_CB)
@@ -754,6 +840,8 @@ def _emit_search_d3_engine(a):
         a.label("ro_nleh")
     if EH_PLY1:
         a.jsr("eh_terms")                                 # D_AD = W_EXCAV*excav(b1)+W_HANG*hang(b1)
+        if DRDANGER:
+            _e_danger_scan(a)                             # CUR = this root's soft b1 -> D_DNG
     if _d(DELTA_P2):
         _e_copy(a, 2, True)                               # CUR <- w1 (b1 parent), once
         _e_base(a)                                        # latch base from parent
@@ -899,6 +987,8 @@ def _emit_search_d3_engine(a):
         a.ins("LDA_imm", 0x01); a.ins("STA_zp", D_V1L); a.ins("LDA_imm", 0x80)
         a.label("vt_st"); a.ins("STA_zp", D_V1H)
         a.label("vt_np")
+    if DRDANGER and _DANGER_MUT not in ("after_rootord", "inert"):
+        _e_danger_apply(a)                                # before the DRROOTORD pre-pass store (pass B sees it)
     if DRREACH and _REACH_PENALTY_MUT:
         import reach_6502 as _RC
         a.ins("LDA_zp", _RC.R_FLT); a.br("BEQ", "rkp_n")
@@ -919,6 +1009,8 @@ def _emit_search_d3_engine(a):
         a.ins("LDA_zp", D_V1L); a.ins16("STA_absX", RO_D2L); a.ins("LDA_zp", D_V1H); a.ins16("STA_absX", RO_D2H)
         a.ins16("INC_abs", RO_J); a.jmp("s_loop")
         a.label("oc_deep")
+        if DRDANGER and _DANGER_MUT == "after_rootord":
+            _e_danger_apply(a)                            # MUTANT: deep pass only
     if DEBUG_VAL1:                                    # dump (C1,O1,V1L,V1H,B2L,B2H) at
                                                         # ring[D_J1*8] (pre-jitter), PLUS
                                                         # (I1L,I1H,L1L,L1H,ADL,ADH) at

@@ -1,0 +1,6 @@
+D4               boards 210: live root writes == sim n 7082/7082; wrong n 0; scan without preceding clear 0; observer passive (final+DONE == vsim_pub2) 210/210
+D1               boards 107: live root writes == sim n 2488/2488; wrong n 0; scan without preceding clear 0; observer passive (final+DONE == vsim_pub2) 107/107
+mut_no_clear     boards 20: live root writes == sim n 762/762; wrong n 0; scan without preceding clear 762; observer passive (final+DONE == vsim_pub2) 20/20
+mut_row_off1     boards 20: live root writes == sim n 758/762; wrong n 4; scan without preceding clear 0; observer passive (final+DONE == vsim_pub2) 20/20
+OFF              boards 20: D_DNG writes 0
+RTL_DNG_GATE PASS
