@@ -3,6 +3,8 @@
 - **Status: COMPLETE.** Stage 0 (characterisation) and stage 1 (screen, main, Q2) are done. The autopilot
   (`tapout_auto.sh`, systemd unit `tapout-auto`) applied the pre-registered screen rule, ran the main and Q2 phases and
   wrote `tapout/analysis.txt` once, after every farm reported DONE (`AUTO DONE 2026-10-13T22:13:53Z`).
+- **Addendum A: COMPLETE (2026-10-14).** The owner-race and gate-b guards show no harm for D4 or D1; D4 is confirmed
+  (D1 the fallback). See Addendum A at the end.
 - **Pre-registration:** `PREREG_TAPOUT.md` (f7e5bd00, arms eaed99cd), committed before any danger-arm game.
 - **Opponent:** dr. lulu at measured pace (M 167.5 s), STEER14 harness and outcome model (`vs_race.evaluate`), V11
   firmware model. Baseline = the banked STEER14 `S14_d16_u8` rows (A16 + u8).
@@ -167,7 +169,7 @@ banked rows through the same wrapper.
     pick.
 - **Not measured here:** the guards outside the LULU race (the owner race and the gate-b tap-out), A16 + u8 against
   other opponents, and anything on hardware. These guards should be run in the sim on the chosen arm before a
-  firmware build.
+  firmware build. **The two guards have since been run on D4 and D1 (Addendum A): no harm, D4 confirmed.**
 
 ## 3. What the recommended arm needs outside the sim
 - **Firmware only (6502 root side), no RTL.** The penalty is applied per root after DRVETO, on the soft b1 board that
@@ -201,14 +203,104 @@ banked rows through the same wrapper.
   Do the same for screen into `tapout/screen/`. Then run `python analyze_tapout.py main`. The baseline rows come from
   STEER14 (`steer14/main/`).
 
-## Addendum A (2026-10-14, RUNNING): owner-race + gate-b guards on D4 / D1
+## Addendum A (2026-10-14, COMPLETE): owner-race + gate-b guards on D4 / D1
+- **Status: COMPLETE.** All 672 guard jobs are banked (`STATUS_guard: DONE 2026-10-14T23:40:36Z`), 33,600 rows, no
+  duplicate (arm, seed). Analysis: `analyze_tapout_guard.py` → `tapout/guard_analysis.txt`.
 - **Design:** `PREREG_TAPOUT.md` addendum A (c295a9f8), committed before any guard game of a danger arm.
-  - Both guards as STEER14 defines them, on 5,100 paired seeds vs A16 + u8.
-  - Plus D4 / D1 at today's gate k32 on 1,000 seeds (descriptive).
-- **Unit:** `tapout-guard` (20 workers, nice 19). Analysis: `analyze_tapout_guard.py` → `tapout/guard_analysis.txt`.
-- **Recommendation status:** D4 (fallback D1) stands pending these guards.
-- **Firmware sketch for the winner:** `tapout/FIRMWARE_SKETCH_DANGER.md`.
-  - About 77 bytes of copro 6502 ROM and 1 zp byte.
-  - About 16k copro cycles per decision (≈ 0.011 f MiSTer).
-  - The cart NMI budget (28,001 / 29,780) is unchanged, because the penalty runs on the copro.
-  - No RTL.
+  - Both guards as STEER14 defines them: owner race (`race ARM 2.36 hartford`, `vs_race.evaluate` at M 239.5) and
+    gate b (`gb ARM owner202610`).
+  - D4 / D1 vs A16 + u8 on the full main block (5,100 seeds 44300.. step 2), paired by seed. Paired bootstrap 10,000,
+    Bonferroni K = 2.
+  - Plus D4 / D1 at today's gate k32 on 1,000 seeds vs the banked `S14_d4_k32` guard rows (descriptive).
+- **Harm rule (as STEER14):** owner-race loss UP (Bonferroni lower > 0) or gate-b tap-out UP (Bonferroni lower > 0).
+
+### A.1 Short answer
+1. **Neither arm shows HARM.** Both guards move the right way for D4 and for D1: owner-race loss and gate-b tap-outs
+   both fall, with every Bonferroni upper bound below 0.
+2. **D4 is confirmed as the recommended arm; D1 stays the fallback.** On the guards the two cannot be separated.
+3. **Owner race, D4:** loss 7.39 % -> 5.90 %, −1.49 [Bonferroni −2.49, −0.51]; kills 6.08 % -> 4.00 %, −2.08
+   [Bonferroni −2.96, −1.20]. **Cost:** slow losses +0.59 [Bonferroni +0.06, +1.12]. This rise is established, as in
+   stage 1, and it is smaller than the kill cut.
+4. **Gate b, D4:** tap-outs 5.06 % -> 3.37 %, −1.69 [Bonferroni −2.53, −0.86]. Every gate-b loss is a tap-out; no
+   stalls.
+
+### A.2 Guards vs A16 + u8 (`tapout/guard_analysis.txt`; n 5,100 paired)
+Diffs are arm − A16 + u8 in pp, with 95 % paired bootstrap [ ] and Bonferroni K = 2 { }.
+
+| endpoint | A16 + u8 (base) | D4 | D1 |
+|---|---|---|---|
+| **owner race: loss** (harm guard) | 7.39 % (377) | 5.90 % (301) | 5.98 % (305) |
+| diff [95 %] | | −1.49 [−2.37, −0.65] | −1.41 [−2.22, −0.65] |
+| diff {Bonferroni} | | **{−2.49, −0.51}** | **{−2.31, −0.57}** |
+| owner race: kill | 6.08 % (310) | 4.00 % (204) | 4.31 % (220) |
+| diff [95 %] {Bonferroni} | | −2.08 [−2.84, −1.31] {−2.96, −1.20} | −1.76 [−2.49, −1.04] {−2.59, −0.94} |
+| owner race: slow | 1.31 % (67) | 1.90 % (97) | 1.67 % (85) |
+| diff [95 %] {Bonferroni} | | +0.59 [+0.12, +1.06] **{+0.06, +1.12}** | +0.35 [−0.06, +0.75] {−0.10, +0.80} |
+| **gate b: tap-out** (harm guard) | 5.06 % (258) | 3.37 % (172) | 3.57 % (182) |
+| diff [95 %] | | −1.69 [−2.43, −0.96] | −1.49 [−2.14, −0.82] |
+| diff {Bonferroni} | | **{−2.53, −0.86}** | **{−2.24, −0.73}** |
+| gate b: loss (1 − won) | 5.06 % | 3.37 % | 3.59 % |
+| diff {Bonferroni} | | {−2.53, −0.86} | {−2.22, −0.71} |
+| gate b: stall | 0.00 % | 0.00 % | 0.02 % (1) |
+| **HARM** | | **no** | **no** |
+
+**Between the arms** (paired, 95 %, descriptive; not pre-registered contrasts):
+
+| D4 − D1 | owner-race kill | owner-race loss | owner-race slow | gate-b tap-out |
+|---|---|---|---|---|
+| diff [95 %] | −0.31 [−1.00, +0.37] | −0.08 [−0.86, +0.69] | +0.24 [−0.22, +0.71] | −0.20 [−0.82, +0.43] |
+
+The guards do not separate D4 from D1. The pattern is the same as in the LULU race: the penalty turns kills into a
+few slow losses, and the net loss still falls. D4 plays about 2 pills per game more than D1 in the owner race (127.5
+vs 125.7) and in gate b (118.5 vs 117.3).
+
+### A.3 Today's gate k32 (descriptive; n 1,000 vs the banked `S14_d4_k32` guard rows, Bonferroni K = 1 = 95 %)
+
+| endpoint | `S14_d4_k32` | D4 at k32 | D1 at k32 |
+|---|---|---|---|
+| owner race: loss | 11.00 % | 6.60 %, −4.40 [−6.80, −2.00] | 6.50 %, −4.50 [−6.70, −2.40] |
+| owner race: kill | 6.90 % | 3.60 %, −3.30 [−5.30, −1.40] | 3.70 %, −3.20 [−4.90, −1.50] |
+| owner race: slow | 4.10 % | 3.00 %, −1.10 [−2.60, +0.50] | 2.80 %, −1.30 [−2.70, +0.20] |
+| gate b: tap-out | 5.00 % | 2.70 %, −2.30 [−3.90, −0.70] | 3.90 %, −1.10 [−2.70, +0.40] |
+| gate b: stall | 0.00 % | 0.00 % | 0.00 % |
+
+No harm direction at k32 either. At k32 D4's gate-b tap-out cut excludes 0 and D1's does not.
+
+### A.4 Deviations and checks
+- **Machines.** The prereg says blackmage only. To finish sooner, 138 of the 672 job files (6,900 rows) ran on a
+  second 4-core Linux compute box of the owner's, from a copy of this worktree at c295a9f8 with the same pinned venv.
+  The rows were merged into `tapout/guard/` with 138 ok / 0 bad. Every row on both machines has the same harness hash
+  (`rig.s14_sha` ef2396467e9e2ae2) and the same rule-guard hash (`rig.guard.sha` 064752972d064a89 == expect). The
+  remote rows have an empty `rig.git` (no `.git` in the copy). Locally run rows carry c295a9f8 or a4f64bbf; the
+  second commit only added the analysis script and docs, with no change to the harness.
+- **Base rows.** The prereg needs `T_a16_u8` for 4,100 seeds. The farm ran it for 4,600 (45300..54498). The 500
+  seeds that overlap the banked STEER14 rows (45300..46298) **equal the banked `rc14_/gb14_S14_d16_u8` rows on every
+  game key and every `knob` counter: 500 / 500 race, 500 / 500 gate b.** This is an extra wrapper identity check.
+  The analysis uses the wrapper rows on the overlap; they are equal, so the result does not change.
+- **Pack.** `rig.numba_cache` (a per-job scratch path) is reduced to `nb_local/<job>` or `nb_remote/<job>` in the
+  committed pack; nothing else in the rows is changed. The analysis re-run from the unpacked pack reproduces
+  `tapout/guard_analysis.txt` byte for byte.
+
+### A.5 Recommendation (after the guards)
+- **D4 (`spawnq`, P 40, h0 10) is confirmed for the firmware step.** It has the lowest LULU kill rate (stage 1), it
+  passes both STEER14 guards with room to spare, and it also lowers owner-race loss and gate-b tap-outs.
+- **Its known cost is the same everywhere:** a small established rise in slow losses (LULU +1.45, owner race +0.59 pp)
+  that the kill cut more than pays for.
+- **D1 (`spawn`, P 60, h0 11) remains the fallback.** It also passes both guards, is linear (no squaring table) and
+  changes half as many decisions. Pick it if the firmware size or the slow-loss cost of D4 turns out to matter.
+- **Next step:** the DRDANGER firmware flag per `tapout/FIRMWARE_SKETCH_DANGER.md`.
+  - About 77 bytes of copro 6502 ROM and 1 zp byte, about 16k copro cycles per decision (≈ 0.011 f MiSTer).
+  - Cart NMI budget (28,001 / 29,780) unchanged; no RTL.
+  - Then the sim and co-sim gates (Verilator copro + firmware against `tapout_run`'s choices on fixed boards).
+  - Only after those: the Quartus fit, the bluemage soak and the couch test (owner).
+
+### A.6 Data and reproduction
+- `tapout/rows_guard.jsonl.gz`: 33,600 rows, the concatenation of `tapout/guard/*.jsonl` in file-name order.
+  - `T_D4_u8` and `T_D1_u8`: 5,100 each per guard.
+  - `T_a16_u8`: 4,600 per guard.
+  - `T_D4_k32` and `T_D1_k32`: 1,000 each per guard.
+  - Race rows have arm `…~steer`; gate-b rows have arm `…@owner202610`.
+- `tapout/jobs_guard.txt` is the job list; `tapout/guard_analysis.txt` is the analysis output.
+- **To re-run:** `mkdir -p tapout/guard` and then
+  `zcat tapout/rows_guard.jsonl.gz | python3 -c 'import sys,json;[open("tapout/guard/"+("rc_" if "~steer" in a else "gb_")+a.split("~")[0].split("@")[0]+"_all.jsonl","a").write(l) for l in sys.stdin for a in [json.loads(l)["arm"]]]'`.
+  Then run `python analyze_tapout_guard.py`. The banked base rows come from STEER14 (`steer14/main/`).
