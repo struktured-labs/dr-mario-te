@@ -1,0 +1,3 @@
+arm=D4 mut=no_clear img8000=4ce8efdf tasks=60
+tall : fw == mirror(+sim DANGER) 60/60; per-root n bad 0; boards with a firing root 60; live roots fw==sim 1161/1161; D_DNG writes 1203; decision moved 5; cycles median 3725419 max 5957185
+GATE_DRDANGER D4 no_clear PASS

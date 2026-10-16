@@ -1,0 +1,3 @@
+arm=D1 mut=None img8000=ac679871 tasks=40
+win  : fw == mirror(+sim DANGER) 40/40; per-root n bad 0; boards with a firing root 40; live roots fw==sim 644/644; D_DNG writes 1455; decision moved 0; cycles median 3169679 max 5578347
+GATE_DRDANGER D1 - FAIL
