@@ -1,0 +1,6 @@
+Fitter status : Successful - Fri Oct 16 18:28:50 2026
+ALMs          : 37711 / 41910  (4199 free)   PASS
+copro slack   : 0.418 ns (bar +0.10)   PASS
+pll_hdmi      : 0.052 ns (baseline -0.012)   PASS
+
+VERDICT: SHIP AS-IS -- all three criteria met; BRAM conversion (#27) not needed.
